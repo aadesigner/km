@@ -43,6 +43,7 @@ import {
 } from "../lib/pendingVinService.js";
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
 import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
+import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
 
 const router = Router();
 
@@ -369,6 +370,21 @@ async function countFreeCoupon(paymentId: number, couponCode: string): Promise<v
   }
 }
 
+async function failFreeCouponPayment(paymentId: number, couponCode: string | null): Promise<void> {
+  try {
+    await db.update(paymentsTable)
+      .set({ status: "failed", updatedAt: new Date() })
+      .where(eq(paymentsTable.id, paymentId));
+    if (couponCode) {
+      await db.update(couponsTable)
+        .set({ uses: sql`GREATEST(uses - 1, 0)` })
+        .where(eq(couponsTable.code, couponCode));
+    }
+  } catch (err) {
+    logger.warn({ err, paymentId, couponCode }, "Failed to roll back free coupon payment");
+  }
+}
+
 
 // ── Free VIN decoder daily rate limit (in-memory, resets on server restart) ──
 const FREE_DECODE_IP_MAP = new Map<string, { count: number; day: string }>();
@@ -533,7 +549,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     const payment = await db.select().from(paymentsTable)
       .where(eq(paymentsTable.paypalOrderId, paypalOrderId))
       .limit(1);
-    if (!payment[0] || payment[0].status !== "completed" || payment[0].userId !== userId) {
+    if (!payment[0] || !isPaymentUsableForLookup(payment[0], userId)) {
       res.status(402).json({ error: "Valid payment required", code: "PAYMENT_REQUIRED" });
       return;
     }
@@ -548,7 +564,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     const payment = await db.select().from(paymentsTable)
       .where(eq(paymentsTable.id, paymentId))
       .limit(1);
-    if (!payment[0] || payment[0].status !== "completed" || payment[0].userId !== userId) {
+    if (!payment[0] || !isPaymentUsableForLookup(payment[0], userId)) {
       res.status(402).json({ error: "Valid payment required", code: "PAYMENT_REQUIRED" });
       return;
     }
@@ -563,7 +579,9 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     const existingPayment = await db.select().from(paymentsTable)
       .where(eq(paymentsTable.userId, userId))
       .limit(100);
-    const vinPayment = existingPayment.find(p => p.vin === normalizedVin && p.status === "completed");
+    const vinPayment = existingPayment.find(
+      (p) => p.vin === normalizedVin && isPaymentUsableForLookup(p, userId),
+    );
     if (!vinPayment) {
       res.status(402).json({ error: "Payment required for VIN lookup", code: "PAYMENT_REQUIRED" });
       return;
@@ -612,6 +630,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     }).returning();
     logger.info({ msg: "vin_lookup_hit", source: "catalog", vin: normalizedVin, userId, provider: catalogEntry.providerName });
     const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt ?? catalogEntry.updatedAt);
+    await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
     res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: true });
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
@@ -644,6 +663,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     }).returning();
     logger.info({ msg: "vin_lookup_hit", source: "cache", vin: normalizedVin, userId, provider: cached.providerName });
     const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt ?? cached.updatedAt);
+    await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
     res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: true });
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
@@ -667,6 +687,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
         paymentId: resolvedPaymentId,
       });
       logger.info({ msg: "vin_lookup_hit", source: "manual_pending", vin: normalizedVin, userId, lookupId: lookup.id });
+      await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
       res.json(serializeLookupForClient(lookup));
       if (freeCouponPaymentId && freeCouponCode) {
         void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
@@ -675,6 +696,9 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
       return;
     } catch (err) {
       logger.error({ err, vin: normalizedVin }, "Manual pending VIN fulfillment failed");
+      if (freeCouponPaymentId) {
+        await failFreeCouponPayment(freeCouponPaymentId, freeCouponCode);
+      }
       res.status(422).json({ error: "VIN failed validation for manual report.", code: "VIN_INVALID" });
       return;
     }
@@ -709,6 +733,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
       }).returning();
       logger.info({ msg: "vin_lookup_hit", source: "provider", vin: normalizedVin, userId, provider: provider.name });
       const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt);
+      await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
       res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: false });
       void upsertVinCatalog(normalizedVin, provider.name, stampedData);
       if (freeCouponPaymentId && freeCouponCode) {
@@ -758,6 +783,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
           paymentId: resolvedPaymentId,
         });
         logger.info({ msg: "vin_lookup_hit", source: "manual_pending_fallback", vin: normalizedVin, userId, lookupId: lookup.id });
+        await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
         res.json(serializeLookupForClient(lookup));
         if (freeCouponPaymentId && freeCouponCode) {
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
@@ -778,14 +804,7 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
           .limit(1);
         const isFreeCoupon = Number(pmt?.amount ?? 0) === 0;
         if (isFreeCoupon) {
-          await db.update(paymentsTable)
-            .set({ status: "failed", updatedAt: new Date() })
-            .where(eq(paymentsTable.id, resolvedPaymentId));
-          if (freeCouponCode) {
-            await db.update(couponsTable)
-              .set({ uses: sql`GREATEST(uses - 1, 0)` })
-              .where(eq(couponsTable.code, freeCouponCode));
-          }
+          await failFreeCouponPayment(resolvedPaymentId, freeCouponCode);
         } else {
           logger.error({
             msg: "paid_vin_lookup_delivery_failed",

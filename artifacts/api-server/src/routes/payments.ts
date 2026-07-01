@@ -4,6 +4,7 @@ import { eq, desc, and, lt, sql } from "drizzle-orm";
 import { requireAuth } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
 import { ensureVinPayableForPayment } from "../lib/vinService.js";
+import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import rateLimit from "express-rate-limit";
 import { isTrustedApiRequest } from "../lib/clientGuard.js";
 import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
@@ -332,7 +333,7 @@ router.post("/payments/create-paypal-order", requireAuth, async (req, res) => {
       vin: normalizedVin,
       amount: 0,
       currency,
-      status: "completed",
+      status: "pending",
       couponCode: appliedCoupon?.code ?? null,
       discountAmount,
     }).returning();
@@ -543,7 +544,7 @@ router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
 router.get("/payments/history", requireAuth, async (req, res) => {
   const userId = req.userId!;
   const payments = await db.select().from(paymentsTable)
-    .where(eq(paymentsTable.userId, userId))
+    .where(recordedTransactionWhere(eq(paymentsTable.userId, userId)))
     .orderBy(desc(paymentsTable.createdAt))
     .limit(50);
   res.json(payments);

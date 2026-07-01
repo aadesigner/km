@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, usersTable, vinLookupsTable, paymentsTable } from "@workspace/db";
 import { eq, desc, count, sum, and, gte, ne, type SQL } from "drizzle-orm";
 import { requireAuth } from "../lib/auth.js";
+import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import { transformVinPhotoData } from "../lib/imageProxy.js";
 import { mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { summarizeVinLookupData } from "../lib/vinLookupSummary.js";
@@ -38,7 +39,7 @@ router.get("/user/profile", requireAuth, async (req, res) => {
 
   const [checksResult] = await db.select({ total: count() }).from(vinLookupsTable).where(activeUserLookupWhere(userId));
   const [spentResult] = await db.select({ total: sum(paymentsTable.amount) }).from(paymentsTable)
-    .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.status, "completed")));
+    .where(recordedTransactionWhere(eq(paymentsTable.userId, userId)));
 
   res.setHeader("Cache-Control", "private, no-store");
   res.json({
@@ -90,13 +91,15 @@ router.get("/user/payments", requireAuth, async (req, res) => {
   const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
   const offset = (page - 1) * limit;
 
+  const fulfilledForUser = recordedTransactionWhere(eq(paymentsTable.userId, userId));
+
   const [items, [{ total }]] = await Promise.all([
     db.select().from(paymentsTable)
-      .where(eq(paymentsTable.userId, userId))
+      .where(fulfilledForUser)
       .orderBy(desc(paymentsTable.createdAt))
       .limit(limit)
       .offset(offset),
-    db.select({ total: count() }).from(paymentsTable).where(eq(paymentsTable.userId, userId)),
+    db.select({ total: count() }).from(paymentsTable).where(fulfilledForUser),
   ]);
 
   res.setHeader("Cache-Control", "private, no-store");
@@ -113,13 +116,13 @@ router.get("/user/stats", requireAuth, async (req, res) => {
   const [totalChecks, totalSpent, checksThisMonth, completedPayments, paymentCurrencyRow, recentChecks] = await Promise.all([
     db.select({ total: count() }).from(vinLookupsTable).where(activeUserLookupWhere(userId)),
     db.select({ total: sum(paymentsTable.amount) }).from(paymentsTable)
-      .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.status, "completed"))),
+      .where(recordedTransactionWhere(eq(paymentsTable.userId, userId))),
     db.select({ total: count() }).from(vinLookupsTable)
       .where(and(activeUserLookupWhere(userId), gte(vinLookupsTable.createdAt, monthStart))),
     db.select({ total: count() }).from(paymentsTable)
-      .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.status, "completed"))),
+      .where(recordedTransactionWhere(eq(paymentsTable.userId, userId))),
     db.select({ currency: paymentsTable.currency }).from(paymentsTable)
-      .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.status, "completed")))
+      .where(recordedTransactionWhere(eq(paymentsTable.userId, userId)))
       .orderBy(desc(paymentsTable.createdAt))
       .limit(1),
     db.select().from(vinLookupsTable)

@@ -57,6 +57,7 @@ import {
   removeUserBanIpBlocks,
 } from "../lib/accessBlocks.js";
 import { normalizeMaintenanceRestrictions, normalizeMaintenanceMessage } from "../lib/maintenancePolicy.js";
+import { recordedTransactionWhere, paymentHasFulfilledLookup } from "../lib/recordedPayments.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
 import rateLimit from "express-rate-limit";
@@ -158,7 +159,12 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       SELECT
         (SELECT COUNT(*) FROM users)::int AS total_users,
         (SELECT COUNT(*) FROM vin_lookups)::int AS total_vin_checks,
-        (SELECT COALESCE(SUM(amount), 0)::float FROM payments WHERE status = 'completed') AS total_revenue,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS total_revenue,
         COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '7 days')::int AS checks_this_week,
         COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '14 days' AND vl.created_at < NOW() - INTERVAL '7 days')::int AS checks_last_week,
         COUNT(*) FILTER (WHERE vl.created_at >= CURRENT_DATE)::int AS checks_today
@@ -176,10 +182,15 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     `),
     // Single 30-day series for revenue
     db.execute(sql`
-      SELECT DATE(created_at) as date, COALESCE(SUM(amount), 0)::float as revenue
-      FROM payments
-      WHERE status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'
-      GROUP BY DATE(created_at)
+      SELECT DATE(p.created_at) as date, COALESCE(SUM(p.amount), 0)::float as revenue
+      FROM payments p
+      WHERE p.status IN ('completed', 'revoked')
+        AND p.created_at >= NOW() - INTERVAL '30 days'
+        AND EXISTS (
+          SELECT 1 FROM vin_lookups vl
+          WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+        )
+      GROUP BY DATE(p.created_at)
       ORDER BY date ASC
     `),
     db.execute(sql`
@@ -194,6 +205,11 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
              p.created_at, u.email, u.name
       FROM payments p
       LEFT JOIN users u ON p.user_id = u.id
+      WHERE p.status IN ('completed', 'revoked')
+        AND EXISTS (
+          SELECT 1 FROM vin_lookups vl
+          WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+        )
       ORDER BY p.created_at DESC
       LIMIT 10
     `),
@@ -343,7 +359,7 @@ async function loadAdminUserStats(userId: string): Promise<{ totalChecks: number
     db.select({ totalChecks: count() }).from(vinLookupsTable).where(eq(vinLookupsTable.userId, userId)),
     db.select({ totalSpent: sum(paymentsTable.amount) })
       .from(paymentsTable)
-      .where(and(eq(paymentsTable.userId, userId), eq(paymentsTable.status, "completed"))),
+      .where(recordedTransactionWhere(eq(paymentsTable.userId, userId))),
   ]);
   return {
     totalChecks: Number(checksRow[0]?.totalChecks ?? 0),
@@ -377,7 +393,7 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
           .groupBy(vinLookupsTable.userId),
         db.select({ userId: paymentsTable.userId, total: sum(paymentsTable.amount) })
           .from(paymentsTable)
-          .where(and(inArray(paymentsTable.userId, userIds), eq(paymentsTable.status, "completed")))
+          .where(and(inArray(paymentsTable.userId, userIds), recordedTransactionWhere()))
           .groupBy(paymentsTable.userId),
       ]);
       const checksMap = new Map(
@@ -418,7 +434,7 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
         .groupBy(vinLookupsTable.userId),
       db.select({ userId: paymentsTable.userId, total: sum(paymentsTable.amount) })
         .from(paymentsTable)
-        .where(and(inArray(paymentsTable.userId, userIds), eq(paymentsTable.status, "completed")))
+        .where(and(inArray(paymentsTable.userId, userIds), recordedTransactionWhere()))
         .groupBy(paymentsTable.userId),
     ]);
     checksMap = new Map(checksStats.filter(r => r.userId !== null).map(r => [r.userId!, r.total]));
@@ -1800,10 +1816,15 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
   const search = req.query.search ? String(req.query.search).trim() : undefined;
 
   const conditions = [];
-  if (status) {
+  if (status === "failed" || status === "pending") {
     conditions.push(eq(paymentsTable.status, status));
+  } else if (status) {
+    conditions.push(eq(paymentsTable.status, status));
+    if (status !== "voided") {
+      conditions.push(paymentHasFulfilledLookup());
+    }
   } else {
-    conditions.push(ne(paymentsTable.status, "voided"));
+    conditions.push(recordedTransactionWhere());
   }
   if (search) {
     conditions.push(or(
@@ -1844,8 +1865,15 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
     ),
     db.execute(sql`
       SELECT status, COUNT(*)::int as cnt, COALESCE(SUM(amount), 0)::float as rev
-      FROM payments
+      FROM payments p
       WHERE status <> 'voided'
+        AND (
+          status IN ('failed', 'pending')
+          OR EXISTS (
+            SELECT 1 FROM vin_lookups vl
+            WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+          )
+        )
       GROUP BY status
     `),
   ]);

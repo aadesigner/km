@@ -226,7 +226,9 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
   }, [error, statsErr, language, setLocation]);
 
   const lang = params.lang;
-  const items = (data?.items ?? [] as Payment[]).filter((p: Payment) => p.status !== "failed");
+  const items = (data?.items ?? [] as Payment[]).filter(
+    (p: Payment) => p.status !== "failed" && p.status !== "pending",
+  );
   const total = data?.total ?? 0;
   const limit = data?.limit ?? 20;
   const totalPages = Math.ceil(total / limit);
