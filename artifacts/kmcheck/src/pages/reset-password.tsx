@@ -10,7 +10,7 @@ import { SEOHead } from "@/components/seo";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-import { getPasswordStrength, isPasswordStrongEnough, getPasswordIssueCode } from "@/lib/password-policy";
+import { getPasswordStrength, isPasswordStrongEnough, getPasswordIssueCode, PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
@@ -147,7 +147,7 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    minLength={8}
+                    minLength={PASSWORD_MIN_LENGTH}
                     autoComplete="new-password"
                     disabled={loading}
                     className="h-11 pr-10"

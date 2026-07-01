@@ -12,6 +12,7 @@ import {
   getPasswordStrength,
   isPasswordStrongEnough,
   getPasswordIssueCode,
+  PASSWORD_MIN_LENGTH,
 } from "@/lib/password-policy";
 import { translateClientError } from "@/lib/translate-client-error";
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
@@ -132,7 +133,7 @@ export default function SetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    minLength={8}
+                    minLength={PASSWORD_MIN_LENGTH}
                     autoComplete="new-password"
                     disabled={loading}
                     className="h-11 pr-10"

@@ -9,20 +9,19 @@ describe("validatePassword", () => {
   });
 
   it("rejects missing letter", () => {
-    const r = validatePassword("12345678");
+    const r = validatePassword("123456");
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe("PASSWORD_NEEDS_LETTER");
   });
 
   it("rejects missing number", () => {
-    const r = validatePassword("password");
+    const r = validatePassword("abcdef");
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe("PASSWORD_NEEDS_NUMBER");
   });
 
-  it("accepts strong enough passwords without requiring uppercase", () => {
-    expect(validatePassword("password1").ok).toBe(true);
-    expect(validatePassword("PASSWORD1").ok).toBe(true);
-    expect(validatePassword("MySecure9").ok).toBe(true);
+  it("accepts medium passwords with 6+ characters", () => {
+    expect(validatePassword("pass12").ok).toBe(true);
+    expect(validatePassword("abc123").ok).toBe(true);
   });
 });

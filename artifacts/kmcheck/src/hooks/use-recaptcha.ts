@@ -62,7 +62,11 @@ export function fetchRecaptchaSettings(force = false): Promise<RcSettings> {
   if (!force && cacheFresh && _cached) return Promise.resolve(_cached);
   if (_inflight) return _inflight;
 
-  _inflight = fetch(`${basePath}/api/payments/public-settings`)
+  _inflight = fetch(`${basePath}/api/payments/public-settings`, {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  })
     .then(async (r) => {
       if (!r.ok) return { enabled: false, siteKey: null } as RcSettings;
       const d = (await r.json()) as {
@@ -118,6 +122,11 @@ function injectRecaptchaScript(siteKey: string): void {
   script.id = "recaptcha-v3-script";
   script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
   script.async = true;
+  script.onerror = () => {
+    // EU / network fallback used by Google when google.com is blocked
+    if (script.src.includes("recaptcha.net")) return;
+    script.src = `https://www.recaptcha.net/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
+  };
   document.head.appendChild(script);
 }
 

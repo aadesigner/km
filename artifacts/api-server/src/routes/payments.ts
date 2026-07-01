@@ -146,7 +146,8 @@ router.get("/payments/public-settings", async (req, res) => {
     };
   });
   const relaxed = isRecaptchaRelaxedForRequest(req);
-  res.setHeader("Cache-Control", "public, max-age=120, stale-while-revalidate=600");
+  // Do not cache publicly — stale recaptchaEnabled breaks login after admin toggles (CDN/browser).
+  res.setHeader("Cache-Control", "private, no-cache, must-revalidate");
   res.json({
     ...data,
     recaptchaEnabled: relaxed ? false : data.recaptchaEnabled,

@@ -710,7 +710,7 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
       res.status(403).json({ error: "Cannot reset another admin account's password from the panel" });
       return;
     }
-    if (password.length < 8) { res.status(400).json({ error: "Password must be at least 8 characters" }); return; }
+    if (password.length < 6) { res.status(400).json({ error: "Password must be at least 6 characters" }); return; }
     const { hashPassword } = await import("../lib/auth.js");
     updates.passwordHash = await hashPassword(password);
   }

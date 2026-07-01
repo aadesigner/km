@@ -16,6 +16,7 @@ import {
   getPasswordStrength,
   isPasswordStrongEnough,
   getPasswordIssueCode,
+  PASSWORD_MIN_LENGTH,
 } from "@/lib/password-policy";
 
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
@@ -232,7 +233,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         required
-                        minLength={isSignIn ? 1 : 8}
+                        minLength={isSignIn ? 1 : PASSWORD_MIN_LENGTH}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
                         disabled={loading}
                         className="h-11 pr-10"
