@@ -178,10 +178,27 @@ export default function HowItWorks() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative isolate overflow-hidden border-b border-border/60 py-12 md:py-20 px-4">
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-emerald-50/80 via-slate-50/50 to-background dark:from-[#060a12] dark:via-slate-950 dark:to-background" />
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,hsl(var(--primary)/0.12),transparent)]" />
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(hsl(var(--foreground)/0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:20px_20px] opacity-60" />
+      <section className="relative isolate overflow-hidden py-12 md:py-20 px-4 pb-14 md:pb-24">
+        {/* Match homepage hero backdrop — light + dark with bottom fade */}
+        <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
+        <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.07] dark:opacity-[0.20]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_55%_at_50%_-5%,rgba(34,197,94,0.20),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-5%,rgba(34,197,94,0.42),transparent)]" />
+        <div className="absolute inset-0 -z-10 hidden dark:block bg-[radial-gradient(ellipse_50%_40%_at_0%_100%,rgba(34,197,94,0.08),transparent)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 md:h-32 -z-10 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+
+        <div
+          aria-hidden
+          className="hero-orb-a pointer-events-none absolute -top-16 left-[8%] h-56 w-56 rounded-full bg-primary/12 blur-3xl -z-10"
+        />
+        <div
+          aria-hidden
+          className="hero-orb-b pointer-events-none absolute top-32 right-[6%] h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl -z-10 hidden sm:block"
+        />
+        <div
+          aria-hidden
+          className="hero-orb-c pointer-events-none absolute bottom-24 left-[42%] h-32 w-32 rounded-full bg-primary/8 blur-2xl -z-10 hidden lg:block"
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -189,25 +206,25 @@ export default function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="relative z-10 max-w-3xl mx-auto text-center space-y-4"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 backdrop-blur-sm px-3.5 py-1 text-xs font-semibold text-foreground shadow-sm dark:border-white/10 dark:bg-white/5">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary dark:border-primary/25 dark:bg-primary/10">
+            <Sparkles className="h-3.5 w-3.5" />
             {t("hiw_badge")}
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold tracking-tight leading-[1.1] text-foreground">
+          <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold tracking-tight leading-[1.1] text-foreground dark:text-white">
             {t("hiw_title")}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground dark:text-white/60 leading-relaxed max-w-2xl mx-auto">
             {t("hiw_subtitle")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
-            <Badge className="rounded-full bg-primary/10 text-primary border-primary/20 px-3 py-1 text-[11px] font-medium">
+            <Badge className="rounded-full bg-primary/10 text-primary border-primary/20 px-3 py-1 text-[11px] font-medium dark:bg-primary/15 dark:border-primary/30">
               <Clock className="h-3 w-3 mr-1 inline" />
               {t("hiw_trust_speed")}
             </Badge>
-            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium">
+            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium dark:border-white/15 dark:text-white/70 dark:bg-white/5">
               {t("trust_secure_payment")}
             </Badge>
-            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium">
+            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium dark:border-white/15 dark:text-white/70 dark:bg-white/5">
               {t("trust_money_back")}
             </Badge>
           </div>
@@ -220,7 +237,7 @@ export default function HowItWorks() {
           transition={{ delay: 0.15, duration: 0.5 }}
           className="relative z-10 max-w-3xl mx-auto mt-8 md:mt-10"
         >
-          <div className="rounded-xl border border-border/70 bg-card/90 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
+          <div className="rounded-xl border border-border/70 bg-background/80 dark:bg-[#0a120e]/75 backdrop-blur-sm p-4 sm:p-5 shadow-sm dark:border-white/10">
             <div className="flex flex-col sm:grid sm:grid-cols-3 gap-4 sm:gap-3">
               {steps.map(({ icon: Icon, title, num }, i) => (
                 <div key={num} className="relative flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0">
