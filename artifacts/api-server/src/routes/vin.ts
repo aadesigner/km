@@ -772,20 +772,34 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
       }
     }
 
-    // Mark payment as failed so it doesn't appear as "Completed" without a delivered report
+    // Do not mark paid PayPal orders as failed — money was captured; user can retry delivery.
     if (resolvedPaymentId) {
       try {
-        await db.update(paymentsTable)
-          .set({ status: "failed", updatedAt: new Date() })
-          .where(eq(paymentsTable.id, resolvedPaymentId));
-        // For free-coupon payments: give the usage back so the user can retry
-        if (freeCouponCode) {
-          await db.update(couponsTable)
-            .set({ uses: sql`GREATEST(uses - 1, 0)` })
-            .where(eq(couponsTable.code, freeCouponCode));
+        const [pmt] = await db.select({ amount: paymentsTable.amount })
+          .from(paymentsTable)
+          .where(eq(paymentsTable.id, resolvedPaymentId))
+          .limit(1);
+        const isFreeCoupon = Number(pmt?.amount ?? 0) === 0;
+        if (isFreeCoupon) {
+          await db.update(paymentsTable)
+            .set({ status: "failed", updatedAt: new Date() })
+            .where(eq(paymentsTable.id, resolvedPaymentId));
+          if (freeCouponCode) {
+            await db.update(couponsTable)
+              .set({ uses: sql`GREATEST(uses - 1, 0)` })
+              .where(eq(couponsTable.code, freeCouponCode));
+          }
+        } else {
+          logger.error({
+            msg: "paid_vin_lookup_delivery_failed",
+            paymentId: resolvedPaymentId,
+            vin: normalizedVin,
+            userId,
+            errorCode,
+          });
         }
       } catch (dbErr) {
-        logger.error({ dbErr }, "Failed to mark payment failed after VIN lookup error");
+        logger.error({ dbErr }, "Failed to update payment after VIN lookup error");
       }
     }
 

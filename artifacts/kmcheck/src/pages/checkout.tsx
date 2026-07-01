@@ -25,6 +25,8 @@ import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { useTheme } from "@/components/theme-provider";
 
+const PAYPAL_CHECKOUT_SESSION_KEY = "kmcheck_paypal_checkout";
+
 function isPaypalUserAbort(err: unknown): boolean {
   const msg =
     typeof err === "string"
@@ -34,7 +36,7 @@ function isPaypalUserAbort(err: unknown): boolean {
         : typeof (err as { message?: string }).message === "string"
           ? (err as { message: string }).message
           : String(err);
-  return /popup close|window closed|can not open popup|cancel/i.test(msg);
+  return /popup close|window closed|can not open popup|cancel|detected pop-?up|popup closed|component closed|global_close|zoid_closed|destroyed|user closed/i.test(msg);
 }
 
 function paypalHostedFieldStyles(): Record<string, Record<string, string>> {
@@ -180,6 +182,9 @@ export default function Checkout({ params }: Props) {
   const paypalInstanceRef = useRef<ReturnType<NonNullable<typeof window.paypal>["Buttons"]> | null>(null);
   /** Order created on "Proceed" so PayPal can open checkout immediately (async createOrder delays popup → blocked). */
   const pendingPaypalOrderRef = useRef<string | null>(null);
+  /** Ignore spurious PayPal onError/onCancel while capture + lookup are running. */
+  const paypalFlowPhaseRef = useRef<"idle" | "approving" | "fulfilling" | "done">("idle");
+  const paidDeliveryRetryRef = useRef(false);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
 
@@ -250,6 +255,8 @@ export default function Checkout({ params }: Props) {
     setStatus("idle");
     setErrorMsg("");
     pendingPaypalOrderRef.current = null;
+    paypalFlowPhaseRef.current = "idle";
+    paidDeliveryRetryRef.current = false;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   }, [normalizedVin]);
@@ -263,10 +270,10 @@ export default function Checkout({ params }: Props) {
 
   // Redirect to existing report if VIN already unlocked
   useEffect(() => {
-    if (peek?.alreadyUnlocked && normalizedVin.length === 17) {
+    if (peek?.alreadyUnlocked && peek.lookupId && normalizedVin.length === 17) {
       setLocation(`/${language}/vin/${normalizedVin}`);
     }
-  }, [peek?.alreadyUnlocked, normalizedVin, language, setLocation]);
+  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin, language, setLocation]);
 
   // Inject PayPal SDK once we have the client ID; include hosted-fields component when cards enabled
   useEffect(() => {
@@ -509,28 +516,127 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  const submitVinLookup = async (nvin: string, paypalOrderId?: string, paymentId?: number) => {
+  const submitVinLookup = async (
+    nvin: string,
+    paypalOrderId?: string,
+    paymentId?: number,
+    attempt = 0,
+  ): Promise<boolean> => {
     setStatus("paying");
+    setErrorMsg("");
     try {
       const resp = await fetch(`${basePath}/api/vin/lookup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vin: nvin, paypalOrderId, paymentId }),
+        body: JSON.stringify({
+          vin: nvin,
+          ...(paypalOrderId ? { paypalOrderId } : {}),
+          ...(paymentId ? { paymentId } : {}),
+        }),
       });
       const data = await resp.json() as { id?: number; vin?: string; error?: string; code?: string };
-      if (!resp.ok || !data.id) {
-        setErrorMsg(translateClientError(t, data.code, data.error));
-        setStatus("error");
-        return;
+      if (resp.ok && data.id) {
+        setStatus("success");
+        paypalFlowPhaseRef.current = "done";
+        sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+        goToVinReport(data.vin ?? nvin);
+        return true;
       }
-      setStatus("success");
-      goToVinReport(data.vin ?? nvin);
+
+      if (attempt === 0 && paypalOrderId) {
+        return submitVinLookup(nvin, undefined, paymentId, 1);
+      }
+      if (attempt === 1 && paypalOrderId) {
+        const capResp = await fetch(`${basePath}/api/payments/capture-paypal-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ orderId: paypalOrderId }),
+        });
+        const capData = await capResp.json() as { success?: boolean; paymentId?: number };
+        if (capResp.ok && capData.success) {
+          return submitVinLookup(nvin, paypalOrderId, capData.paymentId, 2);
+        }
+      }
+
+      setErrorMsg(translateClientError(t, data.code, data.error));
+      setStatus("error");
+      return false;
     } catch {
+      if (attempt === 0) {
+        return submitVinLookup(nvin, undefined, paymentId, 1);
+      }
       setErrorMsg(t("checkout_error_payment_fetch"));
       setStatus("error");
+      return false;
     }
   };
+
+  const finalizePaidCheckout = async (orderId: string, nvin: string) => {
+    if (paypalFlowPhaseRef.current === "approving" || paypalFlowPhaseRef.current === "fulfilling" || paypalFlowPhaseRef.current === "done") {
+      return;
+    }
+    paypalFlowPhaseRef.current = "approving";
+    setStatus("paying");
+    setErrorMsg("");
+    try {
+      const resp = await fetch(`${basePath}/api/payments/capture-paypal-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderId }),
+      });
+      const result = await resp.json() as { success?: boolean; error?: string; code?: string; vin?: string; paymentId?: number };
+      if (!resp.ok || !result.success) {
+        if (resp.status === 404 || result.code === "PAYMENT_NOT_FOUND") {
+          setErrorMsg(t("checkout_error_payment_create"));
+        } else {
+          setErrorMsg(translateClientError(t, result.code, result.error));
+        }
+        setStatus("error");
+        paypalFlowPhaseRef.current = "idle";
+        return;
+      }
+      paypalFlowPhaseRef.current = "fulfilling";
+      const delivered = await submitVinLookup(result.vin ?? nvin, orderId, result.paymentId);
+      if (!delivered) {
+        paypalFlowPhaseRef.current = "idle";
+      }
+    } catch {
+      setErrorMsg(t("checkout_error_capture"));
+      setStatus("error");
+      paypalFlowPhaseRef.current = "idle";
+    }
+  };
+
+  // Paid but report not delivered yet — retry lookup without charging again.
+  useEffect(() => {
+    if (!peek?.alreadyUnlocked || peek.lookupId || normalizedVin.length !== 17) return;
+    if (paidDeliveryRetryRef.current) return;
+    if (paypalFlowPhaseRef.current !== "idle" || status === "paying" || status === "creating") return;
+    paidDeliveryRetryRef.current = true;
+    void submitVinLookup(normalizedVin).then((ok) => {
+      if (!ok) paidDeliveryRetryRef.current = false;
+    });
+  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin, status]);
+
+  // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
+  useEffect(() => {
+    if (!isSignedIn || !vinIsValid) return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token")?.toUpperCase() ?? "";
+    if (!/^[A-Z0-9]{8,20}$/.test(token)) return;
+
+    const clean = new URL(window.location.href);
+    clean.searchParams.delete("token");
+    clean.searchParams.delete("PayerID");
+    window.history.replaceState({}, "", clean.pathname + clean.search);
+
+    setPaymentStarted(true);
+    void finalizePaidCheckout(token, normalizedVin);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot PayPal return handler
+  }, [isSignedIn, vinIsValid, normalizedVin]);
 
   const handleProceedToPayment = async () => {
     const nvin = validateVin();
@@ -551,6 +657,7 @@ export default function Checkout({ params }: Props) {
       return;
     }
     pendingPaypalOrderRef.current = orderId;
+    sessionStorage.setItem(PAYPAL_CHECKOUT_SESSION_KEY, JSON.stringify({ orderId, vin: nvin }));
 
     const buttons = window.paypal.Buttons({
       style: {
@@ -567,29 +674,14 @@ export default function Checkout({ params }: Props) {
       },
       onApprove: async (data: { orderID: string }) => {
         pendingPaypalOrderRef.current = null;
-        setStatus("paying");
-        try {
-          const resp = await fetch(`${basePath}/api/payments/capture-paypal-order`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ orderId: data.orderID }),
-          });
-          const result = await resp.json() as { success?: boolean; error?: string; vin?: string };
-          if (!resp.ok || !result.success) {
-            setErrorMsg(translateClientError(t, undefined, result.error));
-            setStatus("error");
-            return;
-          }
-          await submitVinLookup(result.vin ?? nvin, data.orderID);
-        } catch {
-          setErrorMsg(t("checkout_error_capture"));
-          setStatus("error");
-        }
+        await finalizePaidCheckout(data.orderID, nvin);
       },
       onError: (err: unknown) => {
         console.error("PayPal error", err);
         pendingPaypalOrderRef.current = null;
+        if (paypalFlowPhaseRef.current !== "idle") {
+          return;
+        }
         if (isPaypalUserAbort(err)) {
           setStatus("idle");
           setPaymentStarted(false);
@@ -603,6 +695,9 @@ export default function Checkout({ params }: Props) {
       },
       onCancel: () => {
         pendingPaypalOrderRef.current = null;
+        if (paypalFlowPhaseRef.current !== "idle") {
+          return;
+        }
         setStatus("idle");
         setPaymentStarted(false);
         paypalInstanceRef.current?.close();
@@ -665,13 +760,14 @@ export default function Checkout({ params }: Props) {
         credentials: "include",
         body: JSON.stringify({ orderId: payload.orderId }),
       });
-      const result = await resp.json() as { success?: boolean; error?: string; vin?: string };
+      const result = await resp.json() as { success?: boolean; error?: string; code?: string; vin?: string; paymentId?: number };
       if (!resp.ok || !result.success) {
-        setErrorMsg(translateClientError(t, undefined, result.error));
+        setErrorMsg(translateClientError(t, result.code, result.error));
         setStatus("error");
         return;
       }
-      await submitVinLookup(result.vin ?? nvin, payload.orderId);
+      paypalFlowPhaseRef.current = "fulfilling";
+      await submitVinLookup(result.vin ?? nvin, payload.orderId, result.paymentId);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "__free__" || msg === "__redirect__") return;
@@ -1258,7 +1354,9 @@ export default function Checkout({ params }: Props) {
                       <div>
                         <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("checkout_check_unavailable_title")}</p>
                         <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">
-                          {translateClientError(t, peek.checkUnavailableCode)}
+                          {peek.checkUnavailableCode
+                            ? translateClientError(t, peek.checkUnavailableCode)
+                            : t("checkout_check_unavailable_desc")}
                         </p>
                       </div>
                     </div>
@@ -1313,14 +1411,7 @@ export default function Checkout({ params }: Props) {
 
                   {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
                   {paymentAllowed && (
-                    <div className={cn(payMethod === "card" && "hidden", "[color-scheme:none]")}>
-                      {paymentStarted && payMethod === "paypal" && !couponResult?.isFree && (
-                        <p className="text-xs text-muted-foreground text-center mb-2">
-                          {t("checkout_paypal_use_button")}
-                        </p>
-                      )}
-                      <div ref={paypalContainerRef} className="min-h-0" />
-                    </div>
+                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
                   )}
 
                   {/* Hosted card fields */}

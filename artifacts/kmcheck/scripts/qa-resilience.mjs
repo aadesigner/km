@@ -103,6 +103,29 @@ if (!health.includes("SELECT 1")) {
   fail("/healthz must ping the database");
 }
 
+// ── Static: client error translation coverage ─────────────────────────────────
+const translateErr = read("src/lib/translate-client-error.ts");
+const translateCodes = read("src/lib/translate-client-error.codes.ts");
+if (!translateErr.includes("error_request_failed")) {
+  fail("translate-client-error.ts must not fall back to vague copy only");
+}
+if (!translateErr.includes("ERROR_CODE_KEYS")) {
+  fail("translate-client-error.ts must map API codes explicitly");
+}
+for (const code of ["PAYMENT_REQUIRED", "MAINTENANCE", "banned", "VIN_NO_DATA"]) {
+  if (!translateErr.includes(`${code}:`)) {
+    fail(`translate-client-error.ts missing code mapping for ${code}`);
+  }
+}
+for (const key of ["error_request_failed", "error_server_busy", "error_network"]) {
+  if (!read("src/i18n/en.json").includes(`"${key}"`)) {
+    fail(`en.json missing ${key}`);
+  }
+}
+if (!read("src/App.tsx").includes("AuthSubPage")) {
+  fail("App.tsx should use AuthSubPage with resetKey for password routes");
+}
+
 // ── Static: rate-limit i18n ───────────────────────────────────────────────────
 for (const lang of ["en", "ar", "uk", "ru", "sq"]) {
   const dict = read(`src/i18n/${lang}.json`);

@@ -255,7 +255,7 @@ export default function FreeVinDecoder() {
       setCachedFreeDecode(data);
     } catch {
       if (!local) {
-        setError(t("error_try_again"));
+        setError(t("error_network"));
         setResult(null);
       }
     } finally {

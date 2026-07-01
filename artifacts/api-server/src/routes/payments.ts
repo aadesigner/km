@@ -11,6 +11,11 @@ import { makeTtlCache } from "../lib/ttlCache.js";
 import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
 import { normalizeMaintenanceRestrictions } from "../lib/maintenancePolicy.js";
 import { rejectVinLookupIfDisabled } from "../lib/vinLookupGate.js";
+import {
+  PAYPAL_ORDER_ID_RE,
+  fetchPaypalOrderStatus,
+  interpretPaypalCaptureResponse,
+} from "../lib/paypalCapture.js";
 
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -426,15 +431,17 @@ router.post("/payments/create-paypal-order", requireAuth, async (req, res) => {
 router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
   const userId = req.userId!;
   const { orderId } = req.body as { orderId: string };
-  const ORDER_ID_RE = /^[A-Z0-9]{8,20}$/;
-  if (!orderId || !ORDER_ID_RE.test(orderId)) { res.status(400).json({ error: "Invalid order ID" }); return; }
+  if (!orderId || !PAYPAL_ORDER_ID_RE.test(orderId)) {
+    res.status(400).json({ error: "Invalid order ID", code: "INVALID_ORDER_ID" });
+    return;
+  }
 
   const [payment] = await db.select().from(paymentsTable)
     .where(eq(paymentsTable.paypalOrderId, orderId))
     .limit(1);
 
   if (!payment || payment.userId !== userId) {
-    res.status(404).json({ error: "Payment not found" });
+    res.status(404).json({ error: "Payment not found", code: "PAYMENT_NOT_FOUND" });
     return;
   }
   if (payment.status === "completed") {
@@ -443,6 +450,11 @@ router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
   }
 
   const { clientId, clientSecret, sandbox } = await getPaypalConfig();
+  if (!clientId || !clientSecret) {
+    res.status(503).json({ error: "Payment system not configured. Contact support.", code: "PAYMENT_NOT_CONFIGURED" });
+    return;
+  }
+
   try {
     const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
     const captureResp = await fetch(`${base}/v2/checkout/orders/${orderId}/capture`, {
@@ -454,28 +466,76 @@ router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
       signal: AbortSignal.timeout(15000),
     });
 
-    const captured = await captureResp.json() as { status: string; id: string };
-    if (captured.status !== "COMPLETED") {
+    const captureAttempt = await interpretPaypalCaptureResponse(
+      captureResp,
+      () => fetchPaypalOrderStatus(base, ppToken, orderId),
+    );
+
+    if (!captureAttempt.treatedAsCompleted) {
       await db.update(paymentsTable)
         .set({ status: "failed", updatedAt: new Date() })
         .where(eq(paymentsTable.paypalOrderId, orderId));
-      logger.warn({ msg: "payment_capture_failed", orderId, userId, vin: payment.vin, captureStatus: captured.status });
-      res.status(402).json({ error: "Payment was not completed. Please try again." });
+      logger.warn({
+        msg: "payment_capture_failed",
+        orderId,
+        userId,
+        vin: payment.vin,
+        captureStatus: captureAttempt.orderStatus,
+      });
+      res.status(402).json({
+        error: "Payment was not completed. Please try again.",
+        code: "PAYMENT_NOT_COMPLETED",
+      });
       return;
     }
 
     await db.update(paymentsTable)
       .set({ status: "completed", updatedAt: new Date() })
       .where(eq(paymentsTable.paypalOrderId, orderId));
-    logger.info({ msg: "payment_captured", orderId, paymentId: payment.id, userId, vin: payment.vin, amount: payment.amount, currency: payment.currency });
+    logger.info({
+      msg: "payment_captured",
+      orderId,
+      paymentId: payment.id,
+      userId,
+      vin: payment.vin,
+      amount: payment.amount,
+      currency: payment.currency,
+    });
 
     res.json({ success: true, vin: payment.vin, paymentId: payment.id });
   } catch (err) {
     logger.error({ err, orderId }, "PayPal capture failed");
+
+    try {
+      const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
+      const orderStatus = await fetchPaypalOrderStatus(base, ppToken, orderId);
+      if (orderStatus === "COMPLETED") {
+        await db.update(paymentsTable)
+          .set({ status: "completed", updatedAt: new Date() })
+          .where(eq(paymentsTable.paypalOrderId, orderId));
+        logger.info({ msg: "payment_captured_recovered", orderId, paymentId: payment.id, userId, vin: payment.vin });
+        res.json({ success: true, vin: payment.vin, paymentId: payment.id });
+        return;
+      }
+    } catch (recoverErr) {
+      logger.error({ recoverErr, orderId }, "PayPal capture recovery check failed");
+    }
+
+    const [fresh] = await db.select().from(paymentsTable)
+      .where(eq(paymentsTable.paypalOrderId, orderId))
+      .limit(1);
+    if (fresh?.status === "completed") {
+      res.json({ success: true, vin: fresh.vin, paymentId: fresh.id });
+      return;
+    }
+
     await db.update(paymentsTable)
       .set({ status: "failed", updatedAt: new Date() })
       .where(eq(paymentsTable.paypalOrderId, orderId));
-    res.status(502).json({ error: "Failed to capture payment. Please try again." });
+    res.status(502).json({
+      error: "Failed to capture payment. Please try again.",
+      code: "PAYMENT_CAPTURE_FAILED",
+    });
   }
 });
 

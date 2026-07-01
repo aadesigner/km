@@ -25,7 +25,7 @@ function titleKey(kind: VinReportErrorKind): string {
     case "rate_limit":
       return "error_rate_limit";
     default:
-      return "error_try_again";
+      return "report_load_failed";
   }
 }
 

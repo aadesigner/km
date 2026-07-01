@@ -130,6 +130,21 @@ function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" 
   );
 }
 
+function AuthSubPage({ lang, children }: { lang: "en" | "ar" | "uk" | "ru" | "sq"; children: React.ReactNode }) {
+  const [location] = useLocation();
+  const resetKey = location.split("?")[0] ?? location;
+  return (
+    <I18nProvider initialLanguage={lang}>
+      <RouteSEO />
+      <Layout>
+        <RouteErrorBoundary scope="auth" resetKey={resetKey}>
+          <Suspense fallback={<PageLoader />}>{children}</Suspense>
+        </RouteErrorBoundary>
+      </Layout>
+    </I18nProvider>
+  );
+}
+
 const HomeLang         = withLang(Home, "home");
 const PricingLang      = withLang(Pricing as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "pricing");
 const CheckoutLang     = withLang(Checkout as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "checkout");
@@ -344,42 +359,27 @@ function AppRouter() {
           const validLangs = ["en", "ar", "uk", "ru", "sq"];
           const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
           return (
-            <I18nProvider initialLanguage={lang}>
-              <RouteSEO />
-              <Layout>
-                <RouteErrorBoundary scope="auth">
-                  <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>
-                </RouteErrorBoundary>
-              </Layout>
-            </I18nProvider>
+            <AuthSubPage lang={lang}>
+              <ForgotPassword />
+            </AuthSubPage>
           );
         }} />
         <Route path="/:lang/reset-password" component={(p) => {
           const validLangs = ["en", "ar", "uk", "ru", "sq"];
           const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
           return (
-            <I18nProvider initialLanguage={lang}>
-              <RouteSEO />
-              <Layout>
-                <RouteErrorBoundary scope="auth">
-                  <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>
-                </RouteErrorBoundary>
-              </Layout>
-            </I18nProvider>
+            <AuthSubPage lang={lang}>
+              <ResetPassword />
+            </AuthSubPage>
           );
         }} />
         <Route path="/:lang/set-password" component={(p) => {
           const validLangs = ["en", "ar", "uk", "ru", "sq"];
           const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
           return (
-            <I18nProvider initialLanguage={lang}>
-              <RouteSEO />
-              <Layout>
-                <RouteErrorBoundary scope="auth">
-                  <Suspense fallback={<PageLoader />}><SetPassword /></Suspense>
-                </RouteErrorBoundary>
-              </Layout>
-            </I18nProvider>
+            <AuthSubPage lang={lang}>
+              <SetPassword />
+            </AuthSubPage>
           );
         }} />
 

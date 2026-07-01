@@ -12,6 +12,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 import { PasswordRequirements } from "@/components/password-requirements";
 import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
+import { translateClientError } from "@/lib/translate-client-error";
 
 export default function ResetPasswordPage() {
   const { language, t } = useTranslation();
@@ -66,7 +67,7 @@ export default function ResetPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? t("error_generic"));
+        setError(translateClientError(t, data.code, data.error));
       } else {
         setDone(true);
         setTimeout(() => setLocation(`/${language}/sign-in`), 3000);
