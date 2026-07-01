@@ -22,6 +22,7 @@ import {
   MAINTENANCE_PARTIAL_RESTRICTIONS,
   type MaintenancePartialRestriction,
 } from "@/lib/maintenance-policy";
+import { invalidateRecaptchaSettingsCache } from "@/hooks/use-recaptcha";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -128,6 +129,7 @@ export default function AdminSettings() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
     queryClient.invalidateQueries({ queryKey: ["/api/payments/public-settings"] });
+    invalidateRecaptchaSettingsCache();
   };
 
   const paymUpdater = useAdminUpdateSettings({

@@ -21,8 +21,9 @@ import {
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
   if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
-  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
+  if (code === "PASSWORD_NEEDS_LETTER") return t("error_password_needs_letter");
+  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_letter");
+  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_letter");
   if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
   return t("error_password_weak");
 }
@@ -126,7 +127,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const isSignIn = mode === "sign-in";
   const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const signupPasswordOk = isSignIn || isPasswordStrongEnough(password);
-  const submitDisabled = loading || (rcEnabled && !rcReady) || !signupPasswordOk;
+  const submitDisabled = loading || !signupPasswordOk;
   const hasSocial = googleEnabled || facebookEnabled;
 
   return (

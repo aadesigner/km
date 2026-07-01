@@ -73,11 +73,8 @@ export function translateClientError(t: TFn, code?: string, error?: string): str
   if (code === "PASSWORD_TOO_SHORT" || matchError(error, [/at least 8 characters/i])) {
     return t("reset_password_too_short");
   }
-  if (code === "PASSWORD_NEEDS_LOWERCASE" || matchError(error, [/lowercase letter/i])) {
-    return t("error_password_needs_lowercase");
-  }
-  if (code === "PASSWORD_NEEDS_UPPERCASE" || matchError(error, [/uppercase letter/i])) {
-    return t("error_password_needs_uppercase");
+  if (code === "PASSWORD_NEEDS_LETTER" || code === "PASSWORD_NEEDS_LOWERCASE" || code === "PASSWORD_NEEDS_UPPERCASE" || matchError(error, [/include a letter/i, /lowercase letter/i, /uppercase letter/i])) {
+    return t("error_password_needs_letter");
   }
   if (code === "PASSWORD_NEEDS_NUMBER" || matchError(error, [/include a number/i])) {
     return t("error_password_needs_number");

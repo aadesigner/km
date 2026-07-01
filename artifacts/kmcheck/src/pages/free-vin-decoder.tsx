@@ -409,7 +409,7 @@ export default function FreeVinDecoder() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={loading || registerRequired || (rcEnabled && !rcReady)}
+                disabled={loading || registerRequired}
                 className="absolute right-2 h-10 rounded-xl px-6 font-semibold shadow-md shadow-primary/20"
               >
                 {loading ? (

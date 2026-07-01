@@ -15,8 +15,7 @@ import { getPasswordStrength, isPasswordStrongEnough, getPasswordIssueCode } fro
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
   if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
-  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
+  if (code === "PASSWORD_NEEDS_LETTER") return t("error_password_needs_letter");
   if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
   return t("error_password_weak");
 }
