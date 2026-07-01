@@ -46,6 +46,8 @@ import {
 } from "@/lib/dashboard-nav";
 import { ClientQueryError } from "@/components/client-query-error";
 import { getErrorStatus } from "@/lib/api-error";
+import { showQueryFailure } from "@/lib/query-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 function useGreeting(t: (k: string) => string): string {
   const hour = new Date().getHours();
@@ -148,6 +150,8 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
 
+  const authReady = isLoaded && isSignedIn;
+
   const historyParams = DEFAULT_USER_HISTORY_SUMMARY;
   const {
     data: history,
@@ -159,11 +163,11 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: userHistoryQueryKey(historyParams),
     queryFn: ({ signal }) => fetchUserHistory(historyParams, signal),
-    enabled: !!isSignedIn,
+    enabled: authReady,
     ...CLIENT_AREA_QUERY_OPTIONS,
   });
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErr, refetch: refetchStats, isFetching: statsFetching } = useGetUserStats(
-    { query: { enabled: !!isSignedIn, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS } },
+    { query: { enabled: authReady, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS } },
   );
   const { data: pricing } = useGetCurrentPricing({ query: { ...STATIC_QUERY_OPTIONS } });
 
@@ -189,6 +193,9 @@ export default function Dashboard() {
 
   const queryLoadError = historyError ? historyErr : statsError ? statsErr : null;
   const queryRetrying = historyFetching || statsFetching;
+
+  useQueryRecovery(!!historyError, historyFetching, refetchHistory);
+  useQueryRecovery(!!statsError, statsFetching, refetchStats);
 
   useEffect(() => {
     if (!queryLoadError) return;
@@ -282,7 +289,9 @@ export default function Dashboard() {
   const checksThisMonth = stats?.checksThisMonth ?? 0;
   const isViewableReport = (status: string) => status === "complete" || status === "pending_manual";
   const completed = lookups.filter(l => l.status === "complete" || l.status === "pending_manual").length;
-  const showQueryError = !!(historyError || statsError) && getErrorStatus(queryLoadError) !== 401;
+  const showQueryError =
+    (showQueryFailure(!!historyError, historyFetching) || showQueryFailure(!!statsError, statsFetching))
+    && getErrorStatus(queryLoadError) !== 401;
 
   const pendingBanner = showPendingBanner && pendingVin ? (
     <div className="bg-muted/40 dark:bg-muted/20 border-b border-border px-4 py-3">

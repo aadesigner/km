@@ -8,6 +8,8 @@ import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
 import { ClientAreaLayout } from "@/components/client-area-layout";
 import { ClientQueryError } from "@/components/client-query-error";
 import { getErrorStatus } from "@/lib/api-error";
+import { showQueryFailure } from "@/lib/query-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -200,9 +202,11 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
     }
   }, [isLoaded, isSignedIn, user, language, setLocation]);
 
+  const authReady = isLoaded && isSignedIn;
+
   const { data, isLoading, isError, error, refetch, isFetching } = useGetUserPayments(
     { page, limit: 20 },
-    { query: { enabled: !!isSignedIn, queryKey: ["/api/user/payments", { page, limit: 20 }], ...CLIENT_AREA_QUERY_OPTIONS } },
+    { query: { enabled: authReady, queryKey: ["/api/user/payments", { page, limit: 20 }], ...CLIENT_AREA_QUERY_OPTIONS } },
   );
   const {
     data: stats,
@@ -212,8 +216,11 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
     refetch: refetchStats,
     isFetching: statsFetching,
   } = useGetUserStats({
-    query: { enabled: !!isSignedIn, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS },
+    query: { enabled: authReady, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS },
   });
+
+  useQueryRecovery(!!isError, isFetching, refetch);
+  useQueryRecovery(!!statsError, statsFetching, refetchStats);
 
   const paymentStats = stats as (typeof stats & PaymentStats) | undefined;
 
@@ -233,7 +240,9 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
   const totalSpent = paymentStats?.totalSpent ?? 0;
   const summaryCurrency = paymentStats?.paymentCurrency ?? items[0]?.currency ?? "";
   const queryLoadError = isError ? error : statsError ? statsErr : null;
-  const showQueryError = !!(isError || statsError) && getErrorStatus(queryLoadError) !== 401;
+  const showQueryError =
+    (showQueryFailure(!!isError, isFetching) || showQueryFailure(!!statsError, statsFetching))
+    && getErrorStatus(queryLoadError) !== 401;
   const summaryLoading = isLoading || statsLoading;
 
   const retryQueries = () => {

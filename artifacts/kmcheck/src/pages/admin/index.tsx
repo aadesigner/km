@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 type DaySeries = { date: string; count?: number; revenue?: number };
 type RecentPayment = {
@@ -138,10 +139,11 @@ const TOOLTIP_STYLE = {
 };
 
 export default function AdminOverview() {
-  const { data: rawStats, isLoading, refetch, isFetching } = useAdminGetStats({
+  const { data: rawStats, isLoading, isError, refetch, isFetching } = useAdminGetStats({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     query: { staleTime: 30_000, refetchInterval: 60_000 } as any,
   });
+  useQueryRecovery(isError, isFetching, refetch);
   const stats = rawStats as unknown as ExtendedStats | undefined;
   const [timeRange, setTimeRange] = useState<"7d" | "30d">("7d");
 

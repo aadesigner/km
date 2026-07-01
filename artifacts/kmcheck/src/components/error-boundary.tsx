@@ -10,7 +10,7 @@ type Props = {
   fallback?: ReactNode;
 };
 
-type State = { hasError: boolean };
+type State = { hasError: boolean; autoRetried: boolean };
 
 function parseLangFromPath(): Language {
   const m = window.location.pathname.match(/\/(en|ar|uk|ru|sq)(?:\/|$)/);
@@ -47,29 +47,60 @@ function DefaultFallback({ lang }: { lang: Language }) {
   );
 }
 
+function ErrorRecoveryLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
 export class RouteErrorBoundary extends Component<Props, State> {
+  private autoRetryTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, autoRetried: false };
   }
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): Pick<State, "hasError"> {
     return { hasError: true };
   }
 
   componentDidUpdate(prevProps: Props): void {
-    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
-      this.setState({ hasError: false });
+    if (prevProps.resetKey !== this.props.resetKey) {
+      if (this.autoRetryTimer) {
+        clearTimeout(this.autoRetryTimer);
+        this.autoRetryTimer = null;
+      }
+      if (this.state.hasError || this.state.autoRetried) {
+        this.setState({ hasError: false, autoRetried: false });
+      }
     }
+  }
+
+  componentWillUnmount(): void {
+    if (this.autoRetryTimer) clearTimeout(this.autoRetryTimer);
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     const scope = this.props.scope ?? "app";
     console.error(`[kmcheck:${scope}]`, error, info.componentStack);
+
+    // One silent re-render — recovers race conditions (auth ready, lazy chunks) without a full refresh.
+    if (!this.state.autoRetried) {
+      this.autoRetryTimer = setTimeout(() => {
+        this.autoRetryTimer = null;
+        this.setState({ hasError: false, autoRetried: true });
+      }, 100);
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      if (!this.state.autoRetried) {
+        return <ErrorRecoveryLoader />;
+      }
       if (this.props.fallback) return this.props.fallback;
       return <DefaultFallback lang={parseLangFromPath()} />;
     }

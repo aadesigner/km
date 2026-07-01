@@ -79,6 +79,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setLocation(getPostAuthRedirectPath(language));
   }, [isLoaded, isSignedIn, language, setLocation]);
 
+  const isSignIn = mode === "sign-in";
+  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
+
   if (!isLoaded || isSignedIn) {
     return (
       <div className="min-h-[calc(100dvh-64px)] flex items-center justify-center">
@@ -125,8 +128,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
   };
 
-  const isSignIn = mode === "sign-in";
-  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const signupPasswordOk = isSignIn || isPasswordStrongEnough(password);
   const submitDisabled = loading || !signupPasswordOk;
   const hasSocial = googleEnabled || facebookEnabled;
