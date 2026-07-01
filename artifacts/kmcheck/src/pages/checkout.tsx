@@ -23,6 +23,33 @@ import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin } from "@/lib/c
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+import { useTheme } from "@/components/theme-provider";
+
+function isPaypalUserAbort(err: unknown): boolean {
+  const msg =
+    typeof err === "string"
+      ? err
+      : err instanceof Error
+        ? err.message
+        : typeof (err as { message?: string }).message === "string"
+          ? (err as { message: string }).message
+          : String(err);
+  return /popup close|window closed|can not open popup|cancel/i.test(msg);
+}
+
+function paypalHostedFieldStyles(): Record<string, Record<string, string>> {
+  const root = getComputedStyle(document.documentElement);
+  const fg = root.getPropertyValue("--foreground").trim();
+  const font = root.getPropertyValue("font-family").trim() || "inherit";
+  return {
+    input: {
+      "font-size": "14px",
+      "font-family": font,
+      color: fg ? `hsl(${fg})` : "inherit",
+    },
+    ".invalid": { color: "hsl(0 84% 60%)" },
+  };
+}
 
 const PREVIEW_ROW = "px-5 py-3 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.05] last:border-0";
 const PREVIEW_LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/40";
@@ -103,6 +130,7 @@ export default function Checkout({ params }: Props) {
   const { isSignedIn, isLoaded, user } = useAuth();
   const [location, setLocation] = useLocation();
   const { getToken: getRecaptchaToken } = useRecaptcha();
+  const { resolvedTheme } = useTheme();
 
   const LOCKED_ROWS = [
     { icon: Gauge,         labelKey: "mileage_verification", blur: "47,832 km" },
@@ -150,6 +178,8 @@ export default function Checkout({ params }: Props) {
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<ReturnType<NonNullable<typeof window.paypal>["Buttons"]> | null>(null);
+  /** Order created on "Proceed" so PayPal can open checkout immediately (async createOrder delays popup → blocked). */
+  const pendingPaypalOrderRef = useRef<string | null>(null);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
 
@@ -219,6 +249,7 @@ export default function Checkout({ params }: Props) {
   useEffect(() => {
     setStatus("idle");
     setErrorMsg("");
+    pendingPaypalOrderRef.current = null;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   }, [normalizedVin]);
@@ -252,8 +283,6 @@ export default function Checkout({ params }: Props) {
     script.id = "paypal-sdk";
     script.src = `https://www.paypal.com/sdk/js?client-id=${pubSettings.paypalClientId}&currency=${currency}&intent=capture&components=${components}`;
     script.async = true;
-    // In-page PayPal modal instead of a separate popup (avoids blank tab + broken overlay on desktop).
-    script.setAttribute("data-popups-disabled", "true");
     document.body.appendChild(script);
     return () => { document.getElementById("paypal-sdk")?.remove(); };
   }, [pubSettings?.paypalClientId, pubSettings?.paypalEnableCards, currency]);
@@ -328,10 +357,7 @@ export default function Checkout({ params }: Props) {
             cvv: { selector: "#hf-cvv", placeholder: "···" },
             expirationDate: { selector: "#hf-expiry", placeholder: "MM/YYYY" },
           },
-          styles: {
-            "input": { "font-size": "14px", "color": "inherit", "font-family": "inherit" },
-            ".invalid": { "color": "hsl(0 84% 60%)" },
-          },
+          styles: paypalHostedFieldStyles(),
         });
         if (cancelled) return;
         hostedFieldsRef.current = instance;
@@ -353,7 +379,7 @@ export default function Checkout({ params }: Props) {
     };
     init();
     return () => { cancelled = true; };
-  }, [payMethod, pubSettings?.paypalEnableCards, pubSettings?.paypalClientId]);
+  }, [payMethod, pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, resolvedTheme, t]);
 
   const validateVin = () => {
     const v = vin.trim().toUpperCase();
@@ -437,6 +463,7 @@ export default function Checkout({ params }: Props) {
     setCouponResult(null);
     setCouponCode("");
     setCouponError("");
+    pendingPaypalOrderRef.current = null;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   };
@@ -514,17 +541,32 @@ export default function Checkout({ params }: Props) {
     while (!window.paypal && attempts < 30) { await new Promise(r => setTimeout(r, 200)); attempts++; }
     if (!window.paypal) { setErrorMsg(t("checkout_error_paypal_load")); setStatus("error"); return; }
     setPaymentStarted(true);
-    setStatus("creating");
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
+    pendingPaypalOrderRef.current = null;
+
+    const orderId = await createOrder(nvin);
+    if (!orderId) {
+      setPaymentStarted(false);
+      return;
+    }
+    pendingPaypalOrderRef.current = orderId;
+
     const buttons = window.paypal.Buttons({
-      style: { layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 48 },
-      createOrder: async () => {
-        const orderId = await createOrder(nvin);
-        if (!orderId) throw new Error("Order creation failed");
-        return orderId;
+      style: {
+        layout: "vertical",
+        color: resolvedTheme === "dark" ? "white" : "blue",
+        shape: "rect",
+        label: "pay",
+        height: 48,
+      },
+      createOrder: () => {
+        const id = pendingPaypalOrderRef.current;
+        if (!id) throw new Error("Order not ready");
+        return id;
       },
       onApprove: async (data: { orderID: string }) => {
+        pendingPaypalOrderRef.current = null;
         setStatus("paying");
         try {
           const resp = await fetch(`${basePath}/api/payments/capture-paypal-order`, {
@@ -545,8 +587,22 @@ export default function Checkout({ params }: Props) {
           setStatus("error");
         }
       },
-      onError: (err: unknown) => { console.error("PayPal error", err); setErrorMsg(t("checkout_error_payment_failed")); setStatus("error"); },
+      onError: (err: unknown) => {
+        console.error("PayPal error", err);
+        pendingPaypalOrderRef.current = null;
+        if (isPaypalUserAbort(err)) {
+          setStatus("idle");
+          setPaymentStarted(false);
+          paypalInstanceRef.current?.close();
+          paypalInstanceRef.current = null;
+          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+          return;
+        }
+        setErrorMsg(t("checkout_error_payment_failed"));
+        setStatus("error");
+      },
       onCancel: () => {
+        pendingPaypalOrderRef.current = null;
         setStatus("idle");
         setPaymentStarted(false);
         paypalInstanceRef.current?.close();
@@ -563,6 +619,7 @@ export default function Checkout({ params }: Props) {
       }
     } catch (err) {
       console.error("PayPal render error", err);
+      pendingPaypalOrderRef.current = null;
       setPaymentStarted(false);
       setErrorMsg(t("checkout_error_paypal_load"));
       setStatus("error");
@@ -1254,9 +1311,9 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
-                  {/* PayPal button container */}
+                  {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
                   {paymentAllowed && (
-                    <div className={cn(payMethod === "card" && "hidden")}>
+                    <div className={cn(payMethod === "card" && "hidden", "[color-scheme:none]")}>
                       {paymentStarted && payMethod === "paypal" && !couponResult?.isFree && (
                         <p className="text-xs text-muted-foreground text-center mb-2">
                           {t("checkout_paypal_use_button")}
@@ -1268,7 +1325,7 @@ export default function Checkout({ params }: Props) {
 
                   {/* Hosted card fields */}
                   {payMethod === "card" && pubSettings?.paypalEnableCards && !couponResult?.isFree && paymentAllowed && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 [color-scheme:none]">
                       {cardEligible === "no" ? (
                         <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
                           {t("checkout_card_not_available")}

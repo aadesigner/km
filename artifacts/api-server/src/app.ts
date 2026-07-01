@@ -59,6 +59,7 @@ app.use(
         frameSrc: [
           "'self'",
           "https://www.paypal.com",
+          "https://www.paypalobjects.com",
           "https://www.sandbox.paypal.com",
           "https://sandbox.paypal.com",
           "https://www.google.com",
