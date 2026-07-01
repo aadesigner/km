@@ -1,5 +1,16 @@
 const CACHE_NAME = "kmcheck-vin-images-v1";
-const PREFETCH_CONCURRENCY = 3;
+const PREFETCH_CONCURRENCY = 6;
+
+/** URLs that finished loading in this session — avoids spinner flash on report refetch. */
+const sessionLoadedUrls = new Set<string>();
+
+export function markVinImageSessionLoaded(url: string): void {
+  if (url) sessionLoadedUrls.add(url);
+}
+
+export function isVinImageSessionLoaded(url: string): boolean {
+  return sessionLoadedUrls.has(url);
+}
 
 function canUseCacheApi(): boolean {
   return typeof window !== "undefined" && "caches" in window;
@@ -44,6 +55,7 @@ export async function prefetchVinImages(urls: string[]): Promise<void> {
 
 export async function clearVinImageBrowserCache(): Promise<void> {
   if (!canUseCacheApi()) return;
+  sessionLoadedUrls.clear();
   try {
     await caches.delete(CACHE_NAME);
   } catch {

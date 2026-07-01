@@ -254,6 +254,8 @@ export default function Checkout({ params }: Props) {
     const script = document.createElement("script");
     script.id = "paypal-sdk";
     script.src = `https://www.paypal.com/sdk/js?client-id=${pubSettings.paypalClientId}&currency=${currency}&intent=capture&components=${components}`;
+    // Avoid empty popup + overlay split when COOP blocks popups (common on mobile Safari).
+    script.setAttribute("data-popups-disabled", "true");
     script.async = true;
     document.body.appendChild(script);
     return () => { document.getElementById("paypal-sdk")?.remove(); };
@@ -1261,6 +1263,11 @@ export default function Checkout({ params }: Props) {
                   {/* PayPal button container */}
                   {paymentAllowed && (
                     <div ref={paypalContainerRef} className={cn("min-h-0", payMethod === "card" && "hidden")} />
+                  )}
+                  {paymentStarted && payMethod === "paypal" && status === "idle" && (
+                    <p className="text-xs text-center text-muted-foreground -mt-2">
+                      {t("checkout_paypal_use_button")}
+                    </p>
                   )}
 
                   {/* Hosted card fields */}

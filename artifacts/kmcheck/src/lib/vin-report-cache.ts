@@ -1,12 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { clearVinImageBrowserCache } from "@/lib/vin-image-cache";
 
-/** React Query options for authenticated VIN report pages — refetch when revisiting. */
+/** React Query options for authenticated VIN report pages. */
 export const VIN_REPORT_QUERY_OPTIONS = {
-  staleTime: 0,
-  gcTime: 10 * 60 * 1000,
-  refetchOnMount: "always" as const,
-  refetchOnWindowFocus: true,
+  staleTime: 5 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  refetchOnMount: true,
+  refetchOnWindowFocus: false,
   refetchOnReconnect: true,
 } as const;
 
@@ -50,7 +50,6 @@ export function invalidateVinReportCaches(
   lookupId?: number,
 ): void {
   const vinUpper = normalizeVin(vin);
-  void clearVinImageBrowserCache();
   const matchesVinReport = (query: { queryKey: readonly unknown[]; state: { data?: unknown } }) => {
     if (queryKeyMatchesVinReport(query.queryKey, vinUpper, lookupId)) return true;
     const data = query.state.data as { vin?: string; id?: number } | undefined;

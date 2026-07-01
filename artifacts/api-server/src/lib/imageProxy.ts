@@ -12,12 +12,19 @@ function ivForUrl(url: string): Buffer {
 
 const IMAGE_TOKEN_TTL_SEC = 24 * 60 * 60;
 
+/** Same upstream URL → same token for the rest of the UTC day (stable across report refetches). */
+function tokenExpirySec(): number {
+  const now = Math.floor(Date.now() / 1000);
+  const dayStart = Math.floor(now / 86400) * 86400;
+  return dayStart + 86400 * 2;
+}
+
 export function signImageToken(url: string): string {
   const key = deriveKey();
   const iv = ivForUrl(url);
   const plaintext = JSON.stringify({
     url,
-    exp: Math.floor(Date.now() / 1000) + IMAGE_TOKEN_TTL_SEC,
+    exp: tokenExpirySec(),
   });
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
   const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
