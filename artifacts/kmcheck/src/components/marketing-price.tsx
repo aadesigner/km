@@ -33,13 +33,13 @@ export function MarketingPrice({
       )}
     >
       {compareAmount != null && compareAmount > amount && (
-        <span className="text-sm font-medium text-muted-foreground/55 line-through tabular-nums">
+        <span className="text-base sm:text-lg font-medium text-muted-foreground/55 line-through tabular-nums">
           {currencySymbol}
           {compareAmount.toFixed(2)}
         </span>
       )}
       {loading ? (
-        <Skeleton className={cn(size === "lg" ? "h-11 w-28" : "h-8 w-20", "rounded-md")} />
+        <Skeleton className={cn(size === "lg" ? "h-14 w-32" : "h-8 w-20", "rounded-md")} />
       ) : (
         <div
           className={cn(
@@ -49,20 +49,20 @@ export function MarketingPrice({
         >
           <span
             className={cn(
-              "font-semibold text-primary/75 pr-0.5",
-              size === "lg" ? "text-xl sm:text-2xl" : "text-base sm:text-lg",
+              "font-semibold text-primary/80 pr-0.5",
+              size === "lg" ? "text-2xl sm:text-3xl" : "text-base sm:text-lg",
             )}
           >
             {currencySymbol}
           </span>
           <span
             className={cn(
-              "font-bold text-primary tracking-tight",
-              size === "lg" ? "text-[2rem] sm:text-[2.35rem]" : "text-2xl sm:text-[1.65rem]",
+              "font-extrabold text-primary tracking-tight",
+              size === "lg" ? "text-[2.75rem] sm:text-[3.25rem] md:text-[3.5rem]" : "text-2xl sm:text-[1.65rem]",
             )}
           >
             {whole}
-            <span className="text-[0.58em] font-semibold text-primary/90">.{fraction}</span>
+            <span className="text-[0.55em] font-bold text-primary/90">.{fraction}</span>
           </span>
         </div>
       )}
