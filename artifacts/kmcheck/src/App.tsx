@@ -204,9 +204,21 @@ function VinNumericRedirect({ lang, id }: { lang: string; id: string }) {
   return <PageLoader />;
 }
 
+function stripLegacyShareParam(): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("s")) return;
+  url.searchParams.delete("s");
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
 function VinRouteByAuth(props: { params: { lang: string; id: string } }) {
   const { isSignedIn, isLoaded } = useAuth();
   const vin = props.params.id.toUpperCase();
+
+  useEffect(() => {
+    stripLegacyShareParam();
+  }, [vin]);
 
   if (!isLoaded) return <PageLoader />;
 

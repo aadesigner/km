@@ -32,7 +32,7 @@ export function VinAccessGate({ params, vin }: VinAccessGateProps) {
   const { user } = useAuth();
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ["/api/vin/public", vin, "", user?.id ?? null],
+    queryKey: ["/api/vin/public", vin, user?.id ?? null],
     queryFn: async ({ signal }) => {
       const r = await fetch(`${basePath}/api/vin/public/${encodeURIComponent(vin)}`, {
         credentials: "include",
