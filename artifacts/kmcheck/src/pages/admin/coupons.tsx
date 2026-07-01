@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,15 @@ import {
 } from "recharts";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+async function adminFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const r = await fetch(`${basePath}${path}`, { credentials: "include", ...init });
+  const data = await r.json().catch(() => ({})) as T & { error?: string };
+  if (!r.ok) {
+    throw new Error(data.error ?? `Request failed (${r.status})`);
+  }
+  return data;
+}
 
 type Coupon = {
   id: number;
@@ -125,8 +134,8 @@ function useCoupons() {
   return useQuery<Coupon[]>({
     queryKey: ["/api/admin/coupons"],
     queryFn: async () => {
-      const r = await fetch(`${basePath}/api/admin/coupons`, { credentials: "include" });
-      return r.json();
+      const data = await adminFetch<Coupon[] | { error?: string }>("/api/admin/coupons");
+      return Array.isArray(data) ? data : [];
     },
   });
 }
@@ -134,33 +143,44 @@ function useCoupons() {
 function useCouponStats(days: number) {
   return useQuery<CouponStats>({
     queryKey: ["/api/admin/coupons/stats", days],
-    queryFn: async () => {
-      const r = await fetch(`${basePath}/api/admin/coupons/stats?days=${days}`, { credentials: "include" });
-      if (!r.ok) throw new Error("Failed to load coupon stats");
-      return r.json();
-    },
+    queryFn: () => adminFetch<CouponStats>(`/api/admin/coupons/stats?days=${days}`),
   });
 }
 
 function useCreateCoupon(onSuccess: () => void) {
   return useMutation({
     mutationFn: async (form: CreateForm) => {
-      const r = await fetch(`${basePath}/api/admin/coupons`, {
+      const value = Number.parseFloat(form.value);
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new Error("Value must be greater than 0");
+      }
+      let maxUses: number | null = null;
+      if (form.maxUses.trim()) {
+        maxUses = Number.parseInt(form.maxUses, 10);
+        if (!Number.isFinite(maxUses) || maxUses < 1) {
+          throw new Error("Max uses must be a whole number of at least 1");
+        }
+      }
+      let expiresAt: string | null = null;
+      if (form.expiresAt.trim()) {
+        const dt = new Date(form.expiresAt);
+        if (Number.isNaN(dt.getTime())) {
+          throw new Error("Expiry date is invalid");
+        }
+        expiresAt = dt.toISOString();
+      }
+      return adminFetch<Coupon>("/api/admin/coupons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
-          code: form.code,
+          code: form.code.trim(),
           type: form.type,
-          value: parseFloat(form.value),
-          maxUses: form.maxUses ? parseInt(form.maxUses) : null,
-          expiresAt: form.expiresAt || null,
+          value,
+          maxUses,
+          expiresAt,
           isActive: form.isActive,
         }),
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error ?? "Failed to create coupon");
-      return data;
     },
     onSuccess,
   });
@@ -169,15 +189,11 @@ function useCreateCoupon(onSuccess: () => void) {
 function useToggleCoupon(onSuccess: () => void) {
   return useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      const r = await fetch(`${basePath}/api/admin/coupons/${id}`, {
+      return adminFetch<Coupon>(`/api/admin/coupons/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ isActive }),
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error((data as { error?: string }).error ?? "Failed to update coupon");
-      return data;
     },
     onSuccess,
   });
@@ -186,10 +202,14 @@ function useToggleCoupon(onSuccess: () => void) {
 function useDeleteCoupon(onSuccess: () => void) {
   return useMutation({
     mutationFn: async (id: number) => {
-      await fetch(`${basePath}/api/admin/coupons/${id}`, {
+      const r = await fetch(`${basePath}/api/admin/coupons/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
+      if (!r.ok && r.status !== 204) {
+        const data = await r.json().catch(() => ({})) as { error?: string };
+        throw new Error(data.error ?? `Delete failed (${r.status})`);
+      }
     },
     onSuccess,
   });
@@ -226,6 +246,7 @@ function StatCard({
 
 export default function AdminCoupons() {
   const queryClient = useQueryClient();
+  const createFormRef = useRef<HTMLDivElement>(null);
   const [showForm, setShowForm] = useState(false);
   const [statsDays, setStatsDays] = useState(30);
   const [createError, setCreateError] = useState("");
@@ -237,7 +258,7 @@ export default function AdminCoupons() {
     void queryClient.invalidateQueries({ queryKey: ["/api/admin/coupons"] });
     void queryClient.invalidateQueries({ queryKey: ["/api/admin/coupons/stats"] });
   };
-  const { data: coupons, isLoading } = useCoupons();
+  const { data: coupons, isLoading, isError: listError, error: listErr, refetch: refetchList } = useCoupons();
   const { data: stats, isLoading: statsLoading } = useCouponStats(statsDays);
   const createCoupon = useCreateCoupon(() => {
     invalidate();
@@ -247,6 +268,20 @@ export default function AdminCoupons() {
   });
   const toggleCoupon = useToggleCoupon(invalidate);
   const deleteCoupon = useDeleteCoupon(invalidate);
+
+  useEffect(() => {
+    if (!showForm) return;
+    const id = window.requestAnimationFrame(() => {
+      createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [showForm]);
+
+  const openCreateForm = () => setShowForm(true);
+  const closeCreateForm = () => {
+    setShowForm(false);
+    setCreateError("");
+  };
 
   const chartData = useMemo(
     () => (stats ? fillCouponDays(stats.byDay, stats.days) : []),
@@ -273,11 +308,124 @@ export default function AdminCoupons() {
           <h1 className="text-2xl sm:text-3xl font-bold">Coupons</h1>
           <p className="text-muted-foreground mt-1">Create, track, and manage discount codes</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+        <Button type="button" onClick={openCreateForm} className="gap-2" disabled={showForm}>
           <Plus className="h-4 w-4" />
           New Coupon
         </Button>
       </div>
+
+      {/* Create form — directly under header so mobile users see it after tapping New Coupon */}
+      {showForm && (
+        <Card ref={createFormRef} className="border-primary/20 bg-primary/5 scroll-mt-20">
+          <CardHeader>
+            <CardTitle className="text-base">Create Coupon</CardTitle>
+            <CardDescription>Generate a new discount code for customers</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="coupon-code">Coupon Code <span className="text-destructive">*</span></Label>
+                <Input
+                  id="coupon-code"
+                  placeholder="SUMMER50"
+                  value={form.code}
+                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                  className="font-mono uppercase"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Discount Type <span className="text-destructive">*</span></Label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, type: "percent" }))}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border text-sm font-medium transition-all ${form.type === "percent" ? "bg-primary text-primary-foreground border-primary" : "border-input hover:bg-muted"}`}
+                  >
+                    <Percent className="h-3.5 w-3.5" /> Percent
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, type: "flat" }))}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border text-sm font-medium transition-all ${form.type === "flat" ? "bg-primary text-primary-foreground border-primary" : "border-input hover:bg-muted"}`}
+                  >
+                    <Euro className="h-3.5 w-3.5" /> Flat (€)
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="coupon-value">Value <span className="text-destructive">*</span></Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    {form.type === "percent" ? "%" : "€"}
+                  </span>
+                  <Input
+                    id="coupon-value"
+                    type="number"
+                    inputMode="decimal"
+                    min={0.01}
+                    max={form.type === "percent" ? 100 : undefined}
+                    step={0.01}
+                    placeholder={form.type === "percent" ? "50" : "5.00"}
+                    value={form.value}
+                    onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
+                    className="pl-8"
+                  />
+                </div>
+                {form.type === "percent" && parseFloat(form.value) === 100 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    100% = fully free, no payment needed
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="coupon-max-uses">Max Uses <span className="text-muted-foreground text-xs">(blank = unlimited)</span></Label>
+                <Input
+                  id="coupon-max-uses"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  placeholder="100"
+                  value={form.maxUses}
+                  onChange={(e) => setForm((f) => ({ ...f, maxUses: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="coupon-expires">Expires At <span className="text-muted-foreground text-xs">(blank = never)</span></Label>
+                <Input
+                  id="coupon-expires"
+                  type="datetime-local"
+                  value={form.expiresAt}
+                  onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+                  className="max-w-xs"
+                />
+              </div>
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <Switch
+                  id="coupon-active"
+                  checked={form.isActive}
+                  onCheckedChange={(v) => setForm((f) => ({ ...f, isActive: v }))}
+                />
+                <Label htmlFor="coupon-active" className="cursor-pointer">Active (usable immediately)</Label>
+              </div>
+            </div>
+            {createError && (
+              <p className="text-sm text-destructive" role="alert">{createError}</p>
+            )}
+            <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={closeCreateForm} className="w-full sm:w-auto">
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleCreate} disabled={createCoupon.isPending} className="gap-2 w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
+                {createCoupon.isPending ? "Creating..." : "Create Coupon"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <Card>
@@ -446,111 +594,6 @@ export default function AdminCoupons() {
         </CardContent>
       </Card>
 
-      {/* Create form */}
-      {showForm && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="text-base">Create Coupon</CardTitle>
-            <CardDescription>Generate a new discount code for customers</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Coupon Code <span className="text-destructive">*</span></Label>
-                <Input
-                  placeholder="SUMMER50"
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  className="font-mono uppercase"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Discount Type <span className="text-destructive">*</span></Label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, type: "percent" }))}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm font-medium transition-all ${form.type === "percent" ? "bg-primary text-primary-foreground border-primary" : "border-input hover:bg-muted"}`}
-                  >
-                    <Percent className="h-3.5 w-3.5" /> Percent
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, type: "flat" }))}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm font-medium transition-all ${form.type === "flat" ? "bg-primary text-primary-foreground border-primary" : "border-input hover:bg-muted"}`}
-                  >
-                    <Euro className="h-3.5 w-3.5" /> Flat (€)
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Value <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                    {form.type === "percent" ? "%" : "€"}
-                  </span>
-                  <Input
-                    type="number"
-                    min={0.01}
-                    max={form.type === "percent" ? 100 : undefined}
-                    step={0.01}
-                    placeholder={form.type === "percent" ? "50" : "5.00"}
-                    value={form.value}
-                    onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
-                    className="pl-8"
-                  />
-                </div>
-                {form.type === "percent" && parseFloat(form.value) === 100 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    100% = fully free, no payment needed
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label>Max Uses <span className="text-muted-foreground text-xs">(blank = unlimited)</span></Label>
-                <Input
-                  type="number"
-                  min={1}
-                  placeholder="100"
-                  value={form.maxUses}
-                  onChange={(e) => setForm((f) => ({ ...f, maxUses: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label>Expires At <span className="text-muted-foreground text-xs">(blank = never)</span></Label>
-                <Input
-                  type="datetime-local"
-                  value={form.expiresAt}
-                  onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
-                  className="max-w-xs"
-                />
-              </div>
-              <div className="flex items-center gap-3 sm:col-span-2">
-                <Switch
-                  id="coupon-active"
-                  checked={form.isActive}
-                  onCheckedChange={(v) => setForm((f) => ({ ...f, isActive: v }))}
-                />
-                <Label htmlFor="coupon-active" className="cursor-pointer">Active (usable immediately)</Label>
-              </div>
-            </div>
-            {createError && (
-              <p className="text-sm text-destructive">{createError}</p>
-            )}
-            <div className="flex gap-2 pt-2">
-              <Button onClick={handleCreate} disabled={createCoupon.isPending} className="gap-2">
-                <Plus className="h-4 w-4" />
-                {createCoupon.isPending ? "Creating..." : "Create Coupon"}
-              </Button>
-              <Button variant="outline" onClick={() => { setShowForm(false); setCreateError(""); }}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Coupon list */}
       <Card>
         <CardHeader>
@@ -561,7 +604,17 @@ export default function AdminCoupons() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {listError ? (
+            <div className="py-12 px-6 text-center space-y-3">
+              <AlertTriangle className="h-10 w-10 text-destructive mx-auto" />
+              <p className="font-medium text-destructive">
+                {listErr instanceof Error ? listErr.message : "Failed to load coupons"}
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={() => void refetchList()}>
+                Retry
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
             </div>

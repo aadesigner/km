@@ -139,7 +139,10 @@ export default function Checkout({ params }: Props) {
   const [couponResult, setCouponResult] = useState<CouponResult | null>(null);
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
-  const [couponOpen, setCouponOpen] = useState(false);
+  const [couponOpen, setCouponOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -421,8 +424,11 @@ export default function Checkout({ params }: Props) {
         credentials: "include",
         body: JSON.stringify({ code: couponCode }),
       });
-      const data = await resp.json() as CouponResult & { error?: string };
-      if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
+      const data = await resp.json() as CouponResult & { error?: string; code?: string };
+      if (!resp.ok || data.error) {
+        setCouponError(translateCouponError(t, data.error ?? (resp.status === 403 ? "Forbidden" : undefined)));
+        return;
+      }
       setCouponResult(data);
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
