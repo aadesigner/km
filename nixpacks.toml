@@ -2,7 +2,5 @@
 nixPkgs = ["nodejs_22", "pnpm"]
 
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
-
-[variables]
-NODE_ENV = "production"
+# Install devDependencies too — typecheck/build need typescript, vite, vitest peers, etc.
+cmds = ["pnpm install --frozen-lockfile --prod=false"]

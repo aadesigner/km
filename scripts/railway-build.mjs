@@ -26,7 +26,7 @@ if (!guard && process.env.NODE_ENV === "production") {
 }
 
 console.log("→ pnpm install");
-run("pnpm", ["install", "--frozen-lockfile"]);
+run("pnpm", ["install", "--frozen-lockfile", "--prod=false"]);
 
 console.log("→ typecheck libs");
 run("pnpm", ["run", "typecheck:libs"]);
