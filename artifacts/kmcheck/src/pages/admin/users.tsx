@@ -19,6 +19,10 @@ import {
 } from "@/components/ui/select";
 import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { AdminQueryFallback } from "@/components/admin-query-fallback";
+import { queryErrorMessage, showQueryFailure } from "@/lib/query-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
@@ -41,7 +45,9 @@ export default function AdminUsers() {
     checks: checksFilter || undefined,
   };
 
-  const { data, isLoading, isError, error, refetch } = useAdminGetUsers(listParams);
+  const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams, {
+    query: ADMIN_QUERY_OPTIONS,
+  });
   const banUser = useAdminBanUser({
     mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }) },
   });
@@ -64,8 +70,9 @@ export default function AdminUsers() {
   const users = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
   const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter);
-  const loadError = isError
-    ? ((error as { data?: { error?: string } })?.data?.error ?? (error as Error)?.message ?? "Failed to load users")
+  useQueryRecovery(isError, isFetching, refetch);
+  const loadError = showQueryFailure(isError, isFetching)
+    ? queryErrorMessage(error, "Failed to load users")
     : null;
 
   async function handleExport() {
@@ -218,12 +225,12 @@ export default function AdminUsers() {
             <div className="py-12 px-6 text-center space-y-3">
               <AlertCircle className="h-10 w-10 text-destructive mx-auto" />
               <p className="font-medium text-destructive">{loadError}</p>
-              <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                <RefreshCw className="h-4 w-4 mr-1.5" />
+              <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+                <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? "animate-spin" : ""}`} />
                 Retry
               </Button>
             </div>
-          ) : isLoading ? (
+          ) : isLoading && !data ? (
             <div className="p-6 space-y-3">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
             </div>

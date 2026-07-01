@@ -1,7 +1,9 @@
 import { useAuth } from "@/lib/auth-context";
 import { useLocation, Link } from "wouter";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home } from "lucide-react";
@@ -52,9 +54,9 @@ const mobileBottomNav = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isSignedIn, isLoaded, refreshUser } = useAuth();
+  const { user, isSignedIn, isLoaded } = useAuth();
+  const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
-  const [checked, setChecked] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { data: pendingOpen = 0 } = useQuery({
@@ -65,7 +67,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       const d = await r.json() as { total?: number };
       return d.total ?? 0;
     },
-    enabled: checked && isLoaded && isSignedIn && user?.isAdmin === true,
+    enabled: isLoaded && isSignedIn && user?.isAdmin === true,
+    ...ADMIN_QUERY_OPTIONS,
     staleTime: 60_000,
     refetchInterval: 60_000,
   });
@@ -73,14 +76,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = user?.isAdmin === true;
 
   useEffect(() => {
-    refreshUser().finally(() => setChecked(true));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (checked && isLoaded && (!isSignedIn || !isAdmin)) {
+    if (!isLoaded) return;
+    if (!isSignedIn || !isAdmin) {
       setLocation("/en");
     }
-  }, [checked, isLoaded, isSignedIn, isAdmin, setLocation]);
+  }, [isLoaded, isSignedIn, isAdmin, setLocation]);
+
+  useEffect(() => {
+    if (!isLoaded || !isAdmin) return;
+    void queryClient.prefetchQuery({
+      ...getAdminGetStatsQueryOptions({ query: { ...ADMIN_QUERY_OPTIONS } }),
+    });
+  }, [isLoaded, isAdmin, queryClient]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -91,7 +98,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  if (!checked || !isLoaded) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Skeleton className="h-8 w-48" />

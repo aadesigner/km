@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAdminGetSettings, useAdminUpdateSettings } from "@workspace/api-client-react";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -98,7 +100,9 @@ function TabSaveButton({
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: settings, isLoading } = useAdminGetSettings();
+  const { data: settings, isLoading, isError, error, refetch, isFetching } = useAdminGetSettings({
+    query: ADMIN_QUERY_OPTIONS,
+  });
 
   const notifySaved = (label: string) => {
     toast({ title: "Saved", description: `${label} updated successfully.` });
@@ -356,22 +360,30 @@ export default function AdminSettings() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-2xl">
-        <div>
-          <h1 className="text-2xl font-extrabold">Settings</h1>
-          <p className="text-muted-foreground mt-1">System configuration</p>
-        </div>
-        <Skeleton className="h-10 w-full rounded-lg" />
-        <Card><CardContent className="pt-6 space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
-        </CardContent></Card>
+  const settingsSkeleton = (
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-extrabold">Settings</h1>
+        <p className="text-muted-foreground mt-1">System configuration</p>
       </div>
-    );
-  }
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Card><CardContent className="pt-6 space-y-4">
+        {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
+      </CardContent></Card>
+    </div>
+  );
 
   return (
+    <AdminQueryFallback
+      isLoading={isLoading}
+      isError={isError}
+      isFetching={isFetching}
+      error={error}
+      refetch={refetch}
+      hasData={!!settings}
+      message="Failed to load settings"
+      skeleton={settingsSkeleton}
+    >
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-extrabold">Settings</h1>
@@ -1074,5 +1086,6 @@ export default function AdminSettings() {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminQueryFallback>
   );
 }

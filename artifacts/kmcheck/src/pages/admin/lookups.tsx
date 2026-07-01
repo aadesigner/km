@@ -6,6 +6,7 @@ import {
   AdminGetVinLookupsStatus,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,7 +105,7 @@ export default function AdminLookups() {
     provider: providerFilter || undefined,
   };
 
-  const { data, isLoading } = useAdminGetVinLookups(params);
+  const { data, isLoading } = useAdminGetVinLookups(params, { query: ADMIN_QUERY_OPTIONS });
 
   const refreshVin = useAdminRefreshVin({
     mutation: {

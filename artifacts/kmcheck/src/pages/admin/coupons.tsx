@@ -37,6 +37,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { createClientFetchError } from "@/lib/api-error";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -126,8 +128,10 @@ function useCoupons() {
     queryKey: ["/api/admin/coupons"],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/admin/coupons`, { credentials: "include" });
+      if (!r.ok) throw createClientFetchError("coupons", r.status);
       return r.json();
     },
+    ...ADMIN_QUERY_OPTIONS,
   });
 }
 
@@ -136,9 +140,10 @@ function useCouponStats(days: number) {
     queryKey: ["/api/admin/coupons/stats", days],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/admin/coupons/stats?days=${days}`, { credentials: "include" });
-      if (!r.ok) throw new Error("Failed to load coupon stats");
+      if (!r.ok) throw createClientFetchError("coupon_stats", r.status);
       return r.json();
     },
+    ...ADMIN_QUERY_OPTIONS,
   });
 }
 

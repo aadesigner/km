@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAdminGetStats } from "@workspace/api-client-react";
+import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -138,9 +140,8 @@ const TOOLTIP_STYLE = {
 };
 
 export default function AdminOverview() {
-  const { data: rawStats, isLoading, refetch, isFetching } = useAdminGetStats({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query: { staleTime: 30_000, refetchInterval: 60_000 } as any,
+  const { data: rawStats, isLoading, isError, error, refetch, isFetching } = useAdminGetStats({
+    query: { ...ADMIN_QUERY_OPTIONS, refetchInterval: 60_000 },
   });
   const stats = rawStats as unknown as ExtendedStats | undefined;
   const [timeRange, setTimeRange] = useState<"7d" | "30d">("7d");
@@ -157,19 +158,25 @@ export default function AdminOverview() {
   const totalRevStr = stats?.totalRevenue != null ? `€${Number(stats.totalRevenue).toFixed(2)}` : undefined;
   const cacheStr = stats?.cacheHitRate != null ? `${stats.cacheHitRate.toFixed(1)}%` : undefined;
 
-  if (isLoading && !stats) {
-    return (
-      <div className="space-y-5">
-        <Skeleton className="h-8 w-40" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
-        </div>
-        <Skeleton className="h-56 rounded-xl" />
-      </div>
-    );
-  }
-
   return (
+    <AdminQueryFallback
+      isLoading={isLoading}
+      isError={isError}
+      isFetching={isFetching}
+      error={error}
+      refetch={refetch}
+      hasData={!!stats}
+      message="Failed to load overview"
+      skeleton={(
+        <div className="space-y-5">
+          <Skeleton className="h-8 w-40" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          </div>
+          <Skeleton className="h-56 rounded-xl" />
+        </div>
+      )}
+    >
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -354,5 +361,6 @@ export default function AdminOverview() {
         </Link>
       </div>
     </div>
+    </AdminQueryFallback>
   );
 }
