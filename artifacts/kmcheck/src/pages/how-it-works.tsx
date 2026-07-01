@@ -178,36 +178,36 @@ export default function HowItWorks() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative isolate overflow-hidden border-b border-border/60 py-16 md:py-24 px-4">
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-emerald-50/90 via-slate-50/60 to-background dark:from-[#060a12] dark:via-slate-950 dark:to-background" />
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,hsl(var(--primary)/0.14),transparent)]" />
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(hsl(var(--foreground)/0.05)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
+      <section className="relative isolate overflow-hidden border-b border-border/60 py-12 md:py-20 px-4">
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-emerald-50/80 via-slate-50/50 to-background dark:from-[#060a12] dark:via-slate-950 dark:to-background" />
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,hsl(var(--primary)/0.12),transparent)]" />
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(hsl(var(--foreground)/0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:20px_20px] opacity-60" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative z-10 max-w-3xl mx-auto text-center space-y-5"
+          className="relative z-10 max-w-3xl mx-auto text-center space-y-4"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold text-foreground shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white/90">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 backdrop-blur-sm px-3.5 py-1 text-xs font-semibold text-foreground shadow-sm dark:border-white/10 dark:bg-white/5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             {t("hiw_badge")}
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black tracking-tight leading-[1.08] text-foreground dark:text-white">
+          <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-extrabold tracking-tight leading-[1.1] text-foreground">
             {t("hiw_title")}
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto dark:text-white/60">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             {t("hiw_subtitle")}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <Badge className="rounded-full bg-primary/10 text-primary border-primary/25 px-3 py-1 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/30">
-              <Clock className="h-3 w-3 mr-1.5 inline" />
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+            <Badge className="rounded-full bg-primary/10 text-primary border-primary/20 px-3 py-1 text-[11px] font-medium">
+              <Clock className="h-3 w-3 mr-1 inline" />
               {t("hiw_trust_speed")}
             </Badge>
-            <Badge variant="outline" className="rounded-full border-border text-muted-foreground bg-background/60 px-3 py-1 dark:border-white/15 dark:text-white/70 dark:bg-white/5">
+            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium">
               {t("trust_secure_payment")}
             </Badge>
-            <Badge variant="outline" className="rounded-full border-border text-muted-foreground bg-background/60 px-3 py-1 dark:border-white/15 dark:text-white/70 dark:bg-white/5">
+            <Badge variant="outline" className="rounded-full border-border/70 text-muted-foreground bg-background/60 px-3 py-1 text-[11px] font-medium">
               {t("trust_money_back")}
             </Badge>
           </div>
@@ -217,23 +217,25 @@ export default function HowItWorks() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="relative z-10 max-w-3xl mx-auto mt-12"
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="relative z-10 max-w-3xl mx-auto mt-8 md:mt-10"
         >
-          <div className="rounded-2xl border border-border/70 bg-background/80 backdrop-blur-sm p-4 sm:p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="grid grid-cols-3 gap-2 sm:gap-6">
+          <div className="rounded-xl border border-border/70 bg-card/90 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
+            <div className="flex flex-col sm:grid sm:grid-cols-3 gap-4 sm:gap-3">
               {steps.map(({ icon: Icon, title, num }, i) => (
-                <div key={num} className="relative flex flex-col items-center text-center">
+                <div key={num} className="relative flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0">
                   {i < steps.length - 1 && (
-                    <div className="hidden sm:block absolute top-7 left-[calc(50%+30px)] right-[calc(-50%+30px)] h-px border-t border-dashed border-primary/35" />
+                    <div className="hidden sm:block absolute top-6 left-[calc(50%+28px)] right-[calc(-50%+28px)] h-px border-t border-dashed border-primary/30" />
                   )}
-                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-primary to-emerald-400 text-white flex items-center justify-center shadow-md shadow-primary/25 ring-1 ring-primary/20 mb-2.5 sm:mb-3">
-                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-primary to-emerald-500 text-white flex items-center justify-center shadow-sm shadow-primary/20 shrink-0">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{num}</span>
-                  <span className="text-xs sm:text-sm font-semibold text-foreground leading-snug mt-1 px-1 dark:text-white/85">
-                    {title}
-                  </span>
+                  <div className="flex-1 sm:flex-none text-left sm:text-center min-w-0">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{num}</span>
+                    <p className="text-sm font-semibold text-foreground leading-snug mt-0.5">
+                      {title}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -242,20 +244,21 @@ export default function HowItWorks() {
       </section>
 
       {/* ── Detailed steps (timeline) ── */}
-      <section className="py-16 md:py-24 px-4">
+      <section className="py-12 md:py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 space-y-2"
+            className="text-center mb-10 md:mb-14 space-y-2"
           >
             <SectionLabel>{t("hiw_badge")}</SectionLabel>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">{t("hiw_title")}</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t("hiw_report_title")}</h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">{t("hiw_report_subtitle")}</p>
           </motion.div>
 
-          <div className="relative space-y-10 md:space-y-14">
-            <div className="hidden md:block absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
+          <div className="relative space-y-8 md:space-y-12">
+            <div className="hidden md:block absolute left-7 top-6 bottom-6 w-px bg-gradient-to-b from-primary/40 via-primary/15 to-transparent" />
 
             {steps.map(({ num, label, title, desc, icon: Icon, card, iconWrap, ring, mock }, i) => (
               <motion.div
@@ -268,31 +271,31 @@ export default function HowItWorks() {
                 className="relative md:pl-20"
               >
                 <div className={cn(
-                  "hidden md:flex absolute left-0 top-8 h-16 w-16 items-center justify-center rounded-2xl ring-2",
+                  "hidden md:flex absolute left-0 top-6 h-14 w-14 items-center justify-center rounded-xl ring-2",
                   iconWrap, ring,
                 )}>
-                  <Icon className="h-7 w-7" />
+                  <Icon className="h-6 w-6" />
                 </div>
 
                 <div className={cn(
-                  "grid md:grid-cols-2 gap-8 md:gap-10 items-center rounded-3xl border p-6 md:p-9",
-                  "bg-gradient-to-br shadow-sm hover:shadow-lg transition-all duration-300",
+                  "grid md:grid-cols-2 gap-6 md:gap-8 items-center rounded-2xl border p-5 sm:p-7 md:p-8",
+                  "bg-gradient-to-br shadow-sm hover:shadow-md transition-shadow duration-300",
                   card,
                   i % 2 === 1 && "md:[direction:rtl] md:*:[direction:ltr]",
                 )}>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-4xl font-black text-primary/20 tabular-nums leading-none">{num}</span>
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-primary">{label}</span>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-3xl font-bold text-primary/15 tabular-nums leading-none">{num}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{label}</span>
                     </div>
-                    <div className={cn("md:hidden inline-flex h-12 w-12 items-center justify-center rounded-2xl", iconWrap)}>
-                      <Icon className="h-6 w-6" />
+                    <div className={cn("md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl", iconWrap)}>
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{title}</h3>
-                    <p className="text-muted-foreground leading-relaxed text-base">{desc}</p>
+                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{title}</h3>
+                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{desc}</p>
                   </div>
                   <div className="relative">
-                    <div className="absolute -inset-4 bg-gradient-to-br from-primary/8 to-transparent rounded-3xl blur-2xl -z-10 pointer-events-none" />
+                    <div className="absolute -inset-3 bg-gradient-to-br from-primary/6 to-transparent rounded-2xl blur-xl -z-10 pointer-events-none" />
                     {mock}
                   </div>
                 </div>
@@ -384,50 +387,55 @@ export default function HowItWorks() {
       <VinCheckIncludesSection className="bg-muted/25 border-t border-border/60" />
 
       {/* ── CTA ── */}
-      <section className="relative isolate overflow-hidden py-16 md:py-24 px-4">
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-primary/[0.08] via-primary/[0.03] to-background" />
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,hsl(var(--primary)/0.1),transparent)]" />
+      <section className="relative isolate overflow-hidden py-14 md:py-20 px-4 border-t border-border/60">
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-primary/[0.06] via-primary/[0.02] to-background" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative z-10 max-w-xl mx-auto text-center space-y-6"
+          className="relative z-10 max-w-lg mx-auto text-center space-y-5"
         >
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">{t("hiw_cta_title")}</h2>
-          <p className="text-muted-foreground text-lg">{t("hiw_cta_subtitle")}</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{t("hiw_cta_title")}</h2>
+          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">{t("hiw_cta_subtitle")}</p>
 
           <form onSubmit={handleCheck} className="space-y-3 text-left">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">
               {vinLabel}
             </label>
-            <div className="relative p-[2px] rounded-2xl hero-input-glow sm:shadow-lg sm:shadow-primary/10">
-            <div className="relative flex items-center rounded-2xl border-2 border-primary/30 bg-card overflow-hidden focus-within:border-primary transition-colors">
-              <Search className="absolute left-4 h-5 w-5 text-muted-foreground shrink-0" />
-              <Input
-                className="h-14 pl-12 pr-36 border-0 focus-visible:ring-0 shadow-none font-mono tracking-widest bg-transparent text-foreground"
-                placeholder={t("vin_placeholder")}
-                value={vin}
-                onChange={e => { setVin(e.target.value.toUpperCase()); setVinError(""); }}
-                maxLength={17}
-              />
-              <Button type="submit" className="absolute right-2 h-10 rounded-xl px-5 font-semibold gap-1 shadow-md">
+            <div className="flex flex-col sm:block gap-2.5">
+              <div className="relative p-[2px] rounded-xl hero-input-glow">
+                <div className="relative flex items-center rounded-xl border border-primary/25 bg-card overflow-hidden focus-within:border-primary transition-colors">
+                  <Search className="absolute left-3.5 h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input
+                    className="h-12 sm:h-13 pl-10 sm:pr-36 border-0 focus-visible:ring-0 shadow-none font-mono tracking-widest bg-transparent text-sm sm:text-base"
+                    placeholder={t("vin_placeholder")}
+                    value={vin}
+                    onChange={e => { setVin(e.target.value.toUpperCase()); setVinError(""); }}
+                    maxLength={17}
+                  />
+                  <Button type="submit" className="hidden sm:inline-flex absolute right-1.5 h-9 rounded-lg px-4 text-sm font-semibold gap-1">
+                    {t("hiw_cta_btn")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <Button type="submit" className="sm:hidden w-full h-11 rounded-xl font-semibold gap-1.5">
                 {t("hiw_cta_btn")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
-            </div>
             {vinError && <p className="text-sm text-destructive text-center">{vinError}</p>}
           </form>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground pt-1">
             <Link href={`/${language}/pricing`} className="hover:text-primary transition-colors font-medium">
               {t("pricing")} →
             </Link>
-            <span className="text-border">·</span>
+            <span className="hidden sm:inline text-border">·</span>
             <Link href={`/${language}/free-vin-decoder`} className="hover:text-primary transition-colors font-medium">
               {t("free_decoder_nav_link")} →
             </Link>
-            <span className="text-border">·</span>
+            <span className="hidden sm:inline text-border">·</span>
             <Link href={`/${language}/faq`} className="hover:text-primary transition-colors font-medium">
               {t("nav_faq")} →
             </Link>

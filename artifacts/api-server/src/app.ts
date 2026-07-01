@@ -36,6 +36,8 @@ app.use(
           "https://www.gstatic.com",
           "https://www.recaptcha.net",
           "https://js.paypal.com",
+          "https://www.googletagmanager.com",
+          "https://static.cloudflareinsights.com",
         ],
         styleSrc: [
           "'self'",
@@ -55,6 +57,11 @@ app.use(
           "https://www.google.com",
           "https://www.gstatic.com",
           "https://www.recaptcha.net",
+          "https://www.googletagmanager.com",
+          "https://www.google-analytics.com",
+          "https://*.google-analytics.com",
+          "https://analytics.google.com",
+          "https://cloudflareinsights.com",
         ],
         frameSrc: [
           "'self'",
@@ -64,6 +71,7 @@ app.use(
           "https://sandbox.paypal.com",
           "https://www.google.com",
           "https://www.recaptcha.net",
+          "https://www.googletagmanager.com",
         ],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
