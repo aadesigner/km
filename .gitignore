@@ -44,11 +44,14 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# env
+# env — never commit secrets or env templates
 .env
 .env.*
-!.env.example
+.env.example
 
 # Host tool caches (optional local folders)
 .cache/
 .local/
+
+# Local backups — not for version control
+backup/

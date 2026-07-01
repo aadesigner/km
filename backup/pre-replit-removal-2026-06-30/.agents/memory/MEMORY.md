@@ -1,1 +1,0 @@
-- [kmcheck migration](kmcheck-migration.md) — how to copy kmcheck from GitHub into this Replit workspace without repeating copy failures
