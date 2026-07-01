@@ -1,0 +1,80 @@
+/**
+ * Live QA — run: npx tsx scripts/qa-free-vin-decode.ts
+ * Validates hybrid decoder against NHTSA for known public VINs.
+ */
+import { decodeFreeVin } from "../src/lib/vinDecodeFree.js";
+import { decodeVin } from "@workspace/vin-decode";
+
+const CASES: Array<{
+  vin: string;
+  label: string;
+  expectMake: string;
+  expectModelContains?: string;
+}> = [
+  { vin: "1HGCM82633A004352", label: "USA Honda Accord 2003", expectMake: "Honda", expectModelContains: "Accord" },
+  { vin: "1FTFW1E84MFA12345", label: "USA Ford F-150", expectMake: "Ford", expectModelContains: "F-150" },
+  { vin: "5YJSA1E14HF000001", label: "USA Tesla Model S", expectMake: "Tesla", expectModelContains: "Model S" },
+  { vin: "1VWZZZA3ZDC050213", label: "USA VW Jetta", expectMake: "Volkswagen", expectModelContains: "Jetta" },
+  { vin: "KMHSW81UBGU554169", label: "Korea Hyundai Santa Fe Sport", expectMake: "Hyundai", expectModelContains: "Santa Fe" },
+  { vin: "KNDNB2A28F7123456", label: "Korea Kia Sorento", expectMake: "Kia", expectModelContains: "Sorento" },
+  { vin: "JTDKB20U797867720", label: "Japan Toyota Prius", expectMake: "Toyota", expectModelContains: "Prius" },
+  { vin: "JHMCM56557C404453", label: "Japan Honda Accord", expectMake: "Honda", expectModelContains: "Accord" },
+  { vin: "WBA3A5C55FK123456", label: "Germany BMW 3 Series", expectMake: "BMW", expectModelContains: "3 Series" },
+  { vin: "WDD2130421A123456", label: "Germany Mercedes E-Class", expectMake: "Mercedes-Benz", expectModelContains: "E-Class" },
+  { vin: "WVWZZZ3CZCE064077", label: "Germany VW Passat B8 (EU)", expectMake: "Volkswagen", expectModelContains: "Passat" },
+  { vin: "WAUZZZF4XGN123456", label: "Germany Audi A6 (EU)", expectMake: "Audi", expectModelContains: "A6" },
+];
+
+function validateCheckDigit(vin: string): boolean {
+  const translit: Record<string, number> = {
+    A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8,
+    J: 1, K: 2, L: 3, M: 4, N: 5, P: 7, R: 9,
+    S: 2, T: 3, U: 4, V: 5, W: 6, X: 7, Y: 8, Z: 9,
+  };
+  const weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 17; i++) {
+    const c = vin[i];
+    const val = /\d/.test(c) ? parseInt(c, 10) : (translit[c] ?? 0);
+    sum += val * weights[i];
+  }
+  const rem = sum % 11;
+  const expected = rem === 10 ? "X" : String(rem);
+  return vin[8] === expected;
+}
+
+async function main() {
+  console.log("=== Free VIN Decoder Live QA ===\n");
+  let pass = 0;
+  let fail = 0;
+
+  for (const c of CASES) {
+    const local = decodeVin(c.vin);
+    const result = await decodeFreeVin(c.vin, validateCheckDigit(c.vin));
+    const makeOk = result.make?.toLowerCase().includes(c.expectMake.toLowerCase());
+    const modelOk = !c.expectModelContains
+      || (result.model?.toLowerCase().includes(c.expectModelContains.toLowerCase())
+        ?? local.model?.toLowerCase().includes(c.expectModelContains.toLowerCase()));
+    const ok = makeOk && modelOk;
+    if (ok) pass++; else fail++;
+
+    const status = ok ? "PASS" : "FAIL";
+    console.log(`[${status}] ${c.label}`);
+    console.log(`  VIN:    ${c.vin}`);
+    console.log(`  Source: ${result.source}`);
+    console.log(`  Year:   ${result.year ?? "—"}`);
+    console.log(`  Make:   ${result.make ?? "—"}`);
+    console.log(`  Model:  ${result.model ?? local.model ?? "—"}`);
+    console.log(`  Engine: ${result.engineDecoded ?? result.engineDisplacementL ?? "—"}`);
+    console.log(`  Trim:   ${result.trim ?? "—"}`);
+    console.log("");
+  }
+
+  console.log(`Results: ${pass} passed, ${fail} failed out of ${CASES.length}`);
+  process.exit(fail > 0 ? 1 : 0);
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

@@ -1,0 +1,791 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    font-size: 9.5pt;
+    line-height: 1.4;
+  }
+
+  /* Navbar is hidden in print — drop the layout offset reserved for it */
+  main {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  .vin-report-print {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset all max-width containers */
+  .max-w-4xl,
+  .max-w-2xl,
+  .max-w-7xl,
+  .max-w-6xl {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Compress card padding so sections fit tighter */
+  .py-10 { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+  .py-5  { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; }
+  .py-4  { padding-top: 0.3rem !important;  padding-bottom: 0.3rem !important; }
+  .py-3  { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+  .px-6  { padding-left: 0.7rem !important; padding-right: 0.7rem !important; }
+  .px-4  { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+
+  /* Compress gaps */
+  .gap-6 { gap: 0.5rem !important; }
+  .gap-5 { gap: 0.4rem !important; }
+  .gap-4 { gap: 0.35rem !important; }
+  .gap-3 { gap: 0.3rem !important; }
+
+  /* Compress space-y rhythm */
+  .space-y-6 > * + * { margin-top: 0.45rem !important; }
+  .space-y-5 > * + * { margin-top: 0.4rem !important; }
+  .space-y-4 > * + * { margin-top: 0.35rem !important; }
+  .space-y-3 > * + * { margin-top: 0.3rem !important; }
+
+  /* Compress timeline item padding */
+  .pb-5 { padding-bottom: 0.45rem !important; }
+
+  /* Full report UI — hidden in print; summary PDF is separate */
+  .vin-report-screen {
+    display: none !important;
+  }
+
+  .vin-report-print-summary {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .vin-report-print-summary .print-page {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .vin-report-print-summary .print-page-cover {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .vin-report-print-summary .print-page-history {
+    page-break-before: auto;
+    break-before: auto;
+    margin-top: 0.35rem !important;
+    padding-top: 0.25rem !important;
+    border-top: 1px solid hsl(var(--border) / 0.35);
+  }
+
+  .vin-report-print-summary .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .vin-report-print-summary .print-cover-header {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+    border-bottom: 1.5pt solid hsl(var(--primary) / 0.25) !important;
+    background: transparent !important;
+  }
+
+  .vin-report-print-summary .print-page-cover > h2,
+  .vin-report-print-summary .print-page-cover .print-cover-header h2 {
+    font-size: 14pt !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .vin-report-print-summary .print-score-box {
+    border-color: hsl(var(--primary) / 0.35) !important;
+    background: hsl(var(--primary) / 0.06) !important;
+  }
+
+  .vin-report-print-summary .print-report-link {
+    border-color: hsl(var(--primary) / 0.35) !important;
+    background: hsl(var(--primary) / 0.04) !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .vin-report-print-summary .print-cover-footer {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .vin-report-print-summary .print-hero-layout {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.45rem !important;
+  }
+
+  .vin-report-print-summary .print-hero-photo-wrap {
+    min-height: 0;
+    max-height: 220px;
+    aspect-ratio: 4 / 3;
+  }
+
+  .vin-report-print-summary .print-hero-photo-main {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 220px !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  .vin-report-print-summary .print-spec-grid {
+    gap: 0.3rem !important;
+  }
+
+  .vin-report-print-summary .print-spec-cell {
+    padding: 0.25rem 0.35rem !important;
+  }
+
+  .vin-report-print-summary .print-section-head {
+    padding: 0.3rem 0.45rem !important;
+    background: hsl(var(--primary) / 0.06) !important;
+    border-left: 3px solid hsl(var(--primary) / 0.55) !important;
+  }
+
+  .vin-report-print-summary .print-section-count {
+    color: hsl(var(--primary)) !important;
+    background: hsl(var(--primary) / 0.1);
+    border-radius: 9999px;
+    padding: 0.05rem 0.35rem;
+    min-width: 1.1rem;
+    text-align: center;
+  }
+
+  .vin-report-print-summary .print-block-title-accent {
+    background: hsl(var(--primary)) !important;
+  }
+
+  .vin-report-print-summary .print-finding-positive {
+    background: #ecfdf5 !important;
+    border-color: #6ee7b7 !important;
+    color: #065f46 !important;
+  }
+
+  .vin-report-print-summary .print-finding-negative {
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    color: #991b1b !important;
+  }
+
+  .vin-report-print-summary .print-finding-neutral {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .vin-report-print-summary .print-section-body {
+    padding: 0.3rem 0.4rem !important;
+  }
+
+  .vin-report-print-summary .print-findings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.35rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .vin-report-print-summary .print-findings-grid > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .vin-report-print-summary .print-gallery-cell img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  .vin-report-print-summary .print-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .vin-report-print-summary .print-timeline-table td {
+    padding: 0.2rem 0.35rem 0.2rem 0 !important;
+    vertical-align: top;
+  }
+
+  .vin-report-print-summary .print-timeline-table td:first-child {
+    width: 26%;
+    white-space: nowrap;
+  }
+
+  .vin-report-print-summary .print-photo-gallery {
+    page-break-inside: auto;
+    break-inside: auto;
+    margin-top: 0.25rem !important;
+  }
+
+  .vin-report-print-summary .print-gallery-cell {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .vin-report-print-summary .print-photo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.25rem !important;
+  }
+
+  .vin-report-print > .print-brand-top,
+  .vin-report-print .print-brand-bottom {
+    display: none !important;
+  }
+
+  /* Legacy: no longer used for print layout */
+  .print-two-col {
+    display: none !important;
+  }
+
+  .print-hero-photo {
+    height: 130px !important;
+    max-height: 130px !important;
+    overflow: hidden !important;
+  }
+
+  /* Vin report hero — hidden in summary PDF */
+  .vin-report-hero {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 0.25rem !important;
+    box-shadow: none !important;
+  }
+
+  .vin-report-hero > div {
+    display: block !important;
+  }
+
+  .print-vin-hero-photo {
+    max-height: 72px !important;
+    border-radius: 4pt !important;
+  }
+
+  .print-vin-hero-photo img,
+  .print-vin-hero-photo > div {
+    max-height: 72px !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+  }
+
+  .vin-report-hero h1 {
+    font-size: 13pt !important;
+    line-height: 1.2 !important;
+  }
+
+  .vin-hero-stats {
+    font-size: 8pt !important;
+  }
+
+  .vin-hero-stats .text-xs,
+  .vin-hero-stats .text-\[11px\] {
+    font-size: 7.5pt !important;
+  }
+
+  .photo-slider-section {
+    display: none !important;
+  }
+
+  .print-hide-chart {
+    display: none !important;
+  }
+
+  /* Keep report card borders visible */
+  .rounded-2xl, .rounded-xl {
+    border-radius: 6pt !important;
+  }
+
+  /* Page breaks — only on key blocks; avoid forcing every card to a new page */
+  .print-avoid-break,
+  .vin-report-hero,
+  .print-brand-top,
+  .print-brand-bottom {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .vin-report-print .rounded-2xl {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  .vin-report-print .print-two-col > * {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* Legacy screen-only photo wrappers */
+  .print-no-photo {
+    display: none !important;
+  }
+
+  /* Print branding strips */
+  .print-brand-top,
+  .print-brand-bottom {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-brand-top {
+    page-break-after: avoid;
+    break-after: avoid;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .print-brand-bottom {
+    margin-top: 0.2rem !important;
+    padding-top: 0.2rem !important;
+  }
+
+  .print-brand-bottom .mt-4 {
+    margin-top: 0.2rem !important;
+    padding: 0.25rem 0.4rem !important;
+  }
+
+  .print-brand-bottom .text-lg {
+    font-size: 10pt !important;
+  }
+
+  .print-brand-bottom .mt-8 {
+    margin-top: 0.2rem !important;
+  }
+
+  /* Tighter section headings in PDF */
+  .vin-report-print h2 {
+    font-size: 8pt !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .vin-report-print .rounded-2xl.border {
+    margin-bottom: 0.15rem !important;
+  }
+
+  /* Hero text readable in PDF */
+  .print-hero-photo + div,
+  [class*="primary-foreground"] {
+    color: inherit !important;
+  }
+}
+@layer theme, base, components, utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-amber-accent: oklch(79.5% 0.184 86.047);
+  --color-amber-accent-muted: oklch(96.6% 0.037 90.049);
+  --color-orange-accent: oklch(69.1% 0.207 37.553);
+  --color-orange-accent-muted: oklch(97.1% 0.021 37.1);
+}
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: calc(1 / 0.75);
+  --text-sm: 0.875rem;
+  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-base: 1rem;
+  --text-base--line-height: calc(1.5 / 1);
+  --text-lg: 1.125rem;
+  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-xl: 1.25rem;
+  --text-xl--line-height: calc(1.75 / 1.25);
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: calc(2 / 1.5);
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: calc(2.25 / 1.875);
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: calc(2.5 / 2.25);
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 6rem;
+  --text-8xl--line-height: 1;
+  --text-9xl: 8rem;
+  --text-9xl--line-height: 1;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --app-font-sans: 'Inter', sans-serif;
+  --background: 0 0% 98%;
+  --foreground: 220 13% 9%;
+  --border: 220 13% 90%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 13% 9%;
+  --card-border: 220 13% 88%;
+  --sidebar: 220 13% 96%;
+  --sidebar-foreground: 220 13% 15%;
+  --sidebar-border: 220 13% 88%;
+  --sidebar-primary: 142 76% 36%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 13% 92%;
+  --sidebar-accent-foreground: 220 13% 15%;
+  --sidebar-ring: 142 76% 36%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 13% 9%;
+  --popover-border: 220 13% 88%;
+  --primary: 142 76% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 13% 94%;
+  --secondary-foreground: 220 13% 20%;
+  --muted: 220 13% 94%;
+  --muted-foreground: 220 13% 50%;
+  --accent: 142 76% 36%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 220 13% 85%;
+  --ring: 142 76% 36%;
+  --chart-1: 142 76% 36%;
+  --chart-2: 210 79% 46%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 0 84% 60%;
+  --radius: .5rem;
+}
+
+.dark {
+  --background: 222 20% 8%;
+  --foreground: 210 17% 92%;
+  --border: 222 14% 18%;
+  --card: 222 16% 11%;
+  --card-foreground: 210 17% 92%;
+  --card-border: 222 14% 18%;
+  --sidebar: 222 18% 9%;
+  --sidebar-foreground: 210 17% 85%;
+  --sidebar-border: 222 14% 16%;
+  --sidebar-primary: 142 72% 42%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 14% 16%;
+  --sidebar-accent-foreground: 210 17% 85%;
+  --sidebar-ring: 142 72% 42%;
+  --popover: 222 16% 11%;
+  --popover-foreground: 210 17% 92%;
+  --popover-border: 222 14% 18%;
+  --primary: 142 72% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 14% 16%;
+  --secondary-foreground: 210 17% 80%;
+  --muted: 222 14% 16%;
+  --muted-foreground: 210 17% 55%;
+  --accent: 142 72% 42%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 222 14% 22%;
+  --ring: 142 72% 42%;
+  --chart-1: 142 72% 42%;
+  --chart-2: 210 79% 56%;
+  --chart-3: 38 92% 55%;
+  --chart-4: 280 65% 65%;
+  --chart-5: 0 72% 55%;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.vin-hero-accent-risk {
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.18);
+  animation: vin-hero-risk-pulse 4s ease-in-out infinite;
+}
+
+@keyframes vin-hero-risk-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.88; }
+}
+
+.hero-input-glow {
+  background-size: 200% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+@media (max-width: 639px) {
+  .hero-input-glow {
+    animation: none;
+    background-size: 100% 100%;
+    background-image: none !important;
+  }
+
+  .hero-vin-shell,
+  .hero-vin-submit {
+    box-shadow: none !important;
+  }
+
+  .hero-vin-shell {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .hero-vin-shell .vin-scanner::before {
+    display: none;
+  }
+}
+
+@keyframes vin-scan {
+  0%   { background-position: -80% 0; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { background-position: 200% 0; opacity: 0; }
+}
+
+@keyframes demo-scan {
+  0%, 100% { background-position: 0% -30%; }
+  50% { background-position: 0% 130%; }
+}
+
+@keyframes hero-orb-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(28px, -18px) scale(1.08); }
+}
+
+@keyframes hero-orb-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-22px, 20px) scale(1.05); }
+}
+
+@keyframes hero-orb-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.65; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb-a,
+  .hero-orb-b,
+  .hero-orb-c {
+    animation: none !important;
+  }
+}
+
+.hero-orb-a {
+  animation: hero-orb-drift-a 14s ease-in-out infinite;
+}
+
+.hero-orb-b {
+  animation: hero-orb-drift-b 11s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+.hero-orb-c {
+  animation: hero-orb-pulse 6s ease-in-out infinite;
+}
+
+.vin-scanner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.18) 50%, transparent 100%);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+  opacity: 0;
+}
+
+.vin-scanner:focus-within::before {
+  animation: vin-scan 2.2s ease-in-out infinite;
+}
+
+/* Mobile: avoid clipped/double box-shadow on hero VIN fields under the header */
+.vin-scanner input {
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none !important;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  a, button, [role="button"], label[for], select, summary {
+    cursor: pointer;
+  }
+
+  html {
+    overflow-x: clip;
+  }
+
+  /* Instant theme switch — prevents sluggish bg/color cross-fade */
+  html.disable-transitions,
+  html.disable-transitions *,
+  html.disable-transitions *::before,
+  html.disable-transitions *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+}
+
+/* reCAPTCHA v3 — hide badge (protected by reCAPTCHA per Google ToS) */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
+/* Client area — slightly denser report UI on small screens */
+@layer components {
+  @media (max-width: 639px) {
+    .vin-report-screen .grid.gap-6 {
+      gap: 1rem;
+    }
+
+    .vin-report-screen .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 1rem;
+    }
+
+    .vin-report-screen .rounded-2xl.border > .px-6,
+    .vin-report-screen .rounded-2xl.border > .px-5,
+    .vin-report-screen .rounded-2xl.border.px-6 {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .vin-report-screen .rounded-2xl.border > .py-5,
+    .vin-report-screen .rounded-2xl.border.px-6.py-5 {
+      padding-top: 0.875rem;
+      padding-bottom: 0.875rem;
+    }
+
+    .vin-report-screen .rounded-2xl.border > .py-4,
+    .vin-report-screen .rounded-2xl.border > .border-b {
+      padding-top: 0.625rem;
+      padding-bottom: 0.625rem;
+    }
+
+    .vin-report-screen .text-3xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+
+    .client-report-list .report-list-card {
+      padding: 0.625rem;
+      gap: 0.625rem;
+      border-radius: 0.75rem;
+      font-size: 0.8125rem;
+    }
+
+    .client-report-list .report-list-card .report-list-title {
+      font-size: 0.8125rem;
+      line-height: 1.125rem;
+    }
+
+    .client-report-list .report-list-card .report-list-vin {
+      font-size: 0.6875rem;
+    }
+
+    .client-report-list .report-list-thumb {
+      height: 2.75rem;
+      width: 3.25rem;
+    }
+
+    .client-report-list .report-list-thumb-fallback {
+      height: 2.75rem;
+      width: 2.75rem;
+    }
+  }
+}

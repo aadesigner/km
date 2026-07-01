@@ -1,0 +1,155 @@
+/**
+ * Download model-accurate demo car photos from Wikimedia Commons (CC-licensed).
+ * Run: node artifacts/kmcheck/scripts/fetch-demo-car-photos.mjs
+ */
+import { mkdirSync, writeFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "assets", "demo-cars");
+const OUT_PUBLIC = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "demo-cars");
+mkdirSync(OUT, { recursive: true });
+mkdirSync(OUT_PUBLIC, { recursive: true });
+
+/** @type {Array<{ out: string; wiki: string[] }>} */
+const CARS = [
+  // Korea — Encar marketplace demos
+  {
+    out: "hyundai-tucson.jpg",
+    wiki: ["Hyundai Tucson facelift (front).jpg", "2022 Hyundai Tucson Limited AWD, front 8.15.22.jpg"],
+  },
+  {
+    out: "kia-k8.jpg",
+    wiki: [
+      "Kia K8 GL3 Snow White Pearl (11).jpg",
+      "Kia K8 (front).jpg",
+      "Kia K8 GT-Line (front).jpg",
+    ],
+  },
+  {
+    out: "kia-sportage.jpg",
+    wiki: ["2019 Kia Sportage GT-Line CRDi ISG 1.6.jpg", "Kia Sportage (QL) GT-Line 2.0 CRDi AWD (facelift) – f 17042021.jpg"],
+  },
+  {
+    out: "hyundai-grandeur.jpg",
+    wiki: [
+      "2017 grandeur ig front side.jpg",
+      "Hyundai Grandeur (IG) front 2018.jpg",
+      "Hyundai Grandeur IG 3.0 GDi Luxury (01).jpg",
+    ],
+  },
+  {
+    out: "kia-carnival.jpg",
+    wiki: ["2015 Kia Carnival (YP MY16) S van (2016-01-04) 01.jpg", "Kia Carnival (facelift) IMG 4044.jpg"],
+  },
+  // USA / Canada — auction & listing demos
+  {
+    out: "toyota-rav4.jpg",
+    wiki: ["Toyota Rav4 2.5 XLE 2022 (51691550341).jpg", "2022 Toyota RAV4 XLE Premium AWD, front 8.6.22.jpg"],
+  },
+  {
+    out: "honda-crv.jpg",
+    wiki: ["2018 Honda CR-V EX i-VTEC 2.0 Front.jpg", "2019 Honda CR-V EX-L AWD, front 8.7.19.jpg"],
+  },
+  {
+    out: "ford-f150.jpg",
+    wiki: ["2018 Ford F150 Platinum FX4 Crew Cab in Ruby Red, front left.jpg", "2018 Ford F-150 XLT SuperCrew 4x4, front 5.19.19.jpg"],
+  },
+  {
+    out: "nissan-altima.jpg",
+    wiki: ["2017 Nissan Altima front 3.17.18.jpg", "2018 Nissan Altima 2.5 SV, front 5.19.19.jpg"],
+  },
+  {
+    out: "chevy-malibu.jpg",
+    wiki: ["2014 Chevrolet Malibu LS 2.5L front 6.13.18.jpg", "2016 Chevrolet Malibu LT, front 5.19.19.jpg"],
+  },
+  // Germany — popular imports on Korea (encar) & Canada (AutoTrader)
+  {
+    out: "bmw-320i.jpg",
+    wiki: [
+      "BMW 320i M Sport (G20) front.jpg",
+      "BMW G20 320i Luxury Line Alpine White (1).jpg",
+      "2019 BMW 320i (G20) front.jpg",
+    ],
+  },
+  {
+    out: "mercedes-c-class.jpg",
+    wiki: [
+      "Mercedes-Benz C200 AVANTGARDE (W205) front.JPG",
+      "Mercedes-Benz C180 Laureus Edition (W205) front.jpg",
+      "Mercedes-Benz C 180 AVANTGARDE (W205) front.JPG",
+      "2016 Mercedes-Benz C-Class C220d SE Executive (W205) - 2.2 (170PS) diesel automatic - 2025-05-05, front right.jpg",
+    ],
+  },
+  {
+    out: "vw-tiguan.jpg",
+    wiki: [
+      "2018 Volkswagen Tiguan Allspace R-Line TSi 2.0 Front.jpg",
+      "2018 Volkswagen Tiguan 12.2.17.jpg",
+    ],
+  },
+];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function wikiThumbUrl(fileName) {
+  const title = `File:${fileName}`;
+  const params = new URLSearchParams({
+    action: "query",
+    titles: title,
+    prop: "imageinfo",
+    iiprop: "url",
+    iiurlwidth: "960",
+    format: "json",
+    origin: "*",
+  });
+  const res = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
+    headers: { "User-Agent": "KmcheckDemoPhotoScript/1.0 (https://kmcheck.com)" },
+  });
+  if (!res.ok) throw new Error(`API ${res.status} for ${fileName}`);
+  const json = await res.json();
+  const pages = json.query?.pages ?? {};
+  const page = Object.values(pages)[0];
+  if (!page || "missing" in page) throw new Error(`Missing file: ${fileName}`);
+  const info = page.imageinfo?.[0];
+  const url = info?.thumburl ?? info?.url;
+  if (!url) throw new Error(`No URL for ${fileName}`);
+  return url;
+}
+
+async function download(url) {
+  const res = await fetch(url, {
+    headers: { "User-Agent": "KmcheckDemoPhotoScript/1.0 (https://kmcheck.com)" },
+  });
+  if (!res.ok) throw new Error(`Download ${res.status}: ${url}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length < 8_000) throw new Error(`File too small (${buf.length} bytes)`);
+  if (buf[0] !== 0xff || buf[1] !== 0xd8) throw new Error("Not a JPEG");
+  return buf;
+}
+
+let failed = 0;
+for (const car of CARS) {
+  process.stdout.write(`Fetching ${car.out} … `);
+  let ok = false;
+  for (const wiki of car.wiki) {
+    try {
+      await sleep(1200);
+      const url = await wikiThumbUrl(wiki);
+      const buf = await download(url);
+      writeFileSync(join(OUT, car.out), buf);
+      writeFileSync(join(OUT_PUBLIC, car.out), buf);
+      console.log(`ok (${Math.round(buf.length / 1024)} KB) ← ${wiki}`);
+      ok = true;
+      break;
+    } catch (err) {
+      process.stdout.write(`\n  fallback failed (${wiki}): ${err.message}\n  `);
+    }
+  }
+  if (!ok) {
+    failed += 1;
+    console.log("FAILED (all sources)");
+  }
+}
+
+if (failed > 0) process.exitCode = 1;

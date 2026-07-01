@@ -1,0 +1,71 @@
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+/** Brand assets in `public/` — PNG wordmarks with transparent backgrounds. */
+export const BRAND_ASSETS = {
+  /** Full wordmark for dark backgrounds (white “km” text). */
+  logoWhite: `${basePath}/brand/logo-white.png`,
+  /** Full wordmark for light backgrounds (gray “km” text). */
+  logoDark: `${basePath}/brand/logo-dark.png`,
+  /** Shield symbol — favicon / compact mark. */
+  favicon: `${basePath}/favicon.png`,
+} as const;
+
+export type KmcheckLogoVariant = "light" | "dark";
+
+/** Full horizontal kmcheck.com wordmark. */
+export function KmcheckLogo({
+  variant,
+  className,
+}: {
+  /** `dark` = dark background → white wordmark; `light` = light background → gray wordmark. */
+  variant?: KmcheckLogoVariant;
+  className?: string;
+}) {
+  const { resolvedTheme } = useTheme();
+  const resolved = variant ?? (resolvedTheme === "dark" ? "dark" : "light");
+  const src = resolved === "dark" ? BRAND_ASSETS.logoWhite : BRAND_ASSETS.logoDark;
+
+  return (
+    <img
+      src={src}
+      alt="kmcheck.com"
+      width={160}
+      height={40}
+      fetchPriority="high"
+      className={cn("h-auto w-auto max-w-none object-contain", className)}
+      decoding="async"
+    />
+  );
+}
+
+/** Compact shield symbol (favicon asset). */
+export function KmcheckMark({ className }: { className?: string }) {
+  return (
+    <img
+      src={BRAND_ASSETS.favicon}
+      alt=""
+      width={24}
+      height={24}
+      className={cn("object-contain", className)}
+      aria-hidden="true"
+      decoding="async"
+    />
+  );
+}
+
+/** Wordmark for print/PDF (always dark-on-white). */
+export function KmcheckPrintLogo({ className }: { className?: string }) {
+  return (
+    <img
+      src={BRAND_ASSETS.logoDark}
+      alt="kmcheck.com"
+      width={120}
+      height={28}
+      className={cn("h-6 w-auto object-contain object-left", className)}
+      decoding="async"
+    />
+  );
+}

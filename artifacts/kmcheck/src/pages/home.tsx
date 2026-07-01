@@ -1,0 +1,923 @@
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { decodeVinLocalFree } from "@workspace/vin-decode";
+import { useTranslation } from "@/i18n/context";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLocation, Link } from "wouter";
+import { useAuth } from "@/lib/auth-context";
+import { useDisplayPrice } from "@/hooks/use-display-price";
+import {
+  ShieldCheck, Search, Clock, FileText, ChevronRight, ChevronLeft,
+  CheckCircle2, AlertTriangle, Gauge, Lock,
+  Glasses, Globe, Star, ArrowRight, Check, X,
+} from "lucide-react";
+import { CompareTable } from "@/components/compare-table";
+import { HomeStatsStrip } from "@/components/home-stats-strip";
+import { VinCheckIncludesSection } from "@/components/vin-check-includes-section";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
+import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
+import { getVinValidationErrorKey } from "@/lib/vin-validation";
+import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
+import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import { getTestimonials, shuffleTestimonials } from "@/data/testimonials";
+import { VinCheckSubmitLabel } from "@/components/vin-check-submit-label";
+import { WhereToFindVinHelp } from "@/components/where-to-find-vin-help";
+import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
+import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function useFeatures(t: (k: string) => string) {
+  return [
+    {
+      icon: Gauge, title: t("report_mileage"), desc: t("feature_mileage_desc"),
+      iconColor: "text-orange-500", bgColor: "bg-orange-500/10",
+      borderColor: "border-l-orange-500",
+      calloutClass: "bg-orange-50 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/50",
+      accentBg: "bg-orange-500",
+      example: t("feature_mileage_example"),
+      stat: t("feature_mileage_stat_value"), statLabel: t("feature_mileage_stat_label"),
+    },
+    {
+      icon: AlertTriangle, title: t("report_accidents"), desc: t("feature_accidents_desc"),
+      iconColor: "text-red-500", bgColor: "bg-red-500/10",
+      borderColor: "border-l-red-500",
+      calloutClass: "bg-red-50 dark:bg-red-950/30 border border-red-200/70 dark:border-red-900/50",
+      accentBg: "bg-red-500",
+      example: t("feature_accidents_example"),
+      stat: t("feature_accidents_stat_value"), statLabel: t("feature_accidents_stat_label"),
+    },
+    {
+      icon: ShieldCheck, title: t("report_salvage"), desc: t("feature_salvage_desc"),
+      iconColor: "text-amber-500", bgColor: "bg-amber-500/10",
+      borderColor: "border-l-amber-500",
+      calloutClass: "bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/50",
+      accentBg: "bg-amber-500",
+      example: t("feature_salvage_example"),
+      stat: t("feature_salvage_stat_value"), statLabel: t("feature_salvage_stat_label"),
+    },
+    {
+      icon: Lock, title: t("report_theft"), desc: t("feature_theft_desc"),
+      iconColor: "text-purple-500", bgColor: "bg-purple-500/10",
+      borderColor: "border-l-purple-500",
+      calloutClass: "bg-purple-50 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-900/50",
+      accentBg: "bg-purple-500",
+      example: t("feature_theft_example"),
+      stat: t("feature_theft_stat_value"), statLabel: t("feature_theft_stat_label"),
+    },
+  ];
+}
+
+function useCountries(t: (k: string) => string) {
+  return [
+    {
+      slug: "usa", flagCode: "us", name: t("country_usa_name"), count: t("country_usa_count"),
+      accentFrom: "from-blue-600", accentTo: "to-red-600",
+      bg: "from-blue-900 via-blue-800 to-red-900",
+      brands: ["Ford", "Chevrolet", "Toyota", "Honda", "Ram", "Tesla"],
+    },
+    {
+      slug: "korea", flagCode: "kr", name: t("country_korea_name"), count: t("country_korea_count"),
+      accentFrom: "from-slate-600", accentTo: "to-red-700",
+      bg: "from-slate-900 via-red-900 to-slate-900",
+      brands: ["Hyundai", "Kia", "Genesis", "Ssangyong", "GM Korea"],
+    },
+    {
+      slug: "canada", flagCode: "ca", name: t("country_canada_name"), count: t("country_canada_count"),
+      accentFrom: "from-red-700", accentTo: "to-red-900",
+      bg: "from-red-950 via-slate-900 to-red-900",
+      brands: ["Toyota", "Honda", "Ford", "Chevrolet", "GMC", "Ram"],
+    },
+  ];
+}
+
+function useSteps(t: (k: string) => string) {
+  return [
+    { n: "01", title: t("step_1_title"), desc: t("step_1_desc"), icon: Search },
+    { n: "02", title: t("step_2_title"), desc: t("step_2_desc"), icon: ShieldCheck },
+    { n: "03", title: t("step_3_title"), desc: t("step_3_desc"), icon: FileText },
+  ];
+}
+
+const CYCLING_KEYS = [
+  "cycling_mileage_rollbacks",
+  "cycling_hidden_accidents",
+  "cycling_salvage_titles",
+  "cycling_theft_records",
+] as const;
+
+function CyclingWord() {
+  const { t } = useTranslation();
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx(i => (i + 1) % CYCLING_KEYS.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.span
+        key={idx}
+        className="text-primary inline"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        {t(CYCLING_KEYS[idx])}
+      </motion.span>
+    </AnimatePresence>
+  );
+}
+
+export default function Home() {
+  const { t, language } = useTranslation();
+  const [, setLocation] = useLocation();
+  const { isSignedIn, user } = useAuth();
+  const [vin, setVin] = useState("");
+  const [error, setError] = useState("");
+  const { displayPrice, basePrice: pricingBase, isDiscount, loading: priceLoading, currencySymbol, fmtPrice } = useDisplayPrice();
+
+  const normalizedHomeVin = vin.trim().toUpperCase();
+  const homeLocalDecode = useMemo(
+    () => (normalizedHomeVin.length === 17 ? decodeVinLocalFree(normalizedHomeVin) : null),
+    [normalizedHomeVin],
+  );
+
+  const showVinWarning = !!homeLocalDecode && !homeLocalDecode.make && !homeLocalDecode.model;
+  const homeDecodeTrustworthy = !!homeLocalDecode && isTrustworthyVinDecode({
+    vin: normalizedHomeVin,
+    make: homeLocalDecode.make,
+    model: homeLocalDecode.model,
+    year: homeLocalDecode.year ?? null,
+  });
+  const { data: homePeek } = useQuery({
+    queryKey: ["/api/vin/peek", "home", normalizedHomeVin],
+    enabled: isSignedIn && normalizedHomeVin.length === 17 && homeDecodeTrustworthy,
+    queryFn: async () => {
+      const r = await fetch(`${basePath}/api/vin/peek/${encodeURIComponent(normalizedHomeVin)}`, {
+        credentials: "include",
+      });
+      if (!r.ok) throw new Error("peek_error");
+      return r.json() as {
+        manualPending?: boolean;
+        dataAvailable?: boolean;
+        checkUnavailable?: boolean;
+      };
+    },
+    staleTime: 60_000,
+  });
+  const showHomePendingDoubleCheck = !!homePeek && shouldShowPendingVinDoubleCheck({
+    vin: normalizedHomeVin,
+    make: homeLocalDecode?.make,
+    model: homeLocalDecode?.model,
+    year: homeLocalDecode?.year ?? null,
+    ...homePeek,
+  });
+
+  const FEATURES = useFeatures(t);
+  const STEPS = useSteps(t);
+  const COUNTRIES = useCountries(t);
+  const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
+  const [tmIdx, setTmIdx] = useState(0);
+  const [tmPaused, setTmPaused] = useState(false);
+  const [activeCheck, setActiveCheck] = useState(0);
+  const [checksPaused, setChecksPaused] = useState(false);
+  useEffect(() => { setTmIdx(0); }, [language]);
+  useEffect(() => {
+    if (tmPaused) return;
+    const timer = setInterval(() => setTmIdx(i => (i + 1) % TESTIMONIALS.length), 5500);
+    return () => clearInterval(timer);
+  }, [tmPaused, TESTIMONIALS.length]);
+  useEffect(() => {
+    if (checksPaused) return;
+    const timer = setInterval(() => setActiveCheck(i => (i + 1) % FEATURES.length), 4500);
+    return () => clearInterval(timer);
+  }, [checksPaused, FEATURES.length]);
+
+  const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
+
+  const handleCheck = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (vinLookupDisabled) return;
+    const v = vin.trim().toUpperCase();
+    const validationKey = getVinValidationErrorKey(v);
+    if (validationKey) { setError(t(validationKey)); return; }
+    setError("");
+    if (!isSignedIn) {
+      const authPath = redirectGuestForVinCheckout(v, language);
+      if (authPath) setLocation(authPath);
+      return;
+    }
+    sessionStorage.setItem("checkout_vin", v);
+    setLocation(`/${language}/checkout`);
+  };
+
+  const seo = usePageSeo("home");
+  const orgJsonLd = useMemo(
+    () => organizationJsonLd(
+      typeof window !== "undefined" ? window.location.origin : "https://kmcheck.com",
+      seo.description,
+    ),
+    [seo.description],
+  );
+  return (
+    <div className="flex flex-col">
+      <SEOHead
+        title={seo.title}
+        description={seo.description}
+        lang={seo.lang}
+        canonicalPath={seo.canonicalPath}
+        jsonLd={orgJsonLd}
+      />
+
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3rem+var(--site-header-offset,84px))] pb-12 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
+        {/* Base layers */}
+        <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
+        <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.07] dark:opacity-[0.20]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_55%_at_50%_-5%,rgba(34,197,94,0.20),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-5%,rgba(34,197,94,0.42),transparent)]" />
+        <div className="absolute inset-0 -z-10 hidden dark:block bg-[radial-gradient(ellipse_50%_40%_at_0%_100%,rgba(34,197,94,0.08),transparent)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-28 lg:h-40 -z-10 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+
+        {/* Ambient orbs — CSS only (no JS animation loop) */}
+        <div
+          aria-hidden
+          className="hero-orb-a pointer-events-none absolute -top-16 left-[8%] h-56 w-56 rounded-full bg-primary/12 blur-3xl -z-10"
+        />
+        <div
+          aria-hidden
+          className="hero-orb-b pointer-events-none absolute top-32 right-[6%] h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl -z-10 hidden sm:block"
+        />
+        <div
+          aria-hidden
+          className="hero-orb-c pointer-events-none absolute bottom-24 left-[42%] h-32 w-32 rounded-full bg-primary/8 blur-2xl -z-10 hidden lg:block"
+        />
+
+        <div className="relative max-w-6xl mx-auto isolate z-10">
+          <div className="max-w-3xl mx-auto">
+
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            className="space-y-8 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              {t("hero_badge")}
+            </motion.div>
+
+            <h1 className="text-[3rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
+              {t("hero_headline_1")}<br />
+              <CyclingWord />
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
+              {t("hero_subtext")}
+            </p>
+
+            {/* Rating strip */}
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <span className="font-bold text-sm">4.9</span>
+                <span className="text-xs text-muted-foreground">/ 5</span>
+              </div>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Glasses className="h-3.5 w-3.5 text-primary shrink-0" />
+                {t("trust_instant_report")}
+              </span>
+            </div>
+
+            {/* VIN form */}
+            <form onSubmit={handleCheck} className="max-w-lg w-full mx-auto space-y-3 text-left">
+              <VinLookupDisabledBanner compact />
+              <div className={cn("hero-vin-shell relative overflow-hidden p-[2px] rounded-2xl hero-input-glow bg-gradient-to-r from-primary/15 via-primary/50 to-primary/15 dark:from-primary/10 dark:via-primary/45 dark:to-primary/10 max-sm:p-0 max-sm:bg-transparent sm:shadow-xl sm:shadow-black/10 dark:sm:shadow-black/25", vinLookupDisabled && "opacity-60 pointer-events-none")}>
+                <div className="vin-scanner relative flex items-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/10 focus-within:border-primary/50 transition-colors bg-background dark:bg-[#0a120e] sm:bg-background/90 sm:dark:bg-[#0a120e]/90 sm:backdrop-blur-sm">
+                  <Search className="absolute left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
+                  <Input
+                    className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 rounded-[14px] shadow-none bg-transparent font-mono tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 relative z-0"
+                    placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
+                    value={vin}
+                    onChange={(e) => { setVin(e.target.value.replace(/\s/g, "").toUpperCase()); setError(""); }}
+                    maxLength={17}
+                  />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="hero-vin-submit absolute right-2 z-10 h-10 rounded-xl px-6 font-semibold max-sm:shadow-none sm:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 transition-shadow"
+                  >
+                    <VinCheckSubmitLabel />
+                  </Button>
+                </div>
+              </div>
+              <WhereToFindVinHelp />
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <AnimatePresence>
+                {showVinWarning && (
+                  <motion.div
+                    key="vin-warning"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 px-4 py-3"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
+                      <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("vin_warning_unknown_vehicle_sub")}</p>
+                    </div>
+                  </motion.div>
+                )}
+                {showHomePendingDoubleCheck && (
+                  <motion.div
+                    key="vin-pending-double-check"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex items-start gap-2.5 rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-white dark:bg-zinc-950 px-4 py-3"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+
+            <HomeStatsStrip />
+
+          </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHAT WE CHECK ── */}
+      <section className="relative py-12 md:py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.07),transparent_65%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_50%_40%_at_90%_80%,hsl(var(--primary)/0.04),transparent)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+        <div
+          className="max-w-6xl mx-auto"
+          onMouseEnter={() => setChecksPaused(true)}
+          onMouseLeave={() => setChecksPaused(false)}
+        >
+          {/* ── Mobile ── */}
+          <div className="lg:hidden space-y-5">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center space-y-2"
+            >
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+                {t("home_badge_most_checked")}
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">{t("what_we_check")}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">{t("what_we_check_sub")}</p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {FEATURES.map(({ icon: Icon, title, stat, iconColor, bgColor }, i) => (
+                <button
+                  key={title}
+                  type="button"
+                  onClick={() => setActiveCheck(i)}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors",
+                    i === activeCheck
+                      ? "border-primary/40 bg-primary/[0.07] shadow-sm"
+                      : "bg-background border-border/80",
+                  )}
+                >
+                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
+                    <Icon className={cn("h-4 w-4", iconColor)} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold leading-tight line-clamp-2">{title}</p>
+                    <p className={cn("text-xs font-black tabular-nums mt-0.5", iconColor)}>{stat}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <AnimatePresence mode="wait">
+              {(() => {
+                const { icon: Icon, title, desc, iconColor, bgColor, calloutClass, accentBg, example, stat, statLabel } = FEATURES[activeCheck];
+                return (
+                  <motion.div
+                    key={activeCheck}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative overflow-hidden rounded-xl border bg-card shadow-sm"
+                  >
+                    <div className={cn("absolute inset-x-0 top-0 h-0.5", accentBg)} />
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", bgColor)}>
+                          <Icon className={cn("h-5 w-5", iconColor)} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-base leading-snug">{title}</h3>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{statLabel}</p>
+                        </div>
+                        <p className={cn("text-2xl font-black tabular-nums shrink-0", iconColor)}>{stat}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                      <div className={cn("rounded-lg px-3 py-2.5 text-xs leading-relaxed", calloutClass)}>
+                        {example}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })()}
+            </AnimatePresence>
+
+            <div className="flex justify-center gap-1.5 pt-1">
+              {FEATURES.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveCheck(i)}
+                  aria-label={`${t("what_we_check")} ${i + 1}`}
+                  className={cn(
+                    "rounded-full transition-all",
+                    i === activeCheck ? "w-5 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/30",
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* ── Desktop ── */}
+          <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-10 lg:gap-14 items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="lg:sticky lg:top-24 space-y-6"
+            >
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                  </span>
+                  {t("home_badge_most_checked")}
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("what_we_check")}</h2>
+                <p className="text-muted-foreground text-base md:text-lg leading-relaxed">{t("what_we_check_sub")}</p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {FEATURES.map(({ icon: Icon, title, stat, iconColor, bgColor, borderColor }, i) => (
+                  <button
+                    key={title}
+                    type="button"
+                    onClick={() => setActiveCheck(i)}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-200",
+                      i === activeCheck
+                        ? "border-primary/35 bg-primary/[0.06] shadow-sm shadow-primary/10"
+                        : "bg-background hover:border-border/80 hover:bg-muted/40",
+                    )}
+                  >
+                    {i === activeCheck && (
+                      <motion.div
+                        layoutId="whatWeCheckActive"
+                        className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-full", borderColor.replace("border-l-", "bg-"))}
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <div className={cn(
+                      "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200",
+                      bgColor,
+                      i === activeCheck && "scale-105",
+                    )}>
+                      <Icon className={cn("h-4 w-4", iconColor)} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold leading-tight truncate">{title}</p>
+                      <p className={cn("text-xs font-bold tabular-nums mt-0.5", iconColor)}>{stat}</p>
+                    </div>
+                    <ChevronRight className={cn(
+                      "h-4 w-4 shrink-0 transition-all duration-200",
+                      i === activeCheck ? "text-primary opacity-100 translate-x-0" : "text-muted-foreground/40 opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0",
+                    )} />
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  {FEATURES.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveCheck(i)}
+                      aria-label={`${t("what_we_check")} ${i + 1}`}
+                      className={cn(
+                        "rounded-full transition-all duration-300",
+                        i === activeCheck ? "w-7 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50",
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
+                  {String(activeCheck + 1).padStart(2, "0")} / {String(FEATURES.length).padStart(2, "0")}
+                </span>
+              </div>
+            </motion.div>
+
+            <div className="space-y-4">
+              <AnimatePresence mode="wait">
+                {(() => {
+                  const { icon: Icon, title, desc, iconColor, bgColor, calloutClass, accentBg, example, stat, statLabel } = FEATURES[activeCheck];
+                  return (
+                    <motion.div
+                      key={activeCheck}
+                      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                      transition={{ duration: 0.32, ease: "easeOut" }}
+                      className="group relative overflow-hidden rounded-2xl border-2 border-border bg-background shadow-[0_8px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
+                    >
+                      <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
+                      <div className={cn("absolute -right-4 -bottom-6 text-[9rem] font-black leading-none select-none pointer-events-none opacity-[0.04] tabular-nums", iconColor)}>
+                        {stat}
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
+
+                      <div className="relative z-10 p-6 md:p-8 flex flex-col gap-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", bgColor)}>
+                              <Icon className={cn("h-7 w-7", iconColor)} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                                {String(activeCheck + 1).padStart(2, "0")}
+                              </p>
+                              <h3 className="font-bold text-xl md:text-2xl leading-tight">{title}</h3>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className={cn("text-4xl font-black leading-none tabular-nums", iconColor)}>{stat}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1.5 max-w-[120px] leading-tight ml-auto">{statLabel}</p>
+                          </div>
+                        </div>
+
+                        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{desc}</p>
+
+                        <div className={cn("rounded-xl px-4 py-3.5", calloutClass)}>
+                          <div className="flex items-start gap-2.5">
+                            <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shrink-0 mt-0.5", bgColor)}>
+                              <Check className={cn("h-3.5 w-3.5", iconColor)} />
+                            </div>
+                            <p className="text-sm leading-relaxed text-foreground/80">{example}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground pt-1 border-t border-border/60">
+                          <Glasses className="h-3.5 w-3.5 text-primary shrink-0" />
+                          {t("instant_report")}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
+
+              <div className="grid grid-cols-3 gap-3">
+                {FEATURES.map((feat, i) => {
+                  if (i === activeCheck) return null;
+                  const { icon: Icon, title, stat, iconColor, bgColor } = feat;
+                  return (
+                    <button
+                      key={title}
+                      type="button"
+                      onClick={() => setActiveCheck(i)}
+                      className="group text-left rounded-xl border bg-background/80 hover:bg-muted/30 hover:border-primary/20 px-3.5 py-3 transition-all duration-200 hover:shadow-sm"
+                    >
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
+                          <Icon className={cn("h-4 w-4", iconColor)} />
+                        </div>
+                        <p className={cn("text-lg font-black tabular-nums leading-none", iconColor)}>{stat}</p>
+                      </div>
+                      <p className="text-xs font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">{title}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-16 md:py-24 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
+        <div className="max-w-5xl mx-auto relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16 space-y-3"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-semibold text-white/70">
+              {t("home_badge_3_steps")}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">{t("how_it_works")}</h2>
+            <p className="text-white/50 text-base max-w-lg mx-auto">{t("how_it_works_desc")}</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {STEPS.map(({ n, title, desc, icon: StepIcon }, i) => (
+              <motion.div
+                key={n}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="relative group"
+              >
+                <div className="relative z-10 flex flex-col gap-5 bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-primary/30 hover:bg-white/[0.07] transition-all duration-300">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-lg shadow-primary/30 shrink-0 group-hover:shadow-primary/50 transition-shadow">
+                      <StepIcon className="h-7 w-7 text-white" />
+                    </div>
+                    <span className="text-5xl font-black text-white/8 leading-none select-none">{n}</span>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold text-white">{title}</h3>
+                    <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── COUNTRIES ── */}
+      <section className="py-16 md:py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 space-y-3"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold">{t("countries_title")}</h2>
+            <p className="text-muted-foreground text-base md:text-lg">{t("countries_subtitle")}</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {COUNTRIES.map((c, i) => (
+              <motion.div
+                key={c.slug}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <Link
+                  href={`/${language}/cars/${c.slug}`}
+                  className={`group relative block rounded-2xl overflow-hidden bg-gradient-to-br ${c.bg} min-h-[260px] p-8 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300`}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_60%)]" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_60%_60%_at_80%_30%,rgba(255,255,255,0.1),transparent)]" />
+                  <div className="absolute -bottom-8 -right-8 select-none pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                    <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="w-40 h-auto" />
+                  </div>
+                  <div className="relative z-10 h-full flex flex-col justify-between gap-6">
+                    <div>
+                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-16 w-auto drop-shadow-2xl block mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm" />
+                      <h3 className="text-2xl font-black text-white tracking-tight">{c.name}</h3>
+                      <p className="text-white/50 text-sm mt-1">{c.count} {t("country_registered_vehicles")}</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {c.brands.map(brand => (
+                          <span key={brand} className="text-xs bg-white/10 backdrop-blur-sm text-white/80 px-2.5 py-1 rounded-lg border border-white/15">
+                            {brand}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="inline-flex items-center gap-2 text-sm font-bold text-white bg-white/10 border border-white/20 rounded-xl px-4 py-2 group-hover:bg-white/20 transition-colors">
+                        {t("vin_check_for")} {c.name}
+                        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <VinCheckIncludesSection />
+
+      {/* ── TESTIMONIALS ── */}
+      <section className="py-16 md:py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10 space-y-3"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/40 bg-yellow-400/5 px-3.5 py-1.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              {t("testimonials_trust_badge")}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold">{t("testimonials_title")}</h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">{t("testimonials_subtitle")}</p>
+          </motion.div>
+
+          {/* Slider */}
+          <div
+            className="relative"
+            onMouseEnter={() => setTmPaused(true)}
+            onMouseLeave={() => setTmPaused(false)}
+          >
+            {/* Prev */}
+            <button
+              onClick={() => setTmIdx(i => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 sm:-translate-x-5 z-10 h-10 w-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors shrink-0"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            {/* Next */}
+            <button
+              onClick={() => setTmIdx(i => (i + 1) % TESTIMONIALS.length)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 sm:translate-x-5 z-10 h-10 w-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors shrink-0"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            {/* Card */}
+            <AnimatePresence mode="wait">
+              {(() => {
+                const tm = TESTIMONIALS[tmIdx % Math.max(TESTIMONIALS.length, 1)];
+                if (!tm) return null;
+                return (
+                  <motion.div
+                    key={tmIdx}
+                    initial={{ opacity: 0, x: 32 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -32 }}
+                    transition={{ duration: 0.22 }}
+                    className="mx-8 sm:mx-10 bg-background rounded-3xl border border-border/70 p-7 md:p-9 shadow-sm"
+                  >
+                    {/* Stars + date */}
+                    <div className="flex items-center justify-between gap-2 mb-5">
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} className={`h-4 w-4 ${s <= tm.stars ? "fill-yellow-400 text-yellow-400" : "fill-muted-foreground/15 text-muted-foreground/25"}`} />
+                        ))}
+                      </div>
+                      {tm.date && <span className="text-xs text-muted-foreground/60">{tm.date}</span>}
+                    </div>
+
+                    {/* Quote */}
+                    <p className="text-base md:text-lg leading-relaxed text-foreground/85 mb-5 min-h-[72px]">
+                      "{tm.text}"
+                    </p>
+
+                    {/* Result badge */}
+                    {tm.resultBadge && (
+                      <div className="inline-flex items-center gap-1.5 mb-5 rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400">
+                        <AlertTriangle className="h-3 w-3 shrink-0" />
+                        {tm.resultBadge}
+                      </div>
+                    )}
+
+                    {/* Author */}
+                    <div className="flex items-center gap-3 pt-5 border-t border-border/50">
+                      <div className={`h-11 w-11 rounded-full ${tm.avatarBg} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
+                        {tm.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-sm truncate">{tm.name}</span>
+                          <img src={`https://flagcdn.com/${tm.flagCode}.svg`} alt="" className="h-3.5 w-auto rounded-sm shrink-0" />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate">{tm.car}</p>
+                      </div>
+                      <span className="text-[10px] text-green-600 dark:text-green-400 font-semibold flex items-center gap-1 shrink-0">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> {t("auth_verified_purchase")}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })()}
+            </AnimatePresence>
+
+            {/* Dot indicators */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {TESTIMONIALS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setTmIdx(i)}
+                  className={cn(
+                    "rounded-full transition-all duration-200",
+                    i === tmIdx
+                      ? "w-5 h-2 bg-primary"
+                      : "w-2 h-2 bg-muted-foreground/25 hover:bg-muted-foreground/50"
+                  )}
+                  aria-label={`Go to review ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMPARISON TABLE ── */}
+      <CompareTable />
+
+      {/* ── BOTTOM CTA ── */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-24">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
+        <div className="absolute top-8 left-16 h-40 w-40 rounded-full bg-white/8 blur-3xl" />
+        <div className="absolute bottom-8 right-16 h-48 w-48 rounded-full bg-white/8 blur-3xl" />
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative z-10 max-w-3xl mx-auto text-center space-y-8"
+        >
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              {t("instant_digital_report")}
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
+              {t("cta_title")}
+            </h2>
+            <p className="text-white/65 text-base max-w-xl mx-auto">{t("cta_desc")}</p>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {priceLoading ? (
+              <Skeleton className="h-14 w-28 rounded bg-white/20" />
+            ) : (
+              <span className="text-5xl font-black text-white tabular-nums">
+                {displayPrice != null ? fmtPrice(displayPrice) : "—"}
+              </span>
+            )}
+            {!priceLoading && isDiscount && (
+              <span className="text-2xl line-through text-white/35">
+                {pricingBase != null ? fmtPrice(pricingBase) : null}
+              </span>
+            )}
+            <span className="text-white/50 text-sm">{t("per_report")}</span>
+            {!priceLoading && isDiscount && (
+              <Badge className="bg-orange-500 text-white border-0">{t("limited_time")}</Badge>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button asChild size="lg" className="h-13 px-10 text-base font-bold bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20">
+              <Link href={`/${language}/pricing`}>{t("get_started")}</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-12 border-white/30 text-white hover:bg-white/10 hover:text-white">
+              <Link href={`/${language}/pricing`}>{t("see_whats_included")}</Link>
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+    </div>
+  );
+}

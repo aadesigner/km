@@ -1,0 +1,140 @@
+import {
+  decodeFreeVin,
+  isPlausibleMake,
+  isPlausibleModel,
+  type FreeDecodeResponse,
+} from "./vinDecodeFree.js";
+
+export type VinPeekIdentity = {
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  trim: string | null;
+  engine: string | null;
+  country: string | null;
+  wmi: string;
+  decodeSource: "cache" | "nhtsa" | "local" | "hybrid";
+};
+
+type CacheHint = {
+  make?: unknown;
+  model?: unknown;
+  year?: unknown;
+};
+
+function asString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const t = value.trim();
+  return t || null;
+}
+
+function asYear(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && /^\d{4}$/.test(value.trim())) {
+    return parseInt(value.trim(), 10);
+  }
+  return null;
+}
+
+function plausibleYear(year: number | null): number | null {
+  if (year == null) return null;
+  const max = new Date().getFullYear() + 2;
+  return year >= 1980 && year <= max ? year : null;
+}
+
+function plausibleTrim(trim: string | null, vin: string): string | null {
+  if (!trim) return null;
+  const t = trim.trim();
+  if (t.length < 1 || t.length > 48) return null;
+  const compact = t.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (compact.length >= 10 && /^[A-Z0-9]+$/.test(compact) && !/[AEIOU]/.test(compact)) return null;
+  if (compact.length >= 8 && vin.toUpperCase().includes(compact)) return null;
+  return t;
+}
+
+function pickCachedField(
+  cached: unknown,
+  decoded: string | null,
+  vin: string,
+  kind: "make" | "model",
+): string | null {
+  const raw = asString(cached);
+  if (raw) {
+    const ok = kind === "make" ? isPlausibleMake(raw, vin) : isPlausibleModel(raw, vin);
+    if (ok) return raw;
+  }
+  return decoded;
+}
+
+function fromDecoded(decoded: FreeDecodeResponse): VinPeekIdentity {
+  return {
+    make: decoded.make,
+    model: decoded.model,
+    year: decoded.year,
+    trim: decoded.trim,
+    engine: decoded.engineDecoded,
+    country: decoded.countryOfOrigin,
+    wmi: decoded.wmi,
+    decodeSource: decoded.source,
+  };
+}
+
+/** Hybrid NHTSA + local decode for checkout VIN preview; optional cache overrides provider data. */
+export async function decodeVinPeek(
+  vin: string,
+  checkDigitValid: boolean,
+  cache?: CacheHint | null,
+): Promise<VinPeekIdentity> {
+  const decoded = await decodeFreeVin(vin, checkDigitValid);
+  const base = fromDecoded(decoded);
+
+  if (!cache) return base;
+
+  const cachedMake = pickCachedField(cache.make, base.make, vin, "make");
+  const cachedModel = pickCachedField(cache.model, base.model, vin, "model");
+  const cachedYear = plausibleYear(asYear(cache.year)) ?? base.year;
+  const usedCache =
+    (cachedMake !== base.make && asString(cache.make) != null) ||
+    (cachedModel !== base.model && asString(cache.model) != null) ||
+    (cachedYear !== base.year && asYear(cache.year) != null);
+
+  return {
+    make: cachedMake,
+    model: cachedModel,
+    year: cachedYear,
+    trim: plausibleTrim(base.trim, vin),
+    engine: base.engine,
+    country: base.country,
+    wmi: base.wmi,
+    decodeSource: usedCache ? "cache" : base.decodeSource,
+  };
+}
+
+function looksLikeGibberish(value: string): boolean {
+  const t = value.trim();
+  if (t.length < 8) return false;
+  const compact = t.replace(/[^A-Za-z0-9]/g, "");
+  if (compact.length < 8) return false;
+  if (/^[A-Z0-9]+$/.test(compact) && !/[AEIOUaeiou]/.test(compact)) return true;
+  if (compact.length >= 12 && /^[A-Z0-9]+$/.test(compact) && !/\s/.test(t)) return true;
+  return false;
+}
+
+function fieldLooksValid(value: string | null | undefined, vin: string): boolean {
+  if (!value) return false;
+  const t = value.trim();
+  if (!t || looksLikeGibberish(t)) return false;
+  const compact = t.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (compact.length >= 4 && vin.toUpperCase().includes(compact)) return false;
+  return true;
+}
+
+/** Same rules as checkout free-decoder trust check. */
+export function isTrustworthyVinIdentity(identity: VinPeekIdentity, vin: string): boolean {
+  const makeOk = fieldLooksValid(identity.make, vin);
+  const modelOk = fieldLooksValid(identity.model, vin);
+  if (!makeOk) return false;
+  return modelOk || plausibleYear(identity.year) != null;
+}
+
+export { isPlausibleMake, isPlausibleModel };

@@ -1,0 +1,880 @@
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
+import { Link, useLocation } from "wouter";
+import { PrefetchLink } from "@/components/prefetch-link";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation, ensureDict } from "@/i18n/context";
+import { useTheme } from "@/components/theme-provider";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Moon, Sun, Monitor, User, Shield, LogOut, X,
+  ChevronRight, ChevronDown, Check,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Footer } from "@/components/footer";
+import { KmcheckLogo } from "@/components/logo";
+import { BannedSessionRedirect } from "@/components/banned-session-redirect";
+import { cn } from "@/lib/utils";
+import { setStoredLangPreference } from "@/lib/lang-preference";
+import { AnnouncementBar } from "@/components/announcement-bar";
+import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
+import { SiteAnalytics } from "@/components/site-analytics";
+
+const LANGS = [
+  { code: "en", label: "English",    img: "gb" },
+  { code: "ar", label: "العربية",    img: "sa" },
+  { code: "uk", label: "Українська", img: "ua" },
+  { code: "ru", label: "Русский",    img: "ru" },
+  { code: "sq", label: "Shqip",      img: "al" },
+];
+
+const COUNTRY_LINKS = [
+  { slug: "usa",    img: "us", labelKey: "country_usa_label"    as const, countKey: "country_usa_count"    as const },
+  { slug: "korea",  img: "kr", labelKey: "country_korea_label"  as const, countKey: "country_korea_count"  as const },
+  { slug: "canada", img: "ca", labelKey: "country_canada_label" as const, countKey: "country_canada_count" as const },
+];
+
+function FlagImg({ code, size = 20, className }: { code: string; size?: number; className?: string }) {
+  const height = Math.max(8, Math.round(size * 0.75));
+  return (
+    <img
+      src={`https://flagcdn.com/${size}x${height}/${code}.png`}
+      width={size}
+      height={height}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className={cn("rounded-[2px] object-cover shrink-0", className)}
+    />
+  );
+}
+
+const MobileMenuToggle = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    open: boolean;
+    scrolled: boolean;
+    isDarkNav: boolean;
+    label: string;
+  }
+>(({ open, scrolled, isDarkNav, label, className, ...props }, ref) => (
+  <button
+    ref={ref}
+    type="button"
+    aria-label={label}
+    aria-expanded={open}
+    className={cn(
+      "md:hidden relative inline-flex shrink-0 items-center justify-center rounded-full transition-[color,background-color,transform] duration-200 active:scale-95",
+      scrolled ? "h-9 w-9" : "h-10 w-10",
+      open
+        ? "bg-primary/12 text-primary"
+        : isDarkNav
+          ? "text-white/85 hover:bg-white/10 hover:text-white"
+          : "text-foreground/70 hover:bg-muted/90 hover:text-foreground",
+      className,
+    )}
+    {...props}
+  >
+    <span className="relative block h-3.5 w-[17px]" aria-hidden>
+      <span
+        className={cn(
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
+        )}
+      />
+      <span
+        className={cn(
+          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          open ? "scale-x-0 opacity-0" : "opacity-100",
+        )}
+      />
+      <span
+        className={cn(
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
+        )}
+      />
+    </span>
+  </button>
+));
+MobileMenuToggle.displayName = "MobileMenuToggle";
+
+const NAV_DROPDOWN_BASE = cn(
+  "absolute top-[calc(100%+8px)] z-[110] min-w-[9.5rem] rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10",
+  "overflow-hidden",
+);
+
+/** Dropdown panel shell — motion handles enter/exit; avoid tailwind animate-in (double animation). */
+const NAV_DROPDOWN_CLS = NAV_DROPDOWN_BASE;
+
+const MOBILE_THEMES = ["light", "dark", "system"] as const;
+type MobileTheme = (typeof MOBILE_THEMES)[number];
+
+const MOBILE_THEME_ICONS: Record<MobileTheme, typeof Sun> = {
+  light: Sun,
+  dark: Moon,
+  system: Monitor,
+};
+
+function MobileThemeToggle({
+  theme,
+  setTheme,
+  isDarkNav,
+  scrolled,
+  labels,
+  mobileMenuOpen = false,
+}: {
+  theme: MobileTheme;
+  setTheme: (theme: MobileTheme) => void;
+  isDarkNav: boolean;
+  scrolled: boolean;
+  labels: Record<MobileTheme, string>;
+  mobileMenuOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+  const CurrentIcon = MOBILE_THEME_ICONS[theme];
+
+  const close = useCallback(() => setOpen(false), []);
+
+  const updateMenuPosition = useCallback(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setMenuStyle({
+      position: "fixed",
+      top: rect.bottom + 8,
+      right: Math.max(12, window.innerWidth - rect.right),
+      zIndex: 120,
+      minWidth: "9.5rem",
+    });
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) close();
+  }, [mobileMenuOpen, close]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+    const onReflow = () => updateMenuPosition();
+    window.addEventListener("resize", onReflow);
+    window.addEventListener("scroll", onReflow, true);
+    return () => {
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow, true);
+    };
+  }, [open, updateMenuPosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      close();
+    };
+    const id = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onPointerDown, true);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("pointerdown", onPointerDown, true);
+    };
+  }, [open, close]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, close]);
+
+  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!open) updateMenuPosition();
+    setOpen((v) => !v);
+  };
+
+  const handleSelect = (th: MobileTheme) => {
+    close();
+    requestAnimationFrame(() => setTheme(th));
+  };
+
+  const menu = mounted
+    ? createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              ref={menuRef}
+              role="menu"
+              aria-label={labels[theme]}
+              initial={{ opacity: 0, y: -4, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              style={{ ...menuStyle, transformOrigin: "top right" }}
+              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5"
+            >
+              {MOBILE_THEMES.map((th) => {
+                const Icon = MOBILE_THEME_ICONS[th];
+                const active = theme === th;
+                return (
+                  <button
+                    key={th}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={active}
+                    onClick={() => handleSelect(th)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/[0.06] active:bg-primary/10 transition-colors text-left"
+                  >
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
+                    <span className={cn("text-sm flex-1", active ? "font-semibold text-primary" : "text-foreground")}>
+                      {labels[th]}
+                    </span>
+                    {active && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className="relative md:hidden">
+      <button
+        ref={btnRef}
+        type="button"
+        title={labels[theme]}
+        aria-label={labels[theme]}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={handleToggle}
+        className={cn(
+          "relative inline-flex shrink-0 items-center justify-center rounded-full transition-[color,background-color] duration-200",
+          scrolled ? "h-9 w-9" : "h-10 w-10",
+          open
+            ? isDarkNav
+              ? "bg-white/10 text-white"
+              : "bg-primary/10 text-primary"
+            : isDarkNav
+              ? "text-white/50 hover:text-white hover:bg-white/[0.07]"
+              : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+        )}
+      >
+        <CurrentIcon className="h-4 w-4" />
+      </button>
+      {menu}
+    </div>
+  );
+}
+
+
+export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number }) {
+  const { t, language, setLanguage } = useTranslation();
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const [location, setLocation] = useLocation();
+  const { isSignedIn, isLoaded, user, logout } = useAuth();
+  const [scrolled, setScrolled]       = useState(false);
+  const [heroScrolled, setHeroScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [langOpen, setLangOpen]       = useState(false);
+  const [userOpen, setUserOpen]       = useState(false);
+  const countryRef = useRef<HTMLDivElement>(null);
+  const langRef    = useRef<HTMLDivElement>(null);
+  const userRef    = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = () => {
+      const y = window.scrollY;
+      setScrolled(y > 60);
+      setHeroScrolled(y > 240);
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (countryRef.current && !countryRef.current.contains(e.target as Node)) setCountryOpen(false);
+      if (langRef.current    && !langRef.current.contains(e.target as Node))    setLangOpen(false);
+      if (userRef.current    && !userRef.current.contains(e.target as Node))    setUserOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  const handleLanguageChange = (lang: string) => {
+    const next = lang as "en" | "ar" | "uk" | "ru" | "sq";
+    const path = window.location.pathname;
+    const newPath = path.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
+    const target = newPath === path ? `/${next}` : newPath;
+    void ensureDict(next).then(() => {
+      setStoredLangPreference(next);
+      setLanguage(next);
+      setLocation(target);
+      setMobileOpen(false);
+      setLangOpen(false);
+    });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation(`/${language}`);
+    setMobileOpen(false);
+    setUserOpen(false);
+  };
+
+  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  const isAdmin     = user?.isAdmin === true;
+  const isOnPage    = (seg: string) => location.includes(`/${seg}`);
+  const isHome      = /^\/[a-z]{2}\/?$/.test(location) || location === "/";
+  const isCountry   = isOnPage("cars");
+  const isDarkNav   = (isHome || isCountry) && !heroScrolled && resolvedTheme === "dark";
+
+  const currentLang  = LANGS.find(l => l.code === language);
+  const displayName  = user?.name ?? user?.email?.split("@")[0] ?? "";
+  const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
+
+  const navLink = (active: boolean) => cn(
+    "relative px-3.5 rounded-xl font-medium transition-all duration-200",
+    scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
+    active
+      ? isDarkNav
+        ? "text-white bg-white/12 shadow-sm shadow-black/10"
+        : "text-primary bg-primary/[0.08] shadow-sm shadow-primary/5"
+      : isDarkNav
+        ? "text-white/65 hover:text-white hover:bg-white/[0.08]"
+        : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+  );
+
+  const dropdownCls = NAV_DROPDOWN_CLS;
+
+  return (
+    <header
+      style={{ top: announcementOffset }}
+      className={cn(
+      "fixed inset-x-0 z-[100] w-full print:hidden",
+      "transition-[border-color,backdrop-filter,box-shadow] duration-300",
+      scrolled
+        ? (isDarkNav
+            ? "bg-background/[0.06] backdrop-blur-2xl border-b border-border/20 shadow-sm shadow-black/5"
+            : "bg-background/85 backdrop-blur-2xl border-b border-border/40 shadow-sm shadow-black/[0.04]")
+        : isDarkNav
+        ? "bg-black/20 backdrop-blur-md border-b border-white/[0.10]"
+        : (isHome || isCountry)
+        ? "bg-background/90 backdrop-blur-md border-b border-border/40"
+        : "bg-background/75 backdrop-blur-md border-b border-border/40",
+    )}>
+      <div className={cn(
+        "max-w-[1400px] mx-auto px-5 flex items-center justify-between gap-4",
+        "transition-[height,padding] duration-300",
+        scrolled ? "h-[68px]" : "h-[84px]",
+      )}>
+
+        {/* ── Logo + nav ── */}
+        <div className="flex items-center gap-6 min-w-0">
+          <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px">
+            <KmcheckLogo
+              className={cn(
+                "transition-all duration-300 group-hover:opacity-90",
+                scrolled ? "h-8" : "h-10",
+              )}
+            />
+          </PrefetchLink>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-0.5">
+            {/* By Country dropdown */}
+            <div ref={countryRef} className="relative">
+              <button
+                onClick={() => setCountryOpen(v => !v)}
+                className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
+              >
+                {t("footer_countries")}
+                <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform duration-200", countryOpen && "rotate-180")} />
+                {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+              </button>
+
+              <AnimatePresence>
+                {countryOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ transformOrigin: "top left" }}
+                    className={cn(dropdownCls, "left-0 w-60 p-1.5")}
+                  >
+                    {COUNTRY_LINKS.map(({ slug, img, labelKey, countKey }) => (
+                      <PrefetchLink
+                        key={slug}
+                        href={`/${language}/cars/${slug}`}
+                        onClick={() => setCountryOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/[0.06] transition-colors group"
+                      >
+                        <FlagImg code={img} size={28} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{t(labelKey)}</p>
+                          <p className="text-[11px] text-muted-foreground">{t(countKey)}</p>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 ml-auto shrink-0 group-hover:text-primary/60 group-hover:translate-x-0.5 transition-all" />
+                      </PrefetchLink>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <PrefetchLink href={`/${language}/how-it-works`} className={navLink(isOnPage("how-it-works"))}>
+              {t("nav_how_it_works")}
+              {isOnPage("how-it-works") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+            </PrefetchLink>
+            <PrefetchLink href={`/${language}/pricing`} className={navLink(isOnPage("pricing"))}>
+              {t("pricing")}
+              {isOnPage("pricing") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+            </PrefetchLink>
+            <PrefetchLink href={`/${language}/faq`} className={navLink(isOnPage("faq"))}>
+              {t("nav_faq")}
+              {isOnPage("faq") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+            </PrefetchLink>
+          </nav>
+        </div>
+
+        {/* ── Right controls ── */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="hidden md:flex items-center gap-1">
+
+            {/* Language picker */}
+            <div ref={langRef} className="relative">
+              <button
+                onClick={() => setLangOpen(v => !v)}
+                className={cn(
+                  "flex items-center gap-2 px-2.5 rounded-lg border font-medium transition-all duration-200",
+                  scrolled ? "h-9 text-sm" : "h-10 text-[15px]",
+                  isDarkNav
+                    ? "border-white/15 bg-white/[0.05] text-white/75 hover:bg-white/10 hover:border-white/25"
+                    : "border-border/70 bg-background text-foreground hover:bg-primary/[0.06] hover:border-border",
+                )}
+              >
+                <FlagImg code={LANGS.find(l => l.code === language)?.img ?? "gb"} size={20} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">{language}</span>
+                <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-200", langOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ transformOrigin: "top right" }}
+                    className={cn(dropdownCls, "right-0 w-52 p-1.5")}
+                  >
+                    {LANGS.map(l => (
+                      <button
+                        key={l.code}
+                        onClick={() => handleLanguageChange(l.code)}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/[0.06] transition-colors text-left"
+                      >
+                        <FlagImg code={l.img} size={20} />
+                        <span className={cn("text-sm flex-1", language === l.code ? "font-semibold text-primary" : "text-foreground")}>{l.label}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase">{l.code}</span>
+                        {language === l.code && <Check className="h-3 w-3 text-primary shrink-0" />}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              title="Toggle theme"
+              className={cn(
+                "relative rounded-lg flex items-center justify-center transition-colors duration-200",
+                scrolled ? "h-9 w-9" : "h-10 w-10",
+                isDarkNav
+                  ? "text-white/50 hover:text-white hover:bg-white/[0.07]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+              )}
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </button>
+
+            {/* Divider */}
+            <div className={cn("h-4 w-px mx-1 rounded-full", isDarkNav ? "bg-white/10" : "bg-border/60")} />
+
+            {/* Auth */}
+            {!isLoaded ? (
+              <div className={cn("rounded-full bg-muted/80 animate-pulse", scrolled ? "h-9 w-24" : "h-10 w-28")} aria-hidden />
+            ) : isSignedIn ? (
+              <div ref={userRef} className="relative">
+                <button
+                  onClick={() => setUserOpen(v => !v)}
+                  className={cn(
+                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors outline-none",
+                    isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
+                  )}
+                >
+                  <Avatar className={cn("transition-all duration-300", scrolled ? "h-8 w-8" : "h-9 w-9")}>
+                    <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
+                      {avatarInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className={cn(
+                    "text-[13px] font-medium max-w-[90px] truncate hidden lg:block transition-colors",
+                    isDarkNav ? "text-white/80" : "text-foreground",
+                  )}>
+                    {displayName}
+                  </span>
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-all duration-200", isDarkNav ? "text-white/35" : "text-muted-foreground", userOpen && "rotate-180")} />
+                </button>
+
+                <AnimatePresence>
+                  {userOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                      transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ transformOrigin: "top right" }}
+                      className={cn(dropdownCls, "right-0 w-56 py-1.5")}
+                    >
+                      <div className="px-4 py-3 border-b border-border/60 mb-1">
+                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      </div>
+                      <PrefetchLink
+                        href={`/${language}/dashboard`}
+                        onClick={() => setUserOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
+                      >
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        {t("my_reports")}
+                      </PrefetchLink>
+                      {isAdmin && (
+                        <Link
+                          href="/adminx"
+                          onClick={() => setUserOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
+                        >
+                          <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                          {t("admin")}
+                        </Link>
+                      )}
+                      <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 transition-colors rounded-lg"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          {t("logout")}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "font-medium transition-colors",
+                    scrolled ? "h-9 px-3.5 text-sm" : "h-10 px-4 text-[15px]",
+                    isDarkNav
+                      ? "text-white/60 hover:text-white hover:bg-white/[0.07]"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                  asChild
+                >
+                  <PrefetchLink href={`/${language}/sign-in`}>{t("sign_in")}</PrefetchLink>
+                </Button>
+                <Button
+                  size="sm"
+                  className={cn(
+                    "font-semibold rounded-full shadow-sm shadow-primary/15 hover:shadow-primary/25 transition-all",
+                    scrolled ? "h-9 px-4 text-sm" : "h-10 px-5 text-[15px]",
+                  )}
+                  asChild
+                >
+                  <PrefetchLink href={`/${language}/sign-up`}>{t("sign_up")}</PrefetchLink>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu */}
+          <div className="md:hidden flex items-center gap-1.5">
+            <MobileThemeToggle
+              theme={theme}
+              setTheme={setTheme}
+              isDarkNav={isDarkNav}
+              scrolled={scrolled}
+              mobileMenuOpen={mobileOpen}
+              labels={{
+                light: t("theme_light"),
+                dark: t("theme_dark"),
+                system: t("theme_system"),
+              }}
+            />
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <MobileMenuToggle
+                  open={mobileOpen}
+                  scrolled={scrolled}
+                  isDarkNav={isDarkNav}
+                  label={mobileOpen ? t("nav_close_menu") : t("nav_open_menu")}
+                />
+              </SheetTrigger>
+
+            <SheetContent
+              side="right"
+              speed="fast"
+              overlayClassName="z-[110] touch-none"
+              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-2xl shadow-black/20"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              {/* Mobile header */}
+              <div className="flex items-center justify-between px-5 h-16 border-b shrink-0">
+                <PrefetchLink
+                  href={`/${language}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center -translate-y-px"
+                >
+                  <KmcheckLogo className="h-8" />
+                </PrefetchLink>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] active:scale-95 transition-all duration-150"
+                  aria-label={t("nav_close_menu")}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Mobile nav links */}
+              <nav className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-3 py-3 space-y-0.5 [-webkit-overflow-scrolling:touch] touch-pan-y">
+                <PrefetchLink
+                  href={`/${language}/how-it-works`}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors touch-manipulation active:bg-primary/10",
+                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                  )}
+                >
+                  {t("nav_how_it_works")}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </PrefetchLink>
+                <PrefetchLink
+                  href={`/${language}/pricing`}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                  )}
+                >
+                  {t("pricing")}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </PrefetchLink>
+                <PrefetchLink
+                  href={`/${language}/faq`}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                    isOnPage("faq") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                  )}
+                >
+                  {t("nav_faq")}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </PrefetchLink>
+
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 pt-3 pb-1">
+                  {t("footer_countries")}
+                </p>
+
+                {COUNTRY_LINKS.map(({ slug, img, labelKey }) => (
+                  <PrefetchLink
+                    key={slug}
+                    href={`/${language}/cars/${slug}`}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                      isOnPage(`cars/${slug}`) ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                    )}
+                  >
+                    <FlagImg code={img} size={20} className="w-3.5 h-2.5" />
+                    <span className="flex-1">{t(labelKey)}</span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </PrefetchLink>
+                ))}
+
+              </nav>
+
+              {/* Mobile auth footer */}
+              <div className="border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 shrink-0 bg-background">
+
+                {/* Language flags */}
+                <div className="grid grid-cols-5 gap-1.5">
+                  {LANGS.map(l => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() => handleLanguageChange(l.code)}
+                      title={l.label}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg border transition-colors min-h-[44px] touch-manipulation",
+                        language === l.code
+                          ? "border-primary bg-primary/8 ring-1 ring-primary/20"
+                          : "border-border/60 hover:border-border hover:bg-primary/[0.04] active:bg-primary/[0.06]",
+                      )}
+                    >
+                      <FlagImg code={l.img} size={20} className="w-4 h-3" />
+                      <span className={cn(
+                        "text-[8px] font-bold uppercase tracking-wide leading-none",
+                        language === l.code ? "text-primary" : "text-muted-foreground",
+                      )}>
+                        {l.code}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="h-px bg-border/60" />
+                {!isLoaded ? (
+                  <div className="h-9 rounded-xl bg-muted/80 animate-pulse" aria-hidden />
+                ) : isSignedIn ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 rounded-xl"
+                        asChild
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <PrefetchLink href={`/${language}/dashboard`}>{t("my_reports")}</PrefetchLink>
+                      </Button>
+                      {isAdmin ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 rounded-xl"
+                          asChild
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          <Link href="/adminx">{t("admin")}</Link>
+                        </Button>
+                      ) : (
+                        <div />
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 px-1 py-1">
+                      <Avatar className="h-9 w-9 shrink-0">
+                        <AvatarImage src={user?.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                          {avatarInitial}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 h-9 text-destructive border-destructive/30 hover:bg-destructive/8"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t("logout")}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 h-10 rounded-xl" asChild onClick={() => setMobileOpen(false)}>
+                      <PrefetchLink href={`/${language}/sign-in`}>{t("sign_in")}</PrefetchLink>
+                    </Button>
+                    <Button className="flex-1 h-10 rounded-xl font-bold" asChild onClick={() => setMobileOpen(false)}>
+                      <PrefetchLink href={`/${language}/sign-up`}>{t("sign_up")}</PrefetchLink>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const [announcementHeight, setAnnouncementHeight] = useState(0);
+  const showClientNav = useShowClientMobileNav();
+
+  useEffect(() => {
+    const navbarHeight = 84;
+    document.documentElement.style.setProperty(
+      "--site-header-offset",
+      `${navbarHeight + announcementHeight}px`,
+    );
+    document.documentElement.style.setProperty(
+      "--announcement-bar-height",
+      `${announcementHeight}px`,
+    );
+    return () => {
+      document.documentElement.style.removeProperty("--site-header-offset");
+      document.documentElement.style.removeProperty("--announcement-bar-height");
+    };
+  }, [announcementHeight]);
+
+  return (
+    <div className="min-h-[100dvh] flex flex-col overflow-x-clip w-full">
+      <SiteAnalytics />
+      <BannedSessionRedirect />
+      <AnnouncementBar onHeightChange={setAnnouncementHeight} />
+      <Navbar announcementOffset={announcementHeight} />
+      <div
+        className={cn(
+          "flex flex-col flex-1",
+          showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
+        )}
+      >
+        <main className="flex-1 overflow-x-hidden pt-[var(--site-header-offset,84px)] print:pt-0">
+          {children}
+        </main>
+        <Footer />
+      </div>
+      <ClientMobileNav />
+    </div>
+  );
+}

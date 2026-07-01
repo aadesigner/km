@@ -1,0 +1,185 @@
+import { useLayoutEffect, useMemo } from "react";
+import { useLocation } from "wouter";
+import {
+  SITE_ORIGIN,
+  SEO_LANGS,
+  HREFLANG_MAP,
+  OG_LOCALE_MAP,
+  stripLangPrefix,
+  buildLocalizedPath,
+  type SeoLang,
+} from "@/lib/seo-config";
+import {
+  SEO_DATA,
+  getRouteSeo,
+  type SeoPageKey,
+} from "@/lib/seo-pages";
+
+export { SEO_DATA };
+export type { SeoPageKey };
+
+const appBasePath = () => import.meta.env.BASE_URL.replace(/\/$/, "") || "";
+
+interface SEOProps {
+  title: string;
+  description: string;
+  lang: SeoLang;
+  canonicalPath?: string;
+  noIndex?: boolean;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+function upsertMeta(key: string, content: string, attr = "name") {
+  let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.content = content;
+}
+
+function upsertLink(rel: string, href: string, extra?: Record<string, string>) {
+  const extraStr = extra ? Object.entries(extra).map(([k, v]) => `[${k}="${v}"]`).join("") : "";
+  const selector = `link[rel="${rel}"]${extraStr}`;
+  let el = document.querySelector(selector) as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement("link");
+    el.rel = rel;
+    if (extra) Object.entries(extra).forEach(([k, v]) => el!.setAttribute(k, v));
+    document.head.appendChild(el);
+  }
+  el.href = href;
+}
+
+function removeAlternates() {
+  document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
+  document.querySelectorAll('meta[property="og:locale:alternate"]').forEach((el) => el.remove());
+}
+
+function upsertJsonLd(data: Record<string, unknown> | Record<string, unknown>[] | undefined) {
+  const id = "kmcheck-json-ld";
+  document.getElementById(id)?.remove();
+  if (!data) return;
+  const script = document.createElement("script");
+  script.id = id;
+  script.type = "application/ld+json";
+  script.textContent = JSON.stringify(Array.isArray(data) ? data : data);
+  document.head.appendChild(script);
+}
+
+export function applySeoHead({
+  title,
+  description,
+  lang,
+  canonicalPath,
+  noIndex,
+  ogImage,
+  jsonLd,
+}: SEOProps) {
+  document.title = title;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+  upsertMeta("description", description);
+  upsertMeta("robots", noIndex ? "noindex, nofollow" : "index, follow");
+
+  upsertMeta("og:title", title, "property");
+  upsertMeta("og:description", description, "property");
+  upsertMeta("og:type", "website", "property");
+  upsertMeta("og:locale", OG_LOCALE_MAP[lang], "property");
+  upsertMeta("og:site_name", "kmcheck.com", "property");
+
+  upsertMeta("twitter:card", "summary_large_image");
+  upsertMeta("twitter:title", title);
+  upsertMeta("twitter:description", description);
+
+  if (ogImage) {
+    upsertMeta("og:image", ogImage, "property");
+    upsertMeta("twitter:image", ogImage);
+  } else {
+    document.querySelector('meta[property="og:image"]')?.remove();
+    document.querySelector('meta[name="twitter:image"]')?.remove();
+  }
+
+  const origin = typeof window !== "undefined" ? window.location.origin : SITE_ORIGIN;
+  const path = canonicalPath ?? (typeof window !== "undefined" ? window.location.pathname : `/${lang}`);
+  const canonical = `${origin}${path}`;
+  upsertLink("canonical", canonical);
+  upsertMeta("og:url", canonical, "property");
+
+  removeAlternates();
+  if (!noIndex) {
+    const base = stripLangPrefix(path);
+    SEO_LANGS.forEach((l) => {
+      upsertLink("alternate", `${origin}${buildLocalizedPath(l, base)}`, {
+        hreflang: HREFLANG_MAP[l],
+      });
+    });
+    upsertLink("alternate", `${origin}${buildLocalizedPath("en", base)}`, { hreflang: "x-default" });
+
+    SEO_LANGS.filter((l) => l !== lang).forEach((l) => {
+      upsertMeta("og:locale:alternate", OG_LOCALE_MAP[l], "property");
+    });
+  }
+
+  upsertJsonLd(jsonLd);
+}
+
+/** SEO meta always derived from the URL — never from UI language state. */
+export function usePageSeo(pageKeyOverride?: SeoPageKey) {
+  const [location] = useLocation();
+  return useMemo(
+    () => getRouteSeo(location, appBasePath(), pageKeyOverride),
+    [location, pageKeyOverride],
+  );
+}
+
+export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, jsonLd }: SEOProps) {
+  useLayoutEffect(() => {
+    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, jsonLd });
+    return () => {
+      document.getElementById("kmcheck-json-ld")?.remove();
+    };
+  }, [title, description, lang, canonicalPath, noIndex, ogImage, jsonLd == null ? null : JSON.stringify(jsonLd)]);
+
+  return null;
+}
+
+/** Sets localized SEO from the URL on every route change (before lazy pages load). */
+export function RouteSEO() {
+  const [location] = useLocation();
+
+  useLayoutEffect(() => {
+    const seo = getRouteSeo(location, appBasePath());
+    applySeoHead(seo);
+  }, [location]);
+
+  return null;
+}
+
+export type LangCode = SeoLang;
+
+export function organizationJsonLd(origin: string, description: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "kmcheck.com",
+    url: origin,
+    logo: `${origin}/favicon.png`,
+    description,
+  };
+}
+
+export function faqPageJsonLd(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+}

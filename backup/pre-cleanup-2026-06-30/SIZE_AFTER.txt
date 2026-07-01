@@ -1,0 +1,6 @@
+total_bytes=713456640
+node_modules_bytes=528678532
+backup_bytes=92467200
+timestamp=2026-06-30T17:40:00+02:00
+saved_vs_before_bytes=322677285
+removed_breakdown_mb=.local=388,dist=20,demo-cars=2.2,mockup-sandbox=0.4,npm_packages=15_removed

@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Private / transactional areas
+Disallow: /adminx
+Disallow: /*/sign-in
+Disallow: /*/sign-up
+Disallow: /*/forgot-password
+Disallow: /*/reset-password
+Disallow: /*/dashboard
+Disallow: /*/checkout
+Disallow: /*/purchases
+Disallow: /*/vin/processing
+
+Sitemap: https://kmcheck.com/sitemap.xml
