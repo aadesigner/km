@@ -66,12 +66,12 @@ export function shouldShowPendingVinDoubleCheck(
   return isTrustworthyVinDecode(peek);
 }
 
+/** Checkout preview: make + year only. */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
   const parts: (string | number)[] = [];
-  if (peek.year != null) parts.push(peek.year);
   if (peek.make) parts.push(peek.make);
-  if (peek.model) parts.push(peek.model);
+  if (peek.year != null) parts.push(peek.year);
   return parts.length ? parts.join(" ") : null;
 }
 
