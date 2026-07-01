@@ -379,6 +379,7 @@
   "coupon_placeholder": "Enter code",
   "apply": "Apply",
   "proceed_to_payment": "Proceed to Payment",
+  "checkout_paypal_use_button": "Tap the PayPal button below to sign in and pay.",
   "get_free_report": "Get Free Report",
   "paypal_secure_note": "Payments are securely processed by",
   "vin_not_in_db": "VIN not found in our database. Please try a different VIN.",

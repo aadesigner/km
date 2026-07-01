@@ -379,6 +379,7 @@
   "coupon_placeholder": "أدخل الرمز",
   "apply": "تطبيق",
   "proceed_to_payment": "المتابعة للدفع",
+  "checkout_paypal_use_button": "اضغط زر PayPal أدناه لتسجيل الدخول والدفع.",
   "get_free_report": "الحصول على التقرير مجاناً",
   "paypal_secure_note": "تتم معالجة المدفوعات بأمان عبر",
   "vin_not_in_db": "رقم الهيكل غير موجود في قاعدة بياناتنا.",

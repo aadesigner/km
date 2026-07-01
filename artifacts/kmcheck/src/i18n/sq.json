@@ -380,6 +380,7 @@
   "coupon_placeholder": "Fut kodin",
   "apply": "Apliko",
   "proceed_to_payment": "Vazhdo me pagesën",
+  "checkout_paypal_use_button": "Prek butonin PayPal më poshtë për të hyrë dhe paguar.",
   "get_free_report": "Merr raport falas",
   "paypal_secure_note": "Pagesat procesohen në mënyrë të sigurt nga",
   "vin_not_in_db": "VIN nuk u gjet në bazën tonë të të dhënave.",

@@ -315,7 +315,7 @@ function HeroPhotoGallery({
             priority
             onLoaded={() => markLoaded(0)}
             onFailed={() => markFailed(0)}
-            className="relative sm:rounded-xl"
+            className="relative sm:rounded-xl blur-[5px] scale-[1.04] select-none"
           />
         ) : (
           <HeroPhotoPlaceholder

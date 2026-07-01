@@ -252,6 +252,8 @@ export default function Checkout({ params }: Props) {
     script.id = "paypal-sdk";
     script.src = `https://www.paypal.com/sdk/js?client-id=${pubSettings.paypalClientId}&currency=${currency}&intent=capture&components=${components}`;
     script.async = true;
+    // In-page PayPal modal instead of a separate popup (avoids blank tab + broken overlay on desktop).
+    script.setAttribute("data-popups-disabled", "true");
     document.body.appendChild(script);
     return () => { document.getElementById("paypal-sdk")?.remove(); };
   }, [pubSettings?.paypalClientId, pubSettings?.paypalEnableCards, currency]);
@@ -1254,7 +1256,14 @@ export default function Checkout({ params }: Props) {
 
                   {/* PayPal button container */}
                   {paymentAllowed && (
-                    <div ref={paypalContainerRef} className={cn("min-h-0", payMethod === "card" && "hidden")} />
+                    <div className={cn(payMethod === "card" && "hidden")}>
+                      {paymentStarted && payMethod === "paypal" && !couponResult?.isFree && (
+                        <p className="text-xs text-muted-foreground text-center mb-2">
+                          {t("checkout_paypal_use_button")}
+                        </p>
+                      )}
+                      <div ref={paypalContainerRef} className="min-h-0" />
+                    </div>
                   )}
 
                   {/* Hosted card fields */}

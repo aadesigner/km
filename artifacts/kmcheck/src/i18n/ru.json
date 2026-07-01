@@ -379,6 +379,7 @@
   "coupon_placeholder": "Введите код",
   "apply": "Применить",
   "proceed_to_payment": "Перейти к оплате",
+  "checkout_paypal_use_button": "Нажмите кнопку PayPal ниже, чтобы войти и оплатить.",
   "get_free_report": "Получить бесплатный отчёт",
   "paypal_secure_note": "Платежи безопасно обрабатываются через",
   "vin_not_in_db": "VIN не найден в нашей базе данных.",

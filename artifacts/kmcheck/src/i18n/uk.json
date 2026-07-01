@@ -379,6 +379,7 @@
   "coupon_placeholder": "Введіть код",
   "apply": "Застосувати",
   "proceed_to_payment": "Перейти до оплати",
+  "checkout_paypal_use_button": "Натисніть кнопку PayPal нижче, щоб увійти та оплатити.",
   "get_free_report": "Отримати безкоштовний звіт",
   "paypal_secure_note": "Платежі безпечно обробляються через",
   "vin_not_in_db": "VIN не знайдено в нашій базі даних.",
