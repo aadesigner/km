@@ -49,4 +49,14 @@ describe("summarizeVinLookupData", () => {
     expect(summary).not.toHaveProperty("vinDecode");
     expect(summary).not.toHaveProperty("rawProviderPayload");
   });
+
+  it("uses thumbnailUrl when photos array is empty", () => {
+    const summary = summarizeVinLookupData({
+      make: "Kia",
+      model: "Sportage",
+      thumbnailUrl: "/api/vin/image?token=abc",
+      photos: [],
+    });
+    expect(summary!.photos).toEqual(["/api/vin/image?token=abc"]);
+  });
 });

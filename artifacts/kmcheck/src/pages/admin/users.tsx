@@ -19,8 +19,6 @@ import {
 } from "@/components/ui/select";
 import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
-import { showQueryFailure, queryErrorMessage } from "@/lib/query-error";
-import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
@@ -43,8 +41,7 @@ export default function AdminUsers() {
     checks: checksFilter || undefined,
   };
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams);
-  useQueryRecovery(isError, isFetching, refetch);
+  const { data, isLoading, isError, error, refetch } = useAdminGetUsers(listParams);
   const banUser = useAdminBanUser({
     mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }) },
   });
@@ -67,8 +64,8 @@ export default function AdminUsers() {
   const users = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
   const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter);
-  const loadError = showQueryFailure(isError, isFetching)
-    ? queryErrorMessage(error, "Failed to load users")
+  const loadError = isError
+    ? ((error as { data?: { error?: string } })?.data?.error ?? (error as Error)?.message ?? "Failed to load users")
     : null;
 
   async function handleExport() {

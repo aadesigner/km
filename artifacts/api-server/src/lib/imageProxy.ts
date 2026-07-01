@@ -10,9 +10,7 @@ function ivForUrl(url: string): Buffer {
   return crypto.createHash("sha256").update(`vin-img:${url}`).digest().subarray(0, 12);
 }
 
-const IMAGE_TOKEN_TTL_SEC = 24 * 60 * 60;
-
-/** Same upstream URL → same token for the rest of the UTC day (stable across report refetches). */
+/** Tokens valid through end of tomorrow UTC — stable within a calendar day per upstream URL. */
 function tokenExpirySec(): number {
   const now = Math.floor(Date.now() / 1000);
   const dayStart = Math.floor(now / 86400) * 86400;

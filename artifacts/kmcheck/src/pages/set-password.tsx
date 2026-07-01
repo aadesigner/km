@@ -12,7 +12,6 @@ import {
   getPasswordStrength,
   isPasswordStrongEnough,
   getPasswordIssueCode,
-  PASSWORD_MIN_LENGTH,
 } from "@/lib/password-policy";
 import { translateClientError } from "@/lib/translate-client-error";
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
@@ -22,7 +21,8 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
   if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LETTER") return t("error_password_needs_letter");
+  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
+  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
   if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
   return t("error_password_weak");
 }
@@ -133,7 +133,7 @@ export default function SetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    minLength={PASSWORD_MIN_LENGTH}
+                    minLength={8}
                     autoComplete="new-password"
                     disabled={loading}
                     className="h-11 pr-10"
@@ -143,7 +143,7 @@ export default function SetPasswordPage() {
                     className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
                     onClick={() => setShowPassword(v => !v)}
                     tabIndex={-1}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? t("auth_password_hide") : t("auth_password_show")}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -182,7 +182,7 @@ export default function SetPasswordPage() {
                     className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
                     onClick={() => setShowConfirm(v => !v)}
                     tabIndex={-1}
-                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                    aria-label={showConfirm ? t("auth_password_hide") : t("auth_password_show")}
                   >
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>

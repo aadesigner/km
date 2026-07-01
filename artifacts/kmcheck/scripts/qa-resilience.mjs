@@ -87,6 +87,12 @@ if (!vinRoute.includes('Cache-Control", "private, no-store') && !vinRoute.includ
 if (!vinRoute.includes("withUserVinLookupLock")) {
   fail("POST /vin/lookup provider path must use withUserVinLookupLock");
 }
+
+const trustedClient = readApi("src/lib/trustedClient.ts");
+if (!trustedClient.includes('"/vin/image"')) {
+  fail("trustedClient must exempt /vin/image (img tags cannot send X-Kmcheck-Client)");
+}
+
 if (!vinRoute.includes("findCompleteUserLookup")) {
   fail("POST /vin/lookup must re-check for existing lookup before insert");
 }

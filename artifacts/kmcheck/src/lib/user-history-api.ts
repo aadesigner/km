@@ -1,4 +1,5 @@
 import type { VinHistoryPage } from "@workspace/api-client-react";
+import { createClientFetchError } from "@/lib/api-error";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -28,7 +29,7 @@ export async function fetchUserHistory(
     `${basePath}/api/user/history${suffix ? `?${suffix}` : ""}`,
     { credentials: "include", signal },
   );
-  if (!r.ok) throw new Error(`history:${r.status}`);
+  if (!r.ok) throw createClientFetchError("history", r.status);
   return r.json() as Promise<VinHistoryPage>;
 }
 

@@ -501,8 +501,11 @@ export default function VinPublic({ params }: Props) {
   }, [forbidden, language, setLocation]);
 
   useEffect(() => {
-    if (!data?.isUnlocked) return;
-    const urls = (data.photos ?? []).filter((p): p is string => typeof p === "string" && p.length > 0);
+    if (!data) return;
+    const all = (data.photos ?? (data.thumbnailUrl ? [data.thumbnailUrl] : [])).filter(
+      (p): p is string => typeof p === "string" && p.length > 0,
+    );
+    const urls = data.isUnlocked ? all : all.slice(0, 1);
     if (urls.length) void prefetchVinImages(urls);
   }, [data]);
 

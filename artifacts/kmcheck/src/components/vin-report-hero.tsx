@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   Car, ChevronLeft, ChevronRight, Lock, MapPin,
@@ -8,6 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
 import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
+import {
+  isVinImageSessionLoaded,
+  markVinImageSessionLoaded,
+} from "@/lib/vin-image-cache";
 
 export type VinHeroScore = {
   score: string;
@@ -173,15 +177,32 @@ function HeroPhotoFrame({
   className,
   priority = false,
   onLoaded,
+  onFailed,
 }: {
   src: string;
   alt: string;
   className?: string;
   priority?: boolean;
   onLoaded?: () => void;
+  onFailed?: () => void;
 }) {
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const notifyLoaded = useCallback(() => {
+    markVinImageSessionLoaded(src);
+    onLoaded?.();
+  }, [src, onLoaded]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) {
+      notifyLoaded();
+    }
+  }, [src, notifyLoaded]);
+
   return (
     <img
+      ref={imgRef}
       src={src}
       alt={alt}
       loading={priority ? "eager" : "lazy"}
@@ -192,8 +213,8 @@ function HeroPhotoFrame({
         "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
         className,
       )}
-      onLoad={onLoaded}
-      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      onLoad={notifyLoaded}
+      onError={() => onFailed?.()}
     />
   );
 }
@@ -229,7 +250,14 @@ function HeroPhotoGallery({
   const touchX = useRef(0);
   const currentPhoto = photos[photoIdx] ?? photos[0] ?? null;
   const showNav = photos.length > 1 && !locked;
-  const [loaded, setLoaded] = useState<Record<number, boolean>>({});
+  const [loaded, setLoaded] = useState<Record<number, boolean>>(() => {
+    const init: Record<number, boolean> = {};
+    photos.forEach((url, i) => {
+      if (isVinImageSessionLoaded(url)) init[i] = true;
+    });
+    return init;
+  });
+  const [failed, setFailed] = useState<Record<number, boolean>>({});
 
   const visibleIndices = useMemo(() => {
     if (photos.length === 0) return [];
@@ -243,6 +271,16 @@ function HeroPhotoGallery({
 
   const markLoaded = useCallback((i: number) => {
     setLoaded((prev) => (prev[i] ? prev : { ...prev, [i]: true }));
+    setFailed((prev) => {
+      if (!prev[i]) return prev;
+      const next = { ...prev };
+      delete next[i];
+      return next;
+    });
+  }, []);
+
+  const markFailed = useCallback((i: number) => {
+    setFailed((prev) => (prev[i] ? prev : { ...prev, [i]: true }));
   }, []);
 
   const go = useCallback(
@@ -255,6 +293,53 @@ function HeroPhotoGallery({
 
   const navBtnClass =
     "absolute top-1/2 -translate-y-1/2 flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/55 sm:bg-background/90 backdrop-blur-sm border border-white/25 sm:border shadow-sm text-white sm:text-foreground hover:bg-black/70 sm:hover:bg-background active:scale-95 z-10 print:hidden";
+
+  if (locked) {
+    const previewSrc = photos[0] ?? null;
+    const previewReady = previewSrc
+      ? (loaded[0] || isVinImageSessionLoaded(previewSrc)) && !failed[0]
+      : false;
+
+    return (
+      <div
+        className={cn(
+          "relative w-full rounded-xl overflow-hidden bg-muted/40 print-vin-hero-photo",
+          "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+          className,
+        )}
+      >
+        {previewSrc && !failed[0] ? (
+          <HeroPhotoFrame
+            src={previewSrc}
+            alt={vehicleTitle}
+            priority
+            onLoaded={() => markLoaded(0)}
+            onFailed={() => markFailed(0)}
+            className="relative sm:rounded-xl"
+          />
+        ) : (
+          <HeroPhotoPlaceholder
+            vehicleTitle={vehicleTitle}
+            label={photoPlaceholderLabel}
+            pendingScan={pendingPhotoScan}
+          />
+        )}
+
+        {previewSrc && !previewReady && !failed[0] && (
+          <div className="absolute inset-0 z-[2] flex items-center justify-center bg-muted/30 pointer-events-none">
+            <div className="h-7 w-7 rounded-full border-2 border-muted-foreground/25 border-t-muted-foreground/70 animate-spin" />
+          </div>
+        )}
+
+        {lockedLabel && (
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-background/95 border shadow-sm px-2.5 py-1 print:hidden z-10">
+            <Lock className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] font-medium text-muted-foreground">{lockedLabel}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -271,15 +356,16 @@ function HeroPhotoGallery({
         if (Math.abs(dx) > 40) go(photoIdx + (dx < 0 ? 1 : -1));
       } : undefined}
     >
-      {currentPhoto ? (
+      {currentPhoto && !failed[photoIdx] ? (
         <>
           {visibleIndices.map((i) => (
             <HeroPhotoFrame
-              key={`${i}-${photos[i]}`}
+              key={i}
               src={photos[i]!}
               alt={vehicleTitle}
               priority={i === photoIdx}
               onLoaded={() => markLoaded(i)}
+              onFailed={() => markFailed(i)}
               className={cn(
                 "absolute inset-0 max-sm:transition-none transition-opacity duration-200",
                 i === photoIdx ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none",
@@ -287,7 +373,7 @@ function HeroPhotoGallery({
               )}
             />
           ))}
-          {!loaded[photoIdx] && (
+          {!loaded[photoIdx] && !isVinImageSessionLoaded(currentPhoto) && (
             <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/5 pointer-events-none">
               <div className="h-7 w-7 rounded-full border-2 border-white/40 border-t-white/90 animate-spin" />
             </div>

@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const submitDisabled = loading;
+  const submitDisabled = loading || (rcEnabled && !rcReady);
 
   return (
     <>

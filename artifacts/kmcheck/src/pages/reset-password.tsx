@@ -10,12 +10,13 @@ import { SEOHead } from "@/components/seo";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-import { getPasswordStrength, isPasswordStrongEnough, getPasswordIssueCode, PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
+import { getPasswordStrength, isPasswordStrongEnough, getPasswordIssueCode } from "@/lib/password-policy";
 
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
   if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LETTER") return t("error_password_needs_letter");
+  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
+  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
   if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
   return t("error_password_weak");
 }
@@ -147,7 +148,7 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    minLength={PASSWORD_MIN_LENGTH}
+                    minLength={8}
                     autoComplete="new-password"
                     disabled={loading}
                     className="h-11 pr-10"

@@ -12,6 +12,20 @@ const CACHE_DIR =
   path.join(process.cwd(), ".cache", "vin-images");
 
 const inflight = new Map<string, Promise<CachedVinImage>>();
+const MEMORY_CACHE_MAX = 128;
+const memoryCache = new Map<string, CachedVinImage>();
+
+function rememberInMemory(url: string, image: CachedVinImage): void {
+  if (memoryCache.has(url)) {
+    memoryCache.delete(url);
+  }
+  memoryCache.set(url, image);
+  while (memoryCache.size > MEMORY_CACHE_MAX) {
+    const oldest = memoryCache.keys().next().value;
+    if (!oldest) break;
+    memoryCache.delete(oldest);
+  }
+}
 
 function cacheKeyForUrl(url: string): string {
   return crypto.createHash("sha256").update(url).digest("hex");
@@ -54,6 +68,8 @@ export function mediaVersionFromUpdatedAt(
 }
 
 export async function readVinImageCache(url: string): Promise<CachedVinImage | null> {
+  const mem = memoryCache.get(url);
+  if (mem) return mem;
   try {
     const { bodyPath, metaPath } = pathsForUrl(url);
     const [metaRaw, body] = await Promise.all([
@@ -62,7 +78,9 @@ export async function readVinImageCache(url: string): Promise<CachedVinImage | n
     ]);
     const meta = JSON.parse(metaRaw) as { contentType?: string };
     if (!meta.contentType || !Buffer.isBuffer(body) || body.length === 0) return null;
-    return { contentType: meta.contentType, body };
+    const image = { contentType: meta.contentType, body };
+    rememberInMemory(url, image);
+    return image;
   } catch {
     return null;
   }
@@ -88,6 +106,7 @@ export async function invalidateVinImageCache(urls: string[]): Promise<void> {
   const unique = [...new Set(urls.filter(Boolean))];
   await Promise.all(unique.map(async (url) => {
     inflight.delete(url);
+    memoryCache.delete(url);
     const { bodyPath, metaPath } = pathsForUrl(url);
     await Promise.allSettled([fs.unlink(bodyPath), fs.unlink(metaPath)]);
   }));
@@ -111,6 +130,7 @@ export async function getOrFetchVinImage(
   const promise = fetcher()
     .then(async (image) => {
       await writeVinImageCache(url, image.contentType, image.body);
+      rememberInMemory(url, image);
       return image;
     })
     .finally(() => {

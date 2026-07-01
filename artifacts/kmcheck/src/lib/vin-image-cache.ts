@@ -22,34 +22,44 @@ function isProxiedVinImage(url: string): boolean {
 
 /** Warm browser cache for VIN gallery URLs (same-origin proxied images). */
 export async function prefetchVinImages(urls: string[]): Promise<void> {
-  if (!canUseCacheApi()) return;
   const unique = [...new Set(urls.filter(isProxiedVinImage))];
   if (unique.length === 0) return;
 
-  try {
-    const cache = await caches.open(CACHE_NAME);
-
-    const warmOne = async (url: string) => {
-      if (await cache.match(url)) return;
-      try {
-        const response = await fetch(url, { credentials: "include" });
-        if (response.ok) {
-          await cache.put(url, response.clone());
-        }
-      } catch {
-        // ignore individual prefetch failures
-      }
-    };
-
-    // Hero photo first — visible immediately on report load.
-    await warmOne(unique[0]!);
-
-    const rest = unique.slice(1);
-    for (let i = 0; i < rest.length; i += PREFETCH_CONCURRENCY) {
-      await Promise.all(rest.slice(i, i + PREFETCH_CONCURRENCY).map(warmOne));
+  let cache: Cache | null = null;
+  if (canUseCacheApi()) {
+    try {
+      cache = await caches.open(CACHE_NAME);
+    } catch {
+      cache = null;
     }
-  } catch {
-    // ignore cache API errors (private mode, quota, etc.)
+  }
+
+  const warmOne = async (url: string) => {
+    try {
+      if (cache && (await cache.match(url))) {
+        markVinImageSessionLoaded(url);
+        return;
+      }
+      const response = await fetch(url, { credentials: "include" });
+      if (!response.ok) return;
+      markVinImageSessionLoaded(url);
+      if (cache) {
+        try {
+          await cache.put(url, response.clone());
+        } catch {
+          // private mode / quota — session flag still suppresses spinner
+        }
+      }
+    } catch {
+      // ignore individual prefetch failures
+    }
+  };
+
+  await warmOne(unique[0]!);
+
+  const rest = unique.slice(1);
+  for (let i = 0; i < rest.length; i += PREFETCH_CONCURRENCY) {
+    await Promise.all(rest.slice(i, i + PREFETCH_CONCURRENCY).map(warmOne));
   }
 }
 

@@ -139,10 +139,7 @@ export default function Checkout({ params }: Props) {
   const [couponResult, setCouponResult] = useState<CouponResult | null>(null);
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
-  const [couponOpen, setCouponOpen] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 767px)").matches;
-  });
+  const [couponOpen, setCouponOpen] = useState(false);
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -254,8 +251,6 @@ export default function Checkout({ params }: Props) {
     const script = document.createElement("script");
     script.id = "paypal-sdk";
     script.src = `https://www.paypal.com/sdk/js?client-id=${pubSettings.paypalClientId}&currency=${currency}&intent=capture&components=${components}`;
-    // Avoid empty popup + overlay split when COOP blocks popups (common on mobile Safari).
-    script.setAttribute("data-popups-disabled", "true");
     script.async = true;
     document.body.appendChild(script);
     return () => { document.getElementById("paypal-sdk")?.remove(); };
@@ -426,11 +421,8 @@ export default function Checkout({ params }: Props) {
         credentials: "include",
         body: JSON.stringify({ code: couponCode }),
       });
-      const data = await resp.json() as CouponResult & { error?: string; code?: string };
-      if (!resp.ok || data.error) {
-        setCouponError(translateCouponError(t, data.error ?? (resp.status === 403 ? "Forbidden" : undefined)));
-        return;
-      }
+      const data = await resp.json() as CouponResult & { error?: string };
+      if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
       setCouponResult(data);
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
@@ -1263,11 +1255,6 @@ export default function Checkout({ params }: Props) {
                   {/* PayPal button container */}
                   {paymentAllowed && (
                     <div ref={paypalContainerRef} className={cn("min-h-0", payMethod === "card" && "hidden")} />
-                  )}
-                  {paymentStarted && payMethod === "paypal" && status === "idle" && (
-                    <p className="text-xs text-center text-muted-foreground -mt-2">
-                      {t("checkout_paypal_use_button")}
-                    </p>
                   )}
 
                   {/* Hosted card fields */}

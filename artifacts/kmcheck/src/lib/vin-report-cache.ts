@@ -1,5 +1,4 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { clearVinImageBrowserCache } from "@/lib/vin-image-cache";
 
 /** React Query options for authenticated VIN report pages. */
 export const VIN_REPORT_QUERY_OPTIONS = {

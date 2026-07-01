@@ -5,11 +5,12 @@ import { getAllowedOrigins, isAllowedOrigin } from "./allowedOrigins.js";
 
 export const GUARD_HEADER = "x-kmcheck-client";
 
-/** Routes that cannot send a custom client header (OAuth redirects, health probes). */
+/** Routes that cannot send a custom client header (OAuth redirects, health probes, signed image proxy). */
 const EXEMPT_PREFIXES = [
   "/healthz",
   "/auth/google",
   "/auth/facebook",
+  "/vin/image",
 ];
 
 export function isExemptApiPath(path: string): boolean {

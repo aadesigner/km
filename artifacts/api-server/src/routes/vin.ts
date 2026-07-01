@@ -852,7 +852,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   const catalogPhotos = Array.isArray(d.photos)
     ? (d.photos as string[]).filter(Boolean)
     : [];
-  const previewPhotos = proxyPhotoUrls(catalogPhotos.slice(0, 8), mediaVersion);
+  const lockedPreviewPhotos = proxyPhotoUrls(catalogPhotos.slice(0, 1), mediaVersion);
 
   // 3. Fetch current pricing
   const [pricingRow] = await db
@@ -873,8 +873,8 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     transmission: (d.transmission as string | null) ?? null,
     color: (d.color as string | null) ?? (d.exteriorColor as string | null) ?? null,
     country: (d.country as string | null) ?? null,
-    thumbnailUrl: previewPhotos[0] ?? null,
-    photos: previewPhotos,
+    thumbnailUrl: lockedPreviewPhotos[0] ?? null,
+    photos: lockedPreviewPhotos,
     inCatalog,
     isUnlocked,
     price: displayPrice,

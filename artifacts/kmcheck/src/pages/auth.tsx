@@ -16,15 +16,13 @@ import {
   getPasswordStrength,
   isPasswordStrongEnough,
   getPasswordIssueCode,
-  PASSWORD_MIN_LENGTH,
 } from "@/lib/password-policy";
 
 function passwordErrorMessage(t: (k: string) => string, password: string): string {
   const code = getPasswordIssueCode(password);
   if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LETTER") return t("error_password_needs_letter");
-  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_letter");
-  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_letter");
+  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
+  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
   if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
   return t("error_password_weak");
 }
@@ -79,9 +77,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setLocation(getPostAuthRedirectPath(language));
   }, [isLoaded, isSignedIn, language, setLocation]);
 
-  const isSignIn = mode === "sign-in";
-  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
-
   if (!isLoaded || isSignedIn) {
     return (
       <div className="min-h-[calc(100dvh-64px)] flex items-center justify-center">
@@ -128,8 +123,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
   };
 
+  const isSignIn = mode === "sign-in";
+  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const signupPasswordOk = isSignIn || isPasswordStrongEnough(password);
-  const submitDisabled = loading || !signupPasswordOk;
+  const submitDisabled = loading || (rcEnabled && !rcReady) || !signupPasswordOk;
   const hasSocial = googleEnabled || facebookEnabled;
 
   return (
@@ -234,7 +231,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         required
-                        minLength={isSignIn ? 1 : PASSWORD_MIN_LENGTH}
+                        minLength={isSignIn ? 1 : 8}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
                         disabled={loading}
                         className="h-11 pr-10"

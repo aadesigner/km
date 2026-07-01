@@ -1,4 +1,4 @@
-export const PASSWORD_MIN_LENGTH = 6;
+export const PASSWORD_MIN_LENGTH = 8;
 
 export type PasswordValidationResult =
   | { ok: true }
@@ -12,11 +12,18 @@ export function validatePassword(password: string): PasswordValidationResult {
       error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
     };
   }
-  if (!/[a-zA-Z]/.test(password)) {
+  if (!/[a-z]/.test(password)) {
     return {
       ok: false,
-      code: "PASSWORD_NEEDS_LETTER",
-      error: "Password must include a letter",
+      code: "PASSWORD_NEEDS_LOWERCASE",
+      error: "Password must include a lowercase letter",
+    };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return {
+      ok: false,
+      code: "PASSWORD_NEEDS_UPPERCASE",
+      error: "Password must include an uppercase letter",
     };
   }
   if (!/[0-9]/.test(password)) {

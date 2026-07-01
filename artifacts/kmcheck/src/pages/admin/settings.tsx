@@ -17,15 +17,11 @@ import {
 import {
   Save, Mail, Info, CreditCard, Send, CheckCircle2, XCircle,
   Search, Eye, Globe, Trash2, Database, Loader2, Wrench,
-  AlertCircle, RefreshCw,
 } from "lucide-react";
 import {
   MAINTENANCE_PARTIAL_RESTRICTIONS,
   type MaintenancePartialRestriction,
 } from "@/lib/maintenance-policy";
-import { invalidateRecaptchaSettingsCache } from "@/hooks/use-recaptcha";
-import { useQueryRecovery } from "@/hooks/use-query-recovery";
-import { showQueryFailure, queryErrorMessage } from "@/lib/query-error";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -102,11 +98,7 @@ function TabSaveButton({
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: settings, isLoading, isError, error, refetch, isFetching } = useAdminGetSettings();
-  useQueryRecovery(isError, isFetching, refetch);
-  const settingsLoadError = showQueryFailure(isError, isFetching)
-    ? queryErrorMessage(error, "Failed to load settings")
-    : null;
+  const { data: settings, isLoading } = useAdminGetSettings();
 
   const notifySaved = (label: string) => {
     toast({ title: "Saved", description: `${label} updated successfully.` });
@@ -136,7 +128,6 @@ export default function AdminSettings() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
     queryClient.invalidateQueries({ queryKey: ["/api/payments/public-settings"] });
-    invalidateRecaptchaSettingsCache();
   };
 
   const paymUpdater = useAdminUpdateSettings({
@@ -365,7 +356,7 @@ export default function AdminSettings() {
     }
   };
 
-  if (isLoading && !settings) {
+  if (isLoading) {
     return (
       <div className="space-y-6 max-w-2xl">
         <div>
@@ -376,27 +367,6 @@ export default function AdminSettings() {
         <Card><CardContent className="pt-6 space-y-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
         </CardContent></Card>
-      </div>
-    );
-  }
-
-  if (settingsLoadError) {
-    return (
-      <div className="space-y-6 max-w-2xl">
-        <div>
-          <h1 className="text-2xl font-extrabold">Settings</h1>
-          <p className="text-muted-foreground mt-1">System configuration</p>
-        </div>
-        <Card>
-          <CardContent className="py-12 px-6 text-center space-y-3">
-            <AlertCircle className="h-10 w-10 text-destructive mx-auto" />
-            <p className="font-medium text-destructive">{settingsLoadError}</p>
-            <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-              <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? "animate-spin" : ""}`} />
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     );
   }

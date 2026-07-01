@@ -26,7 +26,7 @@ function clientAreaPathKey(path: string): string | null {
 /** Refetch dashboard data when entering the client area or after a long idle tab return. */
 export function useClientAreaLiveRefresh(): void {
   const queryClient = useQueryClient();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const [location] = useLocation();
   const wasInClientAreaRef = useRef(false);
   const lastRefetchAtRef = useRef(0);
@@ -39,7 +39,7 @@ export function useClientAreaLiveRefresh(): void {
   };
 
   useEffect(() => {
-    if (!isSignedIn) {
+    if (!isLoaded || !isSignedIn) {
       wasInClientAreaRef.current = false;
       return;
     }
@@ -52,10 +52,10 @@ export function useClientAreaLiveRefresh(): void {
     }
 
     wasInClientAreaRef.current = inClientArea;
-  }, [isSignedIn, location, queryClient]);
+  }, [isLoaded, isSignedIn, location, queryClient]);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isLoaded || !isSignedIn) return;
 
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
@@ -74,5 +74,5 @@ export function useClientAreaLiveRefresh(): void {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("pageshow", onPageShow);
     };
-  }, [isSignedIn, queryClient]);
+  }, [isLoaded, isSignedIn, queryClient]);
 }

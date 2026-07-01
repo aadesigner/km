@@ -4,7 +4,15 @@ export function getErrorStatus(error: unknown): number | undefined {
     const status = (error as { status: unknown }).status;
     if (typeof status === "number") return status;
   }
+  if (error instanceof Error) {
+    const fromMessage = /^[a-z_]+:(\d{3})$/i.exec(error.message);
+    if (fromMessage) return Number(fromMessage[1]);
+  }
   return undefined;
+}
+
+export function createClientFetchError(scope: string, status: number): Error & { status: number } {
+  return Object.assign(new Error(`${scope}:${status}`), { status });
 }
 
 export type VinReportErrorKind = "not_found" | "forbidden" | "unauthorized" | "server" | "rate_limit" | "unknown";

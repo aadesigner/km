@@ -4,6 +4,7 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearAuthCache, readAuthCache, writeAuthCache } from "@/lib/auth-session-cache";
+import { invalidateClientAreaQueries } from "@/lib/client-area-queries";
 import type { AuthUser } from "@/lib/auth-types";
 
 export type { AuthUser } from "@/lib/auth-types";
@@ -63,11 +64,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
-  // Clear query cache whenever the signed-in user changes (login / logout)
+  // Drop signed-in user data when the account changes — avoid queryClient.clear() (aborts in-flight loads).
   useEffect(() => {
     const curId = user?.id ?? null;
     if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== curId) {
-      queryClient.clear();
+      void queryClient.removeQueries({
+        predicate: (query) => {
+          const root = query.queryKey[0];
+          if (typeof root !== "string") return false;
+          return (
+            root.startsWith("/api/user/")
+            || root === "/api/vin"
+            || root.startsWith("/api/vin/")
+          );
+        },
+      });
+      if (curId) invalidateClientAreaQueries(queryClient);
     }
     prevUserIdRef.current = curId;
   }, [user?.id, queryClient]);
@@ -109,7 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     assertActiveUser(data.user);
     setUser(data.user ?? null);
     persistUserSession(data.user ?? null);
-  }, []);
+    invalidateClientAreaQueries(queryClient);
+  }, [queryClient]);
 
   const register = useCallback(async (email: string, password: string, name?: string, recaptchaToken?: string) => {
     const res = await fetch(`${basePath}/api/auth/register`, {
@@ -123,7 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     assertActiveUser(data.user);
     setUser(data.user ?? null);
     persistUserSession(data.user ?? null);
-  }, []);
+    invalidateClientAreaQueries(queryClient);
+  }, [queryClient]);
 
   const logout = useCallback(async () => {
     try {

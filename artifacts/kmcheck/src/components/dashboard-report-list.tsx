@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { PrefetchLink } from "@/components/prefetch-link";
 import {
   Car, ChevronRight, CheckCircle2, XCircle, Clock, AlertCircle, Trash2, ArrowUpDown,
@@ -18,6 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  isVinImageSessionLoaded,
+  markVinImageSessionLoaded,
+} from "@/lib/vin-image-cache";
 
 const SORT_OPTIONS: DashboardLookupSort[] = [
   "newest",
@@ -65,6 +69,68 @@ function StatusBadge({ status }: { status: VinLookupStatus | string }) {
 
 type DeleteMutation = UseMutationResult<unknown, unknown, { id: number }, unknown>;
 
+function resolveReportPhotoUrl(data: VinLookup["data"]): string | undefined {
+  const vd = data as { photos?: string[]; thumbnailUrl?: string | null } | null | undefined;
+  if (!vd) return undefined;
+  if (Array.isArray(vd.photos) && vd.photos[0]) return vd.photos[0];
+  if (typeof vd.thumbnailUrl === "string" && vd.thumbnailUrl) return vd.thumbnailUrl;
+  return undefined;
+}
+
+function ReportListThumbnail({ src, alt }: { src?: string; alt: string }) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(() => (src ? isVinImageSessionLoaded(src) : false));
+
+  const markReady = useCallback(() => {
+    if (!src) return;
+    markVinImageSessionLoaded(src);
+    setReady(true);
+    setFailed(false);
+  }, [src]);
+
+  useEffect(() => {
+    setFailed(false);
+    setReady(src ? isVinImageSessionLoaded(src) : false);
+  }, [src]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) markReady();
+  }, [src, markReady]);
+
+  if (!src || failed) {
+    return (
+      <div className="report-list-thumb-fallback h-11 w-11 sm:h-14 sm:w-14 bg-primary/10 flex items-center justify-center">
+        <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        className={cn(
+          "report-list-thumb h-11 w-[3.25rem] sm:h-14 sm:w-[4.5rem] object-cover transition-transform duration-200 group-hover/thumb:scale-[1.03]",
+          !ready && "opacity-0",
+        )}
+        loading="lazy"
+        decoding="async"
+        onLoad={markReady}
+        onError={() => setFailed(true)}
+      />
+      {!ready && (
+        <div className="report-list-thumb-fallback absolute inset-0 h-11 w-11 sm:h-14 sm:w-14 bg-primary/10 flex items-center justify-center">
+          <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary animate-pulse" />
+        </div>
+      )}
+    </>
+  );
+}
+
 function ReportCard({
   lookup,
   index,
@@ -111,21 +177,13 @@ function ReportCard({
       : isSalvage
         ? t("badge_salvage")
         : t("dashboard_no_accidents");
-  const photoUrl = Array.isArray(vd?.photos) ? vd.photos[0] : undefined;
+  const photoUrl = resolveReportPhotoUrl(vd);
   const reportHref = `/${language}/vin/${lookup.vin}`;
   const viewable = isViewableReportStatus(lookup.status);
 
-  const thumbnail = photoUrl ? (
-    <img
-      src={photoUrl}
-      alt={vehicleName ?? lookup.vin}
-      className="report-list-thumb h-11 w-[3.25rem] sm:h-14 sm:w-[4.5rem] object-cover transition-transform duration-200 group-hover/thumb:scale-[1.03]"
-      loading="lazy"
-      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-    />
-  ) : (
-    <div className="report-list-thumb-fallback h-11 w-11 sm:h-14 sm:w-14 bg-primary/10 flex items-center justify-center">
-      <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+  const thumbnail = (
+    <div className="relative shrink-0">
+      <ReportListThumbnail src={photoUrl} alt={vehicleName ?? lookup.vin} />
     </div>
   );
 

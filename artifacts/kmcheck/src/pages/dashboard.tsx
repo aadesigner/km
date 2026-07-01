@@ -3,6 +3,7 @@ import { useTranslation } from "@/i18n/context";
 import { DashboardReportList } from "@/components/dashboard-report-list";
 import { ClientAreaLayout } from "@/components/client-area-layout";
 import { prefetchVinPageChunk, seedVinLookupsFromHistory } from "@/lib/prefetch-vin-report";
+import { prefetchVinImages } from "@/lib/vin-image-cache";
 import {
   useGetUserStats,
   useGetCurrentPricing,
@@ -46,8 +47,6 @@ import {
 } from "@/lib/dashboard-nav";
 import { ClientQueryError } from "@/components/client-query-error";
 import { getErrorStatus } from "@/lib/api-error";
-import { showQueryFailure } from "@/lib/query-error";
-import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 function useGreeting(t: (k: string) => string): string {
   const hour = new Date().getHours();
@@ -150,9 +149,8 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
 
-  const authReady = isLoaded && isSignedIn;
-
   const historyParams = DEFAULT_USER_HISTORY_SUMMARY;
+  const authReady = isLoaded && isSignedIn;
   const {
     data: history,
     isLoading: historyLoading,
@@ -194,9 +192,6 @@ export default function Dashboard() {
   const queryLoadError = historyError ? historyErr : statsError ? statsErr : null;
   const queryRetrying = historyFetching || statsFetching;
 
-  useQueryRecovery(!!historyError, historyFetching, refetchHistory);
-  useQueryRecovery(!!statsError, statsFetching, refetchStats);
-
   useEffect(() => {
     if (!queryLoadError) return;
     if (getErrorStatus(queryLoadError) === 401) {
@@ -217,6 +212,16 @@ export default function Dashboard() {
   useEffect(() => {
     if (!history?.items?.length) return;
     seedVinLookupsFromHistory(queryClient, history.items);
+
+    const thumbUrls = history.items
+      .map((lookup) => {
+        const d = lookup.data as { photos?: string[]; thumbnailUrl?: string | null } | null | undefined;
+        if (!d) return null;
+        if (Array.isArray(d.photos) && d.photos[0]) return d.photos[0];
+        return d.thumbnailUrl ?? null;
+      })
+      .filter((url): url is string => typeof url === "string" && url.length > 0);
+    if (thumbUrls.length) void prefetchVinImages(thumbUrls.slice(0, 12));
   }, [history?.items, queryClient]);
 
   // Pending VIN check saved in sessionStorage before auth / checkout
@@ -285,13 +290,12 @@ export default function Dashboard() {
   }
 
   const lookups = history?.items ?? [];
+  const reportsLoading = historyLoading && !history;
   const totalChecks = stats?.totalChecks ?? lookups.length;
   const checksThisMonth = stats?.checksThisMonth ?? 0;
   const isViewableReport = (status: string) => status === "complete" || status === "pending_manual";
   const completed = lookups.filter(l => l.status === "complete" || l.status === "pending_manual").length;
-  const showQueryError =
-    (showQueryFailure(!!historyError, historyFetching) || showQueryFailure(!!statsError, statsFetching))
-    && getErrorStatus(queryLoadError) !== 401;
+  const showQueryError = !!(historyError || statsError) && getErrorStatus(queryLoadError) !== 401;
 
   const pendingBanner = showPendingBanner && pendingVin ? (
     <div className="bg-muted/40 dark:bg-muted/20 border-b border-border px-4 py-3">
@@ -470,7 +474,7 @@ export default function Dashboard() {
                     onRetry={retryQueries}
                     isRetrying={queryRetrying}
                   />
-                ) : historyLoading ? (
+                ) : reportsLoading ? (
                   <div className="space-y-3.5">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <Skeleton key={i} className="h-[4.5rem] sm:h-20 w-full rounded-2xl" />

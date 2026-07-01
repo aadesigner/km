@@ -3,9 +3,12 @@ export function summarizeVinLookupData(data: unknown): Record<string, unknown> |
   if (!data || typeof data !== "object" || Array.isArray(data)) return null;
   const d = data as Record<string, unknown>;
 
-  const photos = Array.isArray(d.photos)
-    ? d.photos.filter((p): p is string => typeof p === "string" && p.length > 0).slice(0, 1)
-    : undefined;
+  const photoList = Array.isArray(d.photos)
+    ? d.photos.filter((p): p is string => typeof p === "string" && p.length > 0)
+    : [];
+  const thumbnail =
+    typeof d.thumbnailUrl === "string" && d.thumbnailUrl.length > 0 ? d.thumbnailUrl : null;
+  const photos = (photoList.length > 0 ? photoList : thumbnail ? [thumbnail] : []).slice(0, 1);
 
   const mileageHistory = Array.isArray(d.mileageHistory)
     ? d.mileageHistory.slice(0, 20).map((entry) => {
