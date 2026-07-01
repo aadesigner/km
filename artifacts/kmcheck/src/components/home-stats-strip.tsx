@@ -11,7 +11,7 @@ export function HomeStatsStrip({ className }: Props) {
   const stats = useHomeStats(t);
 
   return (
-    <div className={cn("relative z-[1] pt-3 sm:pt-4 shadow-none", className)}>
+    <div className={cn("home-stats-strip relative z-[1] pt-3 sm:pt-4", className)}>
       <ul
         className="mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:gap-x-0"
         role="list"
@@ -28,11 +28,13 @@ export function HomeStatsStrip({ className }: Props) {
             )}
             <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
               <img
-                src={`https://flagcdn.com/${stat.flag}.svg`}
+                src={`https://flagcdn.com/16x12/${stat.flag}.png`}
                 width={16}
                 height={12}
                 alt=""
-                className="shrink-0 h-3 w-4 rounded-[2px] object-cover opacity-90 shadow-none"
+                loading="lazy"
+                decoding="async"
+                className="home-stats-flag shrink-0 h-3 w-4 rounded-[2px] object-cover"
               />
               <span className="font-semibold tabular-nums tracking-tight text-foreground">
                 {stat.value}

@@ -619,6 +619,18 @@
   .hero-vin-shell .vin-scanner::before {
     display: none;
   }
+
+  .vin-scanner {
+    box-shadow: none !important;
+  }
+
+  /* Tiny flag PNGs — SVG/drop-shadow often renders as grey boxes on mobile */
+  .home-stats-strip img,
+  .home-stats-flag {
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+  }
 }
 
 @keyframes vin-scan {

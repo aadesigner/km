@@ -1,31 +1,19 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/i18n/context";
-import { useAuth, ApiRequestError } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { SEOHead } from "@/components/seo";
-import {
-  getPasswordStrength,
-  isPasswordStrongEnough,
-  getPasswordIssueCode,
-} from "@/lib/password-policy";
+import { PasswordRequirements } from "@/components/password-requirements";
+import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
 import { translateClientError } from "@/lib/translate-client-error";
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-function passwordErrorMessage(t: (k: string) => string, password: string): string {
-  const code = getPasswordIssueCode(password);
-  if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
-  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
-  if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
-  return t("error_password_weak");
-}
 
 export default function SetPasswordPage() {
   const { language, t } = useTranslation();
@@ -58,7 +46,7 @@ export default function SetPasswordPage() {
       return;
     }
     if (!isPasswordStrongEnough(password)) {
-      setError(passwordErrorMessage(t, password));
+      setError(getPasswordErrorMessage(t, password));
       return;
     }
     setError("");
@@ -84,11 +72,6 @@ export default function SetPasswordPage() {
       setLoading(false);
     }
   };
-
-  const strength = getPasswordStrength(password);
-  const strengthLabels = ["", t("pw_strength_weak"), t("pw_strength_fair"), t("pw_strength_good"), t("pw_strength_strong")];
-  const strengthColors = ["", "bg-red-500", "bg-orange-400", "bg-yellow-400", "bg-green-500"];
-  const strengthTextColors = ["", "text-red-600", "text-orange-500", "text-yellow-600", "text-green-600"];
 
   if (!isLoaded || !isSignedIn || user?.hasPassword) {
     return (
@@ -133,7 +116,7 @@ export default function SetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    minLength={8}
+                    minLength={6}
                     autoComplete="new-password"
                     disabled={loading}
                     className="h-11 pr-10"
@@ -149,17 +132,7 @@ export default function SetPasswordPage() {
                   </button>
                 </div>
                 {password.length > 0 && (
-                  <div className="mt-2 space-y-1.5">
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4].map(i => (
-                        <div
-                          key={i}
-                          className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= strength ? strengthColors[strength] : "bg-muted"}`}
-                        />
-                      ))}
-                    </div>
-                    <p className={`text-xs font-medium ${strengthTextColors[strength]}`}>{strengthLabels[strength]}</p>
-                  </div>
+                  <PasswordRequirements password={password} className="mt-2" />
                 )}
               </div>
 

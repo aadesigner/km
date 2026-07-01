@@ -12,20 +12,8 @@ import { AuthPageShell } from "@/components/auth-page-shell";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { translateAuthOAuthError, translateClientError } from "@/lib/translate-client-error";
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
-import {
-  getPasswordStrength,
-  isPasswordStrongEnough,
-  getPasswordIssueCode,
-} from "@/lib/password-policy";
-
-function passwordErrorMessage(t: (k: string) => string, password: string): string {
-  const code = getPasswordIssueCode(password);
-  if (code === "PASSWORD_TOO_SHORT") return t("reset_password_too_short");
-  if (code === "PASSWORD_NEEDS_LOWERCASE") return t("error_password_needs_lowercase");
-  if (code === "PASSWORD_NEEDS_UPPERCASE") return t("error_password_needs_uppercase");
-  if (code === "PASSWORD_NEEDS_NUMBER") return t("error_password_needs_number");
-  return t("error_password_weak");
-}
+import { PasswordRequirements } from "@/components/password-requirements";
+import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -108,7 +96,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         await login(email, password, recaptchaToken);
       } else {
         if (!isPasswordStrongEnough(password)) {
-          setError(passwordErrorMessage(t, password));
+          setError(getPasswordErrorMessage(t, password));
           return;
         }
         await register(email, password, name || undefined, recaptchaToken);
@@ -231,7 +219,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         required
-                        minLength={isSignIn ? 1 : 8}
+                        minLength={isSignIn ? 1 : 6}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
                         disabled={loading}
                         className="h-11 pr-10"
@@ -248,32 +236,16 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     </div>
 
                     <AnimatePresence>
-                      {!isSignIn && password.length > 0 && (() => {
-                        const strength = getPasswordStrength(password);
-                        const labels = ["", t("pw_strength_weak"), t("pw_strength_fair"), t("pw_strength_good"), t("pw_strength_strong")];
-                        const colors = ["", "bg-red-500", "bg-orange-400", "bg-yellow-400", "bg-green-500"];
-                        const textColors = ["", "text-red-600", "text-orange-500", "text-yellow-600", "text-green-600"];
-                        return (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pt-1 space-y-1">
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4].map(i => (
-                                  <div
-                                    key={i}
-                                    className={`h-1 flex-1 rounded-full transition-all ${i <= strength ? colors[strength] : "bg-muted"}`}
-                                  />
-                                ))}
-                              </div>
-                              <p className={`text-xs font-medium ${textColors[strength]}`}>{labels[strength]}</p>
-                            </div>
-                          </motion.div>
-                        );
-                      })()}
+                      {!isSignIn && password.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <PasswordRequirements password={password} className="pt-1" />
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
 

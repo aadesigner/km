@@ -714,7 +714,7 @@ export default function Home() {
                   </div>
                   <div className="relative z-10 h-full flex flex-col justify-between gap-6">
                     <div>
-                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-16 w-auto drop-shadow-2xl block mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm" />
+                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-16 w-auto block mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm max-sm:drop-shadow-none sm:drop-shadow-2xl" />
                       <h3 className="text-2xl font-black text-white tracking-tight">{c.name}</h3>
                       <p className="text-white/50 text-sm mt-1">{c.count} {t("country_registered_vehicles")}</p>
                     </div>
