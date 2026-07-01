@@ -207,14 +207,11 @@ function VinNumericRedirect({ lang, id }: { lang: string; id: string }) {
 function VinRouteByAuth(props: { params: { lang: string; id: string } }) {
   const { isSignedIn, isLoaded } = useAuth();
   const vin = props.params.id.toUpperCase();
-  const shareParam = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("s") ?? ""
-    : "";
 
   if (!isLoaded) return <PageLoader />;
 
-  // Guests and explicit share links always use the public locked/unlocked page.
-  if (!isSignedIn || shareParam) {
+  // Guests: public locked preview. Signed-in: ownership gate (purchase required per account).
+  if (!isSignedIn) {
     return (
       <Suspense fallback={<PageLoader />}>
         <VinPublic params={{ lang: props.params.lang, id: vin }} />

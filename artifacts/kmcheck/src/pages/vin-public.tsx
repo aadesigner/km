@@ -181,7 +181,6 @@ type VinPublicReport = {
   insuranceClaims?: InsuranceClaimEntry[] | null;
   registryHistory?: RegistryHistoryEntry[] | null;
   auctionHistory?: AuctionEntry[] | null;
-  shareToken?: string;
   krwPerUsd?: number | null;
 };
 
@@ -385,13 +384,10 @@ export default function VinPublic({ params }: Props) {
 
   const vin = params.id.toUpperCase();
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-  const shareParam = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("s") ?? ""
-    : "";
 
-  const buildShareUrl = useCallback((token: string) => {
+  const buildShareUrl = useCallback(() => {
     const origin = window.location.origin;
-    return `${origin}${basePath}/${language}/vin/${vin}?s=${encodeURIComponent(token)}`;
+    return `${origin}${basePath}/${language}/vin/${vin}`;
   }, [basePath, language, vin]);
 
   const handleUnlock = useCallback(() => {
@@ -403,11 +399,10 @@ export default function VinPublic({ params }: Props) {
   const priceStr = displayPrice != null ? fmtPrice(displayPrice) : null;
 
   const { data, isLoading, isError, error } = useQuery<VinPublicReport>({
-    queryKey: ["/api/vin/public", vin, shareParam, user?.id ?? null],
+    queryKey: ["/api/vin/public", vin, user?.id ?? null],
     enabled: isLoaded,
     queryFn: async () => {
-      const qs = shareParam ? `?s=${encodeURIComponent(shareParam)}` : "";
-      const r = await fetch(`${basePath}/api/vin/public/${vin}${qs}`, {
+      const r = await fetch(`${basePath}/api/vin/public/${vin}`, {
         credentials: "include",
       });
       if (r.status === 404) {
@@ -682,11 +677,7 @@ export default function VinPublic({ params }: Props) {
       : []),
   ].filter((field) => field.value);
 
-  const printReportUrl = (() => {
-    const token = data.shareToken ?? shareParam;
-    if (token && typeof window !== "undefined") return buildShareUrl(token);
-    return typeof window !== "undefined" ? window.location.href : undefined;
-  })();
+  const printReportUrl = typeof window !== "undefined" ? buildShareUrl() : undefined;
 
   const accidentPrintHighlights = buildAccidentPrintHighlights(
     accidents, t, language, data.country, krwPerUsd, data.year, insuranceClaims.length > 0, countryLabels,
@@ -1271,8 +1262,6 @@ export default function VinPublic({ params }: Props) {
               accidentCount: accidentSignals,
               ownerCount: data.ownerCount ?? null,
             }}
-            shareToken={data.shareToken}
-            shareParam={shareParam}
             basePath={basePath}
           />
         )}

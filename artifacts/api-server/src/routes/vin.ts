@@ -19,7 +19,7 @@ import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData } from "../lib/imageProxy.js";
 import { getOrFetchVinImage, mediaVersionFromUpdatedAt, readVinImageCache } from "../lib/vinImageCache.js";
-import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
+import { signVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
 import { getFreeDecoderSettings } from "../lib/freeDecoderSettingsCache.js";
 import { isTrustedApiRequest } from "../lib/clientGuard.js";
@@ -62,10 +62,7 @@ async function stampLookupReportData(
 async function canAccessVinShare(
   userId: string | undefined,
   vin: string,
-  shareToken: string | undefined,
 ): Promise<boolean> {
-  const tokenVin = shareToken ? verifyVinShareToken(shareToken) : null;
-  if (tokenVin && tokenVin === vin) return true;
   if (!userId) return false;
   return userOwnsVinReport(userId, vin);
 }
@@ -845,9 +842,6 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     return;
   }
 
-  const shareToken = typeof req.query.s === "string" ? req.query.s : undefined;
-  const tokenVin = shareToken ? verifyVinShareToken(shareToken) : null;
-  const hasValidShareToken = tokenVin === vin;
   const userId = req.userId;
 
   const [report, ownsReport] = await Promise.all([
@@ -861,7 +855,8 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   }
 
   const { dataSource: d, providerName, inCatalog, mediaVersion } = report;
-  const isUnlocked = hasValidShareToken || ownsReport;
+  // Only the purchasing account (or admin) unlocks — share links never bypass payment.
+  const isUnlocked = ownsReport;
 
   const catalogPhotos = Array.isArray(d.photos)
     ? (d.photos as string[]).filter(Boolean)
@@ -896,8 +891,6 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   };
 
   if (isUnlocked) {
-    // Share token only after unlock — never on locked preview (would bypass payment).
-    response.shareToken = shareToken ?? signVinShareToken(vin);
     Object.assign(response, {
       trim: (d.trim as string | null) ?? null,
       odometer: (d.odometer as number | null) ?? (d.mileage as number | null) ?? null,
@@ -939,7 +932,7 @@ router.get("/vin/share-link/:vin", requireAuth, async (req, res) => {
     return;
   }
 
-  const allowed = await canAccessVinShare(req.userId, vin, undefined);
+  const allowed = await canAccessVinShare(req.userId, vin);
   if (!allowed) {
     res.status(403).json({ error: "Forbidden" });
     return;
@@ -1237,8 +1230,7 @@ router.get("/vin/preview/:vin", publicVinLimiter, optionalAuth, async (req, res)
     return;
   }
 
-  const shareToken = typeof req.query.s === "string" ? req.query.s : undefined;
-  const allowed = await canAccessVinShare(req.userId, vin, shareToken);
+  const allowed = await canAccessVinShare(req.userId, vin);
   if (!allowed) {
     res.status(403).json({ error: "Forbidden" });
     return;

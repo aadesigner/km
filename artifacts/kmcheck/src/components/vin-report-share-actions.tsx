@@ -22,10 +22,7 @@ export type VinShareActionsProps = {
   vehicleTitle: string;
   /** Real report snapshot for the left-side PDF mock. */
   preview?: VinSharePreviewData;
-  shareToken?: string;
-  shareParam?: string;
   basePath: string;
-  fetchShareToken?: () => Promise<string | null>;
   compact?: boolean;
   dense?: boolean;
   className?: string;
@@ -35,26 +32,17 @@ export type VinShareActionsProps = {
 function useShareUrl({
   vin,
   language,
-  shareToken,
-  shareParam,
   basePath,
-  fetchShareToken,
   disabled,
-}: VinShareActionsProps) {
-  const buildShareUrl = useCallback((token: string) => {
+}: Pick<VinShareActionsProps, "vin" | "language" | "basePath" | "disabled">) {
+  const buildShareUrl = useCallback(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return `${origin}${basePath}/${language}/vin/${vin}?s=${encodeURIComponent(token)}`;
+    return `${origin}${basePath}/${language}/vin/${vin}`;
   }, [basePath, language, vin]);
 
   const resolveShareUrl = useCallback(async (): Promise<string | null> => {
-    const existing = shareToken ?? shareParam;
-    if (existing) return buildShareUrl(existing);
-    if (fetchShareToken) {
-      const token = await fetchShareToken();
-      if (token) return buildShareUrl(token);
-    }
-    return typeof window !== "undefined" ? window.location.href : null;
-  }, [shareToken, shareParam, buildShareUrl, fetchShareToken]);
+    return buildShareUrl();
+  }, [buildShareUrl]);
 
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [linkLoading, setLinkLoading] = useState(false);
@@ -99,10 +87,7 @@ export function VinReportShareActions({
   vin,
   language,
   vehicleTitle,
-  shareToken,
-  shareParam,
   basePath,
-  fetchShareToken,
   compact = false,
   dense = false,
   className,
@@ -114,7 +99,7 @@ export function VinReportShareActions({
   const [downloading, setDownloading] = useState(false);
   const [copying, setCopying] = useState(false);
   const { resolveShareUrl, shareUrl, linkLoading } = useShareUrl({
-    vin, language, vehicleTitle, shareToken, shareParam, basePath, fetchShareToken, compact, disabled,
+    vin, language, basePath, disabled,
   });
 
   const shareText = t("vin_result_share_native_text");

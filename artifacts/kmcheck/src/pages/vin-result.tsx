@@ -606,17 +606,6 @@ export default function VinResult({ params }: Props) {
   const toggleAccident = (i: number) =>
     setExpandedAccidents(prev => { const next = new Set(prev); next.has(i) ? next.delete(i) : next.add(i); return next; });
 
-  const fetchShareToken = async () => {
-    try {
-      const r = await fetch(`${basePath}/api/vin/share-link/${lookup.vin}`, { credentials: "include" });
-      if (!r.ok) return null;
-      const { token } = await r.json() as { token: string };
-      return token;
-    } catch {
-      return null;
-    }
-  };
-
   const accidentPrintHighlights = buildAccidentPrintHighlights(
     accidents, t, language, data?.country, krwPerUsd, data?.year, insuranceClaims.length > 0, countryLabels,
   );
@@ -1294,7 +1283,6 @@ export default function VinResult({ params }: Props) {
           ownerCount: data?.ownerCount ?? null,
         }}
         basePath={basePath}
-        fetchShareToken={fetchShareToken}
       />
       )}
 

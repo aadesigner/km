@@ -25,7 +25,7 @@ type VinAccessGateProps = {
 
 /**
  * Signed-in visitors only reach VinResult when /vin/public confirms unlock
- * (purchased, pending_manual on their account, valid share token, or admin).
+ * (purchased, pending_manual on their account, or admin).
  * Everyone else gets the locked VinPublic preview — same as guests.
  */
 export function VinAccessGate({ params, vin }: VinAccessGateProps) {
