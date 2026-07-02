@@ -64,7 +64,7 @@ export function HeroVinForm({
       <div
         className={cn(
           "hero-vin-shell relative overflow-hidden rounded-2xl hero-input-glow sm:hidden",
-          "bg-gradient-to-br from-primary/30 via-primary/15 to-emerald-500/20",
+          "bg-gradient-to-br from-primary/18 via-primary/8 to-emerald-500/10",
           disabled && "opacity-60 pointer-events-none",
         )}
       >
@@ -97,8 +97,8 @@ export function HeroVinForm({
               "hero-vin-field relative overflow-hidden transition-[border-color,box-shadow]",
               "mx-3 mb-3 rounded-xl",
               "border border-border/70 dark:border-white/10",
-              "focus-within:border-primary/40",
-              "focus-within:ring-2 focus-within:ring-primary/12",
+              "focus-within:border-primary/30",
+              "focus-within:ring-2 focus-within:ring-primary/8",
               "bg-muted/40 dark:bg-white/[0.04]",
             )}
           >

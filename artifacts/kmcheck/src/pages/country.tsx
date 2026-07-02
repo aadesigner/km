@@ -236,8 +236,8 @@ export default function CountryPage({ params }: Props) {
             transition={{ duration: 0.5 }}
             className="space-y-8 pt-2 md:pt-6 lg:pt-14 relative z-20 text-center lg:text-start"
           >
-            {/* Eyebrow */}
-            <div className="flex items-center justify-center lg:justify-start gap-3">
+            {/* Desktop eyebrow flag */}
+            <div className="hidden lg:flex items-center justify-start gap-3">
               <img
                 src={`https://flagcdn.com/40x30/${meta.flagImg}.png`}
                 width={40}
@@ -248,14 +248,31 @@ export default function CountryPage({ params }: Props) {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[2.875rem] sm:text-4xl md:text-5xl lg:text-[3.35rem] font-extrabold tracking-tight leading-[1.1]">
+            <h1 className="text-[3.2rem] sm:text-4xl md:text-5xl lg:text-[3.85rem] xl:text-[4.15rem] font-extrabold tracking-tight leading-[1.1]">
               {(() => {
                 const verb = t(`country_${slug}_headline_verb`);
                 return verb ? <>{verb}{" "}</> : null;
               })()}
               <CountryCyclingHeadline slug={slug} />
               <br />
-              <span className="text-foreground/90">{t(`country_${slug}_headline_origin`)}</span>
+              {/* Mobile — flag beside country name on its own line */}
+              <span className="lg:hidden text-foreground/90 inline-flex items-center justify-center gap-x-2 gap-y-1 flex-wrap">
+                <span>{t(`country_${slug}_headline_origin_prefix`)}</span>
+                <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
+                  <img
+                    src={`https://flagcdn.com/48x36/${meta.flagImg}.png`}
+                    width={48}
+                    height={36}
+                    alt=""
+                    className="w-11 h-[33px] rounded-md shadow-md ring-1 ring-black/10 shrink-0"
+                  />
+                  <span className="text-foreground font-extrabold">{countryName}</span>
+                </span>
+              </span>
+              {/* Desktop — full origin line (flag stays in eyebrow above) */}
+              <span className="hidden lg:inline text-foreground/90">
+                {t(`country_${slug}_headline_origin`)}
+              </span>
             </h1>
 
             <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto lg:mx-0 leading-relaxed">
