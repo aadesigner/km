@@ -466,6 +466,7 @@
   "auth_have_account": "Already have an account?",
   "auth_accept_terms_lead": "I agree to the",
   "auth_accept_terms_and": "and",
+  "auth_privacy_link": "Privacy Policy",
   "auth_error_terms_required": "Please accept the Terms of Service and Privacy Policy to continue.",
   "auth_verified_purchase": "Verified Purchase",
   "auth_headline": "Know the truth about any vehicle.",

@@ -452,6 +452,7 @@
   "auth_have_account": "Уже есть аккаунт?",
   "auth_accept_terms_lead": "Принимаю",
   "auth_accept_terms_and": "и",
+  "auth_privacy_link": "Политику конфиденциальности",
   "auth_error_terms_required": "Примите Условия использования и Политику конфиденциальности, чтобы продолжить.",
   "auth_verified_purchase": "Проверенная покупка",
   "auth_headline": "Узнайте правду о любом автомобиле.",

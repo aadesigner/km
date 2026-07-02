@@ -455,6 +455,7 @@
   "auth_have_account": "Keni tashmë llogari?",
   "auth_accept_terms_lead": "Pranoj",
   "auth_accept_terms_and": "dhe",
+  "auth_privacy_link": "Politikën e Privatësisë",
   "auth_error_terms_required": "Pranoni Kushtet e Shërbimit dhe Politikën e Privatësisë për të vazhduar.",
   "auth_verified_purchase": "Blerje e verifikuar",
   "auth_headline": "Zbulo të vërtetën për çdo makinë.",

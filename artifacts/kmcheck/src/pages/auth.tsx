@@ -32,16 +32,18 @@ function AuthField({
   label,
   optional,
   hint,
+  className,
   children,
 }: {
   id: string;
   label: string;
   optional?: string;
   hint?: React.ReactNode;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2 min-w-0", className)}>
       <div className="flex items-center justify-between gap-2">
         <Label htmlFor={id} className="text-[13px] font-semibold tracking-tight text-foreground/90">
           {label}
@@ -211,44 +213,63 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {!isSignIn && (
-                    <AuthField
-                      id="name"
-                      label={t("auth_name_label")}
-                      optional={t("auth_name_optional")}
-                    >
+                  {!isSignIn ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      <AuthField
+                        id="name"
+                        label={t("auth_name_label")}
+                        optional={t("auth_name_optional")}
+                      >
+                        <div className="relative min-w-0">
+                          <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                          <Input
+                            id="name"
+                            type="text"
+                            placeholder={t("auth_name_placeholder")}
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                            autoComplete="name"
+                            disabled={loading}
+                            className={cn(AUTH_INPUT, "pl-9")}
+                          />
+                        </div>
+                      </AuthField>
+
+                      <AuthField id="email" label={t("email")}>
+                        <div className="relative min-w-0">
+                          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                            autoComplete="email"
+                            disabled={loading}
+                            className={cn(AUTH_INPUT, "pl-9")}
+                          />
+                        </div>
+                      </AuthField>
+                    </div>
+                  ) : (
+                    <AuthField id="email" label={t("email")}>
                       <div className="relative">
-                        <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                        <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                         <Input
-                          id="name"
-                          type="text"
-                          placeholder={t("auth_name_placeholder")}
-                          value={name}
-                          onChange={e => setName(e.target.value)}
-                          autoComplete="name"
+                          id="email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          required
+                          autoComplete="email"
                           disabled={loading}
                           className={cn(AUTH_INPUT, "pl-10")}
                         />
                       </div>
                     </AuthField>
                   )}
-
-                  <AuthField id="email" label={t("email")}>
-                    <div className="relative">
-                      <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        autoComplete="email"
-                        disabled={loading}
-                        className={cn(AUTH_INPUT, "pl-10")}
-                      />
-                    </div>
-                  </AuthField>
 
                   <AuthField
                     id="password"
@@ -346,7 +367,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           className="underline underline-offset-2 hover:text-foreground"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {t("privacy")}
+                          {t("auth_privacy_link")}
                         </Link>
                       </label>
                     </div>

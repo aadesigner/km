@@ -14,11 +14,17 @@ export function AuthPageShell({ children, className }: Props) {
   const { language } = useTranslation();
 
   return (
-    <section className="relative min-h-[calc(100dvh-64px)] flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden">
+    <section
+      className={cn(
+        "relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pb-8 sm:pb-12",
+        "-mt-[var(--site-header-offset,84px)] pt-[calc(2rem+var(--site-header-offset,84px))] sm:pt-[calc(3rem+var(--site-header-offset,84px))]",
+      )}
+    >
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/90 via-background to-background dark:hidden" />
       <div className="absolute inset-0 -z-10 hidden dark:block bg-[#040d08]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.06] dark:opacity-[0.16]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(34,197,94,0.18),transparent)] dark:bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(34,197,94,0.35),transparent)]" />
+      <div className="absolute inset-0 -z-10 hidden dark:block bg-[radial-gradient(ellipse_50%_40%_at_0%_100%,rgba(34,197,94,0.08),transparent)]" />
       <div
         aria-hidden
         className="absolute top-[12%] left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl dark:bg-primary/20"

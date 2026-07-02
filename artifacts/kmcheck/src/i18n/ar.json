@@ -452,6 +452,7 @@
   "auth_have_account": "هل لديك حساب بالفعل؟",
   "auth_accept_terms_lead": "أوافق على",
   "auth_accept_terms_and": "و",
+  "auth_privacy_link": "سياسة الخصوصية",
   "auth_error_terms_required": "يرجى قبول شروط الخدمة وسياسة الخصوصية للمتابعة.",
   "auth_verified_purchase": "شراء موثّق",
   "auth_headline": "اكشف الحقيقة عن أي سيارة.",
