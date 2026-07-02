@@ -1,3 +1,5 @@
+import { mapInBatches } from "../lib/batchAsync.js";
+import { adminEmailMatches } from "../lib/adminBootstrap.js";
 import express, { Router } from "express";
 import multer from "multer";
 import { parse as csvParse } from "csv-parse";
@@ -121,9 +123,9 @@ async function propagateCatalogDataToLookups(
 
   if (lookups.length === 0) return;
 
-  await Promise.all(lookups.map((lookup) => {
+  await mapInBatches(lookups, 50, async (lookup) => {
     const catalogData = dataByVin.get(lookup.vin);
-    if (!catalogData) return Promise.resolve();
+    if (!catalogData) return;
     const lookupData = (lookup.data ?? {}) as Record<string, unknown>;
     const catalogRate = readFrozenKrwPerUsd(catalogData);
     const lookupRate = readFrozenKrwPerUsd(lookupData);
@@ -131,10 +133,10 @@ async function propagateCatalogDataToLookups(
       existingRate: lookupRate ?? catalogRate,
       currentRate,
     });
-    return db.update(vinLookupsTable)
+    await db.update(vinLookupsTable)
       .set({ data: stamped, updatedAt: new Date() })
       .where(eq(vinLookupsTable.id, lookup.id));
-  }));
+  });
 }
 
 const router = Router();
@@ -716,6 +718,10 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   if (name !== undefined) updates.name = name?.trim() || null;
   if (email?.trim()) {
     const emailLower = email.trim().toLowerCase();
+    if (adminEmailMatches(emailLower)) {
+      res.status(403).json({ error: "Cannot assign the configured admin email to another account" });
+      return;
+    }
     const [conflict] = await db.select({ id: usersTable.id })
       .from(usersTable).where(eq(usersTable.email, emailLower)).limit(1);
     if (conflict && conflict.id !== userId) { res.status(409).json({ error: "Email already in use by another account" }); return; }

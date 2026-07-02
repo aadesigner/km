@@ -309,22 +309,35 @@ export default function Home() {
             {/* VIN form */}
             <form onSubmit={handleCheck} className="max-w-lg w-full mx-auto space-y-3 text-left">
               <VinLookupDisabledBanner compact />
-              <div className={cn("hero-vin-shell relative overflow-hidden p-[2px] rounded-2xl hero-input-glow bg-gradient-to-r from-primary/15 via-primary/50 to-primary/15 dark:from-primary/10 dark:via-primary/45 dark:to-primary/10 max-sm:p-0 max-sm:bg-transparent sm:shadow-xl sm:shadow-black/10 dark:sm:shadow-black/25", vinLookupDisabled && "opacity-60 pointer-events-none")}>
-                <div className="vin-scanner relative flex items-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/10 focus-within:border-primary/50 transition-colors bg-background dark:bg-[#0a120e] sm:bg-background/90 sm:dark:bg-[#0a120e]/90 sm:backdrop-blur-sm">
-                  <Search className="absolute left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
-                  <Input
-                    className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 rounded-[14px] shadow-none bg-transparent font-mono tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 relative z-0"
-                    placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-                    value={vin}
-                    onChange={(e) => { setVin(e.target.value.replace(/\s/g, "").toUpperCase()); setError(""); }}
-                    maxLength={17}
-                  />
+              <div className={cn("hero-vin-shell relative overflow-hidden p-[2px] rounded-2xl hero-input-glow bg-gradient-to-r from-primary/15 via-primary/50 to-primary/15 dark:from-primary/10 dark:via-primary/45 dark:to-primary/10 max-sm:p-0 max-sm:rounded-2xl max-sm:border max-sm:border-primary/25 max-sm:bg-background max-sm:shadow-lg max-sm:shadow-primary/10 dark:max-sm:border-primary/20 dark:max-sm:bg-[#0a120e] sm:shadow-xl sm:shadow-black/10 dark:sm:shadow-black/25", vinLookupDisabled && "opacity-60 pointer-events-none")}>
+                <div className="vin-scanner relative flex flex-col sm:block rounded-2xl sm:rounded-[14px] overflow-hidden border-0 sm:border sm:border-border/80 dark:sm:border-white/10 focus-within:border-primary/50 sm:focus-within:border-primary/50 transition-colors bg-background dark:bg-[#0a120e] sm:bg-background/90 sm:dark:bg-[#0a120e]/90 sm:backdrop-blur-sm">
+                  <div className="relative flex w-full min-w-0 items-center">
+                    <Search className="absolute left-4 sm:left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
+                    <Input
+                      className={cn(
+                        "h-12 sm:h-14 w-full pl-11 sm:pl-13 text-[15px] sm:text-base border-0 focus-visible:ring-0 rounded-none sm:rounded-[14px] shadow-none bg-transparent font-mono tracking-[0.16em] sm:tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 placeholder:tracking-normal relative z-0",
+                        vin.length > 0 ? "pr-11 sm:pr-36" : "pr-4 sm:pr-36",
+                      )}
+                      placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
+                      value={vin}
+                      onChange={(e) => { setVin(e.target.value.replace(/\s/g, "").toUpperCase()); setError(""); }}
+                      maxLength={17}
+                      autoComplete="off"
+                      spellCheck={false}
+                      inputMode="text"
+                    />
+                    {vin.length > 0 && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums text-muted-foreground/55 sm:hidden pointer-events-none">
+                        {vin.length}/17
+                      </span>
+                    )}
+                  </div>
                   <Button
                     type="submit"
                     size="lg"
-                    className="hero-vin-submit absolute right-2 z-10 h-10 rounded-xl px-6 font-semibold max-sm:shadow-none sm:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 transition-shadow"
+                    className="hero-vin-submit relative z-10 w-full sm:absolute sm:right-2 sm:top-1/2 sm:-translate-y-1/2 sm:w-auto h-11 sm:h-10 rounded-none rounded-b-[15px] sm:rounded-xl px-6 font-semibold border-t border-border/50 dark:border-white/10 sm:border-t-0 max-sm:shadow-none sm:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 transition-shadow"
                   >
-                    <VinCheckSubmitLabel />
+                    <VinCheckSubmitLabel stacked />
                   </Button>
                 </div>
               </div>
@@ -705,30 +718,30 @@ export default function Home() {
               >
                 <Link
                   href={`/${language}/cars/${c.slug}`}
-                  className={`group relative block rounded-2xl overflow-hidden bg-gradient-to-br ${c.bg} min-h-[260px] p-8 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300`}
+                  className={`group relative block rounded-2xl overflow-hidden bg-gradient-to-br ${c.bg} min-h-0 sm:min-h-[260px] p-5 sm:p-8 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300`}
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_60%)]" />
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_60%_60%_at_80%_30%,rgba(255,255,255,0.1),transparent)]" />
-                  <div className="absolute -bottom-8 -right-8 select-none pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-500">
-                    <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="w-40 h-auto" />
+                  <div className="absolute -bottom-8 -right-8 select-none pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-500 max-sm:opacity-15">
+                    <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="w-28 sm:w-40 h-auto" />
                   </div>
-                  <div className="relative z-10 h-full flex flex-col justify-between gap-6">
+                  <div className="relative z-10 h-full flex flex-col justify-between gap-4 sm:gap-6">
                     <div>
-                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-16 w-auto block mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm max-sm:drop-shadow-none sm:drop-shadow-2xl" />
-                      <h3 className="text-2xl font-black text-white tracking-tight">{c.name}</h3>
-                      <p className="text-white/50 text-sm mt-1">{c.count} {t("country_registered_vehicles")}</p>
+                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-11 sm:h-16 w-auto block mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm max-sm:drop-shadow-none sm:drop-shadow-2xl" />
+                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">{c.name}</h3>
+                      <p className="text-white/50 text-xs sm:text-sm mt-0.5 sm:mt-1 line-clamp-1">{c.count} {t("country_registered_vehicles")}</p>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-1.5">
+                    <div className="space-y-2.5 sm:space-y-3">
+                      <div className="flex flex-wrap gap-1.5 max-sm:grid max-sm:grid-cols-3 max-sm:gap-1 max-sm:max-h-[4.5rem] max-sm:overflow-hidden">
                         {c.brands.map(brand => (
-                          <span key={brand} className="text-xs bg-white/10 backdrop-blur-sm text-white/80 px-2.5 py-1 rounded-lg border border-white/15">
+                          <span key={brand} className="text-[10px] sm:text-xs bg-white/10 backdrop-blur-sm text-white/80 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/15 truncate max-sm:text-center">
                             {brand}
                           </span>
                         ))}
                       </div>
-                      <div className="inline-flex items-center gap-2 text-sm font-bold text-white bg-white/10 border border-white/20 rounded-xl px-4 py-2 group-hover:bg-white/20 transition-colors">
-                        {t("vin_check_for")} {c.name}
-                        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                      <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 group-hover:bg-white/20 transition-colors max-sm:line-clamp-2 max-sm:w-full">
+                        <span className="line-clamp-2 min-w-0">{t("vin_check_for")} {c.name}</span>
+                        <ArrowRight className="h-3.5 w-3.5 shrink-0 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>

@@ -39,8 +39,60 @@ function pathsForUrl(url: string): { bodyPath: string; metaPath: string } {
   };
 }
 
+const MAX_DISK_BYTES = Number(process.env.VIN_IMAGE_CACHE_MAX_BYTES ?? 400 * 1024 * 1024);
+
+type DiskCacheEntry = {
+  bodyPath: string;
+  metaPath: string;
+  size: number;
+  mtimeMs: number;
+};
+
 async function ensureCacheDir(): Promise<void> {
   await fs.mkdir(CACHE_DIR, { recursive: true });
+}
+
+async function listDiskCacheEntries(): Promise<DiskCacheEntry[]> {
+  await ensureCacheDir();
+  let files: string[];
+  try {
+    files = await fs.readdir(CACHE_DIR);
+  } catch {
+    return [];
+  }
+
+  const entries: DiskCacheEntry[] = [];
+  for (const file of files) {
+    if (!file.endsWith(".bin")) continue;
+    const bodyPath = path.join(CACHE_DIR, file);
+    const metaPath = path.join(CACHE_DIR, file.replace(/\.bin$/, ".json"));
+    try {
+      const [bodyStat, metaStat] = await Promise.all([fs.stat(bodyPath), fs.stat(metaPath)]);
+      entries.push({
+        bodyPath,
+        metaPath,
+        size: bodyStat.size + metaStat.size,
+        mtimeMs: Math.max(bodyStat.mtimeMs, metaStat.mtimeMs),
+      });
+    } catch {
+      // skip incomplete pairs
+    }
+  }
+  return entries;
+}
+
+async function evictDiskCacheIfNeeded(): Promise<void> {
+  if (!Number.isFinite(MAX_DISK_BYTES) || MAX_DISK_BYTES <= 0) return;
+  let entries = await listDiskCacheEntries();
+  let total = entries.reduce((sum, entry) => sum + entry.size, 0);
+  if (total <= MAX_DISK_BYTES) return;
+
+  entries.sort((a, b) => a.mtimeMs - b.mtimeMs);
+  for (const entry of entries) {
+    if (total <= MAX_DISK_BYTES) break;
+    await Promise.allSettled([fs.unlink(entry.bodyPath), fs.unlink(entry.metaPath)]);
+    total -= entry.size;
+  }
 }
 
 /** Raw upstream photo URLs stored on VIN lookup / catalog rows. */
@@ -97,9 +149,10 @@ export async function writeVinImageCache(
   const tmpBody = `${bodyPath}.${process.pid}.tmp`;
   const tmpMeta = `${metaPath}.${process.pid}.tmp`;
   await fs.writeFile(tmpBody, body);
-  await fs.writeFile(tmpMeta, JSON.stringify({ contentType, upstreamUrl: url }));
+  await fs.writeFile(tmpMeta, JSON.stringify({ contentType, upstreamUrl: url, savedAt: Date.now() }));
   await fs.rename(tmpBody, bodyPath);
   await fs.rename(tmpMeta, metaPath);
+  await evictDiskCacheIfNeeded();
 }
 
 export async function invalidateVinImageCache(urls: string[]): Promise<void> {

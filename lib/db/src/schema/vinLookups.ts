@@ -11,6 +11,7 @@ export const vinLookupsTable = pgTable("vin_lookups", {
   providerName: text("provider_name"),
   fromCache: boolean("from_cache").notNull().default(false),
   paymentId: integer("payment_id"),
+  dataCorrupt: boolean("data_corrupt").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [

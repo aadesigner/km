@@ -16,7 +16,10 @@ import {
   PAYPAL_ORDER_ID_RE,
   fetchPaypalOrderStatus,
   interpretPaypalCaptureResponse,
+  fetchPaypalOrderCaptureAmount,
+  paypalAmountsMatch,
 } from "../lib/paypalCapture.js";
+import { paypalOrderCreateLimiter, paypalCaptureLimiter } from "../lib/expensiveEndpointLimiter.js";
 
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -253,7 +256,7 @@ router.post("/payments/validate-coupon", requireAuth, couponLimiter, async (req,
 });
 
 // POST /payments/create-paypal-order — creates a PayPal order and returns orderId
-router.post("/payments/create-paypal-order", requireAuth, async (req, res) => {
+router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAuth, async (req, res) => {
   const userId = req.userId!;
   const { vin, couponCode, recaptchaToken } = req.body as {
     vin: string; couponCode?: string; recaptchaToken?: string;
@@ -429,7 +432,7 @@ router.post("/payments/create-paypal-order", requireAuth, async (req, res) => {
 });
 
 // POST /payments/capture-paypal-order
-router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
+router.post("/payments/capture-paypal-order", paypalCaptureLimiter, requireAuth, async (req, res) => {
   const userId = req.userId!;
   const { orderId } = req.body as { orderId: string };
   if (!orderId || !PAYPAL_ORDER_ID_RE.test(orderId)) {
@@ -486,6 +489,32 @@ router.post("/payments/capture-paypal-order", requireAuth, async (req, res) => {
       res.status(402).json({
         error: "Payment was not completed. Please try again.",
         code: "PAYMENT_NOT_COMPLETED",
+      });
+      return;
+    }
+
+    let captured = captureAttempt.capturedAmount != null && captureAttempt.capturedCurrency
+      ? { amount: captureAttempt.capturedAmount, currency: captureAttempt.capturedCurrency }
+      : null;
+    if (!captured) {
+      captured = await fetchPaypalOrderCaptureAmount(base, ppToken, orderId);
+    }
+    if (captured && !paypalAmountsMatch(Number(payment.amount), payment.currency, captured)) {
+      await db.update(paymentsTable)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(paymentsTable.paypalOrderId, orderId));
+      logger.error({
+        msg: "payment_capture_amount_mismatch",
+        orderId,
+        paymentId: payment.id,
+        expectedAmount: payment.amount,
+        expectedCurrency: payment.currency,
+        capturedAmount: captured.amount,
+        capturedCurrency: captured.currency,
+      });
+      res.status(402).json({
+        error: "Payment amount verification failed. Please contact support.",
+        code: "PAYMENT_AMOUNT_MISMATCH",
       });
       return;
     }

@@ -1,8 +1,11 @@
 import { useTranslation } from "@/i18n/context";
 
-/** Hero / country VIN form — full label on sm+, short verb only on mobile. */
-export function VinCheckSubmitLabel() {
+/** Hero / country VIN form — short label when inline on narrow screens; full CTA when stacked (home mobile). */
+export function VinCheckSubmitLabel({ stacked = false }: { stacked?: boolean }) {
   const { t } = useTranslation();
+  if (stacked) {
+    return <>{t("check_vin")}</>;
+  }
   return (
     <>
       <span className="sm:hidden">{t("check_vin_short")}</span>

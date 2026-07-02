@@ -535,7 +535,41 @@ export default function Checkout({ params }: Props) {
           ...(paymentId ? { paymentId } : {}),
         }),
       });
-      const data = await resp.json() as { id?: number; vin?: string; error?: string; code?: string };
+      const data = await resp.json() as {
+        id?: number;
+        vin?: string;
+        status?: string;
+        fulfilling?: boolean;
+        error?: string;
+        code?: string;
+      };
+
+      if ((resp.status === 202 || data.status === "fulfilling" || data.fulfilling) && data.id) {
+        paypalFlowPhaseRef.current = "fulfilling";
+        const maxAttempts = 90;
+        for (let poll = 0; poll < maxAttempts; poll++) {
+          if (poll > 0) await new Promise((r) => setTimeout(r, 1000));
+          const pollResp = await fetch(`${basePath}/api/vin/${data.id}`, { credentials: "include" });
+          const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
+          if (!pollResp.ok) continue;
+          if (pollData.status === "complete" || pollData.status === "pending_manual") {
+            setStatus("success");
+            paypalFlowPhaseRef.current = "done";
+            sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+            goToVinReport(pollData.vin ?? nvin);
+            return true;
+          }
+          if (pollData.status === "error") {
+            setErrorMsg(translateClientError(t, pollData.code, pollData.error));
+            setStatus("error");
+            return false;
+          }
+        }
+        setErrorMsg(t("checkout_error_payment_fetch"));
+        setStatus("error");
+        return false;
+      }
+
       if (resp.ok && data.id) {
         setStatus("success");
         paypalFlowPhaseRef.current = "done";

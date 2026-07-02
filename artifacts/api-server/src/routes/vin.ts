@@ -5,8 +5,6 @@ import { requireAuth, optionalAuth } from "../lib/auth.js";
 import {
   getCachedVin,
   getCatalogVin,
-  upsertVinCatalog,
-  fetchFromProvider,
   checkLocalExists,
   isStaleKoreanReport,
   enrichVinReportDataForServe,
@@ -19,13 +17,15 @@ import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData } from "../lib/imageProxy.js";
 import { getOrFetchVinImage, mediaVersionFromUpdatedAt, readVinImageCache } from "../lib/vinImageCache.js";
-import { signVinShareToken } from "../lib/vinShareToken.js";
+import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
 import { getFreeDecoderSettings } from "../lib/freeDecoderSettingsCache.js";
 import { isTrustedApiRequest } from "../lib/clientGuard.js";
 import { rejectVinLookupIfDisabled } from "../lib/vinLookupGate.js";
-import { withUserVinLookupLock } from "../lib/vinLookupMutex.js";
 import { clientIpKey } from "../lib/trustedClient.js";
+import { assertAllowedImageUrl } from "../lib/imageHostAllowlist.js";
+import { vinPeekLimiter, vinLookupUserLimiter } from "../lib/expensiveEndpointLimiter.js";
+import { startProviderFulfillment, VIN_FULFILLING_STATUS } from "../lib/vinFulfillmentService.js";
 import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
 import rateLimit from "express-rate-limit";
 import type { VinSeoLang } from "@workspace/vin-page-seo";
@@ -63,7 +63,12 @@ async function stampLookupReportData(
 async function canAccessVinShare(
   userId: string | undefined,
   vin: string,
+  shareToken?: string | null,
 ): Promise<boolean> {
+  if (shareToken) {
+    const tokenVin = verifyVinShareToken(shareToken);
+    if (tokenVin === vin) return true;
+  }
   if (!userId) return false;
   return userOwnsVinReport(userId, vin);
 }
@@ -200,7 +205,7 @@ function proxyPhotoUrls(
     .map((p) => buildImageProxyUrl(p, { mediaVersion }));
 }
 
-async function findCompleteUserLookup(userId: number, normalizedVin: string) {
+async function findCompleteUserLookup(userId: string, normalizedVin: string) {
   const [row] = await db
     .select()
     .from(vinLookupsTable)
@@ -245,6 +250,12 @@ router.get("/vin/image", async (req, res) => {
   const url = verifyImageToken(token);
   if (!url) {
     res.status(403).json({ error: "Invalid or expired image token" });
+    return;
+  }
+  try {
+    assertAllowedImageUrl(url);
+  } catch {
+    res.status(403).json({ error: "Image host not allowed" });
     return;
   }
   try {
@@ -516,7 +527,7 @@ router.get("/vin/decode-free", freeDecodeBurstLimiter, optionalAuth, async (req,
 });
 
 // POST /vin/lookup — submit a VIN lookup
-router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
+router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, async (req, res) => {
   if (await rejectVinLookupIfDisabled(req, res)) return;
 
   const userId = req.userId!;
@@ -712,115 +723,39 @@ router.post("/vin/lookup", vinLookupLimiter, requireAuth, async (req, res) => {
     return;
   }
 
-  try {
-    await withUserVinLookupLock(userId, normalizedVin, async () => {
-      const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
-      if (racedLookup) {
-        await sendExistingLookupResponse(res, racedLookup);
-        return;
-      }
-      if (!provider.apiKey) throw new Error("Provider API key not configured");
-      const data = await fetchFromProvider(normalizedVin, provider.baseUrl, provider.apiKey);
-      const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
-      const [lookup] = await db.insert(vinLookupsTable).values({
-        vin: normalizedVin,
-        userId,
-        status: "complete",
-        data: stampedData,
-        providerName: provider.name,
-        fromCache: false,
-        paymentId: resolvedPaymentId,
-      }).returning();
-      logger.info({ msg: "vin_lookup_hit", source: "provider", vin: normalizedVin, userId, provider: provider.name });
-      const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt);
-      await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
-      res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: false });
-      void upsertVinCatalog(normalizedVin, provider.name, stampedData);
-      if (freeCouponPaymentId && freeCouponCode) {
-        void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
-      }
-      void fireVinReadyEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0]);
-      void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
-    });
-  } catch (err) {
-    logger.error({ err, vin: normalizedVin }, "VIN lookup failed");
-
-    let userMsg = "Failed to fetch VIN data from provider";
-    let errorCode: string | undefined;
-    if (err instanceof Error) {
-      if (/no vehicle history data found/i.test(err.message)) {
-        userMsg = "No vehicle history data found for this VIN.";
-        errorCode = "VIN_NO_DATA";
-      } else if (/vin not found/i.test(err.message)) {
-        userMsg = "No vehicle history data found for this VIN.";
-        errorCode = "VIN_NO_DATA";
-      } else if (/provider subscription|empty lots|balance is insufficient/i.test(err.message)) {
-        errorCode = "VIN_CHECK_UNAVAILABLE";
-        userMsg = err.message;
-      } else if (/could not reach|not available|access denied/i.test(err.message)) {
-        errorCode = "VIN_CHECK_UNAVAILABLE";
-        userMsg = err.message;
-      } else {
-        const m = err.message.match(/Provider returned \d+:\s*(.+)/s);
-        if (m) {
-          try {
-            const parsed = JSON.parse(m[1]) as { error?: string };
-            if (parsed.error) userMsg = parsed.error;
-          } catch {
-            userMsg = m[1].slice(0, 200);
-          }
-        } else {
-          userMsg = err.message;
-        }
-      }
-    }
-
-    if (errorCode === "VIN_NO_DATA" && await isVinEligibleForManualPending(normalizedVin)) {
-      try {
-        const lookup = await fulfillManualPendingVinLookup({
-          vin: normalizedVin,
-          userId,
-          paymentId: resolvedPaymentId,
-        });
-        logger.info({ msg: "vin_lookup_hit", source: "manual_pending_fallback", vin: normalizedVin, userId, lookupId: lookup.id });
-        await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
-        res.json(serializeLookupForClient(lookup));
-        if (freeCouponPaymentId && freeCouponCode) {
-          void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
-        }
-        void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
-        return;
-      } catch (manualErr) {
-        logger.error({ manualErr, vin: normalizedVin }, "Manual pending fallback failed");
-      }
-    }
-
-    // Do not mark paid PayPal orders as failed — money was captured; user can retry delivery.
-    if (resolvedPaymentId) {
-      try {
-        const [pmt] = await db.select({ amount: paymentsTable.amount })
-          .from(paymentsTable)
-          .where(eq(paymentsTable.id, resolvedPaymentId))
-          .limit(1);
-        const isFreeCoupon = Number(pmt?.amount ?? 0) === 0;
-        if (isFreeCoupon) {
-          await failFreeCouponPayment(resolvedPaymentId, freeCouponCode);
-        } else {
-          logger.error({
-            msg: "paid_vin_lookup_delivery_failed",
-            paymentId: resolvedPaymentId,
-            vin: normalizedVin,
-            userId,
-            errorCode,
-          });
-        }
-      } catch (dbErr) {
-        logger.error({ dbErr }, "Failed to update payment after VIN lookup error");
-      }
-    }
-
-    res.status(502).json({ error: userMsg, code: errorCode });
+  if (!provider.apiKey?.trim()) {
+    res.status(503).json({ error: "Provider API key not configured" });
+    return;
   }
+
+  const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
+  if (racedLookup) {
+    await sendExistingLookupResponse(res, racedLookup);
+    return;
+  }
+
+  const queued = await startProviderFulfillment({
+    userId,
+    normalizedVin,
+    resolvedPaymentId,
+    freeCouponPaymentId,
+    freeCouponCode,
+    resolvedPayment,
+    provider: {
+      id: provider.id,
+      name: provider.name,
+      baseUrl: provider.baseUrl,
+      apiKey: provider.apiKey,
+    },
+    user: user[0],
+  });
+
+  res.status(202).json({
+    id: queued.id,
+    vin: queued.vin,
+    status: queued.status,
+    fulfilling: queued.status === VIN_FULFILLING_STATUS,
+  });
 });
 
 // GET /vin/seo/:vin — public meta for crawlers (locked preview fields only)
@@ -1027,6 +962,7 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
         or(
           eq(vinLookupsTable.status, "complete"),
           eq(vinLookupsTable.status, "pending_manual"),
+          eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
         ),
       ))
       .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.id))
@@ -1069,6 +1005,17 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
     return;
   }
 
+  if (lookup.status === VIN_FULFILLING_STATUS) {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      ...lookup,
+      data: null,
+      status: VIN_FULFILLING_STATUS,
+      fulfilling: true,
+    });
+    return;
+  }
+
   res.setHeader("Cache-Control", "private, no-store");
   const rawData = lookup.data as Record<string, unknown> | null;
   const enrichedData = rawData
@@ -1081,7 +1028,7 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
 });
 
 // GET /vin/peek/:vin — pre-checkout preview decoded from the VIN string
-router.get("/vin/peek/:vin", requireAuth, async (req, res) => {
+router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
   if (await rejectVinLookupIfDisabled(req, res)) return;
 
   const vin = String(req.params.vin ?? "").toUpperCase();
@@ -1241,7 +1188,7 @@ router.get("/vin/peek/:vin", requireAuth, async (req, res) => {
   });
 });
 
-// GET /vin/preview/:vin — unlisted preview (share token or signed-in owner)
+// GET /vin/preview/:vin — unlisted preview (share token ?s= or signed-in owner)
 router.get("/vin/preview/:vin", publicVinLimiter, optionalAuth, async (req, res) => {
   const vin = String(req.params.vin ?? "").toUpperCase();
   if (!vin || vin.length !== 17) {
@@ -1249,7 +1196,8 @@ router.get("/vin/preview/:vin", publicVinLimiter, optionalAuth, async (req, res)
     return;
   }
 
-  const allowed = await canAccessVinShare(req.userId, vin);
+  const shareToken = typeof req.query.s === "string" ? req.query.s : undefined;
+  const allowed = await canAccessVinShare(req.userId, vin, shareToken);
   if (!allowed) {
     res.status(403).json({ error: "Forbidden" });
     return;

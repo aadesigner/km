@@ -3,6 +3,8 @@ import {
   isPaypalOrderAlreadyCaptured,
   readPaypalOrderStatus,
   interpretPaypalCaptureResponse,
+  readPaypalCapturedAmount,
+  paypalAmountsMatch,
 } from "./paypalCapture.js";
 
 describe("paypalCapture", () => {
@@ -38,5 +40,23 @@ describe("paypalCapture", () => {
       async () => "APPROVED",
     );
     expect(result.treatedAsCompleted).toBe(false);
+  });
+
+  it("reads captured amount from completed order payload", () => {
+    const captured = readPaypalCapturedAmount({
+      status: "COMPLETED",
+      purchase_units: [{
+        payments: {
+          captures: [{ amount: { value: "9.99", currency_code: "EUR" } }],
+        },
+      }],
+    });
+    expect(captured).toEqual({ amount: 9.99, currency: "EUR" });
+  });
+
+  it("matches PayPal amounts within tolerance", () => {
+    expect(paypalAmountsMatch(10, "EUR", { amount: 9.99, currency: "EUR" })).toBe(true);
+    expect(paypalAmountsMatch(10, "EUR", { amount: 8, currency: "EUR" })).toBe(false);
+    expect(paypalAmountsMatch(10, "EUR", { amount: 10, currency: "USD" })).toBe(false);
   });
 });

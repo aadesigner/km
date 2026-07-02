@@ -10,11 +10,17 @@ import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
 
 process.on("uncaughtException", (err) => {
-  logger.error({ err }, "Uncaught exception — process continues");
+  logger.error({ err }, "Uncaught exception");
+  if (process.env.NODE_ENV === "production") {
+    setTimeout(() => process.exit(1), 250);
+  }
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.error({ reason }, "Unhandled promise rejection — process continues");
+  logger.error({ reason }, "Unhandled promise rejection");
+  if (process.env.NODE_ENV === "production") {
+    setTimeout(() => process.exit(1), 250);
+  }
 });
 
 const rawPort = process.env["PORT"] ?? "8080";

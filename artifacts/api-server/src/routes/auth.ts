@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { getSettings } from "../lib/settingsCache.js";
 import { shouldBootstrapAdmin } from "../lib/adminBootstrap.js";
 import { clientIpKey } from "../lib/trustedClient.js";
+import { oauthInitLimiter } from "../lib/expensiveEndpointLimiter.js";
 
 const router = Router();
 
@@ -600,7 +601,7 @@ router.post("/auth/reset-password", resetPasswordIpLimiter, resetPasswordTokenLi
 // ── Facebook OAuth ────────────────────────────────────────────────────────────
 
 // GET /auth/facebook — initiate OAuth
-router.get("/auth/facebook", async (req, res) => {
+router.get("/auth/facebook", oauthInitLimiter, async (req, res) => {
   const [settings] = await db
     .select({ facebookAppId: systemSettingsTable.facebookAppId })
     .from(systemSettingsTable)
@@ -826,7 +827,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
 // ── Google OAuth ──────────────────────────────────────────────────────────────
 
 // GET /auth/google — initiate OAuth
-router.get("/auth/google", async (req, res) => {
+router.get("/auth/google", oauthInitLimiter, async (req, res) => {
   const [settings] = await db
     .select({ googleClientId: systemSettingsTable.googleClientId })
     .from(systemSettingsTable)

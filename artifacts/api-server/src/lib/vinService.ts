@@ -14,6 +14,7 @@ import { sanitizeCatalogPayload, catalogHasDeliverableReport } from "./vinCatalo
 import { mediaVersionFromUpdatedAt, extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
 import { removeVinFromSitemaps } from "./sitemapMaintenance.js";
 import { assertValidProviderBaseUrl } from "./providerUrl.js";
+import { withGlobalVinProviderLock } from "./vinProviderMutex.js";
 import {
   providerCalendarLabelToIso,
   repairEncarMisParsedIsoDate,
@@ -651,12 +652,20 @@ export async function getCachedVin(vin: string) {
   const row = results[0] ?? null;
   if (!row) return null;
 
-  // If the cached JSON contains the literal string "[object Object]" it was
-  // written by the old buggy code path. Treat it as a cache miss so the next
-  // request re-fetches clean data from the provider and overwrites the row.
+  // Legacy rows may lack data_corrupt — fall back to JSON probe once, then flag in DB.
+  const rowRecord = row as typeof row & { dataCorrupt?: boolean | null };
+  if (rowRecord.dataCorrupt === true) {
+    logger.warn({ vin }, "Cached VIN marked data_corrupt; treating as cache miss");
+    return null;
+  }
+
   const serialized = JSON.stringify(row.data);
   if (serialized.includes("[object Object]")) {
-    logger.warn({ vin }, "Stale cached VIN result contains [object Object]; treating as cache miss");
+    logger.warn({ vin }, "Stale cached VIN result contains [object Object]; marking data_corrupt");
+    await db.update(vinLookupsTable)
+      .set({ dataCorrupt: true, updatedAt: new Date() })
+      .where(eq(vinLookupsTable.id, row.id))
+      .catch((err) => logger.warn({ err, vin }, "Failed to mark data_corrupt on vin lookup"));
     return null;
   }
 
@@ -985,15 +994,24 @@ async function fetchLocalReport(
 }
 
 export async function fetchFromProvider(vin: string, providerBaseUrl: string, apiKey: string): Promise<NormalizedVinData> {
-  const base = normalizeProviderBaseUrl(providerBaseUrl);
+  const normalized = vin.trim().toUpperCase();
+  return withGlobalVinProviderLock(normalized, async () => {
+    const catalogEntry = await getCatalogVin(normalized);
+    const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
+    if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleKoreanReport(catalogData)) {
+      return normalizeCarstatResponse(catalogData);
+    }
 
-  try {
-    const body = await fetchLocalReport(vin, base, apiKey);
-    return normalizeCarstatResponse(body);
-  } catch (err) {
-    logger.error({ err, vin, providerBaseUrl }, "Error fetching from provider");
-    throw err;
-  }
+    const base = normalizeProviderBaseUrl(providerBaseUrl);
+
+    try {
+      const body = await fetchLocalReport(normalized, base, apiKey);
+      return normalizeCarstatResponse(body);
+    } catch (err) {
+      logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
+      throw err;
+    }
+  });
 }
 
 export type VinPayableResult =

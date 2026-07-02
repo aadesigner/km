@@ -5,11 +5,11 @@ function deriveKey(): Buffer {
   return crypto.createHash("sha256").update(`${secret}:vin-share`).digest();
 }
 
-/** Long-lived token for unlisted share links (default 5 years). */
+/** Share links valid 90 days — rotate via new share-link request. */
 export function signVinShareToken(vin: string): string {
   const key = deriveKey();
   const iv = crypto.randomBytes(12);
-  const exp = Math.floor(Date.now() / 1000) + 5 * 365 * 86400;
+  const exp = Math.floor(Date.now() / 1000) + 90 * 86400;
   const plaintext = JSON.stringify({ vin: vin.toUpperCase(), exp });
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
   const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
