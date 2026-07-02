@@ -248,7 +248,7 @@ export default function CountryPage({ params }: Props) {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[3.2rem] sm:text-4xl md:text-5xl lg:text-[3.85rem] xl:text-[4.15rem] font-extrabold tracking-tight leading-[1.1]">
+            <h1 className="text-[2.95rem] sm:text-4xl md:text-5xl lg:text-[3.85rem] xl:text-[4.15rem] font-extrabold tracking-tight leading-[1.1]">
               {(() => {
                 const verb = t(`country_${slug}_headline_verb`);
                 return verb ? <>{verb}{" "}</> : null;

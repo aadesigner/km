@@ -139,7 +139,7 @@ export function ClientMobileNav() {
                 type="button"
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
-                className="relative -mt-2.5 flex min-h-[3rem] flex-col items-center justify-end gap-0.5 px-0.5 pb-1.5 touch-manipulation select-none"
+                className="relative -mt-4 flex min-h-[3rem] flex-col items-center justify-end gap-1 px-0.5 pb-1.5 touch-manipulation select-none"
                 onPointerDown={() => {
                   prefetchRouteFromHref(href, { isSignedIn });
                 }}
