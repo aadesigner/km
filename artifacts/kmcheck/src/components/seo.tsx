@@ -15,6 +15,7 @@ import {
   getRouteSeo,
   type SeoPageKey,
 } from "@/lib/seo-pages";
+import { resolveFavicons, type FaviconSet } from "@/lib/country-favicons";
 
 export { SEO_DATA };
 export type { SeoPageKey };
@@ -30,6 +31,7 @@ interface SEOProps {
   ogImage?: string;
   ogImageAlt?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  favicons?: FaviconSet;
 }
 
 function upsertMeta(key: string, content: string, attr = "name") {
@@ -61,6 +63,12 @@ function removeAlternates() {
   document.querySelectorAll('meta[property="og:locale:alternate"]').forEach((el) => el.remove());
 }
 
+export function applyFavicons(favicons: FaviconSet) {
+  upsertLink("icon", favicons.icon32, { type: "image/png", sizes: "32x32" });
+  upsertLink("icon", favicons.icon16, { type: "image/png", sizes: "16x16" });
+  upsertLink("apple-touch-icon", favicons.apple, { sizes: "180x180" });
+}
+
 function upsertJsonLd(data: Record<string, unknown> | Record<string, unknown>[] | undefined) {
   const id = "kmcheck-json-ld";
   document.getElementById(id)?.remove();
@@ -81,6 +89,7 @@ export function applySeoHead({
   ogImage,
   ogImageAlt,
   jsonLd,
+  favicons,
 }: SEOProps) {
   document.title = title;
   document.documentElement.lang = lang;
@@ -138,6 +147,7 @@ export function applySeoHead({
   }
 
   upsertJsonLd(jsonLd);
+  applyFavicons(favicons ?? resolveFavicons(undefined, appBasePath()));
 }
 
 /** SEO meta always derived from the URL — never from UI language state. */
@@ -149,13 +159,13 @@ export function usePageSeo(pageKeyOverride?: SeoPageKey) {
   );
 }
 
-export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd }: SEOProps) {
+export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons }: SEOProps) {
   useLayoutEffect(() => {
-    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd });
+    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons });
     return () => {
       document.getElementById("kmcheck-json-ld")?.remove();
     };
-  }, [title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd == null ? null : JSON.stringify(jsonLd)]);
+  }, [title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd == null ? null : JSON.stringify(jsonLd), favicons?.icon16, favicons?.icon32, favicons?.apple]);
 
   return null;
 }

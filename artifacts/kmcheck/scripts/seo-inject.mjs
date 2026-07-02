@@ -5,6 +5,12 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  faviconAssetsForPageKey,
+  withBasePath,
+  DEFAULT_FAVICONS,
+} from "./country-favicon-config.mjs";
+
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
   readFileSync(join(__dir, "../src/lib/seo-data.json"), "utf8"),
@@ -227,10 +233,38 @@ function buildSeoHeadBlock(resolved) {
   return `\n    ${lines.join("\n    ")}\n`;
 }
 
+function resolveFavicons(pageKey, basePath = "") {
+  const country = faviconAssetsForPageKey(pageKey);
+  const assets = country ?? DEFAULT_FAVICONS;
+  return {
+    icon16: withBasePath(assets.icon16, basePath),
+    icon32: withBasePath(assets.icon32, basePath),
+    apple: withBasePath(assets.apple, basePath),
+  };
+}
+
+function applyFaviconLinks(html, pageKey, basePath = "") {
+  const { icon16, icon32, apple } = resolveFavicons(pageKey, basePath);
+  return html
+    .replace(
+      /<link rel="icon" type="image\/png" sizes="32x32" href="[^"]*" \/>/i,
+      `<link rel="icon" type="image/png" sizes="32x32" href="${escapeHtml(icon32)}" />`,
+    )
+    .replace(
+      /<link rel="icon" type="image\/png" sizes="16x16" href="[^"]*" \/>/i,
+      `<link rel="icon" type="image/png" sizes="16x16" href="${escapeHtml(icon16)}" />`,
+    )
+    .replace(
+      /<link rel="apple-touch-icon" sizes="180x180" href="[^"]*" \/>/i,
+      `<link rel="apple-touch-icon" sizes="180x180" href="${escapeHtml(apple)}" />`,
+    );
+}
+
 /** Inject localized SEO into an HTML document string (for SSR-like prerender + Vite dev). */
 export function injectSeoIntoHtml(html, pathname, basePath = "") {
   const resolved = resolveSeoForPath(pathname, basePath);
   let out = removeGeneratedSeoTags(html);
+  out = applyFaviconLinks(out, resolved.pageKey, basePath);
 
   out = out.replace(/<html([^>]*)>/i, (_match, attrs) => {
     const cleaned = String(attrs)

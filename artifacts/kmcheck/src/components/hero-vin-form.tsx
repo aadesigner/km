@@ -147,6 +147,20 @@ export function HeroVinForm({
 
       {/* Desktop — classic gradient shell + single input row (pre-mobile-unification) */}
       <div className={cn("hidden sm:block space-y-3", disabled && "opacity-60 pointer-events-none")}>
+        <div className="flex items-center justify-between gap-3 px-1 pb-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/90">
+            {t("vin_check")}
+          </span>
+          <span
+            className={cn(
+              "text-xs font-mono font-semibold tabular-nums transition-colors",
+              isComplete ? "text-primary" : "text-muted-foreground/80",
+            )}
+            aria-live="polite"
+          >
+            {vinLen}/17
+          </span>
+        </div>
         <div
           className={cn(
             "relative p-[2px] rounded-2xl hero-input-glow",

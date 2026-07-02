@@ -8,6 +8,8 @@
   var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password"];
   var VALID_COUNTRY_SLUGS = ["usa","korea","canada"];
   var BASE = "";
+  var DEFAULT_FAVICONS = {"icon16":"/favicon-16x16.png","icon32":"/favicon-32x32.png","apple":"/apple-touch-icon.png"};
+  var COUNTRY_PAGE_FAVICONS = {"country_usa":{"icon16":"/favicon-usa-16x16.png","icon32":"/favicon-usa-32x32.png","apple":"/apple-touch-icon-usa.png"},"country_korea":{"icon16":"/favicon-korea-16x16.png","icon32":"/favicon-korea-32x32.png","apple":"/apple-touch-icon-korea.png"},"country_canada":{"icon16":"/favicon-canada-16x16.png","icon32":"/favicon-canada-32x32.png","apple":"/apple-touch-icon-canada.png"}};
   var VIN_INDEX_RE = /^\/vin\/([A-HJ-NPR-Z0-9]{17})$/i;
 
   function vinSeoFallback(rest, lang) {
@@ -101,6 +103,23 @@
     });
   }
 
+  function resolveFavicons(pageKey) {
+    var assets = COUNTRY_PAGE_FAVICONS[pageKey] || DEFAULT_FAVICONS;
+    var base = BASE.replace(/\/$/, "");
+    return {
+      icon16: base + assets.icon16,
+      icon32: base + assets.icon32,
+      apple: base + assets.apple,
+    };
+  }
+
+  function applyFavicons(pageKey) {
+    var favicons = resolveFavicons(pageKey);
+    upsertLink("icon", favicons.icon32, { type: "image/png", sizes: "32x32" });
+    upsertLink("icon", favicons.icon16, { type: "image/png", sizes: "16x16" });
+    upsertLink("apple-touch-icon", favicons.apple, { sizes: "180x180" });
+  }
+
   function applySeoFromUrl() {
     var ORIGIN = location.origin;
     var pathname = stripBase(location.pathname);
@@ -142,6 +161,8 @@
         if (l !== lang) upsertMeta("og:locale:alternate", OG_LOCALE[l], "property");
       });
     }
+
+    applyFavicons(pageKey);
   }
 
   applySeoFromUrl();

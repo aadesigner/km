@@ -10,6 +10,11 @@ import {
   OG_LOCALE_MAP,
   seoData,
 } from "./seo-inject.mjs";
+import {
+  faviconAssetsForPageKey,
+  DEFAULT_FAVICONS,
+  COUNTRY_PAGE_FAVICON_SLUGS,
+} from "./country-favicon-config.mjs";
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const root = join(dir, "..");
@@ -25,6 +30,13 @@ const NOINDEX = [
   "/reset-password",
 ];
 
+const countryPageFavicons = Object.fromEntries(
+  Object.keys(COUNTRY_PAGE_FAVICON_SLUGS).map((pageKey) => [
+    pageKey,
+    faviconAssetsForPageKey(pageKey),
+  ]),
+);
+
 const js = `/* auto-generated — do not edit */
 (function () {
   var SEO = ${JSON.stringify(seoData)};
@@ -35,6 +47,8 @@ const js = `/* auto-generated — do not edit */
   var NOINDEX = ${JSON.stringify(NOINDEX)};
   var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada"])};
   var BASE = ${JSON.stringify(basePath)};
+  var DEFAULT_FAVICONS = ${JSON.stringify(DEFAULT_FAVICONS)};
+  var COUNTRY_PAGE_FAVICONS = ${JSON.stringify(countryPageFavicons)};
   var VIN_INDEX_RE = /^\\/vin\\/([A-HJ-NPR-Z0-9]{17})$/i;
 
   function vinSeoFallback(rest, lang) {
@@ -128,6 +142,23 @@ const js = `/* auto-generated — do not edit */
     });
   }
 
+  function resolveFavicons(pageKey) {
+    var assets = COUNTRY_PAGE_FAVICONS[pageKey] || DEFAULT_FAVICONS;
+    var base = BASE.replace(/\\/$/, "");
+    return {
+      icon16: base + assets.icon16,
+      icon32: base + assets.icon32,
+      apple: base + assets.apple,
+    };
+  }
+
+  function applyFavicons(pageKey) {
+    var favicons = resolveFavicons(pageKey);
+    upsertLink("icon", favicons.icon32, { type: "image/png", sizes: "32x32" });
+    upsertLink("icon", favicons.icon16, { type: "image/png", sizes: "16x16" });
+    upsertLink("apple-touch-icon", favicons.apple, { sizes: "180x180" });
+  }
+
   function applySeoFromUrl() {
     var ORIGIN = location.origin;
     var pathname = stripBase(location.pathname);
@@ -169,6 +200,8 @@ const js = `/* auto-generated — do not edit */
         if (l !== lang) upsertMeta("og:locale:alternate", OG_LOCALE[l], "property");
       });
     }
+
+    applyFavicons(pageKey);
   }
 
   applySeoFromUrl();

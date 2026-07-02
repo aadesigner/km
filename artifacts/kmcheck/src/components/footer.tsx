@@ -154,6 +154,7 @@ export function Footer() {
             <h3 className="text-[13px] font-semibold text-white/70">{t("footer_company")}</h3>
             <ul className="space-y-3">
               {[
+                { href: `/${language}/how-it-works`, label: t("nav_how_it_works") },
                 { href: `/${language}/pricing`, label: t("pricing") },
                 { href: `/${language}/free-vin-decoder`, label: t("free_decoder_nav_link") },
                 { href: `/${language}/dashboard`, label: t("my_reports") },

@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
   ShieldCheck, Search, Clock, FileText, ChevronRight, ChevronLeft,
-  CheckCircle2, AlertTriangle, Gauge, Lock,
+  CheckCircle2, AlertTriangle, Gauge, Lock, Check,
   Globe, Star, ArrowRight, X, UserSearch,
 } from "lucide-react";
 import { CompareTable } from "@/components/compare-table";
@@ -29,9 +29,35 @@ import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function useFeatures(t: (k: string) => string) {
+  const mileageIncludes = [
+    t("feature_mileage_include_0"),
+    t("feature_mileage_include_1"),
+    t("feature_mileage_include_2"),
+    t("feature_mileage_include_3"),
+  ];
+  const accidentsIncludes = [
+    t("feature_accidents_include_0"),
+    t("feature_accidents_include_1"),
+    t("feature_accidents_include_2"),
+    t("feature_accidents_include_3"),
+  ];
+  const salvageIncludes = [
+    t("feature_salvage_include_0"),
+    t("feature_salvage_include_1"),
+    t("feature_salvage_include_2"),
+    t("feature_salvage_include_3"),
+  ];
+  const theftIncludes = [
+    t("feature_theft_include_0"),
+    t("feature_theft_include_1"),
+    t("feature_theft_include_2"),
+    t("feature_theft_include_3"),
+  ];
+
   return [
     {
       icon: Gauge, title: t("report_mileage"), desc: t("feature_mileage_desc"),
+      seo: t("feature_mileage_seo"), includes: mileageIncludes,
       iconColor: "text-orange-500", bgColor: "bg-orange-500/10",
       borderColor: "border-l-orange-500",
       calloutClass: "bg-orange-50 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/50",
@@ -41,6 +67,7 @@ function useFeatures(t: (k: string) => string) {
     },
     {
       icon: AlertTriangle, title: t("report_accidents"), desc: t("feature_accidents_desc"),
+      seo: t("feature_accidents_seo"), includes: accidentsIncludes,
       iconColor: "text-red-500", bgColor: "bg-red-500/10",
       borderColor: "border-l-red-500",
       calloutClass: "bg-red-50 dark:bg-red-950/30 border border-red-200/70 dark:border-red-900/50",
@@ -50,6 +77,7 @@ function useFeatures(t: (k: string) => string) {
     },
     {
       icon: ShieldCheck, title: t("report_salvage"), desc: t("feature_salvage_desc"),
+      seo: t("feature_salvage_seo"), includes: salvageIncludes,
       iconColor: "text-amber-500", bgColor: "bg-amber-500/10",
       borderColor: "border-l-amber-500",
       calloutClass: "bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/50",
@@ -59,6 +87,7 @@ function useFeatures(t: (k: string) => string) {
     },
     {
       icon: Lock, title: t("report_theft"), desc: t("feature_theft_desc"),
+      seo: t("feature_theft_seo"), includes: theftIncludes,
       iconColor: "text-purple-500", bgColor: "bg-purple-500/10",
       borderColor: "border-l-purple-500",
       calloutClass: "bg-purple-50 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-900/50",
@@ -67,6 +96,122 @@ function useFeatures(t: (k: string) => string) {
       stat: t("feature_theft_stat_value"), statLabel: t("feature_theft_stat_label"),
     },
   ];
+}
+
+type WhatWeCheckFeature = ReturnType<typeof useFeatures>[number];
+
+function WhatWeCheckDetailPanel({
+  feature,
+  reportShowsLabel,
+  exampleLabel,
+  variant = "desktop",
+}: {
+  feature: WhatWeCheckFeature;
+  reportShowsLabel: string;
+  exampleLabel: string;
+  variant?: "desktop" | "mobile";
+}) {
+  const { icon: Icon, title, desc, seo, includes, iconColor, bgColor, calloutClass, accentBg, example, stat, statLabel } = feature;
+  const isMobile = variant === "mobile";
+
+  return (
+    <article className="relative overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
+      <div className={cn(isMobile ? "p-4 space-y-3.5" : "p-5 md:p-6 space-y-4")}>
+        <header className="flex items-start gap-3">
+          <div className={cn(
+            isMobile ? "h-11 w-11 rounded-xl" : "h-12 w-12 rounded-xl",
+            "flex items-center justify-center shrink-0",
+            bgColor,
+          )}>
+            <Icon className={cn(isMobile ? "h-5 w-5" : "h-6 w-6", iconColor)} />
+          </div>
+          <div className="min-w-0">
+            <h3 className={cn("font-bold leading-tight", isMobile ? "text-lg" : "text-xl")}>{title}</h3>
+            <p className={cn("text-muted-foreground mt-1 leading-snug", isMobile ? "text-sm" : "text-sm")}>{desc}</p>
+          </div>
+        </header>
+
+        <p className={cn("text-foreground/85 leading-relaxed", isMobile ? "text-sm" : "text-[15px]")}>{seo}</p>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{reportShowsLabel}</p>
+          <ul className={cn("gap-2", isMobile ? "space-y-2" : "grid sm:grid-cols-2 gap-x-4 gap-y-2")}>
+            {includes.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-sm text-foreground/90">
+                <Check className={cn("h-4 w-4 shrink-0 mt-0.5", iconColor)} aria-hidden />
+                <span className="leading-snug">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className={cn(
+          isMobile ? "grid grid-cols-1 gap-2.5" : "grid sm:grid-cols-[1fr_auto] gap-3 items-stretch",
+        )}>
+          <div className={cn("rounded-xl px-3.5 py-3 text-sm leading-relaxed", calloutClass)}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{exampleLabel}</p>
+            <p>{example}</p>
+          </div>
+          <div className={cn(
+            "flex items-baseline flex-wrap gap-x-2 gap-y-1 rounded-xl px-4 py-3",
+            isMobile ? "justify-between" : "sm:flex-col sm:justify-center sm:min-w-[9.5rem]",
+            bgColor,
+          )}>
+            <span className={cn("font-black tabular-nums leading-none", isMobile ? "text-2xl" : "text-3xl", iconColor)}>{stat}</span>
+            <span className="text-sm text-muted-foreground leading-snug">{statLabel}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function WhatWeCheckNavButton({
+  feature,
+  active,
+  onClick,
+  layoutId,
+}: {
+  feature: WhatWeCheckFeature;
+  active: boolean;
+  onClick: () => void;
+  layoutId?: boolean;
+}) {
+  const { icon: Icon, title, iconColor, bgColor, borderColor } = feature;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group relative flex items-center gap-3 rounded-xl text-left transition-colors duration-200 w-full",
+        "px-3 py-2.5 lg:py-3",
+        active
+          ? "text-foreground bg-primary/[0.06] border border-primary/20 shadow-sm"
+          : "text-muted-foreground hover:text-foreground border border-transparent hover:bg-muted/40",
+      )}
+    >
+      {active && layoutId && (
+        <motion.div
+          layoutId="whatWeCheckActive"
+          className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-full", borderColor.replace("border-l-", "bg-"))}
+          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+        />
+      )}
+      {active && !layoutId && (
+        <span className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-full", borderColor.replace("border-l-", "bg-"))} />
+      )}
+      <div className={cn("h-9 w-9 lg:h-10 lg:w-10 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
+        <Icon className={cn("h-4 w-4 lg:h-[1.125rem] lg:w-[1.125rem]", iconColor)} />
+      </div>
+      <span className="text-sm lg:text-[15px] font-semibold leading-snug flex-1 min-w-0">{title}</span>
+      <ChevronRight className={cn(
+        "h-4 w-4 shrink-0 transition-opacity",
+        active ? "opacity-50" : "opacity-0 group-hover:opacity-35",
+      )} />
+    </button>
+  );
 }
 
 function useCountries(t: (k: string) => string) {
@@ -358,195 +503,86 @@ export default function Home() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         <div
-          className="max-w-5xl mx-auto"
+          className="max-w-6xl xl:max-w-7xl mx-auto"
           onMouseEnter={() => setChecksPaused(true)}
           onMouseLeave={() => setChecksPaused(false)}
         >
-          {/* ── Mobile ── */}
-          <div className="lg:hidden space-y-4">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center space-y-1.5"
-            >
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-0.5 text-[11px] font-semibold text-primary">
-                {t("home_badge_most_checked")}
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">{t("what_we_check")}</h2>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto">{t("what_we_check_sub")}</p>
-            </motion.div>
-
-            <div className="grid grid-cols-4 gap-1.5">
-              {FEATURES.map(({ icon: Icon, title, iconColor, bgColor, borderColor }, i) => (
-                <button
-                  key={title}
-                  type="button"
-                  onClick={() => setActiveCheck(i)}
-                  aria-label={title}
-                  className={cn(
-                    "relative flex flex-col items-center gap-1.5 rounded-xl border px-1.5 py-2.5 text-center transition-colors",
-                    i === activeCheck
-                      ? "border-primary/35 bg-primary/[0.05]"
-                      : "border-transparent bg-muted/30 hover:bg-muted/50",
-                  )}
-                >
-                  {i === activeCheck && (
-                    <span className={cn("absolute inset-x-2 top-0 h-0.5 rounded-full", borderColor.replace("border-l-", "bg-"))} />
-                  )}
-                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", bgColor)}>
-                    <Icon className={cn("h-4 w-4", iconColor)} />
-                  </div>
-                  <p className="text-[10px] font-semibold leading-tight line-clamp-2">{title}</p>
-                </button>
-              ))}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10 md:mb-12 text-center space-y-3"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
+              {t("home_badge_most_checked")}
             </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("what_we_check")}</h2>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("what_we_check_sub")}</p>
+          </motion.div>
 
-            <AnimatePresence mode="wait">
-              {(() => {
-                const { icon: Icon, title, desc, iconColor, bgColor, accentBg, stat, statLabel } = FEATURES[activeCheck];
-                return (
-                  <motion.div
-                    key={activeCheck}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.18 }}
-                    className="relative overflow-hidden rounded-2xl border bg-card"
-                  >
-                    <div className={cn("absolute inset-x-0 top-0 h-0.5", accentBg)} />
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", bgColor)}>
-                          <Icon className={cn("h-5 w-5", iconColor)} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-base leading-snug">{title}</h3>
-                          <p className="text-sm text-muted-foreground mt-1 leading-snug">{desc}</p>
-                        </div>
-                      </div>
-                      <div className={cn("flex items-baseline gap-1.5 rounded-lg px-3 py-2", bgColor)}>
-                        <span className={cn("text-xl font-black tabular-nums", iconColor)}>{stat}</span>
-                        <span className="text-xs text-muted-foreground leading-snug">{statLabel}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })()}
-            </AnimatePresence>
-
-            <div className="flex justify-center gap-1.5">
-              {FEATURES.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
+          {/* ── Mobile ── */}
+          <div className="lg:hidden space-y-3">
+            <div className="flex flex-col gap-1.5">
+              {FEATURES.map((feat, i) => (
+                <WhatWeCheckNavButton
+                  key={feat.title}
+                  feature={feat}
+                  active={i === activeCheck}
                   onClick={() => setActiveCheck(i)}
-                  aria-label={`${t("what_we_check")} ${i + 1}`}
-                  className={cn(
-                    "rounded-full transition-all",
-                    i === activeCheck ? "w-5 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/30",
-                  )}
                 />
               ))}
             </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeCheck}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.18 }}
+              >
+                <WhatWeCheckDetailPanel
+                  feature={FEATURES[activeCheck]}
+                  reportShowsLabel={t("what_we_check_report_shows")}
+                  exampleLabel={t("what_we_check_real_example")}
+                  variant="mobile"
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* ── Desktop ── */}
-          <div className="hidden lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-8 lg:gap-12 items-start">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="lg:sticky lg:top-24 space-y-5"
-            >
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-0.5 text-xs font-semibold text-primary">
-                  {t("home_badge_most_checked")}
-                </div>
-                <h2 className="text-3xl font-bold tracking-tight">{t("what_we_check")}</h2>
-                <p className="text-muted-foreground text-sm max-w-sm">{t("what_we_check_sub")}</p>
-              </div>
+          <div className="hidden lg:flex lg:gap-8 xl:gap-12 items-start w-fit max-w-full mx-auto">
+            <nav className="w-[15.5rem] xl:w-[17rem] shrink-0 flex flex-col gap-1.5 pt-0.5" aria-label={t("what_we_check")}>
+              {FEATURES.map((feat, i) => (
+                <WhatWeCheckNavButton
+                  key={feat.title}
+                  feature={feat}
+                  active={i === activeCheck}
+                  onClick={() => setActiveCheck(i)}
+                  layoutId
+                />
+              ))}
+            </nav>
 
-              <div className="flex flex-col gap-1">
-                {FEATURES.map(({ icon: Icon, title, iconColor, bgColor, borderColor }, i) => (
-                  <button
-                    key={title}
-                    type="button"
-                    onClick={() => setActiveCheck(i)}
-                    className={cn(
-                      "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors duration-200",
-                      i === activeCheck
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-                    )}
-                  >
-                    {i === activeCheck && (
-                      <motion.div
-                        layoutId="whatWeCheckActive"
-                        className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-full", borderColor.replace("border-l-", "bg-"))}
-                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                      />
-                    )}
-                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
-                      <Icon className={cn("h-4 w-4", iconColor)} />
-                    </div>
-                    <p className="text-sm font-semibold leading-tight">{title}</p>
-                    <ChevronRight className={cn(
-                      "h-4 w-4 ml-auto shrink-0 transition-opacity duration-200",
-                      i === activeCheck ? "opacity-60" : "opacity-0 group-hover:opacity-40",
-                    )} />
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                {FEATURES.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setActiveCheck(i)}
-                    aria-label={`${t("what_we_check")} ${i + 1}`}
-                    className={cn(
-                      "rounded-full transition-all duration-300",
-                      i === activeCheck ? "w-6 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50",
-                    )}
+            <div className="w-[32rem] xl:w-[42rem] shrink min-w-0">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeCheck}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  <WhatWeCheckDetailPanel
+                    feature={FEATURES[activeCheck]}
+                    reportShowsLabel={t("what_we_check_report_shows")}
+                    exampleLabel={t("what_we_check_real_example")}
+                    variant="desktop"
                   />
-                ))}
-              </div>
-            </motion.div>
-
-            <AnimatePresence mode="wait">
-              {(() => {
-                const { icon: Icon, title, desc, iconColor, bgColor, accentBg, stat, statLabel } = FEATURES[activeCheck];
-                return (
-                  <motion.div
-                    key={activeCheck}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="relative overflow-hidden rounded-2xl border bg-card shadow-sm"
-                  >
-                    <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
-                    <div className="p-6 md:p-7 space-y-5">
-                      <div className="flex items-start gap-4">
-                        <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0", bgColor)}>
-                          <Icon className={cn("h-6 w-6", iconColor)} />
-                        </div>
-                        <div className="min-w-0 pt-0.5">
-                          <h3 className="font-bold text-xl leading-tight">{title}</h3>
-                          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{desc}</p>
-                        </div>
-                      </div>
-                      <div className={cn("flex items-baseline flex-wrap gap-x-2 gap-y-1 rounded-xl px-4 py-3", bgColor)}>
-                        <span className={cn("text-3xl font-black tabular-nums leading-none", iconColor)}>{stat}</span>
-                        <span className="text-sm text-muted-foreground">{statLabel}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })()}
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </section>
