@@ -10,7 +10,7 @@ import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
   ShieldCheck, Search, Clock, FileText, ChevronRight, ChevronLeft,
   CheckCircle2, AlertTriangle, Gauge, Lock,
-  Glasses, Globe, Star, ArrowRight, Check, X,
+  Glasses, Globe, Star, ArrowRight, Check, X, UserSearch,
 } from "lucide-react";
 import { CompareTable } from "@/components/compare-table";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
@@ -298,7 +298,7 @@ export default function Home() {
               </div>
               <span className="text-muted-foreground/40">·</span>
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Glasses className="h-3.5 w-3.5 text-primary shrink-0" />
+                <UserSearch className="h-3.5 w-3.5 text-primary shrink-0" />
                 {t("trust_instant_report")}
               </span>
             </div>
@@ -310,42 +310,40 @@ export default function Home() {
               error={error}
               disabled={vinLookupDisabled}
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-              displayPrice={displayPrice}
-              priceLoading={priceLoading}
-              fmtPrice={fmtPrice}
-            >
-              <AnimatePresence>
-                {showVinWarning && (
-                  <motion.div
-                    key="vin-warning"
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 px-4 py-3"
-                  >
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
-                      <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("vin_warning_unknown_vehicle_sub")}</p>
-                    </div>
-                  </motion.div>
-                )}
-                {showHomePendingDoubleCheck && (
-                  <motion.div
-                    key="vin-pending-double-check"
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-white dark:bg-zinc-950 px-4 py-3"
-                  >
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </HeroVinForm>
+              alerts={(showVinWarning || showHomePendingDoubleCheck) ? (
+                <AnimatePresence>
+                  {showVinWarning && (
+                    <motion.div
+                      key="vin-warning"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex items-start gap-2 rounded-lg border border-amber-300/80 bg-amber-50/90 dark:border-amber-700/50 dark:bg-amber-950/40 px-3 py-2.5"
+                    >
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
+                        <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("vin_warning_unknown_vehicle_sub")}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                  {showHomePendingDoubleCheck && (
+                    <motion.div
+                      key="vin-pending-double-check"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex items-start gap-2 rounded-lg border border-amber-200/80 dark:border-amber-800/45 bg-amber-50/50 dark:bg-amber-950/25 px-3 py-2.5"
+                    >
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              ) : null}
+            />
 
             <HomeStatsStrip />
 

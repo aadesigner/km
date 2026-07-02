@@ -470,6 +470,17 @@ export default function VinResult({ params }: Props) {
     if (urls.length) void prefetchVinImages(urls);
   }, [lookupRaw]);
 
+  const isFulfilling = lookup?.status === "fulfilling";
+
+  useEffect(() => {
+    if (!isFulfilling) return;
+    const id = window.setInterval(() => {
+      if (isVinString) void refetchVin();
+      else void refetchById();
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [isFulfilling, isVinString, refetchVin, refetchById]);
+
   if (isLoading) {
     return (
       <>
@@ -500,6 +511,37 @@ export default function VinResult({ params }: Props) {
           kind={resolvedKind}
           language={language}
           onRetry={resolvedKind === "server" || resolvedKind === "unknown" ? retry : undefined}
+          isRetrying={retrying}
+        />
+      </>
+    );
+  }
+
+  if (isFulfilling) {
+    return (
+      <>
+        <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
+        <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center space-y-4">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" aria-hidden />
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">{t("processing_retrieving_data")}</h2>
+            <p className="text-sm font-mono text-muted-foreground">{lookup.vin}</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (lookup.status === "error") {
+    const retry = isVinString ? () => refetchVin() : () => refetchById();
+    const retrying = isVinString ? fetchingVin : fetchingById;
+    return (
+      <>
+        <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
+        <VinReportErrorView
+          kind="server"
+          language={language}
+          onRetry={retry}
           isRetrying={retrying}
         />
       </>
@@ -547,17 +589,19 @@ export default function VinResult({ params }: Props) {
     ownerHistory,
     registryHistory,
   });
-  const scoreData = computeVinConditionScore(
-    scoreInputFromLookup({
-      ...data,
-      odometer,
-      mileageHistory,
-      insuranceClaims,
-      registryHistory,
-      accidents,
-    }),
-    t,
-  );
+  const scoreData = data
+    ? computeVinConditionScore(
+        scoreInputFromLookup({
+          ...data,
+          odometer,
+          mileageHistory,
+          insuranceClaims,
+          registryHistory,
+          accidents,
+        }),
+        t,
+      )
+    : null;
   const marketData = data?.marketData;
 
   const odoMax = 300000;

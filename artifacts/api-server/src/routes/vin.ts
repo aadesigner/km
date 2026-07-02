@@ -224,6 +224,24 @@ async function findCompleteUserLookup(userId: string, normalizedVin: string) {
   return row ?? null;
 }
 
+/** Prefer a deliverable report over an in-flight fulfilling row for the same VIN. */
+async function findUserVinLookupForServe(userId: string, vin: string) {
+  const deliverable = await findCompleteUserLookup(userId, vin);
+  if (deliverable) return deliverable;
+
+  const [fulfilling] = await db
+    .select()
+    .from(vinLookupsTable)
+    .where(and(
+      eq(vinLookupsTable.userId, userId),
+      eq(vinLookupsTable.vin, vin),
+      eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
+    ))
+    .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.id))
+    .limit(1);
+  return fulfilling ?? null;
+}
+
 async function sendExistingLookupResponse(
   res: Response,
   lookup: NonNullable<Awaited<ReturnType<typeof findCompleteUserLookup>>>,
@@ -954,19 +972,7 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
   if (!isVinString && !isNaN(id)) {
     [lookup] = await db.select().from(vinLookupsTable).where(eq(vinLookupsTable.id, id)).limit(1);
   } else {
-    // VIN string — find the most recent completed lookup for this user
-    [lookup] = await db.select().from(vinLookupsTable)
-      .where(and(
-        eq(vinLookupsTable.userId, userId),
-        eq(vinLookupsTable.vin, rawId),
-        or(
-          eq(vinLookupsTable.status, "complete"),
-          eq(vinLookupsTable.status, "pending_manual"),
-          eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
-        ),
-      ))
-      .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.id))
-      .limit(1);
+    lookup = await findUserVinLookupForServe(userId, rawId);
   }
 
   if (!lookup) {

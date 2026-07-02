@@ -27,7 +27,7 @@ import { VinCheckSubmitLabel } from "@/components/vin-check-submit-label";
 import { WhereToFindVinHelp } from "@/components/where-to-find-vin-help";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
-import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
+import { HeroVinForm } from "@/components/hero-vin-form";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 type Severity = "high" | "medium" | "low";
@@ -263,31 +263,16 @@ export default function CountryPage({ params }: Props) {
             </p>
 
             {/* VIN form */}
-            <form onSubmit={handleCheck} className="max-w-lg mx-auto lg:mx-0 space-y-3 relative z-20 w-full">
-              <VinLookupDisabledBanner compact />
-              <div className={cn("relative p-[2px] rounded-2xl hero-input-glow bg-gradient-to-r from-primary/15 via-primary/50 to-primary/15 dark:from-primary/10 dark:via-primary/45 dark:to-primary/10 sm:shadow-xl sm:shadow-black/10 dark:sm:shadow-black/25", vinLookupDisabled && "opacity-60 pointer-events-none")}>
-                <div className="vin-scanner relative flex items-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/10 focus-within:border-primary/50 transition-colors bg-background/90 dark:bg-[#0a120e]/90 backdrop-blur-sm">
-                  <Search className="absolute left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
-                  <Input
-                    ref={vinRef}
-                    className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 rounded-[14px] shadow-none bg-transparent font-mono tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 relative z-0"
-                    placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-                    value={vin}
-                    onChange={e => { setVin(e.target.value.replace(/\s/g, "").toUpperCase()); setError(""); }}
-                    maxLength={17}
-                  />
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="absolute right-2 z-10 h-10 rounded-xl px-6 font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
-                  >
-                    <VinCheckSubmitLabel />
-                  </Button>
-                </div>
-              </div>
-              <WhereToFindVinHelp />
-              {error && <p className="text-sm text-destructive text-center lg:text-start">{error}</p>}
-            </form>
+            <HeroVinForm
+              vin={vin}
+              onVinChange={(v) => { setVin(v); setError(""); }}
+              onSubmit={handleCheck}
+              error={error}
+              disabled={vinLookupDisabled}
+              placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
+              inputRef={vinRef}
+              className="relative z-20 lg:mx-0"
+            />
           </motion.div>
 
           {/* Right */}
