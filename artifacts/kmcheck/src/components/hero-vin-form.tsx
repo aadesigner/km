@@ -57,7 +57,7 @@ export function HeroVinForm({
   const onVinInput = (value: string) => onVinChange(value.replace(/\s/g, "").toUpperCase());
 
   return (
-    <form onSubmit={onSubmit} className={cn("max-w-lg w-full mx-auto space-y-3 text-left", className)}>
+    <form onSubmit={onSubmit} className={cn("max-w-lg sm:max-w-xl w-full mx-auto space-y-3 text-left", className)}>
       <VinLookupDisabledBanner compact />
 
       {/* Mobile — compact card with meta, segments, inline button */}
@@ -155,11 +155,11 @@ export function HeroVinForm({
             "shadow-xl shadow-black/10 dark:shadow-black/25",
           )}
         >
-          <div className="vin-scanner relative flex items-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/10 focus-within:border-primary/50 transition-colors bg-background/90 dark:bg-[#0a120e]/90 backdrop-blur-sm">
-            <Search className="absolute left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
+          <div className="vin-scanner relative flex items-center rounded-[15px] overflow-hidden border border-border/80 dark:border-white/10 focus-within:border-primary/50 transition-colors bg-background/90 dark:bg-[#0a120e]/90 backdrop-blur-sm">
+            <Search className="absolute left-5 h-[1.35rem] w-[1.35rem] text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
             <Input
               ref={inputRef}
-              className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 rounded-[14px] shadow-none bg-transparent font-mono tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 relative z-0"
+              className="h-16 pl-14 pr-[10.5rem] text-lg border-0 focus-visible:ring-0 rounded-[15px] shadow-none bg-transparent font-mono tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 relative z-0"
               placeholder={placeholder}
               value={vin}
               onChange={(e) => onVinInput(e.target.value)}
@@ -173,7 +173,7 @@ export function HeroVinForm({
               type="submit"
               size="lg"
               disabled={disabled}
-              className="absolute right-2 z-10 h-10 rounded-xl px-6 font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
+              className="absolute right-2.5 z-10 h-11 rounded-xl px-7 text-[15px] font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
             >
               <VinCheckSubmitLabel />
             </Button>

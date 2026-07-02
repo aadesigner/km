@@ -10,7 +10,7 @@ import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
   ShieldCheck, Search, Clock, FileText, ChevronRight, ChevronLeft,
   CheckCircle2, AlertTriangle, Gauge, Lock,
-  Glasses, Globe, Star, ArrowRight, Check, X, UserSearch,
+  Globe, Star, ArrowRight, X, UserSearch,
 } from "lucide-react";
 import { CompareTable } from "@/components/compare-table";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
@@ -353,82 +353,81 @@ export default function Home() {
       </section>
 
       {/* ── WHAT WE CHECK ── */}
-      <section className="relative py-12 md:py-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.07),transparent_65%)]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_50%_40%_at_90%_80%,hsl(var(--primary)/0.04),transparent)]" />
+      <section className="relative py-12 md:py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.06),transparent_65%)]" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         <div
-          className="max-w-6xl mx-auto"
+          className="max-w-5xl mx-auto"
           onMouseEnter={() => setChecksPaused(true)}
           onMouseLeave={() => setChecksPaused(false)}
         >
           {/* ── Mobile ── */}
-          <div className="lg:hidden space-y-5">
+          <div className="lg:hidden space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center space-y-2"
+              className="text-center space-y-1.5"
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-0.5 text-[11px] font-semibold text-primary">
                 {t("home_badge_most_checked")}
               </div>
               <h2 className="text-2xl font-bold tracking-tight">{t("what_we_check")}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">{t("what_we_check_sub")}</p>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">{t("what_we_check_sub")}</p>
             </motion.div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {FEATURES.map(({ icon: Icon, title, stat, iconColor, bgColor }, i) => (
+            <div className="grid grid-cols-4 gap-1.5">
+              {FEATURES.map(({ icon: Icon, title, iconColor, bgColor, borderColor }, i) => (
                 <button
                   key={title}
                   type="button"
                   onClick={() => setActiveCheck(i)}
+                  aria-label={title}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors",
+                    "relative flex flex-col items-center gap-1.5 rounded-xl border px-1.5 py-2.5 text-center transition-colors",
                     i === activeCheck
-                      ? "border-primary/40 bg-primary/[0.07] shadow-sm"
-                      : "bg-background border-border/80",
+                      ? "border-primary/35 bg-primary/[0.05]"
+                      : "border-transparent bg-muted/30 hover:bg-muted/50",
                   )}
                 >
-                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
+                  {i === activeCheck && (
+                    <span className={cn("absolute inset-x-2 top-0 h-0.5 rounded-full", borderColor.replace("border-l-", "bg-"))} />
+                  )}
+                  <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", bgColor)}>
                     <Icon className={cn("h-4 w-4", iconColor)} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold leading-tight line-clamp-2">{title}</p>
-                    <p className={cn("text-xs font-black tabular-nums mt-0.5", iconColor)}>{stat}</p>
-                  </div>
+                  <p className="text-[10px] font-semibold leading-tight line-clamp-2">{title}</p>
                 </button>
               ))}
             </div>
 
             <AnimatePresence mode="wait">
               {(() => {
-                const { icon: Icon, title, desc, iconColor, bgColor, calloutClass, accentBg, example, stat, statLabel } = FEATURES[activeCheck];
+                const { icon: Icon, title, desc, iconColor, bgColor, accentBg, stat, statLabel } = FEATURES[activeCheck];
                 return (
                   <motion.div
                     key={activeCheck}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative overflow-hidden rounded-xl border bg-card shadow-sm"
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18 }}
+                    className="relative overflow-hidden rounded-2xl border bg-card"
                   >
                     <div className={cn("absolute inset-x-0 top-0 h-0.5", accentBg)} />
                     <div className="p-4 space-y-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3">
                         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", bgColor)}>
                           <Icon className={cn("h-5 w-5", iconColor)} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-base leading-snug">{title}</h3>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{statLabel}</p>
+                          <p className="text-sm text-muted-foreground mt-1 leading-snug">{desc}</p>
                         </div>
-                        <p className={cn("text-2xl font-black tabular-nums shrink-0", iconColor)}>{stat}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-                      <div className={cn("rounded-lg px-3 py-2.5 text-xs leading-relaxed", calloutClass)}>
-                        {example}
+                      <div className={cn("flex items-baseline gap-1.5 rounded-lg px-3 py-2", bgColor)}>
+                        <span className={cn("text-xl font-black tabular-nums", iconColor)}>{stat}</span>
+                        <span className="text-xs text-muted-foreground leading-snug">{statLabel}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -436,7 +435,7 @@ export default function Home() {
               })()}
             </AnimatePresence>
 
-            <div className="flex justify-center gap-1.5 pt-1">
+            <div className="flex justify-center gap-1.5">
               {FEATURES.map((_, i) => (
                 <button
                   key={i}
@@ -453,36 +452,32 @@ export default function Home() {
           </div>
 
           {/* ── Desktop ── */}
-          <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-10 lg:gap-14 items-start">
+          <div className="hidden lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-8 lg:gap-12 items-start">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="lg:sticky lg:top-24 space-y-6"
+              className="lg:sticky lg:top-24 space-y-5"
             >
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                  </span>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-0.5 text-xs font-semibold text-primary">
                   {t("home_badge_most_checked")}
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("what_we_check")}</h2>
-                <p className="text-muted-foreground text-base md:text-lg leading-relaxed">{t("what_we_check_sub")}</p>
+                <h2 className="text-3xl font-bold tracking-tight">{t("what_we_check")}</h2>
+                <p className="text-muted-foreground text-sm max-w-sm">{t("what_we_check_sub")}</p>
               </div>
 
-              <div className="flex flex-col gap-2">
-                {FEATURES.map(({ icon: Icon, title, stat, iconColor, bgColor, borderColor }, i) => (
+              <div className="flex flex-col gap-1">
+                {FEATURES.map(({ icon: Icon, title, iconColor, bgColor, borderColor }, i) => (
                   <button
                     key={title}
                     type="button"
                     onClick={() => setActiveCheck(i)}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-200",
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors duration-200",
                       i === activeCheck
-                        ? "border-primary/35 bg-primary/[0.06] shadow-sm shadow-primary/10"
-                        : "bg-background hover:border-border/80 hover:bg-muted/40",
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
                     )}
                   >
                     {i === activeCheck && (
@@ -492,128 +487,66 @@ export default function Home() {
                         transition={{ type: "spring", stiffness: 380, damping: 32 }}
                       />
                     )}
-                    <div className={cn(
-                      "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200",
-                      bgColor,
-                      i === activeCheck && "scale-105",
-                    )}>
+                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
                       <Icon className={cn("h-4 w-4", iconColor)} />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold leading-tight truncate">{title}</p>
-                      <p className={cn("text-xs font-bold tabular-nums mt-0.5", iconColor)}>{stat}</p>
-                    </div>
+                    <p className="text-sm font-semibold leading-tight">{title}</p>
                     <ChevronRight className={cn(
-                      "h-4 w-4 shrink-0 transition-all duration-200",
-                      i === activeCheck ? "text-primary opacity-100 translate-x-0" : "text-muted-foreground/40 opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0",
+                      "h-4 w-4 ml-auto shrink-0 transition-opacity duration-200",
+                      i === activeCheck ? "opacity-60" : "opacity-0 group-hover:opacity-40",
                     )} />
                   </button>
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  {FEATURES.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setActiveCheck(i)}
-                      aria-label={`${t("what_we_check")} ${i + 1}`}
-                      className={cn(
-                        "rounded-full transition-all duration-300",
-                        i === activeCheck ? "w-7 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50",
-                      )}
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
-                  {String(activeCheck + 1).padStart(2, "0")} / {String(FEATURES.length).padStart(2, "0")}
-                </span>
+              <div className="flex items-center gap-2 pt-1">
+                {FEATURES.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActiveCheck(i)}
+                    aria-label={`${t("what_we_check")} ${i + 1}`}
+                    className={cn(
+                      "rounded-full transition-all duration-300",
+                      i === activeCheck ? "w-6 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/50",
+                    )}
+                  />
+                ))}
               </div>
             </motion.div>
 
-            <div className="space-y-4">
-              <AnimatePresence mode="wait">
-                {(() => {
-                  const { icon: Icon, title, desc, iconColor, bgColor, calloutClass, accentBg, example, stat, statLabel } = FEATURES[activeCheck];
-                  return (
-                    <motion.div
-                      key={activeCheck}
-                      initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -12, scale: 0.98 }}
-                      transition={{ duration: 0.32, ease: "easeOut" }}
-                      className="group relative overflow-hidden rounded-2xl border-2 border-border bg-background shadow-[0_8px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
-                    >
-                      <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
-                      <div className={cn("absolute -right-4 -bottom-6 text-[9rem] font-black leading-none select-none pointer-events-none opacity-[0.04] tabular-nums", iconColor)}>
-                        {stat}
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
-
-                      <div className="relative z-10 p-6 md:p-8 flex flex-col gap-6">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-4">
-                            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", bgColor)}>
-                              <Icon className={cn("h-7 w-7", iconColor)} />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                                {String(activeCheck + 1).padStart(2, "0")}
-                              </p>
-                              <h3 className="font-bold text-xl md:text-2xl leading-tight">{title}</h3>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className={cn("text-4xl font-black leading-none tabular-nums", iconColor)}>{stat}</p>
-                            <p className="text-[10px] text-muted-foreground mt-1.5 max-w-[120px] leading-tight ml-auto">{statLabel}</p>
-                          </div>
+            <AnimatePresence mode="wait">
+              {(() => {
+                const { icon: Icon, title, desc, iconColor, bgColor, accentBg, stat, statLabel } = FEATURES[activeCheck];
+                return (
+                  <motion.div
+                    key={activeCheck}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="relative overflow-hidden rounded-2xl border bg-card shadow-sm"
+                  >
+                    <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
+                    <div className="p-6 md:p-7 space-y-5">
+                      <div className="flex items-start gap-4">
+                        <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0", bgColor)}>
+                          <Icon className={cn("h-6 w-6", iconColor)} />
                         </div>
-
-                        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{desc}</p>
-
-                        <div className={cn("rounded-xl px-4 py-3.5", calloutClass)}>
-                          <div className="flex items-start gap-2.5">
-                            <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shrink-0 mt-0.5", bgColor)}>
-                              <Check className={cn("h-3.5 w-3.5", iconColor)} />
-                            </div>
-                            <p className="text-sm leading-relaxed text-foreground/80">{example}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground pt-1 border-t border-border/60">
-                          <Glasses className="h-3.5 w-3.5 text-primary shrink-0" />
-                          {t("instant_report")}
+                        <div className="min-w-0 pt-0.5">
+                          <h3 className="font-bold text-xl leading-tight">{title}</h3>
+                          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{desc}</p>
                         </div>
                       </div>
-                    </motion.div>
-                  );
-                })()}
-              </AnimatePresence>
-
-              <div className="grid grid-cols-3 gap-3">
-                {FEATURES.map((feat, i) => {
-                  if (i === activeCheck) return null;
-                  const { icon: Icon, title, stat, iconColor, bgColor } = feat;
-                  return (
-                    <button
-                      key={title}
-                      type="button"
-                      onClick={() => setActiveCheck(i)}
-                      className="group text-left rounded-xl border bg-background/80 hover:bg-muted/30 hover:border-primary/20 px-3.5 py-3 transition-all duration-200 hover:shadow-sm"
-                    >
-                      <div className="flex items-center gap-2.5 mb-2">
-                        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", bgColor)}>
-                          <Icon className={cn("h-4 w-4", iconColor)} />
-                        </div>
-                        <p className={cn("text-lg font-black tabular-nums leading-none", iconColor)}>{stat}</p>
+                      <div className={cn("flex items-baseline flex-wrap gap-x-2 gap-y-1 rounded-xl px-4 py-3", bgColor)}>
+                        <span className={cn("text-3xl font-black tabular-nums leading-none", iconColor)}>{stat}</span>
+                        <span className="text-sm text-muted-foreground">{statLabel}</span>
                       </div>
-                      <p className="text-xs font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">{title}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                    </div>
+                  </motion.div>
+                );
+              })()}
+            </AnimatePresence>
           </div>
         </div>
       </section>

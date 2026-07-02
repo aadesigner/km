@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import type { ComponentProps } from "react";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
-const MarketValueChart = lazy(() =>
+const MarketValueChart = lazyWithRetry(() =>
   import("./market-value-chart").then((m) => ({ default: m.MarketValueChart })),
 );
 

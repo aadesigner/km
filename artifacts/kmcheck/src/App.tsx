@@ -7,7 +7,7 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
-import { useEffect, Suspense, type ReactNode } from "react";
+import { useEffect, Suspense, type ComponentType, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
@@ -338,6 +338,116 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
   return <PageLoader />;
 }
 
+type RouteLang = "en" | "ar" | "uk" | "ru" | "sq";
+
+function parseRouteLang(lang: string): RouteLang {
+  const validLangs: RouteLang[] = ["en", "ar", "uk", "ru", "sq"];
+  return validLangs.includes(lang as RouteLang) ? lang as RouteLang : "en";
+}
+
+function createLegacyCountryRedirect(to: string) {
+  function LegacyCountryRedirect() {
+    return <Redirect to={to} />;
+  }
+  return LegacyCountryRedirect;
+}
+
+const RedirectUsaCars = createLegacyCountryRedirect("/en/cars/usa");
+const RedirectKoreaCars = createLegacyCountryRedirect("/en/cars/korea");
+const RedirectCanadaCars = createLegacyCountryRedirect("/en/cars/canada");
+
+function SignInRoute(props: { params: { lang: string } }) {
+  return <AuthPage params={props.params} mode="sign-in" />;
+}
+
+function SignUpRoute(props: { params: { lang: string } }) {
+  return <AuthPage params={props.params} mode="sign-up" />;
+}
+
+function ForgotPasswordRoute(props: { params: { lang: string } }) {
+  return (
+    <AuthSubPage lang={parseRouteLang(props.params.lang)}>
+      <ForgotPassword />
+    </AuthSubPage>
+  );
+}
+
+function ResetPasswordRoute(props: { params: { lang: string } }) {
+  return (
+    <AuthSubPage lang={parseRouteLang(props.params.lang)}>
+      <ResetPassword />
+    </AuthSubPage>
+  );
+}
+
+function SetPasswordRoute(props: { params: { lang: string } }) {
+  return (
+    <AuthSubPage lang={parseRouteLang(props.params.lang)}>
+      <SetPassword />
+    </AuthSubPage>
+  );
+}
+
+function createAdminRoute(Page: ComponentType) {
+  function AdminRoute() {
+    return (
+      <AdminPage>
+        <Suspense fallback={<PageLoader />}>
+          <Page />
+        </Suspense>
+      </AdminPage>
+    );
+  }
+  return AdminRoute;
+}
+
+const AdminOverviewRoute = createAdminRoute(AdminOverview);
+const AdminAnalyticsRoute = createAdminRoute(AdminAnalytics);
+const AdminUsersRoute = createAdminRoute(AdminUsers);
+const AdminLookupsRoute = createAdminRoute(AdminLookups);
+const AdminProvidersRoute = createAdminRoute(AdminProviders);
+const AdminPricingRoute = createAdminRoute(AdminPricing);
+const AdminSettingsRoute = createAdminRoute(AdminSettings);
+const AdminPluginsRoute = createAdminRoute(AdminPlugins);
+const AdminLogsRoute = createAdminRoute(AdminLogs);
+const AdminCouponsRoute = createAdminRoute(AdminCoupons);
+const AdminEmailsRoute = createAdminRoute(AdminEmails);
+const AdminSecurityRoute = createAdminRoute(AdminSecurity);
+const AdminVinCatalogRoute = createAdminRoute(AdminVinCatalog);
+const AdminPendingVinChecksRoute = createAdminRoute(AdminPendingVinChecks);
+const AdminTransactionsRoute = createAdminRoute(AdminTransactions);
+const AdminAnnouncementsRoute = createAdminRoute(AdminAnnouncements);
+
+function AdminUserDetailRoute(props: { params: { userId: string } }) {
+  return (
+    <AdminPage>
+      <Suspense fallback={<PageLoader />}>
+        <AdminUserDetail params={props.params} />
+      </Suspense>
+    </AdminPage>
+  );
+}
+
+function AdminPendingVinDetailRoute(props: { params: { id: string } }) {
+  return (
+    <AdminPage>
+      <Suspense fallback={<PageLoader />}>
+        <AdminPendingVinDetail params={props.params} />
+      </Suspense>
+    </AdminPage>
+  );
+}
+
+function AdminVinDetailRoute(props: { params: { vin: string } }) {
+  return (
+    <AdminPage>
+      <Suspense fallback={<PageLoader />}>
+        <AdminVinDetail params={props.params} />
+      </Suspense>
+    </AdminPage>
+  );
+}
+
 function AppRouter() {
   const [location] = useLocation();
   const pathname = location.split("?")[0] ?? location;
@@ -355,88 +465,64 @@ function AppRouter() {
       <Switch>
         <Route path="/" component={RootLangRedirect} />
 
-        {["usa", "korea", "canada"].map(c => (
-          <Route key={c} path={`/${c}-cars`} component={() => <Redirect to={`/en/cars/${c}`} />} />
-        ))}
-        {["usa", "korea", "canada"].map(c => (
-          <Route key={`${c}/`} path={`/${c}-cars/`} component={() => <Redirect to={`/en/cars/${c}`} />} />
-        ))}
+        <Route path="/usa-cars" component={RedirectUsaCars} />
+        <Route path="/usa-cars/" component={RedirectUsaCars} />
+        <Route path="/korea-cars" component={RedirectKoreaCars} />
+        <Route path="/korea-cars/" component={RedirectKoreaCars} />
+        <Route path="/canada-cars" component={RedirectCanadaCars} />
+        <Route path="/canada-cars/" component={RedirectCanadaCars} />
 
         {/* Auth routes */}
-        <Route path="/:lang/sign-in/*?" component={(p) => <AuthPage params={p.params} mode="sign-in" />} />
-        <Route path="/:lang/sign-up/*?" component={(p) => <AuthPage params={p.params} mode="sign-up" />} />
-        <Route path="/:lang/forgot-password" component={(p) => {
-          const validLangs = ["en", "ar", "uk", "ru", "sq"];
-          const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
-          return (
-            <AuthSubPage lang={lang}>
-              <ForgotPassword />
-            </AuthSubPage>
-          );
-        }} />
-        <Route path="/:lang/reset-password" component={(p) => {
-          const validLangs = ["en", "ar", "uk", "ru", "sq"];
-          const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
-          return (
-            <AuthSubPage lang={lang}>
-              <ResetPassword />
-            </AuthSubPage>
-          );
-        }} />
-        <Route path="/:lang/set-password" component={(p) => {
-          const validLangs = ["en", "ar", "uk", "ru", "sq"];
-          const lang = validLangs.includes(p.params.lang) ? p.params.lang as "en" | "ar" | "uk" | "ru" | "sq" : "en";
-          return (
-            <AuthSubPage lang={lang}>
-              <SetPassword />
-            </AuthSubPage>
-          );
-        }} />
+        <Route path="/:lang/sign-in/*?" component={SignInRoute} />
+        <Route path="/:lang/sign-up/*?" component={SignUpRoute} />
+        <Route path="/:lang/forgot-password" component={ForgotPasswordRoute} />
+        <Route path="/:lang/reset-password" component={ResetPasswordRoute} />
+        <Route path="/:lang/set-password" component={SetPasswordRoute} />
 
         {/* Admin routes — must come before /:lang/* patterns to avoid /adminx being matched as a lang segment */}
-        <Route path="/adminx"             component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminOverview /></Suspense></AdminPage>} />
-        <Route path="/adminx/analytics"   component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminAnalytics /></Suspense></AdminPage>} />
-        <Route path="/adminx/users/:userId" component={(p) => <AdminPage><Suspense fallback={<PageLoader />}><AdminUserDetail params={p.params as { userId: string }} /></Suspense></AdminPage>} />
-        <Route path="/adminx/users"       component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminUsers /></Suspense></AdminPage>} />
-        <Route path="/adminx/lookups"     component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminLookups /></Suspense></AdminPage>} />
-        <Route path="/adminx/providers"   component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminProviders /></Suspense></AdminPage>} />
-        <Route path="/adminx/pricing"     component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminPricing /></Suspense></AdminPage>} />
-        <Route path="/adminx/settings"    component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminSettings /></Suspense></AdminPage>} />
-        <Route path="/adminx/plugins"     component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminPlugins /></Suspense></AdminPage>} />
-        <Route path="/adminx/logs"        component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminLogs /></Suspense></AdminPage>} />
-        <Route path="/adminx/coupons"     component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminCoupons /></Suspense></AdminPage>} />
-        <Route path="/adminx/emails"      component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminEmails /></Suspense></AdminPage>} />
-        <Route path="/adminx/security"   component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminSecurity /></Suspense></AdminPage>} />
-        <Route path="/adminx/vin-catalog"   component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminVinCatalog /></Suspense></AdminPage>} />
-        <Route path="/adminx/pending-vin-checks/:id" component={(p) => <AdminPage><Suspense fallback={<PageLoader />}><AdminPendingVinDetail params={p.params as { id: string }} /></Suspense></AdminPage>} />
-        <Route path="/adminx/pending-vin-checks" component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminPendingVinChecks /></Suspense></AdminPage>} />
-        <Route path="/adminx/vin/:vin"      component={(p) => <AdminPage><Suspense fallback={<PageLoader />}><AdminVinDetail params={p.params as { vin: string }} /></Suspense></AdminPage>} />
-        <Route path="/adminx/transactions"       component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminTransactions /></Suspense></AdminPage>} />
-        <Route path="/adminx/announcements"      component={() => <AdminPage><Suspense fallback={<PageLoader />}><AdminAnnouncements /></Suspense></AdminPage>} />
+        <Route path="/adminx" component={AdminOverviewRoute} />
+        <Route path="/adminx/analytics" component={AdminAnalyticsRoute} />
+        <Route path="/adminx/users/:userId" component={AdminUserDetailRoute} />
+        <Route path="/adminx/users" component={AdminUsersRoute} />
+        <Route path="/adminx/lookups" component={AdminLookupsRoute} />
+        <Route path="/adminx/providers" component={AdminProvidersRoute} />
+        <Route path="/adminx/pricing" component={AdminPricingRoute} />
+        <Route path="/adminx/settings" component={AdminSettingsRoute} />
+        <Route path="/adminx/plugins" component={AdminPluginsRoute} />
+        <Route path="/adminx/logs" component={AdminLogsRoute} />
+        <Route path="/adminx/coupons" component={AdminCouponsRoute} />
+        <Route path="/adminx/emails" component={AdminEmailsRoute} />
+        <Route path="/adminx/security" component={AdminSecurityRoute} />
+        <Route path="/adminx/vin-catalog" component={AdminVinCatalogRoute} />
+        <Route path="/adminx/pending-vin-checks/:id" component={AdminPendingVinDetailRoute} />
+        <Route path="/adminx/pending-vin-checks" component={AdminPendingVinChecksRoute} />
+        <Route path="/adminx/vin/:vin" component={AdminVinDetailRoute} />
+        <Route path="/adminx/transactions" component={AdminTransactionsRoute} />
+        <Route path="/adminx/announcements" component={AdminAnnouncementsRoute} />
 
         {/* VIN routes */}
-        <Route path="/:lang/vin/processing" component={(p) => <VinProcessingLang params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/vin/:id" component={(p) => <VinResultLang params={p.params as { lang: string; id: string }} />} />
+        <Route path="/:lang/vin/processing" component={VinProcessingLang} />
+        <Route path="/:lang/vin/:id" component={VinResultLang} />
 
         {/* Country SEO pages */}
-        <Route path="/:lang/cars/:country" component={(p) => <CountryLang params={p.params as { lang: string; country: string }} />} />
+        <Route path="/:lang/cars/:country" component={CountryLang} />
 
         {/* Legal */}
-        <Route path="/:lang/terms"   component={(p) => <TermsLang   params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/privacy" component={(p) => <PrivacyLang params={p.params as { lang: string; [key: string]: string }} />} />
+        <Route path="/:lang/terms" component={TermsLang} />
+        <Route path="/:lang/privacy" component={PrivacyLang} />
 
         {/* Main pages */}
-        <Route path="/:lang/pricing"          component={(p) => <PricingLang         params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/checkout"         component={(p) => <CheckoutLang        params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/dashboard/account" component={(p) => <DashboardLang       params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/dashboard/help"    component={(p) => <DashboardLang       params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/dashboard"        component={(p) => <DashboardLang       params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/purchases"        component={(p) => <PurchasesLang       params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/free-vin-decoder" component={(p) => <FreeVinDecoderLang  params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/how-it-works"    component={(p) => <HowItWorksLang      params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/faq"             component={(p) => <FAQLang             params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang/maintenance"     component={(p) => <MaintenanceLang     params={p.params as { lang: string; [key: string]: string }} />} />
-        <Route path="/:lang"           component={(p) => <HomeLang      params={p.params as { lang: string; [key: string]: string }} />} />
+        <Route path="/:lang/pricing" component={PricingLang} />
+        <Route path="/:lang/checkout" component={CheckoutLang} />
+        <Route path="/:lang/dashboard/account" component={DashboardLang} />
+        <Route path="/:lang/dashboard/help" component={DashboardLang} />
+        <Route path="/:lang/dashboard" component={DashboardLang} />
+        <Route path="/:lang/purchases" component={PurchasesLang} />
+        <Route path="/:lang/free-vin-decoder" component={FreeVinDecoderLang} />
+        <Route path="/:lang/how-it-works" component={HowItWorksLang} />
+        <Route path="/:lang/faq" component={FAQLang} />
+        <Route path="/:lang/maintenance" component={MaintenanceLang} />
+        <Route path="/:lang" component={HomeLang} />
 
         <Route component={NotFoundLang} />
       </Switch>

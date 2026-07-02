@@ -1,6 +1,8 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 
-const CHUNK_RELOAD_KEY = "kmcheck-chunk-reload";
+export const CHUNK_RELOAD_KEY = "kmcheck-chunk-reload";
+
+const CHUNK_RETRY_DELAY_MS = 350;
 
 /**
  * React.lazy wrapper that retries once and reloads the page on stale chunk errors
@@ -11,7 +13,7 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
 ): LazyExoticComponent<T> {
   return lazy(async () => {
     try {
-      return await factory();
+      return await importWithInlineRetry(factory);
     } catch (error) {
       const reloaded = sessionStorage.getItem(CHUNK_RELOAD_KEY) === "1";
       if (!reloaded && isChunkLoadError(error)) {
@@ -25,12 +27,55 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
   });
 }
 
-function isChunkLoadError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const msg = error.message.toLowerCase();
+async function importWithInlineRetry<T extends ComponentType<unknown>>(
+  factory: () => Promise<{ default: T }>,
+): Promise<{ default: T }> {
+  try {
+    return await factory();
+  } catch (firstError) {
+    if (!isChunkLoadError(firstError)) throw firstError;
+    await sleep(CHUNK_RETRY_DELAY_MS);
+    return await factory();
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+export function isChunkLoadError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error ?? "");
+  const lower = msg.toLowerCase();
+  const name = error instanceof Error ? error.name : "";
   return (
-    msg.includes("failed to fetch dynamically imported module")
-    || msg.includes("importing a module script failed")
-    || msg.includes("error loading dynamically imported module")
+    name === "ChunkLoadError"
+    || lower.includes("failed to fetch dynamically imported module")
+    || lower.includes("importing a module script failed")
+    || lower.includes("error loading dynamically imported module")
+    || lower.includes("unable to preload css")
+    || lower.includes("loading chunk")
+    || lower.includes("loading css chunk")
   );
+}
+
+/** One-shot full page reload when a lazy chunk fails outside React.lazy (e.g. dynamic import in charts). */
+export function installChunkLoadRecovery(): void {
+  if (typeof window === "undefined") return;
+
+  const tryReload = (error: unknown) => {
+    if (sessionStorage.getItem(CHUNK_RELOAD_KEY) === "1") return;
+    if (!isChunkLoadError(error)) return;
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
+    window.location.reload();
+  };
+
+  window.addEventListener("error", (event) => {
+    tryReload(event.error ?? event.message);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    tryReload(event.reason);
+  });
 }
