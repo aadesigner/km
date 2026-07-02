@@ -3,7 +3,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
-import { queryErrorMessage, showQueryFailure } from "@/lib/query-error";
+import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
 
 type AdminQueryFallbackProps = {
   isLoading: boolean;
@@ -31,7 +31,7 @@ export function AdminQueryFallback({
   useQueryRecovery(isError, isFetching, refetch);
 
   const pending = isLoading && !hasData;
-  const showError = showQueryFailure(isError, isFetching) && !hasData;
+  const showError = showFatalQueryError(isError, isFetching, hasData);
 
   if (pending) {
     return (

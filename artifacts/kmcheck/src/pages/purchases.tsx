@@ -6,7 +6,7 @@ import { useTranslation } from "@/i18n/context";
 import { useGetUserPayments, useGetUserStats } from "@workspace/api-client-react";
 import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
 import { ClientAreaLayout } from "@/components/client-area-layout";
-import { ClientQueryError } from "@/components/client-query-error";
+import { ClientQueryFallback } from "@/components/client-query-fallback";
 import { getErrorStatus } from "@/lib/api-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { SEOHead } from "@/components/seo";
 import { cn } from "@/lib/utils";
 import { formatDisplayPrice } from "@/lib/format-display-price";
 import { motion } from "framer-motion";
+import { fadeUp } from "@/lib/motion-variants";
 
 type Payment = {
   id: number;
@@ -122,9 +123,10 @@ function PaymentHistoryCard({ payment, locale, index }: { payment: Payment; loca
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
+      variants={fadeUp}
+      initial="hidden"
+      animate="show"
+      custom={index}
       className="rounded-xl border bg-background p-4 sm:p-5 shadow-sm"
     >
       <div className="flex items-start gap-3 sm:gap-4 mb-4 pb-4 border-b border-border/60">
@@ -235,9 +237,9 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
   const completedCount = paymentStats?.completedPayments ?? 0;
   const totalSpent = paymentStats?.totalSpent ?? 0;
   const summaryCurrency = paymentStats?.paymentCurrency ?? items[0]?.currency ?? "";
-  const queryLoadError = isError ? error : statsError ? statsErr : null;
-  const showQueryError = !!(isError || statsError) && getErrorStatus(queryLoadError) !== 401;
-  const summaryLoading = isLoading || statsLoading;
+  const hasPaymentsData = data != null;
+  const summaryLoading = (isLoading && !hasPaymentsData) || (statsLoading && stats == null);
+  const paymentsLoadError = isError ? error : statsError ? statsErr : null;
 
   const retryQueries = () => {
     if (isError) void refetch();
@@ -262,7 +264,13 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
       />
       <ClientAreaLayout>
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-10 space-y-7">
-          <div className="flex items-center justify-between gap-4">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0}
+            className="flex items-center justify-between gap-4"
+          >
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">{t("purchases_title")}</h1>
               <p className="text-muted-foreground text-sm sm:text-base mt-1">{t("purchases_subtitle")}</p>
@@ -272,9 +280,15 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
                 {t("back_to_dashboard")}
               </Link>
             </Button>
-          </div>
+          </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="show"
+        custom={1}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
+      >
         {[
           { label: t("payments"), value: summaryLoading ? "—" : String(total), cls: "text-primary" },
           { label: t("completed"), value: summaryLoading ? "—" : String(completedCount), cls: "text-green-600" },
@@ -289,25 +303,32 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
             <p className={cn("text-2xl sm:text-[1.75rem] font-black mt-1.5 tabular-nums", cls)}>{value}</p>
           </div>
         ))}
-      </div>
+      </motion.div>
 
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="show"
+        custom={2}
+      >
       <Card className="shadow-sm">
         <CardHeader className="pb-4 px-5 sm:px-6 pt-5 sm:pt-6">
           <CardTitle className="text-lg">{t("payment_history")}</CardTitle>
           <CardDescription className="text-sm">{isLoading ? t("purchases_loading") : `${total} ${total !== 1 ? t("payments") : t("payment_singular")}`}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3.5 px-5 sm:px-6 pb-5 sm:pb-6">
-          {showQueryError ? (
-            <ClientQueryError
-              error={queryLoadError}
-              onRetry={retryQueries}
-              isRetrying={isFetching || statsFetching}
-            />
-          ) : isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
+          <ClientQueryFallback
+            isLoading={isLoading}
+            isError={isError || statsError}
+            isFetching={isFetching || statsFetching}
+            hasData={hasPaymentsData}
+            error={paymentsLoadError}
+            refetch={retryQueries}
+            skeleton={Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-48 w-full rounded-xl" />
-            ))
-          ) : items.length === 0 ? (
+            ))}
+          >
+          {items.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -351,8 +372,10 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
               </div>
             </div>
           )}
+          </ClientQueryFallback>
         </CardContent>
       </Card>
+      </motion.div>
         </div>
       </ClientAreaLayout>
     </>

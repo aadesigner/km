@@ -17,11 +17,14 @@ const SheetPortal = SheetPrimitive.Portal
 
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay> & { fast?: boolean }
+>(({ className, fast, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/80",
+      fast
+        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-150 data-[state=open]:duration-180"
+        : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -31,24 +34,69 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg will-change-transform data-[state=open]:animate-in data-[state=closed]:animate-out",
+  "fixed z-50 gap-4 bg-background p-6 shadow-lg will-change-transform",
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-        bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right:
-          "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+        top: "inset-x-0 top-0 border-b",
+        bottom: "inset-x-0 bottom-0 border-t",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
+        right: "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
       },
       speed: {
-        default:
+        default: cn(
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
-        fast:
-          "transition-[transform,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] data-[state=closed]:duration-200 data-[state=open]:duration-[280ms]",
+        ),
+        fast: cn(
+          "transition-transform ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "data-[state=closed]:duration-150 data-[state=open]:duration-[200ms]",
+          "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
+        ),
       },
     },
+    compoundVariants: [
+      {
+        side: "top",
+        speed: "default",
+        class: "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+      },
+      {
+        side: "bottom",
+        speed: "default",
+        class: "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+      },
+      {
+        side: "left",
+        speed: "default",
+        class: "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+      },
+      {
+        side: "right",
+        speed: "default",
+        class: "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+      },
+      {
+        side: "right",
+        speed: "fast",
+        class: "data-[state=closed]:translate-x-full",
+      },
+      {
+        side: "left",
+        speed: "fast",
+        class: "data-[state=closed]:-translate-x-full",
+      },
+      {
+        side: "top",
+        speed: "fast",
+        class: "data-[state=closed]:-translate-y-full",
+      },
+      {
+        side: "bottom",
+        speed: "fast",
+        class: "data-[state=closed]:translate-y-full",
+      },
+    ],
     defaultVariants: {
       side: "right",
       speed: "default",
@@ -65,24 +113,25 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", speed = "default", className, overlayClassName, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay
-      className={cn(
-        speed === "fast" &&
-          "bg-black/50 data-[state=closed]:duration-150 data-[state=open]:duration-200",
-        overlayClassName,
-      )}
-    />
-    <SheetPrimitive.Content
-      ref={ref}
-      className={cn(sheetVariants({ side, speed }), className)}
-      {...props}
-    >
-      {children}
-    </SheetPrimitive.Content>
-  </SheetPortal>
-))
+>(({ side = "right", speed = "default", className, overlayClassName, children, ...props }, ref) => {
+  const isFast = speed === "fast"
+
+  return (
+    <SheetPortal>
+      <SheetOverlay
+        fast={isFast}
+        className={cn(isFast && "bg-black/45", overlayClassName)}
+      />
+      <SheetPrimitive.Content
+        ref={ref}
+        className={cn(sheetVariants({ side, speed }), className)}
+        {...props}
+      >
+        {children}
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  )
+})
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({

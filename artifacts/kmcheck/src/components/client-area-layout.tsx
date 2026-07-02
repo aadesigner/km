@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
   Search,
@@ -14,6 +15,7 @@ import { useClientAreaLiveRefresh } from "@/hooks/use-client-area-live-refresh";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { fadeUpSoft } from "@/lib/motion-variants";
 import {
   dashboardPath,
   parseClientAreaSection,
@@ -38,10 +40,11 @@ type Props = {
 
 function navItemClass(isActive: boolean) {
   return cn(
-    "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all border whitespace-nowrap",
+    "relative inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap",
     isActive
-      ? "bg-gradient-to-r from-primary to-[hsl(158,72%,34%)] text-primary-foreground shadow-sm shadow-primary/20 border-primary/30"
-      : "border-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+      ? "text-primary bg-primary/[0.08] shadow-sm shadow-primary/5"
+      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+    isActive && "after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-primary",
   );
 }
 
@@ -65,14 +68,14 @@ export function ClientAreaLayout({ children, before, className }: Props) {
   ];
 
   return (
-    <div className={cn("w-full min-h-[50vh]", className)}>
+    <div className={cn("w-full min-h-[50vh] pb-12 md:pb-20", className)}>
       {before}
 
-      {/* Desktop: in-flow client nav (scrolls with page) */}
+      {/* Desktop: in-flow client nav (scrolls with page) — no enter animation */}
       <div
         className={cn(
           "hidden md:block",
-          "border-b border-border/80 bg-background",
+          "border-b border-border/60 bg-gradient-to-b from-muted/30 to-background",
         )}
       >
         <div className="max-w-6xl mx-auto px-6 h-[4.25rem] flex items-center justify-between gap-4">
@@ -80,7 +83,7 @@ export function ClientAreaLayout({ children, before, className }: Props) {
             <Link
               href={dashboardPath(language, "account")}
               aria-label={t("account")}
-              className="flex shrink-0 rounded-full border border-border/60 bg-muted/30 p-1 hover:bg-muted/50 transition-colors"
+              className="flex shrink-0 rounded-full ring-1 ring-border/50 bg-background p-0.5 hover:ring-primary/30 transition-all"
             >
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name || ""} />
@@ -88,9 +91,9 @@ export function ClientAreaLayout({ children, before, className }: Props) {
               </Avatar>
             </Link>
 
-            <div className="h-6 w-px bg-border/80 shrink-0" aria-hidden />
+            <div className="h-6 w-px bg-border/70 shrink-0" aria-hidden />
 
-            <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none min-w-0" aria-label={t("account")}>
+            <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none min-w-0" aria-label={t("account")}>
               {navItems.map(({ id, icon: Icon, label, href, view }) => {
                 const isActive = activeSection === id;
                 if (href) {
@@ -116,7 +119,7 @@ export function ClientAreaLayout({ children, before, className }: Props) {
             </nav>
           </div>
 
-          <Button asChild size="sm" className="shrink-0 gap-2 rounded-full px-4 shadow-sm shadow-primary/15">
+          <Button asChild size="sm" className="shrink-0 gap-2 rounded-lg px-4 shadow-sm shadow-primary/15">
             <Link href={`/${language}`}>
               <Search className="h-4 w-4" />
               {t("check_vin")}
@@ -126,7 +129,17 @@ export function ClientAreaLayout({ children, before, className }: Props) {
       </div>
 
       <div className="w-full max-w-6xl mx-auto">
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location}
+            variants={fadeUpSoft}
+            initial="hidden"
+            animate="show"
+            exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

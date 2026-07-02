@@ -24,13 +24,15 @@ import { translateLotStatus } from "@/lib/translate-lot-status";
 import { cn } from "@/lib/utils";
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { PrintReportBranding } from "@/components/print-report-branding";
 import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
-import { PendingVinSearchPanel } from "@/components/pending-vin-search-panel";
+import { PendingVinSearchPanel, PendingVinTopNotice } from "@/components/pending-vin-search-panel";
+import { PendingVinCoffeeDialog } from "@/components/pending-vin-coffee-dialog";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
 import { resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
@@ -443,10 +445,15 @@ export default function VinResult({ params }: Props) {
   const storedKrwPerUsd = (lookupRaw?.data as LookupData | null | undefined)?.krwPerUsd;
   const krwPerUsd = useReportKrwPerUsd(storedKrwPerUsd);
   const isLoading = isVinString ? loadingByVin : loadingById;
-  const isError =
+  const isFetchError =
     !route ||
     (isVinString && errorByVin) ||
     (route?.kind === "lookupId" && errorById);
+  const loadError = isVinString ? vinFetchError : lookupByIdError;
+  const isFetching = isVinString ? fetchingVin : fetchingById;
+  const refetchLookup = isVinString ? refetchVin : refetchById;
+  const isLoadingInitial = isLoading && !lookup;
+  useQueryRecovery(!!isFetchError && !!lookup, isFetching, refetchLookup);
   const [, setLocation] = useLocation();
   const [expandedAccidents, setExpandedAccidents] = useState<Set<number>>(new Set());
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -481,7 +488,7 @@ export default function VinResult({ params }: Props) {
     return () => window.clearInterval(id);
   }, [isFulfilling, isVinString, refetchVin, refetchById]);
 
-  if (isLoading) {
+  if (isLoadingInitial) {
     return (
       <>
         <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
@@ -496,13 +503,10 @@ export default function VinResult({ params }: Props) {
     );
   }
 
-  if (isError || !lookup) {
-    const loadError = isVinString ? vinFetchError : lookupByIdError;
+  if (!lookup) {
     const kind = resolveVinReportErrorKind(loadError);
-    const isNotFound = kind === "not_found" || (!lookup && !isLoading && !loadError);
+    const isNotFound = kind === "not_found" || !loadError;
     const resolvedKind = isNotFound ? "not_found" : kind;
-    const retry = isVinString ? () => refetchVin() : () => refetchById();
-    const retrying = isVinString ? fetchingVin : fetchingById;
 
     return (
       <>
@@ -510,8 +514,8 @@ export default function VinResult({ params }: Props) {
         <VinReportErrorView
           kind={resolvedKind}
           language={language}
-          onRetry={resolvedKind === "server" || resolvedKind === "unknown" ? retry : undefined}
-          isRetrying={retrying}
+          onRetry={resolvedKind === "server" || resolvedKind === "unknown" ? refetchLookup : undefined}
+          isRetrying={isFetching}
         />
       </>
     );
@@ -612,6 +616,17 @@ export default function VinResult({ params }: Props) {
   const vehicleTitle = data?.year && data?.make && data?.model
     ? `${data.year} ${data.make} ${data.model}`
     : `${t("report_for")} ${lookup.vin}`;
+
+  const pendingHeroTitle = (() => {
+    if (data?.year && data?.make) return `${data.year} ${data.make}`;
+    if (data?.make) return data.make;
+    if (data?.year) return String(data.year);
+    return null;
+  })();
+
+  const displayVehicleTitle = isPendingManual
+    ? (pendingHeroTitle ?? `${t("report_for")} ${lookup.vin}`)
+    : vehicleTitle;
 
   const hasSalvageData = data?.isSalvage !== undefined && data?.isSalvage !== null;
   const hasTheftData   = data?.isStolen  !== undefined && data?.isStolen  !== null;
@@ -735,21 +750,25 @@ export default function VinResult({ params }: Props) {
       )}
 
       <div className="vin-report-screen space-y-4 sm:space-y-6">
+      {isPendingManual ? (
+        <PendingVinTopNotice />
+      ) : null}
+      {isPendingManual ? <PendingVinCoffeeDialog /> : null}
       <VinReportHero
-        vehicleTitle={vehicleTitle}
+        vehicleTitle={displayVehicleTitle}
         vin={lookup.vin}
         country={isPendingManual ? null : data?.country}
         trim={isPendingManual ? undefined : data?.trim}
         photos={isPendingManual ? [] : photos}
         scoreData={displayScoreData}
         summaryItems={displayHeroSummary}
-        photoPlaceholderLabel={isPendingManual ? t("pending_scan_photos") : undefined}
+        photoPlaceholderLabel={isPendingManual ? t("pending_photos_searching") : undefined}
         pendingPhotoScan={isPendingManual}
         unlockedLabel={isPendingManual ? t("pending_report_badge") : undefined}
         showStatsRow={!isPendingManual}
         onPhotoClick={!isPendingManual && photos.length > 0 ? (i) => openLightbox(i) : undefined}
       >
-        {odometer && odoCol ? (
+        {odometer && odoCol && !isPendingManual ? (
           <div className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 sm:px-2.5 sm:py-1 w-full justify-center">
             <div className={cn("h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full shrink-0", odoCol.dot.split(" ")[0])} />
             <span className={cn("text-[10px] sm:text-[11px] font-semibold tabular-nums truncate", odoCol.text)}>
@@ -773,6 +792,10 @@ export default function VinResult({ params }: Props) {
         )}
       </VinReportHero>
 
+      {isPendingManual ? (
+        <PendingVinSearchPanel />
+      ) : null}
+
       {/* ── 2-Column Content Grid ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start print-two-col min-w-0">
 
@@ -780,7 +803,7 @@ export default function VinResult({ params }: Props) {
         <div className="space-y-4 sm:space-y-6 order-2 lg:order-2 min-w-0">
 
         {/* Mileage + pending search */}
-        {showMileageSection ? (
+        {showMileageSection && !isPendingManual ? (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -848,9 +871,6 @@ export default function VinResult({ params }: Props) {
             ) : null}
           </div>
         </motion.div>
-        ) : null}
-        {isPendingManual ? (
-          <PendingVinSearchPanel />
         ) : null}
 
         {/* Accident History */}
@@ -1118,7 +1138,7 @@ export default function VinResult({ params }: Props) {
         )}
 
         {/* Ownership */}
-        {showOwnershipSection && (
+        {showOwnershipSection && !isPendingManual && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1177,7 +1197,8 @@ export default function VinResult({ params }: Props) {
         {/* RIGHT COLUMN — photos, vehicle info, market data (shown left on desktop) */}
         <div className="space-y-4 sm:space-y-6 order-1 lg:order-1 min-w-0 overflow-hidden print-two-col-left">
 
-          {/* Vehicle Info */}
+          {/* Vehicle Info — hidden while manual report is pending */}
+          {!isPendingManual ? (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1218,7 +1239,10 @@ export default function VinResult({ params }: Props) {
               </VehicleSpecsGrid>
             </div>
           </motion.div>
+          ) : null}
 
+          {!isPendingManual ? (
+          <>
           <InsuranceClaimsSection
             claims={insuranceClaims}
             country={data?.country}
@@ -1240,9 +1264,11 @@ export default function VinResult({ params }: Props) {
             variant="report"
             delay={0.09}
           />
+          </>
+          ) : null}
 
           {/* Market Data */}
-          {showMarketDataSection && marketData && (
+          {showMarketDataSection && marketData && !isPendingManual && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}

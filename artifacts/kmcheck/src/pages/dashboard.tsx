@@ -31,6 +31,7 @@ import {
   ShieldCheck, Zap, MessageCircle, CalendarDays,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { fadeUp } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import {
@@ -45,7 +46,7 @@ import {
   normalizeClientPath,
   type DashboardView,
 } from "@/lib/dashboard-nav";
-import { ClientQueryError } from "@/components/client-query-error";
+import { ClientQueryFallback } from "@/components/client-query-fallback";
 import { getErrorStatus } from "@/lib/api-error";
 
 function useGreeting(t: (k: string) => string): string {
@@ -189,20 +190,13 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, user, language, setLocation]);
 
-  const queryLoadError = historyError ? historyErr : statsError ? statsErr : null;
-  const queryRetrying = historyFetching || statsFetching;
-
   useEffect(() => {
-    if (!queryLoadError) return;
-    if (getErrorStatus(queryLoadError) === 401) {
+    const err = historyError ? historyErr : statsError ? statsErr : null;
+    if (!err) return;
+    if (getErrorStatus(err) === 401) {
       setLocation(`/${language}/sign-in`);
     }
-  }, [queryLoadError, language, setLocation]);
-
-  const retryQueries = () => {
-    if (historyError) void refetchHistory();
-    if (statsError) void refetchStats();
-  };
+  }, [historyError, historyErr, statsError, statsErr, language, setLocation]);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -290,12 +284,11 @@ export default function Dashboard() {
   }
 
   const lookups = history?.items ?? [];
-  const reportsLoading = historyLoading && !history;
+  const hasHistoryData = history != null;
   const totalChecks = stats?.totalChecks ?? lookups.length;
   const checksThisMonth = stats?.checksThisMonth ?? 0;
   const isViewableReport = (status: string) => status === "complete" || status === "pending_manual";
   const completed = lookups.filter(l => l.status === "complete" || l.status === "pending_manual").length;
-  const showQueryError = !!(historyError || statsError) && getErrorStatus(queryLoadError) !== 401;
 
   const pendingBanner = showPendingBanner && pendingVin ? (
     <div className="bg-muted/40 dark:bg-muted/20 border-b border-border px-4 py-3">
@@ -325,8 +318,10 @@ export default function Dashboard() {
 
           {/* Page header — varies by active view */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0}
             className="flex items-center justify-between gap-4"
           >
             <div>
@@ -350,8 +345,10 @@ export default function Dashboard() {
           {/* ── ACCOUNT VIEW ── */}
           {activeView === "account" ? (
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
+              custom={1}
               className="space-y-6"
             >
               <div className="rounded-2xl border bg-background shadow-sm overflow-hidden">
@@ -410,8 +407,10 @@ export default function Dashboard() {
           ) : activeView === "help" ? (
             /* ── HELP VIEW ── */
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
+              custom={1}
               className="space-y-6"
             >
               <Accordion type="single" collapsible className="space-y-2">
@@ -442,7 +441,13 @@ export default function Dashboard() {
             </motion.div>
           ) : (
             /* ── REPORTS VIEW ── */
-            <div className="space-y-6">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
+              custom={1}
+              className="space-y-6"
+            >
               <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                 <DashboardStatCard
                   label={t("dashboard_stat_month_reports")}
@@ -468,19 +473,22 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">{t("my_reports")}</h2>
 
-                {showQueryError ? (
-                  <ClientQueryError
-                    error={queryLoadError}
-                    onRetry={retryQueries}
-                    isRetrying={queryRetrying}
-                  />
-                ) : reportsLoading ? (
-                  <div className="space-y-3.5">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton key={i} className="h-[4.5rem] sm:h-20 w-full rounded-2xl" />
-                    ))}
-                  </div>
-                ) : lookups.length === 0 ? (
+                <ClientQueryFallback
+                  isLoading={historyLoading}
+                  isError={historyError}
+                  isFetching={historyFetching}
+                  hasData={hasHistoryData}
+                  error={historyErr}
+                  refetch={refetchHistory}
+                  skeleton={(
+                    <div className="space-y-3.5">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-[4.5rem] sm:h-20 w-full rounded-2xl" />
+                      ))}
+                    </div>
+                  )}
+                >
+                {lookups.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -535,8 +543,9 @@ export default function Dashboard() {
                     deleteLookup={deleteLookup}
                   />
                 )}
+                </ClientQueryFallback>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
     </ClientAreaLayout>

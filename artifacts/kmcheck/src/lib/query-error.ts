@@ -3,6 +3,15 @@ export function showQueryFailure(isError: boolean, isFetching: boolean): boolean
   return isError && !isFetching;
 }
 
+/** Full-page / section error only when there is no cached data to keep showing. */
+export function showFatalQueryError(
+  isError: boolean,
+  isFetching: boolean,
+  hasData: boolean,
+): boolean {
+  return showQueryFailure(isError, isFetching) && !hasData;
+}
+
 export function queryErrorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === "object") {
     const data = (error as { data?: { error?: string } }).data;

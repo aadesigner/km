@@ -66,7 +66,7 @@ const MobileMenuToggle = forwardRef<
     aria-label={label}
     aria-expanded={open}
     className={cn(
-      "md:hidden relative inline-flex shrink-0 items-center justify-center rounded-full transition-[color,background-color,transform] duration-200 active:scale-95",
+      "md:hidden relative inline-flex shrink-0 items-center justify-center rounded-full touch-manipulation transition-[color,background-color,transform] duration-150 active:scale-95",
       scrolled ? "h-9 w-9" : "h-10 w-10",
       open
         ? "bg-primary/12 text-primary"
@@ -80,19 +80,19 @@ const MobileMenuToggle = forwardRef<
     <span className="relative block h-3.5 w-[17px]" aria-hidden>
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
         )}
       />
       <span
         className={cn(
-          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "scale-x-0 opacity-0" : "opacity-100",
         )}
       />
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
         )}
       />
@@ -300,11 +300,18 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const userRef    = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let ticking = false;
     const handler = () => {
-      const y = window.scrollY;
-      setScrolled(y > 60);
-      setHeroScrolled(y > 240);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolled(y > 60);
+        setHeroScrolled(y > 240);
+        ticking = false;
+      });
     };
+    handler();
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
@@ -374,16 +381,16 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       style={{ top: announcementOffset }}
       className={cn(
       "fixed inset-x-0 z-[100] w-full print:hidden",
-      "transition-[border-color,backdrop-filter,box-shadow] duration-300",
+      "transition-[border-color,backdrop-filter,box-shadow,background-color] duration-300",
       scrolled
         ? (isDarkNav
-            ? "bg-background/[0.06] backdrop-blur-2xl border-b border-border/20 shadow-sm shadow-black/5"
-            : "bg-background/85 backdrop-blur-2xl border-b border-border/40 shadow-sm shadow-black/[0.04]")
+            ? "bg-[#060a14]/75 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)]"
+            : "bg-background/92 backdrop-blur-xl border-b border-border/50 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)]")
         : isDarkNav
-        ? "bg-black/20 backdrop-blur-md border-b border-white/[0.10]"
+        ? "bg-gradient-to-b from-black/45 to-black/15 backdrop-blur-md border-b border-white/[0.08]"
         : (isHome || isCountry)
-        ? "bg-background/90 backdrop-blur-md border-b border-border/40"
-        : "bg-background/75 backdrop-blur-md border-b border-border/40",
+        ? "bg-background/88 backdrop-blur-md border-b border-border/45"
+        : "bg-background/80 backdrop-blur-md border-b border-border/45",
     )}>
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex items-center justify-between gap-4",

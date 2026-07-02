@@ -21,7 +21,7 @@ import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle,
 import { Link } from "wouter";
 import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
-import { queryErrorMessage, showQueryFailure } from "@/lib/query-error";
+import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 
 export default function AdminUsers() {
@@ -71,7 +71,7 @@ export default function AdminUsers() {
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
   const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter);
   useQueryRecovery(isError, isFetching, refetch);
-  const loadError = showQueryFailure(isError, isFetching)
+  const loadError = showFatalQueryError(isError, isFetching, !!data)
     ? queryErrorMessage(error, "Failed to load users")
     : null;
 

@@ -12,7 +12,11 @@ export function useQueryRecovery(
   const recovered = useRef(false);
 
   useEffect(() => {
-    if (!isError || isFetching || recovered.current) return;
+    if (!isError) {
+      recovered.current = false;
+      return;
+    }
+    if (isFetching || recovered.current) return;
     recovered.current = true;
     const id = window.setTimeout(() => {
       void refetch();

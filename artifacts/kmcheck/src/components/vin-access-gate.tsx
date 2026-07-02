@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
 
 const VinResult = lazy(() => import("@/pages/vin-result"));
@@ -46,9 +47,11 @@ export function VinAccessGate({ params, vin }: VinAccessGateProps) {
     ...VIN_REPORT_QUERY_OPTIONS,
   });
 
-  if (isLoading) return <PageLoader />;
+  useQueryRecovery(isError && !!data, isFetching, refetch);
 
-  if (isError) {
+  if (isLoading && !data) return <PageLoader />;
+
+  if (isError && !data) {
     const kind = resolveVinReportErrorKind(error);
     return (
       <VinReportErrorView

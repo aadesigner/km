@@ -13,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check, CheckCircle2, Tag, X, Loader2, ShieldCheck, Clock, RotateCcw,
-  Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
+  Lock, Gauge, AlertTriangle, Info, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
 import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin } from "@/lib/checkout-vin-flow";
@@ -188,7 +189,7 @@ export default function Checkout({ params }: Props) {
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
 
-  const { data: pubSettings, isLoading: pubSettingsLoading, isError: pubSettingsError } = useQuery<PublicSettings>({
+  const { data: pubSettings, isLoading: pubSettingsLoading, isError: pubSettingsError, isFetching: pubSettingsFetching, refetch: refetchPubSettings } = useQuery<PublicSettings>({
     queryKey: ["/api/payments/public-settings"],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/payments/public-settings`);
@@ -197,6 +198,7 @@ export default function Checkout({ params }: Props) {
     },
     ...CHECKOUT_QUERY_OPTIONS,
   });
+  useQueryRecovery(pubSettingsError && !!pubSettings, pubSettingsFetching, refetchPubSettings);
 
   // VIN peek — only fires when VIN is exactly 17 chars, has no invalid chars, and user is signed in
   const normalizedVin = vin.trim().toUpperCase();
@@ -1068,10 +1070,14 @@ export default function Checkout({ params }: Props) {
                   <div className={cn(
                     "flex items-start gap-2.5 border-b px-4 sm:px-5 py-3.5",
                     showVinPendingDoubleCheck
-                      ? "border-amber-200/70 dark:border-amber-800/50 bg-white dark:bg-zinc-950"
+                      ? "border-sky-200/70 dark:border-sky-800/50 bg-sky-50/40 dark:bg-sky-950/20"
                       : "border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30",
                   )}>
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    {showVinPendingDoubleCheck ? (
+                      <Info className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    )}
                     <div>
                       {showVinQualityWarning ? (
                         <>
@@ -1079,7 +1085,7 @@ export default function Checkout({ params }: Props) {
                           <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5 leading-relaxed">{t("vin_warning_unknown_vehicle_sub")}</p>
                         </>
                       ) : (
-                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
+                        <p className="text-sm font-medium text-sky-800 dark:text-sky-300">{t("vin_warning_pending_double_check")}</p>
                       )}
                     </div>
                   </div>

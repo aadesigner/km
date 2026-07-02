@@ -122,33 +122,28 @@ function HeroPhotoPlaceholder({
     return (
       <div
         className={cn(
-          "relative w-full flex flex-col items-center justify-center gap-3 overflow-hidden",
-          "bg-gradient-to-br from-primary/[0.08] via-muted/50 to-muted/30 px-4",
+          "relative w-full overflow-hidden rounded-xl",
+          "bg-gradient-to-br from-muted/55 to-muted/30",
           "aspect-[4/3] max-h-[240px] sm:max-h-none sm:min-h-[260px] sm:h-full",
           className,
         )}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12),transparent_65%)]" />
-        <div className="relative h-16 w-16 sm:h-20 sm:w-20">
-          <div className="absolute inset-0 rounded-full border border-primary/25" />
-          <div className="absolute inset-2 rounded-full border border-primary/15" />
-          {!reduceMotion && (
+        <div className="absolute inset-0 bg-muted-foreground/[0.03]" />
+        {!reduceMotion && (
           <motion.div
-            className="absolute inset-0 rounded-full origin-center"
-            style={{
-              background: "conic-gradient(from 0deg, transparent 0deg, rgba(34,197,94,0.4) 50deg, transparent 100deg)",
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 dark:via-white/5 to-transparent"
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
           />
-          )}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Car className="h-7 w-7 sm:h-8 sm:w-8 text-primary/80" aria-hidden />
-          </div>
+        )}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-4">
+          <Car className="h-11 w-11 sm:h-12 sm:w-12 text-muted-foreground/18" aria-hidden />
+          {label ? (
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground/80 text-center leading-snug">
+              {label}
+            </p>
+          ) : null}
         </div>
-        {label ? (
-          <p className="relative text-xs sm:text-sm font-semibold text-primary text-center">{label}</p>
-        ) : null}
         <span className="sr-only">{vehicleTitle}</span>
       </div>
     );

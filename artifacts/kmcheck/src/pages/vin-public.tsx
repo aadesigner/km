@@ -36,6 +36,7 @@ import {
 } from "@/components/vin-mileage-animated";
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
@@ -398,7 +399,7 @@ export default function VinPublic({ params }: Props) {
   const { displayPrice, fmtPrice } = useDisplayPrice();
   const priceStr = displayPrice != null ? fmtPrice(displayPrice) : null;
 
-  const { data, isLoading, isError, error } = useQuery<VinPublicReport>({
+  const { data, isLoading, isError, error, isFetching, refetch } = useQuery<VinPublicReport>({
     queryKey: ["/api/vin/public", vin, user?.id ?? null],
     enabled: isLoaded,
     queryFn: async () => {
@@ -422,8 +423,9 @@ export default function VinPublic({ params }: Props) {
 
   const krwPerUsd = useReportKrwPerUsd(data?.krwPerUsd);
 
-  const notFound = isError && !!(error as { notFound?: boolean })?.notFound;
-  const forbidden = isError && !!(error as { forbidden?: boolean })?.forbidden;
+  const notFound = isError && !data && !!(error as { notFound?: boolean })?.notFound;
+  const forbidden = isError && !data && !!(error as { forbidden?: boolean })?.forbidden;
+  useQueryRecovery(isError && !!data, isFetching, refetch);
 
   const seoLang = language as VinSeoLang;
   const seoOrigin = typeof window !== "undefined" ? window.location.origin : SITE_ORIGIN;
@@ -513,7 +515,7 @@ export default function VinPublic({ params }: Props) {
     });
   };
 
-  if (isLoading || !isLoaded) {
+  if ((isLoading && !data) || !isLoaded) {
     return (
       <>
         {seoBlock}
@@ -555,8 +557,8 @@ export default function VinPublic({ params }: Props) {
     return null;
   }
 
-  // ── Error ────────────────────────────────────────────────────────────────────
-  if (isError) {
+  // ── Error (only when nothing was loaded yet) ───────────────────────────────
+  if (isError && !data) {
     const kind = resolveVinReportErrorKind(error);
     return (
       <>
@@ -565,6 +567,8 @@ export default function VinPublic({ params }: Props) {
           kind={kind}
           language={language}
           showDashboardLink={kind !== "forbidden"}
+          onRetry={kind === "server" || kind === "unknown" || kind === "rate_limit" ? () => void refetch() : undefined}
+          isRetrying={isFetching}
         />
       </>
     );
