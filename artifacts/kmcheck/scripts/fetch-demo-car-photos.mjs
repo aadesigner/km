@@ -152,4 +152,7 @@ for (const car of CARS) {
   }
 }
 
-if (failed > 0) process.exitCode = 1;
+if (failed > 0) {
+  console.error(`fetch-demo-car-photos: ${failed} image(s) failed — demo card placeholders will show`);
+  process.exit(1);
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlertTriangle, ShieldAlert, Gauge, Fingerprint, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -556,8 +556,9 @@ export function VinDemoCard({
   heroSide?: boolean;
 }) {
   const { t } = useTranslation();
-  const pool = carsForCountry(country);
+  const pool = useMemo(() => carsForCountry(country), [country]);
   const cars = frozen ? [pickFrozenCar(pool)] : pool;
+  const photoUrls = useMemo(() => cars.map((c) => c.photo), [cars]);
 
   const [idx, setIdx] = useState(0);
 
@@ -572,8 +573,8 @@ export function VinDemoCard({
   }, [cars.length, frozen]);
 
   useEffect(() => {
-    preloadDemoCarPhotos(cars.map(c => c.photo));
-  }, [cars]);
+    preloadDemoCarPhotos(photoUrls);
+  }, [photoUrls]);
 
   const car = cars[idx] ?? cars[0];
   if (!car) return null;
@@ -622,25 +623,35 @@ export function VinDemoCard({
             />
           </div>
         ) : (
-          <AnimatePresence initial={false} mode="wait">
-            <motion.div
-              key={car.vin + "-photo"}
-              className="absolute inset-0 overflow-hidden [transform:translateZ(0)]"
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1.06 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{
-                opacity: { duration: 0.45, ease: "easeOut" },
-                scale: { duration: 5, ease: "linear" },
-              }}
-            >
-              <DemoCarPhoto
-                src={car.photo}
-                alt={`${car.year} ${car.name}`}
-                eager
-              />
-            </motion.div>
-          </AnimatePresence>
+          <div className="absolute inset-0 overflow-hidden [transform:translateZ(0)]">
+            {cars.map((slideCar, slideIdx) => {
+              const isActive = slideIdx === idx;
+              const isNext = slideIdx === (idx + 1) % cars.length;
+              return (
+                <div
+                  key={slideCar.vin}
+                  className={cn(
+                    "absolute inset-0 overflow-hidden transition-opacity duration-500 ease-out",
+                    isActive ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none",
+                  )}
+                  aria-hidden={!isActive}
+                >
+                  <div
+                    className={cn(
+                      "h-full w-full transition-transform duration-[5000ms] ease-linear",
+                      isActive ? "scale-[1.06]" : "scale-100",
+                    )}
+                  >
+                    <DemoCarPhoto
+                      src={slideCar.photo}
+                      alt={`${slideCar.year} ${slideCar.name}`}
+                      eager={isActive || isNext}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         {/* Subtle scan shimmer */}

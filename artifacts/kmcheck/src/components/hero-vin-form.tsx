@@ -27,7 +27,7 @@ function VinSegments({ vinLen, isComplete }: { vinLen: number; isComplete: boole
         <div
           key={i}
           className={cn(
-            "h-0.5 flex-1 rounded-full transition-colors duration-200",
+            "h-[3px] flex-1 rounded-full transition-colors duration-200",
             i < vinLen
               ? isComplete ? "bg-primary" : "bg-primary/65"
               : "bg-muted-foreground/12 dark:bg-white/8",
@@ -102,7 +102,7 @@ export function HeroVinForm({
               "bg-muted/40 dark:bg-white/[0.04]",
             )}
           >
-            <div className="hero-vin-input-wrap vin-scanner relative overflow-hidden flex items-center gap-2 p-1.5">
+            <div className="hero-vin-input-wrap vin-scanner relative overflow-hidden flex items-center gap-2 p-1.5 pb-1">
               <div className="relative flex min-w-0 flex-1 items-center">
                 <Search className="absolute left-2.5 h-5 w-5 text-primary/60 dark:text-primary/50 shrink-0 z-10 pointer-events-none" />
                 <Input
@@ -127,7 +127,7 @@ export function HeroVinForm({
               </Button>
             </div>
 
-            <div className="hero-vin-segments flex gap-[3px] px-3.5 pt-2.5 pb-1" aria-hidden>
+            <div className="hero-vin-segments flex gap-[2px] px-1.5 pb-1.5 pt-0" aria-hidden>
               <VinSegments vinLen={vinLen} isComplete={isComplete} />
             </div>
 

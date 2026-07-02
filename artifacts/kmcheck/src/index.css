@@ -619,7 +619,15 @@
   }
 
   .hero-vin-input-wrap:focus-within {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+    box-shadow: none;
+  }
+
+  .hero-vin-field:focus-within .hero-vin-segments {
+    opacity: 1;
+  }
+
+  .hero-vin-segments {
+    margin-top: -1px;
   }
 
   .hero-input-glow {

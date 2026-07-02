@@ -11,6 +11,8 @@ type Props = {
   placeholderClassName?: string;
 };
 
+const MAX_RETRIES = 2;
+
 /**
  * Demo car image with per-URL failure tracking (avoids carousel stale onError bugs).
  */
@@ -34,14 +36,14 @@ export function DemoCarPhoto({
     };
   }, [src]);
 
-  if (failed) {
+  if (!src?.trim() || failed) {
     return (
       <div
         className={cn(
           "flex h-full w-full items-center justify-center bg-muted/35 dark:bg-white/[0.04]",
           placeholderClassName,
         )}
-        aria-hidden
+        aria-hidden={!alt}
       >
         <Car className="h-10 w-10 text-muted-foreground/25 dark:text-white/15" />
       </div>
@@ -61,9 +63,15 @@ export function DemoCarPhoto({
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       fetchPriority={eager ? "high" : "auto"}
-      onError={() => {
+      onLoad={() => {
         if (!mountedRef.current) return;
-        if (retry < 1) {
+        setFailed(false);
+      }}
+      onError={(e) => {
+        if (!mountedRef.current) return;
+        const img = e.currentTarget;
+        if (img.naturalWidth > 0) return;
+        if (retry < MAX_RETRIES) {
           setRetry((n) => n + 1);
           return;
         }
@@ -76,6 +84,7 @@ export function DemoCarPhoto({
 /** Warm the browser cache for a list of demo photo URLs. */
 export function preloadDemoCarPhotos(urls: string[]) {
   for (const url of urls) {
+    if (!url?.trim()) continue;
     const img = new Image();
     img.decoding = "async";
     img.src = url;
