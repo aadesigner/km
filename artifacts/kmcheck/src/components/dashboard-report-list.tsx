@@ -416,7 +416,7 @@ export function DashboardReportList({ lookups, language, deleteLookup }: Props) 
       )}
       {displayed.map((lookup, i) => (
         <ReportCard
-          key={lookup.id}
+          key={lookup.id ?? lookup.vin}
           lookup={lookup}
           index={i}
           language={language}

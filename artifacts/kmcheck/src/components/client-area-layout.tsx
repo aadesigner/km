@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
   Search,
@@ -15,7 +14,6 @@ import { useClientAreaLiveRefresh } from "@/hooks/use-client-area-live-refresh";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { fadeUpSoft } from "@/lib/motion-variants";
 import {
   dashboardPath,
   parseClientAreaSection,
@@ -129,17 +127,7 @@ export function ClientAreaLayout({ children, before, className }: Props) {
       </div>
 
       <div className="w-full max-w-6xl mx-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location}
-            variants={fadeUpSoft}
-            initial="hidden"
-            animate="show"
-            exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        {children}
       </div>
     </div>
   );

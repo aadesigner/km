@@ -4,6 +4,7 @@ import {
   VinReportShareActions,
   VinReportPdfPreview,
   VinShareReportHighlights,
+  VinReportDataDisclaimer,
   type VinShareActionsProps,
 } from "@/components/vin-report-share-actions";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,7 @@ export function VinReportShareCard(props: VinShareActionsProps) {
           </div>
         </div>
       </div>
+      <VinReportDataDisclaimer className="mt-4 sm:mt-5" />
     </section>
   );
 }

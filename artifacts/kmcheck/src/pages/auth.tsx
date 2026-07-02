@@ -6,7 +6,8 @@ import { useRecaptcha } from "@/hooks/use-recaptcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, Loader2, Mail, Lock, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { SEOHead, usePageSeo } from "@/components/seo";
@@ -14,8 +15,46 @@ import { translateAuthOAuthError, translateClientError } from "@/lib/translate-c
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
 import { PasswordRequirements } from "@/components/password-requirements";
 import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
+import { cn } from "@/lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const AUTH_INPUT = cn(
+  "h-12 rounded-xl border-border/60 bg-muted/25 px-3.5 text-[15px] shadow-none",
+  "placeholder:text-muted-foreground/55",
+  "hover:border-border hover:bg-muted/35",
+  "focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/45",
+  "transition-[color,background-color,border-color,box-shadow]",
+);
+
+function AuthField({
+  id,
+  label,
+  optional,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  optional?: string;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor={id} className="text-[13px] font-semibold tracking-tight text-foreground/90">
+          {label}
+          {optional ? (
+            <span className="ml-1 font-normal text-muted-foreground">{optional}</span>
+          ) : null}
+        </Label>
+        {hint}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 type PublicSettings = {
   googleEnabled?: boolean;
@@ -51,6 +90,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const oauthError = searchParams.get("error");
@@ -95,6 +135,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (mode === "sign-in") {
         await login(email, password, recaptchaToken);
       } else {
+        if (!acceptedTerms) {
+          setError(t("auth_error_terms_required"));
+          return;
+        }
         if (!isPasswordStrongEnough(password)) {
           setError(getPasswordErrorMessage(t, password));
           return;
@@ -114,33 +158,35 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const isSignIn = mode === "sign-in";
   const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const signupPasswordOk = isSignIn || isPasswordStrongEnough(password);
-  const submitDisabled = loading || (rcEnabled && !rcReady) || !signupPasswordOk;
+  const submitDisabled = loading || (rcEnabled && !rcReady) || !signupPasswordOk || (!isSignIn && !acceptedTerms);
   const hasSocial = googleEnabled || facebookEnabled;
 
   return (
     <>
       <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
       <AuthPageShell>
-            {/* Tabs */}
-            <div className="flex rounded-xl border border-border overflow-hidden mb-5">
+            {/* Mode switch */}
+            <div className="flex p-1 rounded-xl bg-muted/45 border border-border/50 mb-6">
               <button
                 type="button"
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                className={cn(
+                  "flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200",
                   isSignIn
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/40 text-muted-foreground hover:bg-muted/70"
-                }`}
-                onClick={() => { setMode("sign-in"); setError(""); }}
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}
               >
                 {t("sign_in")}
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                className={cn(
+                  "flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200",
                   !isSignIn
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/40 text-muted-foreground hover:bg-muted/70"
-                }`}
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
                 onClick={() => { setMode("sign-up"); setError(""); }}
               >
                 {t("sign_up")}
@@ -150,68 +196,74 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={mode}
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.15 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="mb-4">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                <div className="mb-6 text-center sm:text-left">
+                  <h1 className="text-2xl font-bold tracking-tight">
                     {isSignIn ? t("auth_welcome_back") : t("auth_create_account")}
                   </h1>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
                     {isSignIn ? t("auth_signin_subtitle") : t("auth_signup_subtitle")}
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-3.5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {!isSignIn && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-sm font-medium">
-                        {t("auth_name_label")}{" "}
-                        <span className="text-muted-foreground font-normal">{t("auth_name_optional")}</span>
-                      </Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder={t("auth_name_placeholder")}
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        autoComplete="name"
-                        disabled={loading}
-                        className="h-11"
-                      />
-                    </div>
+                    <AuthField
+                      id="name"
+                      label={t("auth_name_label")}
+                      optional={t("auth_name_optional")}
+                    >
+                      <div className="relative">
+                        <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder={t("auth_name_placeholder")}
+                          value={name}
+                          onChange={e => setName(e.target.value)}
+                          autoComplete="name"
+                          disabled={loading}
+                          className={cn(AUTH_INPUT, "pl-10")}
+                        />
+                      </div>
+                    </AuthField>
                   )}
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-sm font-medium">{t("email")}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                      autoComplete="email"
-                      disabled={loading}
-                      className="h-11"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <Label htmlFor="password" className="text-sm font-medium">{t("auth_password_label")}</Label>
-                      {isSignIn && (
-                        <Link
-                          href={`/${language}/forgot-password`}
-                          className="text-xs text-primary hover:underline font-medium"
-                        >
-                          {t("forgot_password_link")}
-                        </Link>
-                      )}
-                    </div>
+                  <AuthField id="email" label={t("email")}>
                     <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        autoComplete="email"
+                        disabled={loading}
+                        className={cn(AUTH_INPUT, "pl-10")}
+                      />
+                    </div>
+                  </AuthField>
+
+                  <AuthField
+                    id="password"
+                    label={t("auth_password_label")}
+                    hint={isSignIn ? (
+                      <Link
+                        href={`/${language}/forgot-password`}
+                        className="text-xs text-primary hover:underline font-medium shrink-0"
+                      >
+                        {t("forgot_password_link")}
+                      </Link>
+                    ) : undefined}
+                  >
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -222,11 +274,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         minLength={isSignIn ? 1 : 6}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
                         disabled={loading}
-                        className="h-11 pr-10"
+                        className={cn(AUTH_INPUT, "pl-10 pr-11")}
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground/60 hover:text-foreground transition-colors rounded-r-xl"
                         onClick={() => setShowPassword(v => !v)}
                         tabIndex={-1}
                         aria-label={showPassword ? "Hide password" : "Show password"}
@@ -243,21 +295,66 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden"
                         >
-                          <PasswordRequirements password={password} className="pt-1" />
+                          <PasswordRequirements password={password} className="pt-2" />
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </AuthField>
 
-                  {error && (
-                    <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2.5 rounded-xl">
-                      {error}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="text-sm text-destructive bg-destructive/[0.07] border border-destructive/20 px-3.5 py-3 rounded-xl leading-snug"
+                        role="alert"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {!isSignIn && (
+                    <div className="flex items-start gap-2.5 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
+                      <Checkbox
+                        id="accept-terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                        disabled={loading}
+                        className="mt-0.5 h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
+                      />
+                      <label
+                        htmlFor="accept-terms"
+                        className="text-[11px] leading-snug text-muted-foreground/80 cursor-pointer select-none"
+                      >
+                        {t("auth_accept_terms_lead")}{" "}
+                        <Link
+                          href={`/${language}/terms`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-foreground"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {t("terms")}
+                        </Link>{" "}
+                        {t("auth_accept_terms_and")}{" "}
+                        <Link
+                          href={`/${language}/privacy`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-foreground"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {t("privacy")}
+                        </Link>
+                      </label>
                     </div>
                   )}
 
                   <Button
                     type="submit"
-                    className="w-full h-11 font-semibold rounded-xl shadow-md shadow-primary/20"
+                    className="w-full h-12 text-[15px] font-semibold rounded-xl bg-gradient-to-r from-primary to-[hsl(158,72%,34%)] hover:opacity-[0.97] shadow-lg shadow-primary/20 transition-opacity"
                     disabled={submitDisabled}
                   >
                     {loading ? (
@@ -269,20 +366,20 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 </form>
 
                 {hasSocial && (
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-6 space-y-3">
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
+                        <span className="w-full border-t border-border/60" />
                       </div>
-                      <div className="relative flex justify-center text-xs text-muted-foreground">
-                        <span className="bg-card px-2">{t("or")}</span>
+                      <div className="relative flex justify-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                        <span className="bg-card px-3">{t("or")}</span>
                       </div>
                     </div>
 
                     {googleEnabled && (
                       <a
                         href={`${basePath}/api/auth/google?lang=${language}`}
-                        className="flex w-full h-11 items-center justify-center gap-2.5 rounded-xl border border-border bg-background hover:bg-muted/50 transition-colors text-sm font-medium"
+                        className="flex w-full h-12 items-center justify-center gap-2.5 rounded-xl border border-border/70 bg-background/80 hover:bg-muted/40 hover:border-border transition-all text-sm font-medium shadow-sm"
                       >
                         <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -297,7 +394,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     {facebookEnabled && (
                       <a
                         href={`${basePath}/api/auth/facebook?lang=${language}`}
-                        className="flex w-full h-11 items-center justify-center gap-2.5 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] transition-colors text-sm font-medium text-white"
+                        className="flex w-full h-12 items-center justify-center gap-2.5 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] transition-colors text-sm font-medium text-white shadow-sm shadow-[#1877F2]/25"
                       >
                         <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -308,7 +405,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   </div>
                 )}
 
-                <p className="text-center text-sm text-muted-foreground mt-4">
+                <p className="text-center text-sm text-muted-foreground mt-6 pt-5 border-t border-border/50">
                   {isSignIn ? (
                     <>
                       {t("auth_no_account")}{" "}
@@ -319,7 +416,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   ) : (
                     <>
                       {t("auth_have_account")}{" "}
-                      <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-in"); setError(""); }}>
+                      <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}>
                         {t("sign_in")}
                       </button>
                     </>

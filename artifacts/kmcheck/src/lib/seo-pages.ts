@@ -29,6 +29,8 @@ export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
   "/sign-in": "auth",
   "/sign-up": "sign_up",
   "/dashboard": "dashboard",
+  "/dashboard/account": "dashboard",
+  "/dashboard/help": "dashboard",
   "/checkout": "checkout",
   "/purchases": "purchases",
   "/vin/processing": "vin_result",
@@ -95,7 +97,7 @@ export function resolveSeoFromPath(
 }
 
 export function getSeoEntry(lang: SeoLang, pageKey: SeoPageKey) {
-  const page = SEO_DATA[pageKey];
+  const page = SEO_DATA[pageKey] ?? SEO_DATA.not_found;
   return page[lang] ?? page.en;
 }
 

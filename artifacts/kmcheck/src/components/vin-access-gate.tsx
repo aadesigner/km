@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { createVinReportFetchError } from "@/lib/api-error";
@@ -6,8 +7,8 @@ import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
 
-const VinResult = lazy(() => import("@/pages/vin-result"));
-const VinPublic = lazy(() => import("@/pages/vin-public"));
+const VinResult = lazyWithRetry(() => import("@/pages/vin-result"));
+const VinPublic = lazyWithRetry(() => import("@/pages/vin-public"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 

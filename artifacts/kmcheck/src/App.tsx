@@ -7,7 +7,8 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
-import { useEffect, lazy, Suspense, type ReactNode } from "react";
+import { useEffect, Suspense, type ReactNode } from "react";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
 import { isVin17 } from "@/lib/vin-route";
@@ -25,45 +26,45 @@ import {
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 
 // Lazy-loaded
-const Home          = lazy(() => import("@/pages/home"));
-const Pricing       = lazy(() => import("@/pages/pricing"));
-const Dashboard     = lazy(() => import("@/pages/dashboard"));
-const VinResult     = lazy(() => import("@/pages/vin-result"));
-const VinPublic     = lazy(() => import("@/pages/vin-public"));
-const VinProcessing = lazy(() => import("@/pages/vin-processing"));
-const CountryPage   = lazy(() => import("@/pages/country"));
-const Terms         = lazy(() => import("@/pages/terms"));
-const Privacy       = lazy(() => import("@/pages/privacy"));
-const AdminLayout   = lazy(() => import("@/pages/admin/layout").then(m => ({ default: m.AdminLayout })));
-const AdminOverview  = lazy(() => import("@/pages/admin/index"));
-const AdminUsers     = lazy(() => import("@/pages/admin/users"));
-const AdminUserDetail = lazy(() => import("@/pages/admin/user-detail"));
-const AdminLookups   = lazy(() => import("@/pages/admin/lookups"));
-const AdminProviders = lazy(() => import("@/pages/admin/providers"));
-const AdminPricing   = lazy(() => import("@/pages/admin/pricing"));
-const AdminSettings  = lazy(() => import("@/pages/admin/settings"));
-const AdminLogs      = lazy(() => import("@/pages/admin/logs"));
-const AdminCoupons   = lazy(() => import("@/pages/admin/coupons"));
-const AdminEmails    = lazy(() => import("@/pages/admin/emails"));
-const AdminVinCatalog    = lazy(() => import("@/pages/admin/vin-catalog"));
-const AdminVinDetail     = lazy(() => import("@/pages/admin/vin-detail"));
-const AdminPendingVinChecks = lazy(() => import("@/pages/admin/pending-vin-checks"));
-const AdminPendingVinDetail = lazy(() => import("@/pages/admin/pending-vin-detail"));
-const AdminSecurity      = lazy(() => import("@/pages/admin/security"));
-const AdminTransactions     = lazy(() => import("@/pages/admin/transactions"));
-const AdminAnnouncements    = lazy(() => import("@/pages/admin/announcements"));
-const AdminAnalytics        = lazy(() => import("@/pages/admin/analytics"));
-const AdminPlugins          = lazy(() => import("@/pages/admin/plugins"));
-const Checkout         = lazy(() => import("@/pages/checkout"));
-const ForgotPassword  = lazy(() => import("@/pages/forgot-password"));
-const ResetPassword   = lazy(() => import("@/pages/reset-password"));
-const SetPassword     = lazy(() => import("@/pages/set-password"));
-const FreeVinDecoder  = lazy(() => import("@/pages/free-vin-decoder"));
-const Purchases       = lazy(() => import("@/pages/purchases"));
-const HowItWorks      = lazy(() => import("@/pages/how-it-works"));
-const FAQ             = lazy(() => import("@/pages/faq"));
-const Maintenance     = lazy(() => import("@/pages/maintenance"));
-const AuthForm        = lazy(() => import("@/pages/auth").then((m) => ({ default: m.AuthForm })));
+const Home          = lazyWithRetry(() => import("@/pages/home"));
+const Pricing       = lazyWithRetry(() => import("@/pages/pricing"));
+const Dashboard     = lazyWithRetry(() => import("@/pages/dashboard"));
+const VinResult     = lazyWithRetry(() => import("@/pages/vin-result"));
+const VinPublic     = lazyWithRetry(() => import("@/pages/vin-public"));
+const VinProcessing = lazyWithRetry(() => import("@/pages/vin-processing"));
+const CountryPage   = lazyWithRetry(() => import("@/pages/country"));
+const Terms         = lazyWithRetry(() => import("@/pages/terms"));
+const Privacy       = lazyWithRetry(() => import("@/pages/privacy"));
+const AdminLayout   = lazyWithRetry(() => import("@/pages/admin/layout").then(m => ({ default: m.AdminLayout })));
+const AdminOverview  = lazyWithRetry(() => import("@/pages/admin/index"));
+const AdminUsers     = lazyWithRetry(() => import("@/pages/admin/users"));
+const AdminUserDetail = lazyWithRetry(() => import("@/pages/admin/user-detail"));
+const AdminLookups   = lazyWithRetry(() => import("@/pages/admin/lookups"));
+const AdminProviders = lazyWithRetry(() => import("@/pages/admin/providers"));
+const AdminPricing   = lazyWithRetry(() => import("@/pages/admin/pricing"));
+const AdminSettings  = lazyWithRetry(() => import("@/pages/admin/settings"));
+const AdminLogs      = lazyWithRetry(() => import("@/pages/admin/logs"));
+const AdminCoupons   = lazyWithRetry(() => import("@/pages/admin/coupons"));
+const AdminEmails    = lazyWithRetry(() => import("@/pages/admin/emails"));
+const AdminVinCatalog    = lazyWithRetry(() => import("@/pages/admin/vin-catalog"));
+const AdminVinDetail     = lazyWithRetry(() => import("@/pages/admin/vin-detail"));
+const AdminPendingVinChecks = lazyWithRetry(() => import("@/pages/admin/pending-vin-checks"));
+const AdminPendingVinDetail = lazyWithRetry(() => import("@/pages/admin/pending-vin-detail"));
+const AdminSecurity      = lazyWithRetry(() => import("@/pages/admin/security"));
+const AdminTransactions     = lazyWithRetry(() => import("@/pages/admin/transactions"));
+const AdminAnnouncements    = lazyWithRetry(() => import("@/pages/admin/announcements"));
+const AdminAnalytics        = lazyWithRetry(() => import("@/pages/admin/analytics"));
+const AdminPlugins          = lazyWithRetry(() => import("@/pages/admin/plugins"));
+const Checkout         = lazyWithRetry(() => import("@/pages/checkout"));
+const ForgotPassword  = lazyWithRetry(() => import("@/pages/forgot-password"));
+const ResetPassword   = lazyWithRetry(() => import("@/pages/reset-password"));
+const SetPassword     = lazyWithRetry(() => import("@/pages/set-password"));
+const FreeVinDecoder  = lazyWithRetry(() => import("@/pages/free-vin-decoder"));
+const Purchases       = lazyWithRetry(() => import("@/pages/purchases"));
+const HowItWorks      = lazyWithRetry(() => import("@/pages/how-it-works"));
+const FAQ             = lazyWithRetry(() => import("@/pages/faq"));
+const Maintenance     = lazyWithRetry(() => import("@/pages/maintenance"));
+const AuthForm        = lazyWithRetry(() => import("@/pages/auth").then((m) => ({ default: m.AuthForm })));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -447,6 +448,10 @@ function AppRouter() {
 function AppShell() {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
+
+  useEffect(() => {
+    sessionStorage.removeItem("kmcheck-chunk-reload");
+  }, []);
 
   return (
     <RouteErrorBoundary scope="app" resetKey={resetKey}>

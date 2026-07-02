@@ -79,6 +79,7 @@ export default function Terms() {
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_terms_s5_title")}</h2>
+          <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s5_body0")}</p>
           <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s5_body1")}</p>
           <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s5_body2")}</p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-3">

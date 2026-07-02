@@ -374,22 +374,38 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const isOnPage    = (seg: string) => location.includes(`/${seg}`);
   const isHome      = /^\/[a-z]{2}\/?$/.test(location) || location === "/";
   const isCountry   = isOnPage("cars");
-  const isDarkNav   = (isHome || isCountry) && !heroScrolled && resolvedTheme === "dark";
+  const isHeroTransparentNav = isHome || isCountry || isOnPage("how-it-works");
+  const isAuthNavPage =
+    isOnPage("sign-in")
+    || isOnPage("sign-up")
+    || isOnPage("forgot-password")
+    || isOnPage("reset-password")
+    || isOnPage("set-password");
+  const isMarketingTransparentNav = isOnPage("pricing") || isOnPage("faq");
+  const isDarkNav =
+    resolvedTheme === "dark"
+    && (
+      (isHeroTransparentNav && !heroScrolled)
+      || ((isAuthNavPage || isMarketingTransparentNav) && !scrolled)
+    );
 
   const currentLang  = LANGS.find(l => l.code === language);
   const displayName  = user?.name ?? user?.email?.split("@")[0] ?? "";
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative px-3.5 rounded-xl font-medium",
+    "relative px-3.5 rounded-xl font-medium transition-colors",
     scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
     active
       ? isDarkNav
-        ? "text-white bg-white/12 shadow-sm shadow-black/10"
-        : "text-primary bg-primary/[0.08] shadow-sm shadow-primary/5"
+        ? "text-white"
+        : "text-primary"
       : isDarkNav
-        ? "text-white/65 hover:text-white hover:bg-white/[0.08]"
-        : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+        ? "text-white/65 hover:text-white"
+        : "text-muted-foreground hover:text-foreground",
+    isDarkNav
+      ? "hover:bg-white/[0.08]"
+      : "hover:bg-primary/[0.06]",
   );
 
   const dropdownCls = NAV_DROPDOWN_CLS;
@@ -412,7 +428,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             : "bg-background/92 backdrop-blur-xl border-b border-border/50 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)]")
         : isDarkNav
         ? "bg-gradient-to-b from-black/45 to-black/15 backdrop-blur-md border-b border-white/[0.08]"
-        : (isHome || isCountry)
+        : (isHeroTransparentNav || isAuthNavPage)
         ? "bg-background/88 backdrop-blur-md border-b border-border/45"
         : "bg-background/80 backdrop-blur-md border-b border-border/45",
     )}>

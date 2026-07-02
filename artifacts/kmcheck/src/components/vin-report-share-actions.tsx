@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
-  FileDown, Loader2, Share2, Copy, Check, Link2, Mail,
+  FileDown, Loader2, Share2, Copy, Check, Link2, Mail, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +67,29 @@ function useShareUrl({
   return { resolveShareUrl, shareUrl, linkLoading };
 }
 
+function fillShareTemplate(template: string, vehicleTitle: string): string {
+  return template.replace(/\{vehicle\}/g, vehicleTitle);
+}
+
+export function VinReportDataDisclaimer({ className }: { className?: string }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className={cn(
+        "flex gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-3.5 py-3",
+        "dark:border-amber-500/20 dark:bg-amber-500/[0.08]",
+        className,
+      )}
+      role="note"
+    >
+      <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden />
+      <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed">
+        {t("vin_report_data_disclaimer")}
+      </p>
+    </div>
+  );
+}
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden fill="currentColor">
@@ -102,7 +125,14 @@ export function VinReportShareActions({
     vin, language, basePath, disabled,
   });
 
-  const shareText = t("vin_result_share_native_text");
+  const shareText = useMemo(
+    () => fillShareTemplate(t("vin_share_social_message"), vehicleTitle),
+    [t, vehicleTitle],
+  );
+  const emailSubject = useMemo(
+    () => fillShareTemplate(t("vin_share_email_subject"), vehicleTitle),
+    [t, vehicleTitle],
+  );
 
   const handleDownloadPdf = async () => {
     if (disabled || downloading) return;
@@ -153,7 +183,7 @@ export function VinReportShareActions({
     const urls = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(body)}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-      email: `mailto:?subject=${encodeURIComponent(`${vehicleTitle} (${vin})`)}&body=${encodeURIComponent(body)}`,
+      email: `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`,
     };
     window.open(urls[kind], kind === "email" ? "_self" : "_blank", "noopener,noreferrer");
   };

@@ -309,7 +309,7 @@ function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
       : car.origin === "Germany"
         ? "demo_card_origin_germany"
         : "demo_card_origin_usa";
-  return `${t(originKey)} · ${t("demo_live_preview")}`;
+  return t(originKey);
 }
 
 const LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/40";

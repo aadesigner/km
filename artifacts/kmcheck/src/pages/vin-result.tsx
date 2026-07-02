@@ -7,6 +7,7 @@ import { useGetVinLookup } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
+import { PrefetchLink } from "@/components/prefetch-link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -552,10 +553,41 @@ export default function VinResult({ params }: Props) {
     );
   }
 
-  const data = lookup.data as LookupData | null | undefined;
   const isPendingManual =
     lookup.status === "pending_manual" ||
     (lookup as { isPendingManual?: boolean }).isPendingManual === true;
+
+  if (!isPendingManual && lookup.data == null) {
+    const retry = isVinString ? () => refetchVin() : () => refetchById();
+    const retrying = isVinString ? fetchingVin : fetchingById;
+    if (lookup.status === "processing" || lookup.status === "pending") {
+      return (
+        <>
+          <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
+          <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center space-y-4">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" aria-hidden />
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold">{t("processing_retrieving_data")}</h2>
+              <p className="text-sm font-mono text-muted-foreground">{lookup.vin}</p>
+            </div>
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
+        <VinReportErrorView
+          kind="server"
+          language={language}
+          onRetry={retry}
+          isRetrying={retrying}
+        />
+      </>
+    );
+  }
+
+  const data = lookup.data as LookupData | null | undefined;
   const insuranceClaims = sortHistoryNewestFirst(
     sanitizeInsuranceClaims(repairDatedRecords(data?.insuranceClaims, data?.year), data?.year),
   );
@@ -703,11 +735,11 @@ export default function VinResult({ params }: Props) {
       </AnimatePresence>
 
       {/* Back */}
-      <Button variant="ghost" size="sm" asChild className="-ml-2 print:hidden">
-        <Link href={`/${language}/dashboard`}>
+        <Button variant="ghost" size="sm" asChild className="-ml-2 print:hidden">
+        <PrefetchLink href={`/${language}/dashboard`}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("back_to_dashboard")}
-        </Link>
+        </PrefetchLink>
       </Button>
 
       {!isPendingManual && (

@@ -78,11 +78,11 @@
     "sq": { "title": "Dekodues VIN falas — numri i shasisë | kmcheck.com", "description": "Dekodoni shasinë (VIN) falas: viti, marka, modeli. Për kontroll kilometrash dhe aksidentesh, zhbllokoni raportin e plotë." }
   },
   "how_it_works": {
-    "en": { "title": "How VIN Check Works — 3 Steps | kmcheck.com", "description": "Enter your VIN, we search official records, you get a full history report in seconds." },
-    "ar": { "title": "كيف يعمل فحص VIN — 3 خطوات | kmcheck.com", "description": "أدخل رقم VIN، نبحث في السجلات الرسمية، وتحصل على تقرير كامل خلال ثوانٍ." },
-    "uk": { "title": "Як працює перевірка VIN — 3 кроки | kmcheck.com", "description": "Введіть VIN, ми перевіряємо офіційні бази, ви отримуєте повний звіт за секунди." },
-    "ru": { "title": "Как работает проверка VIN — 3 шага | kmcheck.com", "description": "Введите VIN, мы проверяем официальные базы, вы получаете полный отчёт за секунды." },
-    "sq": { "title": "Si funksionon kontrolli i kilometrave me shasi | kmcheck.com", "description": "Tre hapa për kontroll kilometrash dhe aksidentesh me VIN. Kërkim në baza zyrtare, raport i plotë në sekonda." }
+    "en": { "title": "How VIN Check Works — 3 Steps | kmcheck.com", "description": "Enter your VIN, we search provider databases, you get a full history report in seconds." },
+    "ar": { "title": "كيف يعمل فحص VIN — 3 خطوات | kmcheck.com", "description": "أدخل رقم VIN، نبحث في قواعد بيانات المزودين، وتحصل على تقرير كامل خلال ثوانٍ." },
+    "uk": { "title": "Як працює перевірка VIN — 3 кроки | kmcheck.com", "description": "Введіть VIN, ми перевіряємо бази постачальників, ви отримуєте повний звіт за секунди." },
+    "ru": { "title": "Как работает проверка VIN — 3 шага | kmcheck.com", "description": "Введите VIN, мы проверяем базы поставщиков, вы получаете полный отчёт за секунды." },
+    "sq": { "title": "Si funksionon kontrolli i kilometrave me shasi | kmcheck.com", "description": "Tre hapa për kontroll kilometrash dhe aksidentesh me VIN. Kërkim në baza të ofruesve, raport i plotë në sekonda." }
   },
   "faq": {
     "en": { "title": "VIN Check FAQ | kmcheck.com", "description": "Answers about VIN checks, coverage, data accuracy, delivery, payments and refunds." },
