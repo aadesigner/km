@@ -73,12 +73,11 @@ router.get("/user/history", requireAuth, async (req, res) => {
   ]);
 
   const items = rows.map((row) => {
-    const proxied = proxyVinRow(row as unknown as Record<string, unknown>);
-    if (!summaryView || !proxied.data) return proxied;
-    return {
-      ...proxied,
-      data: summarizeVinLookupData(proxied.data),
-    };
+    const rowObj = row as unknown as Record<string, unknown>;
+    if (summaryView && rowObj.data) {
+      rowObj.data = summarizeVinLookupData(rowObj.data);
+    }
+    return proxyVinRow(rowObj);
   });
   res.setHeader("Cache-Control", "private, no-store");
   res.json({ items, total, page, limit });
@@ -113,7 +112,7 @@ router.get("/user/stats", requireAuth, async (req, res) => {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [totalChecks, totalSpent, checksThisMonth, completedPayments, paymentCurrencyRow, recentChecks] = await Promise.all([
+  const [totalChecks, totalSpent, checksThisMonth, completedPayments, paymentCurrencyRow] = await Promise.all([
     db.select({ total: count() }).from(vinLookupsTable).where(activeUserLookupWhere(userId)),
     db.select({ total: sum(paymentsTable.amount) }).from(paymentsTable)
       .where(recordedTransactionWhere(eq(paymentsTable.userId, userId))),
@@ -125,10 +124,6 @@ router.get("/user/stats", requireAuth, async (req, res) => {
       .where(recordedTransactionWhere(eq(paymentsTable.userId, userId)))
       .orderBy(desc(paymentsTable.createdAt))
       .limit(1),
-    db.select().from(vinLookupsTable)
-      .where(activeUserLookupWhere(userId))
-      .orderBy(desc(vinLookupsTable.createdAt))
-      .limit(5),
   ]);
 
   res.setHeader("Cache-Control", "private, no-store");
@@ -138,7 +133,7 @@ router.get("/user/stats", requireAuth, async (req, res) => {
     checksThisMonth: checksThisMonth[0]?.total ?? 0,
     completedPayments: completedPayments[0]?.total ?? 0,
     paymentCurrency: paymentCurrencyRow[0]?.currency ?? "USD",
-    recentChecks: recentChecks.map((r) => proxyVinRow(r as unknown as Record<string, unknown>)),
+    recentChecks: [],
   });
 });
 

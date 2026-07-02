@@ -106,7 +106,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshUser().finally(() => setIsLoaded(true));
+    const cached = readAuthCache();
+    if (cached) {
+      setIsLoaded(true);
+      void refreshUser();
+      return;
+    }
+    void refreshUser().finally(() => setIsLoaded(true));
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string, recaptchaToken?: string) => {

@@ -12,7 +12,7 @@ export const CLIENT_AREA_QUERY_OPTIONS = {
   staleTime: 60 * 1000,
   gcTime: 10 * 60 * 1000,
   refetchOnWindowFocus: false,
-  refetchOnMount: true,
+  refetchOnMount: false,
   refetchOnReconnect: true,
 } as const;
 

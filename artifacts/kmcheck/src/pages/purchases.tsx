@@ -202,7 +202,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
     }
   }, [isLoaded, isSignedIn, user, language, setLocation]);
 
-  const authReady = isLoaded && isSignedIn;
+  const authReady = isSignedIn;
   const { data, isLoading, isError, error, refetch, isFetching } = useGetUserPayments(
     { page, limit: 20 },
     { query: { enabled: authReady, queryKey: ["/api/user/payments", { page, limit: 20 }], ...CLIENT_AREA_QUERY_OPTIONS } },
@@ -246,7 +246,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
     if (statsError) void refetchStats();
   };
 
-  if (!isLoaded || !isSignedIn) {
+  if (!isSignedIn) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Skeleton className="h-8 w-48" />

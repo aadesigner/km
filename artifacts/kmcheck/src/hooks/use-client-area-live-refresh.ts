@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { normalizeClientPath } from "@/lib/dashboard-nav";
 import { refetchClientAreaQueries } from "@/lib/client-area-queries";
@@ -23,45 +22,27 @@ function clientAreaPathKey(path: string): string | null {
   return lang;
 }
 
-/** Refetch dashboard data when entering the client area or after a long idle tab return. */
+/** Refetch dashboard data after a long idle tab return. */
 export function useClientAreaLiveRefresh(): void {
   const queryClient = useQueryClient();
   const { isSignedIn, isLoaded } = useAuth();
-  const [location] = useLocation();
-  const wasInClientAreaRef = useRef(false);
   const lastRefetchAtRef = useRef(0);
-
-  const maybeRefetch = (force = false) => {
-    const now = Date.now();
-    if (!force && now - lastRefetchAtRef.current < VISIBILITY_REFETCH_MS) return;
-    lastRefetchAtRef.current = now;
-    refetchClientAreaQueries(queryClient);
-  };
-
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) {
-      wasInClientAreaRef.current = false;
-      return;
-    }
-
-    const path = normalizeClientPath(location);
-    const inClientArea = clientAreaPathKey(path) !== null;
-
-    if (inClientArea && !wasInClientAreaRef.current) {
-      maybeRefetch(true);
-    }
-
-    wasInClientAreaRef.current = inClientArea;
-  }, [isLoaded, isSignedIn, location, queryClient]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
+
+    const maybeRefetch = () => {
+      const now = Date.now();
+      if (now - lastRefetchAtRef.current < VISIBILITY_REFETCH_MS) return;
+      lastRefetchAtRef.current = now;
+      refetchClientAreaQueries(queryClient);
+    };
 
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
       const path = normalizeClientPath(window.location.pathname);
       if (!clientAreaPathKey(path)) return;
-      maybeRefetch(false);
+      maybeRefetch();
     };
 
     document.addEventListener("visibilitychange", onVisible);

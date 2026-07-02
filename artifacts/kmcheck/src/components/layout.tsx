@@ -600,7 +600,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
                   )}
                 >
-                  <Avatar className={cn("transition-all duration-300", scrolled ? "h-8 w-8" : "h-9 w-9")}>
+                  <Avatar className={cn("transition-all duration-300", scrolled ? "h-7 w-7" : "h-8 w-8")}>
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
                     <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                       {avatarInitial}

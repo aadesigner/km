@@ -6,11 +6,10 @@ import { prefetchVinPageChunk, seedVinLookupsFromHistory } from "@/lib/prefetch-
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import {
   useGetUserStats,
-  useGetCurrentPricing,
   useDeleteUserVinLookup,
 } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { CLIENT_AREA_QUERY_OPTIONS, STATIC_QUERY_OPTIONS } from "@/lib/query-options";
+import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
 import {
   DEFAULT_USER_HISTORY_SUMMARY,
   fetchUserHistory,
@@ -151,7 +150,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   const historyParams = DEFAULT_USER_HISTORY_SUMMARY;
-  const authReady = isLoaded && isSignedIn;
+  const authReady = isSignedIn;
   const {
     data: history,
     isLoading: historyLoading,
@@ -168,7 +167,6 @@ export default function Dashboard() {
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErr, refetch: refetchStats, isFetching: statsFetching } = useGetUserStats(
     { query: { enabled: authReady, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS } },
   );
-  const { data: pricing } = useGetCurrentPricing({ query: { ...STATIC_QUERY_OPTIONS } });
 
   const deleteLookup = useDeleteUserVinLookup({
     mutation: {
@@ -275,7 +273,7 @@ export default function Dashboard() {
     }
   }, [history, pendingVin]);
 
-  if (!isLoaded || !isSignedIn) {
+  if (!isSignedIn) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Skeleton className="h-8 w-48" />

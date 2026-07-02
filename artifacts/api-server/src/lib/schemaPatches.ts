@@ -61,6 +61,7 @@ const TABLE_PATCHES = [
   `CREATE UNIQUE INDEX IF NOT EXISTS access_blocks_type_value_idx ON access_blocks (block_type, block_value)`,
   `CREATE INDEX IF NOT EXISTS access_blocks_user_id_idx ON access_blocks (user_id)`,
   `CREATE INDEX IF NOT EXISTS access_blocks_created_at_idx ON access_blocks (created_at)`,
+  `CREATE INDEX IF NOT EXISTS vin_lookups_user_created_idx ON vin_lookups (user_id, created_at DESC)`,
 ];
 
 const PRICING_DATA_PATCHES = [
