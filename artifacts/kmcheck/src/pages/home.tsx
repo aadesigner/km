@@ -118,7 +118,7 @@ function CyclingWord() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
         key={idx}
-        className="text-primary block max-sm:whitespace-nowrap"
+        className="text-primary inline"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -232,7 +232,7 @@ export default function Home() {
       />
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(2.25rem+var(--site-header-offset,84px))] pb-10 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
+      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3rem+var(--site-header-offset,84px))] pb-12 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
         {/* Base layers */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
@@ -262,13 +262,13 @@ export default function Home() {
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-6 sm:space-y-8 text-center"
+            className="space-y-8 text-center"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 max-sm:text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -277,39 +277,16 @@ export default function Home() {
               {t("hero_badge")}
             </motion.div>
 
-            <h1
-              className={cn(
-                "home-hero-h1 font-extrabold tracking-tight text-balance sm:text-5xl sm:leading-[1.08] lg:text-[4.25rem]",
-                language === "sq"
-                  ? "home-hero-h1--sq max-sm:text-[1.8125rem] max-sm:leading-[1.08] max-sm:tracking-[-0.03em]"
-                  : "max-sm:text-[2rem] max-sm:leading-[1.1] max-sm:tracking-[-0.02em]",
-              )}
-            >
-              {language === "sq" ? (
-                <>
-                  <span className="block sm:inline">{t("hero_headline_lead")}</span>{" "}
-                  <span className="block sm:inline">{t("hero_headline_tail")}</span>
-                  <br className="hidden sm:block" />
-                  <span className="block text-primary home-hero-cycling min-h-[1.18em] sm:min-h-[1.12em]">
-                    <CyclingWord />
-                  </span>
-                </>
-              ) : (
-                <>
-                  {t("hero_headline_1")}
-                  <br />
-                  <span className="block text-primary home-hero-cycling min-h-[1.18em] sm:min-h-[1.12em]">
-                    <CyclingWord />
-                  </span>
-                </>
-              )}
+            <h1 className="text-[3rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
+              {t("hero_headline_1")}<br />
+              <CyclingWord />
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-snug sm:leading-relaxed mx-auto max-sm:px-1">
+            <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
               {t("hero_subtext")}
             </p>
 
             {/* Rating strip */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 max-sm:gap-x-3">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <div className="flex items-center gap-1.5">
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
