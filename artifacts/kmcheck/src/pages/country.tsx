@@ -297,7 +297,7 @@ export default function CountryPage({ params }: Props) {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.13 }}
-            className="relative z-0 lg:sticky lg:top-8 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center lg:items-stretch"
+            className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center lg:items-stretch"
           >
             <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase />
 

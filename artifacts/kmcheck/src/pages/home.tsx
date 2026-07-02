@@ -73,21 +73,21 @@ function useCountries(t: (k: string) => string) {
   return [
     {
       slug: "usa", flagCode: "us", name: t("country_usa_name"), count: t("country_usa_count"),
-      accentFrom: "from-blue-600", accentTo: "to-red-600",
-      bg: "from-blue-900 via-blue-800 to-red-900",
-      brands: ["Ford", "Chevrolet", "Toyota", "Honda", "Ram", "Tesla"],
+      accentFrom: "from-blue-600", accentTo: "to-red-500",
+      tint: "from-blue-500/[0.07] via-transparent to-red-500/[0.05]",
+      highlights: ["home_country_usa_h0", "home_country_usa_h1", "home_country_usa_h2"] as const,
     },
     {
       slug: "korea", flagCode: "kr", name: t("country_korea_name"), count: t("country_korea_count"),
-      accentFrom: "from-slate-600", accentTo: "to-red-700",
-      bg: "from-slate-900 via-red-900 to-slate-900",
-      brands: ["Hyundai", "Kia", "Genesis", "Ssangyong", "GM Korea"],
+      accentFrom: "from-indigo-600", accentTo: "to-red-600",
+      tint: "from-indigo-500/[0.07] via-transparent to-red-500/[0.05]",
+      highlights: ["home_country_korea_h0", "home_country_korea_h1", "home_country_korea_h2"] as const,
     },
     {
       slug: "canada", flagCode: "ca", name: t("country_canada_name"), count: t("country_canada_count"),
-      accentFrom: "from-red-700", accentTo: "to-red-900",
-      bg: "from-red-950 via-slate-900 to-red-900",
-      brands: ["Toyota", "Honda", "Ford", "Chevrolet", "GMC", "Ram"],
+      accentFrom: "from-red-600", accentTo: "to-slate-600",
+      tint: "from-red-500/[0.07] via-transparent to-slate-500/[0.05]",
+      highlights: ["home_country_canada_h0", "home_country_canada_h1", "home_country_canada_h2"] as const,
     },
   ];
 }
@@ -670,48 +670,65 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-12 space-y-3"
+            className="mb-10 md:mb-12 text-center space-y-3"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">{t("countries_title")}</h2>
-            <p className="text-muted-foreground text-base md:text-lg">{t("countries_subtitle")}</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
+              <Globe className="h-3.5 w-3.5" />
+              {t("stats_countries_badge")}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("countries_title")}</h2>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             {COUNTRIES.map((c, i) => (
               <motion.div
                 key={c.slug}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.12 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                transition={{ delay: i * 0.1 }}
               >
                 <Link
                   href={`/${language}/cars/${c.slug}`}
-                  className={`group relative block rounded-2xl overflow-hidden bg-gradient-to-br ${c.bg} min-h-0 sm:min-h-[260px] p-5 sm:p-8 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300`}
+                  className="group relative flex h-full flex-col rounded-2xl border border-border/70 bg-card overflow-hidden shadow-sm hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_60%)]" />
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_60%_60%_at_80%_30%,rgba(255,255,255,0.1),transparent)]" />
-                  <div className="absolute -bottom-8 -right-8 select-none pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-500 max-sm:opacity-15">
-                    <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="w-28 sm:w-40 h-auto" />
-                  </div>
-                  <div className="relative z-10 h-full flex flex-col justify-between gap-4 sm:gap-6">
-                    <div>
-                      <img src={`https://flagcdn.com/${c.flagCode}.svg`} alt="" className="h-11 sm:h-16 w-auto block mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300 origin-left rounded-sm max-sm:drop-shadow-none sm:drop-shadow-2xl" />
-                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">{c.name}</h3>
-                      <p className="text-white/50 text-xs sm:text-sm mt-0.5 sm:mt-1 line-clamp-1">{c.count} {t("country_registered_vehicles")}</p>
+                  <div className={cn("h-1 bg-gradient-to-r", c.accentFrom, c.accentTo)} />
+                  <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", c.tint)} />
+                  <div className="relative z-10 flex flex-1 flex-col p-5 md:p-6">
+                    <div className="flex items-start justify-between gap-3 mb-5">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <img
+                            src={`https://flagcdn.com/${c.flagCode}.svg`}
+                            alt=""
+                            className="h-8 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                          />
+                          <h3 className="text-xl font-bold tracking-tight">{c.name}</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {c.count} {t("country_registered_vehicles")}
+                        </p>
+                      </div>
+                      <div className={cn(
+                        "h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-sm",
+                        c.accentFrom, c.accentTo,
+                      )}>
+                        <Globe className="h-4 w-4 text-white" />
+                      </div>
                     </div>
-                    <div className="space-y-2.5 sm:space-y-3">
-                      <div className="flex flex-wrap gap-1.5 max-sm:grid max-sm:grid-cols-3 max-sm:gap-1 max-sm:max-h-[4.5rem] max-sm:overflow-hidden">
-                        {c.brands.map(brand => (
-                          <span key={brand} className="text-[10px] sm:text-xs bg-white/10 backdrop-blur-sm text-white/80 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-white/15 truncate max-sm:text-center">
-                            {brand}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 group-hover:bg-white/20 transition-colors max-sm:line-clamp-2 max-sm:w-full">
-                        <span className="line-clamp-2 min-w-0">{t("vin_check_for")} {c.name}</span>
-                        <ArrowRight className="h-3.5 w-3.5 shrink-0 group-hover:translate-x-1 transition-transform" />
-                      </div>
+
+                    <ul className="space-y-2.5 mb-6 flex-1">
+                      {c.highlights.map((key) => (
+                        <li key={key} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-snug">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span>{t(key)}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-2.5 transition-[gap] duration-200">
+                      <span>{t("vin_check_for")} {c.name}</span>
+                      <ArrowRight className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </div>
                 </Link>

@@ -31,9 +31,27 @@ const LANGS = [
 ];
 
 const COUNTRY_LINKS = [
-  { slug: "usa",    img: "us", labelKey: "country_usa_label"    as const, countKey: "country_usa_count"    as const },
-  { slug: "korea",  img: "kr", labelKey: "country_korea_label"  as const, countKey: "country_korea_count"  as const },
-  { slug: "canada", img: "ca", labelKey: "country_canada_label" as const, countKey: "country_canada_count" as const },
+  {
+    slug: "usa",
+    img: "us",
+    labelKey: "country_usa_label" as const,
+    nameKey: "country_usa_name" as const,
+    countKey: "country_usa_count" as const,
+  },
+  {
+    slug: "korea",
+    img: "kr",
+    labelKey: "country_korea_label" as const,
+    nameKey: "country_korea_name" as const,
+    countKey: "country_korea_count" as const,
+  },
+  {
+    slug: "canada",
+    img: "ca",
+    labelKey: "country_canada_label" as const,
+    nameKey: "country_canada_name" as const,
+    countKey: "country_canada_count" as const,
+  },
 ];
 
 function FlagImg({ code, size = 20, className }: { code: string; size?: number; className?: string }) {
@@ -363,7 +381,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative px-3.5 rounded-xl font-medium transition-all duration-200",
+    "relative px-3.5 rounded-xl font-medium",
     scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
     active
       ? isDarkNav
@@ -375,6 +393,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   );
 
   const dropdownCls = NAV_DROPDOWN_CLS;
+  const utilityClusterCls = cn(
+    "flex items-center gap-0.5 rounded-full p-0.5",
+    isDarkNav
+      ? "bg-white/[0.04] border border-white/10"
+      : "bg-muted/35 border border-border/55",
+  );
 
   return (
     <header
@@ -393,65 +417,74 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         : "bg-background/80 backdrop-blur-md border-b border-border/45",
     )}>
       <div className={cn(
-        "max-w-[1400px] mx-auto px-5 flex items-center justify-between gap-4",
+        "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
+        "md:grid md:grid-cols-[1fr_auto]",
         "transition-[height,padding] duration-300",
         scrolled ? "h-[68px]" : "h-[84px]",
       )}>
 
-        {/* ── Logo + nav ── */}
-        <div className="flex items-center gap-6 min-w-0">
-          <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px">
+        {/* ── Logo + nav cluster ── */}
+        <div className="flex items-center gap-6 min-w-0 md:justify-self-start">
+          <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px md:-translate-y-0.5">
             <KmcheckLogo
               className={cn(
                 "transition-all duration-300 group-hover:opacity-90",
-                scrolled ? "h-8" : "h-10",
+                scrolled ? "h-9" : "h-11",
               )}
             />
           </PrefetchLink>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
-            {/* By Country dropdown */}
-            <div ref={countryRef} className="relative">
-              <button
-                onClick={() => setCountryOpen(v => !v)}
-                className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
-              >
-                {t("footer_countries")}
-                <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform duration-200", countryOpen && "rotate-180")} />
-                {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
-              </button>
+          <div className="hidden md:flex items-center gap-0.5">
+          {/* Search by Country — desktop */}
+          <div ref={countryRef} className="relative">
+            <button
+              onClick={() => setCountryOpen(v => !v)}
+              className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
+            >
+              {t("nav_country")}
+              <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform duration-100", countryOpen && "rotate-180")} />
+              {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+            </button>
 
-              <AnimatePresence>
-                {countryOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ transformOrigin: "top left" }}
-                    className={cn(dropdownCls, "left-0 w-60 p-1.5")}
-                  >
-                    {COUNTRY_LINKS.map(({ slug, img, labelKey, countKey }) => (
-                      <PrefetchLink
-                        key={slug}
-                        href={`/${language}/cars/${slug}`}
-                        onClick={() => setCountryOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/[0.06] transition-colors group"
-                      >
-                        <FlagImg code={img} size={28} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{t(labelKey)}</p>
-                          <p className="text-[11px] text-muted-foreground">{t(countKey)}</p>
-                        </div>
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 ml-auto shrink-0 group-hover:text-primary/60 group-hover:translate-x-0.5 transition-all" />
-                      </PrefetchLink>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <AnimatePresence>
+              {countryOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ transformOrigin: "top left" }}
+                  className={cn(dropdownCls, "left-0 w-[15.5rem] p-1.5")}
+                >
+                  {COUNTRY_LINKS.map(({ slug, img, nameKey, countKey }) => (
+                    <PrefetchLink
+                      key={slug}
+                      href={`/${language}/cars/${slug}`}
+                      onClick={() => setCountryOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl group",
+                        isOnPage(`cars/${slug}`)
+                          ? "bg-primary/[0.08]"
+                          : "hover:bg-primary/[0.06]",
+                      )}
+                    >
+                      <FlagImg code={img} size={24} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-foreground group-hover:text-primary leading-tight">
+                          {t(nameKey)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{t(countKey)}</p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/45 shrink-0 group-hover:text-primary/60 group-hover:translate-x-0.5 transition-transform duration-100" />
+                    </PrefetchLink>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
+          {/* Primary nav — desktop, beside Country */}
+          <nav className="flex items-center gap-0.5">
             <PrefetchLink href={`/${language}/how-it-works`} className={navLink(isOnPage("how-it-works"))}>
               {t("nav_how_it_works")}
               {isOnPage("how-it-works") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
@@ -465,27 +498,32 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               {isOnPage("faq") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
             </PrefetchLink>
           </nav>
+          </div>
         </div>
 
         {/* ── Right controls ── */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div className="hidden md:flex items-center gap-1">
+        <div className="flex items-center gap-1.5 shrink-0 md:justify-self-end">
+          <div className="hidden md:flex items-center gap-2">
 
+            <div className={utilityClusterCls}>
             {/* Language picker */}
             <div ref={langRef} className="relative">
               <button
                 onClick={() => setLangOpen(v => !v)}
                 className={cn(
-                  "flex items-center gap-2 px-2.5 rounded-lg border font-medium transition-all duration-200",
-                  scrolled ? "h-9 text-sm" : "h-10 text-[15px]",
-                  isDarkNav
-                    ? "border-white/15 bg-white/[0.05] text-white/75 hover:bg-white/10 hover:border-white/25"
-                    : "border-border/70 bg-background text-foreground hover:bg-primary/[0.06] hover:border-border",
+                  "flex items-center gap-1.5 px-2 rounded-full font-medium",
+                  scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
+                  langOpen
+                    ? isDarkNav
+                      ? "bg-white/10 text-white"
+                      : "bg-primary/8 text-primary"
+                    : isDarkNav
+                      ? "text-white/75 hover:bg-white/10 hover:text-white"
+                      : "text-foreground hover:bg-primary/[0.06]",
                 )}
               >
                 <FlagImg code={LANGS.find(l => l.code === language)?.img ?? "gb"} size={20} />
-                <span className="text-[11px] font-semibold uppercase tracking-wider">{language}</span>
-                <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-200", langOpen && "rotate-180")} />
+                <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", langOpen && "rotate-180")} />
               </button>
 
               <AnimatePresence>
@@ -506,7 +544,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       >
                         <FlagImg code={l.img} size={20} />
                         <span className={cn("text-sm flex-1", language === l.code ? "font-semibold text-primary" : "text-foreground")}>{l.label}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground uppercase">{l.code}</span>
                         {language === l.code && <Check className="h-3 w-3 text-primary shrink-0" />}
                       </button>
                     ))}
@@ -520,19 +557,20 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               onClick={toggleTheme}
               title="Toggle theme"
               className={cn(
-                "relative rounded-lg flex items-center justify-center transition-colors duration-200",
-                scrolled ? "h-9 w-9" : "h-10 w-10",
+                "relative rounded-full flex items-center justify-center transition-colors duration-200",
+                scrolled ? "h-8 w-8" : "h-9 w-9",
                 isDarkNav
-                  ? "text-white/50 hover:text-white hover:bg-white/[0.07]"
+                  ? "text-white/55 hover:text-white hover:bg-white/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
               )}
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </button>
+            </div>
 
             {/* Divider */}
-            <div className={cn("h-4 w-px mx-1 rounded-full", isDarkNav ? "bg-white/10" : "bg-border/60")} />
+            <div className={cn("h-4 w-px rounded-full", isDarkNav ? "bg-white/10" : "bg-border/60")} />
 
             {/* Auth */}
             {!isLoaded ? (

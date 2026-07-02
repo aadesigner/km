@@ -12,7 +12,6 @@ export interface DemoCar {
   year: number;
   origin: "USA" | "Korea" | "Germany";
   flagImg: string;
-  marketplace: string;
   photo: string;
   score: number;
   mileage: number;
@@ -27,14 +26,13 @@ export interface DemoCar {
 // Photos: JPEGs in public/demo-cars (served as /demo-cars/*; refreshed on build).
 // Manual refresh: node artifacts/kmcheck/scripts/fetch-demo-car-photos.mjs
 export const ALL_CARS: DemoCar[] = [
-  /* Korea — encar.com */
+  /* Korea */
   {
     vin: "KM8R3DGE3PU812456",
     name: "Hyundai Tucson",
     year: 2023,
     origin: "Korea",
     flagImg: "kr",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CLEAN",
     photo: demoCarPhotoUrl("hyundai-tucson.jpg"),
@@ -51,7 +49,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2022,
     origin: "Korea",
     flagImg: "kr",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CLEAN",
     photo: demoCarPhotoUrl("kia-k8.jpg"),
@@ -68,7 +65,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2019,
     origin: "Korea",
     flagImg: "kr",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("kia-sportage.jpg"),
@@ -85,7 +81,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2017,
     origin: "Korea",
     flagImg: "kr",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("hyundai-grandeur.jpg"),
@@ -102,7 +97,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2016,
     origin: "Korea",
     flagImg: "kr",
-    marketplace: "encar.com",
     unit: "km",
     condition: "RISK",
     photo: demoCarPhotoUrl("kia-carnival.jpg"),
@@ -114,14 +108,13 @@ export const ALL_CARS: DemoCar[] = [
     stolen: false,
   },
 
-  /* USA — CarGurus / Copart */
+  /* USA */
   {
     vin: "2T3P1RFV8NW214892",
     name: "Toyota RAV4",
     year: 2022,
     origin: "USA",
     flagImg: "us",
-    marketplace: "CarGurus",
     unit: "mi",
     condition: "CLEAN",
     photo: demoCarPhotoUrl("toyota-rav4.jpg"),
@@ -138,7 +131,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2021,
     origin: "USA",
     flagImg: "us",
-    marketplace: "CarGurus",
     unit: "mi",
     condition: "CLEAN",
     photo: demoCarPhotoUrl("honda-crv.jpg"),
@@ -155,7 +147,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2018,
     origin: "USA",
     flagImg: "us",
-    marketplace: "CarGurus",
     unit: "mi",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("ford-f150.jpg"),
@@ -172,7 +163,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2017,
     origin: "USA",
     flagImg: "us",
-    marketplace: "CarGurus",
     unit: "mi",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("nissan-altima.jpg"),
@@ -189,7 +179,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2014,
     origin: "USA",
     flagImg: "us",
-    marketplace: "Copart",
     unit: "mi",
     condition: "RISK",
     photo: demoCarPhotoUrl("chevy-malibu.jpg"),
@@ -201,14 +190,13 @@ export const ALL_CARS: DemoCar[] = [
     stolen: false,
   },
 
-  /* Germany — popular imports (Korea encar · Canada AutoTrader) */
+  /* Germany — popular imports */
   {
     vin: "WBA8E9G50MNU51284",
     name: "BMW 320i",
     year: 2021,
     origin: "Germany",
     flagImg: "de",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CLEAN",
     photo: demoCarPhotoUrl("bmw-320i.jpg"),
@@ -225,7 +213,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2019,
     origin: "Germany",
     flagImg: "de",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("mercedes-c-class.jpg"),
@@ -242,7 +229,6 @@ export const ALL_CARS: DemoCar[] = [
     year: 2018,
     origin: "Germany",
     flagImg: "de",
-    marketplace: "encar.com",
     unit: "km",
     condition: "CAUTION",
     photo: demoCarPhotoUrl("vw-tiguan.jpg"),
@@ -316,27 +302,14 @@ function carsForCountry(country?: "usa" | "korea" | "canada"): DemoCar[] {
   return ALL_CARS.filter((c) => c.origin === "USA");
 }
 
-function displayMarketplace(
-  car: DemoCar,
-  country?: "usa" | "korea" | "canada",
-): string {
-  if (country === "korea" && car.origin === "Germany") return "encar.com";
-  if (country === "canada") {
-    if (car.origin === "Germany") return "AutoTrader.ca";
-    return car.marketplace === "Copart" ? "Copart CA" : "AutoTrader.ca";
-  }
-  return car.marketplace;
-}
-
-function registryLabel(
-  car: DemoCar,
-  country: "usa" | "korea" | "canada" | undefined,
-  t: (key: string) => string,
-): string {
-  if (car.origin === "Germany") return t("demo_registry_germany");
-  if (country === "korea" || car.origin === "Korea") return t("demo_registry_korea");
-  if (country === "canada") return t("demo_registry_canada");
-  return t("demo_registry_usa");
+function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
+  const originKey =
+    car.origin === "Korea"
+      ? "demo_card_origin_korea"
+      : car.origin === "Germany"
+        ? "demo_card_origin_germany"
+        : "demo_card_origin_usa";
+  return `${t(originKey)} · ${t("demo_live_preview")}`;
 }
 
 const LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/40";
@@ -411,7 +384,7 @@ function DemoCardShowcase({
       ref={stageRef}
       className={cn(
         "relative w-full min-w-0 mx-auto lg:mx-0 lg:ms-auto",
-        flat ? "py-0 max-w-[min(100%,340px)]" : "py-1 md:py-2 lg:py-3",
+        flat ? "pt-4 pb-0 max-w-[min(100%,380px)]" : "py-1 md:py-2 lg:py-3",
         wide && !flat ? "max-w-[min(100%,420px)]" : !flat ? "max-w-[min(100%,320px)]" : "",
       )}
       style={
@@ -579,7 +552,7 @@ export function VinDemoCard({
   const car = cars[idx] ?? cars[0];
   if (!car) return null;
   const displayFlag = country === "canada" && car.origin === "USA" ? "ca" : car.flagImg;
-  const displayMarketplaceLabel = displayMarketplace(car, country);
+  const subtitle = demoCardSubtitle(car, t);
   const c = COND[car.condition];
   const compact = showcase && !heroSide;
   const rowClass = cn(
@@ -587,7 +560,7 @@ export function VinDemoCard({
     "flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.05] last:border-0",
   );
   const photoHeight = compact
-    ? "h-28 sm:h-32 lg:h-36"
+    ? "h-32 sm:h-36 lg:h-40"
     : heroSide
       ? "h-48 lg:h-52"
       : "h-44";
@@ -730,9 +703,7 @@ export function VinDemoCard({
               {car.year} {car.name}
             </p>
             <p className="text-muted-foreground/50 dark:text-white/25 text-[10px] font-mono tracking-wide mt-0.5">
-              {displayMarketplaceLabel}
-              <span className="mx-1.5 opacity-40">·</span>
-              {registryLabel(car, country, t)}
+              {subtitle}
             </p>
           </div>
         ) : (
@@ -749,9 +720,7 @@ export function VinDemoCard({
                 {car.year} {car.name}
               </p>
               <p className="text-muted-foreground/50 dark:text-white/25 text-[10px] font-mono tracking-wide mt-0.5">
-                {displayMarketplaceLabel}
-                <span className="mx-1.5 opacity-40">·</span>
-                {registryLabel(car, country, t)}
+                {subtitle}
               </p>
             </motion.div>
           </AnimatePresence>

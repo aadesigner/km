@@ -20,12 +20,22 @@ export function PrefetchLink({ href, children, className, onClick, ...rest }: Pr
     prefetchVinFromHref(queryClient, path, { isSignedIn });
   };
 
+  const scheduleWarmHref = () => {
+    if (typeof window === "undefined") return;
+    const run = () => warmHref();
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(run, { timeout: 120 });
+    } else {
+      window.setTimeout(run, 0);
+    }
+  };
+
   return (
     <Link
       href={href}
       className={className}
-      onMouseEnter={warmHref}
-      onFocus={warmHref}
+      onMouseEnter={scheduleWarmHref}
+      onFocus={scheduleWarmHref}
       onClick={onClick}
       {...rest}
     >
