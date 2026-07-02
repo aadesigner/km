@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, CheckCircle2, AlertTriangle, Gauge, BarChart3, Lock,
-  FileText, ChevronRight, Clock,
+  FileText, ChevronRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
@@ -120,9 +120,6 @@ export function VinCheckIncludesSection({ className }: Props) {
                     </Badge>
                   </>
                 )}
-                <span className="hidden sm:inline text-xs text-muted-foreground font-medium">
-                  {t("pricing_no_subscription").split("·")[0]?.trim()}
-                </span>
               </div>
             </div>
           </motion.div>
@@ -236,11 +233,6 @@ export function VinCheckIncludesSection({ className }: Props) {
                   </Link>
                 </Button>
               </div>
-            </div>
-
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-right-3 lg:bottom-6 rounded-full border border-border/70 bg-background/95 backdrop-blur-sm shadow-lg px-4 py-2 text-xs font-semibold text-foreground flex items-center gap-2 whitespace-nowrap">
-              <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-              {t("pricing_compare_instant")}
             </div>
           </motion.div>
         </div>

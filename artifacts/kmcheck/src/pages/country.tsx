@@ -347,7 +347,7 @@ export default function CountryPage({ params }: Props) {
       </div>
 
       {/* ─────────────────────── WHAT WE CHECK ─────────────────────── */}
-      <WhatWeCheckSection subtitle={content.description} />
+      <WhatWeCheckSection market={slug as "usa" | "korea" | "canada"} />
 
       {/* ─────────────────────── RISKS + INCLUDED ─────────────────────── */}
       <CountryRisksIncludedSection
