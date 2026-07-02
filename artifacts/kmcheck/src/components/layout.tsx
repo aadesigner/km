@@ -445,7 +445,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <KmcheckLogo
               className={cn(
                 "transition-all duration-300 group-hover:opacity-90",
-                scrolled ? "h-9 md:h-8" : "h-11",
+                scrolled ? "h-9 md:h-9" : "h-11 md:h-10",
               )}
             />
           </PrefetchLink>
