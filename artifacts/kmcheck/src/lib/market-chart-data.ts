@@ -73,11 +73,7 @@ export function formatMarketAuctionDate(
   vehicleYear?: number | null,
   vehicleCountry?: string | null,
 ): string | null {
-  const localized = localizeProviderDate(date, language, vehicleYear, vehicleCountry);
-  if (localized) return localized;
-  const trimmed = date?.trim();
-  if (!trimmed) return null;
-  return trimmed.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? trimmed;
+  return localizeProviderDate(date, language, vehicleYear, vehicleCountry);
 }
 
 export function formatMarketCurrency(value: number, currency?: string | null): string {

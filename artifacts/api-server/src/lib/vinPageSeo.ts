@@ -4,14 +4,18 @@ import {
   normalizeVin,
 } from "@workspace/vin-page-seo";
 
-const SITE_ORIGIN = (process.env.SITE_URL ?? "https://kmcheck.com").replace(/\/$/, "");
-
 export function buildVinSeoFromCatalogData(
   lang: VinSeoLang,
   vin: string,
   data: Record<string, unknown>,
-  opts?: { thumbnailUrl?: string | null; odometer?: number | null; isUnlocked?: boolean },
+  opts?: {
+    thumbnailUrl?: string | null;
+    odometer?: number | null;
+    isUnlocked?: boolean;
+    origin?: string;
+  },
 ) {
+  const siteOrigin = (opts?.origin ?? process.env.SITE_URL ?? "https://kmcheck.com").replace(/\/$/, "");
   const vehicle: VinSeoVehicle = {
     vin: normalizeVin(vin),
     make: (data.make as string | null) ?? null,
@@ -26,7 +30,7 @@ export function buildVinSeoFromCatalogData(
     fuelType: (data.fuelType as string | null) ?? null,
     thumbnailUrl: opts?.thumbnailUrl ?? null,
   };
-  return buildVinPageSeo(lang, vehicle, SITE_ORIGIN, {
+  return buildVinPageSeo(lang, vehicle, siteOrigin, {
     odometer: opts?.odometer,
     isUnlocked: opts?.isUnlocked,
   });

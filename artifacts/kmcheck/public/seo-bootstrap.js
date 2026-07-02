@@ -8,6 +8,31 @@
   var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password"];
   var VALID_COUNTRY_SLUGS = ["usa","korea","canada"];
   var BASE = "";
+  var VIN_INDEX_RE = /^\/vin\/([A-HJ-NPR-Z0-9]{17})$/i;
+
+  function vinSeoFallback(rest, lang) {
+    var m = rest.match(VIN_INDEX_RE);
+    if (!m) return null;
+    var vin = m[1].toUpperCase();
+    var titles = {
+      en: "VIN " + vin + " — Vehicle History Report | kmcheck",
+      ar: "VIN " + vin + " — تقرير تاريخ المركبة | kmcheck",
+      uk: "VIN " + vin + " — звіт історії авто | kmcheck",
+      ru: "VIN " + vin + " — отчёт по истории авто | kmcheck",
+      sq: "VIN " + vin + " — raport historiku automjeti | kmcheck",
+    };
+    var descriptions = {
+      en: "Check VIN " + vin + ": mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.",
+      ar: "تحقق من VIN " + vin + ": الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.",
+      uk: "Перевірте VIN " + vin + ": пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.",
+      ru: "Проверьте VIN " + vin + ": пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.",
+      sq: "Kontrollo VIN " + vin + ": kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.",
+    };
+    return {
+      title: titles[lang] || titles.en,
+      description: descriptions[lang] || descriptions.en,
+    };
+  }
 
   function resolvePageKey(rest) {
     if (PATH_MAP[rest]) return PATH_MAP[rest];
@@ -29,6 +54,7 @@
     if (pageKey === "not_found") return true;
     if (NOINDEX.indexOf(rest) !== -1) return true;
     if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
+    if (VIN_INDEX_RE.test(rest)) return false;
     return false;
   }
 
@@ -51,6 +77,7 @@
   }
 
   function upsertLink(rel, href, extra) {
+    if (!href || !String(href).trim()) return;
     var sel = 'link[rel="' + rel + '"]';
     if (extra) {
       for (var k in extra) sel += '[' + k + '="' + extra[k] + '"]';
@@ -80,9 +107,10 @@
     var m = pathname.match(/^\/(en|ar|uk|ru|sq)(\/.*)?$/);
     var lang = m ? m[1] : "en";
     var rest = m && m[2] ? m[2].replace(/\/$/, "") : "";
+    var vinSeo = VIN_INDEX_RE.test(rest) ? vinSeoFallback(rest, lang) : null;
     var pageKey = resolvePageKey(rest);
     var page = SEO[pageKey] || SEO.not_found || SEO.home;
-    var seo = (page && page[lang]) || (page && page.en) || SEO.home.en;
+    var seo = vinSeo || (page && page[lang]) || (page && page.en) || SEO.home.en;
     var noIndex = isNoIndexPath(rest, pageKey);
 
     document.documentElement.lang = lang;

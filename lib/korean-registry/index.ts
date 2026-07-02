@@ -37,6 +37,10 @@ export function isRegistryRepairCostLabel(label: string): boolean {
 /** Repair payouts above this are almost always new-car list prices mis-tagged by the provider. */
 export const MAX_PLAUSIBLE_KRW_REPAIR_PAYOUT = 80_000_000;
 
+/** Encar list prices below this in parsed KRW are usually under-scaled “X.XX million won” values. */
+export const MIN_PLAUSIBLE_NEW_CAR_LIST_KRW = 40_000_000;
+export const MAX_PLAUSIBLE_NEW_CAR_LIST_KRW = 500_000_000;
+
 export type KoreanRepairCostParts = {
   partCost?: number | null;
   laborCost?: number | null;
@@ -119,6 +123,59 @@ export function parseKrwAmountFromText(text: string | null | undefined): number 
 }
 
 /**
+ * Encar/Carstat often encodes list prices as “13.57 million won” meaning ₩135.7M (not ₩13.57M).
+ * Apply ×10 when a million-won parse is implausibly low for a new-car list price.
+ */
+export function parseKoreanListPriceKrw(text: string | null | undefined): number | null {
+  const base = parseKrwAmountFromText(text);
+  if (base == null || base <= 0) return null;
+
+  const raw = (normalizeKrwAmountText(text) ?? String(text)).trim();
+  const million = raw.match(/^([\d.,]+)\s*million\s+won$/i);
+  if (million && base < MIN_PLAUSIBLE_NEW_CAR_LIST_KRW) {
+    const scaled = Math.round(base * 10);
+    if (scaled >= MIN_PLAUSIBLE_NEW_CAR_LIST_KRW && scaled <= MAX_PLAUSIBLE_NEW_CAR_LIST_KRW) {
+      return scaled;
+    }
+  }
+
+  if (base >= MIN_PLAUSIBLE_NEW_CAR_LIST_KRW && base <= MAX_PLAUSIBLE_NEW_CAR_LIST_KRW) {
+    return Math.round(base);
+  }
+
+  return base < MIN_PLAUSIBLE_NEW_CAR_LIST_KRW ? null : Math.round(base);
+}
+
+export function formatKoreanListPriceAmountText(text: string | null | undefined): string | null {
+  const krw = parseKoreanListPriceKrw(text);
+  if (krw == null || krw <= 0) return null;
+  return `${krw.toLocaleString("en-US")} won`;
+}
+
+/** Display KRW for registry chips — repair vs list price use different sanity rules. */
+export function resolveKoreanDisplayKrw(
+  text: string | null | undefined,
+  label?: string | null,
+): number | null {
+  if (!text) return null;
+  if (label && isRegistryRepairCostLabel(label)) {
+    return sanitizeKoreanRepairKrwAmount(parseKrwAmountFromText(text));
+  }
+  if (label && isRegistryAmountLabel(label) && !isRegistryRepairCostLabel(label)) {
+    return parseKoreanListPriceKrw(text);
+  }
+  if (/million\s+won/i.test(text)) {
+    const list = parseKoreanListPriceKrw(text);
+    if (list != null) return list;
+  }
+  const parsed = parseKrwAmountFromText(text);
+  if (parsed != null && parsed >= MIN_PLAUSIBLE_NEW_CAR_LIST_KRW) {
+    return Math.round(parsed);
+  }
+  return sanitizeKoreanRepairKrwAmount(parsed);
+}
+
+/**
  * Drop or correct implausible Korean repair payouts (e.g. new-car list price in a damage field).
  * When part/labor/paint breakdown exists and is much smaller, prefer that sum.
  */
@@ -167,13 +224,16 @@ export function resolveRegistryDisplayAmount(
 
   for (const row of event.details ?? []) {
     if (isRegistryAmountLabel(row.label) && !isRegistryRepairCostLabel(row.label)) {
-      return normalizeKrwAmountText(row.value);
+      return formatKoreanListPriceAmountText(row.value) ?? normalizeKrwAmountText(row.value);
     }
   }
 
   const raw = event.amount;
   if (!raw) return null;
   if (isRegistryRepairCostLabel(raw)) return sanitizeKoreanRepairAmountText(raw);
+  if (type === "new_car_delivery") {
+    return formatKoreanListPriceAmountText(raw) ?? normalizeKrwAmountText(raw);
+  }
   return normalizeKrwAmountText(raw);
 }
 

@@ -507,6 +507,36 @@ export function translateProviderDate(
   return trimmed;
 }
 
+/** Neutral DD/MM/YYYY when month-name localization fails — never hide a parseable date. */
+export function formatProviderDateFallback(
+  date: string | null | undefined,
+  vehicleYear?: number | null,
+  vehicleCountry?: string | null,
+): string | null {
+  if (date == null || date === "") return null;
+  const trimmed = normalizeProviderDateText(String(date));
+  if (!trimmed) return null;
+
+  const usOrder = isUsVehicleCountry(vehicleCountry);
+  const numeric = formatNumericDateAsDayMonthYear(trimmed, { assumeUsSlashOrder: usOrder });
+  if (numeric) return numeric;
+
+  const repaired = sanitizeReportIsoDate(trimmed, vehicleYear)
+    ?? trimmed.match(/^(\d{4}-\d{2}-\d{2})/)?.[1]
+    ?? null;
+  if (repaired) {
+    const fromRepaired = formatNumericDateAsDayMonthYear(repaired, { assumeUsSlashOrder: usOrder });
+    if (fromRepaired) return fromRepaired;
+  }
+
+  const parsed = parseEnglishMonthDate(trimmed);
+  if (parsed?.year != null) {
+    return formatDayMonthYearNumeric(parsed.day, parsed.month + 1, parsed.year);
+  }
+
+  return repaired;
+}
+
 /** Localize a provider date string, including embedded English months in ranges. */
 export function localizeProviderDate(
   date: string | null | undefined,
@@ -572,7 +602,9 @@ export function localizeProviderDate(
   if (!result && vehicleYear != null) {
     result = localizeOnce(undefined);
   }
-  return result;
+  if (result) return result;
+
+  return formatProviderDateFallback(String(date), vehicleYear, vehicleCountry);
 }
 
 /** Compact month/day label for charts (localized). */

@@ -3,32 +3,55 @@ import {
   convertKrwToUsd,
   formatKoreanWonPlain,
   formatUsdAmount,
-  parseKrwFromText,
   resolveKrwPerUsd,
 } from "@/lib/korean-currency";
-import { normalizeKrwAmountText, sanitizeKoreanRepairKrwAmount } from "@workspace/korean-registry";
+import {
+  isRegistryRepairCostLabel,
+  MIN_PLAUSIBLE_NEW_CAR_LIST_KRW,
+  MAX_PLAUSIBLE_NEW_CAR_LIST_KRW,
+  resolveKoreanDisplayKrw,
+  sanitizeKoreanRepairKrwAmount,
+} from "@workspace/korean-registry";
 
 type Props = {
   /** Raw KRW amount */
   krw?: number | null;
   /** Provider text e.g. "2,566,720 won" or "136.6 million won" */
   text?: string | null;
+  /** Registry field label — selects list-price vs repair parsing */
+  amountLabel?: string | null;
   krwPerUsd?: number | null;
   className?: string;
   usdClassName?: string;
   wonClassName?: string;
 };
 
+function resolveWonDisplayKrw(
+  krw: number | null | undefined,
+  text: string | null | undefined,
+  amountLabel?: string | null,
+): number | null {
+  if (text) return resolveKoreanDisplayKrw(text, amountLabel);
+  if (krw == null || krw <= 0) return null;
+  if (amountLabel && isRegistryRepairCostLabel(amountLabel)) {
+    return sanitizeKoreanRepairKrwAmount(krw);
+  }
+  if (krw >= MIN_PLAUSIBLE_NEW_CAR_LIST_KRW && krw <= MAX_PLAUSIBLE_NEW_CAR_LIST_KRW) {
+    return Math.round(krw);
+  }
+  return sanitizeKoreanRepairKrwAmount(krw);
+}
+
 export function KoreanWonAmount({
   krw,
   text,
+  amountLabel,
   krwPerUsd,
   className,
   usdClassName,
   wonClassName,
 }: Props) {
-  const parsedFromText = text ? parseKrwFromText(normalizeKrwAmountText(text) ?? text) : null;
-  const resolvedKrw = sanitizeKoreanRepairKrwAmount(krw ?? parsedFromText);
+  const resolvedKrw = resolveWonDisplayKrw(krw, text, amountLabel);
   if (resolvedKrw == null || resolvedKrw <= 0) return null;
 
   const rate = resolveKrwPerUsd(krwPerUsd);
@@ -48,8 +71,12 @@ export function KoreanWonAmount({
 export function formatKoreanWonDisplay(
   input: number | string,
   krwPerUsd?: number | null,
+  amountLabel?: string | null,
 ): string | null {
-  const krw = typeof input === "number" ? input : parseKrwFromText(input);
+  const krw =
+    typeof input === "number"
+      ? input
+      : resolveKoreanDisplayKrw(input, amountLabel);
   if (krw == null || krw <= 0) return null;
   return formatKoreanWonPlain(krw, resolveKrwPerUsd(krwPerUsd));
 }

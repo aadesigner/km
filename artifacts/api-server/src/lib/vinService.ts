@@ -39,6 +39,7 @@ import {
   sanitizeKoreanRepairAmountText,
   sanitizeKoreanRepairKrwAmount,
   isRegistryRepairCostLabel,
+  formatKoreanListPriceAmountText,
   resolveRegistryDisplayAmount,
   stripRegistrySubtitleNoise,
 } from "@workspace/korean-registry";
@@ -2202,7 +2203,7 @@ function mapKoreanRegistryContentItem(
       const isRepair = isRegistryRepairCostLabel(key);
       const normalized = isRepair
         ? (sanitizeKoreanRepairAmountText(value) ?? null)
-        : (normalizeKrwAmountText(value) ?? value);
+        : (formatKoreanListPriceAmountText(value) ?? normalizeKrwAmountText(value) ?? value);
       if (!normalized) continue;
       details.push({ label: key, value: normalized });
       continue;

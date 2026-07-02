@@ -193,6 +193,14 @@ describe("translateProviderDate", () => {
     expect(translateProviderChartLabel("2021-05-18", "en", "us")).toBe("18/05/21");
     expect(translateProviderChartLabel("05/18/2021", "sq", "usa")).toBe("18/05/21");
   });
+
+  it("falls back to numeric dates for ownership history instead of hiding them", () => {
+    const auctionOwnerDate = "2025-10-04";
+    expect(localizeProviderDate(auctionOwnerDate, "en", 2020, "kr")).toBeTruthy();
+    expect(localizeProviderDate(auctionOwnerDate, "sq", 2020, "kr")).toBeTruthy();
+    expect(localizeProviderDate("April 16, 2019", "sq", 2020, "kr")).toMatch(/2019/);
+    expect(localizeProviderDate("2025-10-04T00:00:00.000Z", "sq", 2020, "kr")).toBeTruthy();
+  });
 });
 
 describe("translateKoreanProviderPhrase", () => {

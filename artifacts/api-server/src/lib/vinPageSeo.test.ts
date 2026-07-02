@@ -26,6 +26,7 @@ describe("vin-page-seo", () => {
     });
     expect(title).toContain("2015 BMW 3 Series");
     expect(title).toContain(vin);
+    expect(title).toContain("Check VIN");
 
     const desc = buildVinPageDescription("en", {
       vin,
@@ -35,7 +36,26 @@ describe("vin-page-seo", () => {
       engine: "2.0L",
     });
     expect(desc).toContain(vin);
+    expect(desc).toContain("mileage");
+    expect(desc).toContain("accidents");
+    expect(desc).toContain("ownership history");
     expect(desc).toContain("2.0L");
+  });
+
+  it("resolves absolute og image URLs", () => {
+    const seo = buildVinPageSeo(
+      "en",
+      {
+        vin: "1HGBH41JXMN109186",
+        make: "Honda",
+        model: "Accord",
+        year: 1991,
+        thumbnailUrl: "/api/vin/image?token=abc",
+      },
+      "https://kmcheck.com",
+    );
+    expect(seo.ogImage).toBe("https://kmcheck.com/api/vin/image?token=abc");
+    expect(seo.ogImageAlt).toBe("1991 Honda Accord");
   });
 
   it("emits WebPage + Vehicle JSON-LD", () => {

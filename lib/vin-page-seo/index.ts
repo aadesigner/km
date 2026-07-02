@@ -53,6 +53,10 @@ export function buildVehicleTitle(v: VinSeoVehicle): string {
   return `VIN ${vin}`;
 }
 
+export function vehicleHasIdentity(v: VinSeoVehicle): boolean {
+  return !!((v.year && v.make && v.model) || (v.make && v.model));
+}
+
 function specSnippet(v: VinSeoVehicle): string {
   const parts: string[] = [];
   if (v.trim) parts.push(v.trim);
@@ -61,51 +65,63 @@ function specSnippet(v: VinSeoVehicle): string {
   if (v.bodyType) parts.push(v.bodyType);
   if (v.fuelType) parts.push(v.fuelType);
   if (v.color) parts.push(v.color);
-  if (v.country) parts.push(v.country);
-  return parts.slice(0, 4).join(" · ");
+  return parts.slice(0, 3).join(" · ");
 }
 
 type TitleFn = (vehicle: string, vin: string) => string;
 type DescFn = (vehicle: string, vin: string, specs: string) => string;
 
 const TITLES: Record<VinSeoLang, TitleFn> = {
-  en: (vehicle, vin) => `${vehicle} — VIN ${vin} History Report | kmcheck`,
-  ar: (vehicle, vin) => `${vehicle} — تقرير VIN ${vin} | kmcheck`,
-  uk: (vehicle, vin) => `${vehicle} — звіт VIN ${vin} | kmcheck`,
-  ru: (vehicle, vin) => `${vehicle} — отчёт VIN ${vin} | kmcheck`,
-  sq: (vehicle, vin) => `${vehicle} — raport VIN ${vin} | kmcheck`,
+  en: (vehicle, vin) => `${vehicle} — Check VIN ${vin} | kmcheck`,
+  ar: (vehicle, vin) => `${vehicle} — تحقق من VIN ${vin} | kmcheck`,
+  uk: (vehicle, vin) => `${vehicle} — перевірка VIN ${vin} | kmcheck`,
+  ru: (vehicle, vin) => `${vehicle} — проверка VIN ${vin} | kmcheck`,
+  sq: (vehicle, vin) => `${vehicle} — kontrollo VIN ${vin} | kmcheck`,
+};
+
+const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
+  en: (vin) => `VIN ${vin} — Vehicle History Report | kmcheck`,
+  ar: (vin) => `VIN ${vin} — تقرير تاريخ المركبة | kmcheck`,
+  uk: (vin) => `VIN ${vin} — звіт історії авто | kmcheck`,
+  ru: (vin) => `VIN ${vin} — отчёт по истории авто | kmcheck`,
+  sq: (vin) => `VIN ${vin} — raport historiku automjeti | kmcheck`,
 };
 
 const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Check mileage, accidents and vehicle history for ${vehicle} (VIN ${vin}).${specsPart} Full instant report at kmcheck.com.`;
+    return `Check ${vehicle} (VIN ${vin}): mileage, accidents, ownership history, insurance & auction records.${specsPart} Instant full report on kmcheck.com.`;
   },
   ar: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `تحقق من الكيلومترات والحوادث والتاريخ الكامل لـ ${vehicle} (VIN ${vin}).${specsPart} تقرير فوري على kmcheck.com.`;
+    return `تحقق من ${vehicle} (VIN ${vin}): الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع.${specsPart} تقرير فوري على kmcheck.com.`;
   },
   uk: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Перевірте пробіг, ДТП та повну історію для ${vehicle} (VIN ${vin}).${specsPart} Миттєвий звіт на kmcheck.com.`;
+    return `Перевірте ${vehicle} (VIN ${vin}): пробіг, ДТП, історія власників, страхування та аукціони.${specsPart} Миттєвий звіт на kmcheck.com.`;
   },
   ru: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Проверьте пробег, ДТП и полную историю для ${vehicle} (VIN ${vin}).${specsPart} Мгновенный отчёт на kmcheck.com.`;
+    return `Проверьте ${vehicle} (VIN ${vin}): пробег, ДТП, история владельцев, страхование и аукционы.${specsPart} Мгновенный отчёт на kmcheck.com.`;
   },
   sq: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Kontrollo kilometrat, aksidentet dhe historinë për ${vehicle} (VIN ${vin}).${specsPart} Raport i plotë në kmcheck.com.`;
+    return `Kontrollo ${vehicle} (VIN ${vin}): kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet.${specsPart} Raport i menjëhershëm në kmcheck.com.`;
   },
 };
 
 const VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> = {
-  en: (vin) => `Check mileage, accidents and vehicle history for VIN ${vin}. Full instant report at kmcheck.com.`,
-  ar: (vin) => `تحقق من الكيلومترات والحوادث والتاريخ الكامل للمركبة لرقم VIN ${vin}. تقرير فوري على kmcheck.com.`,
-  uk: (vin) => `Перевірте пробіг, ДТП та повну історію авто для VIN ${vin}. Миттєвий звіт на kmcheck.com.`,
-  ru: (vin) => `Проверьте пробег, ДТП и полную историю авто для VIN ${vin}. Мгновенный отчёт на kmcheck.com.`,
-  sq: (vin) => `Kontrollo kilometrat, aksidentet dhe historinë për VIN ${vin}. Raport i plotë në kmcheck.com.`,
+  en: (vin) => `Check VIN ${vin}: mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.`,
+  ar: (vin) => `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
+  uk: (vin) => `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
+  ru: (vin) => `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,
+  sq: (vin) => `Kontrollo VIN ${vin}: kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
 };
+
+export function buildVinOnlyPageTitle(lang: VinSeoLang, vin: string): string {
+  const fn = VIN_ONLY_TITLES[lang] ?? VIN_ONLY_TITLES.en;
+  return fn(normalizeVin(vin));
+}
 
 export function buildVinOnlyPageDescription(lang: VinSeoLang, vin: string): string {
   const fn = VIN_ONLY_DESCRIPTIONS[lang] ?? VIN_ONLY_DESCRIPTIONS.en;
@@ -114,14 +130,29 @@ export function buildVinOnlyPageDescription(lang: VinSeoLang, vin: string): stri
 
 export function buildVinPageTitle(lang: VinSeoLang, vehicle: VinSeoVehicle): string {
   const vin = normalizeVin(vehicle.vin);
+  if (!vehicleHasIdentity(vehicle)) {
+    return buildVinOnlyPageTitle(lang, vin);
+  }
   const fn = TITLES[lang] ?? TITLES.en;
   return fn(buildVehicleTitle(vehicle), vin);
 }
 
 export function buildVinPageDescription(lang: VinSeoLang, vehicle: VinSeoVehicle): string {
   const vin = normalizeVin(vehicle.vin);
+  if (!vehicleHasIdentity(vehicle)) {
+    return buildVinOnlyPageDescription(lang, vin);
+  }
   const fn = DESCRIPTIONS[lang] ?? DESCRIPTIONS.en;
   return fn(buildVehicleTitle(vehicle), vin, specSnippet(vehicle));
+}
+
+/** Resolve relative API image paths to absolute URLs for Open Graph / Twitter cards. */
+export function resolveAbsoluteAssetUrl(origin: string, url: string | null | undefined): string | undefined {
+  const trimmed = String(url ?? "").trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const base = origin.replace(/\/$/, "");
+  return trimmed.startsWith("/") ? `${base}${trimmed}` : `${base}/${trimmed}`;
 }
 
 export type VinPageSeo = {
@@ -131,6 +162,7 @@ export type VinPageSeo = {
   noIndex: false;
   jsonLd: Record<string, unknown>[];
   ogImage?: string;
+  ogImageAlt?: string;
 };
 
 export function buildVinPageSeo(
@@ -142,7 +174,9 @@ export function buildVinPageSeo(
   const vin = normalizeVin(vehicle.vin);
   const vehicleTitle = buildVehicleTitle(vehicle);
   const canonicalPath = `/${lang}/vin/${vin}`;
-  const pageUrl = `${origin.replace(/\/$/, "")}${canonicalPath}`;
+  const siteOrigin = origin.replace(/\/$/, "");
+  const pageUrl = `${siteOrigin}${canonicalPath}`;
+  const absoluteImage = resolveAbsoluteAssetUrl(siteOrigin, vehicle.thumbnailUrl);
 
   const vehicleLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -164,7 +198,7 @@ export function buildVinPageSeo(
         unitCode: "KMT",
       },
     }),
-    ...(vehicle.thumbnailUrl && { image: vehicle.thumbnailUrl }),
+    ...(absoluteImage && { image: absoluteImage }),
   };
 
   const webPageLd: Record<string, unknown> = {
@@ -175,9 +209,9 @@ export function buildVinPageSeo(
     name: buildVinPageTitle(lang, vehicle),
     description: buildVinPageDescription(lang, vehicle),
     inLanguage: lang,
-    isPartOf: { "@type": "WebSite", name: "kmcheck.com", url: origin },
+    isPartOf: { "@type": "WebSite", name: "kmcheck.com", url: siteOrigin },
     about: { "@id": `${pageUrl}#vehicle` },
-    primaryImageOfPage: vehicle.thumbnailUrl ?? undefined,
+    primaryImageOfPage: absoluteImage ?? undefined,
   };
 
   return {
@@ -186,6 +220,7 @@ export function buildVinPageSeo(
     canonicalPath,
     noIndex: false,
     jsonLd: [webPageLd, vehicleLd],
-    ogImage: vehicle.thumbnailUrl ?? undefined,
+    ogImage: absoluteImage,
+    ogImageAlt: vehicleTitle,
   };
 }

@@ -9,6 +9,7 @@ import {
   buildLocalizedPath,
   type SeoLang,
 } from "@/lib/seo-config";
+import { resolveAbsoluteAssetUrl } from "@workspace/vin-page-seo";
 import {
   SEO_DATA,
   getRouteSeo,
@@ -27,6 +28,7 @@ interface SEOProps {
   canonicalPath?: string;
   noIndex?: boolean;
   ogImage?: string;
+  ogImageAlt?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
@@ -77,6 +79,7 @@ export function applySeoHead({
   canonicalPath,
   noIndex,
   ogImage,
+  ogImageAlt,
   jsonLd,
 }: SEOProps) {
   document.title = title;
@@ -96,15 +99,24 @@ export function applySeoHead({
   upsertMeta("twitter:title", title);
   upsertMeta("twitter:description", description);
 
-  if (ogImage) {
-    upsertMeta("og:image", ogImage, "property");
-    upsertMeta("twitter:image", ogImage);
+  const origin = typeof window !== "undefined" ? window.location.origin : SITE_ORIGIN;
+  const absoluteOgImage = resolveAbsoluteAssetUrl(origin, ogImage);
+  if (absoluteOgImage) {
+    upsertMeta("og:image", absoluteOgImage, "property");
+    upsertMeta("twitter:image", absoluteOgImage);
+    if (absoluteOgImage.startsWith("https://")) {
+      upsertMeta("og:image:secure_url", absoluteOgImage, "property");
+    }
+    if (ogImageAlt) {
+      upsertMeta("og:image:alt", ogImageAlt, "property");
+    }
   } else {
     document.querySelector('meta[property="og:image"]')?.remove();
     document.querySelector('meta[name="twitter:image"]')?.remove();
+    document.querySelector('meta[property="og:image:secure_url"]')?.remove();
+    document.querySelector('meta[property="og:image:alt"]')?.remove();
   }
 
-  const origin = typeof window !== "undefined" ? window.location.origin : SITE_ORIGIN;
   const path = canonicalPath ?? (typeof window !== "undefined" ? window.location.pathname : `/${lang}`);
   const canonical = `${origin}${path}`;
   upsertLink("canonical", canonical);
@@ -137,13 +149,13 @@ export function usePageSeo(pageKeyOverride?: SeoPageKey) {
   );
 }
 
-export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, jsonLd }: SEOProps) {
+export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd }: SEOProps) {
   useLayoutEffect(() => {
-    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, jsonLd });
+    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd });
     return () => {
       document.getElementById("kmcheck-json-ld")?.remove();
     };
-  }, [title, description, lang, canonicalPath, noIndex, ogImage, jsonLd == null ? null : JSON.stringify(jsonLd)]);
+  }, [title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd == null ? null : JSON.stringify(jsonLd)]);
 
   return null;
 }

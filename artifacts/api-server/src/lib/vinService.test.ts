@@ -321,7 +321,30 @@ describe("extractRegistryHistoryFromLots", () => {
     expect(events[0]?.mileage).toBe(77675);
     expect(events[1]?.type).toBe("new_car_delivery");
     expect(events[1]?.date).toBe("2020-01-03");
-    expect(events[1]?.amount).toBe("136.6 million won");
+    expect(events[1]?.amount).toBe("136,600,000 won");
+  });
+
+  it("scales under-reported Encar new car list prices (13.57M → 135.7M)", () => {
+    const events = extractRegistryHistoryFromLots([{
+      details: {
+        history: [{
+          date: "November 20",
+          content: [{
+            title: "New car shipment (corporate name)",
+            sub: "Yeongdeungpo -gu, Seoul",
+            "New car list price": "13.57 million won",
+            "First buyer": "corporation",
+          }],
+        }],
+      },
+    }]);
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.type).toBe("new_car_delivery");
+    expect(events[0]?.amount).toBe("135,700,000 won");
+    expect(events[0]?.details?.find((r) => r.label === "New car list price")?.value).toBe(
+      "135,700,000 won",
+    );
   });
 
   it("uses Date of occurrence for insurance events instead of month-only group headers", () => {

@@ -478,6 +478,7 @@ export default function VinPublic({ params }: Props) {
       canonicalPath={pageSeo.canonicalPath}
       jsonLd={notFound ? undefined : pageSeo.jsonLd}
       ogImage={pageSeo.ogImage}
+      ogImageAlt={pageSeo.ogImageAlt}
       noIndex={notFound || undefined}
     />
   );

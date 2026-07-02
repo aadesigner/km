@@ -48,12 +48,12 @@ const NOINDEX_EXACT = new Set([
 
 const VIN_INDEX_RE = /^\/vin\/([A-HJ-NPR-Z0-9]{17})$/i;
 
-function isIndexableVinRest(rest) {
+export function isIndexableVinRest(rest) {
   const m = rest.match(VIN_INDEX_RE);
   return !!m && m[1].toLowerCase() !== "processing";
 }
 
-function vinSeoFromRest(rest, lang) {
+export function vinSeoFromRest(rest, lang) {
   const m = rest.match(VIN_INDEX_RE);
   if (!m) return null;
   const vin = m[1].toUpperCase();
@@ -65,11 +65,11 @@ function vinSeoFromRest(rest, lang) {
     sq: `VIN ${vin} — raport historiku automjeti | kmcheck`,
   };
   const descriptions = {
-    en: `Check mileage, accidents and vehicle history for VIN ${vin}. Full instant report at kmcheck.com.`,
-    ar: `تحقق من الكيلومترات والحوادث والتاريخ الكامل للمركبة لرقم VIN ${vin}. تقرير فوري على kmcheck.com.`,
-    uk: `Перевірте пробіг, ДТП та повну історію авто для VIN ${vin}. Миттєвий звіт на kmcheck.com.`,
-    ru: `Проверьте пробег, ДТП и полную историю авто для VIN ${vin}. Мгновенный отчёт на kmcheck.com.`,
-    sq: `Kontrollo kilometrat, aksidentet dhe historinë për VIN ${vin}. Raport i plotë në kmcheck.com.`,
+    en: `Check VIN ${vin}: mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.`,
+    ar: `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
+    uk: `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
+    ru: `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,
+    sq: `Kontrollo VIN ${vin}: kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
   };
   return {
     title: titles[lang] ?? titles.en,
@@ -160,6 +160,8 @@ export function resolveSeoForPath(pathname, basePath = "") {
     noIndex,
     canonicalPath,
     canonicalUrl: `${SITE_ORIGIN}${canonicalPath}`,
+    ogImage: seo.ogImage ?? undefined,
+    ogImageAlt: seo.ogImageAlt ?? undefined,
   };
 }
 
@@ -175,7 +177,7 @@ function removeGeneratedSeoTags(html) {
 }
 
 function buildSeoHeadBlock(resolved) {
-  const { lang, title, description, noIndex, canonicalUrl, rest } = resolved;
+  const { lang, title, description, noIndex, canonicalUrl, rest, ogImage, ogImageAlt } = resolved;
   const lines = [
     `<meta name="description" content="${escapeHtml(description)}" />`,
     `<meta name="robots" content="${noIndex ? "noindex, nofollow" : "index, follow"}" />`,
@@ -190,6 +192,17 @@ function buildSeoHeadBlock(resolved) {
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
   ];
+
+  if (ogImage) {
+    lines.push(`<meta property="og:image" content="${escapeHtml(ogImage)}" />`);
+    lines.push(`<meta name="twitter:image" content="${escapeHtml(ogImage)}" />`);
+    if (String(ogImage).startsWith("https://")) {
+      lines.push(`<meta property="og:image:secure_url" content="${escapeHtml(ogImage)}" />`);
+    }
+    if (ogImageAlt) {
+      lines.push(`<meta property="og:image:alt" content="${escapeHtml(ogImageAlt)}" />`);
+    }
+  }
 
   if (!noIndex) {
     for (const l of SEO_LANGS) {

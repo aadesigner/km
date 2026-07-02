@@ -1,7 +1,12 @@
 import express, { type Express, type Request, type Response } from "express";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { parseVinPagePath } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
+import { vinHasReportData } from "./vinService.js";
+import { buildVinSeoFromCatalogData } from "./vinPageSeo.js";
+import { buildImageProxyUrl } from "./imageProxy.js";
+import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
 
 const ONE_YEAR_SEC = 31_536_000;
 const ONE_DAY_SEC = 86_400;
@@ -62,6 +67,54 @@ function applyStaticCacheHeaders(res: Response, filePath: string): void {
   setCacheHeaders(res, policy.maxAgeSec, policy.immutable);
 }
 
+function requestOrigin(req: Request): string {
+  const fromEnv = process.env.SITE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const host = req.headers.host;
+  if (!host) return "https://kmcheck.com";
+  const forwarded = req.headers["x-forwarded-proto"];
+  const proto = (typeof forwarded === "string" ? forwarded.split(",")[0] : forwarded)
+    ?? (req.secure ? "https" : "http");
+  return `${proto}://${host}`.replace(/\/$/, "");
+}
+
+let cachedIndexHtml: string | null = null;
+
+function loadIndexHtml(publicDir: string): string {
+  if (!cachedIndexHtml) {
+    cachedIndexHtml = readFileSync(path.join(publicDir, "index.html"), "utf8");
+  }
+  return cachedIndexHtml;
+}
+
+async function injectVinCatalogSeo(html: string, reqPath: string, origin: string): Promise<string> {
+  const parsed = parseVinPagePath(reqPath.replace(/\/$/, "") || "/");
+  if (!parsed) return html;
+
+  try {
+    const report = await vinHasReportData(parsed.vin);
+    if (!report) {
+      const seo = buildVinOnlyFallbackSeo(parsed.lang, parsed.vin, origin);
+      return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin);
+    }
+
+    const d = report.dataSource;
+    const photos = Array.isArray(d.photos) ? (d.photos as string[]).filter(Boolean) : [];
+    const thumbnailUrl = photos[0]
+      ? buildImageProxyUrl(photos[0], { mediaVersion: report.mediaVersion })
+      : null;
+
+    const seo = buildVinSeoFromCatalogData(parsed.lang, parsed.vin, d, {
+      thumbnailUrl,
+      origin,
+    });
+    return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin);
+  } catch (err) {
+    logger.warn({ err, path: reqPath }, "VIN SEO HTML inject failed");
+    return html;
+  }
+}
+
 function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean {
   const safe = path.normalize(reqPath).replace(/^(\.\.(\/|\\|$))+/, "");
   const direct = path.join(publicDir, safe);
@@ -76,13 +129,19 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
     res.sendFile(withIndex);
     return true;
   }
-  const fallback = path.join(publicDir, "index.html");
-  if (existsSync(fallback)) {
-    res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(fallback);
-    return true;
-  }
   return false;
+}
+
+async function sendSpaFallback(publicDir: string, reqPath: string, req: Request, res: Response): Promise<boolean> {
+  const fallback = path.join(publicDir, "index.html");
+  if (!existsSync(fallback)) return false;
+
+  res.setHeader("Cache-Control", "no-cache");
+  const origin = requestOrigin(req);
+  let html = loadIndexHtml(publicDir);
+  html = await injectVinCatalogSeo(html, req.path, origin);
+  res.type("html").send(html);
+  return true;
 }
 
 /** Serve built kmcheck frontend (production / Railway single-service deploy). */
@@ -107,15 +166,15 @@ export function mountStaticSite(app: Express): string | null {
     }),
   );
 
-  app.get(/^(?!\/api\/).*/, (req: Request, res: Response) => {
+  app.get(/^(?!\/api\/).*/, async (req: Request, res: Response) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.status(405).end();
       return;
     }
     const urlPath = req.path === "/" ? "/index.html" : req.path;
-    if (!sendSpaFile(publicDir, urlPath, res)) {
-      res.status(404).send("Not found");
-    }
+    if (sendSpaFile(publicDir, urlPath, res)) return;
+    if (await sendSpaFallback(publicDir, urlPath, req, res)) return;
+    res.status(404).send("Not found");
   });
 
   logger.info({ publicDir }, "Serving static site");

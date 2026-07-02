@@ -137,7 +137,7 @@ function EventDetails({
           </dt>
           <dd className="text-[11px] text-foreground mt-1 whitespace-pre-wrap break-words leading-snug">
             {isKoreanCountry(country) && (textContainsWon(row.value) || isRegistryAmountLabel(row.label)) ? (
-              <KoreanWonAmount text={row.value} krwPerUsd={krwPerUsd} />
+              <KoreanWonAmount text={row.value} krwPerUsd={krwPerUsd} amountLabel={row.label} />
             ) : (
               translateRegistryDetailValue(t, language, row.label, row.value, vehicleYear)
             )}
@@ -255,7 +255,11 @@ function RegistryEventCard({
                       <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 rounded-full px-2 py-0.5">
                         <Wallet className="h-2.5 w-2.5 shrink-0" />
                         {isKoreanCountry(country) ? (
-                          <KoreanWonAmount text={event.amount} krwPerUsd={krwPerUsd} />
+                          <KoreanWonAmount
+                            text={event.amount}
+                            krwPerUsd={krwPerUsd}
+                            amountLabel={event.type === "new_car_delivery" ? "New car list price" : undefined}
+                          />
                         ) : (
                           event.amount
                         )}

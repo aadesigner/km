@@ -11,6 +11,7 @@ import {
   resolveRegistryDisplayMileage,
   resolveRegistryDisplayAmount,
   sanitizeKoreanRepairAmountText,
+  formatKoreanListPriceAmountText,
   isRegistryRepairCostLabel,
   sanitizeKoreanRepairKrwAmount,
   stripRegistrySubtitleNoise,
@@ -92,7 +93,9 @@ export function sanitizeRegistryHistoryEvent<T extends RegistryHistoryLike>(
     value: isRegistryRepairCostLabel(row.label)
       ? (sanitizeKoreanRepairAmountText(row.value) ?? row.value)
       : isRegistryAmountDetailRow(row.label)
-        ? (normalizeKrwAmountText(row.value) ?? row.value)
+        ? (formatKoreanListPriceAmountText(row.value)
+          ?? normalizeKrwAmountText(row.value)
+          ?? row.value)
         : row.value,
   }));
   const amount = resolveRegistryDisplayAmount({ ...event, details });

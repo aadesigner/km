@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   hasExplicitRegistryMileage,
   normalizeKrwAmountText,
+  parseKoreanListPriceKrw,
+  formatKoreanListPriceAmountText,
   resolveRegistryDisplayAmount,
   resolveRegistryDisplayMileage,
+  resolveKoreanDisplayKrw,
   sanitizeKoreanRepairKrwAmount,
   stripRegistrySubtitleNoise,
 } from "./index";
@@ -67,6 +70,31 @@ describe("sanitizeKoreanRepairKrwAmount", () => {
   });
 });
 
+describe("parseKoreanListPriceKrw", () => {
+  it("scales under-reported Encar million-won list prices by 10×", () => {
+    expect(parseKoreanListPriceKrw("13.57 million won")).toBe(135_700_000);
+    expect(formatKoreanListPriceAmountText("13.57 million won")).toBe("135,700,000 won");
+  });
+
+  it("leaves correctly scaled million-won list prices unchanged", () => {
+    expect(parseKoreanListPriceKrw("136.6 million won")).toBe(136_600_000);
+  });
+
+  it("accepts full-scale won strings", () => {
+    expect(parseKoreanListPriceKrw("135,700,000 won")).toBe(135_700_000);
+  });
+});
+
+describe("resolveKoreanDisplayKrw", () => {
+  it("shows list prices above repair cap", () => {
+    expect(resolveKoreanDisplayKrw("135,700,000 won", "New car list price")).toBe(135_700_000);
+  });
+
+  it("still caps repair costs", () => {
+    expect(resolveKoreanDisplayKrw("306,000,000 won", "Total repair cost")).toBeNull();
+  });
+});
+
 describe("resolveRegistryDisplayAmount", () => {
   it("hides list price chips on insurance events", () => {
     expect(resolveRegistryDisplayAmount({
@@ -88,6 +116,13 @@ describe("resolveRegistryDisplayAmount", () => {
       type: "insurance_event",
       details: [{ label: "Total repair cost", value: "306,000,000 won" }],
     })).toBeNull();
+  });
+
+  it("scales new car delivery list price from Encar million-won format", () => {
+    expect(resolveRegistryDisplayAmount({
+      type: "new_car_delivery",
+      details: [{ label: "New car list price", value: "13.57 million won" }],
+    })).toBe("135,700,000 won");
   });
 });
 
