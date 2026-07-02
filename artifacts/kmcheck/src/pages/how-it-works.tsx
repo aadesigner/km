@@ -178,7 +178,7 @@ export default function HowItWorks() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative isolate overflow-hidden py-12 md:py-20 px-4 pb-14 md:pb-24">
+      <section className="relative isolate overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3rem+var(--site-header-offset,84px))] pb-14 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-24">
         {/* Match homepage hero backdrop — light + dark with bottom fade */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
