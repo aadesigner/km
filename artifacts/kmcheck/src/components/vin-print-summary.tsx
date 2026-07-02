@@ -4,7 +4,7 @@ import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name
 import { formatAccidentCount } from "@/lib/format-accident-count";
 import { translateTitleStatus } from "@/lib/translate-title-status";
 import type { PrintAuctionRow, PrintMileageRow, PrintOwnerRow, PrintRegistryRow } from "@/lib/build-print-summary";
-import { PRINT_PHOTO_LIMIT } from "@/lib/build-print-summary";
+import { PRINT_GALLERY_PHOTO_LIMIT } from "@/lib/build-print-summary";
 import { cn } from "@/lib/utils";
 
 export type PrintSummaryHighlight = {
@@ -247,9 +247,9 @@ export function VinPrintSummary({
       ? t("report_stolen_flag")
       : t("report_not_stolen");
 
-  const printPhotos = photos.filter(Boolean).slice(0, PRINT_PHOTO_LIMIT);
-  const heroPhoto = printPhotos[0];
-  const galleryPhotos = printPhotos.slice(1);
+  const filteredPhotos = photos.filter(Boolean);
+  const heroPhoto = filteredPhotos[0];
+  const galleryPhotos = filteredPhotos.slice(1, 1 + PRINT_GALLERY_PHOTO_LIMIT);
   const titleStatusLabel = translateTitleStatus(t, titleStatus);
 
   const ownerDisplay = ownerCount != null

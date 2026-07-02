@@ -16,7 +16,12 @@ const PRINT_MILEAGE_LIMIT = 12;
 const PRINT_OWNER_LIMIT = 10;
 const PRINT_REGISTRY_LIMIT = 8;
 const PRINT_AUCTION_LIMIT = 6;
-export const PRINT_PHOTO_LIMIT = 24;
+/** Print/PDF gallery grid: 4 columns × 3 rows max (hero photo is separate). */
+export const PRINT_GALLERY_COLUMNS = 4;
+export const PRINT_GALLERY_MAX_ROWS = 3;
+export const PRINT_GALLERY_PHOTO_LIMIT = PRINT_GALLERY_COLUMNS * PRINT_GALLERY_MAX_ROWS;
+/** Hero + gallery — used when prefetching print images. */
+export const PRINT_PHOTO_LIMIT = 1 + PRINT_GALLERY_PHOTO_LIMIT;
 
 export type PrintMileageRow = {
   date: string | null;

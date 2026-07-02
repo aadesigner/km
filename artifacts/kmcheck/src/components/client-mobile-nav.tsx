@@ -46,7 +46,7 @@ export function useShowClientMobileNav(): boolean {
   return isLoaded && !!isSignedIn && !isClientMobileNavExcluded(location);
 }
 
-export const CLIENT_MOBILE_NAV_PADDING = "pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]";
+export const CLIENT_MOBILE_NAV_PADDING = "pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))]";
 
 type NavItem = {
   id: string;
@@ -139,7 +139,7 @@ export function ClientMobileNav() {
                 type="button"
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
-                className="relative -mt-3 flex min-h-[3.25rem] flex-col items-center justify-end gap-1 px-0.5 pb-2 touch-manipulation select-none"
+                className="relative -mt-2.5 flex min-h-[3rem] flex-col items-center justify-end gap-0.5 px-0.5 pb-1.5 touch-manipulation select-none"
                 onPointerDown={() => {
                   prefetchRouteFromHref(href, { isSignedIn });
                 }}
@@ -168,7 +168,7 @@ export function ClientMobileNav() {
               type="button"
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-0.5 py-2 touch-manipulation select-none",
+                "flex min-h-[3rem] flex-col items-center justify-center gap-0.5 px-0.5 pt-1 pb-2 touch-manipulation select-none",
                 "active:bg-muted/60 transition-colors",
                 active ? "text-primary" : "text-muted-foreground",
               )}
