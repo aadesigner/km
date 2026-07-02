@@ -10,7 +10,7 @@ export const BRAND_ASSETS = {
   /** Full wordmark for light backgrounds (gray “km” text). */
   logoDark: `${basePath}/brand/logo-dark.png`,
   /** Shield symbol — favicon / compact mark. */
-  favicon: `${basePath}/favicon.png`,
+  favicon: `${basePath}/favicon-32x32.png`,
 } as const;
 
 export type KmcheckLogoVariant = "light" | "dark";

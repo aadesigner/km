@@ -78,6 +78,7 @@ const js = `/* auto-generated — do not edit */
   }
 
   function upsertLink(rel, href, extra) {
+    if (!href || !String(href).trim()) return;
     var sel = 'link[rel="' + rel + '"]';
     if (extra) {
       for (var k in extra) sel += '[' + k + '="' + extra[k] + '"]';

@@ -41,6 +41,7 @@ function upsertMeta(key: string, content: string, attr = "name") {
 }
 
 function upsertLink(rel: string, href: string, extra?: Record<string, string>) {
+  if (!href?.trim()) return;
   const extraStr = extra ? Object.entries(extra).map(([k, v]) => `[${k}="${v}"]`).join("") : "";
   const selector = `link[rel="${rel}"]${extraStr}`;
   let el = document.querySelector(selector) as HTMLLinkElement | null;
@@ -167,7 +168,7 @@ export function organizationJsonLd(origin: string, description: string) {
     "@type": "Organization",
     name: "kmcheck.com",
     url: origin,
-    logo: `${origin}/favicon.png`,
+    logo: `${origin}/apple-touch-icon.png`,
     description,
   };
 }

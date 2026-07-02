@@ -697,6 +697,16 @@
   opacity: 0;
 }
 
+.hero-vin-input-wrap.vin-scanner::before {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+@media (min-width: 640px) {
+  .hero-vin-input-wrap.vin-scanner::before {
+    border-radius: 1rem;
+  }
+}
+
 .vin-scanner:focus-within::before {
   animation: vin-scan 2.2s ease-in-out infinite;
 }
