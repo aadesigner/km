@@ -42,6 +42,8 @@ import {
   formatKoreanListPriceAmountText,
   resolveRegistryDisplayAmount,
   stripRegistrySubtitleNoise,
+  isEncarMileageTypoLine,
+  sanitizeRegistryLocation,
 } from "@workspace/korean-registry";
 
 export { parseKmFromText, resolveLatestOdometerKm } from "@workspace/odometer-resolve";
@@ -2248,9 +2250,14 @@ function mapKoreanRegistryContentItem(
   subtitle = stripRegistrySubtitleNoise(subtitle, mileage);
   if (!location && subtitle) {
     const parts = subtitle.split(/\n| · /).map((p) => p.trim()).filter(Boolean);
-    const locCandidate = parts.find((p) => !/mileage|total|no information|recall|inspection/i.test(p));
+    const locCandidate = parts.find((p) =>
+      !/mileage|total|no information|recall|inspection/i.test(p)
+      && !isEncarMileageTypoLine(p),
+    );
     if (locCandidate && locCandidate.length > 3) location = locCandidate;
   }
+
+  location = sanitizeRegistryLocation(location);
 
   let eventDate = resolveRegistryItemDate(item, groupDate);
 

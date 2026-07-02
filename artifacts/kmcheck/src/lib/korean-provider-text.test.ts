@@ -230,6 +230,11 @@ describe("translateProviderMultiline", () => {
       .toBe("Regular inspection · Mileage 77,675 km");
   });
 
+  it("rewrites Encar drone mileage typos in subtitle lines", () => {
+    expect(translateProviderMultiline(t, "en", "Regular inspection\nDrone 76,113km"))
+      .toBe("Regular inspection · Mileage 76,113 km");
+  });
+
   it("translates comprehensive examination mileage line", () => {
     const dict = { ...t, provider_inspection_comprehensive_exam: "Comprehensive examination", provider_of_mileage: "recorded mileage" };
     const tr = (key: string) => (dict as Record<string, string>)[key] ?? key;

@@ -237,6 +237,23 @@ export function resolveRegistryDisplayAmount(
   return normalizeKrwAmountText(raw);
 }
 
+/** Encar/Carstat mistranslate 주행거리 (driving distance) as “drone” / “drown”. */
+const ENCAR_MILEAGE_TYPO_LINE = /^(?:drone|drown)\s+[\d,.\s]+\s*km$/i;
+const ENCAR_MILEAGE_TYPO_FRAGMENT = /\b(?:drone|drown)\s+[\d,.\s]+\s*km\b/gi;
+
+export function isEncarMileageTypoLine(text: string | null | undefined): boolean {
+  if (!text) return false;
+  return ENCAR_MILEAGE_TYPO_LINE.test(text.trim());
+}
+
+/** Drop mileage typo lines mis-assigned as registry event locations. */
+export function sanitizeRegistryLocation(location: string | null | undefined): string | null {
+  if (!location) return null;
+  const trimmed = location.trim();
+  if (!trimmed || isEncarMileageTypoLine(trimmed)) return null;
+  return trimmed;
+}
+
 export function stripRegistrySubtitleNoise(
   subtitle: string | null | undefined,
   mileage: number | null,
@@ -252,6 +269,7 @@ export function stripRegistrySubtitleNoise(
   }
 
   text = text
+    .replace(ENCAR_MILEAGE_TYPO_FRAGMENT, "")
     .replace(/total\s+[\d.,]+\s+(?:million\s+)?won/gi, "")
     .replace(/\s*·\s*·+\s*/g, " · ")
     .replace(/^\s*·\s*|\s*·\s*$/g, "")

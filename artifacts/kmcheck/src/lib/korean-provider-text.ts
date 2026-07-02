@@ -748,6 +748,11 @@ export function translateProviderMileageLine(
     const suffix = tr(t, "provider_of_mileage") ?? "of mileage";
     return `${kmOfMileage[1]!.trim()} km ${suffix}`;
   }
+  const encarTypoKm = text.match(/^(?:drone|drown)\s+([\d,.\s]+)\s*km$/i);
+  if (encarTypoKm) {
+    const label = tr(t, "provider_mileage_word") ?? "Mileage";
+    return `${label} ${encarTypoKm[1]!.trim()} km`;
+  }
   return translateKoreanProviderText(t, text) ?? text;
 }
 

@@ -347,6 +347,30 @@ describe("extractRegistryHistoryFromLots", () => {
     );
   });
 
+  it("does not treat Encar drone mileage typos as registry locations", () => {
+    const events = extractRegistryHistoryFromLots([{
+      details: {
+        history: [{
+          date: "November 15",
+          content: [{
+            title: "Automobile inspection completed",
+            sub: "Regular inspection\nDrone 76,113km",
+            "Inspection date": "November 15, 2024",
+            "Drone during inspection": "76,113km",
+            Inspection: "Regular inspection",
+            "Inspection center": "Seongsan Motor Inspection Center",
+          }],
+        }],
+      },
+    }]);
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.type).toBe("inspection");
+    expect(events[0]?.mileage).toBe(76_113);
+    expect(events[0]?.location).toBeNull();
+    expect(events[0]?.subtitle).toBe("Regular inspection");
+  });
+
   it("uses Date of occurrence for insurance events instead of month-only group headers", () => {
     const events = extractRegistryHistoryFromLots([{
       details: {

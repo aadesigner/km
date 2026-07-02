@@ -15,6 +15,7 @@ import {
   isRegistryRepairCostLabel,
   sanitizeKoreanRepairKrwAmount,
   stripRegistrySubtitleNoise,
+  sanitizeRegistryLocation,
 } from "@workspace/korean-registry";
 import {
   dedupeAccidents,
@@ -99,7 +100,7 @@ export function sanitizeRegistryHistoryEvent<T extends RegistryHistoryLike>(
         : row.value,
   }));
   const amount = resolveRegistryDisplayAmount({ ...event, details });
-  const location = cleanDisplayText(event.location);
+  const location = sanitizeRegistryLocation(cleanDisplayText(event.location));
   const date = cleanDisplayText(event.date);
   const title = cleanDisplayText(event.title);
 

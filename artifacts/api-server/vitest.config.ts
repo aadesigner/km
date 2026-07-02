@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts", "../kmcheck/src/lib/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "../kmcheck/src/lib/**/*.test.ts", "../../lib/korean-registry/**/*.test.ts"],
     environment: "node",
     reporters: ["verbose"],
   },

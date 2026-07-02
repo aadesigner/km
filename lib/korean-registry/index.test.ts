@@ -9,6 +9,8 @@ import {
   resolveKoreanDisplayKrw,
   sanitizeKoreanRepairKrwAmount,
   stripRegistrySubtitleNoise,
+  isEncarMileageTypoLine,
+  sanitizeRegistryLocation,
 } from "./index";
 
 describe("resolveRegistryDisplayMileage", () => {
@@ -129,6 +131,25 @@ describe("resolveRegistryDisplayAmount", () => {
 describe("stripRegistrySubtitleNoise", () => {
   it("removes extracted repair cost from subtitle", () => {
     expect(stripRegistrySubtitleNoise("Busan · total 2,566,720 won", null)).toBe("Busan");
+  });
+
+  it("removes Encar drone/drown mileage typos from subtitle", () => {
+    expect(stripRegistrySubtitleNoise("Regular inspection · Drone 76,113km", 76_113))
+      .toBe("Regular inspection");
+    expect(stripRegistrySubtitleNoise("Drown 87,100 km", 87_100)).toBeNull();
+  });
+});
+
+describe("sanitizeRegistryLocation", () => {
+  it("drops mileage typo lines mis-tagged as locations", () => {
+    expect(sanitizeRegistryLocation("Drone 76,113km")).toBeNull();
+    expect(sanitizeRegistryLocation("Drown 87,100 km")).toBeNull();
+    expect(sanitizeRegistryLocation("Yeongdeungpo-gu, Seoul")).toBe("Yeongdeungpo-gu, Seoul");
+  });
+
+  it("detects Encar mileage typo lines", () => {
+    expect(isEncarMileageTypoLine("Drone 76,113km")).toBe(true);
+    expect(isEncarMileageTypoLine("Busan")).toBe(false);
   });
 });
 
