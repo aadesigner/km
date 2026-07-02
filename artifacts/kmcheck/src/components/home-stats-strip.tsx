@@ -13,7 +13,7 @@ export function HomeStatsStrip({ className }: Props) {
   return (
     <div className={cn("home-stats-strip relative z-[1] pt-3 sm:pt-4", className)}>
       <ul
-        className="mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:gap-x-0 max-sm:max-h-[3.75rem] max-sm:overflow-hidden max-sm:content-start"
+        className="mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 max-sm:max-h-[3.25rem] sm:gap-x-0 max-sm:overflow-hidden max-sm:content-start"
         role="list"
       >
         {stats.map((stat, i) => (

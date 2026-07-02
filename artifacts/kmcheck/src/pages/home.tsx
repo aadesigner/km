@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation, Link } from "wouter";
@@ -24,9 +23,7 @@ import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { getTestimonials, shuffleTestimonials } from "@/data/testimonials";
-import { VinCheckSubmitLabel } from "@/components/vin-check-submit-label";
-import { WhereToFindVinHelp } from "@/components/where-to-find-vin-help";
-import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
+import { HeroVinForm } from "@/components/hero-vin-form";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -121,7 +118,7 @@ function CyclingWord() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
         key={idx}
-        className="text-primary inline"
+        className="text-primary block max-sm:whitespace-nowrap"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -235,7 +232,7 @@ export default function Home() {
       />
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3rem+var(--site-header-offset,84px))] pb-12 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
+      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(2.25rem+var(--site-header-offset,84px))] pb-10 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
         {/* Base layers */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
@@ -265,13 +262,13 @@ export default function Home() {
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-8 text-center"
+            className="space-y-6 sm:space-y-8 text-center"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 max-sm:text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium text-primary"
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -280,16 +277,39 @@ export default function Home() {
               {t("hero_badge")}
             </motion.div>
 
-            <h1 className="text-[3rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
-              {t("hero_headline_1")}<br />
-              <CyclingWord />
+            <h1
+              className={cn(
+                "home-hero-h1 font-extrabold tracking-tight text-balance sm:text-5xl sm:leading-[1.08] lg:text-[4.25rem]",
+                language === "sq"
+                  ? "home-hero-h1--sq max-sm:text-[1.8125rem] max-sm:leading-[1.08] max-sm:tracking-[-0.03em]"
+                  : "max-sm:text-[2rem] max-sm:leading-[1.1] max-sm:tracking-[-0.02em]",
+              )}
+            >
+              {language === "sq" ? (
+                <>
+                  <span className="block sm:inline">{t("hero_headline_lead")}</span>{" "}
+                  <span className="block sm:inline">{t("hero_headline_tail")}</span>
+                  <br className="hidden sm:block" />
+                  <span className="block text-primary home-hero-cycling min-h-[1.18em] sm:min-h-[1.12em]">
+                    <CyclingWord />
+                  </span>
+                </>
+              ) : (
+                <>
+                  {t("hero_headline_1")}
+                  <br />
+                  <span className="block text-primary home-hero-cycling min-h-[1.18em] sm:min-h-[1.12em]">
+                    <CyclingWord />
+                  </span>
+                </>
+              )}
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-snug sm:leading-relaxed mx-auto max-sm:px-1">
               {t("hero_subtext")}
             </p>
 
             {/* Rating strip */}
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 max-sm:gap-x-3">
               <div className="flex items-center gap-1.5">
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -306,43 +326,17 @@ export default function Home() {
               </span>
             </div>
 
-            {/* VIN form */}
-            <form onSubmit={handleCheck} className="max-w-lg w-full mx-auto space-y-3 text-left">
-              <VinLookupDisabledBanner compact />
-              <div className={cn("hero-vin-shell relative overflow-hidden p-[2px] rounded-2xl hero-input-glow bg-gradient-to-r from-primary/15 via-primary/50 to-primary/15 dark:from-primary/10 dark:via-primary/45 dark:to-primary/10 max-sm:p-0 max-sm:rounded-2xl max-sm:border max-sm:border-primary/25 max-sm:bg-background max-sm:shadow-lg max-sm:shadow-primary/10 dark:max-sm:border-primary/20 dark:max-sm:bg-[#0a120e] sm:shadow-xl sm:shadow-black/10 dark:sm:shadow-black/25", vinLookupDisabled && "opacity-60 pointer-events-none")}>
-                <div className="vin-scanner relative flex flex-col sm:block rounded-2xl sm:rounded-[14px] overflow-hidden border-0 sm:border sm:border-border/80 dark:sm:border-white/10 focus-within:border-primary/50 sm:focus-within:border-primary/50 transition-colors bg-background dark:bg-[#0a120e] sm:bg-background/90 sm:dark:bg-[#0a120e]/90 sm:backdrop-blur-sm">
-                  <div className="relative flex w-full min-w-0 items-center">
-                    <Search className="absolute left-4 sm:left-5 h-5 w-5 text-muted-foreground dark:text-white/35 shrink-0 z-10 pointer-events-none" />
-                    <Input
-                      className={cn(
-                        "h-12 sm:h-14 w-full pl-11 sm:pl-13 text-[15px] sm:text-base border-0 focus-visible:ring-0 rounded-none sm:rounded-[14px] shadow-none bg-transparent font-mono tracking-[0.16em] sm:tracking-widest text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/30 placeholder:tracking-normal relative z-0",
-                        vin.length > 0 ? "pr-11 sm:pr-36" : "pr-4 sm:pr-36",
-                      )}
-                      placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-                      value={vin}
-                      onChange={(e) => { setVin(e.target.value.replace(/\s/g, "").toUpperCase()); setError(""); }}
-                      maxLength={17}
-                      autoComplete="off"
-                      spellCheck={false}
-                      inputMode="text"
-                    />
-                    {vin.length > 0 && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums text-muted-foreground/55 sm:hidden pointer-events-none">
-                        {vin.length}/17
-                      </span>
-                    )}
-                  </div>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="hero-vin-submit relative z-10 w-full sm:absolute sm:right-2 sm:top-1/2 sm:-translate-y-1/2 sm:w-auto h-11 sm:h-10 rounded-none rounded-b-[15px] sm:rounded-xl px-6 font-semibold border-t border-border/50 dark:border-white/10 sm:border-t-0 max-sm:shadow-none sm:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 transition-shadow"
-                  >
-                    <VinCheckSubmitLabel stacked />
-                  </Button>
-                </div>
-              </div>
-              <WhereToFindVinHelp />
-              {error && <p className="text-sm text-destructive">{error}</p>}
+            <HeroVinForm
+              vin={vin}
+              onVinChange={(v) => { setVin(v); setError(""); }}
+              onSubmit={handleCheck}
+              error={error}
+              disabled={vinLookupDisabled}
+              placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
+              displayPrice={displayPrice}
+              priceLoading={priceLoading}
+              fmtPrice={fmtPrice}
+            >
               <AnimatePresence>
                 {showVinWarning && (
                   <motion.div
@@ -374,7 +368,7 @@ export default function Home() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </form>
+            </HeroVinForm>
 
             <HomeStatsStrip />
 
