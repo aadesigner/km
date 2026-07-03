@@ -498,11 +498,10 @@ export default function CountryPage({ params }: Props) {
           </div>
 
           <form onSubmit={handleCheck} className="space-y-3">
-            <div className="relative p-[2px] rounded-2xl sm:shadow-xl sm:shadow-black/20">
-            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/12 focus-within:border-primary/50 transition-colors bg-white/[0.06] backdrop-blur-sm">
+            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/12 bg-white/[0.06] backdrop-blur-sm sm:shadow-xl sm:shadow-black/20">
               <Search className="absolute left-5 h-5 w-5 text-white/35 shrink-0" />
               <Input
-                className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 shadow-none bg-transparent font-mono tracking-widest text-white placeholder:text-white/25"
+                className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none bg-transparent font-mono tracking-widest text-white placeholder:text-white/25"
                 placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
                 value={vin}
                 onChange={e => { setVin(e.target.value.toUpperCase()); setError(""); }}
@@ -514,7 +513,6 @@ export default function CountryPage({ params }: Props) {
               >
                 <VinCheckSubmitLabel />
               </Button>
-            </div>
             </div>
             <WhereToFindVinHelp variant="on-dark" />
             {error && <p className="text-sm text-red-400 text-center">{error}</p>}

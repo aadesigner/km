@@ -600,36 +600,12 @@
 }
 
 @media (max-width: 639px) {
-  .hero-vin-field:focus-within .hero-vin-segments {
-    opacity: 1;
-  }
-
-  .hero-vin-segments {
-    margin-top: -1px;
-  }
-
-  .hero-vin-input-wrap.vin-scanner::before {
-    background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.1) 50%, transparent 100%);
-  }
-
-  .hero-vin-input-wrap.vin-scanner:focus-within::before {
-    animation-duration: 2.8s;
-  }
-
-  /* Tiny flag PNGs — SVG/drop-shadow often renders as grey boxes on mobile */
   .home-stats-strip img,
   .home-stats-flag {
     box-shadow: none !important;
     filter: none !important;
     -webkit-filter: none !important;
   }
-}
-
-@keyframes vin-scan {
-  0%   { background-position: -80% 0; opacity: 0; }
-  8%   { opacity: 1; }
-  92%  { opacity: 1; }
-  100% { background-position: 200% 0; opacity: 0; }
 }
 
 @keyframes demo-scan {
@@ -671,40 +647,6 @@
 
 .hero-orb-c {
   animation: hero-orb-pulse 6s ease-in-out infinite;
-}
-
-.vin-scanner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.18) 50%, transparent 100%);
-  background-size: 60% 100%;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: inherit;
-  opacity: 0;
-}
-
-.hero-vin-input-wrap.vin-scanner::before {
-  border-radius: 0.75rem 0.75rem 0 0;
-}
-
-@media (min-width: 640px) {
-  .hero-vin-input-wrap.vin-scanner::before {
-    border-radius: 0.875rem 0.875rem 0 0;
-  }
-}
-
-.vin-scanner:focus-within::before {
-  animation: vin-scan 2.2s ease-in-out infinite;
-}
-
-/* Mobile: avoid clipped/double box-shadow on hero VIN fields under the header */
-.vin-scanner input {
-  -webkit-appearance: none;
-  appearance: none;
-  box-shadow: none !important;
 }
 
 @layer base {

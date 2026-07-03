@@ -1,5 +1,21 @@
 /** Table-based email wrapper — no DB dependencies. */
 
+const EMAIL_LOGO_PATH = "/brand/logo-white.png";
+const EMAIL_LOGO_WIDTH = 160;
+const EMAIL_LOGO_HEIGHT = 40;
+
+export function emailBrandLogoUrl(siteUrl?: string): string {
+  const base = (siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
+  return `${base}${EMAIL_LOGO_PATH}`;
+}
+
+function emailHeaderLogo(siteUrl: string): string {
+  const logoUrl = emailBrandLogoUrl(siteUrl);
+  return `<a href="${siteUrl}" style="text-decoration:none;display:inline-block;line-height:0">
+              <img src="${logoUrl}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" alt="kmcheck.com" border="0" style="display:block;border:0;outline:none;text-decoration:none;width:${EMAIL_LOGO_WIDTH}px;max-width:100%;height:auto" />
+            </a>`;
+}
+
 export function buildEmailBase(content: string, preheader?: string, siteUrl?: string): string {
   const year = new Date().getFullYear();
   const base = (siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
@@ -18,10 +34,8 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1
     <td align="center" style="padding:32px 16px">
       <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
         <tr>
-          <td bgcolor="#16a34a" style="padding:22px 32px;background:#16a34a">
-            <a href="${base}" style="text-decoration:none">
-              <span style="font-size:26px;font-weight:800;color:#ffffff;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px">km<span style="color:#bbf7d0">check</span></span>
-            </a>
+          <td bgcolor="#16a34a" style="padding:22px 32px;background:#16a34a;text-align:left">
+            ${emailHeaderLogo(base)}
           </td>
         </tr>
         <tr>

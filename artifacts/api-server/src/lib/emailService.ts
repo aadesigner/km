@@ -13,9 +13,10 @@ import {
   smtpTransportSecurity,
   type SmtpSecurityLevel,
 } from "./smtpSecurity.js";
+import { buildEmailBase } from "./emailLayout.js";
 import { formatSmtpConfigError, formatSmtpTransportError } from "./smtpErrors.js";
 
-export { buildEmailBase } from "./emailLayout.js";
+export { buildEmailBase };
 
 export type SmtpOverride = {
   smtpEnabled?: boolean;
