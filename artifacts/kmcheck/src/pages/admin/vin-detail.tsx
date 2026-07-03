@@ -52,6 +52,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [assignMsg, setAssignMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const lastHydratedAtRef = useRef<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(userSearch), 300);
@@ -95,9 +96,17 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
         if (updated?.data) {
           setForm(vinCatalogFormFromData((updated.data ?? {}) as VinCatalogData));
         }
-        queryClient.invalidateQueries({ queryKey: getAdminGetVinCatalogByVinQueryKey(vin) });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/vin-catalog"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/vin"] });
+        if (updated?.updatedAt) {
+          lastHydratedAtRef.current = String(updated.updatedAt);
+        }
+        if (updated) {
+          queryClient.setQueryData(
+            getAdminGetVinCatalogByVinQueryKey(vin, { assignedPage }),
+            (prev) => ({ ...(prev ?? {}), ...updated }),
+          );
+        }
+        void queryClient.invalidateQueries({ queryKey: ["/api/admin/vin-catalog"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/admin/vin"] });
         invalidateVinReportCaches(queryClient, vin);
       },
       onError: () => {
@@ -107,9 +116,17 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   });
 
   useEffect(() => {
+    lastHydratedAtRef.current = null;
+  }, [vin]);
+
+  useEffect(() => {
     if (!detail || updateMutation.isPending) return;
+    const serverAt = detail.updatedAt;
+    if (typeof serverAt !== "string") return;
+    if (lastHydratedAtRef.current != null && serverAt <= lastHydratedAtRef.current) return;
+    lastHydratedAtRef.current = serverAt;
     setForm(vinCatalogFormFromData((detail.data ?? {}) as VinCatalogData));
-  }, [detail, updateMutation.isPending]);
+  }, [detail?.data, detail?.updatedAt, updateMutation.isPending]);
 
   const handleSave = () => {
     setSaveMsg(null);

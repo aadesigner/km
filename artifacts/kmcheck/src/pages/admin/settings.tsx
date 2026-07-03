@@ -44,10 +44,19 @@ type SocialForm = {
   facebookAppSecret: string;
 };
 
+type SmtpSecurityLevel = "starttls" | "ssl" | "none";
+
+function loadSmtpSecurity(raw: unknown, port: number): SmtpSecurityLevel {
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (s === "ssl" || s === "none" || s === "starttls") return s;
+  return port === 465 ? "ssl" : "starttls";
+}
+
 type AuthForm = {
   smtpEnabled: boolean;
   smtpHost: string;
   smtpPort: number;
+  smtpSecurity: SmtpSecurityLevel;
   smtpUser: string;
   smtpPass: string;
   smtpFromEmail: string;
@@ -223,7 +232,7 @@ export default function AdminSettings() {
     facebookLoginEnabled: true, facebookAppId: "", facebookAppSecret: "",
   });
   const [auth, setAuth] = useState<AuthForm>({
-    smtpEnabled: false, smtpHost: "", smtpPort: 587, smtpUser: "", smtpPass: "",
+    smtpEnabled: false, smtpHost: "", smtpPort: 587, smtpSecurity: "starttls", smtpUser: "", smtpPass: "",
     smtpFromEmail: "", smtpFromName: "kmcheck", sessionDays: 30, requireHttps: false,
   });
   const [bot, setBot] = useState<BotForm>({
@@ -278,6 +287,7 @@ export default function AdminSettings() {
       smtpEnabled: (s.smtpEnabled as boolean) ?? false,
       smtpHost: (s.smtpHost as string) ?? "",
       smtpPort: (s.smtpPort as number) ?? 587,
+      smtpSecurity: loadSmtpSecurity(s.smtpSecurity, (s.smtpPort as number) ?? 587),
       smtpUser: (s.smtpUser as string) ?? "",
       smtpPass: "",
       smtpFromEmail: (s.smtpFromEmail as string) ?? "",
@@ -331,32 +341,66 @@ export default function AdminSettings() {
     setRecaptchaTestStatus("testing");
     setRecaptchaTestError("");
     try {
-      const resp = await fetch(`${basePath}/api/admin/settings/test-recaptcha`, { method: "POST" });
+      const resp = await fetch(`${basePath}/api/admin/settings/test-recaptcha`, {
+        method: "POST",
+        credentials: "include",
+      });
       const data = await resp.json() as { ok?: boolean; error?: string };
       if (data.ok) setRecaptchaTestStatus("ok");
       else { setRecaptchaTestStatus("error"); setRecaptchaTestError(data.error ?? "reCAPTCHA key validation failed"); }
     } catch {
       setRecaptchaTestStatus("error");
-      setRecaptchaTestError("Network error");
+      setRecaptchaTestError("Network error — check you are signed in as admin");
     }
   };
 
   const handleTestSmtp = async () => {
     if (!smtpTestEmail.trim()) return;
+    if (!auth.smtpEnabled) {
+      setSmtpTestStatus("error");
+      setSmtpTestError("Enable SMTP first");
+      return;
+    }
+    if (!auth.smtpHost.trim() || !auth.smtpUser.trim()) {
+      setSmtpTestStatus("error");
+      setSmtpTestError("SMTP host and username are required");
+      return;
+    }
+    if (!auth.smtpPass.trim() && !hasSmtpPass) {
+      setSmtpTestStatus("error");
+      setSmtpTestError("Enter the SMTP password (or save it first), then test again");
+      return;
+    }
     setSmtpTestStatus("sending");
     setSmtpTestError("");
     try {
       const resp = await fetch(`${basePath}/api/admin/email/test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: smtpTestEmail }),
+        credentials: "include",
+        body: JSON.stringify({
+          to: smtpTestEmail.trim(),
+          smtp: {
+            smtpEnabled: auth.smtpEnabled,
+            smtpHost: auth.smtpHost.trim() || null,
+            smtpPort: auth.smtpPort,
+            smtpSecurity: auth.smtpSecurity,
+            smtpUser: auth.smtpUser.trim() || null,
+            smtpPass: auth.smtpPass.trim() || undefined,
+            smtpFromEmail: auth.smtpFromEmail.trim() || null,
+            smtpFromName: auth.smtpFromName.trim() || null,
+          },
+        }),
       });
-      const data = await resp.json() as { ok?: boolean; error?: string };
-      if (data.ok) setSmtpTestStatus("ok");
-      else { setSmtpTestStatus("error"); setSmtpTestError(data.error ?? "Failed to send test email"); }
+      const data = await resp.json().catch(() => ({})) as { ok?: boolean; error?: string };
+      if (resp.ok && data.ok) setSmtpTestStatus("ok");
+      else {
+        setSmtpTestStatus("error");
+        setSmtpTestError(data.error ?? `Failed to send test email (${resp.status})`);
+      }
     } catch {
       setSmtpTestStatus("error");
-      setSmtpTestError("Network error");
+      setSmtpTestError("Network error — save settings, stay signed in as admin, then retry");
     }
   };
 
@@ -647,6 +691,24 @@ export default function AdminSettings() {
                   <Label>Port</Label>
                   <Input type="number" placeholder="587" value={auth.smtpPort} onChange={(e) => setAuth(f => ({ ...f, smtpPort: parseInt(e.target.value) || 587 }))} disabled={!auth.smtpEnabled} />
                 </div>
+                <div className="space-y-1.5 col-span-2 sm:col-span-1">
+                  <Label>Security</Label>
+                  <Select
+                    value={auth.smtpSecurity}
+                    onValueChange={(v) => setAuth(f => ({ ...f, smtpSecurity: v as SmtpSecurityLevel }))}
+                    disabled={!auth.smtpEnabled}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="STARTTLS" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="starttls">STARTTLS (port 587 — recommended)</SelectItem>
+                      <SelectItem value="ssl">SSL/TLS (port 465)</SelectItem>
+                      <SelectItem value="none">None (plain — not recommended)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Must match your provider. Gmail/Outlook usually use STARTTLS on 587.</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -669,6 +731,9 @@ export default function AdminSettings() {
                 </div>
               </div>
               <div className="border-t pt-4 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Save SMTP settings below, then send a test. The test uses the form values (saved password is kept if the field is blank).
+                </p>
                 <Label className="text-muted-foreground text-xs uppercase tracking-wide">Test Email</Label>
                 <div className="flex gap-2">
                   <Input
@@ -733,6 +798,7 @@ export default function AdminSettings() {
                 smtpEnabled: auth.smtpEnabled,
                 smtpHost: auth.smtpHost.trim() || null,
                 smtpPort: auth.smtpPort,
+                smtpSecurity: auth.smtpSecurity,
                 smtpUser: auth.smtpUser.trim() || null,
                 smtpFromEmail: auth.smtpFromEmail.trim() || null,
                 smtpFromName: auth.smtpFromName.trim() || null,

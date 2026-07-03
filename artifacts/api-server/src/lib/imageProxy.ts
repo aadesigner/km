@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { isAllowedImageHost } from "./imageHostAllowlist.js";
 
 function deriveKey(): Buffer {
   const secret = process.env.JWT_SECRET ?? "dev-insecure-secret-change-in-production";
@@ -68,6 +69,24 @@ export function buildImageProxyUrl(
   return url;
 }
 
+/** Proxy known CDNs; pass through admin-pasted URLs so reports can use any public HTTPS image. */
+export function resolveVinPhotoUrlForClient(
+  upstreamUrl: string,
+  opts?: { baseApiUrl?: string; mediaVersion?: number },
+): string {
+  if (upstreamUrl.startsWith("/api/vin/image")) return upstreamUrl;
+  try {
+    const parsed = new URL(upstreamUrl);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return upstreamUrl;
+    if (isAllowedImageHost(parsed.hostname)) {
+      return buildImageProxyUrl(upstreamUrl, opts);
+    }
+  } catch {
+    return upstreamUrl;
+  }
+  return upstreamUrl;
+}
+
 export function proxyPhotos(
   photos: unknown,
   baseApiUrl: string,
@@ -76,8 +95,7 @@ export function proxyPhotos(
   if (!Array.isArray(photos)) return [];
   return (photos as unknown[]).flatMap((p) => {
     if (typeof p !== "string" || !p) return [];
-    if (p.startsWith("/api/vin/image")) return [p];
-    return [buildImageProxyUrl(p, { baseApiUrl, mediaVersion })];
+    return [resolveVinPhotoUrlForClient(p, { baseApiUrl, mediaVersion })];
   });
 }
 
@@ -91,16 +109,10 @@ export function transformVinPhotoData(
   if (Array.isArray(record.photos)) {
     result.photos = (record.photos as unknown[])
       .filter((p): p is string => typeof p === "string" && p.length > 0)
-      .map((p) =>
-        p.startsWith("/api/vin/image")
-          ? p
-          : buildImageProxyUrl(p, { mediaVersion }),
-      );
+      .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
   }
   if (typeof record.thumbnailUrl === "string" && record.thumbnailUrl) {
-    result.thumbnailUrl = record.thumbnailUrl.startsWith("/api/vin/image")
-      ? record.thumbnailUrl
-      : buildImageProxyUrl(record.thumbnailUrl, { mediaVersion });
+    result.thumbnailUrl = resolveVinPhotoUrlForClient(record.thumbnailUrl, { mediaVersion });
   }
   return result;
 }

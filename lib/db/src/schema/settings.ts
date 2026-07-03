@@ -39,6 +39,8 @@ export const systemSettingsTable = pgTable("system_settings", {
   smtpEnabled: boolean("smtp_enabled").notNull().default(false),
   smtpHost: text("smtp_host"),
   smtpPort: integer("smtp_port"),
+  /** starttls | ssl | none */
+  smtpSecurity: text("smtp_security").notNull().default("starttls"),
   smtpUser: text("smtp_user"),
   smtpPass: text("smtp_pass"),
   smtpFromEmail: text("smtp_from_email"),

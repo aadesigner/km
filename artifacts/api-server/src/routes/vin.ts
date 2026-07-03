@@ -46,6 +46,7 @@ import {
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
 import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
+import { claimEmailDelivery, paymentConfirmEmailDeliveryKey } from "../lib/emailDeliveryGuard.js";
 import { waitForVinLookupPublish } from "../lib/vinLookupNotify.js";
 
 const router = Router();
@@ -363,6 +364,8 @@ async function firePaymentConfirmEmail(
   payment: { amount: number; currency: string; ref: string | null } | null,
 ): Promise<void> {
   if (!user) return;
+  const deliveryKey = paymentConfirmEmailDeliveryKey(lookupId, user.email);
+  if (!claimEmailDelivery(deliveryKey)) return;
   try {
     const [settings] = await db
       .select({
@@ -741,7 +744,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
       if (freeCouponPaymentId && freeCouponCode) {
         void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
       }
-      void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
+      // Manual pending: no customer email until admin publishes to catalog.
       return;
     } catch (err) {
       logger.error({ err, vin: normalizedVin }, "Manual pending VIN fulfillment failed");

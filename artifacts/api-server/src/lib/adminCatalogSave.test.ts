@@ -35,4 +35,13 @@ describe("admin catalog save integration", () => {
     expect(out.odometer).toBe(100_000);
     expect(out.odometerLocked).toBe(true);
   });
+
+  it("persists admin-pasted photo URLs including non-CDN hosts", () => {
+    const url = "https://images.example-cdn.net/vehicle/front.jpg";
+    const out = adminSave({ make: "Kia", photos: [] }, {
+      make: "Kia",
+      photos: [url],
+    });
+    expect(out.photos).toEqual([url]);
+  });
 });

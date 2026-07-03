@@ -49,7 +49,8 @@ import {
 } from "../lib/pendingVinService.js";
 import { ADMIN_CONFIRM_PHRASES, requireConfirmPhrase } from "../lib/adminDestructive.js";
 import { consumeAdminProviderAction, adminProviderRateLimitMessage } from "../lib/adminProviderRateLimit.js";
-import { validateBoundedSettingsPatch, validateAnnouncementLinkUrl } from "../lib/adminValidation.js";
+import { validateBoundedSettingsPatch, validateAnnouncementLinkUrl, validateSmtpSecurity } from "../lib/adminValidation.js";
+import { normalizeSmtpSecurity } from "../lib/smtpSecurity.js";
 import {
   listAccessBlocks,
   addIpBlock,
@@ -1218,6 +1219,15 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     return;
   }
 
+  if ("smtpSecurity" in patch) {
+    const smtpSecError = validateSmtpSecurity(patch.smtpSecurity);
+    if (smtpSecError) {
+      res.status(400).json({ error: smtpSecError });
+      return;
+    }
+    patch.smtpSecurity = normalizeSmtpSecurity(patch.smtpSecurity);
+  }
+
   if ("maintenanceRestrictions" in patch) {
     patch.maintenanceRestrictions = normalizeMaintenanceRestrictions(patch.maintenanceRestrictions);
   }
@@ -1693,11 +1703,12 @@ router.get("/admin/email/preview", requireAdmin, async (req, res) => {
 });
 
 router.post("/admin/email/test", requireAdmin, async (req, res) => {
-  const { to, type, subject, contentHtml } = req.body as {
+  const { to, type, subject, contentHtml, smtp } = req.body as {
     to?: string;
     type?: string;
     subject?: string;
     contentHtml?: string;
+    smtp?: import("../lib/emailService.js").SmtpOverride;
   };
   if (!to?.trim()) { res.status(400).json({ error: "to is required" }); return; }
 
@@ -1726,7 +1737,7 @@ router.post("/admin/email/test", requireAdmin, async (req, res) => {
     subject: emailPayload.subject,
     html: emailPayload.html,
     text: emailPayload.text,
-  });
+  }, smtp && typeof smtp === "object" ? smtp : undefined);
   if (result.ok) {
     res.json({ ok: true });
   } else {

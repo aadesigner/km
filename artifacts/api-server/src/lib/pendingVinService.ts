@@ -12,7 +12,7 @@ import {
   checkLocalExists,
   syncStampedCatalogToAllLookups,
 } from "./vinService.js";
-import { sanitizeCatalogPayload, catalogHasDeliverableReport } from "./vinCatalogImport.js";
+import { sanitizeCatalogPayload, catalogHasDeliverableReport, applyCatalogAdminPatch } from "./vinCatalogImport.js";
 import { decodeVinPeek, isTrustworthyVinIdentity } from "./vinDecodePreview.js";
 import { validateCheckDigit } from "@workspace/vin-decode";
 import { logger } from "./logger.js";
@@ -227,7 +227,7 @@ export async function publishPendingVinCheck(opts: {
     pending.draftData && typeof pending.draftData === "object" && !Array.isArray(pending.draftData)
       ? (pending.draftData as Record<string, unknown>)
       : {};
-  const merged = { ...existingDraft, ...opts.draftData };
+  const merged = applyCatalogAdminPatch(existingDraft, opts.draftData);
   const mileageTouched = detectAdminCatalogMileageTouched(existingDraft, opts.draftData);
   const prepared = finalizeAdminCatalogSave(merged, mileageTouched);
   const payload = sanitizeCatalogPayload(prepared);
@@ -260,18 +260,28 @@ export async function publishPendingVinCheck(opts: {
 
   notifyVinLookupPublished(vin);
 
+  const notifiedUsers = new Set<string>();
   for (const req of requests) {
     if (!req.notifyOnPublish || req.notifiedAt) continue;
+    if (notifiedUsers.has(req.userId)) {
+      await db.update(pendingVinCheckRequestsTable)
+        .set({ notifiedAt: now })
+        .where(eq(pendingVinCheckRequestsTable.id, req.id));
+      continue;
+    }
     const [user] = await db.select({
       name: usersTable.name,
       email: usersTable.email,
     }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
-    if (user) {
-      await fireVinReadyEmailForUser(req.lookupId, vin, stamped, user);
+    if (user?.email) {
+      const sent = await fireVinReadyEmailForUser(req.lookupId, vin, stamped, user);
+      if (sent) notifiedUsers.add(req.userId);
+      if (sent) {
+        await db.update(pendingVinCheckRequestsTable)
+          .set({ notifiedAt: now })
+          .where(eq(pendingVinCheckRequestsTable.id, req.id));
+      }
     }
-    await db.update(pendingVinCheckRequestsTable)
-      .set({ notifiedAt: now })
-      .where(eq(pendingVinCheckRequestsTable.id, req.id));
   }
 
   return { vin, stamped, requests, lookupIds };
@@ -294,7 +304,7 @@ export async function savePendingVinCheckDraft(opts: {
       ? (pending.draftData as Record<string, unknown>)
       : {};
 
-  const merged = { ...existingDraft, ...opts.draftData };
+  const merged = applyCatalogAdminPatch(existingDraft, opts.draftData);
   const mileageTouched = detectAdminCatalogMileageTouched(existingDraft, opts.draftData);
   const prepared = finalizeAdminCatalogSave(merged, mileageTouched);
   const payload = sanitizeCatalogPayload(prepared);

@@ -16,6 +16,7 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS maintenance_message text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS vin_lookup_enabled boolean NOT NULL DEFAULT true`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS plugin_settings jsonb`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS smtp_security text NOT NULL DEFAULT 'starttls'`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_ip text`,
   `ALTER TABLE vin_lookups ADD COLUMN IF NOT EXISTS data_corrupt boolean NOT NULL DEFAULT false`,
 ];

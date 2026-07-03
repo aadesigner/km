@@ -45,6 +45,13 @@ export function validateBoundedSettingsPatch(patch: Record<string, unknown>): st
   return null;
 }
 
+export function validateSmtpSecurity(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  const s = String(value).trim().toLowerCase();
+  if (s === "starttls" || s === "ssl" || s === "none") return null;
+  return "smtpSecurity must be starttls, ssl, or none";
+}
+
 const ALLOWED_LINK_SCHEMES = new Set(["https:", "http:"]);
 
 export function validateAnnouncementLinkUrl(raw: string | null | undefined): { ok: true; value: string | null } | { ok: false; error: string } {

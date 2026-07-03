@@ -182,7 +182,7 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     titleStatus: form.titleStatus.trim() || null,
     isSalvage: form.isSalvage,
     isStolen: form.isStolen,
-    photos: form.photos.length ? form.photos : null,
+    photos: form.photos,
     accidents: accidentsToPayload(form.accidents),
     insuranceClaims: insuranceClaimsToPayload(form.insuranceClaims),
     mileageHistory: mileageHistoryToPayload(form.mileageHistory),
@@ -402,7 +402,7 @@ export function VinCatalogDataForm({
   );
 
   const photosTab = (
-    <AdminField label="Vehicle photos" hint="Paste CDN or proxy URLs. Order is preserved on save.">
+    <AdminField label="Vehicle photos" hint="Paste any public HTTPS image URL. Click Add, then Save draft. Encar/Carstat URLs are proxied; other hosts load directly on reports.">
       <VinCatalogPhotoManager photos={form.photos} onChange={(photos) => set("photos", photos)} compact={compact} />
     </AdminField>
   );

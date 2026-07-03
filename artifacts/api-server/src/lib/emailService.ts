@@ -8,9 +8,24 @@ import {
   varsFromVinReady,
   getSampleTemplateVars,
 } from "./emailTemplates.js";
-import { buildEmailBase } from "./emailLayout.js";
+import {
+  normalizeSmtpSecurity,
+  smtpTransportSecurity,
+  type SmtpSecurityLevel,
+} from "./smtpSecurity.js";
 
 export { buildEmailBase } from "./emailLayout.js";
+
+export type SmtpOverride = {
+  smtpEnabled?: boolean;
+  smtpHost?: string | null;
+  smtpPort?: number | null;
+  smtpSecurity?: SmtpSecurityLevel | string | null;
+  smtpUser?: string | null;
+  smtpPass?: string | null;
+  smtpFromEmail?: string | null;
+  smtpFromName?: string | null;
+};
 
 interface EmailOptions {
   to: string;
@@ -19,17 +34,52 @@ interface EmailOptions {
   text?: string;
 }
 
-async function getSmtpSettings() {
-  const [settings] = await db
+type ResolvedSmtp = {
+  host: string;
+  port: number;
+  security: SmtpSecurityLevel;
+  user: string;
+  pass: string;
+  fromName: string;
+  fromEmail: string;
+};
+
+async function resolveSmtpConfig(override?: SmtpOverride): Promise<ResolvedSmtp | null> {
+  const [saved] = await db
     .select()
     .from(systemSettingsTable)
     .orderBy(desc(systemSettingsTable.id))
     .limit(1);
 
-  if (!settings?.smtpEnabled || !settings?.smtpHost || !settings?.smtpUser || !settings?.smtpPass) {
-    return null;
-  }
-  return settings;
+  const enabled = override?.smtpEnabled ?? saved?.smtpEnabled;
+  if (!enabled) return null;
+
+  const host = String(override?.smtpHost ?? saved?.smtpHost ?? "").trim();
+  const user = String(override?.smtpUser ?? saved?.smtpUser ?? "").trim();
+  const pass = String(override?.smtpPass ?? saved?.smtpPass ?? "").trim();
+  if (!host || !user || !pass) return null;
+
+  const port = override?.smtpPort ?? saved?.smtpPort ?? 587;
+  const security = normalizeSmtpSecurity(
+    override?.smtpSecurity ?? saved?.smtpSecurity,
+    port,
+  );
+  const fromEmail = String(override?.smtpFromEmail ?? saved?.smtpFromEmail ?? user).trim() || user;
+  const fromName = String(override?.smtpFromName ?? saved?.smtpFromName ?? "kmcheck").trim() || "kmcheck";
+
+  return {
+    host,
+    port,
+    security,
+    user,
+    pass,
+    fromEmail,
+    fromName,
+  };
+}
+
+async function getSmtpSettings() {
+  return resolveSmtpConfig();
 }
 
 /** True when admin SMTP is enabled and has host, user, and password. */
@@ -63,42 +113,36 @@ export async function loadEmailTemplatesConfig(): Promise<EmailTemplatesConfig> 
   }
 }
 
-export async function sendEmail(opts: EmailOptions): Promise<{ ok: boolean; error?: string }> {
+export async function sendEmail(
+  opts: EmailOptions,
+  smtpOverride?: SmtpOverride,
+): Promise<{ ok: boolean; error?: string }> {
   try {
-    const settings = await getSmtpSettings();
-    if (!settings) {
+    const smtp = await resolveSmtpConfig(smtpOverride);
+    if (!smtp) {
       return { ok: false, error: "SMTP not configured or not enabled" };
     }
 
-    const port = settings.smtpPort ?? 587;
-    const secure = port === 465;
-
     const transporter = nodemailer.createTransport({
-      host: settings.smtpHost!,
-      port,
-      secure,
-      // For port 587 (STARTTLS), enforce the TLS upgrade — prevents silent plaintext fallback
-      ...(!secure ? { requireTLS: true } : {}),
+      host: smtp.host,
+      port: smtp.port,
+      ...smtpTransportSecurity(smtp.security),
       auth: {
-        user: settings.smtpUser!,
-        pass: settings.smtpPass!,
+        user: smtp.user,
+        pass: smtp.pass,
       },
-      // Generous but finite timeouts so a hung connection doesn't block forever
       connectionTimeout: 10_000,
       greetingTimeout: 10_000,
       socketTimeout: 30_000,
       tls: {
-        // Defaults to strict cert validation. Set SMTP_INSECURE=true only for
-        // private SMTP relays with self-signed certs (not recommended in production).
         rejectUnauthorized: process.env.SMTP_INSECURE !== "true",
       },
     });
 
-    const fromName = settings.smtpFromName ?? "kmcheck";
-    const fromEmail = settings.smtpFromEmail ?? settings.smtpUser!;
+    await transporter.verify();
 
     await transporter.sendMail({
-      from: `"${fromName}" <${fromEmail}>`,
+      from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
       to: opts.to,
       subject: opts.subject,
       html: opts.html,

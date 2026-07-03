@@ -1,6 +1,7 @@
 import { db, systemSettingsTable } from "@workspace/db";
 import { desc } from "drizzle-orm";
 import { logger } from "./logger.js";
+import { claimEmailDelivery, vinReadyEmailDeliveryKey } from "./emailDeliveryGuard.js";
 
 /** Fire-and-forget VIN report ready email after catalog publish or instant fulfillment. */
 export async function fireVinReadyEmailForUser(
@@ -8,8 +9,15 @@ export async function fireVinReadyEmailForUser(
   vin: string,
   data: Record<string, unknown> | null,
   user: { name: string | null; email: string } | undefined,
-): Promise<void> {
-  if (!user) return;
+): Promise<boolean> {
+  if (!user?.email) return false;
+
+  const deliveryKey = vinReadyEmailDeliveryKey(lookupId, user.email);
+  if (!claimEmailDelivery(deliveryKey)) {
+    logger.info({ vin, lookupId, email: user.email }, "VIN ready email skipped — duplicate guard");
+    return false;
+  }
+
   try {
     const [settings] = await db
       .select({
@@ -20,7 +28,7 @@ export async function fireVinReadyEmailForUser(
       .from(systemSettingsTable)
       .orderBy(desc(systemSettingsTable.id))
       .limit(1);
-    if (settings?.emailSendVinReady === false) return;
+    if (settings?.emailSendVinReady === false) return false;
     const siteUrl = settings?.siteUrl?.replace(/\/$/, "") ?? "https://kmcheck.com";
     const templates = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
     const { sendEmail, buildVinReadyEmail } = await import("./emailService.js");
@@ -39,8 +47,13 @@ export async function fireVinReadyEmailForUser(
         siteUrl,
       }, templates.vinready),
     });
-    if (!result.ok) logger.warn({ vin, err: result.error }, "VIN ready email failed");
+    if (!result.ok) {
+      logger.warn({ vin, err: result.error }, "VIN ready email failed");
+      return false;
+    }
+    return true;
   } catch (err) {
     logger.warn({ vin, err }, "VIN ready email threw");
+    return false;
   }
 }

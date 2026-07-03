@@ -23,6 +23,7 @@ import {
 } from "./pendingVinService.js";
 import { finalizePaymentOnFulfillment } from "./recordedPayments.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
+import { claimEmailDelivery, paymentConfirmEmailDeliveryKey } from "./emailDeliveryGuard.js";
 import {
   applyFrozenKrwPerUsd,
   getCurrentKrwPerUsd,
@@ -93,6 +94,11 @@ async function firePaymentConfirmEmail(
   payment: ProviderFulfillmentPayment,
 ): Promise<void> {
   if (!user) return;
+  const deliveryKey = paymentConfirmEmailDeliveryKey(lookupId, user.email);
+  if (!claimEmailDelivery(deliveryKey)) {
+    logger.info({ vin, lookupId, email: user.email }, "Payment confirmation email skipped — duplicate guard");
+    return;
+  }
   try {
     const { systemSettingsTable } = await import("@workspace/db");
     const { desc, eq } = await import("drizzle-orm");
@@ -279,7 +285,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         if (freeCouponPaymentId && freeCouponCode) {
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
-        void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user, resolvedPayment);
+        // Manual pending fallback: no customer email until admin publishes.
         logger.info({ msg: "vin_lookup_hit", source: "manual_pending_async_fallback", vin: normalizedVin, userId, lookupId: lookup.id });
         return;
       } catch (manualErr) {

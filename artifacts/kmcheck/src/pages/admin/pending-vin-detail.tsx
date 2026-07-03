@@ -51,6 +51,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const [removing, setRemoving] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const exportLinkRef = useRef<HTMLAnchorElement>(null);
+  const lastHydratedAtRef = useRef<string | null>(null);
 
   const { data: detail, isLoading, error } = useQuery({
     queryKey: ["/api/admin/pending-vin-checks", pendingId],
@@ -63,9 +64,16 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   });
 
   useEffect(() => {
+    lastHydratedAtRef.current = null;
+  }, [pendingId]);
+
+  useEffect(() => {
     if (!detail?.draftData || saving) return;
+    const serverAt = detail.updatedAt;
+    if (lastHydratedAtRef.current != null && serverAt <= lastHydratedAtRef.current) return;
+    lastHydratedAtRef.current = serverAt;
     setForm(vinCatalogFormFromData(detail.draftData));
-  }, [detail, saving]);
+  }, [detail?.draftData, detail?.updatedAt, saving]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -88,6 +96,9 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       if (body.draftData) {
         setForm(vinCatalogFormFromData(body.draftData));
       }
+      if (body.updatedAt) {
+        lastHydratedAtRef.current = body.updatedAt;
+      }
       if (detail) {
         invalidateVinReportCaches(queryClient, detail.vin);
         for (const req of detail.requests) {
@@ -96,8 +107,13 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           }
         }
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks", pendingId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      queryClient.setQueryData(["/api/admin/pending-vin-checks", pendingId], body);
+      void queryClient.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey)
+          && q.queryKey[0] === "/api/admin/pending-vin-checks"
+          && q.queryKey.length === 3,
+      });
     } catch {
       setSaveMsg({ ok: false, text: "Save failed — network error" });
     } finally {
