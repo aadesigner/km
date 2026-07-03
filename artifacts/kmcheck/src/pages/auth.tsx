@@ -241,7 +241,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           <Input
                             id="email"
                             type="email"
-                            placeholder="you@example.com"
+                            placeholder={t("auth_email_placeholder")}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             required
@@ -259,7 +259,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         <Input
                           id="email"
                           type="email"
-                          placeholder="you@example.com"
+                          placeholder={t("auth_email_placeholder")}
                           value={email}
                           onChange={e => setEmail(e.target.value)}
                           required

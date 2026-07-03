@@ -442,6 +442,7 @@
   "auth_name_label": "Имя",
   "auth_name_optional": "(необязательно)",
   "auth_name_placeholder": "Ваше имя",
+  "auth_email_placeholder": "you@example.com",
   "auth_password_label": "Пароль",
   "auth_password_placeholder_signin": "Ваш пароль",
   "auth_password_placeholder_signup": "Мин. 6 символов, буква и цифра",

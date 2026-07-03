@@ -6,6 +6,7 @@ import {
 } from "./seo-config";
 import { isIndexableVinRest, buildVinPageSeo, normalizeVin, type VinSeoLang } from "@workspace/vin-page-seo";
 import { resolveFavicons } from "./country-favicons";
+import { resolvePageOgImage } from "./seo-og-images";
 
 export type SeoPageKey = keyof typeof seoData;
 
@@ -131,11 +132,14 @@ export function getRouteSeo(
   }
 
   const seo = getSeoEntry(resolved.lang, pageKey);
+  const ogImage = resolvePageOgImage(pageKey, resolved.lang, basePath);
   return {
     ...seo,
     lang: resolved.lang,
     canonicalPath: buildCanonicalPath(resolved.lang, resolved.rest),
     noIndex: resolved.noIndex || pageKey === "not_found",
     favicons: resolveFavicons(pageKey, basePath),
+    ogImage,
+    ogImageAlt: seo.title,
   };
 }

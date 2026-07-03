@@ -2,6 +2,9 @@ import { db, systemLogsTable, loginAttemptsTable, systemSettingsTable, paymentsT
 import { lt, desc, and, eq, inArray } from "drizzle-orm";
 import { logger } from "./logger.js";
 
+/** Default retention for new installs; existing rows with 0 are migrated to this on startup. */
+export const DEFAULT_LOG_RETENTION_DAYS = 4;
+
 async function getSettings() {
   const [s] = await db
     .select({
@@ -11,7 +14,7 @@ async function getSettings() {
     .from(systemSettingsTable)
     .orderBy(desc(systemSettingsTable.id))
     .limit(1);
-  return s ?? { logRetentionDays: 0, failedTxnRetentionDays: 0 };
+  return s ?? { logRetentionDays: DEFAULT_LOG_RETENTION_DAYS, failedTxnRetentionDays: 0 };
 }
 
 async function purgeLogs(days: number): Promise<number> {
@@ -67,10 +70,11 @@ export async function runCleanupJobs(): Promise<void> {
       logger.warn({ err: e }, "cleanup: login_attempts purge failed"),
     );
 
-    if (settings.logRetentionDays > 0) {
-      const n = await purgeLogs(settings.logRetentionDays);
-      if (n > 0) logger.info({ count: n, days: settings.logRetentionDays }, "cleanup: system_logs purged");
-    }
+    const logDays = settings.logRetentionDays > 0
+      ? settings.logRetentionDays
+      : DEFAULT_LOG_RETENTION_DAYS;
+    const n = await purgeLogs(logDays);
+    if (n > 0) logger.info({ count: n, days: logDays }, "cleanup: system_logs purged");
 
     if (settings.failedTxnRetentionDays > 0) {
       const n = await purgeFailedTransactions(settings.failedTxnRetentionDays);

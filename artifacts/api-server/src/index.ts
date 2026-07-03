@@ -84,8 +84,19 @@ async function syncPaypalFromEnv(): Promise<void> {
 }
 
 const dbUrl = process.env.DATABASE_URL ?? "";
-if (process.env.NODE_ENV === "production" && !dbUrl.includes("ssl") && !dbUrl.includes("sslmode")) {
-  logger.warn("DATABASE_URL has no SSL params — add ?sslmode=require for encrypted DB connections in production");
+const dbHostIsPrivate =
+  /@(?:localhost|127\.0\.0\.1|postgres\.railway\.internal)(?::|\/)/i.test(dbUrl)
+  || dbUrl.includes(".railway.internal");
+const dbHasSslParam = /(?:^|[?&])ssl(?:mode)?=/i.test(dbUrl) || dbUrl.includes("sslmode");
+if (
+  process.env.NODE_ENV === "production"
+  && !dbHasSslParam
+  && !dbHostIsPrivate
+  && process.env.DATABASE_SSL_SKIP_CHECK !== "true"
+) {
+  logger.info(
+    "DATABASE_URL has no ?sslmode=require — recommended for encrypted connections when the database is reached over the public internet",
+  );
 }
 
 exitOnProductionConfigFailure();

@@ -456,6 +456,7 @@
   "auth_name_label": "Name",
   "auth_name_optional": "(optional)",
   "auth_name_placeholder": "Your name",
+  "auth_email_placeholder": "you@example.com",
   "auth_password_label": "Password",
   "auth_password_placeholder_signin": "Your password",
   "auth_password_placeholder_signup": "6+ chars, letter and number",

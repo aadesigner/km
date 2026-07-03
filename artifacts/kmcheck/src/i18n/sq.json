@@ -445,6 +445,7 @@
   "auth_name_label": "Emri",
   "auth_name_optional": "(opsionale)",
   "auth_name_placeholder": "Emri juaj",
+  "auth_email_placeholder": "emri@gmail.com",
   "auth_password_label": "Fjalëkalimi",
   "auth_password_placeholder_signin": "Fjalëkalimi juaj",
   "auth_password_placeholder_signup": "Min. 6 karaktere, shkronjë dhe numër",

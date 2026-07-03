@@ -248,7 +248,7 @@ export default function AdminSettings() {
     freeVinDecoderEnabled: true, freeVinDecoderDailyLimit: 0, freeVinDecoderRequireSignIn: false,
     rateLimit: 100, rateLimitWindow: 60, maxVinsPerDay: 0,
     abuseDetectionEnabled: true,
-    logRetentionDays: 0, failedTxnRetentionDays: 0,
+    logRetentionDays: 4, failedTxnRetentionDays: 0,
     krwPerUsd: 1537,
   });
 
@@ -318,7 +318,7 @@ export default function AdminSettings() {
       rateLimitWindow: settings.rateLimitWindow,
       maxVinsPerDay: settings.maxVinsPerDay,
       abuseDetectionEnabled: settings.abuseDetectionEnabled,
-      logRetentionDays: (s.logRetentionDays as number) ?? 0,
+      logRetentionDays: (s.logRetentionDays as number) ?? 4,
       failedTxnRetentionDays: (s.failedTxnRetentionDays as number) ?? 0,
       krwPerUsd: (s.krwPerUsd as number) ?? 1537,
     });
@@ -1110,18 +1110,17 @@ export default function AdminSettings() {
                 Automatic Cleanup
               </CardTitle>
               <CardDescription>
-                Old records are purged every 6 hours. Set to 0 to disable. Manual purge available on the Transactions page.
+                Old records are purged every 6 hours. System logs default to 4 days retention.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label>System Log Retention</Label>
-                <p className="text-xs text-muted-foreground">Delete system logs older than this many days (0 = keep forever)</p>
+                <p className="text-xs text-muted-foreground">Delete system logs older than this many days (0 uses the 4-day default)</p>
                 <Select value={String(system.logRetentionDays)} onValueChange={(v) => setSystem(f => ({ ...f, logRetentionDays: Number(v) }))}>
                   <SelectTrigger className="max-w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">Keep forever</SelectItem>
-                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="0">4 days (default)</SelectItem>
                     <SelectItem value="7">7 days</SelectItem>
                     <SelectItem value="30">30 days</SelectItem>
                   </SelectContent>

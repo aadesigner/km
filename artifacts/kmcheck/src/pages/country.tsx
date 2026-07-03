@@ -211,7 +211,7 @@ export default function CountryPage({ params }: Props) {
 
   return (
     <div>
-      <SEOHead title={seo.title} description={seo.description} lang={seo.lang} canonicalPath={seo.canonicalPath} favicons={seo.favicons} />
+      <SEOHead title={seo.title} description={seo.description} lang={seo.lang} canonicalPath={seo.canonicalPath} ogImage={seo.ogImage} ogImageAlt={seo.ogImageAlt} favicons={seo.favicons} />
 
       {/* ─────────────────────── HERO ─────────────────────── */}
       <section ref={heroRef} className="relative overflow-x-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(2rem+var(--site-header-offset,84px))] md:pt-[calc(3.5rem+var(--site-header-offset,84px))] pb-0">

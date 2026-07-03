@@ -10,6 +10,7 @@ import {
   withBasePath,
   DEFAULT_FAVICONS,
 } from "./country-favicon-config.mjs";
+import { isSeoOgPageKey, seoOgImagePath } from "./seo-og-config.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
@@ -155,6 +156,8 @@ export function resolveSeoForPath(pathname, basePath = "") {
   const noIndex = isNoIndexPath(rest, pageKey);
   const canonicalPath = rest ? `/${lang}${rest}` : `/${lang}`;
   const dir = lang === "ar" ? "rtl" : "ltr";
+  const ogImage = seo.ogImage
+    ?? (isSeoOgPageKey(pageKey) ? seoOgImagePath(pageKey, lang, basePath) : undefined);
 
   return {
     lang,
@@ -166,8 +169,8 @@ export function resolveSeoForPath(pathname, basePath = "") {
     noIndex,
     canonicalPath,
     canonicalUrl: `${SITE_ORIGIN}${canonicalPath}`,
-    ogImage: seo.ogImage ?? undefined,
-    ogImageAlt: seo.ogImageAlt ?? undefined,
+    ogImage,
+    ogImageAlt: seo.ogImageAlt ?? seo.title,
   };
 }
 

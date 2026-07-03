@@ -8,7 +8,8 @@
     "build": "node scripts/generate-favicons.mjs && node scripts/generate-country-favicons.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-vin-sitemap.mjs && node scripts/generate-seo-bootstrap.mjs && node scripts/fetch-demo-car-photos.mjs && vite build --config vite.config.ts && node scripts/generate-prerender-html.mjs && node scripts/minify-dist.mjs",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "qa:resilience": "node scripts/qa-resilience.mjs"
+    "qa:resilience": "node scripts/qa-resilience.mjs",
+    "seo:capture-screenshots": "node scripts/capture-seo-screenshots.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -60,6 +61,7 @@
     "esbuild": "0.27.3",
     "framer-motion": "catalog:",
     "html-minifier-terser": "^7.2.0",
+    "playwright": "^1.52.0",
     "input-otp": "^1.4.2",
     "lucide-react": "catalog:",
     "next-themes": "^0.4.6",

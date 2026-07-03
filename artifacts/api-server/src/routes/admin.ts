@@ -572,8 +572,8 @@ async function logAdminAction(
   try {
     await db.insert(systemLogsTable).values({
       level: "info",
-      message: action,
-      context: JSON.stringify({ adminUserId, targetId, ...extra }),
+      message: action.slice(0, 500),
+      context: JSON.stringify({ adminUserId, targetId, ...extra }).slice(0, 1500),
     });
   } catch { /* best-effort */ }
 }

@@ -180,6 +180,8 @@ export default function Home() {
         description={seo.description}
         lang={seo.lang}
         canonicalPath={seo.canonicalPath}
+        ogImage={seo.ogImage}
+        ogImageAlt={seo.ogImageAlt}
         jsonLd={orgJsonLd}
       />
 
@@ -237,18 +239,7 @@ export default function Home() {
               {t("hero_subtext")}
             </p>
 
-            {/* Rating strip */}
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-              <div className="flex items-center gap-1.5">
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <span className="font-bold text-sm">4.9</span>
-                <span className="text-xs text-muted-foreground">/ 5</span>
-              </div>
-            </div>
+            <HomeStatsStrip variant="hero" />
 
             <HeroVinForm
               vin={vin}
@@ -291,8 +282,6 @@ export default function Home() {
                 </AnimatePresence>
               ) : null}
             />
-
-            <HomeStatsStrip />
 
           </motion.div>
           </div>

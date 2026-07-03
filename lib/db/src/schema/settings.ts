@@ -81,8 +81,8 @@ export const systemSettingsTable = pgTable("system_settings", {
   analyticsGtmContainerId: text("analytics_gtm_container_id"),
   analyticsGaEnabled: boolean("analytics_ga_enabled").notNull().default(false),
   analyticsGaMeasurementId: text("analytics_ga_measurement_id"),
-  // Log retention (days, 0 = disabled)
-  logRetentionDays: integer("log_retention_days").notNull().default(0),
+  // Log retention (days; 0 = use 4-day default in cleanup job)
+  logRetentionDays: integer("log_retention_days").notNull().default(4),
   // Failed transaction auto-removal (days, 0 = disabled)
   failedTxnRetentionDays: integer("failed_txn_retention_days").notNull().default(0),
   /** KRW per 1 USD — used to show Korean insurance claim amounts in USD */

@@ -442,6 +442,7 @@
   "auth_name_label": "الاسم",
   "auth_name_optional": "(اختياري)",
   "auth_name_placeholder": "اسمك",
+  "auth_email_placeholder": "you@example.com",
   "auth_password_label": "كلمة المرور",
   "auth_password_placeholder_signin": "كلمة المرور",
   "auth_password_placeholder_signup": "6+ أحرف، حرف ورقم",
