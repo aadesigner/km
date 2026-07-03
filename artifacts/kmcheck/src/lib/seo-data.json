@@ -1,24 +1,24 @@
 {
   "home": {
     "en": {
-      "title": "kmcheck.com — VIN Check: Mileage, Accidents & Salvage History",
-      "description": "Instant VIN check — verify real mileage (km), uncover accident history, salvage records and theft flags for any car. Results in seconds."
+      "title": "Car VIN Check — Mileage, Accidents & Salvage History | kmcheck.com",
+      "description": "Instant VIN check — verify real km readings, uncover full accident history & salvage records for any car."
     },
     "ar": {
-      "title": "kmcheck.com — فحص VIN: الكيلومترات، الحوادث وسجلات الإتلاف",
-      "description": "فحص VIN فوري — تحقق من الكيلومترات الحقيقية، اكشف تاريخ الحوادث وسجلات الإتلاف والسرقة لأي سيارة. النتائج خلال ثوانٍ."
+      "title": "فحص VIN للسيارات — الكيلومترات، الحوادث وسجلات الإتلاف | kmcheck.com",
+      "description": "فحص VIN فوري — تحقق من قراءات الكيلومتر الحقيقية، واكشف تاريخ الحوادث الكامل وسجلات الإتلاف لأي سيارة."
     },
     "uk": {
-      "title": "kmcheck.com — Перевірка VIN: пробіг, ДТП та історія авто",
-      "description": "Миттєва перевірка VIN — реальний пробіг, історія ДТП, статус утилізації та викрадення. Результати за секунди."
+      "title": "Перевірка VIN авто — пробіг, ДТП та історія | kmcheck.com",
+      "description": "Миттєва перевірка VIN — перевірте реальні показники пробігу (км), розкрийте повну історію ДТП та записи про утилізацію для будь-якого авто."
     },
     "ru": {
-      "title": "kmcheck.com — Проверка VIN: пробег, ДТП и история авто",
-      "description": "Мгновенная проверка VIN — реальный пробег, история ДТП, утилизация и угон. Результаты за секунды."
+      "title": "Проверка VIN автомобиля — пробег, ДТП и история | kmcheck.com",
+      "description": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля."
     },
     "sq": {
-      "title": "kmcheck.com — Kontroll kilometrash dhe aksidentesh me shasi",
-      "description": "Kontroll aksidentesh me shasi (VIN) dhe kilometrash në sekonda. Zbuloni km të manipuluara, aksidentet, fshirjen dhe vjedhjet për çdo makinë."
+      "title": "Kontroll VIN i makinave — kilometrazh, aksidente dhe fshirje | kmcheck.com",
+      "description": "Kontroll VIN i menjëhershëm — verifikoni kilometrazhin real (km), zbuloni historinë e plotë të aksidenteve dhe regjistrat e fshirjes për çdo makinë."
     }
   },
   "pricing": {
