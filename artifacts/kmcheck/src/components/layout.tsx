@@ -436,7 +436,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[1fr_auto]",
         "transition-[height,padding] duration-300",
-        scrolled ? "h-[68px]" : "h-[84px]",
+        scrolled ? "h-[68px]" : "h-[72px] md:h-[84px]",
       )}>
 
         {/* ── Logo + nav cluster ── */}
@@ -445,7 +445,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <KmcheckLogo
               className={cn(
                 "transition-all duration-300 group-hover:opacity-90",
-                scrolled ? "h-9 md:h-9" : "h-11 md:h-10",
+                scrolled ? "h-9 md:h-9" : "h-9 md:h-10",
               )}
             />
           </PrefetchLink>
@@ -903,16 +903,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const showClientNav = useShowClientMobileNav();
 
   useEffect(() => {
-    const navbarHeight = 84;
-    document.documentElement.style.setProperty(
-      "--site-header-offset",
-      `${navbarHeight + announcementHeight}px`,
-    );
-    document.documentElement.style.setProperty(
-      "--announcement-bar-height",
-      `${announcementHeight}px`,
-    );
+    const mq = window.matchMedia("(min-width: 768px)");
+    const apply = () => {
+      const navbarHeight = mq.matches ? 84 : 72;
+      document.documentElement.style.setProperty(
+        "--site-header-offset",
+        `${navbarHeight + announcementHeight}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--announcement-bar-height",
+        `${announcementHeight}px`,
+      );
+    };
+    apply();
+    mq.addEventListener("change", apply);
     return () => {
+      mq.removeEventListener("change", apply);
       document.documentElement.style.removeProperty("--site-header-offset");
       document.documentElement.style.removeProperty("--announcement-bar-height");
     };
