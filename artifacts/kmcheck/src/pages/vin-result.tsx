@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "@/i18n/context";
 import { parseVinRouteParam } from "@/lib/vin-route";
-import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
+import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import { useGetVinLookup } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
+import { useVinPendingPublishWait } from "@/hooks/use-vin-pending-publish-wait";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { PrintReportBranding } from "@/components/print-report-branding";
 import { VinPrintSummary } from "@/components/vin-print-summary";
@@ -417,6 +418,7 @@ export default function VinResult({ params }: Props) {
       enabled: route?.kind === "lookupId",
       queryKey: ["/api/vin", "id", lookupId],
       ...VIN_REPORT_QUERY_OPTIONS,
+      refetchInterval: vinReportRefetchInterval,
     },
   });
   const {
@@ -430,6 +432,7 @@ export default function VinResult({ params }: Props) {
     queryKey: ["/api/vin", "vin", vinUpper],
     enabled: isVinString,
     ...VIN_REPORT_QUERY_OPTIONS,
+    refetchInterval: vinReportRefetchInterval,
     retry: 1,
     queryFn: async ({ signal }) => {
       const r = await fetch(`${basePath}/api/vin/${encodeURIComponent(vinUpper)}`, { credentials: "include", signal });
@@ -480,14 +483,7 @@ export default function VinResult({ params }: Props) {
 
   const isFulfilling = lookup?.status === "fulfilling";
 
-  useEffect(() => {
-    if (!isFulfilling) return;
-    const id = window.setInterval(() => {
-      if (isVinString) void refetchVin();
-      else void refetchById();
-    }, 2000);
-    return () => window.clearInterval(id);
-  }, [isFulfilling, isVinString, refetchVin, refetchById]);
+  useVinPendingPublishWait(lookup, !!lookup && lookup.status === "pending_manual");
 
   if (isLoadingInitial) {
     return (

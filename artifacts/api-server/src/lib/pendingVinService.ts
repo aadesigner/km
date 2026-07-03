@@ -21,6 +21,7 @@ import { transformVinPhotoData } from "./imageProxy.js";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
 import { firePendingVinAdminNotification } from "./pendingVinAdminEmail.js";
+import { notifyVinLookupPublished } from "./vinLookupNotify.js";
 import {
   applyFrozenKrwPerUsd,
   getCurrentKrwPerUsd,
@@ -256,6 +257,8 @@ export async function publishPendingVinCheck(opts: {
   });
 
   await invalidateVinImageCache(extractVinPhotoUrls(stamped));
+
+  notifyVinLookupPublished(vin);
 
   for (const req of requests) {
     if (!req.notifyOnPublish || req.notifiedAt) continue;

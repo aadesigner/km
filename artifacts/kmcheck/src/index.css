@@ -600,22 +600,6 @@
 }
 
 @media (max-width: 639px) {
-  .hero-vin-card {
-    background: linear-gradient(
-      180deg,
-      hsl(var(--background)) 0%,
-      hsl(var(--muted) / 0.12) 100%
-    );
-  }
-
-  .dark .hero-vin-card {
-    background: linear-gradient(180deg, #0a120e 0%, #0c1510 100%);
-  }
-
-  .hero-vin-input-wrap:focus-within {
-    box-shadow: none;
-  }
-
   .hero-vin-field:focus-within .hero-vin-segments {
     opacity: 1;
   }
@@ -703,12 +687,12 @@
 }
 
 .hero-vin-input-wrap.vin-scanner::before {
-  border-radius: 0.5rem 0.5rem 0 0;
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 
 @media (min-width: 640px) {
   .hero-vin-input-wrap.vin-scanner::before {
-    border-radius: 1rem;
+    border-radius: 0.875rem 0.875rem 0 0;
   }
 }
 

@@ -46,6 +46,7 @@ import {
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
 import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
+import { waitForVinLookupPublish } from "../lib/vinLookupNotify.js";
 
 const router = Router();
 
@@ -972,6 +973,74 @@ router.get("/vin/resolve/:id", requireAuth, async (req, res) => {
     return;
   }
   res.json({ vin: row.vin });
+});
+
+// GET /vin/wait-update/:vin — long-poll while pending_manual; wakes on admin publish only
+router.get("/vin/wait-update/:vin", requireAuth, async (req, res) => {
+  const vin = String(req.params.vin ?? "").toUpperCase();
+  if (!VIN_RE.test(vin)) {
+    res.status(400).json({ error: "Invalid VIN" });
+    return;
+  }
+
+  const userId = req.userId!;
+  const sinceRaw = String(req.query.since ?? "0");
+  const sinceMs = Number(sinceRaw);
+  const since = Number.isFinite(sinceMs) && sinceMs > 0 ? sinceMs : 0;
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+
+  const loadClientLookup = async () => {
+    const row = await findCompleteUserLookup(userId, vin);
+    if (!row) return null;
+    if (row.userId !== userId && !user?.isAdmin) return null;
+    const rawData = row.data as Record<string, unknown> | null;
+    const enrichedData = rawData
+      ? await enrichVinReportDataForServe(row.vin, rawData, { primaryUpdatedAt: row.updatedAt })
+      : null;
+    return serializeLookupForClient({ ...row, data: enrichedData ?? row.data });
+  };
+
+  const lookupMs = (row: { updatedAt?: Date | string | null }) => {
+    if (!row.updatedAt) return 0;
+    const t = row.updatedAt instanceof Date ? row.updatedAt.getTime() : new Date(row.updatedAt).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  let current = await findCompleteUserLookup(userId, vin);
+  if (!current || (current.userId !== userId && !user?.isAdmin)) {
+    res.status(404).json({ error: "VIN lookup not found" });
+    return;
+  }
+
+  const alreadyChanged =
+    current.status !== "pending_manual" || lookupMs(current) > since;
+
+  if (alreadyChanged) {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({ changed: true, lookup: await loadClientLookup() });
+    return;
+  }
+
+  let closed = false;
+  req.on("close", () => { closed = true; });
+
+  await waitForVinLookupPublish(vin, 55_000);
+  if (closed) return;
+
+  current = await findCompleteUserLookup(userId, vin);
+  if (!current) {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({ changed: false });
+    return;
+  }
+
+  const changed = current.status !== "pending_manual" || lookupMs(current) > since;
+  res.setHeader("Cache-Control", "private, no-store");
+  res.json({
+    changed,
+    lookup: changed ? await loadClientLookup() : null,
+  });
 });
 
 // GET /vin/:id

@@ -9,6 +9,15 @@ export const VIN_REPORT_QUERY_OPTIONS = {
   refetchOnReconnect: true,
 } as const;
 
+/** Poll while provider fetch is in progress — stops when status changes. */
+export function vinReportRefetchInterval(query: {
+  state: { data?: unknown };
+}): number | false {
+  const status = (query.state.data as { status?: string } | undefined)?.status;
+  if (status === "fulfilling") return 2_000;
+  return false;
+}
+
 function normalizeVin(vin: string): string {
   return vin.trim().toUpperCase();
 }
