@@ -59,11 +59,20 @@ describe("resolveRequestCountryCode", () => {
   });
 
   it("resolves country from public IP via geoip", () => {
-    const req = mockReq({
-      headers: { "x-forwarded-for": "8.8.8.8" },
-      remoteAddress: "127.0.0.1",
-      nodeEnv: "production",
-    });
-    expect(resolveRequestCountryCode(req)).toBe("US");
+    const prevEnabled = process.env.GEOIP_ENABLED;
+    const prevNode = process.env.NODE_ENV;
+    process.env.GEOIP_ENABLED = "true";
+    process.env.NODE_ENV = "production";
+    try {
+      const req = mockReq({
+        headers: { "x-forwarded-for": "8.8.8.8" },
+        remoteAddress: "127.0.0.1",
+      });
+      expect(resolveRequestCountryCode(req)).toBe("US");
+    } finally {
+      if (prevEnabled === undefined) delete process.env.GEOIP_ENABLED;
+      else process.env.GEOIP_ENABLED = prevEnabled;
+      process.env.NODE_ENV = prevNode ?? "test";
+    }
   });
 });

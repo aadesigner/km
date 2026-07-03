@@ -13,9 +13,13 @@ const isProduction = process.env.NODE_ENV === "production";
  */
 class DbLogStream extends Writable {
   private _buf = "";
+  private static readonly MAX_BUF = 64 * 1024;
 
   override _write(chunk: Buffer | string, _enc: BufferEncoding, cb: () => void): void {
     this._buf += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : chunk;
+    if (this._buf.length > DbLogStream.MAX_BUF) {
+      this._buf = this._buf.slice(-DbLogStream.MAX_BUF);
+    }
     let nl = this._buf.indexOf("\n");
     while (nl !== -1) {
       const line = this._buf.slice(0, nl).trim();
@@ -51,6 +55,8 @@ const prettyStream = isProduction
   ? (process.stdout as unknown as { write(msg: string): void })
   : (PinoPretty({ colorize: true }) as unknown as { write(msg: string): void });
 
+const dbLogLevel = isProduction ? "warn" : "info";
+
 export const logger = pino(
   {
     level: process.env.LOG_LEVEL ?? "info",
@@ -62,6 +68,6 @@ export const logger = pino(
   },
   pino.multistream([
     { stream: prettyStream },
-    { stream: dbStream as unknown as { write(msg: string): void }, level: "info" },
+    { stream: dbStream as unknown as { write(msg: string): void }, level: dbLogLevel },
   ]),
 );

@@ -1,6 +1,33 @@
 import type { Request } from "express";
-import geoip from "geoip-lite";
+import { createRequire } from "node:module";
 import { clientIpKey } from "./trustedClient.js";
+
+const require = createRequire(import.meta.url);
+
+type GeoipLite = typeof import("geoip-lite");
+let geoipModule: GeoipLite | null | undefined;
+
+function geoipDisabled(): boolean {
+  if (process.env.GEOIP_DISABLED === "true") return true;
+  if (process.env.GEOIP_ENABLED === "true") return false;
+  // Production runs behind Cloudflare — cf-ipcountry is enough; skip ~50–90MB MaxMind heap.
+  return process.env.NODE_ENV === "production";
+}
+
+/** Load MaxMind data only on first IP lookup — skipped when Cloudflare sends country headers. */
+function lookupCountryFromGeoip(ip: string): string | null {
+  if (geoipDisabled()) return null;
+  if (geoipModule === undefined) {
+    try {
+      geoipModule = require("geoip-lite") as GeoipLite;
+    } catch {
+      geoipModule = null;
+    }
+  }
+  if (!geoipModule) return null;
+  const hit = geoipModule.lookup(ip);
+  return normalizeCountryCode(hit?.country ?? null);
+}
 
 const COUNTRY_RE = /^[A-Z]{2}$/;
 
@@ -47,8 +74,7 @@ export function isPrivateOrLoopbackIp(ip: string): boolean {
 
 function countryFromIp(ip: string): string | null {
   const clean = stripIpv4Mapped(ip);
-  const hit = geoip.lookup(clean);
-  return normalizeCountryCode(hit?.country ?? null);
+  return lookupCountryFromGeoip(clean);
 }
 
 let devEgressCache: { country: string | null; expiresAt: number } | null = null;

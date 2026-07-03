@@ -7,24 +7,64 @@ export type CachedVinImage = {
   body: Buffer;
 };
 
+export type VinImageDiskHit = {
+  contentType: string;
+  bodyPath: string;
+  byteLength: number;
+};
+
+const isProduction = process.env.NODE_ENV === "production";
+
 const CACHE_DIR =
   process.env.VIN_IMAGE_CACHE_DIR?.trim() ||
   path.join(process.cwd(), ".cache", "vin-images");
 
 const inflight = new Map<string, Promise<CachedVinImage>>();
-const MEMORY_CACHE_MAX = 128;
+const MEMORY_CACHE_MAX_ENTRIES = Math.max(
+  1,
+  Number(
+    process.env.VIN_IMAGE_MEMORY_CACHE_MAX_ENTRIES
+    ?? (isProduction ? 16 : 24),
+  ) || (isProduction ? 16 : 24),
+);
+/** Hot-fetch RAM cap — disk cache + streaming serves repeat traffic without heap copies. */
+const MEMORY_CACHE_MAX_BYTES = Math.max(
+  256 * 1024,
+  Number(
+    process.env.VIN_IMAGE_MEMORY_CACHE_MAX_BYTES
+    ?? (isProduction ? 16 * 1024 * 1024 : 32 * 1024 * 1024),
+  ) || (isProduction ? 16 * 1024 * 1024 : 32 * 1024 * 1024),
+);
+
 const memoryCache = new Map<string, CachedVinImage>();
+let memoryCacheBytes = 0;
 
 function rememberInMemory(url: string, image: CachedVinImage): void {
-  if (memoryCache.has(url)) {
+  const existing = memoryCache.get(url);
+  if (existing) {
+    memoryCacheBytes -= existing.body.length;
     memoryCache.delete(url);
   }
   memoryCache.set(url, image);
-  while (memoryCache.size > MEMORY_CACHE_MAX) {
+  memoryCacheBytes += image.body.length;
+
+  while (
+    memoryCache.size > MEMORY_CACHE_MAX_ENTRIES
+    || memoryCacheBytes > MEMORY_CACHE_MAX_BYTES
+  ) {
     const oldest = memoryCache.keys().next().value;
     if (!oldest) break;
+    const evicted = memoryCache.get(oldest);
+    if (evicted) memoryCacheBytes -= evicted.body.length;
     memoryCache.delete(oldest);
   }
+}
+
+function forgetInMemory(url: string): void {
+  const existing = memoryCache.get(url);
+  if (!existing) return;
+  memoryCacheBytes -= existing.body.length;
+  memoryCache.delete(url);
 }
 
 function cacheKeyForUrl(url: string): string {
@@ -119,23 +159,47 @@ export function mediaVersionFromUpdatedAt(
   return Number.isFinite(ms) ? ms : undefined;
 }
 
-export async function readVinImageCache(url: string): Promise<CachedVinImage | null> {
-  const mem = memoryCache.get(url);
-  if (mem) return mem;
+export function getMemoryCachedVinImage(url: string): CachedVinImage | null {
+  return memoryCache.get(url) ?? null;
+}
+
+async function readVinImageDiskHit(url: string): Promise<VinImageDiskHit | null> {
   try {
     const { bodyPath, metaPath } = pathsForUrl(url);
-    const [metaRaw, body] = await Promise.all([
+    const [metaRaw, bodyStat] = await Promise.all([
       fs.readFile(metaPath, "utf8"),
-      fs.readFile(bodyPath),
+      fs.stat(bodyPath),
     ]);
     const meta = JSON.parse(metaRaw) as { contentType?: string };
-    if (!meta.contentType || !Buffer.isBuffer(body) || body.length === 0) return null;
-    const image = { contentType: meta.contentType, body };
-    rememberInMemory(url, image);
-    return image;
+    if (!meta.contentType || bodyStat.size <= 0) return null;
+    return {
+      contentType: meta.contentType,
+      bodyPath,
+      byteLength: bodyStat.size,
+    };
   } catch {
     return null;
   }
+}
+
+export async function readVinImageCache(url: string): Promise<CachedVinImage | null> {
+  const mem = memoryCache.get(url);
+  if (mem) return mem;
+  const disk = await readVinImageDiskHit(url);
+  if (!disk) return null;
+  try {
+    const body = await fs.readFile(disk.bodyPath);
+    if (!body.length) return null;
+    return { contentType: disk.contentType, body };
+  } catch {
+    return null;
+  }
+}
+
+/** Disk metadata for streaming — avoids loading multi-MB buffers on cache hits. */
+export async function resolveVinImageDiskHit(url: string): Promise<VinImageDiskHit | null> {
+  if (memoryCache.has(url)) return null;
+  return readVinImageDiskHit(url);
 }
 
 export async function writeVinImageCache(
@@ -159,7 +223,7 @@ export async function invalidateVinImageCache(urls: string[]): Promise<void> {
   const unique = [...new Set(urls.filter(Boolean))];
   await Promise.all(unique.map(async (url) => {
     inflight.delete(url);
-    memoryCache.delete(url);
+    forgetInMemory(url);
     const { bodyPath, metaPath } = pathsForUrl(url);
     await Promise.allSettled([fs.unlink(bodyPath), fs.unlink(metaPath)]);
   }));

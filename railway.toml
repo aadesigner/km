@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "node scripts/railway-build.mjs"
 
 [deploy]
-startCommand = "node --import ./artifacts/api-server/load-env.mjs --enable-source-maps ./artifacts/api-server/dist/index.mjs"
+startCommand = "node --import ./artifacts/api-server/load-env.mjs ./artifacts/api-server/dist/index.mjs"
 healthcheckPath = "/api/healthz"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

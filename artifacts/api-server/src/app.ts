@@ -17,7 +17,24 @@ const app: Express = express();
 
 app.set("trust proxy", 1);
 
-app.use(compression({ threshold: 1024 }));
+const STATIC_EXT_RE = /\.(?:js|mjs|css|woff2?|png|jpe?g|webp|svg|ico|gif|txt|xml|map)$/i;
+
+app.use(
+  compression({
+    threshold: 1024,
+    filter(req, res) {
+      const path = req.path ?? "";
+      if (path.startsWith("/api/vin/image")) return false;
+      if (STATIC_EXT_RE.test(path)) return false;
+      const type = res.getHeader("Content-Type");
+      if (typeof type === "string") {
+        if (type.startsWith("image/")) return false;
+        if (type.includes("font/")) return false;
+      }
+      return compression.filter(req, res);
+    },
+  }),
+);
 
 const CORS_METHODS = "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS";
 const CORS_HEADERS = "Content-Type,Authorization,X-Requested-With,X-Kmcheck-Client";

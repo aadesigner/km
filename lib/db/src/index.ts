@@ -10,11 +10,12 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const pgPoolMax = parseInt(process.env.PG_POOL_MAX ?? "20", 10);
+const defaultPoolMax = process.env.NODE_ENV === "production" ? 8 : 20;
+const pgPoolMax = parseInt(process.env.PG_POOL_MAX ?? String(defaultPoolMax), 10);
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: isNaN(pgPoolMax) || pgPoolMax <= 0 ? 20 : pgPoolMax,
+  max: isNaN(pgPoolMax) || pgPoolMax <= 0 ? defaultPoolMax : pgPoolMax,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 3_000,
   allowExitOnIdle: false,

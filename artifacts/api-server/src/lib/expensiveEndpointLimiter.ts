@@ -1,6 +1,15 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import type { Request } from "express";
 
+function envRateMax(name: string, prodDefault: number, devDefault: number): number {
+  const raw = process.env[name];
+  if (raw !== undefined && raw !== "") {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return process.env.NODE_ENV === "production" ? prodDefault : devDefault;
+}
+
 /** Per-user when authenticated, else per-IP — never skipped for trusted clients. */
 export function userOrIpKey(req: Request): string {
   if (req.userId) return `u:${req.userId}`;
@@ -13,7 +22,7 @@ export function userOrIpKey(req: Request): string {
 /** Pre-checkout VIN peek — calls local-exists when catalog is cold. */
 export const vinPeekLimiter = rateLimit({
   windowMs: 60_000,
-  max: Number(process.env.VIN_PEEK_RATE_MAX ?? 40),
+  max: envRateMax("VIN_PEEK_RATE_MAX", 25, 40),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many VIN preview requests. Please wait a moment." },
@@ -43,7 +52,7 @@ export const paypalCaptureLimiter = rateLimit({
 /** Post-payment lookup — provider path is async but still bounded per user. */
 export const vinLookupUserLimiter = rateLimit({
   windowMs: 60_000,
-  max: Number(process.env.VIN_LOOKUP_USER_RATE_MAX ?? 15),
+  max: envRateMax("VIN_LOOKUP_USER_RATE_MAX", 12, 15),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many report requests. Please wait before trying again." },

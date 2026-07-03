@@ -16,7 +16,7 @@ import { decodeVin, decodeCountry, validateCheckDigit, decodeVinDiagnostics } fr
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData } from "../lib/imageProxy.js";
-import { getOrFetchVinImage, mediaVersionFromUpdatedAt, readVinImageCache } from "../lib/vinImageCache.js";
+import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
 import { getFreeDecoderSettings } from "../lib/freeDecoderSettingsCache.js";
@@ -28,6 +28,8 @@ import { vinPeekLimiter, vinLookupUserLimiter } from "../lib/expensiveEndpointLi
 import { startProviderFulfillment, VIN_FULFILLING_STATUS } from "../lib/vinFulfillmentService.js";
 import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
 import rateLimit from "express-rate-limit";
+import { createReadStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import type { VinSeoLang } from "@workspace/vin-page-seo";
 import { buildVinSeoFromCatalogData } from "../lib/vinPageSeo.js";
 import {
@@ -277,9 +279,23 @@ router.get("/vin/image", async (req, res) => {
     return;
   }
   try {
-    const diskCached = await readVinImageCache(url);
+    const memoryCached = getMemoryCachedVinImage(url);
+    if (memoryCached) {
+      if (memoryCached.body.length > MAX_VIN_IMAGE_BYTES) {
+        res.status(413).json({ error: "Image too large" });
+        return;
+      }
+      res.setHeader("Content-Type", memoryCached.contentType);
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Vin-Image-Cache", "HIT-MEM");
+      res.send(memoryCached.body);
+      return;
+    }
+
+    const diskCached = await resolveVinImageDiskHit(url);
     if (diskCached) {
-      if (diskCached.body.length > MAX_VIN_IMAGE_BYTES) {
+      if (diskCached.byteLength > MAX_VIN_IMAGE_BYTES) {
         res.status(413).json({ error: "Image too large" });
         return;
       }
@@ -287,7 +303,7 @@ router.get("/vin/image", async (req, res) => {
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       res.setHeader("X-Content-Type-Options", "nosniff");
       res.setHeader("X-Vin-Image-Cache", "HIT");
-      res.send(diskCached.body);
+      await pipeline(createReadStream(diskCached.bodyPath), res);
       return;
     }
 
@@ -417,7 +433,10 @@ async function failFreeCouponPayment(paymentId: number, couponCode: string | nul
 
 // ── Free VIN decoder daily rate limit (in-memory, resets on server restart) ──
 const FREE_DECODE_IP_MAP = new Map<string, { count: number; day: string }>();
-const FREE_DECODE_IP_MAX = 10_000;
+const FREE_DECODE_IP_MAX = Math.max(
+  500,
+  Number(process.env.FREE_DECODE_IP_MAP_MAX ?? 3000) || 3000,
+);
 
 function pruneFreeDecodeIpMap(today: string): void {
   for (const [ip, entry] of FREE_DECODE_IP_MAP) {
