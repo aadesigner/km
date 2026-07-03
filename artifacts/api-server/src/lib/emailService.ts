@@ -15,6 +15,7 @@ import {
 } from "./smtpSecurity.js";
 import { buildEmailBase } from "./emailLayout.js";
 import { formatSmtpConfigError, formatSmtpTransportError } from "./smtpErrors.js";
+import { logger } from "./logger.js";
 
 export { buildEmailBase };
 
@@ -35,6 +36,32 @@ export type SendEmailResult = {
   hint?: string;
   code?: string;
 };
+
+/** Cap how long callers (e.g. admin SMTP test) wait before a friendly timeout. */
+export const SMTP_SEND_DEADLINE_MS = 22_000;
+
+export async function sendEmailWithDeadline(
+  opts: EmailOptions,
+  smtpOverride?: SmtpOverride,
+  deadlineMs = SMTP_SEND_DEADLINE_MS,
+): Promise<SendEmailResult> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<SendEmailResult>((resolve) => {
+    timer = setTimeout(() => {
+      resolve({
+        ok: false,
+        error: "SMTP connection timed out.",
+        hint:
+          "The API could not reach your mail server in time. On Railway, outbound SMTP is often blocked or slow — try port 465 (SSL) or 587 (STARTTLS), double-check host/credentials, or use a relay like SendGrid/Mailgun.",
+        code: "SMTP_TIMEOUT",
+      });
+    }, deadlineMs);
+  });
+
+  const result = await Promise.race([sendEmail(opts, smtpOverride), deadline]);
+  if (timer) clearTimeout(timer);
+  return result;
+}
 
 interface EmailOptions {
   to: string;
@@ -156,12 +183,14 @@ export async function sendEmail(
   opts: EmailOptions,
   smtpOverride?: SmtpOverride,
 ): Promise<SendEmailResult> {
+  let smtpHost: string | undefined;
   try {
     const resolved = await resolveSmtpConfig(smtpOverride);
     if (!resolved.ok) {
       return { ok: false, error: resolved.error, hint: resolved.hint, code: resolved.code };
     }
     const smtp = resolved.config;
+    smtpHost = smtp.host;
 
     const transporter = nodemailer.createTransport({
       host: smtp.host,
@@ -171,15 +200,13 @@ export async function sendEmail(
         user: smtp.user,
         pass: smtp.pass,
       },
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 30_000,
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 15_000,
       tls: {
         rejectUnauthorized: process.env.SMTP_INSECURE !== "true",
       },
     });
-
-    await transporter.verify();
 
     await transporter.sendMail({
       from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
@@ -192,6 +219,7 @@ export async function sendEmail(
     return { ok: true };
   } catch (err) {
     const detail = formatSmtpTransportError(err);
+    logger.warn({ ...detail, smtpHost }, "sendEmail failed");
     return { ok: false, ...detail };
   }
 }

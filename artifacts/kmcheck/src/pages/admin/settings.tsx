@@ -398,8 +398,19 @@ export default function AdminSettings() {
       if (resp.ok && data.ok) setSmtpTestStatus("ok");
       else {
         setSmtpTestStatus("error");
-        setSmtpTestError(data.error ?? `Failed to send test email (${resp.status})`);
-        setSmtpTestHint(data.hint ?? "");
+        const gatewayTimeout = resp.status === 502 || resp.status === 504;
+        setSmtpTestError(
+          data.error
+          ?? (gatewayTimeout
+            ? "Mail test timed out or the server could not reach your SMTP host."
+            : `Failed to send test email (${resp.status})`),
+        );
+        setSmtpTestHint(
+          data.hint
+          ?? (gatewayTimeout
+            ? "On Railway, outbound SMTP is often blocked or slow. Try port 465 (SSL) or 587 (STARTTLS), verify credentials, or use a transactional email relay (SendGrid, Mailgun, etc.)."
+            : ""),
+        );
       }
     } catch {
       setSmtpTestStatus("error");

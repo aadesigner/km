@@ -1713,7 +1713,7 @@ router.post("/admin/email/test", requireAdmin, async (req, res) => {
     };
     if (!to?.trim()) { res.status(400).json({ error: "Recipient email (to) is required." }); return; }
 
-    const { sendEmail, buildSmtpTestEmail, getSiteUrl } = await import("../lib/emailService.js");
+    const { sendEmailWithDeadline, buildSmtpTestEmail, getSiteUrl } = await import("../lib/emailService.js");
     const siteUrl = (await getSiteUrl()).replace(/\/$/, "");
 
     let emailPayload: { subject: string; html: string; text?: string };
@@ -1733,7 +1733,7 @@ router.post("/admin/email/test", requireAdmin, async (req, res) => {
       emailPayload.text = "SMTP is working! Your kmcheck email configuration is correctly set up.";
     }
 
-    const result = await sendEmail({
+    const result = await sendEmailWithDeadline({
       to: to.trim(),
       subject: emailPayload.subject,
       html: emailPayload.html,

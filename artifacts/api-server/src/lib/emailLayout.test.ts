@@ -2,10 +2,11 @@ import { describe, it, expect } from "vitest";
 import { buildEmailBase, emailBrandLogoUrl } from "./emailLayout.js";
 
 describe("emailLayout", () => {
-  it("uses the white brand logo image in the header", () => {
+  it("uses the white brand logo on a dark header", () => {
     const html = buildEmailBase("<p>Hi</p>", undefined, "https://kmcheck.com");
     expect(html).toContain('src="https://kmcheck.com/brand/logo-white.png"');
-    expect(html).toContain('alt="kmcheck.com"');
+    expect(html).toContain('bgcolor="#040d08"');
+    expect(html).not.toContain('bgcolor="#16a34a"');
     expect(html).not.toContain("km<span");
   });
 

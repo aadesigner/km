@@ -276,10 +276,17 @@ export default function AdminEmails() {
       if (data.ok) {
         setTestMsg({ ok: true, text: `Test "${EMAIL_TYPES.find(e => e.type === selectedType)?.label}" sent to ${testEmail}` });
       } else {
+        const gatewayTimeout = resp.status === 502 || resp.status === 504;
         setTestMsg({
           ok: false,
-          text: data.error ?? "Send failed — check SMTP settings",
-          hint: data.hint,
+          text: data.error
+            ?? (gatewayTimeout
+              ? "Mail test timed out or SMTP host unreachable."
+              : "Send failed — check SMTP settings"),
+          hint: data.hint
+            ?? (gatewayTimeout
+              ? "Try port 465 (SSL) or 587 (STARTTLS). Railway often blocks or throttles outbound SMTP."
+              : undefined),
         });
       }
     } catch {
