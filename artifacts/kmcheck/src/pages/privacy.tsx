@@ -3,6 +3,7 @@ import { useTranslation } from "@/i18n/context";
 import { useLegalTranslation } from "@/i18n/useLegalTranslation";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TextWithObfuscatedEmail } from "@/components/obfuscated-email-link";
 
 const COOKIE_TYPES = [
   { typeKey: "legal_cookie_essential_type", descKey: "legal_cookie_essential_desc", required: true },
@@ -140,7 +141,7 @@ export default function Privacy() {
             {rightsItems.map((item) => <li key={item}>{item}</li>)}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-3">
-            {t("legal_privacy_s7_footer_before")}{" "}
+            <TextWithObfuscatedEmail text={t("legal_privacy_s7_footer_before")} />{" "}
             <Link href={`/${language}/terms`} className="text-primary hover:underline">
               {t("legal_link_terms")}
             </Link>
@@ -165,7 +166,9 @@ export default function Privacy() {
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s11_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s11_body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            <TextWithObfuscatedEmail text={t("legal_privacy_s11_body")} />
+          </p>
         </section>
       </div>
 

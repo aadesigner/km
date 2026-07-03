@@ -3,6 +3,7 @@ import { useTranslation } from "@/i18n/context";
 import { useLegalTranslation } from "@/i18n/useLegalTranslation";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TextWithObfuscatedEmail } from "@/components/obfuscated-email-link";
 
 export default function Terms() {
   const { language, dir } = useTranslation();
@@ -114,7 +115,9 @@ export default function Terms() {
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_terms_s10_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_terms_s10_body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            <TextWithObfuscatedEmail text={t("legal_terms_s10_body")} />
+          </p>
         </section>
       </div>
 

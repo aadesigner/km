@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "@/i18n/context";
 import { DashboardReportList } from "@/components/dashboard-report-list";
 import { ClientAreaLayout } from "@/components/client-area-layout";
+import { ObfuscatedEmailLink } from "@/components/obfuscated-email-link";
 import { prefetchVinPageChunk, seedVinLookupsFromHistory } from "@/lib/prefetch-vin-report";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import {
@@ -431,9 +432,7 @@ export default function Dashboard() {
                 <div>
                   <p className="font-semibold text-sm">{t("help_contact_title")}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{t("help_contact_desc")}</p>
-                  <a href="mailto:support@kmcheck.com" className="text-xs font-medium text-primary mt-2 inline-block hover:underline">
-                    support@kmcheck.com
-                  </a>
+                  <ObfuscatedEmailLink className="text-xs font-medium mt-2 inline-block" />
                 </div>
               </div>
             </motion.div>
