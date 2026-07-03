@@ -13,6 +13,7 @@ import {
   smtpTransportSecurity,
   type SmtpSecurityLevel,
 } from "./smtpSecurity.js";
+import { formatSmtpConfigError, formatSmtpTransportError } from "./smtpErrors.js";
 
 export { buildEmailBase } from "./emailLayout.js";
 
@@ -25,6 +26,13 @@ export type SmtpOverride = {
   smtpPass?: string | null;
   smtpFromEmail?: string | null;
   smtpFromName?: string | null;
+};
+
+export type SendEmailResult = {
+  ok: boolean;
+  error?: string;
+  hint?: string;
+  code?: string;
 };
 
 interface EmailOptions {
@@ -44,20 +52,46 @@ type ResolvedSmtp = {
   fromEmail: string;
 };
 
-async function resolveSmtpConfig(override?: SmtpOverride): Promise<ResolvedSmtp | null> {
-  const [saved] = await db
-    .select()
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
+type SmtpConfigResult =
+  | { ok: true; config: ResolvedSmtp }
+  | { ok: false; error: string; hint?: string; code?: string };
+
+async function resolveSmtpConfig(override?: SmtpOverride): Promise<SmtpConfigResult> {
+  let saved: typeof systemSettingsTable.$inferSelect | undefined;
+  try {
+    [saved] = await db
+      .select()
+      .from(systemSettingsTable)
+      .orderBy(desc(systemSettingsTable.id))
+      .limit(1);
+  } catch (err) {
+    const detail = formatSmtpTransportError(err);
+    return { ok: false, ...detail };
+  }
 
   const enabled = override?.smtpEnabled ?? saved?.smtpEnabled;
-  if (!enabled) return null;
+  if (!enabled) {
+    const detail = formatSmtpConfigError("disabled");
+    return { ok: false, ...detail };
+  }
 
   const host = String(override?.smtpHost ?? saved?.smtpHost ?? "").trim();
   const user = String(override?.smtpUser ?? saved?.smtpUser ?? "").trim();
-  const pass = String(override?.smtpPass ?? saved?.smtpPass ?? "").trim();
-  if (!host || !user || !pass) return null;
+  const overridePass = override?.smtpPass != null ? String(override.smtpPass).trim() : "";
+  const pass = overridePass || String(saved?.smtpPass ?? "").trim();
+
+  if (!host) {
+    const detail = formatSmtpConfigError("host");
+    return { ok: false, ...detail };
+  }
+  if (!user) {
+    const detail = formatSmtpConfigError("user");
+    return { ok: false, ...detail };
+  }
+  if (!pass) {
+    const detail = formatSmtpConfigError("pass");
+    return { ok: false, ...detail };
+  }
 
   const port = override?.smtpPort ?? saved?.smtpPort ?? 587;
   const security = normalizeSmtpSecurity(
@@ -68,18 +102,22 @@ async function resolveSmtpConfig(override?: SmtpOverride): Promise<ResolvedSmtp 
   const fromName = String(override?.smtpFromName ?? saved?.smtpFromName ?? "kmcheck").trim() || "kmcheck";
 
   return {
-    host,
-    port,
-    security,
-    user,
-    pass,
-    fromEmail,
-    fromName,
+    ok: true,
+    config: {
+      host,
+      port,
+      security,
+      user,
+      pass,
+      fromEmail,
+      fromName,
+    },
   };
 }
 
 async function getSmtpSettings() {
-  return resolveSmtpConfig();
+  const resolved = await resolveSmtpConfig();
+  return resolved.ok ? resolved.config : null;
 }
 
 /** True when admin SMTP is enabled and has host, user, and password. */
@@ -116,12 +154,13 @@ export async function loadEmailTemplatesConfig(): Promise<EmailTemplatesConfig> 
 export async function sendEmail(
   opts: EmailOptions,
   smtpOverride?: SmtpOverride,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<SendEmailResult> {
   try {
-    const smtp = await resolveSmtpConfig(smtpOverride);
-    if (!smtp) {
-      return { ok: false, error: "SMTP not configured or not enabled" };
+    const resolved = await resolveSmtpConfig(smtpOverride);
+    if (!resolved.ok) {
+      return { ok: false, error: resolved.error, hint: resolved.hint, code: resolved.code };
     }
+    const smtp = resolved.config;
 
     const transporter = nodemailer.createTransport({
       host: smtp.host,
@@ -151,8 +190,8 @@ export async function sendEmail(
 
     return { ok: true };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: msg };
+    const detail = formatSmtpTransportError(err);
+    return { ok: false, ...detail };
   }
 }
 

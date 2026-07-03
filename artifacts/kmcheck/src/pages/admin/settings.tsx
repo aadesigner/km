@@ -255,6 +255,7 @@ export default function AdminSettings() {
   const [smtpTestEmail, setSmtpTestEmail] = useState("");
   const [smtpTestStatus, setSmtpTestStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
   const [smtpTestError, setSmtpTestError] = useState("");
+  const [smtpTestHint, setSmtpTestHint] = useState("");
   const [recaptchaTestStatus, setRecaptchaTestStatus] = useState<"idle" | "testing" | "ok" | "error">("idle");
   const [recaptchaTestError, setRecaptchaTestError] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -373,6 +374,7 @@ export default function AdminSettings() {
     }
     setSmtpTestStatus("sending");
     setSmtpTestError("");
+    setSmtpTestHint("");
     try {
       const resp = await fetch(`${basePath}/api/admin/email/test`, {
         method: "POST",
@@ -392,11 +394,12 @@ export default function AdminSettings() {
           },
         }),
       });
-      const data = await resp.json().catch(() => ({})) as { ok?: boolean; error?: string };
+      const data = await resp.json().catch(() => ({})) as { ok?: boolean; error?: string; hint?: string };
       if (resp.ok && data.ok) setSmtpTestStatus("ok");
       else {
         setSmtpTestStatus("error");
         setSmtpTestError(data.error ?? `Failed to send test email (${resp.status})`);
+        setSmtpTestHint(data.hint ?? "");
       }
     } catch {
       setSmtpTestStatus("error");
@@ -755,7 +758,12 @@ export default function AdminSettings() {
                       : <><Send className="h-4 w-4" />Send Test</>}
                   </Button>
                 </div>
-                {smtpTestStatus === "error" && smtpTestError && <p className="text-xs text-destructive">{smtpTestError}</p>}
+                {smtpTestStatus === "error" && smtpTestError && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-destructive font-medium">{smtpTestError}</p>
+                    {smtpTestHint && <p className="text-xs text-muted-foreground">{smtpTestHint}</p>}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

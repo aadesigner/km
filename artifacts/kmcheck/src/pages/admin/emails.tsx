@@ -116,7 +116,7 @@ export default function AdminEmails() {
 
   const [testEmail, setTestEmail] = useState("");
   const [testSending, setTestSending] = useState(false);
-  const [testMsg, setTestMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [testMsg, setTestMsg] = useState<{ ok: boolean; text: string; hint?: string } | null>(null);
 
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -272,11 +272,15 @@ export default function AdminEmails() {
           contentHtml: draftContent,
         }),
       });
-      const data = await resp.json() as { ok?: boolean; error?: string };
+      const data = await resp.json().catch(() => ({})) as { ok?: boolean; error?: string; hint?: string };
       if (data.ok) {
         setTestMsg({ ok: true, text: `Test "${EMAIL_TYPES.find(e => e.type === selectedType)?.label}" sent to ${testEmail}` });
       } else {
-        setTestMsg({ ok: false, text: data.error ?? "Send failed — check SMTP settings" });
+        setTestMsg({
+          ok: false,
+          text: data.error ?? "Send failed — check SMTP settings",
+          hint: data.hint,
+        });
       }
     } catch {
       setTestMsg({ ok: false, text: "Network error" });
@@ -531,7 +535,12 @@ export default function AdminEmails() {
                     </p>
                   )}
                   {testMsg && (
-                    <p className={cn("text-xs", testMsg.ok ? "text-green-600" : "text-destructive")}>{testMsg.text}</p>
+                    <div className="space-y-1">
+                      <p className={cn("text-xs", testMsg.ok ? "text-green-600" : "text-destructive font-medium")}>{testMsg.text}</p>
+                      {!testMsg.ok && testMsg.hint && (
+                        <p className="text-xs text-muted-foreground">{testMsg.hint}</p>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>

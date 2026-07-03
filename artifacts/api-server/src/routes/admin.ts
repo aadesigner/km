@@ -1703,45 +1703,63 @@ router.get("/admin/email/preview", requireAdmin, async (req, res) => {
 });
 
 router.post("/admin/email/test", requireAdmin, async (req, res) => {
-  const { to, type, subject, contentHtml, smtp } = req.body as {
-    to?: string;
-    type?: string;
-    subject?: string;
-    contentHtml?: string;
-    smtp?: import("../lib/emailService.js").SmtpOverride;
-  };
-  if (!to?.trim()) { res.status(400).json({ error: "to is required" }); return; }
+  try {
+    const { to, type, subject, contentHtml, smtp } = req.body as {
+      to?: string;
+      type?: string;
+      subject?: string;
+      contentHtml?: string;
+      smtp?: import("../lib/emailService.js").SmtpOverride;
+    };
+    if (!to?.trim()) { res.status(400).json({ error: "Recipient email (to) is required." }); return; }
 
-  const { sendEmail, buildSmtpTestEmail, getSiteUrl } = await import("../lib/emailService.js");
-  const siteUrl = (await getSiteUrl()).replace(/\/$/, "");
+    const { sendEmail, buildSmtpTestEmail, getSiteUrl } = await import("../lib/emailService.js");
+    const siteUrl = (await getSiteUrl()).replace(/\/$/, "");
 
-  let emailPayload: { subject: string; html: string; text?: string };
-  if (type && isEmailTemplateType(type)) {
-    const { renderEmailTemplate, getSampleTemplateVars } = await import("../lib/emailTemplates.js");
-    const [settings] = await db
-      .select({ emailTemplates: systemSettingsTable.emailTemplates })
-      .from(systemSettingsTable)
-      .orderBy(desc(systemSettingsTable.id))
-      .limit(1);
-    const stored = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
-    const draftOverride = (subject || contentHtml) ? { subject, contentHtml } : undefined;
-    const override = draftOverride ?? stored[type];
-    emailPayload = renderEmailTemplate(type, getSampleTemplateVars(type, siteUrl), override, siteUrl);
-  } else {
-    emailPayload = buildSmtpTestEmail(siteUrl);
-    emailPayload.text = "SMTP is working! Your kmcheck email configuration is correctly set up.";
-  }
+    let emailPayload: { subject: string; html: string; text?: string };
+    if (type && isEmailTemplateType(type)) {
+      const { renderEmailTemplate, getSampleTemplateVars } = await import("../lib/emailTemplates.js");
+      const [settings] = await db
+        .select({ emailTemplates: systemSettingsTable.emailTemplates })
+        .from(systemSettingsTable)
+        .orderBy(desc(systemSettingsTable.id))
+        .limit(1);
+      const stored = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
+      const draftOverride = (subject || contentHtml) ? { subject, contentHtml } : undefined;
+      const override = draftOverride ?? stored[type];
+      emailPayload = renderEmailTemplate(type, getSampleTemplateVars(type, siteUrl), override, siteUrl);
+    } else {
+      emailPayload = buildSmtpTestEmail(siteUrl);
+      emailPayload.text = "SMTP is working! Your kmcheck email configuration is correctly set up.";
+    }
 
-  const result = await sendEmail({
-    to: to.trim(),
-    subject: emailPayload.subject,
-    html: emailPayload.html,
-    text: emailPayload.text,
-  }, smtp && typeof smtp === "object" ? smtp : undefined);
-  if (result.ok) {
-    res.json({ ok: true });
-  } else {
-    res.status(502).json({ ok: false, error: result.error });
+    const result = await sendEmail({
+      to: to.trim(),
+      subject: emailPayload.subject,
+      html: emailPayload.html,
+      text: emailPayload.text,
+    }, smtp && typeof smtp === "object" ? smtp : undefined);
+
+    if (result.ok) {
+      res.json({ ok: true });
+      return;
+    }
+
+    res.status(502).json({
+      ok: false,
+      error: result.error ?? "Failed to send test email.",
+      hint: result.hint,
+      code: result.code,
+    });
+  } catch (err) {
+    const { formatSmtpTransportError } = await import("../lib/smtpErrors.js");
+    const detail = formatSmtpTransportError(err);
+    res.status(500).json({
+      ok: false,
+      error: detail.error,
+      hint: detail.hint ?? "An unexpected error occurred while sending the test email.",
+      code: detail.code ?? "EMAIL_TEST_FAILED",
+    });
   }
 });
 
