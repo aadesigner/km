@@ -13,20 +13,12 @@ export function HomeStatsStrip({ className }: Props) {
   return (
     <div className={cn("home-stats-strip relative z-[1] pt-1 sm:pt-1.5", className)}>
       <ul
-        className="mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 max-sm:max-h-[3.25rem] sm:gap-x-0 max-sm:overflow-hidden max-sm:content-start"
+        className="mx-auto flex flex-wrap items-center justify-center gap-1.5 sm:gap-2"
         role="list"
       >
-        {stats.map((stat, i) => (
+        {stats.map((stat) => (
           <li key={stat.id} className="flex items-center">
-            {i > 0 && (
-              <span
-                aria-hidden
-                className="mx-3 hidden text-muted-foreground/30 sm:inline select-none"
-              >
-                ·
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground sm:text-xs dark:border-white/10 dark:bg-white/5">
               <img
                 src={`https://flagcdn.com/16x12/${stat.flag}.png`}
                 width={16}
