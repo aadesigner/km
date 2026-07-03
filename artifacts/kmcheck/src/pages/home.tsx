@@ -239,7 +239,7 @@ export default function Home() {
               {t("hero_subtext")}
             </p>
 
-            <HomeStatsStrip variant="hero" />
+            <HomeStatsStrip />
 
             <HeroVinForm
               vin={vin}

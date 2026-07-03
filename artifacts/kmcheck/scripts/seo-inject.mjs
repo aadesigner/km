@@ -203,10 +203,11 @@ function buildSeoHeadBlock(resolved) {
   ];
 
   if (ogImage) {
-    lines.push(`<meta property="og:image" content="${escapeHtml(ogImage)}" />`);
-    lines.push(`<meta name="twitter:image" content="${escapeHtml(ogImage)}" />`);
-    if (String(ogImage).startsWith("https://")) {
-      lines.push(`<meta property="og:image:secure_url" content="${escapeHtml(ogImage)}" />`);
+    const absoluteOgImage = String(ogImage).startsWith("/") ? `${SITE_ORIGIN}${ogImage}` : ogImage;
+    lines.push(`<meta property="og:image" content="${escapeHtml(absoluteOgImage)}" />`);
+    lines.push(`<meta name="twitter:image" content="${escapeHtml(absoluteOgImage)}" />`);
+    if (String(absoluteOgImage).startsWith("https://")) {
+      lines.push(`<meta property="og:image:secure_url" content="${escapeHtml(absoluteOgImage)}" />`);
     }
     if (ogImageAlt) {
       lines.push(`<meta property="og:image:alt" content="${escapeHtml(ogImageAlt)}" />`);
