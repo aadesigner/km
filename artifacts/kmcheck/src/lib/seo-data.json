@@ -17,8 +17,8 @@
       "description": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля."
     },
     "sq": {
-      "title": "Kontroll VIN i makinave — kilometrazh, aksidente dhe fshirje | kmcheck.com",
-      "description": "Kontroll VIN i menjëhershëm — verifikoni kilometrazhin real (km), zbuloni historinë e plotë të aksidenteve dhe regjistrat e fshirjes për çdo makinë."
+      "title": "Kontroll kilometrash, aksidentesh dhe regjistra salvage | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh dhe regjistra salvage — verifikoni kilometrat origjinale (km), zbuloni historinë e plotë të aksidenteve për çdo makinë."
     }
   },
   "pricing": {
@@ -54,7 +54,7 @@
     "ar": { "title": "تحقق من كيلومترات وحوادث السيارات الأمريكية | kmcheck.com", "description": "تحقق من الكيلومترات والحوادث والسرقة وسجلات الإتلاف للسيارات الأمريكية. تقرير VIN فوري لجميع الولايات الخمسين." },
     "uk": { "title": "Перевір пробіг, аварії та угони авто з США | kmcheck.com", "description": "Перевірка пробігу, аварій, угонів і тоталів американських авто. Миттєвий звіт VIN по всіх 50 штатах." },
     "ru": { "title": "Проверь пробег, аварии и угоны авто из США | kmcheck.com", "description": "Проверка пробега, аварий, угонов и тоталов американских авто. Мгновенный отчёт VIN по всем 50 штатам." },
-    "sq": { "title": "Kontrollo kilometrat, aksidentet dhe statusin e vjedhjes — makina nga SHBA | kmcheck.com", "description": "Kontrollo kilometrat, aksidentet, statusin e vjedhjes dhe fshirjes për makina nga SHBA. Raport i menjëhershëm me shasi (VIN) për të 50 shtetet." }
+    "sq": { "title": "Kontrollo kilometrat, aksidentet dhe statusin e vjedhjes — makina nga SHBA | kmcheck.com", "description": "Kontrollo kilometrat, aksidentet, statusin e vjedhjes dhe dëmtimit total për makina nga SHBA. Raport i menjëhershëm me shasi (VIN) për të 50 shtetet." }
   },
   "country_korea": {
     "en": { "title": "Check Korean Car Mileage, Accidents & History | kmcheck.com", "description": "Check car mileage, accidents, import history and hidden damage for Korean cars. Instant VIN report for Hyundai, Kia and Genesis." },

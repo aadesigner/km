@@ -231,7 +231,7 @@ export default function Home() {
               {t("hero_badge")}
             </motion.div>
 
-            <h1 className="text-[3rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
+            <h1 className="text-[2.75rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {t("hero_headline_1")}<br />
               <CyclingWord />
             </h1>
