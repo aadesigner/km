@@ -87,9 +87,23 @@ function injectRecaptchaScript(siteKey: string): void {
   if (document.getElementById("recaptcha-v3-script")) return;
   const script = document.createElement("script");
   script.id = "recaptcha-v3-script";
-  script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
+  // recaptcha.net loads in more regions / privacy browsers than google.com alone
+  script.src = `https://www.recaptcha.net/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
   script.async = true;
   document.head.appendChild(script);
+}
+
+/** Run execute() — call from pointerdown/touchstart while the user gesture is still active (iOS). */
+export function executeRecaptchaToken(siteKey: string, action: string): Promise<string | null> {
+  if (!siteKey || typeof window === "undefined") return Promise.resolve(null);
+  if (typeof window.grecaptcha === "undefined") return Promise.resolve(null);
+  return new Promise((resolve) => {
+    window.grecaptcha.ready(() => {
+      void window.grecaptcha.execute(siteKey, { action })
+        .then((token) => resolve(token))
+        .catch(() => resolve(null));
+    });
+  });
 }
 
 export function useRecaptcha() {
@@ -136,15 +150,11 @@ export function useRecaptcha() {
     const ready = await waitForGrecaptcha(current.siteKey);
     if (!ready) return null;
 
-    try {
-      return await window.grecaptcha.execute(current.siteKey, { action });
-    } catch {
-      return null;
-    }
+    return executeRecaptchaToken(current.siteKey, action);
   }, []);
 
   const enabled = settings.enabled && !!settings.siteKey;
   const ready = settingsLoaded && (!enabled || scriptReady);
 
-  return { getToken, enabled, ready, settingsLoaded };
+  return { getToken, executeRecaptchaToken, enabled, ready, settingsLoaded, siteKey: settings.siteKey };
 }

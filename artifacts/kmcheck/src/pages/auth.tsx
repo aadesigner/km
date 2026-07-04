@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, ApiRequestError } from "@/lib/auth-context";
 import { useTranslation } from "@/i18n/context";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { useRecaptcha, executeRecaptchaToken } from "@/hooks/use-recaptcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,7 +83,7 @@ interface AuthFormProps {
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const { login, register, isSignedIn, isLoaded } = useAuth();
   const { language, t } = useTranslation();
-  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady } = useRecaptcha();
+  const { enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const { googleEnabled, facebookEnabled } = useOAuthSettings();
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState(initialMode);
@@ -95,6 +95,14 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
+
+  const recaptchaAction = mode === "sign-in" ? "login" : "register";
+
+  const primeRecaptcha = () => {
+    if (!rcEnabled || !rcReady || !rcSiteKey || loading) return;
+    recaptchaPrimeRef.current = executeRecaptchaToken(rcSiteKey, recaptchaAction);
+  };
 
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const oauthError = searchParams.get("error");
@@ -162,10 +170,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
     const form = e.currentTarget;
     const isSignInMode = mode === "sign-in";
-    const action = isSignInMode ? "login" : "register";
 
-    // Start reCAPTCHA immediately while the submit click user-gesture is still active (Safari/iOS).
-    const recaptchaPromise = rcEnabled ? getRecaptchaToken(action) : Promise.resolve(null);
+    const recaptchaPromise = recaptchaPrimeRef.current
+      ?? (rcEnabled && rcSiteKey ? executeRecaptchaToken(rcSiteKey, recaptchaAction) : Promise.resolve(null));
+    recaptchaPrimeRef.current = null;
 
     const submitEmail = readAuthFieldValue(form, "email", email).trim();
     const submitPassword = readAuthFieldValue(form, "password", password);
@@ -430,6 +438,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     type="submit"
                     className="w-full h-12 text-[15px] font-semibold rounded-xl bg-gradient-to-r from-primary to-[hsl(158,72%,34%)] hover:opacity-[0.97] shadow-lg shadow-primary/20 transition-opacity"
                     disabled={submitDisabled}
+                    onPointerDown={primeRecaptcha}
+                    onTouchStart={primeRecaptcha}
                   >
                     {loading ? (
                       <><Loader2 className="h-4 w-4 animate-spin mr-2" />{isSignIn ? t("auth_signing_in") : t("auth_creating_account")}</>
