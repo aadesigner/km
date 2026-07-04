@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, ApiRequestError } from "@/lib/auth-context";
 import { useTranslation } from "@/i18n/context";
@@ -93,6 +93,30 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  /** iOS/Safari strong-password autofill updates the DOM but often skips React onChange. */
+  const syncAutofillFromDom = useCallback(() => {
+    const domEmail = emailRef.current?.value;
+    const domPassword = passwordRef.current?.value;
+    const domName = nameRef.current?.value;
+    if (domEmail != null && domEmail !== email) setEmail(domEmail);
+    if (domPassword != null && domPassword !== password) setPassword(domPassword);
+    if (domName != null && domName !== name) setName(domName);
+  }, [email, password, name]);
+
+  useEffect(() => {
+    const nodes = [emailRef.current, passwordRef.current, nameRef.current].filter(Boolean) as HTMLInputElement[];
+    const onAutofillAnim = (e: AnimationEvent) => {
+      if (e.animationName === "native-autofill-start") syncAutofillFromDom();
+    };
+    for (const node of nodes) node.addEventListener("animationstart", onAutofillAnim);
+    return () => {
+      for (const node of nodes) node.removeEventListener("animationstart", onAutofillAnim);
+    };
+  }, [mode, syncAutofillFromDom]);
 
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const oauthError = searchParams.get("error");
@@ -115,9 +139,31 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+
+    syncAutofillFromDom();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const submitEmail = String(formData.get("email") ?? emailRef.current?.value ?? email).trim();
+    const submitPassword = String(formData.get("password") ?? passwordRef.current?.value ?? password);
+    const submitName = String(formData.get("name") ?? nameRef.current?.value ?? name).trim();
+
+    if (submitEmail !== email) setEmail(submitEmail);
+    if (submitPassword !== password) setPassword(submitPassword);
+    if (submitName !== name) setName(submitName);
+
+    if (mode !== "sign-in") {
+      if (!acceptedTerms) {
+        setError(t("auth_error_terms_required"));
+        return;
+      }
+      if (!isPasswordStrongEnough(submitPassword)) {
+        setError(getPasswordErrorMessage(t, submitPassword));
+        return;
+      }
+    }
 
     if (rcEnabled && !rcReady) {
       setError(t("error_recaptcha_loading"));
@@ -127,7 +173,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setLoading(true);
     try {
       const action = mode === "sign-in" ? "login" : "register";
-      const recaptchaToken = await getRecaptchaToken(action) ?? undefined;
+      let recaptchaToken = await getRecaptchaToken(action) ?? undefined;
+      if (rcEnabled && !recaptchaToken) {
+        await new Promise((r) => setTimeout(r, 300));
+        recaptchaToken = await getRecaptchaToken(action) ?? undefined;
+      }
 
       if (rcEnabled && !recaptchaToken) {
         setError(t("error_recaptcha_failed"));
@@ -135,17 +185,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       }
 
       if (mode === "sign-in") {
-        await login(email, password, recaptchaToken);
+        await login(submitEmail, submitPassword, recaptchaToken);
       } else {
-        if (!acceptedTerms) {
-          setError(t("auth_error_terms_required"));
-          return;
-        }
-        if (!isPasswordStrongEnough(password)) {
-          setError(getPasswordErrorMessage(t, password));
-          return;
-        }
-        await register(email, password, name || undefined, recaptchaToken);
+        await register(submitEmail, submitPassword, submitName || undefined, recaptchaToken);
       }
       setLocation(getPostAuthRedirectPath(language));
     } catch (err) {
@@ -223,14 +265,18 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         <div className="relative min-w-0">
                           <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                           <Input
+                            ref={nameRef}
                             id="name"
+                            name="name"
                             type="text"
                             placeholder={t("auth_name_placeholder")}
                             value={name}
                             onChange={e => setName(e.target.value)}
+                            onInput={e => setName(e.currentTarget.value)}
+                            onBlur={syncAutofillFromDom}
                             autoComplete="name"
                             disabled={loading}
-                            className={cn(AUTH_INPUT, "pl-9")}
+                            className={cn(AUTH_INPUT, "pl-9 auth-field-input")}
                           />
                         </div>
                       </AuthField>
@@ -239,15 +285,19 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         <div className="relative min-w-0">
                           <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                           <Input
+                            ref={emailRef}
                             id="email"
+                            name="email"
                             type="email"
                             placeholder={t("auth_email_placeholder")}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
+                            onInput={e => setEmail(e.currentTarget.value)}
+                            onBlur={syncAutofillFromDom}
                             required
-                            autoComplete="email"
+                            autoComplete="username"
                             disabled={loading}
-                            className={cn(AUTH_INPUT, "pl-9")}
+                            className={cn(AUTH_INPUT, "pl-9 auth-field-input")}
                           />
                         </div>
                       </AuthField>
@@ -257,15 +307,19 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                       <div className="relative">
                         <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                         <Input
+                          ref={emailRef}
                           id="email"
+                          name="email"
                           type="email"
                           placeholder={t("auth_email_placeholder")}
                           value={email}
                           onChange={e => setEmail(e.target.value)}
+                          onInput={e => setEmail(e.currentTarget.value)}
+                          onBlur={syncAutofillFromDom}
                           required
-                          autoComplete="email"
+                          autoComplete="username"
                           disabled={loading}
-                          className={cn(AUTH_INPUT, "pl-10")}
+                          className={cn(AUTH_INPUT, "pl-10 auth-field-input")}
                         />
                       </div>
                     </AuthField>
@@ -286,16 +340,20 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     <div className="relative">
                       <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                       <Input
+                        ref={passwordRef}
                         id="password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder={isSignIn ? t("auth_password_placeholder_signin") : t("auth_password_placeholder_signup")}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
+                        onInput={e => setPassword(e.currentTarget.value)}
+                        onBlur={syncAutofillFromDom}
                         required
                         minLength={isSignIn ? 1 : 6}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
                         disabled={loading}
-                        className={cn(AUTH_INPUT, "pl-10 pr-11")}
+                        className={cn(AUTH_INPUT, "pl-10 pr-11 auth-field-input")}
                       />
                       <button
                         type="button"

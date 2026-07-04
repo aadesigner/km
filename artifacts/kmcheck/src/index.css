@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Safari/iOS password autofill does not fire React onChange — detect via animation. */
+@keyframes native-autofill-start {
+  from { opacity: 1; }
+  to { opacity: 1; }
+}
+
+.auth-field-input:-webkit-autofill {
+  animation-name: native-autofill-start;
+  animation-duration: 0.01s;
+}
+
 @media print {
   @page {
     size: A4 portrait;
