@@ -3,6 +3,7 @@ import { buildVinOnlyPageDescription, buildVinOnlyPageTitle, buildVinPageSeo, no
 
 const OG_LOCALE_MAP: Record<VinSeoLang, string> = {
   en: "en_US",
+  es: "es_ES",
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
@@ -11,13 +12,14 @@ const OG_LOCALE_MAP: Record<VinSeoLang, string> = {
 
 const HREFLANG_MAP: Record<VinSeoLang, string> = {
   en: "en",
+  es: "es",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
   sq: "sq-AL",
 };
 
-const SEO_LANGS: VinSeoLang[] = ["en", "ar", "uk", "ru", "sq"];
+const SEO_LANGS: VinSeoLang[] = ["en", "es", "uk", "ru", "ar", "sq"];
 
 function escapeHtml(value: string): string {
   return String(value)
@@ -41,7 +43,7 @@ function removeGeneratedSeoTags(html: string): string {
 
 function buildSeoHeadBlock(seo: VinPageSeo, lang: VinSeoLang, origin: string): string {
   const canonicalUrl = `${origin.replace(/\/$/, "")}${seo.canonicalPath}`;
-  const rest = seo.canonicalPath.replace(/^\/(en|ar|uk|ru|sq)/, "");
+  const rest = seo.canonicalPath.replace(/^\/(en|es|uk|ru|ar|sq)/, "");
   const lines = [
     `<meta name="description" content="${escapeHtml(seo.description)}" />`,
     `<meta name="robots" content="index, follow" />`,

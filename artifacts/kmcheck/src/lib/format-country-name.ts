@@ -162,6 +162,7 @@ const ENGLISH_NAME_TO_ISO: Record<string, string> = {
 const LOCALE_MAP: Record<string, string> = {
   sq: "sq-AL",
   en: "en-US",
+  es: "es-ES",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",

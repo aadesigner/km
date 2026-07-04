@@ -3,6 +3,7 @@ import { KmcheckPrintLogo } from "@/components/logo";
 
 const PRINT_LOCALE: Record<string, string> = {
   en: "en-US",
+  es: "es-ES",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",

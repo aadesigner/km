@@ -24,10 +24,11 @@ import { SiteAnalytics } from "@/components/site-analytics";
 
 const LANGS = [
   { code: "en", label: "English",    img: "gb" },
+  { code: "es", label: "Español",    img: "es" },
+  { code: "sq", label: "Shqip",      img: "al" },
   { code: "ar", label: "العربية",    img: "sa" },
   { code: "uk", label: "Українська", img: "ua" },
   { code: "ru", label: "Русский",    img: "ru" },
-  { code: "sq", label: "Shqip",      img: "al" },
 ];
 
 const COUNTRY_LINKS = [
@@ -273,7 +274,7 @@ function MobileThemeToggle({
     : null;
 
   return (
-    <div className="relative md:hidden">
+    <div className="relative">
       <button
         ref={btnRef}
         type="button"
@@ -284,7 +285,7 @@ function MobileThemeToggle({
         onClick={handleToggle}
         className={cn(
           "relative inline-flex shrink-0 items-center justify-center rounded-full transition-[color,background-color] duration-200",
-          scrolled ? "h-9 w-9" : "h-10 w-10",
+          scrolled ? "h-8 w-8" : "h-9 w-9",
           open
             ? isDarkNav
               ? "bg-white/10 text-white"
@@ -295,6 +296,168 @@ function MobileThemeToggle({
         )}
       >
         <CurrentIcon className="h-4 w-4" />
+      </button>
+      {menu}
+    </div>
+  );
+}
+
+function MobileLangPicker({
+  language,
+  onLanguageChange,
+  isDarkNav,
+  scrolled,
+  mobileMenuOpen = false,
+}: {
+  language: string;
+  onLanguageChange: (code: string) => void;
+  isDarkNav: boolean;
+  scrolled: boolean;
+  mobileMenuOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+
+  const close = useCallback(() => setOpen(false), []);
+
+  const updateMenuPosition = useCallback(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setMenuStyle({
+      position: "fixed",
+      top: rect.bottom + 8,
+      right: Math.max(12, window.innerWidth - rect.right),
+      zIndex: 120,
+      minWidth: "13rem",
+    });
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) close();
+  }, [mobileMenuOpen, close]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+    const onReflow = () => updateMenuPosition();
+    window.addEventListener("resize", onReflow);
+    window.addEventListener("scroll", onReflow, true);
+    return () => {
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow, true);
+    };
+  }, [open, updateMenuPosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      close();
+    };
+    const id = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onPointerDown, true);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("pointerdown", onPointerDown, true);
+    };
+  }, [open, close]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, close]);
+
+  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!open) updateMenuPosition();
+    setOpen((v) => !v);
+  };
+
+  const current = LANGS.find((l) => l.code === language);
+
+  const menu = mounted
+    ? createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              ref={menuRef}
+              role="menu"
+              aria-label="Language"
+              initial={{ opacity: 0, y: -4, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              style={{ ...menuStyle, transformOrigin: "top right" }}
+              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5"
+            >
+              {LANGS.map((l) => {
+                const active = language === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={active}
+                    onClick={() => {
+                      close();
+                      requestAnimationFrame(() => onLanguageChange(l.code));
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/[0.06] active:bg-primary/10 transition-colors text-left"
+                  >
+                    <FlagImg code={l.img} size={20} />
+                    <span className={cn("text-sm flex-1", active ? "font-semibold text-primary" : "text-foreground")}>
+                      {l.label}
+                    </span>
+                    {active && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className="relative">
+      <button
+        ref={btnRef}
+        type="button"
+        title={current?.label ?? language}
+        aria-label={current?.label ?? language}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={handleToggle}
+        className={cn(
+          "flex items-center gap-1 px-2 rounded-full font-medium transition-[color,background-color] duration-200",
+          scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
+          open
+            ? isDarkNav
+              ? "bg-white/10 text-white"
+              : "bg-primary/10 text-primary"
+            : isDarkNav
+              ? "text-white/75 hover:bg-white/10 hover:text-white"
+              : "text-foreground hover:bg-primary/[0.06]",
+        )}
+      >
+        <FlagImg code={current?.img ?? "gb"} size={20} />
+        <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
       </button>
       {menu}
     </div>
@@ -349,7 +512,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   }, []);
 
   const handleLanguageChange = (lang: string) => {
-    const next = lang as "en" | "ar" | "uk" | "ru" | "sq";
+    const next = lang as "en" | "es" | "uk" | "ru" | "ar" | "sq";
     const path = window.location.pathname;
     const newPath = path.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
     const target = newPath === path ? `/${next}` : newPath;
@@ -692,18 +855,27 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
           {/* Mobile menu */}
           <div className="md:hidden flex items-center gap-1.5">
-            <MobileThemeToggle
-              theme={theme}
-              setTheme={setTheme}
-              isDarkNav={isDarkNav}
-              scrolled={scrolled}
-              mobileMenuOpen={mobileOpen}
-              labels={{
-                light: t("theme_light"),
-                dark: t("theme_dark"),
-                system: t("theme_system"),
-              }}
-            />
+            <div className={utilityClusterCls}>
+              <MobileLangPicker
+                language={language}
+                onLanguageChange={handleLanguageChange}
+                isDarkNav={isDarkNav}
+                scrolled={scrolled}
+                mobileMenuOpen={mobileOpen}
+              />
+              <MobileThemeToggle
+                theme={theme}
+                setTheme={setTheme}
+                isDarkNav={isDarkNav}
+                scrolled={scrolled}
+                mobileMenuOpen={mobileOpen}
+                labels={{
+                  light: t("theme_light"),
+                  dark: t("theme_dark"),
+                  system: t("theme_system"),
+                }}
+              />
+            </div>
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <MobileMenuToggle
@@ -799,34 +971,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
               {/* Mobile auth footer */}
               <div className="border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 shrink-0 bg-background">
-
-                {/* Language flags */}
-                <div className="grid grid-cols-5 gap-1.5">
-                  {LANGS.map(l => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => handleLanguageChange(l.code)}
-                      title={l.label}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg border transition-colors min-h-[44px] touch-manipulation",
-                        language === l.code
-                          ? "border-primary bg-primary/8 ring-1 ring-primary/20"
-                          : "border-border/60 hover:border-border hover:bg-primary/[0.04] active:bg-primary/[0.06]",
-                      )}
-                    >
-                      <FlagImg code={l.img} size={20} className="w-4 h-3" />
-                      <span className={cn(
-                        "text-[8px] font-bold uppercase tracking-wide leading-none",
-                        language === l.code ? "text-primary" : "text-muted-foreground",
-                      )}>
-                        {l.code}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="h-px bg-border/60" />
                 {!isLoaded ? (
                   <div className="h-9 rounded-xl bg-muted/80 animate-pulse" aria-hidden />
                 ) : isSignedIn ? (

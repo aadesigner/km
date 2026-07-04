@@ -2,7 +2,7 @@
 
 export const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
 
-export const VIN_SEO_LANGS = ["en", "ar", "uk", "ru", "sq"] as const;
+export const VIN_SEO_LANGS = ["en", "es", "uk", "ru", "ar", "sq"] as const;
 export type VinSeoLang = (typeof VIN_SEO_LANGS)[number];
 
 export type VinSeoVehicle = {
@@ -39,7 +39,7 @@ export function isIndexableVinRest(rest: string): boolean {
 
 export function parseVinPagePath(pathname: string): { lang: VinSeoLang; vin: string; rest: string } | null {
   const path = pathname.split("?")[0]!.replace(/\/$/, "") || "/";
-  const m = path.match(/^\/(en|ar|uk|ru|sq)(\/vin\/([A-HJ-NPR-Z0-9]{17}))$/i);
+  const m = path.match(/^\/(en|es|uk|ru|ar|sq)(\/vin\/([A-HJ-NPR-Z0-9]{17}))$/i);
   if (!m?.[3]) return null;
   const vin = normalizeVin(m[3]);
   if (!isValidVin(vin)) return null;
@@ -73,6 +73,7 @@ type DescFn = (vehicle: string, vin: string, specs: string) => string;
 
 const TITLES: Record<VinSeoLang, TitleFn> = {
   en: (vehicle, vin) => `${vehicle} — Check VIN ${vin} | kmcheck`,
+  es: (vehicle, vin) => `${vehicle} — Comprobar VIN ${vin} | kmcheck`,
   ar: (vehicle, vin) => `${vehicle} — تحقق من VIN ${vin} | kmcheck`,
   uk: (vehicle, vin) => `${vehicle} — перевірка VIN ${vin} | kmcheck`,
   ru: (vehicle, vin) => `${vehicle} — проверка VIN ${vin} | kmcheck`,
@@ -81,6 +82,7 @@ const TITLES: Record<VinSeoLang, TitleFn> = {
 
 const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
   en: (vin) => `VIN ${vin} — Vehicle History Report | kmcheck`,
+  es: (vin) => `VIN ${vin} — Informe historial del vehículo | kmcheck`,
   ar: (vin) => `VIN ${vin} — تقرير تاريخ المركبة | kmcheck`,
   uk: (vin) => `VIN ${vin} — звіт історії авто | kmcheck`,
   ru: (vin) => `VIN ${vin} — отчёт по истории авто | kmcheck`,
@@ -91,6 +93,10 @@ const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
     return `Check ${vehicle} (VIN ${vin}): mileage, accidents, ownership history, insurance & auction records.${specsPart} Instant full report on kmcheck.com.`;
+  },
+  es: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Verifique ${vehicle} (VIN ${vin}): kilometraje, accidentes, historial de propietarios, seguro y subastas.${specsPart} Informe completo al instante en kmcheck.com.`;
   },
   ar: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
@@ -112,6 +118,7 @@ const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
 
 const VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> = {
   en: (vin) => `Check VIN ${vin}: mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.`,
+  es: (vin) => `Verifique VIN ${vin}: kilometraje, accidentes, historial de propietarios, seguro y subastas. Informe completo al instante en kmcheck.com.`,
   ar: (vin) => `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
   uk: (vin) => `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
   ru: (vin) => `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,

@@ -43,7 +43,7 @@ const js = `/* auto-generated — do not edit */
   var PATH_MAP = ${JSON.stringify(PATH_TO_SEO_KEY)};
   var OG_LOCALE = ${JSON.stringify(OG_LOCALE_MAP)};
   var SEO_LANGS = ${JSON.stringify(SEO_LANGS)};
-  var HREFLANG = ${JSON.stringify({ en: "en", ar: "ar", uk: "uk-UA", ru: "ru", sq: "sq-AL" })};
+  var HREFLANG = ${JSON.stringify({ en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", sq: "sq-AL" })};
   var NOINDEX = ${JSON.stringify(NOINDEX)};
   var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada"])};
   var BASE = ${JSON.stringify(basePath)};
@@ -162,7 +162,7 @@ const js = `/* auto-generated — do not edit */
   function applySeoFromUrl() {
     var ORIGIN = location.origin;
     var pathname = stripBase(location.pathname);
-    var m = pathname.match(/^\\/(en|ar|uk|ru|sq)(\\/.*)?$/);
+    var m = pathname.match(/^\\/(en|es|uk|ru|ar|sq)(\\/.*)?$/);
     var lang = m ? m[1] : "en";
     var rest = m && m[2] ? m[2].replace(/\\/$/, "") : "";
     var vinSeo = VIN_INDEX_RE.test(rest) ? vinSeoFallback(rest, lang) : null;

@@ -803,7 +803,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 router.get("/vin/seo/:vin", publicVinLimiter, async (req, res) => {
   const vin = String(req.params.vin ?? "").toUpperCase();
   const lang = String(req.query.lang ?? "en").toLowerCase();
-  const seoLang = (["en", "ar", "uk", "ru", "sq"].includes(lang) ? lang : "en") as VinSeoLang;
+  const seoLang = (["en", "es", "ar", "uk", "ru", "sq"].includes(lang) ? lang : "en") as VinSeoLang;
 
   if (!VIN_RE.test(vin)) {
     res.status(400).json({ error: "Invalid VIN" });

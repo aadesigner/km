@@ -42,6 +42,7 @@ type PaymentStats = {
 
 const LOCALE_MAP: Record<string, string> = {
   en: "en-US",
+  es: "es-ES",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",
@@ -259,7 +260,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
       <SEOHead
         title={`${t("purchases_title")} — kmcheck.com`}
         description={t("purchases_subtitle")}
-        lang={lang as "en" | "ar" | "uk" | "ru" | "sq"}
+        lang={lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}
         noIndex
       />
       <ClientAreaLayout>

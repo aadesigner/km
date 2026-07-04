@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ORIGIN = "https://kmcheck.com";
-const LANGS = ["en", "ar", "uk", "ru", "sq"];
+const LANGS = ["en", "es", "uk", "ru", "ar", "sq"];
 const PATHS = [
   "",
   "/pricing",
@@ -23,6 +23,7 @@ const PATHS = [
 
 const HREFLANG = {
   en: "en",
+  es: "es",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",

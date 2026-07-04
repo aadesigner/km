@@ -33,6 +33,11 @@ describe("pluginSettings", () => {
     });
     expect(resolveLanguageForCountry("AL", settings)).toBe("sq");
     expect(resolveLanguageForCountry("MK", settings)).toBe("sq");
+    expect(resolveLanguageForCountry("MX", settings)).toBe("es");
+    expect(resolveLanguageForCountry("ES", settings)).toBe("es");
+    expect(resolveLanguageForCountry("CO", settings)).toBe("es");
+    expect(resolveLanguageForCountry("AR", settings)).toBe("es");
+    expect(resolveLanguageForCountry("PE", settings)).toBe("es");
     expect(resolveLanguageForCountry("UA", settings)).toBe("uk");
     expect(resolveLanguageForCountry("SA", settings)).toBe("ar");
     expect(resolveLanguageForCountry("PS", settings)).toBe("ar");

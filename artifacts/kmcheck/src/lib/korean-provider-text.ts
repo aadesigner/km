@@ -6,6 +6,7 @@ import { isRegistryRepairCostLabel, sanitizeKoreanRepairAmountText } from "@work
 
 const LOCALE_BY_LANG: Record<Language, string> = {
   en: "en-US",
+  es: "es-ES",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",

@@ -1,5 +1,5 @@
 /**
- * QA: verify every indexable page has title + description in all 5 languages.
+ * QA: verify every indexable page has title + description in all 6 languages.
  * Usage: node artifacts/kmcheck/scripts/qa-seo.mjs
  */
 import { readFileSync } from "node:fs";
@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const seoData = JSON.parse(readFileSync(join(root, "src/lib/seo-data.json"), "utf8"));
-const langs = ["en", "ar", "uk", "ru", "sq"];
+const langs = ["en", "es", "uk", "ru", "ar", "sq"];
 const indexableKeys = [
   "home",
   "pricing",

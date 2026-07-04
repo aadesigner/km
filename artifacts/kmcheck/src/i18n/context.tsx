@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import enTranslations from "./en.json";
 
-export type Language = "en" | "ar" | "uk" | "ru" | "sq";
+export type Language = "en" | "es" | "uk" | "ru" | "ar" | "sq";
 type Translations = Record<string, string>;
 
 interface I18nContextType {
@@ -14,7 +14,7 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-const ALL_LANGS: Language[] = ["en", "ar", "uk", "ru", "sq"];
+const ALL_LANGS: Language[] = ["en", "es", "uk", "ru", "ar", "sq"];
 
 const dictCache: Partial<Record<Language, Translations>> = {
   en: enTranslations as Translations,
@@ -33,6 +33,7 @@ export async function loadDict(lang: Language): Promise<Translations> {
   if (!loadPromises[lang]) {
     const map: Record<Language, () => Promise<{ default: Translations }>> = {
       en: () => Promise.resolve({ default: enTranslations as Translations }),
+      es: () => import("./es.json"),
       ar: () => import("./ar.json"),
       uk: () => import("./uk.json"),
       ru: () => import("./ru.json"),

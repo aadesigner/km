@@ -5,6 +5,7 @@ type LegalDict = Record<string, string>;
 
 const loaders: Record<string, () => Promise<{ default: LegalDict }>> = {
   en: () => import("./legal/en.json"),
+  es: () => import("./legal/es.json"),
   ar: () => import("./legal/ar.json"),
   uk: () => import("./legal/uk.json"),
   ru: () => import("./legal/ru.json"),

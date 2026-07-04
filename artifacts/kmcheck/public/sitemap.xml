@@ -3,601 +3,781 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://kmcheck.com/en</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/pricing</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/pricing</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/pricing</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/pricing</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/pricing</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/pricing</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/pricing</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/pricing" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/pricing" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/pricing" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/pricing" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/pricing" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/pricing" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/free-vin-decoder</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/free-vin-decoder</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/free-vin-decoder</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/free-vin-decoder</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/free-vin-decoder</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/free-vin-decoder</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/free-vin-decoder</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/free-vin-decoder" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/free-vin-decoder" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/free-vin-decoder" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/free-vin-decoder" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/how-it-works</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/how-it-works</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/how-it-works</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/how-it-works</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/how-it-works</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/how-it-works</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/how-it-works</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/how-it-works" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/how-it-works" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/how-it-works" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/how-it-works" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/how-it-works" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/how-it-works" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/faq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/faq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/faq</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/faq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/faq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/faq</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/faq</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/faq" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/faq" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/faq" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/faq" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/terms</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/terms</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/terms</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/terms</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/terms</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/terms</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/terms</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/terms" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/terms" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/terms" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/terms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/terms" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/privacy</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/privacy</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/privacy</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/privacy</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/privacy</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/privacy</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/privacy</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/privacy" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/privacy" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/privacy" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/privacy" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/cars/usa</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/cars/usa</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/cars/usa</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/cars/usa</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/cars/usa</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/cars/usa</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/cars/usa</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/usa" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/usa" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/usa" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/usa" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/usa" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/usa" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/usa" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/cars/korea</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/cars/korea</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/cars/korea</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/cars/korea</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/cars/korea</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/cars/korea</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/cars/korea</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/korea" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/korea" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/korea" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/korea" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/korea" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/korea" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/korea" />
   </url>
   <url>
     <loc>https://kmcheck.com/en/cars/canada</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
   </url>
   <url>
-    <loc>https://kmcheck.com/ar/cars/canada</loc>
-    <lastmod>2026-07-03</lastmod>
+    <loc>https://kmcheck.com/es/cars/canada</loc>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
   </url>
   <url>
     <loc>https://kmcheck.com/uk/cars/canada</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
   </url>
   <url>
     <loc>https://kmcheck.com/ru/cars/canada</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/ar/cars/canada</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
   </url>
   <url>
     <loc>https://kmcheck.com/sq/cars/canada</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://kmcheck.com/en/cars/canada" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://kmcheck.com/es/cars/canada" />
     <xhtml:link rel="alternate" hreflang="uk-UA" href="https://kmcheck.com/uk/cars/canada" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://kmcheck.com/ru/cars/canada" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://kmcheck.com/ar/cars/canada" />
     <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/cars/canada" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kmcheck.com/en/cars/canada" />
   </url>

@@ -71,7 +71,7 @@ function CyclingWord() {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % CYCLING_KEYS.length), 2600);
+    const id = setInterval(() => setIdx(i => (i + 1) % CYCLING_KEYS.length), 4200);
     return () => clearInterval(id);
   }, []);
   return (
@@ -218,19 +218,6 @@ export default function Home() {
             transition={{ duration: 0.55 }}
             className="space-y-8 text-center"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-              </span>
-              {t("hero_badge")}
-            </motion.div>
-
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {t("hero_headline_1")}<br />
               <CyclingWord />

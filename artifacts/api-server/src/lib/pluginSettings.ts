@@ -1,4 +1,4 @@
-export const PLUGIN_LANGS = ["en", "ar", "uk", "ru", "sq"] as const;
+export const PLUGIN_LANGS = ["en", "es", "uk", "ru", "ar", "sq"] as const;
 export type PluginLanguage = (typeof PLUGIN_LANGS)[number];
 
 /** Never geo-redirect these ISO codes — even if added to a rule by mistake. */
@@ -23,6 +23,12 @@ export type PluginSettings = {
 /** Pre-configured country → language rules (first match wins). */
 export const DEFAULT_GEO_LANGUAGE_RULES: GeoLanguageRule[] = [
   { countries: ["AL", "XK", "MK", "ME"], language: "sq" },
+  {
+    countries: [
+      "ES", "MX", "AR", "CO", "PE", "CL", "VE", "EC", "GT", "BO", "DO", "HN", "PY", "SV", "NI", "CR", "PA", "UY",
+    ],
+    language: "es",
+  },
   { countries: ["UA"], language: "uk" },
   {
     countries: [

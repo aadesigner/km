@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
       <SEOHead
         title={`${t("reset_title")} — kmcheck.com`}
         description={t("reset_subtitle")}
-        lang={language as "en" | "ar" | "uk" | "ru" | "sq"}
+        lang={language as "en" | "es" | "uk" | "ru" | "ar" | "sq"}
         noIndex
       />
       <AuthPageShell>
