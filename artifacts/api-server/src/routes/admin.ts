@@ -937,7 +937,7 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
 
   try {
     const oldPhotoUrls = extractVinPhotoUrls(lookup.data);
-    const data = await fetchFromProvider(lookup.vin, provider.baseUrl, provider.apiKey);
+    const data = await fetchFromProvider(lookup.vin, provider.baseUrl, provider.apiKey, { force: true });
     const currentRate = await getCurrentKrwPerUsd();
     const existingCatalog = await db.select().from(vinCatalogTable).where(eq(vinCatalogTable.vin, lookup.vin)).limit(1);
     const existingCatalogData = (existingCatalog[0]?.data ?? {}) as Record<string, unknown>;
@@ -2464,7 +2464,7 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
     const oldPhotoUrls = extractVinPhotoUrls(existingEntry?.data);
     const existingData = (existingEntry?.data ?? {}) as Record<string, unknown>;
     const existingCatalogRate = readFrozenKrwPerUsd(existingData);
-    const data = await fetchFromProvider(vin, provider.baseUrl, provider.apiKey);
+    const data = await fetchFromProvider(vin, provider.baseUrl, provider.apiKey, { force: true });
     const payload = sanitizeCatalogPayload(data as unknown as Record<string, unknown>);
     const currentRate = await getCurrentKrwPerUsd();
     const stampedCatalog = stampCatalogImportData(payload, {

@@ -996,13 +996,22 @@ async function fetchLocalReport(
   throw new Error(`Provider returned ${res.status}: ${text.slice(0, 200)}`);
 }
 
-export async function fetchFromProvider(vin: string, providerBaseUrl: string, apiKey: string): Promise<NormalizedVinData> {
+export async function fetchFromProvider(
+  vin: string,
+  providerBaseUrl: string,
+  apiKey: string,
+  opts?: { force?: boolean },
+): Promise<NormalizedVinData> {
   const normalized = vin.trim().toUpperCase();
   return withGlobalVinProviderLock(normalized, async () => {
-    const catalogEntry = await getCatalogVin(normalized);
-    const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-    if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleKoreanReport(catalogData)) {
-      return normalizeCarstatResponse(catalogData);
+    // `force` (admin "Refresh from provider") always calls the provider and bypasses
+    // the catalog cache, so a partial/stale catalog row can be fully repaired.
+    if (!opts?.force) {
+      const catalogEntry = await getCatalogVin(normalized);
+      const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
+      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleKoreanReport(catalogData)) {
+        return normalizeCarstatResponse(catalogData);
+      }
     }
 
     const base = normalizeProviderBaseUrl(providerBaseUrl);
