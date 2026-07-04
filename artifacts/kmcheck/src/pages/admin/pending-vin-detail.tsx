@@ -107,7 +107,13 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           }
         }
       }
-      queryClient.setQueryData(["/api/admin/pending-vin-checks", pendingId], body);
+      // Preserve `requests` if the response ever omits it, so the detail page
+      // never re-renders with an undefined `requests` array.
+      const merged: PendingDetail = {
+        ...body,
+        requests: body.requests ?? detail?.requests ?? [],
+      };
+      queryClient.setQueryData(["/api/admin/pending-vin-checks", pendingId], merged);
       void queryClient.invalidateQueries({
         predicate: (q) =>
           Array.isArray(q.queryKey)
@@ -271,15 +277,15 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary" />
-            Requesting users ({detail.requests.length})
+            Requesting users ({(detail.requests ?? []).length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {detail.requests.length === 0 ? (
+          {(detail.requests ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No linked requests.</p>
           ) : (
             <ul className="space-y-2">
-              {detail.requests.map((req) => (
+              {(detail.requests ?? []).map((req) => (
                 <li key={req.id} className="text-sm flex flex-wrap items-center gap-x-3 gap-y-1 py-2 border-b last:border-0">
                   <span className="font-medium">{req.email ?? req.userId}</span>
                   {req.name && <span className="text-muted-foreground">{req.name}</span>}

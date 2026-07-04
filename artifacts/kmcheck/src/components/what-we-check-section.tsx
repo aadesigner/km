@@ -123,7 +123,7 @@ function WhatWeCheckNavButton({
       </div>
       <span className="text-sm lg:text-[15px] font-semibold leading-snug flex-1 min-w-0">{title}</span>
       <ChevronRight className={cn(
-        "h-4 w-4 shrink-0 transition-opacity",
+        "h-4 w-4 shrink-0 transition-opacity hidden lg:block",
         active ? "opacity-50" : "opacity-0 group-hover:opacity-35",
       )} />
     </button>
@@ -171,7 +171,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Pro
         </motion.div>
 
         <div className="lg:hidden space-y-3">
-          <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
             {features.map((feat, i) => (
               <WhatWeCheckNavButton
                 key={feat.title}

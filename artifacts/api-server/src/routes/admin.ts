@@ -965,7 +965,10 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
     res.json(updated);
   } catch (err) {
     logger.error({ err, id }, "Force refresh failed");
-    res.status(502).json({ error: "Failed to refresh from provider" });
+    const reason = err instanceof Error ? err.message : "";
+    res.status(502).json({
+      error: reason ? `Failed to refresh from provider: ${reason}` : "Failed to refresh from provider",
+    });
   }
 });
 
@@ -2496,7 +2499,10 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
     res.json({ ok: true, vin });
   } catch (err) {
     logger.error({ err, vin }, "VIN catalog refresh failed");
-    res.status(502).json({ error: "Failed to refresh from provider" });
+    const reason = err instanceof Error ? err.message : "";
+    res.status(502).json({
+      error: reason ? `Failed to refresh from provider: ${reason}` : "Failed to refresh from provider",
+    });
   }
 });
 
@@ -2997,8 +3003,11 @@ router.patch("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) => 
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
   const body = req.body as Record<string, unknown>;
   try {
-    const updated = await savePendingVinCheckDraft({ pendingId: id, draftData: body });
-    res.json(updated);
+    await savePendingVinCheckDraft({ pendingId: id, draftData: body });
+    // Return the same enriched shape as GET (includes `requests`) so the client
+    // cache stays consistent and the detail page can re-render without crashing.
+    const detail = await getPendingVinCheckById(id);
+    res.json(detail);
   } catch (err) {
     const code = (err as { code?: string }).code;
     if (code === "NOT_FOUND") {

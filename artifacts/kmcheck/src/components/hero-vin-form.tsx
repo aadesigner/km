@@ -18,6 +18,7 @@ type HeroVinFormProps = {
   alerts?: ReactNode;
   inputRef?: RefObject<HTMLInputElement | null>;
   className?: string;
+  helpVariant?: "default" | "on-dark";
 };
 
 export function HeroVinForm({
@@ -30,6 +31,7 @@ export function HeroVinForm({
   alerts,
   inputRef,
   className,
+  helpVariant = "default",
 }: HeroVinFormProps) {
   const { t } = useTranslation();
   const vinLen = vin.length;
@@ -72,7 +74,7 @@ export function HeroVinForm({
               <Input
                 ref={inputRef}
                 className={cn(
-                  "h-12 sm:h-14 md:h-16 w-full min-w-0",
+                  "h-[3.25rem] sm:h-14 md:h-16 w-full min-w-0",
                   "pl-11 sm:pl-14 pr-[7.5rem] sm:pr-[10.5rem]",
                   "text-[16px] sm:text-lg",
                   "border-0 focus-visible:ring-0 focus-visible:outline-none rounded-none shadow-none bg-transparent",
@@ -117,7 +119,7 @@ export function HeroVinForm({
         </div>
       </div>
 
-      <WhereToFindVinHelp />
+      <WhereToFindVinHelp variant={helpVariant} />
     </form>
   );
 }

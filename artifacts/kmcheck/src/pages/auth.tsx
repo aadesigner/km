@@ -343,14 +343,14 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         checked={acceptedTerms}
                         onCheckedChange={(v) => setAcceptedTerms(v === true)}
                         disabled={loading}
-                        className="mt-0.5 h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
+                        className="mt-0.5 h-[1.15rem] w-[1.15rem] rounded-[4px] border-muted-foreground/40 data-[state=checked]:border-primary"
                       />
                       <label
                         htmlFor="accept-terms"
-                        className="text-[11px] leading-snug text-muted-foreground/80 cursor-pointer select-none"
+                        className="text-[13px] leading-snug text-muted-foreground/80 cursor-pointer select-none"
                       >
                         {t("auth_accept_terms_lead")}{" "}
-                        <Link
+                        <a
                           href={`/${language}/terms`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -358,9 +358,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           onClick={(e) => e.stopPropagation()}
                         >
                           {t("terms")}
-                        </Link>{" "}
+                        </a>{" "}
                         {t("auth_accept_terms_and")}{" "}
-                        <Link
+                        <a
                           href={`/${language}/privacy`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -368,7 +368,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           onClick={(e) => e.stopPropagation()}
                         >
                           {t("auth_privacy_link")}
-                        </Link>
+                        </a>
                       </label>
                     </div>
                   )}

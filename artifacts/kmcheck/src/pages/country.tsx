@@ -4,7 +4,6 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Accordion,
@@ -13,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Search, ShieldCheck,
+  ShieldCheck,
   Zap, ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,8 +22,6 @@ import { CompareTable } from "@/components/compare-table";
 import { WhatWeCheckSection } from "@/components/what-we-check-section";
 import { CountryRisksIncludedSection } from "@/components/country-risks-included";
 import { cn } from "@/lib/utils";
-import { VinCheckSubmitLabel } from "@/components/vin-check-submit-label";
-import { WhereToFindVinHelp } from "@/components/where-to-find-vin-help";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
@@ -480,7 +477,7 @@ export default function CountryPage({ params }: Props) {
               {countryName} · {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
-              {t("country_cta_heading")} {countryName}?
+              {t("country_cta_heading").replace("{country}", countryName)}
             </h2>
             <div className="text-white/45 text-base leading-relaxed">
               {t("country_cta_desc")}{" "}
@@ -497,26 +494,15 @@ export default function CountryPage({ params }: Props) {
             </div>
           </div>
 
-          <form onSubmit={handleCheck} className="space-y-3">
-            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/12 bg-white/[0.06] backdrop-blur-sm sm:shadow-xl sm:shadow-black/20">
-              <Search className="absolute left-5 h-5 w-5 text-white/35 shrink-0" />
-              <Input
-                className="h-14 pl-13 pr-36 text-base border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none bg-transparent font-mono tracking-widest text-white placeholder:text-white/25"
-                placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-                value={vin}
-                onChange={e => { setVin(e.target.value.toUpperCase()); setError(""); }}
-                maxLength={17}
-              />
-              <Button
-                type="submit" size="lg"
-                className="absolute right-2 h-10 rounded-xl px-6 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-              >
-                <VinCheckSubmitLabel />
-              </Button>
-            </div>
-            <WhereToFindVinHelp variant="on-dark" />
-            {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-          </form>
+          <HeroVinForm
+            vin={vin}
+            onVinChange={(v) => { setVin(v); setError(""); }}
+            onSubmit={handleCheck}
+            error={error}
+            disabled={vinLookupDisabled}
+            placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
+            helpVariant="on-dark"
+          />
 
           <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/35">
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-white/45" />{t("trust_secure_payment")}</span>

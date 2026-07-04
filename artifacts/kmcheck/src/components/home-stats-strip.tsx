@@ -18,7 +18,7 @@ export function HomeStatsStrip({ className }: Props) {
       >
         {stats.map((stat) => (
           <li key={stat.id} className="flex items-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground sm:text-xs dark:border-white/10 dark:bg-white/5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] sm:text-xs dark:border-white/10 dark:bg-white/5">
               <img
                 src={`https://flagcdn.com/16x12/${stat.flag}.png`}
                 width={16}
@@ -28,10 +28,7 @@ export function HomeStatsStrip({ className }: Props) {
                 decoding="async"
                 className="home-stats-flag shrink-0 h-3 w-4 rounded-[2px] object-cover"
               />
-              <span className="font-semibold tabular-nums tracking-tight text-foreground">
-                {stat.value}
-              </span>
-              <span className="text-muted-foreground/80">{stat.label}</span>
+              <span className="font-semibold tracking-tight text-foreground">{stat.label}</span>
             </span>
           </li>
         ))}

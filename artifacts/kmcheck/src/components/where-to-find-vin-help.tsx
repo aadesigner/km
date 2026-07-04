@@ -121,9 +121,9 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
           )}
         >
           <div className="px-4 pt-5 pb-4 sm:px-6 sm:pt-6 md:px-8 md:pt-7 border-b bg-muted/30">
-            <DialogHeader className={cn("space-y-1.5 text-center sm:text-start", dir === "ar" && "sm:text-right")}>
+            <DialogHeader className={cn("text-center sm:text-start", dir === "ar" && "sm:text-right")}>
               <DialogTitle className="text-lg sm:text-xl md:text-[1.35rem] pr-8 leading-snug">{t("vin_find_help_title")}</DialogTitle>
-              <DialogDescription className="text-sm md:text-[0.9375rem] leading-relaxed text-pretty">
+              <DialogDescription className="sr-only">
                 {t("vin_find_help_intro")}
               </DialogDescription>
             </DialogHeader>
