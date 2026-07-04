@@ -145,6 +145,7 @@ async function verifyRecaptchaToken(
   token: string,
   secretKey: string,
   minScore: number,
+  opts?: { acceptSuccessOnly?: boolean },
 ): Promise<{ ok: boolean; score: number; outage: boolean; errorCodes?: string[] }> {
   try {
     const body = new URLSearchParams({ secret: secretKey, response: token });
@@ -161,8 +162,11 @@ async function verifyRecaptchaToken(
     };
     const score = data.score ?? 1;
     const errorCodes = data["error-codes"];
+    const ok = opts?.acceptSuccessOnly
+      ? data.success
+      : data.success && score >= minScore;
     return {
-      ok: data.success && score >= minScore,
+      ok,
       score,
       outage: false,
       errorCodes,
@@ -173,13 +177,13 @@ async function verifyRecaptchaToken(
   }
 }
 
-/** Auth forms (login/register) see more mobile / autofill traffic — use a lower bar than checkout. */
 const AUTH_RECAPTCHA_MIN_SCORE = 0.3;
+const AUTH_RECAPTCHA_OPTS = { minScore: AUTH_RECAPTCHA_MIN_SCORE, acceptSuccessOnly: true } as const;
 
 async function checkRecaptcha(
   token: string | undefined,
   req?: { headers?: { host?: string } },
-  opts?: { minScore?: number },
+  opts?: { minScore?: number; acceptSuccessOnly?: boolean },
 ): Promise<{ blocked: boolean; reason?: string }> {
   const [settings] = await db
     .select({
@@ -202,7 +206,12 @@ async function checkRecaptcha(
   }
 
   const minScore = opts?.minScore ?? settings.recaptchaMinScore ?? 0.5;
-  const result = await verifyRecaptchaToken(token, settings.recaptchaSecretKey, minScore);
+  const result = await verifyRecaptchaToken(
+    token,
+    settings.recaptchaSecretKey,
+    minScore,
+    { acceptSuccessOnly: opts?.acceptSuccessOnly },
+  );
   if (result.outage) {
     return { blocked: false };
   }
@@ -243,7 +252,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     recaptchaToken?: string;
   };
 
-  const captcha = await checkRecaptcha(recaptchaToken, req, { minScore: AUTH_RECAPTCHA_MIN_SCORE });
+  const captcha = await checkRecaptcha(recaptchaToken, req, AUTH_RECAPTCHA_OPTS);
   if (captcha.blocked) {
     res.status(403).json({ error: captcha.reason ?? "Security check failed", code: "RECAPTCHA_FAILED" });
     return;
@@ -339,7 +348,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     recaptchaToken?: string;
   };
 
-  const captcha = await checkRecaptcha(recaptchaToken, req, { minScore: AUTH_RECAPTCHA_MIN_SCORE });
+  const captcha = await checkRecaptcha(recaptchaToken, req, AUTH_RECAPTCHA_OPTS);
   if (captcha.blocked) {
     res.status(403).json({ error: captcha.reason ?? "Security check failed", code: "RECAPTCHA_FAILED" });
     return;
@@ -453,7 +462,7 @@ router.post("/auth/forgot-password", forgotPasswordIpLimiter, forgotPasswordEmai
     lang?: string;
   };
 
-  const captcha = await checkRecaptcha(recaptchaToken, req, { minScore: AUTH_RECAPTCHA_MIN_SCORE });
+  const captcha = await checkRecaptcha(recaptchaToken, req, AUTH_RECAPTCHA_OPTS);
   if (captcha.blocked) {
     res.status(403).json({ error: captcha.reason ?? "Security check failed", code: "RECAPTCHA_FAILED" });
     return;

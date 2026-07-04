@@ -14,8 +14,11 @@ import { SEOHead, usePageSeo } from "@/components/seo";
 import { translateAuthOAuthError, translateClientError } from "@/lib/translate-client-error";
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
 import { PasswordRequirements } from "@/components/password-requirements";
-import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
-import { readAuthFieldValue } from "@/lib/auth-form-values";
+import {
+  readAuthCredentials,
+  resolveAuthRecaptchaToken,
+  validateAuthSignupInput,
+} from "@/lib/auth-email-submit";
 import { cn } from "@/lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -83,7 +86,7 @@ interface AuthFormProps {
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const { login, register, isSignedIn, isLoaded } = useAuth();
   const { language, t } = useTranslation();
-  const { enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
+  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const { googleEnabled, facebookEnabled } = useOAuthSettings();
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState(initialMode);
@@ -96,12 +99,24 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
   const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
+  const recaptchaPrimeAtRef = useRef(0);
 
   const recaptchaAction = mode === "sign-in" ? "login" : "register";
 
   const primeRecaptcha = () => {
-    if (!rcEnabled || !rcReady || !rcSiteKey || loading) return;
-    recaptchaPrimeRef.current = executeRecaptchaToken(rcSiteKey, recaptchaAction);
+    if (!rcEnabled || !rcSiteKey || loading) return;
+    const now = Date.now();
+    if (recaptchaPrimeRef.current && now - recaptchaPrimeAtRef.current < 800) return;
+    recaptchaPrimeAtRef.current = now;
+    recaptchaPrimeRef.current = rcReady
+      ? executeRecaptchaToken(rcSiteKey, recaptchaAction)
+      : getRecaptchaToken(recaptchaAction);
+  };
+
+  const syncFieldFromInput = (field: "email" | "password" | "name", value: string) => {
+    if (field === "email") setEmail(value);
+    else if (field === "password") setPassword(value);
+    else setName(value);
   };
 
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
@@ -129,16 +144,18 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       cleanup?.();
 
       const syncPasswordFromDom = () => {
-        if (el.value && el.value !== password) setPassword(el.value);
+        if (el.value) syncFieldFromInput("password", el.value);
       };
       const onAutofillAnim = (e: AnimationEvent) => {
         if (e.animationName === "native-autofill-start") syncPasswordFromDom();
       };
       el.addEventListener("animationstart", onAutofillAnim);
       const timer = window.setTimeout(syncPasswordFromDom, 200);
+      const timer2 = window.setTimeout(syncPasswordFromDom, 600);
       cleanup = () => {
         el.removeEventListener("animationstart", onAutofillAnim);
         window.clearTimeout(timer);
+        window.clearTimeout(timer2);
       };
     };
 
@@ -149,7 +166,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       window.clearTimeout(retry);
       cleanup?.();
     };
-  }, [isLoaded, isSignedIn, mode, password]);
+  }, [isLoaded, isSignedIn, mode]);
 
   if (!isLoaded || isSignedIn) {
     return (
@@ -163,36 +180,35 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     e.preventDefault();
     setError("");
 
-    if (rcEnabled && !rcReady) {
-      setError(t("error_recaptcha_loading"));
-      return;
-    }
-
     const form = e.currentTarget;
     const isSignInMode = mode === "sign-in";
-
-    const recaptchaPromise = recaptchaPrimeRef.current
-      ?? (rcEnabled && rcSiteKey ? executeRecaptchaToken(rcSiteKey, recaptchaAction) : Promise.resolve(null));
-    recaptchaPrimeRef.current = null;
-
-    const submitEmail = readAuthFieldValue(form, "email", email).trim();
-    const submitPassword = readAuthFieldValue(form, "password", password);
-    const submitName = readAuthFieldValue(form, "name", name).trim();
+    const creds = readAuthCredentials(form, { email, password, name });
 
     if (!isSignInMode) {
-      if (!acceptedTerms) {
-        setError(t("auth_error_terms_required"));
-        return;
-      }
-      if (!isPasswordStrongEnough(submitPassword)) {
-        setError(getPasswordErrorMessage(t, submitPassword));
+      const signupCheck = validateAuthSignupInput(creds, acceptedTerms, t);
+      if (!signupCheck.ok) {
+        setError(signupCheck.error);
         return;
       }
     }
 
     setLoading(true);
     try {
-      const recaptchaToken = (await recaptchaPromise) ?? undefined;
+      if (rcEnabled && !rcReady) {
+        setError(t("error_recaptcha_loading"));
+        return;
+      }
+
+      const primed = recaptchaPrimeRef.current;
+      recaptchaPrimeRef.current = null;
+
+      const recaptchaToken = await resolveAuthRecaptchaToken({
+        enabled: rcEnabled,
+        siteKey: rcSiteKey,
+        action: recaptchaAction,
+        primed,
+        getToken: getRecaptchaToken,
+      });
 
       if (rcEnabled && !recaptchaToken) {
         setError(t("error_recaptcha_failed"));
@@ -200,9 +216,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       }
 
       if (isSignInMode) {
-        await login(submitEmail, submitPassword, recaptchaToken);
+        await login(creds.email, creds.password, recaptchaToken);
       } else {
-        await register(submitEmail, submitPassword, submitName || undefined, recaptchaToken);
+        await register(creds.email, creds.password, creds.name || undefined, recaptchaToken);
       }
       setLocation(getPostAuthRedirectPath(language));
     } catch (err) {
@@ -216,7 +232,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   const isSignIn = mode === "sign-in";
   const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
-  const submitDisabled = loading || (rcEnabled && !rcReady) || (!isSignIn && !acceptedTerms);
+  const submitDisabled = loading || (!isSignIn && !acceptedTerms);
   const hasSocial = googleEnabled || facebookEnabled;
 
   return (
@@ -268,7 +284,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} autoComplete="on" className="space-y-4">
                   {!isSignIn ? (
                     <div className="grid grid-cols-2 gap-3">
                       <AuthField
@@ -285,6 +301,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                             placeholder={t("auth_name_placeholder")}
                             value={name}
                             onChange={e => setName(e.target.value)}
+                            onInput={e => syncFieldFromInput("name", e.currentTarget.value)}
                             autoComplete="name"
                             disabled={loading}
                             className={cn(AUTH_INPUT, "pl-9 auth-field-input")}
@@ -302,8 +319,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                             placeholder={t("auth_email_placeholder")}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
+                            onInput={e => syncFieldFromInput("email", e.currentTarget.value)}
                             required
-                            autoComplete="username"
+                            autoComplete="email"
                             disabled={loading}
                             className={cn(AUTH_INPUT, "pl-9 auth-field-input")}
                           />
@@ -321,6 +339,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                           placeholder={t("auth_email_placeholder")}
                           value={email}
                           onChange={e => setEmail(e.target.value)}
+                          onInput={e => syncFieldFromInput("email", e.currentTarget.value)}
                           required
                           autoComplete="username"
                           disabled={loading}
@@ -352,6 +371,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         placeholder={isSignIn ? t("auth_password_placeholder_signin") : t("auth_password_placeholder_signup")}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
+                        onInput={e => syncFieldFromInput("password", e.currentTarget.value)}
                         required
                         minLength={isSignIn ? 1 : 6}
                         autoComplete={isSignIn ? "current-password" : "new-password"}
