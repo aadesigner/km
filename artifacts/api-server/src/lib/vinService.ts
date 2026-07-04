@@ -234,6 +234,41 @@ export function mergeVinPhotoLists(
   return out;
 }
 
+/**
+ * First teaser photo for locked public VIN pages.
+ * Uses catalog data when present; otherwise the newest complete lookup for this VIN
+ * (catalog row already exists, so this does not expose delisted VINs).
+ */
+export async function resolveLockedPreviewPhotoSources(
+  vin: string,
+  dataSource: Record<string, unknown>,
+): Promise<string[]> {
+  const normalized = vin.trim().toUpperCase();
+  const fromCatalog = Array.isArray(dataSource.photos)
+    ? (dataSource.photos as string[]).map((p) => p.trim()).filter(Boolean)
+    : [];
+  if (fromCatalog.length > 0) return fromCatalog.slice(0, 1);
+
+  const [lookup] = await db
+    .select({ data: vinLookupsTable.data })
+    .from(vinLookupsTable)
+    .where(and(
+      eq(vinLookupsTable.vin, normalized),
+      or(
+        eq(vinLookupsTable.status, "complete"),
+        eq(vinLookupsTable.status, "pending_manual"),
+      ),
+    ))
+    .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.createdAt))
+    .limit(1);
+
+  const lookupData = (lookup?.data as Record<string, unknown> | null) ?? null;
+  const fromLookup = lookupData && Array.isArray(lookupData.photos)
+    ? (lookupData.photos as string[]).map((p) => p.trim()).filter(Boolean)
+    : [];
+  return fromLookup.slice(0, 1);
+}
+
 function readOdometerScalar(data: Record<string, unknown> | null | undefined): number | null {
   if (!data) return null;
   const raw = data.odometer ?? data.mileage;

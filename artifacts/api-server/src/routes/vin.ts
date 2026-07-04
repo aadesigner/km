@@ -10,12 +10,13 @@ import {
   enrichVinReportDataForServe,
   vinHasReportData,
   resolveVinReportForViewer,
+  resolveLockedPreviewPhotoSources,
 } from "../lib/vinService.js";
 import { logger } from "../lib/logger.js";
 import { decodeVin, decodeCountry, validateCheckDigit, decodeVinDiagnostics } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
-import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData } from "../lib/imageProxy.js";
+import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
 import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
@@ -206,7 +207,7 @@ function proxyPhotoUrls(
   return photos
     .filter(Boolean)
     .slice(0, MAX_VIN_PHOTOS)
-    .map((p) => buildImageProxyUrl(p, { mediaVersion }));
+    .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
 }
 
 async function findCompleteUserLookup(userId: string, normalizedVin: string) {
@@ -856,7 +857,8 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   const catalogPhotos = Array.isArray(d.photos)
     ? (d.photos as string[]).filter(Boolean)
     : [];
-  const lockedPreviewPhotos = proxyPhotoUrls(catalogPhotos.slice(0, 1), mediaVersion);
+  const lockedPreviewSources = await resolveLockedPreviewPhotoSources(vin, d);
+  const lockedPreviewPhotos = proxyPhotoUrls(lockedPreviewSources, mediaVersion);
 
   // 3. Fetch current pricing
   const [pricingRow] = await db

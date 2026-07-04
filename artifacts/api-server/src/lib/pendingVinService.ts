@@ -4,6 +4,7 @@ import {
   pendingVinCheckRequestsTable,
   vinLookupsTable,
   usersTable,
+  paymentsTable,
 } from "@workspace/db";
 import { eq, and, desc, inArray, count } from "drizzle-orm";
 import {
@@ -518,19 +519,48 @@ export async function importPendingVinDraftsFromJson(payload: unknown) {
   return { updated, skipped, errors: errors.slice(0, 20) };
 }
 
-/** Remove an open pending VIN check and delete linked client lookups. */
+/** Remove an open pending VIN check, delete linked client lookups, and revoke their payments. */
 export async function removePendingVinCheck(opts: { pendingId: number; adminId?: string }) {
   const row = await getPendingVinCheckById(opts.pendingId);
   if (!row || row.status !== "open") {
     throw Object.assign(new Error("Pending VIN check not found"), { code: "NOT_FOUND" });
   }
 
-  const lookupIds = row.requests.map((r) => r.lookupId);
+  const lookupIds = row.requests.map((r) => r.lookupId).filter((id): id is number => id != null);
+  const paymentIds = [...new Set(row.requests.map((r) => r.paymentId).filter((id): id is number => id != null))];
+  const userIds = [...new Set(row.requests.map((r) => r.userId))];
+  const vin = row.vin.toUpperCase();
+  const now = new Date();
+  const revokedPaymentIds = new Set<number>();
 
   await db.transaction(async (tx) => {
     if (lookupIds.length > 0) {
       await tx.delete(vinLookupsTable).where(inArray(vinLookupsTable.id, lookupIds));
     }
+
+    if (paymentIds.length > 0) {
+      const revokedById = await tx.update(paymentsTable)
+        .set({ status: "revoked", updatedAt: now })
+        .where(and(
+          inArray(paymentsTable.id, paymentIds),
+          eq(paymentsTable.status, "completed"),
+        ))
+        .returning({ id: paymentsTable.id });
+      for (const row of revokedById) revokedPaymentIds.add(row.id);
+    }
+
+    for (const userId of userIds) {
+      const revokedByUser = await tx.update(paymentsTable)
+        .set({ status: "revoked", updatedAt: now })
+        .where(and(
+          eq(paymentsTable.userId, userId),
+          eq(paymentsTable.vin, vin),
+          eq(paymentsTable.status, "completed"),
+        ))
+        .returning({ id: paymentsTable.id });
+      for (const row of revokedByUser) revokedPaymentIds.add(row.id);
+    }
+
     await tx.delete(pendingVinCheckRequestsTable)
       .where(eq(pendingVinCheckRequestsTable.pendingVinCheckId, opts.pendingId));
     await tx.delete(pendingVinChecksTable).where(eq(pendingVinChecksTable.id, opts.pendingId));
@@ -539,10 +569,11 @@ export async function removePendingVinCheck(opts: { pendingId: number; adminId?:
   logger.info({
     msg: "pending_vin_removed",
     pendingId: opts.pendingId,
-    vin: row.vin,
+    vin,
     adminId: opts.adminId,
     removedLookupIds: lookupIds,
+    revokedPaymentIds: [...revokedPaymentIds],
   });
 
-  return { vin: row.vin, removedLookupIds: lookupIds };
+  return { vin, removedLookupIds: lookupIds, paymentsRevoked: revokedPaymentIds.size };
 }

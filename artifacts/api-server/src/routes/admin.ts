@@ -3104,6 +3104,7 @@ router.delete("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) =>
     await logAdminAction(req.userId!, "admin_remove_pending_vin", String(id), {
       vin: result.vin,
       removedLookupIds: result.removedLookupIds,
+      paymentsRevoked: result.paymentsRevoked,
     });
     res.json({ ok: true, ...result });
   } catch (err) {
