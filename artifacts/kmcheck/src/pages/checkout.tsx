@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useRecaptcha } from "@/hooks/use-recaptcha";
 import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SEOHead } from "@/components/seo";
 import { parseLangFromPath } from "@/lib/seo-config";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
+import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,7 @@ export default function Checkout({ params }: Props) {
   const { t, language } = useTranslation();
   const { isSignedIn, isLoaded, user } = useAuth();
   const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const { getToken: getRecaptchaToken } = useRecaptcha();
   const { resolvedTheme } = useTheme();
 
@@ -403,6 +405,9 @@ export default function Checkout({ params }: Props) {
     const target = normalizeCheckoutVin(reportVin);
     sessionStorage.removeItem(PENDING_VIN_KEY);
     sessionStorage.removeItem(CHECKOUT_VIN_KEY);
+    // A VIN was just unlocked — refresh the (cached) client-area lists so the
+    // dashboard shows it when the user navigates back, despite refetchOnMount:false.
+    refreshClientAreaAfterUnlock(queryClient);
     setLocation(`/${language}/vin/${target}`);
   };
 
