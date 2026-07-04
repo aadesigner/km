@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth, ApiRequestError } from "@/lib/auth-context";
 import { useTranslation } from "@/i18n/context";
@@ -15,6 +15,7 @@ import { translateAuthOAuthError, translateClientError } from "@/lib/translate-c
 import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
 import { PasswordRequirements } from "@/components/password-requirements";
 import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
+import { readAuthFieldValue } from "@/lib/auth-form-values";
 import { cn } from "@/lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -93,30 +94,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
-
-  /** iOS/Safari strong-password autofill updates the DOM but often skips React onChange. */
-  const syncAutofillFromDom = useCallback(() => {
-    const domEmail = emailRef.current?.value;
-    const domPassword = passwordRef.current?.value;
-    const domName = nameRef.current?.value;
-    if (domEmail != null && domEmail !== email) setEmail(domEmail);
-    if (domPassword != null && domPassword !== password) setPassword(domPassword);
-    if (domName != null && domName !== name) setName(domName);
-  }, [email, password, name]);
-
-  useEffect(() => {
-    const nodes = [emailRef.current, passwordRef.current, nameRef.current].filter(Boolean) as HTMLInputElement[];
-    const onAutofillAnim = (e: AnimationEvent) => {
-      if (e.animationName === "native-autofill-start") syncAutofillFromDom();
-    };
-    for (const node of nodes) node.addEventListener("animationstart", onAutofillAnim);
-    return () => {
-      for (const node of nodes) node.removeEventListener("animationstart", onAutofillAnim);
-    };
-  }, [mode, syncAutofillFromDom]);
 
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const oauthError = searchParams.get("error");
@@ -131,6 +109,40 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setLocation(getPostAuthRedirectPath(language));
   }, [isLoaded, isSignedIn, language, setLocation]);
 
+  useEffect(() => {
+    if (!isLoaded || isSignedIn || mode !== "sign-up") return;
+
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+
+    const attach = () => {
+      const el = passwordRef.current;
+      if (!el || cancelled) return;
+      cleanup?.();
+
+      const syncPasswordFromDom = () => {
+        if (el.value && el.value !== password) setPassword(el.value);
+      };
+      const onAutofillAnim = (e: AnimationEvent) => {
+        if (e.animationName === "native-autofill-start") syncPasswordFromDom();
+      };
+      el.addEventListener("animationstart", onAutofillAnim);
+      const timer = window.setTimeout(syncPasswordFromDom, 200);
+      cleanup = () => {
+        el.removeEventListener("animationstart", onAutofillAnim);
+        window.clearTimeout(timer);
+      };
+    };
+
+    attach();
+    const retry = window.setTimeout(attach, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retry);
+      cleanup?.();
+    };
+  }, [isLoaded, isSignedIn, mode, password]);
+
   if (!isLoaded || isSignedIn) {
     return (
       <div className="min-h-[calc(100dvh-64px)] flex items-center justify-center">
@@ -143,18 +155,23 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     e.preventDefault();
     setError("");
 
-    syncAutofillFromDom();
+    if (rcEnabled && !rcReady) {
+      setError(t("error_recaptcha_loading"));
+      return;
+    }
+
     const form = e.currentTarget;
-    const formData = new FormData(form);
-    const submitEmail = String(formData.get("email") ?? emailRef.current?.value ?? email).trim();
-    const submitPassword = String(formData.get("password") ?? passwordRef.current?.value ?? password);
-    const submitName = String(formData.get("name") ?? nameRef.current?.value ?? name).trim();
+    const isSignInMode = mode === "sign-in";
+    const action = isSignInMode ? "login" : "register";
 
-    if (submitEmail !== email) setEmail(submitEmail);
-    if (submitPassword !== password) setPassword(submitPassword);
-    if (submitName !== name) setName(submitName);
+    // Start reCAPTCHA immediately while the submit click user-gesture is still active (Safari/iOS).
+    const recaptchaPromise = rcEnabled ? getRecaptchaToken(action) : Promise.resolve(null);
 
-    if (mode !== "sign-in") {
+    const submitEmail = readAuthFieldValue(form, "email", email).trim();
+    const submitPassword = readAuthFieldValue(form, "password", password);
+    const submitName = readAuthFieldValue(form, "name", name).trim();
+
+    if (!isSignInMode) {
       if (!acceptedTerms) {
         setError(t("auth_error_terms_required"));
         return;
@@ -165,26 +182,16 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       }
     }
 
-    if (rcEnabled && !rcReady) {
-      setError(t("error_recaptcha_loading"));
-      return;
-    }
-
     setLoading(true);
     try {
-      const action = mode === "sign-in" ? "login" : "register";
-      let recaptchaToken = await getRecaptchaToken(action) ?? undefined;
-      if (rcEnabled && !recaptchaToken) {
-        await new Promise((r) => setTimeout(r, 300));
-        recaptchaToken = await getRecaptchaToken(action) ?? undefined;
-      }
+      const recaptchaToken = (await recaptchaPromise) ?? undefined;
 
       if (rcEnabled && !recaptchaToken) {
         setError(t("error_recaptcha_failed"));
         return;
       }
 
-      if (mode === "sign-in") {
+      if (isSignInMode) {
         await login(submitEmail, submitPassword, recaptchaToken);
       } else {
         await register(submitEmail, submitPassword, submitName || undefined, recaptchaToken);
@@ -201,8 +208,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   const isSignIn = mode === "sign-in";
   const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
-  const signupPasswordOk = isSignIn || isPasswordStrongEnough(password);
-  const submitDisabled = loading || (rcEnabled && !rcReady) || !signupPasswordOk || (!isSignIn && !acceptedTerms);
+  const submitDisabled = loading || (rcEnabled && !rcReady) || (!isSignIn && !acceptedTerms);
   const hasSocial = googleEnabled || facebookEnabled;
 
   return (
@@ -265,15 +271,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         <div className="relative min-w-0">
                           <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                           <Input
-                            ref={nameRef}
                             id="name"
                             name="name"
                             type="text"
                             placeholder={t("auth_name_placeholder")}
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            onInput={e => setName(e.currentTarget.value)}
-                            onBlur={syncAutofillFromDom}
                             autoComplete="name"
                             disabled={loading}
                             className={cn(AUTH_INPUT, "pl-9 auth-field-input")}
@@ -285,15 +288,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         <div className="relative min-w-0">
                           <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                           <Input
-                            ref={emailRef}
                             id="email"
                             name="email"
                             type="email"
                             placeholder={t("auth_email_placeholder")}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
-                            onInput={e => setEmail(e.currentTarget.value)}
-                            onBlur={syncAutofillFromDom}
                             required
                             autoComplete="username"
                             disabled={loading}
@@ -307,15 +307,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                       <div className="relative">
                         <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
                         <Input
-                          ref={emailRef}
                           id="email"
                           name="email"
                           type="email"
                           placeholder={t("auth_email_placeholder")}
                           value={email}
                           onChange={e => setEmail(e.target.value)}
-                          onInput={e => setEmail(e.currentTarget.value)}
-                          onBlur={syncAutofillFromDom}
                           required
                           autoComplete="username"
                           disabled={loading}
@@ -347,8 +344,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         placeholder={isSignIn ? t("auth_password_placeholder_signin") : t("auth_password_placeholder_signup")}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        onInput={e => setPassword(e.currentTarget.value)}
-                        onBlur={syncAutofillFromDom}
                         required
                         minLength={isSignIn ? 1 : 6}
                         autoComplete={isSignIn ? "current-password" : "new-password"}

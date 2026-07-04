@@ -190,10 +190,7 @@ async function checkRecaptcha(
   const minScore = settings.recaptchaMinScore ?? 0.5;
   const result = await verifyRecaptchaToken(token, settings.recaptchaSecretKey, minScore);
   if (result.outage) {
-    return {
-      blocked: true,
-      reason: "Security verification is temporarily unavailable. Please try again shortly.",
-    };
+    return { blocked: false };
   }
   if (!result.ok) return { blocked: true, reason: "Security check failed. Please try again." };
   return { blocked: false };
