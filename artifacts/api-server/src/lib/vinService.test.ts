@@ -25,6 +25,8 @@ import {
   pickVinReportDataForServe,
   mergeVinPhotoLists,
   isStaleKoreanReport,
+  isStaleCachedReport,
+  isPartialCarstatPhotoCache,
   vinReportDataRichnessScore,
   isKoreanRecallRegistryItem,
   repairEncarMisParsedIsoDate,
@@ -925,6 +927,27 @@ describe("isStaleKoreanReport", () => {
       photos: Array.from({ length: 10 }, (_, i) => `https://cdn/${i}.jpg`),
     })).toBe(true);
     expect(isStaleKoreanReport({ country: "us", insuranceClaims: [{ date: "2020-01-01" }] })).toBe(false);
+  });
+});
+
+describe("isPartialCarstatPhotoCache / isStaleCachedReport", () => {
+  const copartCache = Array.from({ length: 5 }, (_, i) =>
+    `https://i2.carstat.dev/copart/toyota/camry/2007/${i + 1}.webp`);
+
+  it("flags USA Copart rows that only stored partial Carstat webp cache", () => {
+    const row = { country: "us", photos: copartCache };
+    expect(isPartialCarstatPhotoCache(row)).toBe(true);
+    expect(isStaleCachedReport(row)).toBe(true);
+    expect(isStaleKoreanReport(row)).toBe(false);
+  });
+
+  it("does not flag full Copart galleries already stored on the row", () => {
+    const row = {
+      country: "us",
+      photos: Array.from({ length: 12 }, (_, i) => `https://cs.copart.com/v1/photo-${i}.jpg`),
+    };
+    expect(isPartialCarstatPhotoCache(row)).toBe(false);
+    expect(isStaleCachedReport(row)).toBe(false);
   });
 });
 

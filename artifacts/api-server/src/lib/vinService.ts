@@ -650,6 +650,30 @@ export async function resolveVinReportForViewer(
 }
 
 /**
+ * Carstat often stores only a few i2.carstat.dev webp previews in catalog while
+ * Copart/IAAI/Encar still expose a full gallery upstream (big/normal tiers).
+ */
+export function isPartialCarstatPhotoCache(
+  data: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!data) return false;
+  const photos = data.photos;
+  if (!Array.isArray(photos) || photos.length === 0 || photos.length >= 8) return false;
+  const urls = photos.filter((p): p is string => typeof p === "string" && p.trim().length > 0);
+  if (urls.length === 0) return false;
+  return urls.every((u) => /i2\.carstat\.dev/i.test(u));
+}
+
+/** True when a cached catalog/lookup row should be refreshed from the provider. */
+export function isStaleCachedReport(
+  data: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!data) return false;
+  if (isPartialCarstatPhotoCache(data)) return true;
+  return isStaleKoreanReport(data);
+}
+
+/**
  * Korean Encar reports cached before registry extraction often have insurance/owners
  * but an empty registryHistory — treat as stale so we re-fetch from the provider.
  */
@@ -740,7 +764,7 @@ export async function grantVinReportToUser(
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && !isStaleKoreanReport(catalogData)) {
+  if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(catalogData, {
       existingRate: readFrozenKrwPerUsd(catalogData),
@@ -761,7 +785,7 @@ export async function grantVinReportToUser(
 
   const cached = await getCachedVin(normalizedVin);
   const cachedPayload = (cached?.data as Record<string, unknown> | null) ?? null;
-  if (cached?.status === "complete" && cachedPayload && !isStaleKoreanReport(cachedPayload)) {
+  if (cached?.status === "complete" && cachedPayload && !isStaleCachedReport(cachedPayload)) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(cachedPayload, {
       existingRate: readFrozenKrwPerUsd(cachedPayload),
@@ -1044,7 +1068,7 @@ export async function fetchFromProvider(
     if (!opts?.force) {
       const catalogEntry = await getCatalogVin(normalized);
       const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleKoreanReport(catalogData)) {
+      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
         return normalizeCarstatResponse(catalogData);
       }
     }
@@ -1322,7 +1346,7 @@ function str(v: unknown): string | null {
 }
 
 const LOT_IMAGE_TIERS = [
-  "big", "large", "full", "original", "high", "normal", "downloaded", "gallery", "thumbnail", "small",
+  "big", "large", "full", "original", "high", "normal", "exterior", "interior", "downloaded", "gallery", "thumbnail", "small",
 ] as const;
 
 const TIER_QUALITY_RANK: Record<string, number> = {
@@ -1332,6 +1356,8 @@ const TIER_QUALITY_RANK: Record<string, number> = {
   original: 54,
   high: 50,
   normal: 40,
+  exterior: 45,
+  interior: 44,
   downloaded: 20,
   gallery: 35,
   thumbnail: 10,

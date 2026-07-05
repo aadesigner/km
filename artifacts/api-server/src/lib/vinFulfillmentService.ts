@@ -14,7 +14,7 @@ import {
   getCatalogVin,
   upsertVinCatalog,
   enrichVinReportDataForServe,
-  isStaleKoreanReport,
+  isStaleCachedReport,
 } from "./vinService.js";
 import { catalogHasDeliverableReport } from "./vinCatalogImport.js";
 import {
@@ -210,14 +210,14 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
 
       const catalogEntry = await getCatalogVin(normalizedVin);
         const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-        if (catalogEntry && catalogData && !isStaleKoreanReport(catalogData)) {
+        if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
           await completeLookupFromCatalog(lookupId, input, catalogEntry);
           return;
         }
 
         const cached = await getCachedVin(normalizedVin);
         const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-        if (cached && cached.status === "complete" && cachedData && !isStaleKoreanReport(cachedData)) {
+        if (cached && cached.status === "complete" && cachedData && !isStaleCachedReport(cachedData)) {
           const enriched = await enrichVinReportDataForServe(normalizedVin, cachedData, {
             primaryUpdatedAt: cached.updatedAt,
           });

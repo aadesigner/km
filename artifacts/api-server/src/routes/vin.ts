@@ -6,7 +6,7 @@ import {
   getCachedVin,
   getCatalogVin,
   checkLocalExists,
-  isStaleKoreanReport,
+  isStaleCachedReport,
   enrichVinReportDataForServe,
   vinHasReportData,
   resolveVinReportForViewer,
@@ -664,7 +664,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && !isStaleKoreanReport(catalogData)) {
+  if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
@@ -695,7 +695,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const cached = await getCachedVin(normalizedVin);
   const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-  if (cached && cached.status === "complete" && cachedData && !isStaleKoreanReport(cachedData)) {
+  if (cached && cached.status === "complete" && cachedData && !isStaleCachedReport(cachedData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
