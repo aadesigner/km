@@ -2698,7 +2698,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
 
   const hp = Number(raw.hp) || null;
   const cylinders = Number(raw.cylinders) || null;
-  const engineName = str(engineObj.name) ?? (hp ? `${hp} hp` : null);
+  const engineName = str(engineObj.name);
 
   const vehicleYear = Number(raw.year) || null;
 

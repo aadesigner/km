@@ -286,6 +286,20 @@ describe("normalizeCarstatResponse", () => {
     expect(normalized.registryHistory?.length).toBeGreaterThan(0);
     expect(normalized.registryHistory?.some((e) => e.type === "inspection")).toBe(true);
   });
+
+  it("does not synthesize engine from hp when engine.name is missing", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2019,
+      vin: "TESTVIN1234567890",
+      manufacturer: { name: "Audi" },
+      model: { name: "A4" },
+      hp: 170,
+      lots: [],
+    });
+
+    expect(normalized.engine).toBeNull();
+    expect(normalized.hp).toBe(170);
+  });
 });
 
 describe("extractRegistryHistoryFromLots", () => {
