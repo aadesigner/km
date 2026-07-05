@@ -1278,15 +1278,27 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     if (!secret) delete patch.recaptchaSecretKey;
     else patch.recaptchaSecretKey = secret;
   }
+  if ("googleClientId" in patch) {
+    const trimmed = trimText(patch.googleClientId);
+    patch.googleClientId = trimmed;
+  }
   if ("googleClientSecret" in patch) {
     const secret = typeof patch.googleClientSecret === "string" ? patch.googleClientSecret.trim() : patch.googleClientSecret;
     if (!secret) delete patch.googleClientSecret;
     else patch.googleClientSecret = secret;
   }
+  if ("facebookAppId" in patch) {
+    const trimmed = trimText(patch.facebookAppId);
+    patch.facebookAppId = trimmed;
+  }
   if ("facebookAppSecret" in patch) {
     const secret = typeof patch.facebookAppSecret === "string" ? patch.facebookAppSecret.trim() : patch.facebookAppSecret;
     if (!secret) delete patch.facebookAppSecret;
     else patch.facebookAppSecret = secret;
+  }
+  if ("linkedinClientId" in patch) {
+    const trimmed = trimText(patch.linkedinClientId);
+    patch.linkedinClientId = trimmed;
   }
   if ("linkedinClientSecret" in patch) {
     const secret = typeof patch.linkedinClientSecret === "string" ? patch.linkedinClientSecret.trim() : patch.linkedinClientSecret;
@@ -1308,7 +1320,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
-    res.json(sanitizeAdminSettings(updated));
+    const effective = await getEffectiveSystemSettings();
+    res.json(sanitizeAdminSettings(effective ?? updated));
   } else {
     const [created] = await db.insert(systemSettingsTable).values({
       rateLimit: updates.rateLimit ?? 10,
@@ -1348,7 +1361,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
-    res.json(sanitizeAdminSettings(created));
+    const effective = await getEffectiveSystemSettings();
+    res.json(sanitizeAdminSettings(effective ?? created));
   }
 });
 

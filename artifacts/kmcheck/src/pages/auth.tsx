@@ -63,7 +63,15 @@ function AuthField({
 }
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { publicSettingsQueryOptions, parseOAuthPublicFlags, readPersistedOAuthFlags, persistOAuthFlags } from "@/lib/public-settings";
+import {
+  publicSettingsQueryOptions,
+  parseOAuthPublicFlags,
+  readPersistedOAuthFlags,
+  persistOAuthFlags,
+  resolveOAuthPublicFlags,
+  readPersistedOAuthAsPublicSettings,
+  oauthFlagsAnyEnabled,
+} from "@/lib/public-settings";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -216,10 +224,13 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
-  const { login, register, isSignedIn, isLoaded } = useAuth();
+  const { user, login, register, isSignedIn, isLoaded } = useAuth();
   const { language, t } = useTranslation();
   const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const oauthError = searchParams.get("error");
   const persistedOAuthRef = useRef(readPersistedOAuthFlags());
   const {
     data: oauthSettings,
@@ -229,6 +240,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     refetch: refetchOAuthSettings,
   } = useQuery({
     ...publicSettingsQueryOptions(),
+    initialData: readPersistedOAuthAsPublicSettings,
+    initialDataUpdatedAt: () => (readPersistedOAuthFlags() ? 0 : undefined),
     placeholderData: (previous) => previous,
     retry: 2,
     retryDelay: 400,
@@ -241,10 +254,16 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   useEffect(() => {
     if (!oauthSettingsFetched || !oauthSettings) return;
     const flags = parseOAuthPublicFlags(oauthSettings);
-    persistOAuthFlags(flags);
-    persistedOAuthRef.current = flags.googleEnabled || flags.facebookEnabled || flags.linkedinEnabled
-      ? flags
-      : null;
+    if (oauthFlagsAnyEnabled(flags)) {
+      persistOAuthFlags(flags);
+      persistedOAuthRef.current = flags;
+      return;
+    }
+    const cached = persistedOAuthRef.current ?? readPersistedOAuthFlags();
+    if (!oauthFlagsAnyEnabled(cached)) {
+      persistOAuthFlags(flags);
+      persistedOAuthRef.current = null;
+    }
   }, [oauthSettingsFetched, oauthSettings]);
 
   useEffect(() => {
@@ -262,18 +281,23 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     };
   }, [refetchOAuthSettings]);
 
+  // After OAuth cancel the server redirects here with ?error=… — refetch flags in background.
+  useEffect(() => {
+    if (!oauthError) return;
+    void refetchOAuthSettings();
+  }, [oauthError, refetchOAuthSettings]);
+
   const liveOAuthFlags = oauthSettingsFetched && oauthSettings
     ? parseOAuthPublicFlags(oauthSettings)
     : null;
   const cachedOAuthFlags = persistedOAuthRef.current ?? readPersistedOAuthFlags();
-  const googleEnabled = liveOAuthFlags?.googleEnabled ?? cachedOAuthFlags?.googleEnabled ?? false;
-  const facebookEnabled = liveOAuthFlags?.facebookEnabled ?? cachedOAuthFlags?.facebookEnabled ?? false;
-  const linkedinEnabled = liveOAuthFlags?.linkedinEnabled ?? cachedOAuthFlags?.linkedinEnabled ?? false;
-  const socialSettingsLoading = !liveOAuthFlags
-    && !cachedOAuthFlags
+  const resolvedOAuth = resolveOAuthPublicFlags(liveOAuthFlags, cachedOAuthFlags);
+  const googleEnabled = resolvedOAuth.googleEnabled;
+  const facebookEnabled = resolvedOAuth.facebookEnabled;
+  const linkedinEnabled = resolvedOAuth.linkedinEnabled;
+  const socialSettingsLoading = !oauthFlagsAnyEnabled(resolvedOAuth)
     && oauthSettingsPending
     && !oauthSettingsError;
-  const [, setLocation] = useLocation();
   const [mode, setMode] = useState(initialMode);
 
   const [email, setEmail] = useState("");
@@ -304,8 +328,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     else setName(value);
   };
 
-  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const oauthError = searchParams.get("error");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -353,7 +375,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     };
   }, [isLoaded, isSignedIn, mode]);
 
-  if (!isLoaded || isSignedIn) {
+  // Signed-in users redirect; guests see the form immediately (don't wait on /me).
+  if (isSignedIn || (user !== null && !isLoaded)) {
     return (
       <div className="min-h-[calc(100dvh-64px)] flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

@@ -2,6 +2,24 @@ import { db, systemSettingsTable, type SystemSettings } from "@workspace/db";
 import { desc, eq, ne } from "drizzle-orm";
 import { mergeMissingCredentials } from "./oauthSettings.js";
 
+function trimmed(value: string | null | undefined): string {
+  return value?.trim() ?? "";
+}
+
+/** True when the latest row may still need credential fields from older rows. */
+function latestRowMayNeedCredentialMerge(row: SystemSettings): boolean {
+  return !trimmed(row.googleClientId)
+    || !trimmed(row.googleClientSecret)
+    || !trimmed(row.facebookAppId)
+    || !trimmed(row.facebookAppSecret)
+    || !trimmed(row.linkedinClientId)
+    || !trimmed(row.linkedinClientSecret)
+    || !trimmed(row.paypalClientId)
+    || !trimmed(row.paypalClientSecret)
+    || !trimmed(row.recaptchaSecretKey)
+    || !trimmed(row.smtpPass);
+}
+
 /** Latest settings row (highest id). */
 export async function getLatestSystemSettings(): Promise<SystemSettings | null> {
   const [row] = await db
@@ -19,12 +37,16 @@ export async function getLatestSystemSettings(): Promise<SystemSettings | null> 
 export async function getEffectiveSystemSettings(): Promise<SystemSettings | null> {
   const latest = await getLatestSystemSettings();
   if (!latest) return null;
+  if (!latestRowMayNeedCredentialMerge(latest)) return latest;
 
   const olderRows = await db
     .select()
     .from(systemSettingsTable)
     .where(ne(systemSettingsTable.id, latest.id))
-    .orderBy(desc(systemSettingsTable.id));
+    .orderBy(desc(systemSettingsTable.id))
+    .limit(20);
+
+  if (olderRows.length === 0) return latest;
 
   let merged = latest;
   for (const row of olderRows) {

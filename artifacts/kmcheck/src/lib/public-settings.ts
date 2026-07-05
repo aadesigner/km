@@ -51,6 +51,36 @@ export function persistOAuthFlags(flags: OAuthPublicFlags): void {
   }
 }
 
+export function oauthFlagsAnyEnabled(flags: OAuthPublicFlags | null | undefined): boolean {
+  return !!(flags?.googleEnabled || flags?.facebookEnabled || flags?.linkedinEnabled);
+}
+
+/** Seed React Query from session so OAuth buttons survive a full reload after cancel/back. */
+export function readPersistedOAuthAsPublicSettings(): PublicSettingsPayload | undefined {
+  const flags = readPersistedOAuthFlags();
+  if (!flags) return undefined;
+  return {
+    googleEnabled: flags.googleEnabled,
+    facebookEnabled: flags.facebookEnabled,
+    linkedinEnabled: flags.linkedinEnabled,
+  };
+}
+
+/**
+ * Prefer a live API response when it enables providers. If the API suddenly returns all-off
+ * but we recently had providers enabled, keep the cached flags (transient refetch blip).
+ */
+export function resolveOAuthPublicFlags(
+  live: OAuthPublicFlags | null,
+  cached: OAuthPublicFlags | null,
+): OAuthPublicFlags {
+  const empty: OAuthPublicFlags = { googleEnabled: false, facebookEnabled: false, linkedinEnabled: false };
+  if (!live) return cached ?? empty;
+  if (oauthFlagsAnyEnabled(live)) return live;
+  if (oauthFlagsAnyEnabled(cached)) return cached!;
+  return live;
+}
+
 export async function fetchPublicSettings(signal?: AbortSignal): Promise<PublicSettingsPayload> {
   const r = await fetch(`${basePath}/api/payments/public-settings`, { signal });
   if (!r.ok) throw new Error(`public_settings_${r.status}`);

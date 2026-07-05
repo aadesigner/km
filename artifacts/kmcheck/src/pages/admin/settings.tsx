@@ -241,13 +241,32 @@ export default function AdminSettings() {
   });
   const socialUpdater = useAdminUpdateSettings({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (data, { data: payload }) => {
         invalidate();
         setSocialSaved(true);
         notifySaved("Social login settings");
-        if (social.googleClientSecret.trim()) setHasGoogleSecret(true);
-        if (social.facebookAppSecret.trim()) setHasFacebookSecret(true);
-        setSocial((f) => ({ ...f, googleClientSecret: "", facebookAppSecret: "" }));
+        const saved = data as unknown as Record<string, unknown> | undefined;
+        if (saved) {
+          if ("hasGoogleSecret" in saved) setHasGoogleSecret(!!saved.hasGoogleSecret);
+          if ("hasFacebookSecret" in saved) setHasFacebookSecret(!!saved.hasFacebookSecret);
+          if ("hasLinkedInSecret" in saved) setHasLinkedInSecret(!!saved.hasLinkedInSecret);
+        } else {
+          if (typeof payload.googleClientSecret === "string" && payload.googleClientSecret.trim()) {
+            setHasGoogleSecret(true);
+          }
+          if (typeof payload.facebookAppSecret === "string" && payload.facebookAppSecret.trim()) {
+            setHasFacebookSecret(true);
+          }
+          if (typeof payload.linkedinClientSecret === "string" && payload.linkedinClientSecret.trim()) {
+            setHasLinkedInSecret(true);
+          }
+        }
+        setSocial((f) => ({
+          ...f,
+          googleClientSecret: "",
+          facebookAppSecret: "",
+          linkedinClientSecret: "",
+        }));
         setTimeout(() => setSocialSaved(false), 2000);
       },
       onError: (err: Error) => notifySaveError("Social login settings", err),
@@ -756,6 +775,18 @@ export default function AdminSettings() {
                 <Label>Client Secret</Label>
                 <Input type="password" placeholder={hasGoogleSecret ? "••••••••  (leave blank to keep current)" : "GOCSPX-..."} value={social.googleClientSecret} onChange={(e) => setSocial(f => ({ ...f, googleClientSecret: e.target.value }))} />
               </div>
+              {(() => {
+                const ready = social.googleLoginEnabled
+                  && !!social.googleClientId.trim()
+                  && (hasGoogleSecret || !!social.googleClientSecret.trim());
+                return (
+                  <p className={cn("text-xs", ready ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400")}>
+                    {ready
+                      ? "Continue with Google will show on sign-in / sign-up after you save."
+                      : "Button stays hidden until enabled, Client ID, and Client Secret are all set (enter the secret on first save)."}
+                  </p>
+                );
+              })()}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/60 border text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <p>Add as <strong>Authorized redirect URI</strong>: <code className="bg-muted px-1 py-0.5 rounded font-mono">https://your-domain.com/api/auth/google/callback</code></p>
@@ -860,6 +891,18 @@ export default function AdminSettings() {
                 <Label>Client Secret</Label>
                 <Input type="password" placeholder={hasLinkedInSecret ? "••••••••  (leave blank to keep current)" : "••••••••"} value={social.linkedinClientSecret} onChange={(e) => setSocial(f => ({ ...f, linkedinClientSecret: e.target.value }))} />
               </div>
+              {(() => {
+                const ready = social.linkedinLoginEnabled
+                  && !!social.linkedinClientId.trim()
+                  && (hasLinkedInSecret || !!social.linkedinClientSecret.trim());
+                return (
+                  <p className={cn("text-xs", ready ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400")}>
+                    {ready
+                      ? "Continue with LinkedIn will show on sign-in / sign-up after you save."
+                      : "Button stays hidden until enabled, Client ID, and Client Secret are all set (enter the secret on first save)."}
+                  </p>
+                );
+              })()}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/60 border text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <p>Add as <strong>Authorized redirect URL</strong>: <code className="bg-muted px-1 py-0.5 rounded font-mono">https://your-domain.com/api/auth/linkedin/callback</code></p>
