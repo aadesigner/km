@@ -25,8 +25,8 @@ import {
 } from "@/lib/lang-preference";
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 
+import Home from "@/pages/home";
 // Lazy-loaded
-const Home          = lazyWithRetry(() => import("@/pages/home"));
 const Pricing       = lazyWithRetry(() => import("@/pages/pricing"));
 const Dashboard     = lazyWithRetry(() => import("@/pages/dashboard"));
 const VinResult     = lazyWithRetry(() => import("@/pages/vin-result"));

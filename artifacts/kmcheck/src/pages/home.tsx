@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
@@ -78,7 +77,7 @@ function CyclingWord() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
         key={idx}
-        className="text-primary inline"
+        className="text-primary inline-block min-h-[1.12em] min-w-[14ch] sm:min-w-[18ch] md:min-w-[22ch]"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -96,7 +95,7 @@ export default function Home() {
   const { isSignedIn, user } = useAuth();
   const [vin, setVin] = useState("");
   const [error, setError] = useState("");
-  const { displayPrice, basePrice: pricingBase, isDiscount, loading: priceLoading, currencySymbol, fmtPrice } = useDisplayPrice();
+  const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
 
   const normalizedHomeVin = vin.trim().toUpperCase();
   const homeLocalDecode = useMemo(
@@ -213,9 +212,8 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
 
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
             className="space-y-8 text-center"
           >
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
@@ -548,20 +546,16 @@ export default function Home() {
           </div>
 
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            {priceLoading ? (
-              <Skeleton className="h-14 w-28 rounded bg-white/20" />
-            ) : (
-              <span className="text-5xl font-black text-white tabular-nums">
-                {displayPrice != null ? fmtPrice(displayPrice) : "—"}
-              </span>
-            )}
-            {!priceLoading && isDiscount && (
+            <span className="text-5xl font-black text-white tabular-nums">
+              {displayPrice != null ? fmtPrice(displayPrice) : "—"}
+            </span>
+            {isDiscount && (
               <span className="text-2xl line-through text-white/35">
                 {pricingBase != null ? fmtPrice(pricingBase) : null}
               </span>
             )}
             <span className="text-white/50 text-sm">{t("per_report")}</span>
-            {!priceLoading && isDiscount && (
+            {isDiscount && (
               <Badge className="bg-orange-500 text-white border-0">{t("limited_time")}</Badge>
             )}
           </div>

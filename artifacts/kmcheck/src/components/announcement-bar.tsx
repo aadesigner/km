@@ -15,6 +15,7 @@ type Announcement = {
 };
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const ANNOUNCEMENT_CACHE_KEY = "kmcheck_announcement_cache_v1";
 
 const PAGE_SLUGS: Record<string, string[]> = {
   home:        ["/", ""],
@@ -24,6 +25,32 @@ const PAGE_SLUGS: Record<string, string[]> = {
   country:     ["/cars/"],
   auth:        ["/sign-in", "/sign-up"],
 };
+
+function readAnnouncementCache(lang: string): Announcement | null {
+  if (typeof sessionStorage === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(ANNOUNCEMENT_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { lang?: string; data?: Announcement | null };
+    if (parsed.lang !== lang || !parsed.data) return null;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeAnnouncementCache(lang: string, data: Announcement | null): void {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    if (!data) {
+      sessionStorage.removeItem(ANNOUNCEMENT_CACHE_KEY);
+      return;
+    }
+    sessionStorage.setItem(ANNOUNCEMENT_CACHE_KEY, JSON.stringify({ lang, data }));
+  } catch {
+    // ignore quota errors
+  }
+}
 
 function matchesPage(pages: string, location: string): boolean {
   if (pages === "all") return true;
@@ -44,31 +71,47 @@ function matchesPage(pages: string, location: string): boolean {
   return false;
 }
 
+function isDismissed(id: number): boolean {
+  if (typeof localStorage === "undefined") return false;
+  return localStorage.getItem("kmcheck_dismissed_announcement") === String(id);
+}
+
 export function AnnouncementBar({ onHeightChange }: { onHeightChange?: (height: number) => void }) {
-  const [data, setData] = useState<Announcement | null | undefined>(undefined);
-  const [dismissed, setDismissed] = useState(false);
+  const { language } = useTranslation();
+  const [data, setData] = useState<Announcement | null | undefined>(() => readAnnouncementCache(language) ?? undefined);
+  const [dismissed, setDismissed] = useState(() => {
+    const cached = readAnnouncementCache(language);
+    return cached?.id != null ? isDismissed(cached.id) : false;
+  });
   const barRef = useRef<HTMLDivElement>(null);
   const { isSignedIn, isLoaded } = useAuth();
   const [location] = useLocation();
-  const { language } = useTranslation();
 
   useEffect(() => {
+    const cached = readAnnouncementCache(language);
+    setData(cached ?? undefined);
+    setDismissed(cached?.id != null ? isDismissed(cached.id) : false);
+
     fetch(`${basePath}/api/announcements/active?lang=${language}`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
-      .then(setData)
-      .catch(() => setData(null));
+      .then((next) => {
+        setData(next);
+        writeAnnouncementCache(language, next);
+      })
+      .catch(() => {
+        setData((current) => current ?? null);
+      });
   }, [language]);
 
   useEffect(() => {
     if (data?.id != null) {
-      const stored = localStorage.getItem("kmcheck_dismissed_announcement");
-      if (stored === String(data.id)) setDismissed(true);
-      else setDismissed(false);
+      setDismissed(isDismissed(data.id));
     }
   }, [data?.id]);
 
+  const audienceReady = data?.showTo === "all" || isLoaded;
   const visible =
-    isLoaded &&
+    audienceReady &&
     data != null &&
     data !== undefined &&
     !dismissed &&
