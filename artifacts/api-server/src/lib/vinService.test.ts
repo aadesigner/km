@@ -27,6 +27,7 @@ import {
   isStaleKoreanReport,
   isStaleCachedReport,
   isPartialCarstatPhotoCache,
+  isCarstatMirroredPreviewUrl,
   vinReportDataRichnessScore,
   isKoreanRecallRegistryItem,
   repairEncarMisParsedIsoDate,
@@ -930,6 +931,15 @@ describe("isStaleKoreanReport", () => {
   });
 });
 
+describe("isCarstatMirroredPreviewUrl", () => {
+  it("detects i2.carstat.dev and carstat.dev webp mirrors", () => {
+    expect(isCarstatMirroredPreviewUrl("https://i2.carstat.dev/copart/toyota/1.webp")).toBe(true);
+    expect(isCarstatMirroredPreviewUrl("https://carstat.dev/cache/encar/2.webp")).toBe(true);
+    expect(isCarstatMirroredPreviewUrl("https://encar.com/photo-1.jpg")).toBe(false);
+    expect(isCarstatMirroredPreviewUrl("https://cs.copart.com/v1/photo.jpg")).toBe(false);
+  });
+});
+
 describe("isPartialCarstatPhotoCache / isStaleCachedReport", () => {
   const copartCache = Array.from({ length: 5 }, (_, i) =>
     `https://i2.carstat.dev/copart/toyota/camry/2007/${i + 1}.webp`);
@@ -939,6 +949,46 @@ describe("isPartialCarstatPhotoCache / isStaleCachedReport", () => {
     expect(isPartialCarstatPhotoCache(row)).toBe(true);
     expect(isStaleCachedReport(row)).toBe(true);
     expect(isStaleKoreanReport(row)).toBe(false);
+  });
+
+  it("flags Korean Encar rows with only Carstat webp previews", () => {
+    const row = {
+      country: "kr",
+      photos: [
+        "https://carstat.dev/cache/encar/1.webp",
+        "https://carstat.dev/cache/encar/2.webp",
+      ],
+      registryHistory: [],
+      insuranceClaims: [],
+    };
+    expect(isPartialCarstatPhotoCache(row)).toBe(true);
+    expect(isStaleCachedReport(row)).toBe(true);
+    expect(isStaleKoreanReport(row)).toBe(true);
+  });
+
+  it("flags Korean rows with Carstat previews even when registry is not extracted yet", () => {
+    const row = {
+      country: "kr",
+      photos: ["https://i2.carstat.dev/encar/bmw/1.webp"],
+      ownerCount: 1,
+    };
+    expect(isStaleKoreanReport(row)).toBe(true);
+    expect(isStaleCachedReport(row)).toBe(true);
+  });
+
+  it("does not flag Korean rows with a short but native Encar gallery and no registry", () => {
+    const row = {
+      country: "kr",
+      photos: [
+        "https://img.encar.com/photo-1.jpg",
+        "https://img.encar.com/photo-2.jpg",
+        "https://img.encar.com/photo-3.jpg",
+      ],
+      registryHistory: [],
+    };
+    expect(isPartialCarstatPhotoCache(row)).toBe(false);
+    expect(isStaleKoreanReport(row)).toBe(false);
+    expect(isStaleCachedReport(row)).toBe(false);
   });
 
   it("does not flag full Copart galleries already stored on the row", () => {

@@ -649,8 +649,16 @@ export async function resolveVinReportForViewer(
   return vinHasReportData(vin);
 }
 
+/** Carstat-hosted mirror previews (not full Copart/IAAI/Encar gallery URLs). */
+export function isCarstatMirroredPreviewUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (/i2\.carstat\.dev/i.test(trimmed)) return true;
+  return /carstat\.dev/i.test(trimmed) && /\.webp(?:$|[?#])/i.test(trimmed);
+}
+
 /**
- * Carstat often stores only a few i2.carstat.dev webp previews in catalog while
+ * Carstat often stores only a few webp previews in catalog while
  * Copart/IAAI/Encar still expose a full gallery upstream (big/normal tiers).
  */
 export function isPartialCarstatPhotoCache(
@@ -661,7 +669,7 @@ export function isPartialCarstatPhotoCache(
   if (!Array.isArray(photos) || photos.length === 0 || photos.length >= 8) return false;
   const urls = photos.filter((p): p is string => typeof p === "string" && p.trim().length > 0);
   if (urls.length === 0) return false;
-  return urls.every((u) => /i2\.carstat\.dev/i.test(u));
+  return urls.every(isCarstatMirroredPreviewUrl);
 }
 
 /** True when a cached catalog/lookup row should be refreshed from the provider. */
@@ -681,17 +689,24 @@ export function isStaleKoreanReport(data: Record<string, unknown> | null | undef
   if (!data) return false;
   const country = String(data.country ?? "").toLowerCase();
   if (country !== "kr") return false;
+
+  const photoUrls = Array.isArray(data.photos)
+    ? data.photos.filter((p): p is string => typeof p === "string" && p.trim().length > 0)
+    : [];
+  const photoLen = photoUrls.length;
   const registry = data.registryHistory;
   const registryLen = Array.isArray(registry) ? registry.length : 0;
   const claims = data.insuranceClaims;
   const claimsLen = Array.isArray(claims) ? claims.length : 0;
   const ownerCount = Number(data.ownerCount ?? data.owners ?? 0);
 
-  if (registryLen > 0) {
-    const photoLen = Array.isArray(data.photos) ? data.photos.length : 0;
+  if (photoLen > 0 && photoLen < 8) {
     // Carstat often caches 2 webp previews while the full Encar gallery exists upstream.
-    if (photoLen > 0 && photoLen < 8) return true;
+    if (photoUrls.some(isCarstatMirroredPreviewUrl)) return true;
+    if (registryLen > 0) return true;
+  }
 
+  if (registryLen > 0) {
     const expectedMin = claimsLen + (ownerCount > 1 ? 2 : 0) + 2;
     if (claimsLen >= 2 && registryLen < Math.min(expectedMin, 10)) return true;
     return false;
