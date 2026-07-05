@@ -62,8 +62,119 @@ function AuthField({
   );
 }
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { publicSettingsQueryOptions } from "@/lib/public-settings";
+
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+}
+
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 114.126 0 2.063 2.063 0 01-2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  );
+}
+
+const SOCIAL_BTN = "flex flex-1 items-center justify-center gap-2 h-11 min-w-0 rounded-xl text-sm font-medium transition-all";
+
+function SocialAuthButtons({
+  language,
+  googleEnabled,
+  facebookEnabled,
+  linkedinEnabled,
+  loading,
+}: {
+  language: string;
+  googleEnabled: boolean;
+  facebookEnabled: boolean;
+  linkedinEnabled: boolean;
+  loading?: boolean;
+}) {
+  const { t } = useTranslation();
+  const hasSocial = googleEnabled || facebookEnabled || linkedinEnabled;
+
+  if (loading) {
+    return (
+      <div className="mt-6 space-y-3">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border/60" />
+          </div>
+          <div className="relative flex justify-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+            <span className="bg-card px-3">{t("or")}</span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex-1 h-11 rounded-xl bg-muted/50 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasSocial) return null;
+
+  return (
+    <div className="mt-6 space-y-3">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border/60" />
+        </div>
+        <div className="relative flex justify-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+          <span className="bg-card px-3">{t("or")}</span>
+        </div>
+      </div>
+
+      <div className="flex items-stretch gap-2">
+        {googleEnabled && (
+          <a
+            href={`${basePath}/api/auth/google?lang=${language}`}
+            className={cn(SOCIAL_BTN, "border border-border/70 bg-background/80 hover:bg-muted/40 hover:border-border shadow-sm")}
+          >
+            <GoogleIcon className="h-4 w-4 shrink-0" />
+            <span>Google</span>
+          </a>
+        )}
+        {facebookEnabled && (
+          <a
+            href={`${basePath}/api/auth/facebook?lang=${language}`}
+            className={cn(SOCIAL_BTN, "bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-sm shadow-[#1877F2]/20")}
+          >
+            <FacebookIcon className="h-4 w-4 shrink-0" />
+            <span>Facebook</span>
+          </a>
+        )}
+        {linkedinEnabled && (
+          <a
+            href={`${basePath}/api/auth/linkedin?lang=${language}`}
+            className={cn(SOCIAL_BTN, "bg-[#0A66C2] hover:bg-[#004182] text-white shadow-sm shadow-[#0A66C2]/20")}
+          >
+            <LinkedInIcon className="h-4 w-4 shrink-0" />
+            <span>LinkedIn</span>
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface AuthFormProps {
   lang: string;
@@ -74,10 +185,33 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const { login, register, isSignedIn, isLoaded } = useAuth();
   const { language, t } = useTranslation();
   const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
-  const { data: oauthSettings = {} } = useQuery(publicSettingsQueryOptions());
-  const googleEnabled = !!oauthSettings.googleEnabled;
-  const facebookEnabled = !!oauthSettings.facebookEnabled;
-  const linkedinEnabled = !!oauthSettings.linkedinEnabled;
+  const queryClient = useQueryClient();
+  const {
+    data: oauthSettings,
+    isPending: oauthSettingsPending,
+    isFetched: oauthSettingsFetched,
+    refetch: refetchOAuthSettings,
+  } = useQuery({
+    ...publicSettingsQueryOptions(),
+    placeholderData: (previous) => previous,
+  });
+
+  useEffect(() => {
+    void queryClient.ensureQueryData(publicSettingsQueryOptions());
+  }, [queryClient]);
+
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) void refetchOAuthSettings();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [refetchOAuthSettings]);
+
+  const googleEnabled = !!oauthSettings?.googleEnabled;
+  const facebookEnabled = !!oauthSettings?.facebookEnabled;
+  const linkedinEnabled = !!oauthSettings?.linkedinEnabled;
+  const socialSettingsLoading = oauthSettingsPending && !oauthSettingsFetched && !oauthSettings;
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState(initialMode);
 
@@ -223,7 +357,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const isSignIn = mode === "sign-in";
   const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const submitDisabled = loading || (!isSignIn && !acceptedTerms);
-  const hasSocial = googleEnabled || facebookEnabled || linkedinEnabled;
 
   return (
     <>
@@ -458,78 +591,34 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     )}
                   </Button>
                 </form>
-
-                {hasSocial && (
-                  <div className="mt-6 space-y-3">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border/60" />
-                      </div>
-                      <div className="relative flex justify-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                        <span className="bg-card px-3">{t("or")}</span>
-                      </div>
-                    </div>
-
-                    {googleEnabled && (
-                      <a
-                        href={`${basePath}/api/auth/google?lang=${language}`}
-                        className="flex w-full h-12 items-center justify-center gap-2.5 rounded-xl border border-border/70 bg-background/80 hover:bg-muted/40 hover:border-border transition-all text-sm font-medium shadow-sm"
-                      >
-                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        {isSignIn ? t("auth_continue_with_google") : t("auth_signup_with_google")}
-                      </a>
-                    )}
-
-                    {facebookEnabled && (
-                      <a
-                        href={`${basePath}/api/auth/facebook?lang=${language}`}
-                        className="flex w-full h-12 items-center justify-center gap-2.5 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] transition-colors text-sm font-medium text-white shadow-sm shadow-[#1877F2]/25"
-                      >
-                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                        {isSignIn ? t("auth_continue_with_facebook") : t("auth_signup_with_facebook")}
-                      </a>
-                    )}
-
-                    {linkedinEnabled && (
-                      <a
-                        href={`${basePath}/api/auth/linkedin?lang=${language}`}
-                        className="flex w-full h-12 items-center justify-center gap-2.5 rounded-xl bg-[#0A66C2] hover:bg-[#004182] transition-colors text-sm font-medium text-white shadow-sm shadow-[#0A66C2]/25"
-                      >
-                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 114.126 0 2.063 2.063 0 01-2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                        {isSignIn ? t("auth_continue_with_linkedin") : t("auth_signup_with_linkedin")}
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                <p className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border/50">
-                  {isSignIn ? (
-                    <>
-                      {t("auth_no_account")}{" "}
-                      <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-up"); setError(""); }}>
-                        {t("auth_sign_up_free")}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {t("auth_have_account")}{" "}
-                      <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}>
-                        {t("sign_in")}
-                      </button>
-                    </>
-                  )}
-                </p>
               </motion.div>
             </AnimatePresence>
+
+            <SocialAuthButtons
+              language={language}
+              googleEnabled={googleEnabled}
+              facebookEnabled={facebookEnabled}
+              linkedinEnabled={linkedinEnabled}
+              loading={socialSettingsLoading}
+            />
+
+            <p className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border/50">
+              {isSignIn ? (
+                <>
+                  {t("auth_no_account")}{" "}
+                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-up"); setError(""); }}>
+                    {t("auth_sign_up_free")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {t("auth_have_account")}{" "}
+                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}>
+                    {t("sign_in")}
+                  </button>
+                </>
+              )}
+            </p>
       </AuthPageShell>
     </>
   );
