@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
           </>
         ) : (
           <>
-            <div className="mb-5 space-y-1.5">
+            <div className="mb-4 space-y-1.5">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("reset_title")}</h1>
               <p className="text-sm text-muted-foreground">{t("reset_subtitle")}</p>
             </div>

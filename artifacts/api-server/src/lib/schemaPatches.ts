@@ -18,6 +18,11 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS plugin_settings jsonb`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS smtp_security text NOT NULL DEFAULT 'starttls'`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_ip text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin_id text`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS users_linkedin_id_unique ON users (linkedin_id) WHERE linkedin_id IS NOT NULL`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS linkedin_login_enabled boolean NOT NULL DEFAULT true`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS linkedin_client_id text`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS linkedin_client_secret text`,
   `ALTER TABLE vin_lookups ADD COLUMN IF NOT EXISTS data_corrupt boolean NOT NULL DEFAULT false`,
 ];
 

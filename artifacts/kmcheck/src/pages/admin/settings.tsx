@@ -24,6 +24,7 @@ import {
   MAINTENANCE_PARTIAL_RESTRICTIONS,
   type MaintenancePartialRestriction,
 } from "@/lib/maintenance-policy";
+import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -42,6 +43,32 @@ type SocialForm = {
   facebookLoginEnabled: boolean;
   facebookAppId: string;
   facebookAppSecret: string;
+  linkedinLoginEnabled: boolean;
+  linkedinClientId: string;
+  linkedinClientSecret: string;
+};
+
+type SocialLoginCheck = {
+  id: string;
+  label: string;
+  ok: boolean;
+  message: string;
+  hint?: string;
+};
+
+type SocialLoginProviderResult = {
+  provider: string;
+  label: string;
+  ok: boolean;
+  checks: SocialLoginCheck[];
+};
+
+type SocialLoginTestReport = {
+  ok: boolean;
+  siteOrigin: string;
+  testedAt: string;
+  results: SocialLoginProviderResult[];
+  error?: string;
 };
 
 type SmtpSecurityLevel = "starttls" | "ssl" | "none";
@@ -130,9 +157,12 @@ export default function AdminSettings() {
   const [hasPaypalSecret, setHasPaypalSecret] = useState(false);
   const [hasGoogleSecret, setHasGoogleSecret] = useState(false);
   const [hasFacebookSecret, setHasFacebookSecret] = useState(false);
+  const [hasLinkedInSecret, setHasLinkedInSecret] = useState(false);
   const [hasSmtpPass, setHasSmtpPass] = useState(false);
   const [hasRecaptchaSecret, setHasRecaptchaSecret] = useState(false);
   const [socialSaved, setSocialSaved] = useState(false);
+  const [socialTestStatus, setSocialTestStatus] = useState<"idle" | "testing" | "done">("idle");
+  const [socialTestReport, setSocialTestReport] = useState<SocialLoginTestReport | null>(null);
   const [authSaved, setAuthSaved] = useState(false);
   const [botSaved, setBotSaved] = useState(false);
   const [generalSaved, setGeneralSaved] = useState(false);
@@ -230,6 +260,7 @@ export default function AdminSettings() {
   const [social, setSocial] = useState<SocialForm>({
     googleLoginEnabled: true, googleClientId: "", googleClientSecret: "",
     facebookLoginEnabled: true, facebookAppId: "", facebookAppSecret: "",
+    linkedinLoginEnabled: true, linkedinClientId: "", linkedinClientSecret: "",
   });
   const [auth, setAuth] = useState<AuthForm>({
     smtpEnabled: false, smtpHost: "", smtpPort: 587, smtpSecurity: "starttls", smtpUser: "", smtpPass: "",
@@ -274,6 +305,7 @@ export default function AdminSettings() {
     setHasPaypalSecret(!!s.hasPaypalSecret);
     setHasGoogleSecret(!!s.hasGoogleSecret);
     setHasFacebookSecret(!!s.hasFacebookSecret);
+    setHasLinkedInSecret(!!s.hasLinkedInSecret);
     setHasSmtpPass(!!s.hasSmtpPass);
     setHasRecaptchaSecret(!!s.hasRecaptchaSecret);
     setSocial({
@@ -283,6 +315,9 @@ export default function AdminSettings() {
       facebookLoginEnabled: (s.facebookLoginEnabled as boolean) ?? true,
       facebookAppId: (s.facebookAppId as string) ?? "",
       facebookAppSecret: "",
+      linkedinLoginEnabled: (s.linkedinLoginEnabled as boolean) ?? true,
+      linkedinClientId: (s.linkedinClientId as string) ?? "",
+      linkedinClientSecret: "",
     });
     setAuth({
       smtpEnabled: (s.smtpEnabled as boolean) ?? false,
@@ -335,6 +370,56 @@ export default function AdminSettings() {
       setPreviewHtml("<p style='padding:24px;color:red'>Failed to load preview</p>");
     } finally {
       setPreviewLoading(false);
+    }
+  };
+
+  const handleTestSocialLogins = async () => {
+    setSocialTestStatus("testing");
+    setSocialTestReport(null);
+    try {
+      const overrides: Record<string, unknown> = {
+        googleLoginEnabled: social.googleLoginEnabled,
+        facebookLoginEnabled: social.facebookLoginEnabled,
+        linkedinLoginEnabled: social.linkedinLoginEnabled,
+      };
+      if (social.googleClientId.trim()) overrides.googleClientId = social.googleClientId.trim();
+      if (social.facebookAppId.trim()) overrides.facebookAppId = social.facebookAppId.trim();
+      if (social.linkedinClientId.trim()) overrides.linkedinClientId = social.linkedinClientId.trim();
+      const googleSecret = social.googleClientSecret.trim();
+      const facebookSecret = social.facebookAppSecret.trim();
+      const linkedinSecret = social.linkedinClientSecret.trim();
+      if (googleSecret) overrides.googleClientSecret = googleSecret;
+      if (facebookSecret) overrides.facebookAppSecret = facebookSecret;
+      if (linkedinSecret) overrides.linkedinClientSecret = linkedinSecret;
+
+      const resp = await fetch(`${basePath}/api/admin/settings/test-social-logins`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ overrides }),
+      });
+      const data = await resp.json() as SocialLoginTestReport;
+      if (!resp.ok && !data.results?.length) {
+        setSocialTestReport({
+          ok: false,
+          siteOrigin: "",
+          testedAt: new Date().toISOString(),
+          results: [],
+          error: data.error ?? `Test failed (${resp.status})`,
+        });
+      } else {
+        setSocialTestReport(data);
+      }
+      setSocialTestStatus("done");
+    } catch {
+      setSocialTestReport({
+        ok: false,
+        siteOrigin: "",
+        testedAt: new Date().toISOString(),
+        results: [],
+        error: "Network error — stay signed in as admin and try again",
+      });
+      setSocialTestStatus("done");
     }
   };
 
@@ -449,13 +534,29 @@ export default function AdminSettings() {
       </div>
 
       <Tabs defaultValue="payments">
-        <TabsList className="w-full grid grid-cols-6 h-auto">
-          <TabsTrigger value="payments" className="text-xs sm:text-sm py-2">Payments</TabsTrigger>
-          <TabsTrigger value="social" className="text-xs sm:text-sm py-2">Social Login</TabsTrigger>
-          <TabsTrigger value="auth" className="text-xs sm:text-sm py-2">Auth &amp; Access</TabsTrigger>
-          <TabsTrigger value="bot" className="text-xs sm:text-sm py-2">Bot Protection</TabsTrigger>
-          <TabsTrigger value="general" className="text-xs sm:text-sm py-2">General</TabsTrigger>
-          <TabsTrigger value="system" className="text-xs sm:text-sm py-2">System Limits</TabsTrigger>
+        <TabsList className="w-full h-auto gap-1.5 p-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:gap-1">
+          <TabsTrigger value="payments" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            Payments
+          </TabsTrigger>
+          <TabsTrigger value="social" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            <span className="lg:hidden">Social</span>
+            <span className="hidden lg:inline">Social Login</span>
+          </TabsTrigger>
+          <TabsTrigger value="auth" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            <span className="lg:hidden">Auth</span>
+            <span className="hidden lg:inline">Auth &amp; Access</span>
+          </TabsTrigger>
+          <TabsTrigger value="bot" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            <span className="lg:hidden">Bots</span>
+            <span className="hidden lg:inline">Bot Protection</span>
+          </TabsTrigger>
+          <TabsTrigger value="general" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            General
+          </TabsTrigger>
+          <TabsTrigger value="system" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            <span className="lg:hidden">Limits</span>
+            <span className="hidden lg:inline">System Limits</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* ── PAYMENTS ─────────────────────────────────────────────────────── */}
@@ -537,6 +638,81 @@ export default function AdminSettings() {
 
         {/* ── SOCIAL LOGIN ──────────────────────────────────────────────────── */}
         <TabsContent value="social" className="space-y-4 mt-4">
+
+          <Card className="border-primary/20 bg-primary/[0.03]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Test social login configuration</CardTitle>
+              <CardDescription>
+                Validates saved credentials with Google, Facebook, and LinkedIn, checks redirect URIs,
+                login-page visibility, and documents register / existing-account / returning-user flows.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2"
+                disabled={socialTestStatus === "testing"}
+                onClick={() => void handleTestSocialLogins()}
+              >
+                {socialTestStatus === "testing" ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" />Testing Google, Facebook & LinkedIn…</>
+                ) : (
+                  <><Search className="h-4 w-4" />Run all social login tests</>
+                )}
+              </Button>
+
+              {socialTestReport?.error && (
+                <p className="text-sm text-destructive">{socialTestReport.error}</p>
+              )}
+
+              {socialTestReport?.results?.length ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Tested against <code className="bg-muted px-1 rounded">{socialTestReport.siteOrigin}</code>
+                    {" · "}
+                    {socialTestReport.ok ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">All providers passed</span>
+                    ) : (
+                      <span className="text-amber-700 dark:text-amber-400 font-medium">Some checks failed — review below</span>
+                    )}
+                  </p>
+                  {socialTestReport.results.map((provider) => (
+                    <div key={provider.provider} className="rounded-xl border bg-background/80 p-4 space-y-2">
+                      <div className="flex items-center gap-2">
+                        {provider.ok ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                        )}
+                        <p className="font-semibold text-sm">{provider.label}</p>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {provider.checks.map((item) => (
+                          <li key={item.id} className="text-xs">
+                            <div className="flex items-start gap-2">
+                              {item.ok ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                              ) : (
+                                <XCircle className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
+                              )}
+                              <div className="min-w-0">
+                                <span className="font-medium text-foreground/90">{item.label}: </span>
+                                <span className={item.ok ? "text-muted-foreground" : "text-destructive"}>{item.message}</span>
+                                {item.hint ? (
+                                  <p className="text-muted-foreground mt-0.5">{item.hint}</p>
+                                ) : null}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
 
           {/* Google */}
           <Card>
@@ -626,9 +802,67 @@ export default function AdminSettings() {
                 <Label>App Secret</Label>
                 <Input type="password" placeholder={hasFacebookSecret ? "••••••••  (leave blank to keep current)" : "••••••••"} value={social.facebookAppSecret} onChange={(e) => setSocial(f => ({ ...f, facebookAppSecret: e.target.value }))} />
               </div>
+              {(() => {
+                const ready = social.facebookLoginEnabled
+                  && !!social.facebookAppId.trim()
+                  && (hasFacebookSecret || !!social.facebookAppSecret.trim());
+                return (
+                  <p className={cn("text-xs", ready ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400")}>
+                    {ready
+                      ? "Continue with Facebook will show on sign-in / sign-up after you save."
+                      : "Button stays hidden until enabled, App ID, and App Secret are all set (enter the secret on first save)."}
+                  </p>
+                );
+              })()}
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/60 border text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <p>Add as <strong>Valid OAuth Redirect URI</strong>: <code className="bg-muted px-1 py-0.5 rounded font-mono">https://your-domain.com/api/auth/facebook/callback</code></p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* LinkedIn */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="#0A66C2" aria-hidden="true">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 114.126 0 2.063 2.063 0 01-2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    LinkedIn Sign-In
+                  </CardTitle>
+                  <CardDescription>
+                    Create an app in{" "}
+                    <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                      LinkedIn Developer Portal
+                    </a>{" "}→ enable <strong>Sign In with LinkedIn using OpenID Connect</strong>.
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2 pt-0.5 shrink-0">
+                  <Label htmlFor="linkedin-enabled" className="text-sm text-muted-foreground">
+                    {social.linkedinLoginEnabled ? "Enabled" : "Disabled"}
+                  </Label>
+                  <Switch
+                    id="linkedin-enabled"
+                    checked={social.linkedinLoginEnabled}
+                    onCheckedChange={(v) => setSocial(f => ({ ...f, linkedinLoginEnabled: v }))}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Client ID</Label>
+                <Input placeholder="78xxxxxxxxxx" value={social.linkedinClientId} onChange={(e) => setSocial(f => ({ ...f, linkedinClientId: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Client Secret</Label>
+                <Input type="password" placeholder={hasLinkedInSecret ? "••••••••  (leave blank to keep current)" : "••••••••"} value={social.linkedinClientSecret} onChange={(e) => setSocial(f => ({ ...f, linkedinClientSecret: e.target.value }))} />
+              </div>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/60 border text-xs text-muted-foreground">
+                <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <p>Add as <strong>Authorized redirect URL</strong>: <code className="bg-muted px-1 py-0.5 rounded font-mono">https://your-domain.com/api/auth/linkedin/callback</code></p>
               </div>
             </CardContent>
           </Card>
@@ -643,11 +877,15 @@ export default function AdminSettings() {
                 googleClientId: social.googleClientId.trim() || null,
                 facebookLoginEnabled: social.facebookLoginEnabled,
                 facebookAppId: social.facebookAppId.trim() || null,
+                linkedinLoginEnabled: social.linkedinLoginEnabled,
+                linkedinClientId: social.linkedinClientId.trim() || null,
               };
               const googleSecret = social.googleClientSecret.trim();
               const facebookSecret = social.facebookAppSecret.trim();
+              const linkedinSecret = social.linkedinClientSecret.trim();
               if (googleSecret) payload.googleClientSecret = googleSecret;
               if (facebookSecret) payload.facebookAppSecret = facebookSecret;
+              if (linkedinSecret) payload.linkedinClientSecret = linkedinSecret;
               socialUpdater.mutate({ data: payload as Parameters<typeof socialUpdater.mutate>[0]["data"] });
             }}
           />

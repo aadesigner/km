@@ -12,6 +12,13 @@ import { getSettings } from "../lib/settingsCache.js";
 import { shouldBootstrapAdmin } from "../lib/adminBootstrap.js";
 import { clientIpKey } from "../lib/trustedClient.js";
 import { oauthInitLimiter } from "../lib/expensiveEndpointLimiter.js";
+import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
+import {
+  isFacebookOAuthConfigured,
+  isGoogleOAuthConfigured,
+  isLinkedInOAuthConfigured,
+  getLinkedInOAuthCredentials,
+} from "../lib/oauthSettings.js";
 
 const router = Router();
 
@@ -629,17 +636,13 @@ router.post("/auth/reset-password", resetPasswordIpLimiter, resetPasswordTokenLi
 
 // GET /auth/facebook — initiate OAuth
 router.get("/auth/facebook", oauthInitLimiter, async (req, res) => {
-  const [settings] = await db
-    .select({ facebookAppId: systemSettingsTable.facebookAppId })
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
-
-  const appId = settings?.facebookAppId;
-  if (!appId) {
+  const settings = await getEffectiveSystemSettings();
+  if (!isFacebookOAuthConfigured(settings)) {
     res.status(503).json({ error: "Facebook sign-in is not configured" });
     return;
   }
+
+  const appId = settings!.facebookAppId!.trim();
 
   const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
   const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host ?? "localhost";
@@ -691,22 +694,14 @@ router.get("/auth/facebook/callback", async (req, res) => {
     return;
   }
 
-  const [settings] = await db
-    .select({
-      facebookAppId: systemSettingsTable.facebookAppId,
-      facebookAppSecret: systemSettingsTable.facebookAppSecret,
-      sessionDays: systemSettingsTable.sessionDays,
-    })
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
-
-  const appId = settings?.facebookAppId;
-  const appSecret = settings?.facebookAppSecret;
-  if (!appId || !appSecret) {
+  const settings = await getEffectiveSystemSettings();
+  if (!isFacebookOAuthConfigured(settings)) {
     res.redirect(errorRedirect);
     return;
   }
+
+  const appId = settings!.facebookAppId!.trim();
+  const appSecret = settings!.facebookAppSecret!.trim();
 
   const redirectUri = `${proto}://${host}/api/auth/facebook/callback`;
 
@@ -780,7 +775,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
     return;
   }
 
-  const sessionDays = clampSessionDays(settings?.sessionDays);
+  const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
 
   // Find or create user
@@ -855,17 +850,13 @@ router.get("/auth/facebook/callback", async (req, res) => {
 
 // GET /auth/google — initiate OAuth
 router.get("/auth/google", oauthInitLimiter, async (req, res) => {
-  const [settings] = await db
-    .select({ googleClientId: systemSettingsTable.googleClientId })
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
-
-  const clientId = settings?.googleClientId;
-  if (!clientId) {
+  const settings = await getEffectiveSystemSettings();
+  if (!isGoogleOAuthConfigured(settings)) {
     res.status(503).json({ error: "Google sign-in is not configured" });
     return;
   }
+
+  const clientId = settings!.googleClientId!.trim();
 
   const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
   const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host ?? "localhost";
@@ -919,22 +910,14 @@ router.get("/auth/google/callback", async (req, res) => {
     return;
   }
 
-  const [settings] = await db
-    .select({
-      googleClientId: systemSettingsTable.googleClientId,
-      googleClientSecret: systemSettingsTable.googleClientSecret,
-      sessionDays: systemSettingsTable.sessionDays,
-    })
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
-
-  const clientId = settings?.googleClientId;
-  const clientSecret = settings?.googleClientSecret;
-  if (!clientId || !clientSecret) {
+  const settings = await getEffectiveSystemSettings();
+  if (!isGoogleOAuthConfigured(settings)) {
     res.redirect(errorRedirect);
     return;
   }
+
+  const clientId = settings!.googleClientId!.trim();
+  const clientSecret = settings!.googleClientSecret!.trim();
 
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
@@ -1013,7 +996,7 @@ router.get("/auth/google/callback", async (req, res) => {
     return;
   }
 
-  const sessionDays = clampSessionDays(settings?.sessionDays);
+  const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
 
   // Find or create user
@@ -1068,6 +1051,232 @@ router.get("/auth/google/callback", async (req, res) => {
       .set({ lastLoginAt: new Date(), lastLoginIp: oauthIp, updatedAt: new Date() })
       .where(eq(usersTable.id, user.id));
     logger.info({ msg: "google_oauth_login", userId: user.id, email });
+  }
+
+  if (!user) {
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  if (user.isBanned) {
+    res.redirect(oauthSignInRedirect(frontendBase, lang, "banned"));
+    return;
+  }
+
+  const token = await signJwt(user.id, sessionDays);
+  setAuthCookie(res, token, sessionDays);
+
+  res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
+});
+
+// ── LinkedIn OAuth ────────────────────────────────────────────────────────────
+
+// GET /auth/linkedin — initiate OAuth (OpenID Connect)
+router.get("/auth/linkedin", oauthInitLimiter, async (req, res) => {
+  const settings = await getEffectiveSystemSettings();
+  const linkedinCreds = getLinkedInOAuthCredentials(settings);
+  if (!linkedinCreds) {
+    res.status(503).json({ error: "LinkedIn sign-in is not configured" });
+    return;
+  }
+
+  const clientId = linkedinCreds.clientId;
+
+  const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
+  const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host ?? "localhost";
+  const redirectUri = `${proto}://${host}/api/auth/linkedin/callback`;
+
+  setOAuthLangCookie(res, resolveOAuthLang(req), proto === "https");
+
+  const state = crypto.randomBytes(16).toString("hex");
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    state,
+    scope: "openid profile email",
+  });
+
+  res.cookie("linkedin_oauth_state", state, {
+    httpOnly: true,
+    secure: proto === "https",
+    sameSite: "lax",
+    maxAge: 10 * 60 * 1000,
+    path: "/",
+  });
+
+  res.redirect(`https://www.linkedin.com/oauth/v2/authorization?${params}`);
+});
+
+// GET /auth/linkedin/callback
+router.get("/auth/linkedin/callback", async (req, res) => {
+  const { code, state, error: oauthError } = req.query as Record<string, string | undefined>;
+
+  const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
+  const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host ?? "localhost";
+  const frontendBase = `${proto}://${host}`;
+  const lang = resolveOAuthLang(req);
+  clearOAuthLangCookie(res);
+  const errorRedirect = oauthSignInRedirect(frontendBase, lang, "linkedin_failed");
+
+  if (oauthError || !code || !state) {
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  const storedState = req.cookies?.["linkedin_oauth_state"] as string | undefined;
+  res.clearCookie("linkedin_oauth_state", { path: "/" });
+  if (!storedState || storedState !== state) {
+    logger.warn({ msg: "linkedin_oauth_state_mismatch" });
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  const settings = await getEffectiveSystemSettings();
+  const linkedinCreds = getLinkedInOAuthCredentials(settings);
+  if (!linkedinCreds) {
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  const clientId = linkedinCreds.clientId;
+  const clientSecret = linkedinCreds.clientSecret;
+
+  const redirectUri = `${proto}://${host}/api/auth/linkedin/callback`;
+
+  let accessToken: string;
+  try {
+    const tokenRes = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+      }).toString(),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!tokenRes.ok) {
+      const txt = await tokenRes.text();
+      logger.warn({ msg: "linkedin_oauth_token_error", response: txt.slice(0, 200) });
+      res.redirect(errorRedirect);
+      return;
+    }
+    const tokenData = await tokenRes.json() as { access_token?: string };
+    if (!tokenData.access_token) {
+      logger.warn({ msg: "linkedin_oauth_no_access_token" });
+      res.redirect(errorRedirect);
+      return;
+    }
+    accessToken = tokenData.access_token;
+  } catch (err) {
+    logger.error({ msg: "linkedin_oauth_token_fetch_error", err });
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  let linkedinId: string;
+  let email: string | undefined;
+  let name: string | undefined;
+  let picture: string | undefined;
+  try {
+    const meRes = await fetch("https://api.linkedin.com/v2/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!meRes.ok) {
+      logger.warn({ msg: "linkedin_oauth_userinfo_failed", status: meRes.status });
+      res.redirect(errorRedirect);
+      return;
+    }
+    const info = await meRes.json() as {
+      sub?: string;
+      name?: string;
+      given_name?: string;
+      family_name?: string;
+      picture?: string;
+      email?: string;
+      email_verified?: boolean;
+    };
+    if (!info.sub) {
+      res.redirect(errorRedirect);
+      return;
+    }
+    if (info.email_verified === false) {
+      res.redirect(oauthSignInRedirect(frontendBase, lang, "linkedin_unverified"));
+      return;
+    }
+    linkedinId = info.sub;
+    email = info.email?.toLowerCase().trim();
+    const composedName = [info.given_name, info.family_name].filter(Boolean).join(" ").trim();
+    name = info.name || composedName || undefined;
+    picture = info.picture;
+  } catch (err) {
+    logger.error({ msg: "linkedin_oauth_userinfo_error", err });
+    res.redirect(errorRedirect);
+    return;
+  }
+
+  if (!email) {
+    res.redirect(oauthSignInRedirect(frontendBase, lang, "linkedin_no_email"));
+    return;
+  }
+
+  const sessionDays = clampSessionDays(settings.sessionDays);
+  const oauthIp = clientIpKey(req);
+
+  let [user] = await db.select().from(usersTable).where(eq(usersTable.linkedinId, linkedinId)).limit(1);
+
+  if (!user) {
+    const [existingByEmail] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    if (existingByEmail) {
+      const [updated] = await db.update(usersTable)
+        .set({
+          linkedinId,
+          avatarUrl: existingByEmail.avatarUrl ?? picture ?? undefined,
+          lastLoginAt: new Date(),
+          lastLoginIp: oauthIp,
+          updatedAt: new Date(),
+        })
+        .where(eq(usersTable.id, existingByEmail.id))
+        .returning();
+      user = updated;
+      logger.info({ msg: "linkedin_oauth_link", userId: existingByEmail.id, email });
+    }
+  }
+
+  if (!user) {
+    const isAdmin = await shouldBootstrapAdmin(email);
+    const id = crypto.randomUUID();
+    try {
+      const [created] = await db.insert(usersTable).values({
+        id,
+        email,
+        name: name ?? undefined,
+        avatarUrl: picture ?? undefined,
+        linkedinId,
+        authProvider: "linkedin",
+        isAdmin,
+        lastLoginAt: new Date(),
+        lastLoginIp: oauthIp,
+      }).returning();
+      user = created;
+      logger.info({ msg: "linkedin_oauth_register", userId: id, email });
+    } catch (err) {
+      if (!isPgUniqueViolation(err)) throw err;
+      const [existing] = await db.select().from(usersTable)
+        .where(or(eq(usersTable.linkedinId, linkedinId), eq(usersTable.email, email)))
+        .limit(1);
+      user = existing;
+    }
+  } else {
+    user = await syncUserAdminFlag(user);
+    await db.update(usersTable)
+      .set({ lastLoginAt: new Date(), lastLoginIp: oauthIp, updatedAt: new Date() })
+      .where(eq(usersTable.id, user.id));
+    logger.info({ msg: "linkedin_oauth_login", userId: user.id, email });
   }
 
   if (!user) {

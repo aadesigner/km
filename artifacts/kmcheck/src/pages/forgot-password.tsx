@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
       <AuthPageShell>
         {sent ? (
           <div className="space-y-4 text-center">
-            <MailCheck className="h-12 w-12 text-primary mx-auto" />
+            <MailCheck className="h-10 w-10 text-primary mx-auto" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("forgot_sent_title")}</h1>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           <>
-            <div className="mb-5 space-y-1.5">
+            <div className="mb-4 space-y-1.5">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("forgot_title")}</h1>
               <p className="text-sm text-muted-foreground">{t("forgot_subtitle")}</p>
             </div>

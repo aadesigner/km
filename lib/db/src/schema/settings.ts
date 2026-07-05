@@ -68,6 +68,10 @@ export const systemSettingsTable = pgTable("system_settings", {
   facebookLoginEnabled: boolean("facebook_login_enabled").notNull().default(true),
   facebookAppId: text("facebook_app_id"),
   facebookAppSecret: text("facebook_app_secret"),
+  // LinkedIn OAuth
+  linkedinLoginEnabled: boolean("linkedin_login_enabled").notNull().default(true),
+  linkedinClientId: text("linkedin_client_id"),
+  linkedinClientSecret: text("linkedin_client_secret"),
   // Site URL + Email send toggles
   siteUrl: text("site_url").default("https://kmcheck.com"),
   emailSendWelcome: boolean("email_send_welcome").notNull().default(true),

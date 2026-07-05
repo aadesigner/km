@@ -21,7 +21,7 @@ import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
-import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin } from "@/lib/checkout-vin-flow";
+import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
@@ -245,12 +245,12 @@ export default function Checkout({ params }: Props) {
       ? Math.round((promoDiscountAmount / standardPrice) * 100)
       : 0;
 
-  // Redirect to sign-in if not authenticated (wait until auth has loaded)
+  // Redirect to sign-up if not authenticated (wait until auth has loaded)
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
       if (vin) sessionStorage.setItem("pending_vin", vin);
-      setLocation(`/${language}/sign-in`);
+      setLocation(guestVinAuthPath(language));
     }
   }, [isLoaded, isSignedIn, language, setLocation, vin]);
 

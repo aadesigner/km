@@ -57,10 +57,15 @@ export type UnlockCheckoutTarget = {
   vin: string;
 };
 
+/** Where guests land when a VIN check requires an account (register, not login). */
+export function guestVinAuthPath(language: string): string {
+  return `/${language}/sign-up`;
+}
+
 /**
  * Build navigation target when user unlocks a full report from a decoded VIN.
  * - Signed in → checkout with ?vin= (also in sessionStorage)
- * - Signed out → sign-in; pending_vin is kept for post-login/register redirect (see auth.tsx)
+ * - Signed out → sign-up; pending_vin is kept for post-auth redirect (see auth.tsx)
  */
 export function buildUnlockCheckoutTarget(
   vin: string,
@@ -79,15 +84,15 @@ export function buildUnlockCheckoutTarget(
 
   return {
     vin: normalized,
-    href: `/${language}/sign-in`,
+    href: guestVinAuthPath(language),
   };
 }
 
-/** Guest VIN check → sign-in with pending VIN stored (unified across marketing pages). */
+/** Guest VIN check → sign-up with pending VIN stored (unified across marketing pages). */
 export function redirectGuestForVinCheckout(vin: string, language: string): string | null {
   const normalized = persistVinForCheckout(vin);
   if (!normalized) return null;
-  return `/${language}/sign-in`;
+  return guestVinAuthPath(language);
 }
 
 /** After auth, where to send the user if a checkout VIN is waiting. */

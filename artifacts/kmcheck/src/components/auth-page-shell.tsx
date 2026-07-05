@@ -16,8 +16,8 @@ export function AuthPageShell({ children, className }: Props) {
   return (
     <section
       className={cn(
-        "relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pb-8 sm:pb-12",
-        "-mt-[var(--site-header-offset,84px)] pt-[calc(2rem+var(--site-header-offset,84px))] sm:pt-[calc(3rem+var(--site-header-offset,84px))]",
+        "relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pb-6 sm:pb-10",
+        "-mt-[var(--site-header-offset,84px)] pt-[calc(1.25rem+var(--site-header-offset,84px))] sm:pt-[calc(2rem+var(--site-header-offset,84px))]",
       )}
     >
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/90 via-background to-background dark:hidden" />
@@ -46,18 +46,18 @@ export function AuthPageShell({ children, className }: Props) {
         >
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-          <div className="flex flex-col items-center px-6 pt-7 pb-5 border-b border-border/40 bg-gradient-to-b from-muted/25 to-transparent">
+          <div className="flex flex-col items-center px-5 pt-5 pb-4 border-b border-border/40 bg-gradient-to-b from-muted/25 to-transparent">
             <Link
               href={`/${language}`}
-              className="group flex flex-col items-center gap-2 rounded-2xl p-1 transition-opacity hover:opacity-90"
+              className="group flex flex-col items-center rounded-xl p-0.5 transition-opacity hover:opacity-90"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.08] ring-1 ring-primary/15 shadow-sm shadow-primary/10 transition-transform group-hover:scale-[1.02]">
-                <KmcheckMark className="h-7 w-7" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/15 shadow-sm shadow-primary/10 transition-transform group-hover:scale-[1.02]">
+                <KmcheckMark className="h-6 w-6" />
               </span>
             </Link>
           </div>
 
-          <div className="p-6 sm:p-8">{children}</div>
+          <div className="p-5 sm:p-7">{children}</div>
         </div>
       </motion.div>
     </section>

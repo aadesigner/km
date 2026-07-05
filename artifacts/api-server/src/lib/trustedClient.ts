@@ -10,6 +10,7 @@ const EXEMPT_PREFIXES = [
   "/healthz",
   "/auth/google",
   "/auth/facebook",
+  "/auth/linkedin",
   "/vin/image",
 ];
 

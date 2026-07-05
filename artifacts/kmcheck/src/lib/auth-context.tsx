@@ -64,23 +64,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
-  // Drop signed-in user data when the account changes — avoid queryClient.clear() (aborts in-flight loads).
+  // Clear client data on logout or account switch — not on fresh login (null → user),
+  // which would race with dashboard queries and leave reports stuck loading.
   useEffect(() => {
     const curId = user?.id ?? null;
-    if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== curId) {
-      void queryClient.removeQueries({
-        predicate: (query) => {
-          const root = query.queryKey[0];
-          if (typeof root !== "string") return false;
-          return (
-            root.startsWith("/api/user/")
-            || root === "/api/vin"
-            || root.startsWith("/api/vin/")
-          );
-        },
-      });
-      if (curId) invalidateClientAreaQueries(queryClient);
+    const prevId = prevUserIdRef.current;
+
+    if (prevId !== undefined && prevId !== curId) {
+      const switchingAccount = prevId != null && curId != null && prevId !== curId;
+      const loggingOut = prevId != null && curId == null;
+
+      if (switchingAccount || loggingOut) {
+        void queryClient.removeQueries({
+          predicate: (query) => {
+            const root = query.queryKey[0];
+            if (typeof root !== "string") return false;
+            return (
+              root.startsWith("/api/user/")
+              || root === "/api/vin"
+              || root.startsWith("/api/vin/")
+            );
+          },
+        });
+      }
+
+      if (curId != null && (switchingAccount || loggingOut)) {
+        invalidateClientAreaQueries(queryClient);
+      }
     }
+
     prevUserIdRef.current = curId;
   }, [user?.id, queryClient]);
 

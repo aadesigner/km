@@ -10,6 +10,11 @@ import { isTrustedApiRequest } from "../lib/clientGuard.js";
 import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
 import { makeTtlCache } from "../lib/ttlCache.js";
 import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
+import {
+  isFacebookOAuthConfigured,
+  isGoogleOAuthConfigured,
+  isLinkedInOAuthConfigured,
+} from "../lib/oauthSettings.js";
 import { normalizeMaintenanceRestrictions } from "../lib/maintenancePolicy.js";
 import { rejectVinLookupIfDisabled } from "../lib/vinLookupGate.js";
 import {
@@ -90,6 +95,7 @@ type PublicSettingsResponse = {
   paypalEnableCards: boolean;
   googleEnabled: boolean;
   facebookEnabled: boolean;
+  linkedinEnabled: boolean;
   freeVinDecoderEnabled: boolean;
   freeVinDecoderRequireSignIn: boolean;
   krwPerUsd: number;
@@ -131,8 +137,9 @@ router.get("/payments/public-settings", async (req, res) => {
     const envClientId = process.env.PAYPAL_CLIENT_ID?.trim() || null;
     const rawClientId = settings?.paypalClientId?.trim() || envClientId;
     const paypalClientId = rawClientId || null;
-    const googleEnabled = (settings?.googleLoginEnabled ?? true) && !!(settings?.googleClientId && settings?.googleClientSecret);
-    const facebookEnabled = (settings?.facebookLoginEnabled ?? true) && !!(settings?.facebookAppId && settings?.facebookAppSecret);
+    const googleEnabled = isGoogleOAuthConfigured(settings);
+    const facebookEnabled = isFacebookOAuthConfigured(settings);
+    const linkedinEnabled = isLinkedInOAuthConfigured(settings);
     return {
       recaptchaEnabled: settings?.recaptchaEnabled ?? false,
       recaptchaSiteKey: settings?.recaptchaSiteKey ?? null,
@@ -141,6 +148,7 @@ router.get("/payments/public-settings", async (req, res) => {
       paypalEnableCards: settings?.paypalEnableCards ?? true,
       googleEnabled,
       facebookEnabled,
+      linkedinEnabled,
       freeVinDecoderEnabled: settings?.freeVinDecoderEnabled ?? true,
       freeVinDecoderRequireSignIn: settings?.freeVinDecoderRequireSignIn ?? false,
       krwPerUsd: settings?.krwPerUsd && settings.krwPerUsd > 0 ? settings.krwPerUsd : 1537,

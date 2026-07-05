@@ -1,4 +1,9 @@
 import type { systemSettingsTable } from "@workspace/db";
+import {
+  isFacebookOAuthConfigured,
+  isGoogleOAuthConfigured,
+  isLinkedInOAuthConfigured,
+} from "./oauthSettings.js";
 
 type SettingsRow = typeof systemSettingsTable.$inferSelect;
 
@@ -9,6 +14,7 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
     recaptchaSecretKey,
     googleClientSecret,
     facebookAppSecret,
+    linkedinClientSecret,
     smtpPass,
     ...safe
   } = settings;
@@ -18,6 +24,10 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
     hasRecaptchaSecret: !!recaptchaSecretKey?.trim(),
     hasGoogleSecret: !!googleClientSecret?.trim(),
     hasFacebookSecret: !!facebookAppSecret?.trim(),
+    hasLinkedInSecret: !!linkedinClientSecret?.trim(),
     hasSmtpPass: !!smtpPass?.trim(),
+    googleButtonVisible: isGoogleOAuthConfigured(settings),
+    facebookButtonVisible: isFacebookOAuthConfigured(settings),
+    linkedinButtonVisible: isLinkedInOAuthConfigured(settings),
   };
 }

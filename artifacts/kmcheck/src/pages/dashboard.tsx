@@ -151,7 +151,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   const historyParams = DEFAULT_USER_HISTORY_SUMMARY;
-  const authReady = isSignedIn;
+  const authReady = isLoaded && isSignedIn;
   const {
     data: history,
     isLoading: historyLoading,

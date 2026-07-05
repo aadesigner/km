@@ -1,5 +1,6 @@
 import { db, systemSettingsTable, type SystemSettings } from "@workspace/db";
-import { desc, isNotNull, and, ne, eq } from "drizzle-orm";
+import { desc, eq, ne } from "drizzle-orm";
+import { mergeMissingCredentials } from "./oauthSettings.js";
 
 /** Latest settings row (highest id). */
 export async function getLatestSystemSettings(): Promise<SystemSettings | null> {
@@ -12,41 +13,24 @@ export async function getLatestSystemSettings(): Promise<SystemSettings | null> 
 }
 
 /**
- * Prefer the newest row, but inherit PayPal credentials from an older row when a
- * partial insert left the latest row without them (e.g. email-template-only row).
+ * Prefer the newest row, but inherit credentials from older rows when a partial
+ * insert left the latest row without them (e.g. email-template-only row).
  */
 export async function getEffectiveSystemSettings(): Promise<SystemSettings | null> {
   const latest = await getLatestSystemSettings();
   if (!latest) return null;
 
-  const hasPaypal =
-    !!latest.paypalClientId?.trim() && !!latest.paypalClientSecret?.trim();
-  if (hasPaypal) return latest;
-
-  const [donor] = await db
+  const olderRows = await db
     .select()
     .from(systemSettingsTable)
-    .where(
-      and(
-        isNotNull(systemSettingsTable.paypalClientId),
-        ne(systemSettingsTable.paypalClientId, ""),
-        isNotNull(systemSettingsTable.paypalClientSecret),
-        ne(systemSettingsTable.paypalClientSecret, ""),
-        ne(systemSettingsTable.id, latest.id),
-      ),
-    )
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
+    .where(ne(systemSettingsTable.id, latest.id))
+    .orderBy(desc(systemSettingsTable.id));
 
-  if (!donor) return latest;
-
-  return {
-    ...latest,
-    paypalClientId: latest.paypalClientId?.trim() || donor.paypalClientId,
-    paypalClientSecret: latest.paypalClientSecret?.trim() || donor.paypalClientSecret,
-    paypalSandbox: latest.paypalSandbox ?? donor.paypalSandbox,
-    paypalEnableCards: latest.paypalEnableCards ?? donor.paypalEnableCards,
-  };
+  let merged = latest;
+  for (const row of olderRows) {
+    merged = mergeMissingCredentials(merged, row);
+  }
+  return merged;
 }
 
 /** Merge orphan settings rows into the canonical row and delete duplicates. */
@@ -68,14 +52,26 @@ export async function consolidateSystemSettingsRows(): Promise<void> {
     if (!merged.paypalClientSecret?.trim() && row.paypalClientSecret?.trim()) {
       merged.paypalClientSecret = row.paypalClientSecret;
     }
+    if (!merged.googleClientId?.trim() && row.googleClientId?.trim()) {
+      merged.googleClientId = row.googleClientId;
+    }
     if (!merged.recaptchaSecretKey?.trim() && row.recaptchaSecretKey?.trim()) {
       merged.recaptchaSecretKey = row.recaptchaSecretKey;
     }
     if (!merged.googleClientSecret?.trim() && row.googleClientSecret?.trim()) {
       merged.googleClientSecret = row.googleClientSecret;
     }
+    if (!merged.facebookAppId?.trim() && row.facebookAppId?.trim()) {
+      merged.facebookAppId = row.facebookAppId;
+    }
     if (!merged.facebookAppSecret?.trim() && row.facebookAppSecret?.trim()) {
       merged.facebookAppSecret = row.facebookAppSecret;
+    }
+    if (!merged.linkedinClientId?.trim() && row.linkedinClientId?.trim()) {
+      merged.linkedinClientId = row.linkedinClientId;
+    }
+    if (!merged.linkedinClientSecret?.trim() && row.linkedinClientSecret?.trim()) {
+      merged.linkedinClientSecret = row.linkedinClientSecret;
     }
     if (!merged.smtpPass?.trim() && row.smtpPass?.trim()) {
       merged.smtpPass = row.smtpPass;
@@ -89,9 +85,13 @@ export async function consolidateSystemSettingsRows(): Promise<void> {
       paypalClientSecret: merged.paypalClientSecret,
       paypalSandbox: merged.paypalSandbox,
       paypalEnableCards: merged.paypalEnableCards,
+      googleClientId: merged.googleClientId,
       recaptchaSecretKey: merged.recaptchaSecretKey,
       googleClientSecret: merged.googleClientSecret,
+      facebookAppId: merged.facebookAppId,
       facebookAppSecret: merged.facebookAppSecret,
+      linkedinClientId: merged.linkedinClientId,
+      linkedinClientSecret: merged.linkedinClientSecret,
       smtpPass: merged.smtpPass,
       updatedAt: new Date(),
     })

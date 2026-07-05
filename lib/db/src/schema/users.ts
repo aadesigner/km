@@ -10,6 +10,7 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash"),
   googleId: text("google_id").unique(),
   facebookId: text("facebook_id").unique(),
+  linkedinId: text("linkedin_id").unique(),
   authProvider: text("auth_provider").notNull().default("local"),
   isBanned: boolean("is_banned").notNull().default(false),
   banReason: text("ban_reason"),

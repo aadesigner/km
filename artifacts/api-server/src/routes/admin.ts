@@ -31,7 +31,14 @@ import { logger } from "../lib/logger";
 import { runCleanupJobs } from "../lib/cleanupJobs.js";
 import { invalidateSettingsCache } from "../lib/settingsCache.js";
 import { invalidateFreeDecoderSettingsCache } from "../lib/freeDecoderSettingsCache.js";
+import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
 import { sanitizeAdminSettings } from "../lib/adminSettings.js";
+import {
+  applySocialLoginTestOverrides,
+  resolveSiteOrigin,
+  runAllSocialLoginTests,
+  type SocialLoginTestOverrides,
+} from "../lib/oauthSocialLoginTest.js";
 import {
   listPendingVinChecksForAdmin,
   getPendingVinCheckById,
@@ -1156,7 +1163,7 @@ router.patch("/admin/pricing", requireAdmin, async (req, res) => {
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 
 router.get("/admin/settings", requireAdmin, async (_req, res) => {
-  const [settings] = await db.select().from(systemSettingsTable).orderBy(desc(systemSettingsTable.id)).limit(1);
+  const settings = await getEffectiveSystemSettings();
   if (!settings) {
     res.json({
       rateLimit: 10, rateLimitWindow: 60, maxVinsPerDay: 50,
@@ -1165,7 +1172,8 @@ router.get("/admin/settings", requireAdmin, async (_req, res) => {
       maintenanceRestrictions: [], maintenanceMessage: null,
       vinLookupEnabled: true,
       freeVinDecoderEnabled: true, freeVinDecoderDailyLimit: 0, freeVinDecoderRequireSignIn: false,
-      hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasSmtpPass: false,
+      hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasLinkedInSecret: false, hasSmtpPass: false,
+      googleButtonVisible: false, facebookButtonVisible: false, linkedinButtonVisible: false,
     });
     return;
   }
@@ -1197,6 +1205,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     sessionDays: number; requireHttps: boolean;
     googleLoginEnabled: boolean; googleClientId: string | null; googleClientSecret: string | null;
     facebookLoginEnabled: boolean; facebookAppId: string | null; facebookAppSecret: string | null;
+    linkedinLoginEnabled: boolean; linkedinClientId: string | null; linkedinClientSecret: string | null;
     logRetentionDays: number; failedTxnRetentionDays: number;
     krwPerUsd: number;
     analyticsGtmEnabled: boolean;
@@ -1279,6 +1288,11 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     if (!secret) delete patch.facebookAppSecret;
     else patch.facebookAppSecret = secret;
   }
+  if ("linkedinClientSecret" in patch) {
+    const secret = typeof patch.linkedinClientSecret === "string" ? patch.linkedinClientSecret.trim() : patch.linkedinClientSecret;
+    if (!secret) delete patch.linkedinClientSecret;
+    else patch.linkedinClientSecret = secret;
+  }
   if ("smtpPass" in patch) {
     const secret = typeof patch.smtpPass === "string" ? patch.smtpPass.trim() : patch.smtpPass;
     if (!secret) delete patch.smtpPass;
@@ -1324,6 +1338,9 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       facebookLoginEnabled: updates.facebookLoginEnabled ?? true,
       facebookAppId: updates.facebookAppId ?? null,
       facebookAppSecret: updates.facebookAppSecret ?? null,
+      linkedinLoginEnabled: updates.linkedinLoginEnabled ?? true,
+      linkedinClientId: updates.linkedinClientId ?? null,
+      linkedinClientSecret: updates.linkedinClientSecret ?? null,
       krwPerUsd: updates.krwPerUsd ?? 1537,
       ...patch,
     }).returning();
@@ -1841,6 +1858,32 @@ router.post("/admin/settings/test-recaptcha", requireAdmin, async (_req, res) =>
   } catch (err) {
     logger.error({ err }, "reCAPTCHA test failed");
     res.status(502).json({ ok: false, error: "Could not reach Google's reCAPTCHA service. Check your server's network access." });
+  }
+});
+
+// ── SOCIAL LOGIN TEST ─────────────────────────────────────────────────────────
+
+router.post("/admin/settings/test-social-logins", requireAdmin, async (req, res) => {
+  const overrides = (req.body?.overrides ?? undefined) as SocialLoginTestOverrides | undefined;
+  const effective = await getEffectiveSystemSettings();
+  const settings = applySocialLoginTestOverrides(effective, overrides);
+
+  const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
+  const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host ?? "localhost";
+  const siteOrigin = resolveSiteOrigin(proto, host);
+
+  try {
+    const report = await runAllSocialLoginTests(settings, siteOrigin);
+    res.json(report);
+  } catch (err) {
+    logger.error({ err }, "social login test failed");
+    res.status(500).json({
+      ok: false,
+      siteOrigin,
+      testedAt: new Date().toISOString(),
+      results: [],
+      error: err instanceof Error ? err.message : "Social login test failed",
+    });
   }
 });
 

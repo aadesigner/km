@@ -9,7 +9,7 @@ export const CLIENT_AREA_QUERY_ROOTS = [
 
 export function invalidateClientAreaQueries(queryClient: QueryClient): void {
   for (const root of CLIENT_AREA_QUERY_ROOTS) {
-    void queryClient.invalidateQueries({ queryKey: [root] });
+    void queryClient.invalidateQueries({ queryKey: [root], refetchType: "all" });
   }
 }
 

@@ -92,7 +92,7 @@ export default function SetPasswordPage() {
       <AuthPageShell>
         {done ? (
           <div className="space-y-4 text-center">
-            <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
+            <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("set_password_done_title")}</h1>
               <p className="text-sm text-muted-foreground mt-1">{t("set_password_done_desc")}</p>
@@ -100,7 +100,7 @@ export default function SetPasswordPage() {
           </div>
         ) : (
           <>
-            <div className="mb-5 space-y-1.5">
+            <div className="mb-4 space-y-1.5">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("set_password_title")}</h1>
               <p className="text-sm text-muted-foreground">{t("set_password_subtitle")}</p>
             </div>
