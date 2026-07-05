@@ -77,7 +77,7 @@ function CyclingWord() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
         key={idx}
-        className="text-primary inline-block min-h-[1.12em] min-w-[14ch] sm:min-w-[18ch] md:min-w-[22ch]"
+        className="inline"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -212,13 +212,17 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
 
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
             className="space-y-8 text-center"
           >
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
-              {t("hero_headline_1")}<br />
-              <CyclingWord />
+              {t("hero_headline_1")}
+              <br />
+              <span className="block text-primary">
+                <CyclingWord />
+              </span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
               {t("hero_subtext")}
