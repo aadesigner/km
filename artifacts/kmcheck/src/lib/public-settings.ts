@@ -8,6 +8,49 @@ export const PUBLIC_SETTINGS_QUERY_KEY = ["/api/payments/public-settings"] as co
 
 export type PublicSettingsPayload = Record<string, unknown>;
 
+export type OAuthPublicFlags = {
+  googleEnabled: boolean;
+  facebookEnabled: boolean;
+  linkedinEnabled: boolean;
+};
+
+const OAUTH_FLAGS_SESSION_KEY = "kmcheck_oauth_public_flags";
+
+export function parseOAuthPublicFlags(payload: PublicSettingsPayload | undefined): OAuthPublicFlags {
+  return {
+    googleEnabled: !!payload?.googleEnabled,
+    facebookEnabled: !!payload?.facebookEnabled,
+    linkedinEnabled: !!payload?.linkedinEnabled,
+  };
+}
+
+/** Last known-good OAuth flags from a successful public-settings response (survives refetch blips). */
+export function readPersistedOAuthFlags(): OAuthPublicFlags | null {
+  if (typeof sessionStorage === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(OAUTH_FLAGS_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<OAuthPublicFlags>;
+    const flags: OAuthPublicFlags = {
+      googleEnabled: !!parsed.googleEnabled,
+      facebookEnabled: !!parsed.facebookEnabled,
+      linkedinEnabled: !!parsed.linkedinEnabled,
+    };
+    return flags.googleEnabled || flags.facebookEnabled || flags.linkedinEnabled ? flags : null;
+  } catch {
+    return null;
+  }
+}
+
+export function persistOAuthFlags(flags: OAuthPublicFlags): void {
+  if (typeof sessionStorage === "undefined") return;
+  if (flags.googleEnabled || flags.facebookEnabled || flags.linkedinEnabled) {
+    sessionStorage.setItem(OAUTH_FLAGS_SESSION_KEY, JSON.stringify(flags));
+  } else {
+    sessionStorage.removeItem(OAUTH_FLAGS_SESSION_KEY);
+  }
+}
+
 export async function fetchPublicSettings(signal?: AbortSignal): Promise<PublicSettingsPayload> {
   const r = await fetch(`${basePath}/api/payments/public-settings`, { signal });
   if (!r.ok) throw new Error(`public_settings_${r.status}`);

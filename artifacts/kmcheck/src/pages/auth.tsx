@@ -63,7 +63,7 @@ function AuthField({
 }
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { publicSettingsQueryOptions } from "@/lib/public-settings";
+import { publicSettingsQueryOptions, parseOAuthPublicFlags, readPersistedOAuthFlags, persistOAuthFlags } from "@/lib/public-settings";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -92,23 +92,69 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
-const SOCIAL_BTN = "flex flex-1 items-center justify-center gap-2 h-11 min-w-0 rounded-xl text-sm font-medium transition-all";
+const SOCIAL_BTN_COMPACT = "flex flex-1 items-center justify-center gap-2 h-11 min-w-0 rounded-xl text-sm font-medium transition-all";
+const SOCIAL_BTN_FULL = "flex w-full h-12 items-center justify-center gap-2.5 rounded-xl text-sm font-medium transition-all";
+
+type SocialProviderId = "facebook" | "google" | "linkedin";
 
 function SocialAuthButtons({
   language,
+  mode,
   googleEnabled,
   facebookEnabled,
   linkedinEnabled,
   loading,
 }: {
   language: string;
+  mode: "sign-in" | "sign-up";
   googleEnabled: boolean;
   facebookEnabled: boolean;
   linkedinEnabled: boolean;
   loading?: boolean;
 }) {
   const { t } = useTranslation();
-  const hasSocial = googleEnabled || facebookEnabled || linkedinEnabled;
+  const isSignIn = mode === "sign-in";
+
+  const providers: Array<{
+    id: SocialProviderId;
+    enabled: boolean;
+    href: string;
+    shortLabel: string;
+    fullLabel: string;
+    className: string;
+    icon: React.ReactNode;
+  }> = [
+    {
+      id: "facebook",
+      enabled: facebookEnabled,
+      href: `${basePath}/api/auth/facebook?lang=${language}`,
+      shortLabel: "Facebook",
+      fullLabel: isSignIn ? t("auth_continue_with_facebook") : t("auth_signup_with_facebook"),
+      className: "bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-sm shadow-[#1877F2]/20",
+      icon: <FacebookIcon className="h-4 w-4 shrink-0" />,
+    },
+    {
+      id: "google",
+      enabled: googleEnabled,
+      href: `${basePath}/api/auth/google?lang=${language}`,
+      shortLabel: "Google",
+      fullLabel: isSignIn ? t("auth_continue_with_google") : t("auth_signup_with_google"),
+      className: "border border-border/70 bg-background/80 hover:bg-muted/40 hover:border-border shadow-sm",
+      icon: <GoogleIcon className="h-4 w-4 shrink-0" />,
+    },
+    {
+      id: "linkedin",
+      enabled: linkedinEnabled,
+      href: `${basePath}/api/auth/linkedin?lang=${language}`,
+      shortLabel: "LinkedIn",
+      fullLabel: isSignIn ? t("auth_continue_with_linkedin") : t("auth_signup_with_linkedin"),
+      className: "bg-[#0A66C2] hover:bg-[#004182] text-white shadow-sm shadow-[#0A66C2]/20",
+      icon: <LinkedInIcon className="h-4 w-4 shrink-0" />,
+    },
+  ];
+
+  const active = providers.filter((p) => p.enabled);
+  const count = active.length;
 
   if (loading) {
     return (
@@ -122,7 +168,7 @@ function SocialAuthButtons({
           </div>
         </div>
         <div className="flex gap-2">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: Math.max(count, 3) }).map((_, i) => (
             <div key={i} className="flex-1 h-11 rounded-xl bg-muted/50 animate-pulse" />
           ))}
         </div>
@@ -130,7 +176,9 @@ function SocialAuthButtons({
     );
   }
 
-  if (!hasSocial) return null;
+  if (count === 0) return null;
+
+  const compact = count > 1;
 
   return (
     <div className="mt-6 space-y-3">
@@ -143,34 +191,20 @@ function SocialAuthButtons({
         </div>
       </div>
 
-      <div className="flex items-stretch gap-2">
-        {googleEnabled && (
+      <div className={cn("flex items-stretch gap-2", count === 1 && "flex-col")}>
+        {active.map((provider) => (
           <a
-            href={`${basePath}/api/auth/google?lang=${language}`}
-            className={cn(SOCIAL_BTN, "border border-border/70 bg-background/80 hover:bg-muted/40 hover:border-border shadow-sm")}
+            key={provider.id}
+            href={provider.href}
+            className={cn(
+              compact ? SOCIAL_BTN_COMPACT : SOCIAL_BTN_FULL,
+              provider.className,
+            )}
           >
-            <GoogleIcon className="h-4 w-4 shrink-0" />
-            <span>Google</span>
+            {provider.icon}
+            <span>{compact ? provider.shortLabel : provider.fullLabel}</span>
           </a>
-        )}
-        {facebookEnabled && (
-          <a
-            href={`${basePath}/api/auth/facebook?lang=${language}`}
-            className={cn(SOCIAL_BTN, "bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-sm shadow-[#1877F2]/20")}
-          >
-            <FacebookIcon className="h-4 w-4 shrink-0" />
-            <span>Facebook</span>
-          </a>
-        )}
-        {linkedinEnabled && (
-          <a
-            href={`${basePath}/api/auth/linkedin?lang=${language}`}
-            className={cn(SOCIAL_BTN, "bg-[#0A66C2] hover:bg-[#004182] text-white shadow-sm shadow-[#0A66C2]/20")}
-          >
-            <LinkedInIcon className="h-4 w-4 shrink-0" />
-            <span>LinkedIn</span>
-          </a>
-        )}
+        ))}
       </div>
     </div>
   );
@@ -186,14 +220,18 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const { language, t } = useTranslation();
   const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const queryClient = useQueryClient();
+  const persistedOAuthRef = useRef(readPersistedOAuthFlags());
   const {
     data: oauthSettings,
     isPending: oauthSettingsPending,
     isFetched: oauthSettingsFetched,
+    isError: oauthSettingsError,
     refetch: refetchOAuthSettings,
   } = useQuery({
     ...publicSettingsQueryOptions(),
     placeholderData: (previous) => previous,
+    retry: 2,
+    retryDelay: 400,
   });
 
   useEffect(() => {
@@ -201,17 +239,40 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   }, [queryClient]);
 
   useEffect(() => {
+    if (!oauthSettingsFetched || !oauthSettings) return;
+    const flags = parseOAuthPublicFlags(oauthSettings);
+    persistOAuthFlags(flags);
+    persistedOAuthRef.current = flags.googleEnabled || flags.facebookEnabled || flags.linkedinEnabled
+      ? flags
+      : null;
+  }, [oauthSettingsFetched, oauthSettings]);
+
+  useEffect(() => {
     const onPageShow = (event: PageTransitionEvent) => {
       if (event.persisted) void refetchOAuthSettings();
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refetchOAuthSettings();
+    };
     window.addEventListener("pageshow", onPageShow);
-    return () => window.removeEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [refetchOAuthSettings]);
 
-  const googleEnabled = !!oauthSettings?.googleEnabled;
-  const facebookEnabled = !!oauthSettings?.facebookEnabled;
-  const linkedinEnabled = !!oauthSettings?.linkedinEnabled;
-  const socialSettingsLoading = oauthSettingsPending && !oauthSettingsFetched && !oauthSettings;
+  const liveOAuthFlags = oauthSettingsFetched && oauthSettings
+    ? parseOAuthPublicFlags(oauthSettings)
+    : null;
+  const cachedOAuthFlags = persistedOAuthRef.current ?? readPersistedOAuthFlags();
+  const googleEnabled = liveOAuthFlags?.googleEnabled ?? cachedOAuthFlags?.googleEnabled ?? false;
+  const facebookEnabled = liveOAuthFlags?.facebookEnabled ?? cachedOAuthFlags?.facebookEnabled ?? false;
+  const linkedinEnabled = liveOAuthFlags?.linkedinEnabled ?? cachedOAuthFlags?.linkedinEnabled ?? false;
+  const socialSettingsLoading = !liveOAuthFlags
+    && !cachedOAuthFlags
+    && oauthSettingsPending
+    && !oauthSettingsError;
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState(initialMode);
 
@@ -596,6 +657,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
             <SocialAuthButtons
               language={language}
+              mode={mode}
               googleEnabled={googleEnabled}
               facebookEnabled={facebookEnabled}
               linkedinEnabled={linkedinEnabled}
