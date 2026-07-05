@@ -17,10 +17,13 @@ export type OAuthPublicFlags = {
 const OAUTH_FLAGS_SESSION_KEY = "kmcheck_oauth_public_flags";
 
 export function parseOAuthPublicFlags(payload: PublicSettingsPayload | undefined): OAuthPublicFlags {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return { googleEnabled: false, facebookEnabled: false, linkedinEnabled: false };
+  }
   return {
-    googleEnabled: !!payload?.googleEnabled,
-    facebookEnabled: !!payload?.facebookEnabled,
-    linkedinEnabled: !!payload?.linkedinEnabled,
+    googleEnabled: !!payload.googleEnabled,
+    facebookEnabled: !!payload.facebookEnabled,
+    linkedinEnabled: !!payload.linkedinEnabled,
   };
 }
 
@@ -84,16 +87,28 @@ export function resolveOAuthPublicFlags(
 export async function fetchPublicSettings(signal?: AbortSignal): Promise<PublicSettingsPayload> {
   const r = await fetch(`${basePath}/api/payments/public-settings`, { signal });
   if (!r.ok) throw new Error(`public_settings_${r.status}`);
-  return r.json() as Promise<PublicSettingsPayload>;
+  const json = await r.json() as PublicSettingsPayload;
+  const flags = parseOAuthPublicFlags(json);
+  if (oauthFlagsAnyEnabled(flags)) {
+    persistOAuthFlags(flags);
+  }
+  return json;
 }
 
 export function publicSettingsQueryOptions() {
+  const persisted = readPersistedOAuthAsPublicSettings();
   return {
     queryKey: PUBLIC_SETTINGS_QUERY_KEY,
     queryFn: ({ signal }: { signal?: AbortSignal }) => fetchPublicSettings(signal),
+    initialData: persisted,
+    initialDataUpdatedAt: persisted ? 0 : undefined,
+    placeholderData: (previous: PublicSettingsPayload | undefined) =>
+      previous ?? readPersistedOAuthAsPublicSettings(),
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: 400,
   };
 }
 

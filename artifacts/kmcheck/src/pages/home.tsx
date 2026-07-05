@@ -208,7 +208,7 @@ export default function Home() {
           className="hero-orb-c pointer-events-none absolute bottom-24 left-[42%] h-32 w-32 rounded-full bg-primary/8 blur-2xl -z-10 hidden lg:block"
         />
 
-        <div className="relative max-w-6xl mx-auto isolate z-10">
+        <div className="relative max-w-6xl mx-auto z-10">
           <div className="max-w-3xl mx-auto">
 
           <motion.div

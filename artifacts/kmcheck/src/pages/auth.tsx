@@ -238,14 +238,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     isFetched: oauthSettingsFetched,
     isError: oauthSettingsError,
     refetch: refetchOAuthSettings,
-  } = useQuery({
-    ...publicSettingsQueryOptions(),
-    initialData: readPersistedOAuthAsPublicSettings,
-    initialDataUpdatedAt: () => (readPersistedOAuthFlags() ? 0 : undefined),
-    placeholderData: (previous) => previous,
-    retry: 2,
-    retryDelay: 400,
-  });
+  } = useQuery(publicSettingsQueryOptions());
 
   useEffect(() => {
     void queryClient.ensureQueryData(publicSettingsQueryOptions());
@@ -259,39 +252,36 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       persistedOAuthRef.current = flags;
       return;
     }
+    // Only clear stored flags after a successful fetch that confirms all providers are off.
+    if (oauthSettingsError) return;
     const cached = persistedOAuthRef.current ?? readPersistedOAuthFlags();
     if (!oauthFlagsAnyEnabled(cached)) {
       persistOAuthFlags(flags);
       persistedOAuthRef.current = null;
     }
-  }, [oauthSettingsFetched, oauthSettings]);
+  }, [oauthSettingsFetched, oauthSettings, oauthSettingsError]);
 
   useEffect(() => {
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) void refetchOAuthSettings();
-    };
-    const onVisible = () => {
-      if (document.visibilityState === "visible") void refetchOAuthSettings();
+    const onPageShow = () => {
+      void refetchOAuthSettings();
     };
     window.addEventListener("pageshow", onPageShow);
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      window.removeEventListener("pageshow", onPageShow);
-      document.removeEventListener("visibilitychange", onVisible);
-    };
+    return () => window.removeEventListener("pageshow", onPageShow);
   }, [refetchOAuthSettings]);
 
-  // After OAuth cancel the server redirects here with ?error=… — refetch flags in background.
+  // After OAuth cancel the server redirects here with ?error=… — refetch in background.
   useEffect(() => {
     if (!oauthError) return;
     void refetchOAuthSettings();
   }, [oauthError, refetchOAuthSettings]);
 
-  const liveOAuthFlags = oauthSettingsFetched && oauthSettings
+  const liveOAuthFlags = oauthSettingsFetched
     ? parseOAuthPublicFlags(oauthSettings)
     : null;
   const cachedOAuthFlags = persistedOAuthRef.current ?? readPersistedOAuthFlags();
-  const resolvedOAuth = resolveOAuthPublicFlags(liveOAuthFlags, cachedOAuthFlags);
+  const resolvedOAuth = oauthSettingsFetched
+    ? resolveOAuthPublicFlags(liveOAuthFlags, cachedOAuthFlags)
+    : (cachedOAuthFlags ?? parseOAuthPublicFlags(oauthSettings));
   const googleEnabled = resolvedOAuth.googleEnabled;
   const facebookEnabled = resolvedOAuth.facebookEnabled;
   const linkedinEnabled = resolvedOAuth.linkedinEnabled;

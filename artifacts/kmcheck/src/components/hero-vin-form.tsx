@@ -65,8 +65,9 @@ export function HeroVinForm({
             className={cn(
               "hero-vin-field relative overflow-hidden rounded-2xl",
               "border border-border/80 dark:border-white/10",
-              "bg-background/95 dark:bg-[#0a120e]/95 backdrop-blur-sm",
-              "shadow-lg shadow-black/10 dark:shadow-black/25 sm:shadow-xl",
+              "bg-background dark:bg-[#0a120e]",
+              "max-sm:shadow-none sm:bg-background/95 sm:dark:bg-[#0a120e]/95 sm:backdrop-blur-sm",
+              "sm:shadow-lg sm:shadow-black/10 sm:dark:shadow-black/25 md:shadow-xl",
             )}
           >
             <div className="hero-vin-input-wrap relative flex items-center overflow-hidden">
@@ -98,7 +99,7 @@ export function HeroVinForm({
                   "hero-vin-submit absolute right-1.5 sm:right-2.5 z-10",
                   "h-9 sm:h-10 md:h-11 rounded-lg sm:rounded-xl",
                   "px-3.5 sm:px-7 text-sm sm:text-[15px] font-semibold",
-                  "shadow-md sm:shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow",
+                  "max-sm:shadow-none sm:shadow-md md:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 sm:transition-shadow",
                 )}
               >
                 <VinCheckSubmitLabel />

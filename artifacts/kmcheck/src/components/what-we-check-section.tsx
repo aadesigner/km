@@ -31,7 +31,7 @@ function WhatWeCheckDetailPanel({
   const isMobile = variant === "mobile";
 
   return (
-    <article className="relative overflow-hidden rounded-2xl border bg-card shadow-sm">
+    <article className="relative overflow-hidden rounded-2xl border bg-card max-sm:shadow-none sm:shadow-sm">
       <div className={cn("absolute inset-x-0 top-0 h-1", accentBg)} />
       <div className={cn(isMobile ? "p-4 space-y-3.5" : "p-5 md:p-6 space-y-4")}>
         <header className="flex items-start gap-3">
@@ -148,7 +148,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Pro
   }, [autoRotate, checksPaused, features.length]);
 
   return (
-    <section className="relative py-12 md:py-20 px-4 overflow-hidden">
+    <section className="relative z-[1] py-12 md:py-20 px-4 overflow-hidden bg-background">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.06),transparent_65%)]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
