@@ -17,10 +17,7 @@ export function VinDecodeRecheckHint({ className }: VinDecodeRecheckHintProps) {
       )}
     >
       <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-      <p className="text-sm leading-relaxed text-foreground">
-        <span className="font-medium">{t("vin_hint_recheck")}</span>
-        <span className="text-muted-foreground"> {t("vin_hint_recheck_sub")}</span>
-      </p>
+      <p className="text-sm leading-relaxed text-muted-foreground">{t("vin_hint_recheck")}</p>
     </div>
   );
 }
