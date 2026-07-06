@@ -24,6 +24,7 @@ import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { getTestimonials, shuffleTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
+import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -103,7 +104,16 @@ export default function Home() {
     [normalizedHomeVin],
   );
 
-  const showVinWarning = !!homeLocalDecode && !homeLocalDecode.make && !homeLocalDecode.model;
+  const showVinRecheckHint =
+    normalizedHomeVin.length === 17
+    && !getVinValidationErrorKey(normalizedHomeVin)
+    && !!homeLocalDecode
+    && !isTrustworthyVinDecode({
+      vin: normalizedHomeVin,
+      make: homeLocalDecode.make,
+      model: homeLocalDecode.model,
+      year: homeLocalDecode.year ?? null,
+    });
   const homeDecodeTrustworthy = !!homeLocalDecode && isTrustworthyVinDecode({
     vin: normalizedHomeVin,
     make: homeLocalDecode.make,
@@ -237,22 +247,17 @@ export default function Home() {
               error={error}
               disabled={vinLookupDisabled}
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-              alerts={(showVinWarning || showHomePendingDoubleCheck) ? (
+              alerts={(showVinRecheckHint || showHomePendingDoubleCheck) ? (
                 <AnimatePresence>
-                  {showVinWarning && (
+                  {showVinRecheckHint && (
                     <motion.div
-                      key="vin-warning"
+                      key="vin-recheck-hint"
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.25 }}
-                      className="flex items-start gap-2 rounded-lg border border-amber-300/80 bg-amber-50/90 dark:border-amber-700/50 dark:bg-amber-950/40 px-3 py-2.5"
                     >
-                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
-                        <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("vin_warning_unknown_vehicle_sub")}</p>
-                      </div>
+                      <VinDecodeRecheckHint />
                     </motion.div>
                   )}
                   {showHomePendingDoubleCheck && (

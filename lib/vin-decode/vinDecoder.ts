@@ -9,6 +9,8 @@
 
 import { decodeModelEuropean } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
+import { decodeEuropeanBrandModel } from "./european-brands";
+import { isVagWmi } from "./vag-wmi";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
 // Letters I, O, Q, U, Z are never used. Digits 0 is never used.
@@ -129,7 +131,7 @@ const WMI_MAP: Record<string, string> = {
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
   "WDF": "Mercedes-Benz", "WME": "Smart",
   "WP0": "Porsche", "WP1": "Porsche",
-  "WVW": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
+  "WVW": "Volkswagen", "WVG": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
   "W09": "Porsche",
   // ── UK ────────────────────────────────────────────────────────────────────
   "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover",
@@ -410,6 +412,7 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── More Renault (VF1*) ───────────────────────────────────────────────────
   "VF1J": "Clio",        "VF1L": "Megane",      "VF1K": "Captur",
   "VF1R": "Zoe (EV)",    "VF1E": "Kadjar",      "VF1S": "Arkana",
+  "VF1B": "Clio",        "VF1M": "Megane",      "VF1H": "Captur",
   // ── More Peugeot (VF3*) ───────────────────────────────────────────────────
   "VF3A": "208",          "VF3D": "308",         "VF3M": "3008",
   "VF3N": "5008",         "VF3E": "2008",
@@ -419,9 +422,10 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Opel / Vauxhall (W0L*) ────────────────────────────────────────────────
   "W0LS": "Astra",        "W0LB": "Corsa",       "W0LT": "Insignia",
   "W0LM": "Mokka",        "W0LN": "Grandland",
-  // ── Škoda (TMB*) ──────────────────────────────────────────────────────────
+  // ── Škoda (TMB*) — 4-char fallbacks; precise decode in european-brands.ts ───
   "TMBA": "Octavia",      "TMBJ": "Fabia",       "TMBE": "Superb",
   "TMBG": "Kodiaq",       "TMBK": "Kamiq",       "TMBZ": "Karoq",
+  "TMBL": "Karoq",        "TMBD": "Kodiaq",      "TMBR": "Scala",
   // ── SEAT (VS6* / VS7*) ────────────────────────────────────────────────────
   "VS6A": "Ibiza",        "VS6K": "Leon",        "VS7A": "Arona",
   "VS7B": "Ateca",        "VS7T": "Tarraco",
@@ -498,11 +502,12 @@ function decodeModel(vin: string): string | null {
     const hit = MODEL_OVERRIDES[upper.slice(0, len)];
     if (hit) return hit;
   }
+  const euBrand = decodeEuropeanBrandModel(upper);
+  if (euBrand) return euBrand;
   // EU VAG/Audi ZZZ-format: model code at position 7 — before generic 4-char map
   if (upper.length >= 7 && upper.slice(3, 6) === "ZZZ") {
     const wmi = upper.slice(0, 3);
-    if (wmi.startsWith("WVW") || wmi.startsWith("WV1") || wmi.startsWith("WV2")
-      || wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+    if (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
       const eu = decodeModelEuropean(upper);
       if (eu) return eu;
     }
@@ -1310,8 +1315,10 @@ const BODY_CODE_MAP: Record<string, Record<string, string>> = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function lookupByWmi<T>(wmi: string, map: Record<string, Record<string, T>>): Record<string, T> | null {
-  return map[wmi.slice(0, 3)] ?? map[wmi.slice(0, 2)] ?? null;
+function lookupByWmi<T>(vin: string, map: Record<string, Record<string, T>>): Record<string, T> | null {
+  const w3 = vin.slice(0, 3);
+  const wmiKey = isVagWmi(w3) && map.WVW ? "WVW" : w3;
+  return map[wmiKey] ?? map[vin.slice(0, 2)] ?? null;
 }
 
 export function decodeEngineCode(vin: string): string | null {

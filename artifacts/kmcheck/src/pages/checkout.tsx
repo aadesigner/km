@@ -24,6 +24,7 @@ import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleC
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
+import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { useTheme } from "@/components/theme-provider";
 
@@ -1072,28 +1073,14 @@ export default function Checkout({ params }: Props) {
                   exit={{ opacity: 0, height: 0 }}
                   style={{ overflow: "hidden" }}
                 >
-                  <div className={cn(
-                    "flex items-start gap-2.5 border-b px-4 sm:px-5 py-3.5",
-                    showVinPendingDoubleCheck
-                      ? "border-sky-200/70 dark:border-sky-800/50 bg-sky-50/40 dark:bg-sky-950/20"
-                      : "border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30",
-                  )}>
-                    {showVinPendingDoubleCheck ? (
+                  {showVinQualityWarning ? (
+                    <VinDecodeRecheckHint className="border-0 border-b rounded-none px-4 sm:px-5 py-3.5" />
+                  ) : (
+                    <div className="flex items-start gap-2.5 border-b border-sky-200/70 dark:border-sky-800/50 bg-sky-50/40 dark:bg-sky-950/20 px-4 sm:px-5 py-3.5">
                       <Info className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                    )}
-                    <div>
-                      {showVinQualityWarning ? (
-                        <>
-                          <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
-                          <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5 leading-relaxed">{t("vin_warning_unknown_vehicle_sub")}</p>
-                        </>
-                      ) : (
-                        <p className="text-sm font-medium text-sky-800 dark:text-sky-300">{t("vin_warning_pending_double_check")}</p>
-                      )}
+                      <p className="text-sm font-medium text-sky-800 dark:text-sky-300">{t("vin_warning_pending_double_check")}</p>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

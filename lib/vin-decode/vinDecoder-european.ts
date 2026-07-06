@@ -1,3 +1,5 @@
+import { isVagWmi } from "./vag-wmi";
+
 /**
  * European VIN model decoding (VAG Group + Audi).
  * EU-format VINs use ZZZ filler at positions 4–6; model platform at position 7 (index 6).
@@ -64,8 +66,7 @@ const AUDI_MODEL_AT_7: Record<string, string> = {
 };
 
 function isVagPrefix(prefix: string): boolean {
-  return prefix.startsWith("WVW") || prefix.startsWith("WV1") || prefix.startsWith("WV2")
-    || prefix.startsWith("3VW");
+  return isVagWmi(prefix) || prefix.startsWith("3VW");
 }
 
 function isAudiEuPrefix(prefix: string): boolean {

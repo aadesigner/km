@@ -22,7 +22,14 @@ const CASES: Array<{
   { vin: "WBA3A5C55FK123456", label: "Germany BMW 3 Series", expectMake: "BMW", expectModelContains: "3 Series" },
   { vin: "WDD2130421A123456", label: "Germany Mercedes E-Class", expectMake: "Mercedes-Benz", expectModelContains: "E-Class" },
   { vin: "WVWZZZ3CZCE064077", label: "Germany VW Passat B8 (EU)", expectMake: "Volkswagen", expectModelContains: "Passat" },
+  { vin: "WVGZZZ5NZDW535045", label: "Germany VW Tiguan (WVG plant)", expectMake: "Volkswagen", expectModelContains: "Tiguan" },
   { vin: "WAUZZZF4XGN123456", label: "Germany Audi A6 (EU)", expectMake: "Audi", expectModelContains: "A6" },
+  { vin: "WP0ZZZ99ZPS123456", label: "Germany Porsche 911", expectMake: "Porsche", expectModelContains: "911" },
+  { vin: "TMBEP6NJ3MZ012345", label: "Czech Škoda Fabia III", expectMake: "Škoda", expectModelContains: "Fabia" },
+  { vin: "TMBJP7NX5MY012345", label: "Czech Škoda Octavia IV", expectMake: "Škoda", expectModelContains: "Octavia" },
+  { vin: "ZFA31200000745586", label: "Italy Fiat 500", expectMake: "Fiat", expectModelContains: "500" },
+  { vin: "VF1RJA00012345678", label: "France Renault Clio", expectMake: "Renault", expectModelContains: "Clio" },
+  { vin: "VF3MRHPYWR1234567", label: "France Peugeot 3008", expectMake: "Peugeot", expectModelContains: "3008" },
 ];
 
 function validateCheckDigit(vin: string): boolean {

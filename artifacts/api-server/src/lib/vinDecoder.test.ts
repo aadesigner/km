@@ -728,6 +728,13 @@ describe("regressions", () => {
     expect(r.model).toBe("Golf");
   });
 
+  it("[REG-004] WVGZZZ5NZDW535045 → Volkswagen Tiguan (VAG plant WMI)", () => {
+    const r = decodeVin("WVGZZZ5NZDW535045");
+    expect(r.make).toBe("Volkswagen");
+    expect(r.model).toContain("Tiguan");
+    expect(r.year).toBe(2013);
+  });
+
   it("[REG-003] JHMCM56557C404453 → Honda Accord (Japan export)", () => {
     const r = decodeVin("JHMCM56557C404453");
     expect(r.make).toBe("Honda");

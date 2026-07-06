@@ -6,6 +6,8 @@
  * this module covers model line, chassis generation, body style, and engine family.
  */
 
+import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
+
 type PrefixRule = { prefix: string; model: string; chassis?: string };
 
 function matchLongestPrefix(vin: string, rules: PrefixRule[]): PrefixRule | null {
@@ -106,6 +108,9 @@ const MERCEDES_RULES: PrefixRule[] = [
   { prefix: "WDD166", model: "GLE", chassis: "W166" },
   { prefix: "WDD167", model: "GLS", chassis: "X167" },
   { prefix: "WDD247", model: "GLA", chassis: "H247" },
+  { prefix: "WDD246", model: "B-Class", chassis: "W246" },
+  { prefix: "WDD164", model: "ML-Class", chassis: "W164" },
+  { prefix: "WDD251", model: "GLK", chassis: "X204" },
   { prefix: "WDD463", model: "G-Class", chassis: "W463/W465" },
   { prefix: "WDD290", model: "EQS", chassis: "V297" },
   { prefix: "WDD294", model: "EQE", chassis: "V294" },
@@ -134,6 +139,7 @@ const AUDI_RULES: PrefixRule[] = [
   { prefix: "WAUZZZGE", model: "Q8 / e-tron" },
   { prefix: "WAUZZZGS", model: "Q3" },
   { prefix: "WAUZZZGU", model: "e-tron GT" },
+  { prefix: "WAUZZZGB", model: "Q4 e-tron" },
   { prefix: "WAUZZZF1", model: "A3", chassis: "8Y" },
   { prefix: "WAUZZZF4", model: "A4", chassis: "B9" },
   { prefix: "WAUZZZF5", model: "A5", chassis: "F5" },
@@ -173,6 +179,8 @@ const VW_RULES: PrefixRule[] = [
   { prefix: "WVWZZZSY", model: "T-Roc" },
   { prefix: "WVWZZZAU", model: "Golf", chassis: "Mk6" },
   { prefix: "WVWZZZ1J", model: "Jetta", chassis: "Mk6/Mk7" },
+  { prefix: "WVWZZZAA", model: "Up!" },
+  { prefix: "WVWZZZ2K", model: "Golf", chassis: "Mk7" },
   { prefix: "3VWZZZ", model: "Volkswagen", chassis: "US market" },
 ];
 
@@ -207,7 +215,7 @@ function decodeFromRules(vin: string, rules: PrefixRule[]): PremiumEuropeanDecod
 }
 
 export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null {
-  const upper = vin.toUpperCase().trim();
+  const upper = normalizeVagVinForPremium(vin.trim());
   if (upper.length !== 17) return null;
 
   const wmi = upper.slice(0, 3);
@@ -223,7 +231,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   if (wmi.startsWith("WP0") || wmi.startsWith("WP1")) {
     return decodeFromRules(upper, PORSCHE_RULES);
   }
-  if (wmi.startsWith("WVW") || wmi.startsWith("WV1") || wmi.startsWith("WV2") || upper.startsWith("3VW")) {
+  if (isVagWmi(wmi) || upper.startsWith("3VW")) {
     return decodeFromRules(upper, VW_RULES);
   }
   if (wmi.startsWith("WMW")) {

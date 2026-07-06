@@ -805,6 +805,8 @@
   "owner_transfer": "Kalim / Ankand",
   "vin_warning_unknown_vehicle": "Ky VIN nuk duket i saktë — ju lutemi kontrollojeni përsëri.",
   "vin_warning_unknown_vehicle_sub": "Nuk mundëm të identifikojmë markën ose modelin. VIN-i mund të jetë i pasaktë.",
+  "vin_hint_recheck": "Nuk mundëm ta identifikojmë këtë automjet vetëm nga VIN-i.",
+  "vin_hint_recheck_sub": "Kontrolloni çdo karakter — një gabim i vogël shkrimi lehtësohet.",
   "vin_warning_check_digit": "Shifra kontrolluese nuk përputhet — kontrolloni VIN-in me kujdes.",
   "vin_warning_check_digit_sub": "Të dhënat e mjetit më sipër mund të jenë të sakta; verifikoni me kujdes VIN-in e futur.",
   "vin_warning_pending_double_check": "Sigurohuni që VIN-i është i saktë — kontrollojeni përsëri.",

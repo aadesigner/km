@@ -1,6 +1,11 @@
 import type { VinDecodeResult } from "./vinDecoder";
 import { decodeModelEuropean } from "./vinDecoder-european";
 import { decodePremiumEuropean } from "./european-premium";
+import { isVagWmi } from "./vag-wmi";
+
+function isRenaultWmiForDiag(wmi: string): boolean {
+  return wmi.startsWith("VF1") || wmi.startsWith("VF2") || wmi.startsWith("GA1");
+}
 
 export type DiagnosticCategory =
   | "structure"
@@ -38,7 +43,7 @@ function wmiFamily(wmi: string): string | null {
     "5UX": "BMW USA", "4US": "BMW USA",
     WDD: "Mercedes-Benz", WDB: "Mercedes-Benz", WDC: "Mercedes-Benz", WDF: "Mercedes-Benz",
     WAU: "Audi", TRU: "Audi",
-    WVW: "Volkswagen", WV1: "VW Commercial", WV2: "VW Commercial",
+    WVW: "Volkswagen", WVG: "Volkswagen", WV1: "VW Commercial", WV2: "VW Commercial",
     WP0: "Porsche", WP1: "Porsche",
     JHM: "Honda Japan", "1HG": "Honda USA", "5FN": "Honda USA", "5J6": "Honda USA",
     JT: "Toyota Japan", "4T1": "Toyota USA", "5TD": "Toyota USA", "5TF": "Toyota USA", "2T2": "Lexus",
@@ -192,7 +197,7 @@ function vagDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic[]
     push(out, "options", "drivetrain_badge", vin[7] === "D" ? "quattro / TDI diesel line" : null);
     if (vin[7] === "S") push(out, "options", "electrification", "e-tron electric");
   }
-  if (wmi.startsWith("WVW")) {
+  if (isVagWmi(wmi)) {
     if (vin[7] === "M") push(out, "options", "electrification", "eTSI mild hybrid / BlueMotion");
   }
   if (base.bodyStyleDecoded) push(out, "body", "body_style", base.bodyStyleDecoded);
@@ -386,7 +391,7 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     porscheDiagnostics(vin, base, out);
     return;
   }
-  if (wmi.startsWith("WVW") || make.includes("volkswagen")) {
+  if (isVagWmi(wmi) || make.includes("volkswagen")) {
     vagDiagnostics(vin, base, out);
     return;
   }
@@ -416,6 +421,35 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
   }
   if (wmi.startsWith("JF") || wmi.startsWith("4S") || make.includes("subaru")) {
     subaruDiagnostics(vin, out);
+    return;
+  }
+  if (wmi.startsWith("TMB") || make.includes("škoda") || make.includes("skoda")) {
+    push(out, "identity", "model_line", base.model);
+    if (vin.length >= 8) {
+      push(out, "identity", "skoda_type_code", vin.slice(6, 8), "Škoda model/type code (pos. 7–8)");
+    }
+    return;
+  }
+  if (isRenaultWmiForDiag(wmi) || make.includes("renault")) {
+    push(out, "identity", "model_line", base.model);
+    if (vin.length >= 5) {
+      push(out, "identity", "renault_vds", vin.slice(3, 5), "Renault VDS prefix (pos. 4–5)");
+    }
+    return;
+  }
+  if (wmi.startsWith("ZFA") || wmi.startsWith("ZFB") || make.includes("fiat")) {
+    push(out, "identity", "model_line", base.model);
+    if (vin.length >= 6) {
+      push(out, "identity", "fiat_platform", vin.slice(3, 6), "Fiat internal platform code (pos. 4–6)");
+    }
+    return;
+  }
+  if (wmi.startsWith("VF3") || make.includes("peugeot")) {
+    push(out, "identity", "model_line", base.model);
+    return;
+  }
+  if (wmi.startsWith("VSS") || make.includes("seat")) {
+    vagDiagnostics(vin, base, out);
     return;
   }
 

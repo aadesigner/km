@@ -21,6 +21,7 @@ export {
   type EngineSpecs,
 } from "./vinDecoder";
 export { decodeModelEuropean } from "./vinDecoder-european";
+export { decodeEuropeanBrandModel } from "./european-brands";
 export {
   decodePremiumEuropean,
   decodePremiumEuropeanModel,

@@ -22,6 +22,7 @@ import { translateClientError } from "@/lib/translate-client-error";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -525,14 +526,15 @@ export default function FreeVinDecoder() {
                 </div>
               </div>
 
-              {/* Warnings inside banner */}
-              {(!result.make && !result.year) && (
-                <div className="flex items-start gap-2.5 px-5 py-3.5 border-b bg-amber-50 dark:bg-amber-950/20">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_unknown_vehicle")}</p>
-                    <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("vin_warning_unknown_vehicle_sub")}</p>
-                  </div>
+              {/* Unidentified vehicle — soft recheck hint, not a VIN error */}
+              {displayResult && !isTrustworthyVinDecode({
+                vin: displayResult.vin,
+                make: displayResult.make,
+                model: displayResult.model,
+                year: displayResult.year,
+              }) && (
+                <div className="border-b px-5 py-3.5">
+                  <VinDecodeRecheckHint className="border-0 bg-transparent p-0" />
                 </div>
               )}
               {!result.checkDigitValid && (result.make || result.year) && (

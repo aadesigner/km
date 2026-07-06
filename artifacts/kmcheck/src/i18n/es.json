@@ -824,6 +824,8 @@
   "owner_transfer": "Transferencia / Subasta",
   "vin_warning_unknown_vehicle": "Este VIN no parece correcto — verifíquelo.",
   "vin_warning_unknown_vehicle_sub": "No pudimos identificar la marca o el modelo. El VIN puede ser incorrecto.",
+  "vin_hint_recheck": "No pudimos identificar este vehículo solo con el VIN.",
+  "vin_hint_recheck_sub": "Revise cada carácter — un error tipográfico es fácil de pasar por alto.",
   "vin_warning_check_digit": "El dígito de control no coincide — verifique el VIN.",
   "vin_warning_check_digit_sub": "Los datos del vehículo anteriores pueden ser correctos; verifique cuidadosamente el VIN introducido.",
   "vin_warning_pending_double_check": "Asegúrese de que su VIN es correcto — verifíquelo.",

@@ -824,6 +824,8 @@
   "owner_transfer": "Transfer / Auction",
   "vin_warning_unknown_vehicle": "This VIN doesn't look right — please double-check it.",
   "vin_warning_unknown_vehicle_sub": "We couldn't identify the make or model. The VIN may be incorrect.",
+  "vin_hint_recheck": "Couldn't identify this vehicle from the VIN alone.",
+  "vin_hint_recheck_sub": "Please double-check each character — a small typo is easy to miss.",
   "vin_warning_check_digit": "Check digit doesn't match — double-check the VIN.",
   "vin_warning_check_digit_sub": "The vehicle data above may still be correct; verify the VIN you entered carefully.",
   "vin_warning_pending_double_check": "Make sure your VIN is correct — double-check it.",
