@@ -13,7 +13,7 @@ import {
   resolveLockedPreviewPhotoSources,
 } from "../lib/vinService.js";
 import { logger } from "../lib/logger.js";
-import { decodeVin, decodeCountry, validateCheckDigit, decodeVinDiagnostics } from "@workspace/vin-decode";
+import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
@@ -532,7 +532,7 @@ router.get("/vin/decode-free", freeDecodeBurstLimiter, optionalAuth, async (req,
     return;
   }
 
-  const checkDigitValid = validateCheckDigit(vin);
+  const checkDigitValid = resolveCheckDigitValid(vin);
 
   try {
     const result = await decodeFreeVin(vin, checkDigitValid);
@@ -1148,7 +1148,7 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
     return;
   }
 
-  const checkDigitValid = validateCheckDigit(vin);
+  const checkDigitValid = resolveCheckDigitValid(vin);
 
   // Check if this user already has a completed lookup or payment for this VIN
   const [[completedLookup], [pendingLookup], [completedPmt]] = await Promise.all([

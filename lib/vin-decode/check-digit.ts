@@ -6,6 +6,12 @@ const TRANSLIT: Record<string, number> = {
 
 const WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
 
+/** US / Canada / Mexico market VINs (ISO region 1–5) require the position-9 check digit. */
+export function isNorthAmericanMarketVin(vin: string): boolean {
+  const first = vin.trim().toUpperCase()[0];
+  return first >= "1" && first <= "5";
+}
+
 export function validateCheckDigit(vin: string): boolean {
   const up = vin.toUpperCase();
   if (up.length !== 17) return false;
@@ -17,4 +23,11 @@ export function validateCheckDigit(vin: string): boolean {
   }
   const rem = sum % 11;
   return up[8] === (rem === 10 ? "X" : String(rem));
+}
+
+/** For display/API: EU and other non-NA VINs skip check-digit validation (not applicable). */
+export function resolveCheckDigitValid(vin: string): boolean {
+  const normalized = vin.trim().toUpperCase();
+  if (!isNorthAmericanMarketVin(normalized)) return true;
+  return validateCheckDigit(normalized);
 }

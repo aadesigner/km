@@ -1,4 +1,4 @@
-import { validateCheckDigit } from "./check-digit";
+import { resolveCheckDigitValid } from "./check-digit";
 import { isValidVinFormat } from "./validation";
 import { isPlausibleMake, isPlausibleModel } from "./plausibility";
 import { decodeVin, decodeCountry } from "./vinDecoder";
@@ -36,7 +36,7 @@ export function decodeVinLocalFree(vin: string): LocalFreeDecodeResult | null {
   if (!isValidVinFormat(normalized)) return null;
 
   const local = decodeVin(normalized);
-  const checkDigitValid = validateCheckDigit(normalized);
+  const checkDigitValid = resolveCheckDigitValid(normalized);
   const diagnostics = decodeVinDiagnostics(normalized, local);
   const premiumTrim = decodePremiumEuropeanTrim(normalized);
 

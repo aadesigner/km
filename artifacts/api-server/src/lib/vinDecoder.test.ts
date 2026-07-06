@@ -15,6 +15,8 @@ import {
   decodeTransmission,
   extractEngineSpecs,
   decodePlantInfo,
+  isNorthAmericanMarketVin,
+  resolveCheckDigitValid,
 } from "@workspace/vin-decode";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -733,6 +735,8 @@ describe("regressions", () => {
     expect(r.make).toBe("Volkswagen");
     expect(r.model).toContain("Tiguan");
     expect(r.year).toBe(2013);
+    expect(isNorthAmericanMarketVin("WVGZZZ5NZDW535045")).toBe(false);
+    expect(resolveCheckDigitValid("WVGZZZ5NZDW535045")).toBe(true);
   });
 
   it("[REG-003] JHMCM56557C404453 → Honda Accord (Japan export)", () => {

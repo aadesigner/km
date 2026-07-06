@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { decodeVinLocalFree, type VinDiagnostic } from "@workspace/vin-decode";
+import { decodeVinLocalFree, isNorthAmericanMarketVin, type VinDiagnostic } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useRecaptcha } from "@/hooks/use-recaptcha";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import {
-  Search, CheckCircle2, XCircle, Lock, Zap, ShieldCheck,
+  Search, CheckCircle2, Lock, Zap, ShieldCheck,
   AlertTriangle, Car, Globe, Factory, Gauge, Fuel,
   Settings2, ChevronRight, Info, ArrowRight, Layers, Cpu, Shield, Wrench,
 } from "lucide-react";
@@ -504,15 +504,10 @@ export default function FreeVinDecoder() {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {result.checkDigitValid ? (
+                  {isNorthAmericanMarketVin(result.vin) && result.checkDigitValid && (
                     <span className="flex items-center gap-1.5 text-sm font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-full px-3 py-1.5">
                       <CheckCircle2 className="h-4 w-4" />
                       {t("free_decoder_check_valid")}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-full px-3 py-1.5">
-                      <XCircle className="h-4 w-4" />
-                      {t("free_decoder_check_invalid")}
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground bg-muted/60 border rounded-full px-2.5 py-1">
@@ -535,15 +530,6 @@ export default function FreeVinDecoder() {
               }) && (
                 <div className="border-b px-5 py-3.5">
                   <VinDecodeRecheckHint className="border-0 bg-transparent p-0" />
-                </div>
-              )}
-              {!result.checkDigitValid && (result.make || result.year) && (
-                <div className="flex items-start gap-2.5 px-5 py-3.5 border-b bg-yellow-50 dark:bg-yellow-950/15">
-                  <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">{t("vin_warning_check_digit")}</p>
-                    <p className="text-xs text-yellow-600/80 dark:text-yellow-500 mt-0.5">{t("vin_warning_check_digit_sub")}</p>
-                  </div>
                 </div>
               )}
               {showDecoderPendingDoubleCheck && (

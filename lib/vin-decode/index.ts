@@ -1,4 +1,8 @@
-export { validateCheckDigit } from "./check-digit";
+export {
+  validateCheckDigit,
+  isNorthAmericanMarketVin,
+  resolveCheckDigitValid,
+} from "./check-digit";
 export {
   VIN_CHARSET_RE,
   inspectVinFormat,
