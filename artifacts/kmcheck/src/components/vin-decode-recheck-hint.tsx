@@ -6,7 +6,7 @@ type VinDecodeRecheckHintProps = {
   className?: string;
 };
 
-/** Soft nudge when the decoder couldn't identify the vehicle — not a VIN error warning. */
+/** Gentle nudge to re-read the VIN — not an error or identification failure message. */
 export function VinDecodeRecheckHint({ className }: VinDecodeRecheckHintProps) {
   const { t } = useTranslation();
   return (
@@ -17,10 +17,10 @@ export function VinDecodeRecheckHint({ className }: VinDecodeRecheckHintProps) {
       )}
     >
       <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-      <div>
-        <p className="text-sm font-medium text-foreground">{t("vin_hint_recheck")}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t("vin_hint_recheck_sub")}</p>
-      </div>
+      <p className="text-sm leading-relaxed text-foreground">
+        <span className="font-medium">{t("vin_hint_recheck")}</span>
+        <span className="text-muted-foreground"> {t("vin_hint_recheck_sub")}</span>
+      </p>
     </div>
   );
 }
