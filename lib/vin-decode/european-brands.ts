@@ -76,6 +76,10 @@ const RENAULT_PREFIX_RULES: PrefixRule[] = [
   { prefix: "VF1LB", model: "Megane" },
   { prefix: "VF1LM", model: "Megane" },
   { prefix: "VF1AG", model: "Arkana" },
+  { prefix: "VF1RJF", model: "Duster" },
+  { prefix: "VF1RFB", model: "Austral" },
+  { prefix: "VF1RFA", model: "Scenic" },
+  { prefix: "VF1RFD", model: "Espace" },
 ];
 
 function isRenaultWmi(wmi: string): boolean {

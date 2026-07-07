@@ -25,6 +25,7 @@ import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/v
 import { getTestimonials, shuffleTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
+import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -267,10 +268,8 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.25 }}
-                      className="flex items-start gap-2 rounded-lg border border-amber-200/80 dark:border-amber-800/45 bg-amber-50/50 dark:bg-amber-950/25 px-3 py-2.5"
                     >
-                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
+                      <VinPendingDoubleCheckHint />
                     </motion.div>
                   )}
                 </AnimatePresence>

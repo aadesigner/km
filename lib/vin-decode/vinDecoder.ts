@@ -10,6 +10,7 @@
 import { decodeModelEuropean } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
 import { decodeEuropeanBrandModel } from "./european-brands";
+import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
 import { isVagWmi } from "./vag-wmi";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
@@ -118,13 +119,17 @@ const WMI_MAP: Record<string, string> = {
   "JM1": "Mazda", "JM3": "Mazda", "JMB": "Mitsubishi",
   "JN1": "Infiniti", "JN3": "Nissan", "JN8": "Nissan",
   "JT": "Toyota",  // 2-char prefix catch-all for Toyota Japan
-  "JS1": "Suzuki", "JS2": "Suzuki",
+  "JS1": "Suzuki", "JS2": "Suzuki", "JS3": "Suzuki", "JS4": "Suzuki",
+  "JSA": "Suzuki", "JST": "Suzuki",
+  "2S2": "Suzuki", "2S3": "Suzuki",
+  "TSM": "Suzuki",
   // ── SOUTH KOREA ───────────────────────────────────────────────────────────
   "KMH": "Hyundai", "KMF": "Hyundai", "KM8": "Hyundai",
   "KNA": "Kia", "KND": "Kia", "KNJ": "Kia",
   "KNC": "Kia", "KNP": "Kia",
   "KNM": "Renault Samsung",
   "KPT": "SsangYong",
+  "KPA": "SsangYong",
   // ── GERMANY ───────────────────────────────────────────────────────────────
   "WAU": "Audi", "WAP": "Porsche",
   "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW",
@@ -159,6 +164,17 @@ const WMI_MAP: Record<string, string> = {
   "XLR": "DAF", "XL9": "Spyker",
   // ── RUSSIA ────────────────────────────────────────────────────────────────
   "XTA": "Lada/AvtoVAZ",
+  // ── Dacia (Romania) ───────────────────────────────────────────────────────
+  "UU1": "Dacia", "UU6": "Dacia",
+  // ── DS Automobiles ────────────────────────────────────────────────────────
+  "VR1": "DS Automobiles",
+  // ── Polestar / VinFast / Tata / Isuzu ─────────────────────────────────────
+  "LPS": "Polestar",
+  "RLL": "VinFast", "RLN": "VinFast",
+  "MAT": "Tata",
+  "JAA": "Isuzu", "JAC": "Isuzu", "JAL": "Isuzu",
+  "MP1": "Isuzu", "MPA": "Isuzu", "M3G": "Isuzu",
+  "4S1": "Isuzu", "4S2": "Isuzu", "J87": "Isuzu",
   // ── CHINA ─────────────────────────────────────────────────────────────────
   "LFV": "Volkswagen China", "LGX": "Buick China",
   "LSG": "General Motors China",
@@ -240,9 +256,12 @@ const WMI_MAP: Record<string, string> = {
   "WDH": "Mercedes-Benz",
 };
 
-function decodeMake(vin: string): string | null {
+function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typeof decodeGlobalBrand>): string | null {
+  return resolveGlobalBrandMake(vin, wmiMake, global);
+}
+
+function lookupWmiMake(vin: string): string | null {
   const upper = vin.toUpperCase();
-  // Try 3-char WMI first, then 2-char prefix
   return WMI_MAP[upper.slice(0, 3)] ?? WMI_MAP[upper.slice(0, 2)] ?? null;
 }
 
@@ -466,6 +485,9 @@ const MODEL_MAP_4: Record<string, string> = {
   "JTME": "bZ4X",
   // ── Genesis GV70e / GV60 (EV) ────────────────────────────────────────────
   "KMTN": "GV70e",
+  // ── Dacia (4-char fallbacks; precise decode in global-brands.ts) ──────────
+  "UU1D": "Duster",     "UU1B": "Sandero",    "UU1H": "Logan",
+  "UU1J": "Jogger",     "UU1S": "Spring",
 };
 
 // Longer-prefix overrides checked before MODEL_MAP_4 (longest match wins).
@@ -492,7 +514,7 @@ const MODEL_OVERRIDES: Record<string, string> = {
   "JHMF":    "Civic",
 };
 
-function decodeModel(vin: string): string | null {
+function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
   const upper = vin.toUpperCase();
 
   const premium = decodePremiumEuropeanModel(upper);
@@ -501,6 +523,11 @@ function decodeModel(vin: string): string | null {
   for (const len of [7, 6, 5]) {
     const hit = MODEL_OVERRIDES[upper.slice(0, len)];
     if (hit) return hit;
+  }
+  if (global?.model) return global.model;
+  if (!global) {
+    const discovered = decodeGlobalBrand(upper).model;
+    if (discovered) return discovered;
   }
   const euBrand = decodeEuropeanBrandModel(upper);
   if (euBrand) return euBrand;
@@ -1367,9 +1394,11 @@ export interface VinDecodeResult {
 
 export function decodeVin(vin: string): VinDecodeResult {
   const upper = vin.toUpperCase().trim();
+  const global = decodeGlobalBrand(upper);
   const wmi = upper.slice(0, 3);
-  const make = decodeMake(upper);
-  const model = decodeModel(upper);
+  const wmiMake = lookupWmiMake(upper);
+  const make = decodeMake(upper, wmiMake, global);
+  const model = decodeModel(upper, global);
   const engineDecoded = decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);
   const plant = decodePlantInfo(upper);

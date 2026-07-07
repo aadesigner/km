@@ -197,6 +197,10 @@ export async function readVinImageCache(url: string): Promise<CachedVinImage | n
 }
 
 /** Disk metadata for streaming — avoids loading multi-MB buffers on cache hits. */
+export async function getVinImageDiskHit(url: string): Promise<VinImageDiskHit | null> {
+  return readVinImageDiskHit(url);
+}
+
 export async function resolveVinImageDiskHit(url: string): Promise<VinImageDiskHit | null> {
   if (memoryCache.has(url)) return null;
   return readVinImageDiskHit(url);
@@ -247,7 +251,6 @@ export async function getOrFetchVinImage(
   const promise = fetcher()
     .then(async (image) => {
       await writeVinImageCache(url, image.contentType, image.body);
-      rememberInMemory(url, image);
       return image;
     })
     .finally(() => {

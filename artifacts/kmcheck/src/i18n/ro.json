@@ -827,7 +827,7 @@
   "vin_hint_recheck": "Asigurați-vă că verificați din nou caracterele VIN.",
   "vin_warning_check_digit": "Cifra de control nu se potrivește — verificați din nou VIN-ul.",
   "vin_warning_check_digit_sub": "Datele vehiculului de mai sus pot fi totuși corecte; verificați cu atenție VIN-ul introdus.",
-  "vin_warning_pending_double_check": "Asigurați-vă că VIN-ul este corect — verificați-l din nou.",
+  "vin_warning_pending_double_check": "Asigurați-vă că VIN-ul este corect",
   "date_not_recorded": "Data neînregistrată",
   "latest": "Cel mai recent",
   "condition": "Stare",

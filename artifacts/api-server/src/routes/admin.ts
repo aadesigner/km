@@ -28,6 +28,7 @@ import {
   type JsonImportRecord,
 } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger";
+import { forEachJsonArrayRecord } from "../lib/streamJsonArray.js";
 import { runCleanupJobs } from "../lib/cleanupJobs.js";
 import { invalidateSettingsCache } from "../lib/settingsCache.js";
 import { invalidateFreeDecoderSettingsCache } from "../lib/freeDecoderSettingsCache.js";
@@ -125,7 +126,11 @@ async function propagateCatalogDataToLookups(
 
   const vinList = [...dataByVin.keys()];
   const lookups = await db
-    .select()
+    .select({
+      id: vinLookupsTable.id,
+      vin: vinLookupsTable.vin,
+      data: vinLookupsTable.data,
+    })
     .from(vinLookupsTable)
     .where(inArray(vinLookupsTable.vin, vinList));
 
@@ -2323,22 +2328,6 @@ router.post(
   async (req, res) => {
     if (!req.file) { res.status(400).json({ error: "Multipart field 'file' is required" }); return; }
 
-    let records: unknown[];
-    try {
-      const raw = await readFile(req.file.path, "utf8");
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) throw new Error("Expected a JSON array at the root");
-      if (parsed.length > MAX_JSON_IMPORT_ROWS) {
-        throw new Error(`JSON import exceeds the ${MAX_JSON_IMPORT_ROWS.toLocaleString()}-row limit`);
-      }
-      records = parsed;
-    } catch (err) {
-      res.status(400).json({ error: "Invalid JSON: " + String((err as Error).message ?? err) });
-      return;
-    } finally {
-      unlink(req.file.path, () => {});
-    }
-
     let totalInserted = 0, totalUpdated = 0, total = 0, totalConflicts = 0;
     let invalidSkipped = 0, batchErrors = 0;
     const allConflicts: Array<{ vin: string; existing: string; incoming: string }> = [];
@@ -2362,22 +2351,34 @@ router.post(
       }
     };
 
-    for (const record of records) {
-      const normalized = normalizeJsonImportRecord(record as JsonImportRecord);
-      if (!normalized) {
-        invalidSkipped++;
-        continue;
-      }
-      currentBatch.push({
-        vin: normalized.vin,
-        provider: normalized.provider,
-        data: normalized.data,
-      });
-      total++;
-      if (currentBatch.length >= CATALOG_IMPORT_BATCH) {
-        await flushBatch();
-      }
+    try {
+      await forEachJsonArrayRecord(
+        req.file.path,
+        { maxRows: MAX_JSON_IMPORT_ROWS },
+        async (record) => {
+          const normalized = normalizeJsonImportRecord(record as JsonImportRecord);
+          if (!normalized) {
+            invalidSkipped++;
+            return;
+          }
+          currentBatch.push({
+            vin: normalized.vin,
+            provider: normalized.provider,
+            data: normalized.data,
+          });
+          total++;
+          if (currentBatch.length >= CATALOG_IMPORT_BATCH) {
+            await flushBatch();
+          }
+        },
+      );
+    } catch (err) {
+      res.status(400).json({ error: "Invalid JSON: " + String((err as Error).message ?? err) });
+      return;
+    } finally {
+      unlink(req.file.path, () => {});
     }
+
     await flushBatch();
 
     if (total === 0 && invalidSkipped === 0) {

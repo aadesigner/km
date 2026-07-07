@@ -23,6 +23,7 @@ import { translateFuelType } from "@/lib/translate-fuel-type";
 import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
+import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -533,10 +534,7 @@ export default function FreeVinDecoder() {
                 </div>
               )}
               {showDecoderPendingDoubleCheck && (
-                <div className="flex items-start gap-2.5 px-5 py-3.5 border-b border-amber-200/70 dark:border-amber-800/50 bg-white dark:bg-zinc-950">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_warning_pending_double_check")}</p>
-                </div>
+                <VinPendingDoubleCheckHint className="border-0 border-b rounded-none px-5 py-3.5" />
               )}
             </div>
 

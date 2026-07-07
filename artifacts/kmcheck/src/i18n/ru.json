@@ -817,7 +817,7 @@
   "vin_hint_recheck": "Убедитесь, что проверили символы VIN.",
   "vin_warning_check_digit": "Контрольная цифра не совпадает — проверьте VIN ещё раз.",
   "vin_warning_check_digit_sub": "Данные о транспортном средстве выше могут быть верными; внимательно проверьте введённый VIN.",
-  "vin_warning_pending_double_check": "Убедитесь, что VIN указан верно — перепроверьте его.",
+  "vin_warning_pending_double_check": "Убедитесь, что VIN указан верно",
   "date_not_recorded": "Дата не указана",
   "latest": "Последний",
   "condition": "Состояние",

@@ -86,6 +86,40 @@ const CASES: BrandCase[] = [
   { vin: "JTMB1RFV0KD123456", label: "Toyota RAV4", make: "Toyota", modelContains: "RAV4" },
   { vin: "KNDNB2A28F7123456", label: "Kia Sorento", make: "Kia", modelContains: "Sorento" },
   { vin: "KNDC34LA5P5123456", label: "Kia EV6", make: "Kia", modelContains: "EV6" },
+
+  // ── Dacia ─────────────────────────────────────────────────────────────────
+  { vin: "UU1DJF11065848712", label: "Dacia Duster", make: "Dacia", modelContains: "Duster" },
+  { vin: "UU1BFB11061234567", label: "Dacia Sandero", make: "Dacia", modelContains: "Sandero" },
+  { vin: "UU1HDR11061234567", label: "Dacia Logan", make: "Dacia", modelContains: "Logan" },
+
+  // ── Renault Duster (Renault-badged) ───────────────────────────────────────
+  { vin: "VF1RJF00261234567", label: "Renault Duster", make: "Renault", modelContains: "Duster" },
+
+  // ── Suzuki ────────────────────────────────────────────────────────────────
+  { vin: "JS2ZC33S7C4116148", label: "Suzuki Swift", make: "Suzuki", modelContains: "Swift" },
+  { vin: "JS3JB74V5P7123456", label: "Suzuki Jimny", make: "Suzuki", modelContains: "Jimny" },
+  { vin: "TSMLY8V3XKA123456", label: "Suzuki Vitara HU", make: "Suzuki", modelContains: "Vitara" },
+
+  // ── MG / BYD / Haval ──────────────────────────────────────────────────────
+  { vin: "LSJWP4U21NG123456", label: "MG ZS", make: "MG", modelContains: "ZS" },
+  { vin: "LSJW5E14P1N123456", label: "MG4", make: "MG", modelContains: "MG4" },
+  { vin: "LFPAA3A24P4123456", label: "BYD Atto 3", make: "BYD", modelContains: "Atto 3" },
+  { vin: "LGWFF4A55PM123456", label: "Haval H6", make: "Haval / Great Wall", modelContains: "H6" },
+
+  // ── Polestar / VinFast / Lucid ────────────────────────────────────────────
+  { vin: "LPSVSEXT0N1234567", label: "Polestar 2", make: "Polestar", modelContains: "2" },
+  { vin: "RLLVCE1A0N1234567", label: "VinFast VF8", make: "VinFast", modelContains: "VF8" },
+  { vin: "5LAA1BAA0N0123456", label: "Lucid Air", make: "Lucid", modelContains: "Air" },
+
+  // ── Isuzu / Tata / KGM ────────────────────────────────────────────────────
+  { vin: "MPATFS40JKT123456", label: "Isuzu D-Max TH", make: "Isuzu", modelContains: "D-Max" },
+  { vin: "MAT612AK1P8123456", label: "Tata Nexon", make: "Tata", modelContains: "Nexon" },
+  { vin: "KPTB2A1A0P8123456", label: "KGM Torres", make: "SsangYong", modelContains: "Torres" },
+
+  // ── Cupra / DS ────────────────────────────────────────────────────────────
+  { vin: "VSSZZZKM7MR123456", label: "Cupra Formentor", make: "Cupra", modelContains: "Formentor" },
+  { vin: "VSSZZZK1ZMR123456", label: "Cupra Born", make: "Cupra", modelContains: "Born" },
+  { vin: "VR1RHRHVP5L123456", label: "DS 7", make: "DS Automobiles", modelContains: "DS 7" },
 ];
 
 function assertDecode(c: BrandCase): void {
@@ -133,5 +167,41 @@ describe("brand coverage — no cross-brand contamination", () => {
     const r = decodeVin("TMBJP7NX5MY012345");
     expect(r.model?.toLowerCase()).toContain("octavia");
     expect(r.model?.toLowerCase()).not.toContain("fabia");
+  });
+
+  it("Dacia Duster never decodes as Renault", () => {
+    const r = decodeVin("UU1DJF11065848712");
+    expect(r.make).toBe("Dacia");
+    expect(r.model?.toLowerCase()).toContain("duster");
+  });
+
+  it("Cupra Formentor never decodes as SEAT", () => {
+    const r = decodeVin("VSSZZZKM7MR123456");
+    expect(r.make).toBe("Cupra");
+    expect(r.model?.toLowerCase()).toContain("formentor");
+  });
+
+  it("SEAT León still decodes as SEAT not Cupra", () => {
+    const r = decodeVin("VSSZZZ2FZFR123456");
+    expect(r.make).toBe("SEAT");
+    expect(r.model?.toLowerCase()).toContain("león");
+  });
+
+  it("Citroën C3 EU ZZZ is not mislabeled as DS", () => {
+    const r = decodeVin("VF7ZZZABGR1234567");
+    expect(r.make).toBe("Citroën");
+    expect(r.model?.toLowerCase()).toContain("c3");
+  });
+
+  it("LYV VIN without Polestar prefix does not force Polestar make", () => {
+    const r = decodeVin("LYVXZE1A0N0123456");
+    expect(r.make).not.toBe("Polestar");
+    expect(r.model).toBeNull();
+  });
+
+  it("VR1 without DS prefix does not guess DS 7 model", () => {
+    const r = decodeVin("VR1AAAA0001234567");
+    expect(r.make).toBe("DS Automobiles");
+    expect(r.model).toBeNull();
   });
 });

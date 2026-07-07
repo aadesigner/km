@@ -28,6 +28,7 @@ import {
   isStaleCachedReport,
   isPartialCarstatPhotoCache,
   isCarstatMirroredPreviewUrl,
+  vinDataHasCorruptObjectMarker,
   vinReportDataRichnessScore,
   isKoreanRecallRegistryItem,
   repairEncarMisParsedIsoDate,
@@ -951,6 +952,28 @@ describe("isCarstatMirroredPreviewUrl", () => {
     expect(isCarstatMirroredPreviewUrl("https://carstat.dev/cache/encar/2.webp")).toBe(true);
     expect(isCarstatMirroredPreviewUrl("https://encar.com/photo-1.jpg")).toBe(false);
     expect(isCarstatMirroredPreviewUrl("https://cs.copart.com/v1/photo.jpg")).toBe(false);
+  });
+});
+
+describe("vinDataHasCorruptObjectMarker", () => {
+  it("detects literal [object Object] strings without JSON.stringify", () => {
+    expect(vinDataHasCorruptObjectMarker({ make: "[object Object]", model: "Civic" })).toBe(true);
+    expect(vinDataHasCorruptObjectMarker({ nested: { history: ["ok", "[object Object]"] } })).toBe(true);
+  });
+
+  it("ignores clean report payloads", () => {
+    expect(vinDataHasCorruptObjectMarker({
+      make: "Honda",
+      model: "Civic",
+      mileageHistory: [{ date: "2020-01-01", odometer: 50000 }],
+    })).toBe(false);
+  });
+
+  it("matches JSON.stringify probe semantics for mixed trees", () => {
+    const corrupt = { photos: ["https://x.test/1.jpg"], notes: "[object Object]" };
+    expect(vinDataHasCorruptObjectMarker(corrupt)).toBe(
+      JSON.stringify(corrupt).includes("[object Object]"),
+    );
   });
 });
 

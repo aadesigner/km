@@ -1,6 +1,6 @@
 import { db, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable } from "@workspace/db";
 import type { VinCatalog } from "@workspace/db";
-import { eq, desc, and, or, ne, inArray } from "drizzle-orm";
+import { eq, desc, and, or, ne, inArray, sql } from "drizzle-orm";
 import { logger } from "./logger";
 import {
   inferAccidentSeverityFromLossAmount,
@@ -10,7 +10,12 @@ import {
   getCurrentKrwPerUsd,
   readFrozenKrwPerUsd,
 } from "./krwRate.js";
-import { sanitizeCatalogPayload, catalogHasDeliverableReport } from "./vinCatalogImport.js";
+import {
+  sanitizeCatalogPayload,
+  catalogHasDeliverableReport,
+  catalogDeliverableFromHint,
+  type CatalogDeliverableHint,
+} from "./vinCatalogImport.js";
 import { mediaVersionFromUpdatedAt, extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
 import { removeVinFromSitemaps } from "./sitemapMaintenance.js";
 import { assertValidProviderBaseUrl } from "./providerUrl.js";
@@ -719,30 +724,176 @@ export function isStaleKoreanReport(data: Record<string, unknown> | null | undef
   return false;
 }
 
+/** Detect legacy rows where nested values were wrongly stringified as "[object Object]". */
+export function vinDataHasCorruptObjectMarker(value: unknown, depth = 0): boolean {
+  if (depth > 32) return false;
+  if (value == null) return false;
+  if (typeof value === "string") return value.includes("[object Object]");
+  if (typeof value !== "object") return false;
+  if (Array.isArray(value)) {
+    return value.some((item) => vinDataHasCorruptObjectMarker(item, depth + 1));
+  }
+  for (const child of Object.values(value as Record<string, unknown>)) {
+    if (vinDataHasCorruptObjectMarker(child, depth + 1)) return true;
+  }
+  return false;
+}
+
+async function markVinLookupCorrupt(lookupId: number, vin: string): Promise<void> {
+  await db.update(vinLookupsTable)
+    .set({ dataCorrupt: true, updatedAt: new Date() })
+    .where(eq(vinLookupsTable.id, lookupId))
+    .catch((err) => logger.warn({ err, vin }, "Failed to mark data_corrupt on vin lookup"));
+}
+
+function isCorruptCachedVinRow(
+  row: { id: number; data: unknown; dataCorrupt: boolean },
+  vin: string,
+): boolean {
+  if (row.dataCorrupt === true) {
+    logger.warn({ vin }, "Cached VIN marked data_corrupt; treating as cache miss");
+    return true;
+  }
+  if (vinDataHasCorruptObjectMarker(row.data)) {
+    logger.warn({ vin }, "Stale cached VIN result contains [object Object]; marking data_corrupt");
+    void markVinLookupCorrupt(row.id, vin);
+    return true;
+  }
+  return false;
+}
+
+const catalogPeekHintSelect = {
+  make: sql<string | null>`${vinCatalogTable.data}->>'make'`,
+  model: sql<string | null>`${vinCatalogTable.data}->>'model'`,
+  year: sql<unknown>`${vinCatalogTable.data}->'year'`,
+  fulfillmentPending: sql<boolean | null>`(${vinCatalogTable.data}->>'fulfillmentPending')::boolean`,
+  accidentsLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'accidents', '[]'::jsonb))`,
+  mileageLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'mileageHistory', '[]'::jsonb))`,
+  ownerLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'ownerHistory', '[]'::jsonb))`,
+  claimsLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'insuranceClaims', '[]'::jsonb))`,
+  registryLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'registryHistory', '[]'::jsonb))`,
+  auctionLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'auctionHistory', '[]'::jsonb))`,
+  photosLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'photos', '[]'::jsonb))`,
+};
+
+export type VinPeekCacheSource = {
+  status: string;
+  make: string | null;
+  model: string | null;
+  year: unknown;
+};
+
+export type VinCatalogPeekHint = CatalogDeliverableHint & {
+  deliverable: boolean;
+};
+
+/** Peek/preview path — identity fields only, no full report blob over the wire. */
+export async function getCachedVinForPeek(vin: string): Promise<VinPeekCacheSource | null> {
+  const normalized = vin.toUpperCase();
+  const results = await db
+    .select({
+      id: vinLookupsTable.id,
+      status: vinLookupsTable.status,
+      dataCorrupt: vinLookupsTable.dataCorrupt,
+      make: sql<string | null>`${vinLookupsTable.data}->>'make'`,
+      model: sql<string | null>`${vinLookupsTable.data}->>'model'`,
+      year: sql<unknown>`${vinLookupsTable.data}->'year'`,
+    })
+    .from(vinLookupsTable)
+    .where(eq(vinLookupsTable.vin, normalized))
+    .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.createdAt))
+    .limit(1);
+  const row = results[0];
+  if (!row) return null;
+  if (row.dataCorrupt) {
+    logger.warn({ vin: normalized }, "Cached VIN marked data_corrupt; treating as cache miss");
+    return null;
+  }
+  return { status: row.status, make: row.make, model: row.model, year: row.year };
+}
+
+export async function getCatalogVinPeekHint(vin: string): Promise<VinCatalogPeekHint | null> {
+  const results = await db
+    .select(catalogPeekHintSelect)
+    .from(vinCatalogTable)
+    .where(eq(vinCatalogTable.vin, vin.toUpperCase()))
+    .limit(1);
+  const row = results[0];
+  if (!row) return null;
+  const hint: CatalogDeliverableHint = {
+    fulfillmentPending: row.fulfillmentPending === true,
+    accidentsLen: Number(row.accidentsLen) || 0,
+    mileageLen: Number(row.mileageLen) || 0,
+    ownerLen: Number(row.ownerLen) || 0,
+    claimsLen: Number(row.claimsLen) || 0,
+    registryLen: Number(row.registryLen) || 0,
+    auctionLen: Number(row.auctionLen) || 0,
+    photosLen: Number(row.photosLen) || 0,
+    make: row.make,
+    model: row.model,
+    year: row.year,
+  };
+  return { ...hint, deliverable: catalogDeliverableFromHint(hint) };
+}
+
+export type VinPreviewCacheSource = {
+  status: string;
+  updatedAt: Date;
+  make: string | null;
+  model: string | null;
+  year: unknown;
+  country: string | null;
+  firstPhoto: string | null;
+};
+
+/** Preview card — scalar identity + first photo URL, not the full gallery/history blob. */
+export async function getCachedVinForPreview(vin: string): Promise<VinPreviewCacheSource | null> {
+  const normalized = vin.toUpperCase();
+  const results = await db
+    .select({
+      id: vinLookupsTable.id,
+      status: vinLookupsTable.status,
+      updatedAt: vinLookupsTable.updatedAt,
+      dataCorrupt: vinLookupsTable.dataCorrupt,
+      make: sql<string | null>`${vinLookupsTable.data}->>'make'`,
+      model: sql<string | null>`${vinLookupsTable.data}->>'model'`,
+      year: sql<unknown>`${vinLookupsTable.data}->'year'`,
+      country: sql<string | null>`${vinLookupsTable.data}->>'country'`,
+      firstPhoto: sql<string | null>`${vinLookupsTable.data}->'photos'->>0`,
+    })
+    .from(vinLookupsTable)
+    .where(eq(vinLookupsTable.vin, normalized))
+    .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.createdAt))
+    .limit(1);
+  const row = results[0];
+  if (!row) return null;
+  if (row.dataCorrupt) {
+    logger.warn({ vin: normalized }, "Cached VIN marked data_corrupt; treating as cache miss");
+    return null;
+  }
+  return {
+    status: row.status,
+    updatedAt: row.updatedAt,
+    make: row.make,
+    model: row.model,
+    year: row.year,
+    country: row.country,
+    firstPhoto: row.firstPhoto,
+  };
+}
+
 export async function getCachedVin(vin: string) {
+  const normalized = vin.toUpperCase();
   const results = await db
     .select()
     .from(vinLookupsTable)
-    .where(eq(vinLookupsTable.vin, vin.toUpperCase()))
+    .where(eq(vinLookupsTable.vin, normalized))
     .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.createdAt))
     .limit(1);
   const row = results[0] ?? null;
   if (!row) return null;
 
-  // Legacy rows may lack data_corrupt — fall back to JSON probe once, then flag in DB.
-  const rowRecord = row as typeof row & { dataCorrupt?: boolean | null };
-  if (rowRecord.dataCorrupt === true) {
-    logger.warn({ vin }, "Cached VIN marked data_corrupt; treating as cache miss");
-    return null;
-  }
-
-  const serialized = JSON.stringify(row.data);
-  if (serialized.includes("[object Object]")) {
-    logger.warn({ vin }, "Stale cached VIN result contains [object Object]; marking data_corrupt");
-    await db.update(vinLookupsTable)
-      .set({ dataCorrupt: true, updatedAt: new Date() })
-      .where(eq(vinLookupsTable.id, row.id))
-      .catch((err) => logger.warn({ err, vin }, "Failed to mark data_corrupt on vin lookup"));
+  if (isCorruptCachedVinRow({ id: row.id, dataCorrupt: row.dataCorrupt, data: row.data }, normalized)) {
     return null;
   }
 

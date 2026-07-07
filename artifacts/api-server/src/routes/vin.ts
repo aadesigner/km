@@ -4,7 +4,10 @@ import { eq, desc, and, sql, or } from "drizzle-orm";
 import { requireAuth, optionalAuth } from "../lib/auth.js";
 import {
   getCachedVin,
+  getCachedVinForPeek,
+  getCachedVinForPreview,
   getCatalogVin,
+  getCatalogVinPeekHint,
   checkLocalExists,
   isStaleCachedReport,
   enrichVinReportDataForServe,
@@ -17,7 +20,7 @@ import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics 
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
-import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
+import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
 import { getFreeDecoderSettings } from "../lib/freeDecoderSettingsCache.js";
@@ -45,7 +48,6 @@ import {
   isVinEligibleForManualPending,
 } from "../lib/pendingVinService.js";
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
-import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
 import { claimEmailDelivery, paymentConfirmEmailDeliveryKey } from "../lib/emailDeliveryGuard.js";
 import { waitForVinLookupPublish } from "../lib/vinLookupNotify.js";
@@ -331,6 +333,19 @@ router.get("/vin/image", async (req, res) => {
       if (body.length > MAX_VIN_IMAGE_BYTES) throw new Error("upstream image too large");
       return { contentType: ct, body };
     });
+    const diskHit = await getVinImageDiskHit(url);
+    if (diskHit) {
+      if (diskHit.byteLength > MAX_VIN_IMAGE_BYTES) {
+        res.status(413).json({ error: "Image too large" });
+        return;
+      }
+      res.setHeader("Content-Type", diskHit.contentType);
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Vin-Image-Cache", "MISS");
+      await pipeline(createReadStream(diskHit.bodyPath), res);
+      return;
+    }
     if (image.body.length > MAX_VIN_IMAGE_BYTES) {
       res.status(413).json({ error: "Image too large" });
       return;
@@ -1183,11 +1198,13 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
   const lookupId = completedLookup?.id ?? pendingLookup?.id ?? null;
 
   const [cached, catalog] = await Promise.all([
-    getCachedVin(vin),
-    getCatalogVin(vin),
+    getCachedVinForPeek(vin),
+    getCatalogVinPeekHint(vin),
   ]);
 
-  const previewData = ((cached?.status === "complete" ? cached.data : null) ?? catalog?.data) as Record<string, unknown> | null;
+  const previewData = ((cached?.status === "complete"
+    ? { make: cached.make, model: cached.model, year: cached.year }
+    : null) ?? (catalog ? { make: catalog.make, model: catalog.model, year: catalog.year } : null));
   const fromCache = !!(cached?.status === "complete" || catalog);
 
   const identity = await decodeVinPeek(vin, checkDigitValid, fromCache ? previewData : null);
@@ -1221,10 +1238,10 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
   let checkUnavailable = false;
   let checkUnavailableCode: string | undefined;
 
-  const catalogData = catalog?.data ?? null;
+  const catalogData = catalog;
   const cachedComplete = cached?.status === "complete";
 
-  if (catalogData && catalogHasDeliverableReport(catalogData)) {
+  if (catalogData?.deliverable) {
     dataAvailable = true;
   } else if (cachedComplete) {
     dataAvailable = true;
@@ -1302,23 +1319,20 @@ router.get("/vin/preview/:vin", publicVinLimiter, optionalAuth, async (req, res)
     return;
   }
 
-  const cached = await getCachedVin(vin);
+  const cached = await getCachedVinForPreview(vin);
   if (!cached || cached.status !== "complete") {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
 
-  const data = cached.data as Record<string, unknown> | null;
   const mediaVersion = mediaVersionFromUpdatedAt(cached.updatedAt);
-  const firstPhoto = Array.isArray(data?.photos) && (data.photos as string[]).length > 0
-    ? (data.photos as string[])[0]
-    : null;
+  const firstPhoto = cached.firstPhoto;
   res.json({
     vin,
-    make: data?.make ?? null,
-    model: data?.model ?? null,
-    year: data?.year ?? null,
-    country: data?.country ?? null,
+    make: cached.make ?? null,
+    model: cached.model ?? null,
+    year: cached.year ?? null,
+    country: cached.country ?? null,
     thumbnailUrl: firstPhoto ? buildImageProxyUrl(firstPhoto, { mediaVersion }) : null,
   });
 });

@@ -817,7 +817,7 @@
   "vin_hint_recheck": "تأكد من التحقق من أحرف رقم الشاسيه.",
   "vin_warning_check_digit": "الرقم الضابط غير متطابق — يرجى التحقق من رقم الشاسيه مجدداً.",
   "vin_warning_check_digit_sub": "قد تكون بيانات المركبة أعلاه صحيحة؛ تحقق بعناية من الرقم التعريفي الذي أدخلته.",
-  "vin_warning_pending_double_check": "تأكد من أن رقم الشاسيه صحيح — تحقق منه مرة أخرى.",
+  "vin_warning_pending_double_check": "تأكد من أن رقم الشاسيه صحيح",
   "date_not_recorded": "التاريخ غير مسجل",
   "latest": "الأحدث",
   "condition": "الحالة",

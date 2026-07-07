@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check, CheckCircle2, Tag, X, Loader2, ShieldCheck, Clock, RotateCcw,
-  Lock, Gauge, AlertTriangle, Info, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
+  Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
@@ -25,6 +25,7 @@ import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPa
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
+import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { useTheme } from "@/components/theme-provider";
 
@@ -1076,10 +1077,7 @@ export default function Checkout({ params }: Props) {
                   {showVinQualityWarning ? (
                     <VinDecodeRecheckHint className="border-0 border-b rounded-none px-4 sm:px-5 py-3.5" />
                   ) : (
-                    <div className="flex items-start gap-2.5 border-b border-sky-200/70 dark:border-sky-800/50 bg-sky-50/40 dark:bg-sky-950/20 px-4 sm:px-5 py-3.5">
-                      <Info className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
-                      <p className="text-sm font-medium text-sky-800 dark:text-sky-300">{t("vin_warning_pending_double_check")}</p>
-                    </div>
+                    <VinPendingDoubleCheckHint className="border-0 border-b rounded-none px-4 sm:px-5 py-3.5" />
                   )}
                 </motion.div>
               )}

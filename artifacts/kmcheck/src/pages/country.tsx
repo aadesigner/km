@@ -1,4 +1,6 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
@@ -24,8 +26,13 @@ import { CountryRisksIncludedSection } from "@/components/country-risks-included
 import { cn } from "@/lib/utils";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
+import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { HeroVinForm } from "@/components/hero-vin-form";
+import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
+import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Severity = "high" | "medium" | "low";
 
@@ -153,6 +160,80 @@ export default function CountryPage({ params }: Props) {
   const meta        = COUNTRY_META[slug];
   const content     = useCountryContent(slug, t);
   const countryName = t(`country_${slug}_name`);
+  const isKnownCountry = slug in COUNTRY_META;
+
+  const normalizedCountryVin = vin.trim().toUpperCase();
+  const countryLocalDecode = useMemo(
+    () => (normalizedCountryVin.length === 17 ? decodeVinLocalFree(normalizedCountryVin) : null),
+    [normalizedCountryVin],
+  );
+  const showVinRecheckHint =
+    isKnownCountry
+    && normalizedCountryVin.length === 17
+    && !getVinValidationErrorKey(normalizedCountryVin)
+    && !!countryLocalDecode
+    && !isTrustworthyVinDecode({
+      vin: normalizedCountryVin,
+      make: countryLocalDecode.make,
+      model: countryLocalDecode.model,
+      year: countryLocalDecode.year ?? null,
+    });
+  const countryDecodeTrustworthy = !!countryLocalDecode && isTrustworthyVinDecode({
+    vin: normalizedCountryVin,
+    make: countryLocalDecode.make,
+    model: countryLocalDecode.model,
+    year: countryLocalDecode.year ?? null,
+  });
+  const { data: countryPeek } = useQuery({
+    queryKey: ["/api/vin/peek", "country", slug, normalizedCountryVin],
+    enabled: isSignedIn && isKnownCountry && normalizedCountryVin.length === 17 && countryDecodeTrustworthy,
+    queryFn: async () => {
+      const r = await fetch(`${basePath}/api/vin/peek/${encodeURIComponent(normalizedCountryVin)}`, {
+        credentials: "include",
+      });
+      if (!r.ok) throw new Error("peek_error");
+      return r.json() as {
+        manualPending?: boolean;
+        dataAvailable?: boolean;
+        checkUnavailable?: boolean;
+      };
+    },
+    staleTime: 60_000,
+  });
+  const showCountryPendingDoubleCheck = isKnownCountry && !!countryPeek && shouldShowPendingVinDoubleCheck({
+    vin: normalizedCountryVin,
+    make: countryLocalDecode?.make,
+    model: countryLocalDecode?.model,
+    year: countryLocalDecode?.year ?? null,
+    ...countryPeek,
+  });
+  const vinFormAlerts = (showVinRecheckHint || showCountryPendingDoubleCheck) ? (
+    <AnimatePresence>
+      {showVinRecheckHint && (
+        <motion.div
+          key="vin-recheck-hint"
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.25 }}
+        >
+          <VinDecodeRecheckHint />
+        </motion.div>
+      )}
+      {showCountryPendingDoubleCheck && (
+        <motion.div
+          key="vin-pending-double-check"
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.25 }}
+        >
+          <VinPendingDoubleCheckHint />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  ) : null;
+
   const countryKey = slug === "korea"
     ? "country_korea"
     : slug === "canada"
@@ -286,6 +367,7 @@ export default function CountryPage({ params }: Props) {
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
               inputRef={vinRef}
               className="relative z-20 lg:mx-0"
+              alerts={vinFormAlerts}
             />
           </motion.div>
 
@@ -502,6 +584,7 @@ export default function CountryPage({ params }: Props) {
             disabled={vinLookupDisabled}
             placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
             helpVariant="on-dark"
+            alerts={vinFormAlerts}
           />
 
           <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/35">

@@ -8,20 +8,49 @@ const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
 export function catalogHasDeliverableReport(data: unknown): boolean {
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
   const d = data as Record<string, unknown>;
-  if (d.fulfillmentPending === true) return false;
-  const historyKeys = [
-    "accidents",
-    "mileageHistory",
-    "ownerHistory",
-    "insuranceClaims",
-    "registryHistory",
-    "auctionHistory",
-  ] as const;
-  if (historyKeys.some((key) => Array.isArray(d[key]) && (d[key] as unknown[]).length > 0)) {
+  return catalogDeliverableFromHint({
+    fulfillmentPending: d.fulfillmentPending === true,
+    accidentsLen: Array.isArray(d.accidents) ? d.accidents.length : 0,
+    mileageLen: Array.isArray(d.mileageHistory) ? d.mileageHistory.length : 0,
+    ownerLen: Array.isArray(d.ownerHistory) ? d.ownerHistory.length : 0,
+    claimsLen: Array.isArray(d.insuranceClaims) ? d.insuranceClaims.length : 0,
+    registryLen: Array.isArray(d.registryHistory) ? d.registryHistory.length : 0,
+    auctionLen: Array.isArray(d.auctionHistory) ? d.auctionHistory.length : 0,
+    photosLen: Array.isArray(d.photos) ? d.photos.length : 0,
+    make: typeof d.make === "string" ? d.make : null,
+    model: typeof d.model === "string" ? d.model : null,
+    year: d.year,
+  });
+}
+
+export type CatalogDeliverableHint = {
+  fulfillmentPending: boolean;
+  accidentsLen: number;
+  mileageLen: number;
+  ownerLen: number;
+  claimsLen: number;
+  registryLen: number;
+  auctionLen: number;
+  photosLen: number;
+  make: string | null;
+  model: string | null;
+  year: unknown;
+};
+
+export function catalogDeliverableFromHint(hint: CatalogDeliverableHint): boolean {
+  if (hint.fulfillmentPending) return false;
+  if (
+    hint.accidentsLen > 0
+    || hint.mileageLen > 0
+    || hint.ownerLen > 0
+    || hint.claimsLen > 0
+    || hint.registryLen > 0
+    || hint.auctionLen > 0
+  ) {
     return true;
   }
-  if (Array.isArray(d.photos) && (d.photos as unknown[]).length > 0) return true;
-  if (d.make && (d.model || d.year != null)) return true;
+  if (hint.photosLen > 0) return true;
+  if (hint.make && (hint.model || hint.year != null)) return true;
   return false;
 }
 

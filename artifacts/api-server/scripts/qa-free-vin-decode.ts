@@ -29,7 +29,18 @@ const CASES: Array<{
   { vin: "TMBJP7NX5MY012345", label: "Czech Škoda Octavia IV", expectMake: "Škoda", expectModelContains: "Octavia" },
   { vin: "ZFA31200000745586", label: "Italy Fiat 500", expectMake: "Fiat", expectModelContains: "500" },
   { vin: "VF1RJA00012345678", label: "France Renault Clio", expectMake: "Renault", expectModelContains: "Clio" },
+  { vin: "VF1RJF00261234567", label: "France Renault Duster", expectMake: "Renault", expectModelContains: "Duster" },
   { vin: "VF3MRHPYWR1234567", label: "France Peugeot 3008", expectMake: "Peugeot", expectModelContains: "3008" },
+  { vin: "UU1DJF11065848712", label: "Romania Dacia Duster", expectMake: "Dacia", expectModelContains: "Duster" },
+  { vin: "JS2ZC33S7C4116148", label: "Japan Suzuki Swift", expectMake: "Suzuki", expectModelContains: "Swift" },
+  { vin: "LSJWP4U21NG123456", label: "China MG ZS", expectMake: "MG", expectModelContains: "ZS" },
+  { vin: "LFPAA3A24P4123456", label: "China BYD Atto 3", expectMake: "BYD", expectModelContains: "Atto 3" },
+  { vin: "LPSVSEXT0N1234567", label: "China Polestar 2", expectMake: "Polestar", expectModelContains: "2" },
+  { vin: "RLLVCE1A0N1234567", label: "Vietnam VinFast VF8", expectMake: "VinFast", expectModelContains: "VF8" },
+  { vin: "MPATFS40JKT123456", label: "Thailand Isuzu D-Max", expectMake: "Isuzu", expectModelContains: "D-Max" },
+  { vin: "MAT612AK1P8123456", label: "India Tata Nexon", expectMake: "Tata", expectModelContains: "Nexon" },
+  { vin: "VSSZZZKM7MR123456", label: "Spain Cupra Formentor", expectMake: "Cupra", expectModelContains: "Formentor" },
+  { vin: "VR1RHRHVP5L123456", label: "France DS 7", expectMake: "DS Automobiles", expectModelContains: "DS 7" },
 ];
 
 function validateCheckDigit(vin: string): boolean {

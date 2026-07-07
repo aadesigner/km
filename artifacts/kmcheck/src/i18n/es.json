@@ -827,7 +827,7 @@
   "vin_hint_recheck": "Asegúrese de revisar los caracteres del VIN.",
   "vin_warning_check_digit": "El dígito de control no coincide — verifique el VIN.",
   "vin_warning_check_digit_sub": "Los datos del vehículo anteriores pueden ser correctos; verifique cuidadosamente el VIN introducido.",
-  "vin_warning_pending_double_check": "Asegúrese de que su VIN es correcto — verifíquelo.",
+  "vin_warning_pending_double_check": "Asegúrese de que su VIN es correcto",
   "date_not_recorded": "Fecha no registrada",
   "latest": "Más reciente",
   "condition": "Estado",
