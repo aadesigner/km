@@ -86,7 +86,7 @@ export default function SetPasswordPage() {
       <SEOHead
         title={`${t("set_password_title")} — kmcheck.com`}
         description={t("set_password_subtitle")}
-        lang={language as "en" | "es" | "uk" | "ru" | "ar" | "sq"}
+        lang={language as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}
         noIndex
       />
       <AuthPageShell>

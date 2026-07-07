@@ -15,6 +15,7 @@ describe("englishPrefixRedirectTarget", () => {
   it("leaves prefixed paths unchanged", () => {
     expect(englishPrefixRedirectTarget("/en/cars/usa")).toBeNull();
     expect(englishPrefixRedirectTarget("/sq/pricing")).toBeNull();
+    expect(englishPrefixRedirectTarget("/ro/pricing")).toBeNull();
     expect(englishPrefixRedirectTarget("/ar/vin/ABC")).toBeNull();
     expect(englishPrefixRedirectTarget("/en")).toBeNull();
   });

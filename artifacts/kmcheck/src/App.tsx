@@ -91,7 +91,7 @@ function withLang(
   return function LangWrapper(props: { params: { lang: string; [key: string]: string } }) {
     const [location] = useLocation();
     const resetKey = location.split("?")[0] ?? location;
-    const validLangs = ["en", "es", "uk", "ru", "ar", "sq"];
+    const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
     if (!validLangs.includes(props.params.lang)) {
       return <Redirect to="/en" />;
     }
@@ -101,7 +101,7 @@ function withLang(
       </Suspense>
     );
     return (
-      <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}>
+      <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}>
         <RouteSEO />
         <Layout>
           {errorScope ? <RouteErrorBoundary scope={errorScope} resetKey={resetKey}>{page}</RouteErrorBoundary> : page}
@@ -114,11 +114,11 @@ function withLang(
 function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" | "sign-up" }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
   const lang = validLangs.includes(params.lang) ? params.lang : "en";
 
   return (
-    <I18nProvider initialLanguage={lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}>
+    <I18nProvider initialLanguage={lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}>
       <RouteSEO />
       <Layout>
         <RouteErrorBoundary scope="auth" resetKey={resetKey}>
@@ -131,7 +131,7 @@ function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" 
   );
 }
 
-function AuthSubPage({ lang, children }: { lang: "en" | "es" | "uk" | "ru" | "ar" | "sq"; children: React.ReactNode }) {
+function AuthSubPage({ lang, children }: { lang: "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"; children: React.ReactNode }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
   return (
@@ -162,10 +162,10 @@ const MaintenanceLang     = withLang(Maintenance as React.ComponentType<{ params
 function CountryLang(props: { params: { lang: string; country: string } }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   return (
-    <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}>
+    <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}>
       <RouteSEO />
       <Layout>
         <RouteErrorBoundary scope="country" resetKey={resetKey}>
@@ -239,11 +239,11 @@ function VinRouteByAuth(props: { params: { lang: string; id: string } }) {
 function VinResultLang(props: { params: { lang: string; id: string } }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   const isVin = isVin17(props.params.id);
   return (
-    <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}>
+    <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}>
       <RouteSEO />
       <Layout>
         <RouteErrorBoundary scope="vin" resetKey={resetKey}>
@@ -273,8 +273,8 @@ function AdminPage({ children }: { children: React.ReactNode }) {
 
 function NotFoundLang() {
   const [location] = useLocation();
-  const validLangs = ["en", "es", "uk", "ru", "ar", "sq"] as const;
-  const match = location.match(/^\/(en|es|uk|ru|ar|sq)(?:\/|$)/);
+  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"] as const;
+  const match = location.match(/^\/(en|es|uk|ru|ro|ar|sq)(?:\/|$)/);
   const lang = validLangs.includes((match?.[1] ?? "en") as typeof validLangs[number])
     ? (match?.[1] ?? "en") as typeof validLangs[number]
     : "en";
@@ -338,10 +338,10 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
   return <PageLoader />;
 }
 
-type RouteLang = "en" | "es" | "uk" | "ru" | "ar" | "sq";
+type RouteLang = "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq";
 
 function parseRouteLang(lang: string): RouteLang {
-  const validLangs: RouteLang[] = ["en", "es", "uk", "ru", "ar", "sq"];
+  const validLangs: RouteLang[] = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
   return validLangs.includes(lang as RouteLang) ? lang as RouteLang : "en";
 }
 

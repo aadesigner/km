@@ -22,7 +22,7 @@ import {
 
 const router = Router();
 
-const OAUTH_LANGS = new Set(["en", "es", "ar", "uk", "ru", "sq"]);
+const OAUTH_LANGS = new Set(["en", "es", "ar", "uk", "ru", "ro", "sq"]);
 const OAUTH_LANG_COOKIE = "km_oauth_lang";
 
 function resolveOAuthLang(req: { query: Record<string, unknown>; cookies?: Record<string, string> }): string {
@@ -460,7 +460,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
 });
 
 // POST /auth/forgot-password
-const FORGOT_PASSWORD_LANGS = new Set(["en", "es", "sq", "ar", "uk", "ru"]);
+const FORGOT_PASSWORD_LANGS = new Set(["en", "es", "sq", "ro", "ar", "uk", "ru"]);
 
 router.post("/auth/forgot-password", forgotPasswordIpLimiter, forgotPasswordEmailLimiter, async (req, res) => {
   const { email, recaptchaToken, lang: rawLang } = req.body as {

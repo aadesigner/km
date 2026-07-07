@@ -7,8 +7,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ORIGIN = "https://kmcheck.com";
-const LANGS = ["en", "es", "uk", "ru", "ar", "sq"];
-const HREFLANG = { en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", sq: "sq-AL" };
+const LANGS = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+const HREFLANG = { en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", ro: "ro", sq: "sq-AL" };
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const root = join(dir, "..", "..", "..");

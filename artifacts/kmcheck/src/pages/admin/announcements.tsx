@@ -45,10 +45,12 @@ type FormState = {
 
 const SUPPORTED_LANGUAGES: { code: string; label: string; flag: string }[] = [
   { code: "en", label: "English", flag: "gb" },
+  { code: "es", label: "Spanish", flag: "es" },
+  { code: "sq", label: "Albanian", flag: "al" },
+  { code: "ro", label: "Romanian", flag: "ro" },
   { code: "ar", label: "Arabic",  flag: "sa" },
   { code: "uk", label: "Ukrainian", flag: "ua" },
   { code: "ru", label: "Russian", flag: "ru" },
-  { code: "sq", label: "Albanian", flag: "al" },
 ];
 
 const PAGE_OPTIONS = [

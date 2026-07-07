@@ -1,7 +1,7 @@
 /** Public site origin for canonical URLs and sitemap (production). */
 export const SITE_ORIGIN = "https://kmcheck.com";
 
-export const SEO_LANGS = ["en", "es", "uk", "ru", "ar", "sq"] as const;
+export const SEO_LANGS = ["en", "es", "uk", "ru", "ro", "ar", "sq"] as const;
 export type SeoLang = (typeof SEO_LANGS)[number];
 
 /** BCP 47 hreflang values */
@@ -11,6 +11,7 @@ export const HREFLANG_MAP: Record<SeoLang, string> = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
+  ro: "ro",
   sq: "sq-AL",
 };
 
@@ -20,6 +21,7 @@ export const OG_LOCALE_MAP: Record<SeoLang, string> = {
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
+  ro: "ro_RO",
   sq: "sq_AL",
 };
 
@@ -43,7 +45,7 @@ export function buildLocalizedPath(lang: SeoLang, path: string): string {
 }
 
 export function stripLangPrefix(pathname: string): string {
-  const stripped = pathname.replace(/^\/(en|es|uk|ru|ar|sq)(\/|$)/, "/");
+  const stripped = pathname.replace(/^\/(en|es|uk|ru|ro|ar|sq)(\/|$)/, "/");
   return stripped === "/" ? "" : stripped.replace(/\/$/, "") || "";
 }
 
@@ -58,6 +60,6 @@ export function stripAppBasePath(pathname: string, basePath = ""): string {
 
 export function parseLangFromPath(pathname: string, basePath = ""): SeoLang | null {
   const normalized = stripAppBasePath(pathname.split("?")[0], basePath);
-  const m = normalized.match(/^\/(en|es|uk|ru|ar|sq)(\/|$)/);
+  const m = normalized.match(/^\/(en|es|uk|ru|ro|ar|sq)(\/|$)/);
   return m ? (m[1] as SeoLang) : null;
 }

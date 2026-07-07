@@ -127,7 +127,7 @@ if (!read("src/App.tsx").includes("AuthSubPage")) {
 }
 
 // ── Static: rate-limit i18n ───────────────────────────────────────────────────
-for (const lang of ["en", "es", "uk", "ru", "ar", "sq"]) {
+for (const lang of ["en", "es", "uk", "ru", "ro", "ar", "sq"]) {
   const dict = read(`src/i18n/${lang}.json`);
   if (!dict.includes("error_rate_limit")) {
     fail(`${lang}.json missing error_rate_limit`);

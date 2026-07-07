@@ -46,6 +46,7 @@ const LOCALE_MAP: Record<string, string> = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",
+  ro: "ro-RO",
   sq: "sq-AL",
 };
 
@@ -260,7 +261,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
       <SEOHead
         title={`${t("purchases_title")} — kmcheck.com`}
         description={t("purchases_subtitle")}
-        lang={lang as "en" | "es" | "uk" | "ru" | "ar" | "sq"}
+        lang={lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}
         noIndex
       />
       <ClientAreaLayout>

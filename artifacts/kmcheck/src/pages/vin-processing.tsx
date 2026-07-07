@@ -67,7 +67,7 @@ export default function VinProcessing({ params }: Props) {
       <SEOHead
         title={`${t("processing_payment")} — kmcheck.com`}
         description={t("processing_desc")}
-        lang={language as "en" | "es" | "uk" | "ru" | "ar" | "sq"}
+        lang={language as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}
         noIndex
       />
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center space-y-6">

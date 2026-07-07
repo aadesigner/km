@@ -166,6 +166,7 @@ const LOCALE_MAP: Record<string, string> = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",
+  ro: "ro-RO",
 };
 
 function normalizeCountryKey(raw: string): string {

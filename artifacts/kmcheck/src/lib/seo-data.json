@@ -23,6 +23,10 @@
     "es": {
       "title": "Verificación de kilometraje VIN — Accidentes y siniestro total | kmcheck.com",
       "description": "Compruebe el VIN al instante: verifique el kilometraje real, descubra accidentes ocultos y registros de siniestro total de cualquier coche."
+    },
+    "ro": {
+      "title": "Verificare VIN auto — kilometraj, accidente și istoric salvage | kmcheck.com",
+      "description": "Verificare VIN instantanee — confirmați kilometrajul real, descoperiți accidentele și înregistrările salvage pentru orice mașină."
     }
   },
   "pricing": {
@@ -49,6 +53,10 @@
     "es": {
       "title": "Precios — Informes de historial VIN | kmcheck.com",
       "description": "Un informe VIN asequible con verificación de kilometraje, accidentes, siniestro total y robo. Entrega al instante. Sin suscripción."
+    },
+    "ro": {
+      "title": "Prețuri — Rapoarte istoric VIN | kmcheck.com",
+      "description": "Un raport VIN accesibil acoperă verificarea kilometrajului, accidentele, statusul salvage și furtul. Livrare instantanee. Fără abonament."
     }
   },
   "auth": {
@@ -75,6 +83,10 @@
     "es": {
       "title": "Iniciar sesión — kmcheck.com",
       "description": "Inicie sesión o cree una cuenta gratuita para comprobar VIN al instante y acceder a sus informes de historial vehicular."
+    },
+    "ro": {
+      "title": "Autentificare — kmcheck.com",
+      "description": "Autentificați-vă sau creați un cont gratuit pentru verificări VIN instantanee și acces la rapoartele dvs. de istoric vehicul."
     }
   },
   "dashboard": {
@@ -101,6 +113,10 @@
     "es": {
       "title": "Mis informes — Historial VIN | kmcheck.com",
       "description": "Vea sus informes de historial vehicular y haga nuevas comprobaciones VIN."
+    },
+    "ro": {
+      "title": "Rapoartele mele — Istoric VIN | kmcheck.com",
+      "description": "Vizualizați rapoartele de istoric vehicul și rulați noi verificări VIN."
     }
   },
   "vin_result": {
@@ -127,6 +143,10 @@
     "es": {
       "title": "Informe VIN | kmcheck.com",
       "description": "Verifique kilometraje, accidentes e historial completo del vehículo. Informe al instante en kmcheck.com."
+    },
+    "ro": {
+      "title": "Raport VIN | kmcheck.com",
+      "description": "Verificați kilometrajul, accidentele și istoricul complet al vehiculului. Raport instant pe kmcheck.com."
     }
   },
   "country_usa": {
@@ -153,6 +173,10 @@
     "es": {
       "title": "Verificar kilometraje, accidentes y robo — coches de USA | kmcheck.com",
       "description": "Verifique kilometraje, accidentes, robos y títulos de siniestro total en coches americanos. Informe VIN al instante para los 50 estados."
+    },
+    "ro": {
+      "title": "Mașini din SUA — verificare VIN, kilometraj și accidente | kmcheck.com",
+      "description": "Verificați mașinile importate din SUA: kilometraj, accidente, titluri salvage și înregistrări de furt înainte de cumpărare."
     }
   },
   "country_korea": {
@@ -179,6 +203,10 @@
     "es": {
       "title": "Verificar kilometraje, accidentes e historial — coches de Corea | kmcheck.com",
       "description": "Verifique kilometraje, accidentes, historial de importación y daños ocultos en coches coreanos. Informe VIN para Hyundai, Kia y Genesis."
+    },
+    "ro": {
+      "title": "Mașini din Coreea — verificare VIN și kilometraj | kmcheck.com",
+      "description": "Verificați mașinile coreene importate: kilometraj, accidente, daune structurale și înregistrări de furt."
     }
   },
   "country_canada": {
@@ -205,6 +233,10 @@
     "es": {
       "title": "Verificar kilometraje, accidentes e historial — coches de Canadá | kmcheck.com",
       "description": "Verifique kilometraje, accidentes, títulos marcados y registros de robo en coches canadienses. Informe VIN en todas las provincias y territorios."
+    },
+    "ro": {
+      "title": "Mașini din Canada — verificare VIN și istoric | kmcheck.com",
+      "description": "Verificați mașinile canadiene: kilometraj, accidente, titluri branded și înregistrări transfrontaliere."
     }
   },
   "free_decoder": {
@@ -231,6 +263,10 @@
     "es": {
       "title": "Decodificador VIN gratuito — Año, marca, modelo | kmcheck.com",
       "description": "Decodifique cualquier VIN de 17 dígitos gratis. Año, marca, modelo, motor y carrocería. Sin registro."
+    },
+    "ro": {
+      "title": "Decodor VIN gratuit — An, marcă, model | kmcheck.com",
+      "description": "Decodați gratuit orice VIN de 17 caractere. An, marcă, model, motor, caroserie și cifră de control. Fără înregistrare."
     }
   },
   "how_it_works": {
@@ -257,6 +293,10 @@
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
       "description": "Introduzca su VIN, buscamos en bases de datos de proveedores y recibe un informe completo en segundos."
+    },
+    "ro": {
+      "title": "Cum funcționează verificarea VIN — 3 pași | kmcheck.com",
+      "description": "Introduceți VIN-ul, căutăm în bazele de date ale furnizorilor, primiți raportul complet în câteva secunde."
     }
   },
   "faq": {
@@ -283,6 +323,10 @@
     "es": {
       "title": "Preguntas frecuentes — Comprobación VIN | kmcheck.com",
       "description": "Respuestas sobre comprobación VIN, cobertura, precisión de datos, entrega, pagos y reembolsos."
+    },
+    "ro": {
+      "title": "Întrebări frecvente — Verificare VIN | kmcheck.com",
+      "description": "Răspunsuri despre verificarea VIN, acoperire, acuratețea datelor, livrare, plăți și rambursări."
     }
   },
   "terms": {
@@ -309,6 +353,10 @@
     "es": {
       "title": "Términos del servicio | kmcheck.com",
       "description": "Términos del servicio de kmcheck.com para informes de historial VIN, pagos, reembolsos y disponibilidad de datos."
+    },
+    "ro": {
+      "title": "Termeni și condiții | kmcheck.com",
+      "description": "Termenii și condițiile de utilizare a serviciilor kmcheck."
     }
   },
   "privacy": {
@@ -335,6 +383,10 @@
     "es": {
       "title": "Política de privacidad y cookies | kmcheck.com",
       "description": "Cómo kmcheck.com recopila, utiliza y protege sus datos. Incluye política de cookies."
+    },
+    "ro": {
+      "title": "Politica de confidențialitate | kmcheck.com",
+      "description": "Cum kmcheck colectează, utilizează și protejează datele dumneavoastră."
     }
   },
   "not_found": {
@@ -361,6 +413,10 @@
     "es": {
       "title": "Página no encontrada | kmcheck.com",
       "description": "La página que busca no existe o puede haber sido movida."
+    },
+    "ro": {
+      "title": "Pagină negăsită | kmcheck.com",
+      "description": "Pagina solicitată nu a fost găsită pe kmcheck.com."
     }
   },
   "sign_up": {
@@ -387,6 +443,10 @@
     "es": {
       "title": "Crear cuenta — kmcheck.com",
       "description": "Cree una cuenta gratuita en kmcheck para comprobar VIN al instante y acceder a sus informes de historial vehicular."
+    },
+    "ro": {
+      "title": "Înregistrare — kmcheck.com",
+      "description": "Creați un cont gratuit kmcheck pentru verificări VIN instantanee și acces la rapoartele dvs. de istoric vehicul."
     }
   },
   "checkout": {
@@ -413,6 +473,10 @@
     "es": {
       "title": "Pago — kmcheck.com",
       "description": "Complete la compra de su informe de historial VIN de forma segura."
+    },
+    "ro": {
+      "title": "Finalizare comandă — kmcheck.com",
+      "description": "Finalizați achiziția raportului VIN în siguranță pe kmcheck.com."
     }
   },
   "purchases": {
@@ -439,6 +503,10 @@
     "es": {
       "title": "Historial de compras — kmcheck.com",
       "description": "Vea sus compras de informes VIN y recibos."
+    },
+    "ro": {
+      "title": "Istoric achiziții — kmcheck.com",
+      "description": "Vizualizați achizițiile de rapoarte VIN și chitanțele."
     }
   },
   "forgot_password": {
@@ -465,6 +533,10 @@
     "es": {
       "title": "Olvidé mi contraseña — kmcheck.com",
       "description": "Restablezca la contraseña de su cuenta de kmcheck."
+    },
+    "ro": {
+      "title": "Parolă uitată — kmcheck.com",
+      "description": "Resetați parola contului kmcheck."
     }
   },
   "reset_password": {
@@ -491,6 +563,10 @@
     "es": {
       "title": "Restablecer contraseña — kmcheck.com",
       "description": "Elija una nueva contraseña para su cuenta de kmcheck."
+    },
+    "ro": {
+      "title": "Resetare parolă — kmcheck.com",
+      "description": "Setați o parolă nouă pentru contul kmcheck."
     }
   }
 }

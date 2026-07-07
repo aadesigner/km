@@ -42,6 +42,33 @@ describe("vin-page-seo", () => {
     expect(desc).toContain("2.0L");
   });
 
+  it("builds Romanian VIN page title and description", () => {
+    const vin = "WBA3V7106FJ995387";
+    const title = buildVinPageTitle("ro", {
+      vin,
+      year: 2015,
+      make: "BMW",
+      model: "3 Series",
+    });
+    expect(title).toContain("verificare VIN");
+    expect(title).toContain(vin);
+
+    const desc = buildVinPageDescription("ro", { vin, year: 2015, make: "BMW", model: "3 Series" });
+    expect(desc).toContain(vin);
+    expect(desc).toContain("kilometraj");
+    expect(desc).toContain("accidente");
+    expect(desc).toContain("kmcheck.com");
+  });
+
+  it("builds Romanian VIN-only fallback SEO strings", () => {
+    const vin = "1HGBH41JXMN109186";
+    const seo = buildVinPageSeo("ro", { vin }, "https://kmcheck.com");
+    expect(seo.title).toContain("raport istoric vehicul");
+    expect(seo.title).toContain(vin);
+    expect(seo.description).toContain("Verificați VIN");
+    expect(seo.canonicalPath).toBe("/ro/vin/1HGBH41JXMN109186");
+  });
+
   it("resolves absolute og image URLs", () => {
     const seo = buildVinPageSeo(
       "en",

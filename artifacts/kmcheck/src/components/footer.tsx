@@ -26,6 +26,7 @@ const LANGS = [
   { code: "en", label: "EN", img: "gb", full: "English" },
   { code: "es", label: "ES", img: "es", full: "Español" },
   { code: "sq", label: "SQ", img: "al", full: "Shqip" },
+  { code: "ro", label: "RO", img: "ro", full: "Română" },
   { code: "ar", label: "AR", img: "sa", full: "العربية" },
   { code: "uk", label: "UK", img: "ua", full: "Українська" },
   { code: "ru", label: "RU", img: "ru", full: "Русский" },
@@ -55,7 +56,7 @@ export function Footer() {
   const [location, setLocation] = useLocation();
 
   const handleLanguageChange = (lang: string) => {
-    const next = lang as "en" | "es" | "uk" | "ru" | "ar" | "sq";
+    const next = lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq";
     const newPath = location.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
     const target = newPath === location ? `/${next}` : newPath;
     void ensureDict(next).then(() => {

@@ -17,7 +17,7 @@ const seoData = JSON.parse(
   readFileSync(join(__dir, "../src/lib/seo-data.json"), "utf8"),
 );
 
-export const SEO_LANGS = ["en", "es", "uk", "ru", "ar", "sq"];
+export const SEO_LANGS = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
 
 export const PATH_TO_SEO_KEY = {
   "": "home",
@@ -70,6 +70,7 @@ export function vinSeoFromRest(rest, lang) {
     ar: `VIN ${vin} — تقرير تاريخ المركبة | kmcheck`,
     uk: `VIN ${vin} — звіт історії авто | kmcheck`,
     ru: `VIN ${vin} — отчёт по истории авто | kmcheck`,
+    ro: `VIN ${vin} — raport istoric vehicul | kmcheck`,
     sq: `VIN ${vin} — raport historiku automjeti | kmcheck`,
   };
   const descriptions = {
@@ -78,6 +79,7 @@ export function vinSeoFromRest(rest, lang) {
     ar: `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
     uk: `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
     ru: `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,
+    ro: `Verificați VIN ${vin}: kilometraj, accidente, istoric proprietari, asigurare și licitații. Raport complet instant pe kmcheck.com.`,
     sq: `Kontrollo VIN ${vin}: kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
   };
   return {
@@ -117,6 +119,7 @@ export const HREFLANG_MAP = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
+  ro: "ro",
   sq: "sq-AL",
 };
 
@@ -126,6 +129,7 @@ export const OG_LOCALE_MAP = {
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
+  ro: "ro_RO",
   sq: "sq_AL",
 };
 
@@ -150,7 +154,7 @@ function stripBasePath(pathname, basePath = "") {
 /** Resolve SEO for a URL pathname like /sq/pricing */
 export function resolveSeoForPath(pathname, basePath = "") {
   const path = stripBasePath(pathname.split("?")[0], basePath);
-  const m = path.match(/^\/(en|es|uk|ru|ar|sq)(\/.*)?$/);
+  const m = path.match(/^\/(en|es|uk|ru|ro|ar|sq)(\/.*)?$/);
   const lang = m?.[1] ?? "en";
   const rest = (m?.[2] ?? "").replace(/\/$/, "") || "";
   const vinSeo = isIndexableVinRest(rest) ? vinSeoFromRest(rest, lang) : null;
