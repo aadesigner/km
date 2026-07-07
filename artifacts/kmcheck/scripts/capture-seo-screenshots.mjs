@@ -11,7 +11,6 @@ import { spawn } from "node:child_process";
 import { mkdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import sharp from "sharp";
 import {
   SEO_OG_LANGS,
   SEO_OG_PAGES,
@@ -19,6 +18,7 @@ import {
   SEO_OG_HEIGHT,
   seoOgImageRelPath,
 } from "./seo-og-config.mjs";
+import { compressOgWebp } from "./seo-og-compress.mjs";
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const root = join(dir, "..");
@@ -27,10 +27,16 @@ const distDir = join(root, "dist", "public");
 
 const PREVIEW_PORT = Number(process.env.SEO_CAPTURE_PORT ?? 4173);
 const EXTERNAL_URL = process.env.SEO_CAPTURE_URL?.replace(/\/$/, "");
-const WEBP_QUALITY = Number(process.env.SEO_OG_WEBP_QUALITY ?? 84);
+const CAPTURE_LANGS = process.env.SEO_CAPTURE_LANGS
+  ? process.env.SEO_CAPTURE_LANGS.split(",").map((s) => s.trim()).filter(Boolean)
+  : null;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+async function compressToWebp(pngBuffer, destPath) {
+  await compressOgWebp(pngBuffer, destPath);
 }
 
 function waitForHttp(url, attempts = 60) {
@@ -82,13 +88,6 @@ function startPreview() {
   });
 }
 
-async function compressToWebp(pngBuffer, destPath) {
-  await sharp(pngBuffer)
-    .resize(SEO_OG_WIDTH, SEO_OG_HEIGHT, { fit: "cover", position: "top" })
-    .webp({ quality: WEBP_QUALITY, effort: 4 })
-    .toFile(destPath);
-}
-
 async function main() {
   if (!existsSync(join(distDir, "index.html"))) {
     console.error("Missing dist/public/index.html — run `pnpm run build` in artifacts/kmcheck first.");
@@ -114,9 +113,14 @@ async function main() {
   const page = await context.newPage();
 
   let count = 0;
+  const langs = CAPTURE_LANGS?.length ? SEO_OG_LANGS.filter((l) => CAPTURE_LANGS.includes(l)) : SEO_OG_LANGS;
+  if (langs.length === 0) {
+    console.error("No languages matched SEO_CAPTURE_LANGS");
+    process.exit(1);
+  }
   try {
     for (const { pageKey, rest } of SEO_OG_PAGES) {
-      for (const lang of SEO_OG_LANGS) {
+      for (const lang of langs) {
         const urlPath = rest ? `/${lang}${rest}` : `/${lang}`;
         const url = `${baseUrl}${urlPath}`;
         process.stdout.write(`Capturing ${pageKey} (${lang})… `);

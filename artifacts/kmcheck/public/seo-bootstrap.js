@@ -115,6 +115,21 @@
     };
   }
 
+  function removeOgImages() {
+    document.querySelectorAll('meta[property="og:image"]').forEach(function (el) { el.remove(); });
+    document.querySelectorAll('meta[property="og:image:secure_url"]').forEach(function (el) { el.remove(); });
+    document.querySelectorAll('meta[property="og:image:alt"]').forEach(function (el) { el.remove(); });
+    document.querySelectorAll('meta[name="twitter:image"]').forEach(function (el) { el.remove(); });
+  }
+
+  function resolveOgImage(pageKey, lang) {
+    if (!OG_PAGE_KEYS[pageKey]) return null;
+    var base = BASE.replace(/\/$/, "");
+    return base + "/seo/og/" + pageKey + "-" + lang + ".webp";
+  }
+
+  var OG_PAGE_KEYS = {"home":true,"country_usa":true,"country_korea":true,"country_canada":true};
+
   function applyFavicons(pageKey) {
     var favicons = resolveFavicons(pageKey);
     upsertLink("icon", favicons.icon32, { type: "image/png", sizes: "32x32" });
@@ -147,6 +162,18 @@
     upsertMeta("twitter:card", "summary_large_image");
     upsertMeta("twitter:title", seo.title);
     upsertMeta("twitter:description", seo.description);
+
+    removeOgImages();
+    var ogImageRel = resolveOgImage(pageKey, lang);
+    if (ogImageRel) {
+      var absoluteOg = ORIGIN + ogImageRel;
+      upsertMeta("og:image", absoluteOg, "property");
+      upsertMeta("twitter:image", absoluteOg);
+      if (absoluteOg.indexOf("https://") === 0) {
+        upsertMeta("og:image:secure_url", absoluteOg, "property");
+      }
+      upsertMeta("og:image:alt", seo.title, "property");
+    }
 
     var canonical = ORIGIN + (rest ? "/" + lang + rest : "/" + lang);
     upsertLink("canonical", canonical);

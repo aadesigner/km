@@ -2,10 +2,11 @@
  * QA: verify every indexable page has title + description in all 7 languages.
  * Usage: node artifacts/kmcheck/scripts/qa-seo.mjs
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SEO_LANGS, vinSeoFromRest } from "./seo-inject.mjs";
+import { SEO_OG_PAGES } from "./seo-og-config.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const seoData = JSON.parse(readFileSync(join(root, "src/lib/seo-data.json"), "utf8"));
@@ -132,6 +133,25 @@ for (const lang of langs) {
 if (!bootstrap.includes("raport istoric vehicul | kmcheck")) {
   console.error("BOOTSTRAP missing Romanian VIN title template");
   errors++;
+}
+
+const ogDir = join(root, "public", "seo", "og");
+const OG_MAX_BYTES = { home: 40_000, country: 52_000 };
+for (const { pageKey } of SEO_OG_PAGES) {
+  const max = pageKey === "home" ? OG_MAX_BYTES.home : OG_MAX_BYTES.country;
+  for (const lang of langs) {
+    const file = join(ogDir, `${pageKey}-${lang}.webp`);
+    if (!existsSync(file)) {
+      console.error(`MISSING OG image: seo/og/${pageKey}-${lang}.webp`);
+      errors++;
+      continue;
+    }
+    const size = statSync(file).size;
+    if (size > max) {
+      console.error(`OG image too heavy: seo/og/${pageKey}-${lang}.webp (${Math.round(size / 1024)}KB > ${Math.round(max / 1024)}KB)`);
+      errors++;
+    }
+  }
 }
 
 if (errors === 0) {

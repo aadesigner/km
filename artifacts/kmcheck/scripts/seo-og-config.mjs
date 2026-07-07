@@ -13,6 +13,10 @@ export const SEO_OG_PAGES = [
 export const SEO_OG_WIDTH = 1200;
 export const SEO_OG_HEIGHT = 630;
 
+/** WebP output — tuned for ~25–45 KB OG cards at 1200×630 */
+export const SEO_OG_WEBP_QUALITY = 80;
+export const SEO_OG_WEBP_EFFORT = 6;
+
 export function seoOgImageRelPath(pageKey, lang) {
   return `/seo/og/${pageKey}-${lang}.webp`;
 }

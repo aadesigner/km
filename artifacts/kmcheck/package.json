@@ -9,7 +9,8 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "qa:resilience": "node scripts/qa-resilience.mjs",
-    "seo:capture-screenshots": "node scripts/capture-seo-screenshots.mjs"
+    "seo:capture-screenshots": "node scripts/capture-seo-screenshots.mjs",
+    "seo:optimize-og": "node scripts/optimize-seo-og.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
