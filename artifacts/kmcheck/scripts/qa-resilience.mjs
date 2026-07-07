@@ -56,6 +56,19 @@ if (read("src/components/vin-access-gate.tsx").includes("access-gate")) {
   fail("vin-access-gate must not use a separate React Query key (share /api/vin/public cache)");
 }
 
+// ── Static: analytics scoped to public/client (not admin) ─────────────────────
+const siteAnalytics = read("src/components/site-analytics.tsx");
+const analyticsScope = read("src/lib/analytics-scope.ts");
+if (!analyticsScope.includes("adminx") || !analyticsScope.includes("isPublicAnalyticsPath")) {
+  fail("analytics-scope.ts must exclude /adminx from tracking");
+}
+if (!siteAnalytics.includes("isPublicAnalyticsPath") || !siteAnalytics.includes("removeInjectedAnalytics")) {
+  fail("site-analytics.tsx must gate tracking and remove tags when leaving public shell");
+}
+if (read("src/pages/admin/layout.tsx").includes("SiteAnalytics")) {
+  fail("AdminLayout must not mount SiteAnalytics");
+}
+
 // ── Static: error boundaries reset on navigation ──────────────────────────────
 if (!read("src/components/error-boundary.tsx").includes("resetKey")) {
   fail("RouteErrorBoundary must support resetKey");

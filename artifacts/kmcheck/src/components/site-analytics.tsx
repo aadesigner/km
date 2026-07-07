@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPublicSettings, PUBLIC_SETTINGS_QUERY_KEY } from "@/lib/public-settings";
+import { isPublicAnalyticsPath, removeInjectedAnalytics } from "@/lib/analytics-scope";
 
 const GTM_HEAD_ATTR = "data-kmcheck-gtm-head";
 const GTM_BODY_ATTR = "data-kmcheck-gtm-body";
@@ -95,11 +96,12 @@ async function fetchAnalyticsSettings(): Promise<AnalyticsPublicSettings> {
   };
 }
 
-/** Injects GTM / GA scripts on the public site (not admin). */
+/** Injects GTM / GA on public + client routes only (never /adminx). */
 export function SiteAnalytics() {
   const [location] = useLocation();
   const injectedRef = useRef(false);
   const configRef = useRef<{ gtm: string | null; ga: string | null }>({ gtm: null, ga: null });
+  const trackable = isPublicAnalyticsPath(location);
 
   const { data: settings } = useQuery({
     queryKey: PUBLIC_SETTINGS_QUERY_KEY,
@@ -115,6 +117,14 @@ export function SiteAnalytics() {
     : null;
 
   useEffect(() => {
+    if (!trackable) {
+      if (injectedRef.current) {
+        removeInjectedAnalytics();
+        injectedRef.current = false;
+        configRef.current = { gtm: null, ga: null };
+      }
+      return;
+    }
     if (!gtmId && !gaId) return;
 
     if (gtmId) injectGtm(gtmId);
@@ -124,14 +134,19 @@ export function SiteAnalytics() {
     injectedRef.current = true;
 
     trackPageView(location, gaId, !!gtmId);
-  }, [gtmId, gaId]); // eslint-disable-line react-hooks/exhaustive-deps -- initial inject only
+  }, [gtmId, gaId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- initial inject only
 
   useEffect(() => {
-    if (!injectedRef.current) return;
+    if (!trackable || !injectedRef.current) return;
     const { gtm, ga } = configRef.current;
     if (!gtm && !ga) return;
     trackPageView(location, ga, !!gtm);
-  }, [location]);
+  }, [location, trackable]);
+
+  useEffect(() => () => {
+    removeInjectedAnalytics();
+    injectedRef.current = false;
+  }, []);
 
   return null;
 }

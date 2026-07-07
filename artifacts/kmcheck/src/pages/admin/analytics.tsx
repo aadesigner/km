@@ -131,7 +131,7 @@ export default function AdminAnalytics() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="gtm-enabled" className="font-medium">Enable GTM</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Inject GTM on the public site</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Inject GTM on public pages and the client area (not admin)</p>
             </div>
             <Switch
               id="gtm-enabled"
@@ -171,7 +171,7 @@ export default function AdminAnalytics() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="ga-enabled" className="font-medium">Enable Google Analytics</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Inject gtag.js and track SPA page views</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Track SPA page views on public and client routes only (admin excluded)</p>
             </div>
             <Switch
               id="ga-enabled"
