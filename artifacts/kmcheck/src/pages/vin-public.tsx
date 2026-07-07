@@ -1098,7 +1098,7 @@ export default function VinPublic({ params }: Props) {
                       />
                     </div>
                     {mileageRecordedDate ? (
-                      <span className="text-[9px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
+                      <span className="text-[10px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
                         {mileageRecordedDate}
                       </span>
                     ) : null}
