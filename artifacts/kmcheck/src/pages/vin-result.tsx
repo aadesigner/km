@@ -37,7 +37,10 @@ import { PendingVinSearchPanel, PendingVinTopNotice } from "@/components/pending
 import { PendingVinCoffeeDialog } from "@/components/pending-vin-coffee-dialog";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
-import { resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
+import {
+  resolveLatestOdometerRecordedYear,
+  resolveLatestRecordedOdometer,
+} from "@/lib/resolve-latest-odometer";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
 import { formatMarketAuctionDate } from "@/lib/market-chart-data";
@@ -613,14 +616,16 @@ export default function VinResult({ params }: Props) {
       { listingOdometer: data?.odometer },
     ),
   );
-  const odometer = resolveLatestRecordedOdometer({
+  const mileageSourceInput = {
     odometer: data?.odometer,
     odometerLocked: data?.odometerLocked === true,
     country: data?.country,
     mileageHistory,
     ownerHistory,
     registryHistory,
-  });
+  };
+  const odometer = resolveLatestRecordedOdometer(mileageSourceInput);
+  const mileageRecordedYear = resolveLatestOdometerRecordedYear(mileageSourceInput);
   const scoreData = data
     ? computeVinConditionScore(
         scoreInputFromLookup({
@@ -848,14 +853,21 @@ export default function VinResult({ params }: Props) {
               </h2>
             </div>
             {odometer && odoCol ? (
-                <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
-                  <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
-                  <AnimatedMileageBadge
-                    odometer={odometer}
-                    t={t}
-                    showMiles
-                    className="text-xs font-semibold tabular-nums"
-                  />
+                <div className="inline-flex flex-col items-end gap-0.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
+                  <div className="inline-flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
+                    <AnimatedMileageBadge
+                      odometer={odometer}
+                      t={t}
+                      showMiles
+                      className="text-xs font-semibold tabular-nums"
+                    />
+                  </div>
+                  {mileageRecordedYear != null ? (
+                    <span className="text-[9px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
+                      {mileageRecordedYear}
+                    </span>
+                  ) : null}
                 </div>
               ) : null}
           </div>

@@ -37,7 +37,7 @@ import {
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
-import { resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
+import { resolveLatestOdometerRecordedYear, resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
@@ -608,14 +608,16 @@ export default function VinPublic({ params }: Props) {
       { listingOdometer: data.odometer },
     ),
   );
-  const odometer = resolveLatestRecordedOdometer({
+  const mileageSourceInput = {
     odometer: data.odometer,
     odometerLocked: data.odometerLocked === true,
     country: data.country,
     mileageHistory,
     ownerHistory,
     registryHistory,
-  });
+  };
+  const odometer = resolveLatestRecordedOdometer(mileageSourceInput);
+  const mileageRecordedYear = resolveLatestOdometerRecordedYear(mileageSourceInput);
   const hasTheftData = data.stolen != null;
   const showAccidentsSection = data.isUnlocked && accidents.length > 0;
   const showMileageSection = data.isUnlocked && hasMileageData(odometer, mileageHistory);
@@ -1084,12 +1086,19 @@ export default function VinPublic({ params }: Props) {
                   {t("vin_public_mileage_section")}
                 </h2>
                 {odometer != null && odoCol && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
-                    <Gauge className="h-3 w-3 shrink-0 opacity-90" />
-                    <AnimatedMileageBadge
-                      odometer={odometer}
-                      className="text-[11px] font-semibold tabular-nums"
-                    />
+                  <div className="inline-flex flex-col items-end gap-0.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
+                    <div className="inline-flex items-center gap-1.5">
+                      <Gauge className="h-3 w-3 shrink-0 opacity-90" />
+                      <AnimatedMileageBadge
+                        odometer={odometer}
+                        className="text-[11px] font-semibold tabular-nums"
+                      />
+                    </div>
+                    {mileageRecordedYear != null ? (
+                      <span className="text-[9px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
+                        {mileageRecordedYear}
+                      </span>
+                    ) : null}
                   </div>
                 )}
               </div>
