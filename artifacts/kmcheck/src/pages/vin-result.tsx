@@ -38,7 +38,7 @@ import { PendingVinCoffeeDialog } from "@/components/pending-vin-coffee-dialog";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
 import {
-  resolveLatestOdometerRecordedYear,
+  resolveLatestOdometerRecordedDate,
   resolveLatestRecordedOdometer,
 } from "@/lib/resolve-latest-odometer";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
@@ -625,7 +625,10 @@ export default function VinResult({ params }: Props) {
     registryHistory,
   };
   const odometer = resolveLatestRecordedOdometer(mileageSourceInput);
-  const mileageRecordedYear = resolveLatestOdometerRecordedYear(mileageSourceInput);
+  const mileageRecordedDateRaw = resolveLatestOdometerRecordedDate(mileageSourceInput);
+  const mileageRecordedDate = mileageRecordedDateRaw
+    ? localizeProviderDate(mileageRecordedDateRaw, language, data?.year, data?.country)
+    : null;
   const scoreData = data
     ? computeVinConditionScore(
         scoreInputFromLookup({
@@ -858,14 +861,12 @@ export default function VinResult({ params }: Props) {
                     <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
                     <AnimatedMileageBadge
                       odometer={odometer}
-                      t={t}
-                      showMiles
                       className="text-xs font-semibold tabular-nums"
                     />
                   </div>
-                  {mileageRecordedYear != null ? (
+                  {mileageRecordedDate ? (
                     <span className="text-[9px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
-                      {mileageRecordedYear}
+                      {mileageRecordedDate}
                     </span>
                   ) : null}
                 </div>

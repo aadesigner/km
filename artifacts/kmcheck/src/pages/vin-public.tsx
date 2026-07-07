@@ -37,7 +37,7 @@ import {
 import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
-import { resolveLatestOdometerRecordedYear, resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
+import { resolveLatestOdometerRecordedDate, resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
@@ -617,7 +617,10 @@ export default function VinPublic({ params }: Props) {
     registryHistory,
   };
   const odometer = resolveLatestRecordedOdometer(mileageSourceInput);
-  const mileageRecordedYear = resolveLatestOdometerRecordedYear(mileageSourceInput);
+  const mileageRecordedDateRaw = resolveLatestOdometerRecordedDate(mileageSourceInput);
+  const mileageRecordedDate = mileageRecordedDateRaw
+    ? localizeProviderDate(mileageRecordedDateRaw, language, data?.year, data?.country)
+    : null;
   const hasTheftData = data.stolen != null;
   const showAccidentsSection = data.isUnlocked && accidents.length > 0;
   const showMileageSection = data.isUnlocked && hasMileageData(odometer, mileageHistory);
@@ -1094,9 +1097,9 @@ export default function VinPublic({ params }: Props) {
                         className="text-[11px] font-semibold tabular-nums"
                       />
                     </div>
-                    {mileageRecordedYear != null ? (
+                    {mileageRecordedDate ? (
                       <span className="text-[9px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
-                        {mileageRecordedYear}
+                        {mileageRecordedDate}
                       </span>
                     ) : null}
                   </div>

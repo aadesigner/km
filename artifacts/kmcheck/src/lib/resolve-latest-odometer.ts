@@ -28,16 +28,6 @@ export type MileageSourceInput = OdometerResolveInput & {
 
 type DatedReading = { km: number; date?: string | null };
 
-function yearFromHistoryDate(date: string | null | undefined): number | null {
-  if (!date?.trim()) return null;
-  const trimmed = date.trim();
-  const iso = trimmed.match(/^(\d{4})-\d{2}-\d{2}/);
-  if (iso) return Number(iso[1]);
-  const key = historyDateSortKey(trimmed);
-  if (!Number.isFinite(key) || key === Number.NEGATIVE_INFINITY) return null;
-  return new Date(key).getUTCFullYear();
-}
-
 function collectDatedReadings(input: MileageSourceInput): DatedReading[] {
   const out: DatedReading[] = [];
   const add = (km?: number | null, date?: string | null) => {
@@ -87,13 +77,14 @@ export function resolveLatestRecordedOdometer(input: MileageSourceInput): number
   return resolveLatestOdometerKm(input);
 }
 
-/** Calendar year of the dated reading that matches the resolved latest odometer (when known). */
-export function resolveLatestOdometerRecordedYear(input: MileageSourceInput): number | null {
+/** Raw date string of the reading that matches the resolved latest odometer (when known). */
+export function resolveLatestOdometerRecordedDate(input: MileageSourceInput): string | null {
   const km = resolveLatestRecordedOdometer(input);
   if (km == null) return null;
 
   const readings = collectDatedReadings(input);
   const matching = readings.filter((r) => r.km === km);
   const dated = newestDatedReading(matching.length > 0 ? matching : readings);
-  return yearFromHistoryDate(dated?.date);
+  const raw = dated?.date?.trim();
+  return raw || null;
 }

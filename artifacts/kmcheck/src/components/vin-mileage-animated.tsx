@@ -68,6 +68,7 @@ type VinMileageGaugeProps = {
   className?: string;
   size?: "lg" | "sm";
   showScale?: boolean;
+  showMiles?: boolean;
 };
 
 /** Bar grows from the left while the km readout counts up. */
@@ -78,6 +79,7 @@ export function VinMileageGauge({
   className,
   size = "lg",
   showScale = true,
+  showMiles = true,
 }: VinMileageGaugeProps) {
   const reduced = useReducedMotion();
   const odoCol = mileageColor(odometer);
@@ -98,9 +100,11 @@ export function VinMileageGauge({
         </span>
         <div className="text-right mb-0.5">
           <span className={cn("text-muted-foreground block", isLg ? "text-sm" : "text-xs")}>km</span>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {formatMilesInParens(odometer, t)}
-          </span>
+          {showMiles ? (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {formatMilesInParens(odometer, t)}
+            </span>
+          ) : null}
         </div>
       </div>
       <div className="space-y-1.5 overflow-hidden">
