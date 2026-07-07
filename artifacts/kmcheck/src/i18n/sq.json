@@ -820,7 +820,7 @@
   "vin_hint_recheck": "Sigurohu të kontrollosh karakteret e VIN-it.",
   "vin_warning_check_digit": "Shifra kontrolluese nuk përputhet — kontrolloni VIN-in me kujdes.",
   "vin_warning_check_digit_sub": "Të dhënat e mjetit më sipër mund të jenë të sakta; verifikoni me kujdes VIN-in e futur.",
-  "vin_warning_pending_double_check": "Sigurohuni që VIN-i është i saktë",
+  "vin_warning_pending_double_check": "Sigurohuni që VIN (Shasia) është e saktë",
   "date_not_recorded": "Data nuk është regjistruar",
   "latest": "Më i fundit",
   "condition": "Gjendja",
