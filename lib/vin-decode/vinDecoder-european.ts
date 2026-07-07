@@ -1,4 +1,5 @@
 import { isVagWmi } from "./vag-wmi";
+import { decodeAudiEuHomologation, homologationToDisplay } from "./eu-zzz-homologation";
 
 /**
  * European VIN model decoding (VAG Group + Audi).
@@ -96,8 +97,14 @@ export function decodeModelEuropean(vin: string): string | null {
   const u = vin.toUpperCase();
   if (u.length < 8 || !hasZzzFiller(u)) return null;
 
-  const pos7 = u[6];
   const wmi = u.slice(0, 3);
+
+  if (isAudiEuPrefix(wmi) || wmi === "WVG") {
+    const audi = decodeAudiEuHomologation(u);
+    if (audi) return homologationToDisplay(audi);
+  }
+
+  const pos7 = u[6];
 
   if (isVagPrefix(wmi)) return VAG_MODEL_AT_7[pos7] ?? null;
   if (isAudiEuPrefix(wmi)) return AUDI_MODEL_AT_7[pos7] ?? null;

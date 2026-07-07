@@ -11,6 +11,7 @@ import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecode
 import { decodePremiumEuropeanModel } from "./european-premium";
 import { decodeEuropeanBrandModel } from "./european-brands";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
+import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
@@ -257,6 +258,7 @@ const WMI_MAP: Record<string, string> = {
 };
 
 function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typeof decodeGlobalBrand>): string | null {
+  if (isAudiHomologationVin(vin)) return "Audi";
   return resolveGlobalBrandMake(vin, wmiMake, global);
 }
 

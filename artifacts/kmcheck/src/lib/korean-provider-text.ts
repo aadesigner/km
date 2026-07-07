@@ -15,6 +15,38 @@ const LOCALE_BY_LANG: Record<Language, string> = {
   sq: "sq-AL",
 };
 
+/** Albanian month names — Intl sq-AL is missing in some browsers; manual labels match sq.json tone. */
+const SQ_MONTHS_LONG = [
+  "janar", "shkurt", "mars", "prill", "maj", "qershor",
+  "korrik", "gusht", "shtator", "tetor", "nëntor", "dhjetor",
+] as const;
+
+function isSqLocale(locale: string): boolean {
+  return locale === LOCALE_BY_LANG.sq || locale.startsWith("sq");
+}
+
+function formatSqLocalizedDate(parts: { month: number; day: number; year?: number }): string {
+  const monthName = SQ_MONTHS_LONG[parts.month];
+  if (!monthName) return "";
+  if (parts.year != null) {
+    if (parts.day === 1) return `${monthName} ${parts.year}`;
+    return `${parts.day} ${monthName} ${parts.year}`;
+  }
+  return `${parts.day} ${monthName}`;
+}
+
+function formatSqLocalizedMonthYear(year: number, month: number): string {
+  const monthName = SQ_MONTHS_LONG[month];
+  return monthName ? `${monthName} ${year}` : "";
+}
+
+/** True when a date string is only digits and separators (no localized month letters). */
+function looksNumericOnlyDate(text: string): boolean {
+  const t = text.trim();
+  if (!t || /[A-Za-z\u0400-\u04FF\u0600-\u06FF]/.test(t)) return false;
+  return /^[\d./:\-\s]+$/.test(t);
+}
+
 const MONTH_INDEX: Record<string, number> = {
   january: 0, jan: 0,
   february: 1, feb: 1,
@@ -38,6 +70,10 @@ function formatLocalizedDate(
   locale: string,
   parts: { month: number; day: number; year?: number },
 ): string {
+  if (isSqLocale(locale)) {
+    const manual = formatSqLocalizedDate(parts);
+    if (manual) return manual;
+  }
   const date = new Date(parts.year ?? 2000, parts.month, parts.day);
   if (parts.year != null) {
     return new Intl.DateTimeFormat(locale, { year: "numeric", month: "long", day: "numeric" }).format(date);
@@ -50,6 +86,10 @@ function formatLocalizedMonthYear(
   year: number,
   month: number,
 ): string {
+  if (isSqLocale(locale)) {
+    const manual = formatSqLocalizedMonthYear(year, month);
+    if (manual) return manual;
+  }
   return new Intl.DateTimeFormat(locale, { year: "numeric", month: "long" }).format(new Date(year, month, 1));
 }
 
@@ -160,9 +200,25 @@ export function formatNumericDateAsDayMonthYear(
 function localizeUsVehicleFullDate(
   date: string,
   vehicleYear?: number | null,
+  language?: Language,
 ): string | null {
   const normalized = normalizeProviderDateText(date);
   const repaired = sanitizeReportIsoDate(normalized, vehicleYear) ?? normalized;
+  const numericParts = parseNumericDayMonthYear(repaired, { assumeUsSlashOrder: true });
+
+  if (language === "sq" && numericParts) {
+    if (numericParts.day === 1) {
+      const my = formatSqLocalizedMonthYear(numericParts.year, numericParts.month - 1);
+      if (my) return my;
+    }
+    const manual = formatSqLocalizedDate({
+      month: numericParts.month - 1,
+      day: numericParts.day,
+      year: numericParts.year,
+    });
+    if (manual) return manual;
+  }
+
   const numeric = formatNumericDateAsDayMonthYear(repaired, { assumeUsSlashOrder: true });
   if (numeric) return numeric;
 
@@ -515,25 +571,50 @@ export function formatProviderDateFallback(
   date: string | null | undefined,
   vehicleYear?: number | null,
   vehicleCountry?: string | null,
+  language?: Language,
 ): string | null {
   if (date == null || date === "") return null;
   const trimmed = normalizeProviderDateText(String(date));
   if (!trimmed) return null;
 
   const usOrder = isUsVehicleCountry(vehicleCountry);
-  const numeric = formatNumericDateAsDayMonthYear(trimmed, { assumeUsSlashOrder: usOrder });
-  if (numeric) return numeric;
+  const sqLocale = language === "sq" ? LOCALE_BY_LANG.sq : null;
+
+  const trySqFromParts = (parts: NumericDateParts): string | null => {
+    if (!sqLocale) return null;
+    if (parts.day === 1) return formatSqLocalizedMonthYear(parts.year, parts.month - 1);
+    return formatSqLocalizedDate({ month: parts.month - 1, day: parts.day, year: parts.year });
+  };
+
+  const numericParts = parseNumericDayMonthYear(trimmed, { assumeUsSlashOrder: usOrder });
+  if (numericParts) {
+    const sqManual = trySqFromParts(numericParts);
+    if (sqManual) return sqManual;
+    return formatDayMonthYearNumeric(numericParts.day, numericParts.month, numericParts.year);
+  }
 
   const repaired = sanitizeReportIsoDate(trimmed, vehicleYear)
     ?? trimmed.match(/^(\d{4}-\d{2}-\d{2})/)?.[1]
     ?? null;
   if (repaired) {
-    const fromRepaired = formatNumericDateAsDayMonthYear(repaired, { assumeUsSlashOrder: usOrder });
-    if (fromRepaired) return fromRepaired;
+    const repairedParts = parseNumericDayMonthYear(repaired, { assumeUsSlashOrder: usOrder });
+    if (repairedParts) {
+      const sqManual = trySqFromParts(repairedParts);
+      if (sqManual) return sqManual;
+      return formatDayMonthYearNumeric(repairedParts.day, repairedParts.month, repairedParts.year);
+    }
   }
 
   const parsed = parseEnglishMonthDate(trimmed);
   if (parsed?.year != null) {
+    if (sqLocale) {
+      const sqManual = formatSqLocalizedDate({
+        month: parsed.month,
+        day: parsed.day,
+        year: parsed.year,
+      });
+      if (sqManual) return sqManual;
+    }
     return formatDayMonthYearNumeric(parsed.day, parsed.month + 1, parsed.year);
   }
 
@@ -550,9 +631,9 @@ export function localizeProviderDate(
   if (date == null || date === "") return null;
 
   if (isUsVehicleCountry(vehicleCountry)) {
-    let usDate = localizeUsVehicleFullDate(String(date), vehicleYear);
+    let usDate = localizeUsVehicleFullDate(String(date), vehicleYear, language);
     if (!usDate && vehicleYear != null) {
-      usDate = localizeUsVehicleFullDate(String(date), undefined);
+      usDate = localizeUsVehicleFullDate(String(date), undefined, language);
     }
     if (usDate) return usDate;
   }
@@ -607,7 +688,27 @@ export function localizeProviderDate(
   }
   if (result) return result;
 
-  return formatProviderDateFallback(String(date), vehicleYear, vehicleCountry);
+  const fallback = formatProviderDateFallback(String(date), vehicleYear, vehicleCountry, language);
+  if (fallback && language === "sq" && looksNumericOnlyDate(fallback)) {
+    const parts = parseNumericDayMonthYear(String(date), {
+      assumeUsSlashOrder: isUsVehicleCountry(vehicleCountry),
+    })
+      ?? parseNumericDayMonthYear(fallback, { assumeUsSlashOrder: isUsVehicleCountry(vehicleCountry) });
+    if (parts) {
+      if (parts.day === 1) {
+        const my = formatSqLocalizedMonthYear(parts.year, parts.month - 1);
+        if (my) return my;
+      }
+      const manual = formatSqLocalizedDate({
+        month: parts.month - 1,
+        day: parts.day,
+        year: parts.year,
+      });
+      if (manual) return manual;
+    }
+  }
+
+  return fallback;
 }
 
 /** Compact month/day label for charts (localized). */

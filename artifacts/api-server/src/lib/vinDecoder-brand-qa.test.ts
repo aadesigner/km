@@ -26,9 +26,13 @@ const CASES: BrandCase[] = [
   // ── Audi ──────────────────────────────────────────────────────────────────
   { vin: "WAUZZZ8K1BN123456", label: "Audi A4 EU", make: "Audi", modelContains: "A4" },
   { vin: "WAUZZZ4G5DN123456", label: "Audi A7 Sportback C7 EU", make: "Audi", modelContains: "A7" },
-  { vin: "WAUZZZGY1NU123456", label: "Audi Q7 EU", make: "Audi", modelContains: "Q7" },
-  { vin: "WAUZZZGA1BN123456", label: "Audi Q5 EU", make: "Audi", modelContains: "Q5" },
-  { vin: "WAUZZZF1ZAN123456", label: "Audi A3 8Y", make: "Audi", modelContains: "A3" },
+  { vin: "WAUZZZGY1NU123456", label: "Audi Q7 EU (GY)", make: "Audi", modelContains: "Q7" },
+  { vin: "WAUZZZGA1BN123456", label: "Audi Q5 EU (GA)", make: "Audi", modelContains: "Q5" },
+  { vin: "WAUZZZF7BN1234567", label: "Audi Q7 EU (F7)", make: "Audi", modelContains: "Q7" },
+  { vin: "WAUZZZFYBN1234567", label: "Audi Q5 EU (FY)", make: "Audi", modelContains: "Q5" },
+  { vin: "WAUZZZF1ZAN123456", label: "Audi Q8 EU (F1)", make: "Audi", modelContains: "Q8" },
+  { vin: "WAUZZZ4LBAN123456", label: "Audi Q7 EU (4L)", make: "Audi", modelContains: "Q7" },
+  { vin: "WVGZZZF7BN1234567", label: "Audi Q7 Bratislava (WVG)", make: "Audi", modelContains: "Q7" },
 
   // ── Porsche ───────────────────────────────────────────────────────────────
   { vin: "WP0ZZZ99ZPS123456", label: "Porsche 911", make: "Porsche", modelContains: "911" },
@@ -42,6 +46,9 @@ const CASES: BrandCase[] = [
   { vin: "WBA21EM00P9R09775", label: "BMW X7 G07", make: "BMW", modelContains: "X7" },
   { vin: "WBA31BH00P9R09775", label: "BMW X3 G01", make: "BMW", modelContains: "X3" },
   { vin: "WBY7E21050V123456", label: "BMW iX", make: "BMW", modelContains: "iX" },
+  { vin: "WBA6D6C53HG388222", label: "BMW 6 Series F06", make: "BMW", modelContains: "6 Series" },
+  { vin: "WBAZZZ6C0X0A12345", label: "BMW 6 Series EU ZZZ", make: "BMW", modelContains: "6 Series" },
+  { vin: "WBAZZZ310X0A12345", label: "BMW 3 Series EU ZZZ", make: "BMW", modelContains: "3 Series" },
 
   // ── Mercedes-Benz ─────────────────────────────────────────────────────────
   { vin: "WDD2130421A123456", label: "Mercedes E-Class W213", make: "Mercedes-Benz", modelContains: "E-Class" },
@@ -49,6 +56,7 @@ const CASES: BrandCase[] = [
   { vin: "WDD1770871A123456", label: "Mercedes A-Class W177", make: "Mercedes-Benz", modelContains: "A-Class" },
   { vin: "WDD2531491A123456", label: "Mercedes GLC X253", make: "Mercedes-Benz", modelContains: "GLC" },
   { vin: "WDD4632761A123456", label: "Mercedes G-Class", make: "Mercedes-Benz", modelContains: "G-Class" },
+  { vin: "WDDZZZ2131AA12345", label: "Mercedes E-Class EU ZZZ", make: "Mercedes-Benz", modelContains: "E-Class" },
 
   // ── Škoda ─────────────────────────────────────────────────────────────────
   { vin: "TMBEP6NJ3MZ012345", label: "Škoda Fabia III", make: "Škoda", modelContains: "Fabia" },

@@ -6,6 +6,12 @@
  * this module covers model line, chassis generation, body style, and engine family.
  */
 
+import {
+  decodeAudiEuHomologation,
+  decodeBmwEuHomologation,
+  decodeMercedesEuHomologation,
+  homologationToDisplay,
+} from "./eu-zzz-homologation";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
 
 type PrefixRule = { prefix: string; model: string; chassis?: string };
@@ -46,6 +52,14 @@ const BMW_RULES: PrefixRule[] = [
   { prefix: "WBA2A", model: "2 Series", chassis: "Active Tourer (F45)" },
   { prefix: "WBA2T", model: "2 Series", chassis: "G42 Coupé" },
   { prefix: "WBA2X", model: "2 Series", chassis: "F44 Gran Coupé" },
+  // 6 Series — F06/F12/F13 (US VDS and EU); missing rules caused blank model
+  { prefix: "WBAJV6", model: "6 Series", chassis: "F12/F13 Convertible" },
+  { prefix: "WBA6D", model: "6 Series", chassis: "F06 Gran Coupé" },
+  { prefix: "WBA6C", model: "6 Series", chassis: "F12/F13" },
+  { prefix: "WBA6F", model: "6 Series", chassis: "F12/F13" },
+  { prefix: "WBA6", model: "6 Series" },
+  { prefix: "WBA8C", model: "8 Series", chassis: "G14/G15/G16" },
+  { prefix: "WBA8", model: "8 Series" },
   // Spartanburg / US G-generation SUVs — WBA21 is X7, NOT 2 Series
   { prefix: "WBA21E", model: "X7", chassis: "G07" },
   { prefix: "WBA21C", model: "X7", chassis: "G07" },
@@ -149,10 +163,6 @@ const AUDI_RULES: PrefixRule[] = [
   { prefix: "WAUZZZGS", model: "Q3" },
   { prefix: "WAUZZZGU", model: "e-tron GT" },
   { prefix: "WAUZZZGB", model: "Q4 e-tron" },
-  { prefix: "WAUZZZF1", model: "A3", chassis: "8Y" },
-  { prefix: "WAUZZZF4", model: "A4", chassis: "B9" },
-  { prefix: "WAUZZZF5", model: "A5", chassis: "F5" },
-  { prefix: "WAUZZZF6", model: "A6", chassis: "C8" },
   { prefix: "WAUZZZFR", model: "R8" },
   { prefix: "WAUZZZTR", model: "TT" },
 ];
@@ -223,18 +233,47 @@ function decodeFromRules(vin: string, rules: PrefixRule[]): PremiumEuropeanDecod
   };
 }
 
-export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null {
-  const upper = normalizeVagVinForPremium(vin.trim());
-  if (upper.length !== 17) return null;
+function fromHomologation(hit: ReturnType<typeof decodeAudiEuHomologation>): PremiumEuropeanDecode | null {
+  if (!hit) return null;
+  return {
+    model: hit.model,
+    chassis: hit.chassis,
+    displayModel: homologationToDisplay(hit),
+  };
+}
 
+export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null {
+  const raw = vin.trim().toUpperCase();
+  if (raw.length !== 17) return null;
+
+  // Bratislava (WVG): Audi SUVs share plant WMI with VW — homologation decides brand/model.
+  if (raw.startsWith("WVG") && raw.slice(3, 6) === "ZZZ") {
+    const audiHit = fromHomologation(decodeAudiEuHomologation(raw));
+    if (audiHit) return audiHit;
+  }
+
+  const upper = normalizeVagVinForPremium(raw);
   const wmi = upper.slice(0, 3);
+
   if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("5UX") || wmi.startsWith("4US")) {
+    if (raw.slice(3, 6) === "ZZZ") {
+      const euHit = fromHomologation(decodeBmwEuHomologation(raw));
+      if (euHit) return euHit;
+    }
     return decodeFromRules(upper, BMW_RULES);
   }
-  if (wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC") || wmi.startsWith("WDF")) {
+  if (wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC") || wmi.startsWith("WDF") || wmi.startsWith("W1K")) {
+    if (raw.slice(3, 6) === "ZZZ") {
+      const euHit = fromHomologation(decodeMercedesEuHomologation(raw));
+      if (euHit) return euHit;
+    }
     return decodeFromRules(upper, MERCEDES_RULES);
   }
   if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+    if (raw.slice(3, 6) === "ZZZ") {
+      const euHit = fromHomologation(decodeAudiEuHomologation(raw));
+      if (euHit) return euHit;
+    }
     return decodeFromRules(upper, AUDI_RULES);
   }
   if (wmi.startsWith("WP0") || wmi.startsWith("WP1")) {

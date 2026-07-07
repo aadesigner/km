@@ -180,12 +180,13 @@ describe("translateProviderDate", () => {
     }
   });
 
-  it("formats US vehicle dates as DD/MM/YYYY", () => {
+  it("formats US vehicle dates as DD/MM/YYYY (en) or localized months (sq)", () => {
     expect(formatDayMonthYearNumeric(18, 6, 2024)).toBe("18/06/2024");
     expect(formatNumericDateAsDayMonthYear("2024-06-18")).toBe("18/06/2024");
     expect(formatNumericDateAsDayMonthYear("06/18/2024", { assumeUsSlashOrder: true })).toBe("18/06/2024");
     expect(localizeProviderDate("2024-06-18", "en", null, "us")).toBe("18/06/2024");
-    expect(localizeProviderDate("05/18/2021", "sq", 2018, "usa")).toBe("18/05/2021");
+    expect(localizeProviderDate("05/18/2021", "sq", 2018, "usa")).toMatch(/maj/i);
+    expect(localizeProviderDate("05/18/2021", "sq", 2018, "usa")).not.toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
     expect(localizeProviderDate("May 18, 2021", "uk", null, "us")).toBe("18/05/2021");
   });
 
@@ -194,10 +195,17 @@ describe("translateProviderDate", () => {
     expect(translateProviderChartLabel("05/18/2021", "sq", "usa")).toBe("18/05/21");
   });
 
+  it("uses Albanian month names for ISO and mileage-style dates", () => {
+    expect(localizeProviderDate("2024-03-15", "sq", 2020, "de")).toMatch(/mars/i);
+    expect(localizeProviderDate("2025-10-04", "sq", 2020, "kr")).toMatch(/tetor/i);
+    expect(localizeProviderDate("2025-10-04T00:00:00.000Z", "sq", 2020, "kr")).toMatch(/tetor/i);
+    expect(localizeProviderDate("2021-05-18", "sq", 2018, "usa")).toMatch(/maj/i);
+  });
+
   it("falls back to numeric dates for ownership history instead of hiding them", () => {
     const auctionOwnerDate = "2025-10-04";
     expect(localizeProviderDate(auctionOwnerDate, "en", 2020, "kr")).toBeTruthy();
-    expect(localizeProviderDate(auctionOwnerDate, "sq", 2020, "kr")).toBeTruthy();
+    expect(localizeProviderDate(auctionOwnerDate, "sq", 2020, "kr")).toMatch(/tetor/i);
     expect(localizeProviderDate("April 16, 2019", "sq", 2020, "kr")).toMatch(/2019/);
     expect(localizeProviderDate("2025-10-04T00:00:00.000Z", "sq", 2020, "kr")).toBeTruthy();
   });
