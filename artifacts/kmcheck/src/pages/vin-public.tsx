@@ -1089,19 +1089,12 @@ export default function VinPublic({ params }: Props) {
                   {t("vin_public_mileage_section")}
                 </h2>
                 {odometer != null && odoCol && (
-                  <div className="inline-flex flex-col items-end gap-0.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
-                    <div className="inline-flex items-center gap-1.5">
-                      <Gauge className="h-3 w-3 shrink-0 opacity-90" />
-                      <AnimatedMileageBadge
-                        odometer={odometer}
-                        className="text-[11px] font-semibold tabular-nums"
-                      />
-                    </div>
-                    {mileageRecordedDate ? (
-                      <span className="text-[10px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
-                        {mileageRecordedDate}
-                      </span>
-                    ) : null}
+                  <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
+                    <Gauge className="h-3 w-3 shrink-0 opacity-90" />
+                    <AnimatedMileageBadge
+                      odometer={odometer}
+                      className="text-[11px] font-semibold tabular-nums"
+                    />
                   </div>
                 )}
               </div>
@@ -1113,6 +1106,7 @@ export default function VinPublic({ params }: Props) {
                     t={t}
                     size="sm"
                     showScale={mileageHistory.length <= 1}
+                    recordedDate={mileageRecordedDate}
                     className={mileageHistory.length > 1 ? "mb-4 pb-3 border-b border-border/60" : "mb-4"}
                   />
                 ) : null}

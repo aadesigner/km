@@ -257,7 +257,7 @@ export async function publishPendingVinCheck(opts: {
     promoteAllPendingManual: true,
   });
 
-  await invalidateVinImageCache(extractVinPhotoUrls(stamped));
+  void invalidateVinImageCache(extractVinPhotoUrls(stamped));
 
   notifyVinLookupPublished(vin);
 
@@ -265,24 +265,24 @@ export async function publishPendingVinCheck(opts: {
   for (const req of requests) {
     if (!req.notifyOnPublish || req.notifiedAt) continue;
     if (notifiedUsers.has(req.userId)) {
-      await db.update(pendingVinCheckRequestsTable)
+      void db.update(pendingVinCheckRequestsTable)
         .set({ notifiedAt: now })
         .where(eq(pendingVinCheckRequestsTable.id, req.id));
       continue;
     }
-    const [user] = await db.select({
-      name: usersTable.name,
-      email: usersTable.email,
-    }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
-    if (user?.email) {
+    notifiedUsers.add(req.userId);
+    void (async () => {
+      const [user] = await db.select({
+        name: usersTable.name,
+        email: usersTable.email,
+      }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
+      if (!user?.email) return;
       const sent = await fireVinReadyEmailForUser(req.lookupId, vin, stamped, user);
-      if (sent) notifiedUsers.add(req.userId);
-      if (sent) {
-        await db.update(pendingVinCheckRequestsTable)
-          .set({ notifiedAt: now })
-          .where(eq(pendingVinCheckRequestsTable.id, req.id));
-      }
-    }
+      if (!sent) return;
+      await db.update(pendingVinCheckRequestsTable)
+        .set({ notifiedAt: now })
+        .where(eq(pendingVinCheckRequestsTable.id, req.id));
+    })();
   }
 
   return { vin, stamped, requests, lookupIds };

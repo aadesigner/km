@@ -69,6 +69,8 @@ type VinMileageGaugeProps = {
   size?: "lg" | "sm";
   showScale?: boolean;
   showMiles?: boolean;
+  /** Localized date of the highest recorded reading (shown beside the km readout). */
+  recordedDate?: string | null;
 };
 
 /** Bar grows from the left while the km readout counts up. */
@@ -80,6 +82,7 @@ export function VinMileageGauge({
   size = "lg",
   showScale = true,
   showMiles = true,
+  recordedDate,
 }: VinMileageGaugeProps) {
   const reduced = useReducedMotion();
   const odoCol = mileageColor(odometer);
@@ -95,9 +98,21 @@ export function VinMileageGauge({
       transition={{ duration: 0.48, ease: EASE_OUT }}
     >
       <div className={cn("flex items-end justify-between gap-3", isLg ? "mb-4" : "mb-3")}>
-        <span className={cn("font-black tabular-nums", odoCol.text, isLg ? "text-3xl" : "text-2xl")}>
-          {displayKm.toLocaleString()}
-        </span>
+        <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
+          <span className={cn("font-black tabular-nums", odoCol.text, isLg ? "text-3xl" : "text-2xl")}>
+            {displayKm.toLocaleString()}
+          </span>
+          {recordedDate ? (
+            <span
+              className={cn(
+                "font-medium text-muted-foreground/55 tabular-nums leading-tight",
+                isLg ? "text-sm" : "text-xs",
+              )}
+            >
+              {recordedDate}
+            </span>
+          ) : null}
+        </div>
         <div className="text-right mb-0.5">
           <span className={cn("text-muted-foreground block", isLg ? "text-sm" : "text-xs")}>km</span>
           {showMiles ? (

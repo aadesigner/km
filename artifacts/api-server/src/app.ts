@@ -143,7 +143,8 @@ app.use(
 app.use(cookieParser());
 app.use((req, res, next) => {
   const isLargeCatalogBody =
-    req.path.startsWith("/api/admin/vin-catalog")
+    (req.path.startsWith("/api/admin/vin-catalog")
+      || req.path.startsWith("/api/admin/pending-vin-checks"))
     && (req.method === "PATCH" || req.method === "POST")
     && !req.path.endsWith("/import")
     && !req.path.endsWith("/import-json");
@@ -164,6 +165,13 @@ app.use("/api", router);
 mountStaticSite(app);
 
 app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const errType = err && typeof err === "object" && "type" in err ? (err as { type?: string }).type : undefined;
+  if (errType === "entity.too.large") {
+    if (!res.headersSent) {
+      res.status(413).json({ error: "Request body too large" });
+    }
+    return;
+  }
   const message = err instanceof Error ? err.message : String(err);
   const stack = err instanceof Error ? err.stack : undefined;
   logger.error({ err, stack, method: req.method, url: req.url }, "Unhandled error");

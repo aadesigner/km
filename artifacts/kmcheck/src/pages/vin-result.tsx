@@ -856,19 +856,12 @@ export default function VinResult({ params }: Props) {
               </h2>
             </div>
             {odometer && odoCol ? (
-                <div className="inline-flex flex-col items-end gap-0.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
-                  <div className="inline-flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
-                    <AnimatedMileageBadge
-                      odometer={odometer}
-                      className="text-xs font-semibold tabular-nums"
-                    />
-                  </div>
-                  {mileageRecordedDate ? (
-                    <span className="text-[10px] font-medium tabular-nums opacity-75 leading-none pr-0.5">
-                      {mileageRecordedDate}
-                    </span>
-                  ) : null}
+                <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
+                  <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
+                  <AnimatedMileageBadge
+                    odometer={odometer}
+                    className="text-xs font-semibold tabular-nums"
+                  />
                 </div>
               ) : null}
           </div>
@@ -882,6 +875,7 @@ export default function VinResult({ params }: Props) {
                     t={t}
                     size="sm"
                     showScale={false}
+                    recordedDate={mileageRecordedDate}
                     className="mb-5 pb-4 border-b border-border/60"
                   />
                 ) : null}
@@ -889,7 +883,7 @@ export default function VinResult({ params }: Props) {
               </>
             ) : odometer && odoCol ? (
               <>
-                <VinMileageGauge odometer={odometer} odoMax={odoMax} t={t} />
+                <VinMileageGauge odometer={odometer} odoMax={odoMax} t={t} recordedDate={mileageRecordedDate} />
                 <div className={cn(
                   "flex items-center gap-2 p-3 rounded-xl mt-4",
                   mileageStatus?.warn

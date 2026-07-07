@@ -599,15 +599,24 @@ describe("engine code decoding", () => {
   });
 
   it("does not treat EU Audi ZZZ type-approval letter G as 2.7T Biturbo", () => {
-    // 2014 A6 allroad 3.0 TDI — positions 7–8 are platform code 4G, not US engine char G.
+    // 2014 A6 allroad 3.0 TDI — positions 7–9 are platform code 4G6 (shared A6/A7 C7).
     const vin = "WAUZZZ4G6EN191357";
     expect(decodeEngineCode(vin)).toBeNull();
     const decoded = decodeVin(vin);
     expect(decoded.make).toBe("Audi");
-    expect(decoded.model).toBe("A6");
+    expect(decoded.model).toMatch(/A6|A7/);
     expect(decoded.year).toBe(2014);
     expect(decoded.engineDecoded).toBeNull();
     expect(decoded.engineCode).toBeNull();
+  });
+
+  it("WAUZZZ4G5 EU type code → A7 Sportback C7 (not generic A6)", () => {
+    const vin = "WAUZZZ4G5GN050914";
+    const decoded = decodeVin(vin);
+    expect(decoded.make).toBe("Audi");
+    expect(decoded.model).toMatch(/A7/);
+    expect(decoded.year).toBe(2016);
+    expect(decodeEngineCode(vin)).toBeNull();
   });
 
   it("does not guess engine from EU ZZZ homologation codes (BMW, Mercedes, JLR, Porsche)", () => {

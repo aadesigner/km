@@ -25,7 +25,7 @@ const CASES: BrandCase[] = [
 
   // ── Audi ──────────────────────────────────────────────────────────────────
   { vin: "WAUZZZ8K1BN123456", label: "Audi A4 EU", make: "Audi", modelContains: "A4" },
-  { vin: "WAUZZZ4G5DN123456", label: "Audi A6 EU", make: "Audi", modelContains: "A6" },
+  { vin: "WAUZZZ4G5DN123456", label: "Audi A7 Sportback C7 EU", make: "Audi", modelContains: "A7" },
   { vin: "WAUZZZGY1NU123456", label: "Audi Q7 EU", make: "Audi", modelContains: "Q7" },
   { vin: "WAUZZZGA1BN123456", label: "Audi Q5 EU", make: "Audi", modelContains: "Q5" },
   { vin: "WAUZZZF1ZAN123456", label: "Audi A3 8Y", make: "Audi", modelContains: "A3" },

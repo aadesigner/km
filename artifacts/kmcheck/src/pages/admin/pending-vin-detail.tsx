@@ -88,7 +88,13 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
-        setSaveMsg({ ok: false, text: (body as { error?: string }).error ?? "Save failed" });
+        const errText = (body as { error?: string }).error;
+        setSaveMsg({
+          ok: false,
+          text: r.status === 413
+            ? "Draft is too large — try fewer photos or shorter history entries."
+            : errText ?? `Save failed (${r.status})`,
+        });
         return;
       }
       const body = (await r.json()) as PendingDetail;
