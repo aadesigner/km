@@ -9,6 +9,7 @@ import {
   dedupeCatalogImportRows,
   mergeCatalogData,
   catalogHasDeliverableReport,
+  catalogDeliverableFromHint,
   normalizeJsonImportRecord,
   parseCsvBool,
   sanitizeCatalogPayload,
@@ -39,6 +40,33 @@ describe("catalogHasDeliverableReport", () => {
 
   it("rejects empty catalog payload", () => {
     expect(catalogHasDeliverableReport({})).toBe(false);
+  });
+
+  it("catalogDeliverableFromHint matches full-data helper", () => {
+    const payloads = [
+      { make: "Hyundai", model: "Elantra", year: 2018, fulfillmentPending: true, accidents: [] },
+      { make: "Hyundai", model: "Elantra", year: 2018, mileageHistory: [{ date: "2020-01-01", odometer: 50000 }] },
+      { make: "BMW", model: "3 Series", year: 2019, photos: ["https://x.test/1.jpg"] },
+      { make: "Ford", model: "F-150", year: 2020 },
+      {},
+    ];
+    for (const payload of payloads) {
+      const d = payload as Record<string, unknown>;
+      const hint = {
+        fulfillmentPending: d.fulfillmentPending === true,
+        accidentsLen: Array.isArray(d.accidents) ? d.accidents.length : 0,
+        mileageLen: Array.isArray(d.mileageHistory) ? d.mileageHistory.length : 0,
+        ownerLen: Array.isArray(d.ownerHistory) ? d.ownerHistory.length : 0,
+        claimsLen: Array.isArray(d.insuranceClaims) ? d.insuranceClaims.length : 0,
+        registryLen: Array.isArray(d.registryHistory) ? d.registryHistory.length : 0,
+        auctionLen: Array.isArray(d.auctionHistory) ? d.auctionHistory.length : 0,
+        photosLen: Array.isArray(d.photos) ? d.photos.length : 0,
+        make: typeof d.make === "string" ? d.make : null,
+        model: typeof d.model === "string" ? d.model : null,
+        year: d.year,
+      };
+      expect(catalogDeliverableFromHint(hint)).toBe(catalogHasDeliverableReport(payload));
+    }
   });
 });
 

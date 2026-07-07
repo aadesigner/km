@@ -35,6 +35,17 @@ describe("forEachJsonArrayRecord", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
+  it("allows an empty array (caller handles no rows)", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "json-stream-"));
+    const filePath = path.join(dir, "catalog.json");
+    await writeFile(filePath, "[]");
+
+    const count = await forEachJsonArrayRecord(filePath, {}, async () => {});
+    expect(count).toBe(0);
+
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it("rejects non-array JSON roots", async () => {
     const dir = await mkdtemp(path.join(tmpdir(), "json-stream-"));
     const filePath = path.join(dir, "catalog.json");

@@ -43,9 +43,5 @@ export async function forEachJsonArrayRecord(
     throw err;
   }
 
-  if (count === 0) {
-    throw new Error("Expected a JSON array at the root");
-  }
-
   return count;
 }
