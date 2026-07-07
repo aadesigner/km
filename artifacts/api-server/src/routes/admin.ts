@@ -180,6 +180,36 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
              SELECT 1 FROM vin_lookups vl
              WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
            )) AS total_revenue,
+        (SELECT COUNT(*)::int FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS qualifying_payment_count,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND p.created_at >= NOW() - INTERVAL '7 days'
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_this_week,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND p.created_at >= NOW() - INTERVAL '14 days'
+           AND p.created_at < NOW() - INTERVAL '7 days'
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_last_week,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND p.created_at >= DATE_TRUNC('month', NOW())
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_this_month,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE u.created_at >= NOW() - INTERVAL '7 days') AS signups_this_week,
         COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '7 days')::int AS checks_this_week,
         COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '14 days' AND vl.created_at < NOW() - INTERVAL '7 days')::int AS checks_last_week,
         COUNT(*) FILTER (WHERE vl.created_at >= CURRENT_DATE)::int AS checks_today
@@ -252,6 +282,9 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
     total_users?: number; total_vin_checks?: number; total_revenue?: number;
+    qualifying_payment_count?: number;
+    revenue_this_week?: number; revenue_last_week?: number; revenue_this_month?: number;
+    signups_this_week?: number;
     checks_this_week?: number; checks_last_week?: number; checks_today?: number;
   };
 
@@ -261,8 +294,14 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
 
   const checksBy30 = checksByDay30.rows as Array<{ date: string; count: number }>;
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 7);
   const cutoffStr = cutoff.toISOString().substring(0, 10);
+
+  const totalRevenue = Number(agg.total_revenue ?? 0);
+  const qualifyingPaymentCount = Number(agg.qualifying_payment_count ?? 0);
+  const revenueThisWeek = Number(agg.revenue_this_week ?? 0);
+  const revenueLastWeek = Number(agg.revenue_last_week ?? 0);
+  const revenueThisMonth = Number(agg.revenue_this_month ?? 0);
 
   const recentPendingVinChecks = await (async () => {
     if (recentPendingRows.length === 0) return [];
@@ -293,7 +332,13 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
   res.json({
     totalUsers: Number(agg.total_users ?? 0),
     totalVinChecks: Number(agg.total_vin_checks ?? 0),
-    totalRevenue: Number(agg.total_revenue ?? 0),
+    totalRevenue,
+    qualifyingPaymentCount,
+    avgOrderValue: qualifyingPaymentCount > 0 ? totalRevenue / qualifyingPaymentCount : 0,
+    revenueThisWeek,
+    revenueLastWeek,
+    revenueThisMonth,
+    signupsThisWeek: Number(agg.signups_this_week ?? 0),
     checksToday: Number(agg.checks_today ?? 0),
     cacheHitRate: Math.round(cacheHitRate * 10) / 10,
     activeProviders: activeProviders ?? 0,

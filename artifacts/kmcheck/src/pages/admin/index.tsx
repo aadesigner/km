@@ -37,6 +37,9 @@ type RecentPendingVin = {
 
 type ExtendedStats = {
   totalUsers: number; totalVinChecks: number; totalRevenue: number;
+  qualifyingPaymentCount?: number; avgOrderValue?: number;
+  revenueThisWeek?: number; revenueLastWeek?: number; revenueThisMonth?: number;
+  signupsThisWeek?: number;
   checksToday: number; cacheHitRate: number; activeProviders: number;
   checksByDay: DaySeries[]; revenueByDay: DaySeries[];
   checksByDay30: DaySeries[]; revenueByDay30: DaySeries[];
@@ -48,42 +51,14 @@ type ExtendedStats = {
   recentPendingVinChecks?: RecentPendingVin[];
 };
 
-function sumSeriesInDayRange(
-  data: DaySeries[],
-  key: "count" | "revenue",
-  fromDaysAgo: number,
-  toDaysAgo: number,
-): number {
-  const map = new Map<string, number>();
-  data.forEach((row) => {
-    const d = String(row.date).substring(0, 10);
-    map.set(d, Number((row as Record<string, unknown>)[key] ?? 0));
-  });
-  let sum = 0;
-  for (let i = fromDaysAgo; i <= toDaysAgo; i++) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() - i);
-    dt.setHours(0, 0, 0, 0);
-    const iso = dt.toISOString().substring(0, 10);
-    sum += map.get(iso) ?? 0;
-  }
-  return sum;
+function utcDateKeyDaysAgo(daysAgo: number): string {
+  const dt = new Date();
+  dt.setUTCDate(dt.getUTCDate() - daysAgo);
+  return dt.toISOString().substring(0, 10);
 }
 
-function sumMonthToDate(data: DaySeries[], key: "count" | "revenue"): number {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const map = new Map<string, number>();
-  data.forEach((row) => {
-    const d = String(row.date).substring(0, 10);
-    map.set(d, Number((row as Record<string, unknown>)[key] ?? 0));
-  });
-  let sum = 0;
-  for (let d = new Date(monthStart); d <= now; d.setDate(d.getDate() + 1)) {
-    const iso = d.toISOString().substring(0, 10);
-    sum += map.get(iso) ?? 0;
-  }
-  return sum;
+function sumSeriesValues(data: Array<{ value: number }>): number {
+  return data.reduce((sum, row) => sum + row.value, 0);
 }
 
 function fmtEuro(amount: number): string {
@@ -100,13 +75,11 @@ function fillDays(
   });
   const result = [];
   for (let i = days - 1; i >= 0; i--) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() - i);
-    dt.setHours(0, 0, 0, 0);
-    const iso = dt.toISOString().substring(0, 10);
+    const iso = utcDateKeyDaysAgo(i);
+    const dt = new Date(`${iso}T12:00:00Z`);
     result.push({
       date: iso,
-      label: dt.toLocaleDateString("en", { month: "short", day: "numeric" }),
+      label: dt.toLocaleDateString("en", { month: "short", day: "numeric", timeZone: "UTC" }),
       value: map.get(iso) ?? 0,
     });
   }
@@ -284,33 +257,30 @@ export default function AdminOverview() {
     const days = timeRange === "7d" ? 7 : 30;
     const checksSource = timeRange === "7d" ? (stats.checksByDay ?? []) : (stats.checksByDay30 ?? []);
     const revenueSource = timeRange === "7d" ? (stats.revenueByDay ?? []) : (stats.revenueByDay30 ?? []);
-    const revenue30 = stats.revenueByDay30 ?? [];
     const usersSource = stats.usersByDay ?? [];
 
-    const weekRevenue = sumSeriesInDayRange(revenue30, "revenue", 0, 6);
-    const lastWeekRevenue = sumSeriesInDayRange(revenue30, "revenue", 7, 13);
-    const monthRevenue = sumMonthToDate(revenue30, "revenue");
-    const revenue30dTotal = sumSeriesInDayRange(revenue30, "revenue", 0, 29);
-    const signupsThisWeek = sumSeriesInDayRange(usersSource, "count", 0, 6);
-    const completedPayments = (stats.paymentStatusCounts ?? [])
-      .find((r) => r.status === "completed")?.count ?? 0;
+    const checksData = fillDays(checksSource, days, "count");
+    const revenueData = fillDays(revenueSource, days, "revenue");
+    const usersData = fillDays(usersSource, days, "count");
+    const weekRevenue = stats.revenueThisWeek ?? 0;
+    const lastWeekRevenue = stats.revenueLastWeek ?? 0;
+    const monthRevenue = stats.revenueThisMonth ?? 0;
+    const signupsThisWeek = stats.signupsThisWeek ?? 0;
 
     return {
       days,
-      checksData: fillDays(checksSource, days, "count"),
-      revenueData: fillDays(revenueSource, days, "revenue"),
-      usersData: fillDays(usersSource, days, "count"),
+      checksData,
+      revenueData,
+      usersData,
       checksTrend: trendPct(stats.checksThisWeek ?? 0, stats.checksLastWeek ?? 0),
       pendingOpen: stats.pendingVinChecksOpen ?? 0,
       recentPending: stats.recentPendingVinChecks ?? [],
       weekRevenue,
       revenueWeekTrend: trendPct(weekRevenue, lastWeekRevenue),
       monthRevenue,
-      revenue30dTotal,
+      revenue30dTotal: sumSeriesValues(revenueData),
       signupsThisWeek,
-      avgOrder: completedPayments > 0 && stats.totalRevenue
-        ? Number(stats.totalRevenue) / completedPayments
-        : 0,
+      avgOrder: stats.avgOrderValue ?? 0,
       totalRevStr: stats.totalRevenue != null ? fmtEuro(Number(stats.totalRevenue)) : undefined,
       cacheStr: stats.cacheHitRate != null ? `${stats.cacheHitRate.toFixed(1)}%` : undefined,
     };
