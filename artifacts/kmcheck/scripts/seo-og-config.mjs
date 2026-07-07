@@ -1,6 +1,6 @@
 /** Shared OG screenshot targets — used by capture script and SEO inject. */
 
-export const SEO_OG_LANGS = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+export const SEO_OG_LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
 
 /** pageKey → URL path without lang prefix */
 export const SEO_OG_PAGES = [

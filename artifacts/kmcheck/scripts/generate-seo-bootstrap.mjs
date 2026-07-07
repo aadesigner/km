@@ -43,7 +43,7 @@ const js = `/* auto-generated — do not edit */
   var PATH_MAP = ${JSON.stringify(PATH_TO_SEO_KEY)};
   var OG_LOCALE = ${JSON.stringify(OG_LOCALE_MAP)};
   var SEO_LANGS = ${JSON.stringify(SEO_LANGS)};
-  var HREFLANG = ${JSON.stringify({ en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", ro: "ro", sq: "sq-AL" })};
+  var HREFLANG = ${JSON.stringify({ en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", ro: "ro", pl: "pl", sq: "sq-AL" })};
   var NOINDEX = ${JSON.stringify(NOINDEX)};
   var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada"])};
   var BASE = ${JSON.stringify(basePath)};
@@ -61,6 +61,7 @@ const js = `/* auto-generated — do not edit */
       uk: "VIN " + vin + " — звіт історії авто | kmcheck",
       ru: "VIN " + vin + " — отчёт по истории авто | kmcheck",
       ro: "VIN " + vin + " — raport istoric vehicul | kmcheck",
+      pl: "VIN " + vin + " — raport historii pojazdu | kmcheck",
       sq: "VIN " + vin + " — raport historiku automjeti | kmcheck",
     };
     var descriptions = {
@@ -69,6 +70,7 @@ const js = `/* auto-generated — do not edit */
       uk: "Перевірте VIN " + vin + ": пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.",
       ru: "Проверьте VIN " + vin + ": пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.",
       ro: "Verificați VIN " + vin + ": kilometraj, accidente, istoric proprietari, asigurare și licitații. Raport complet instant pe kmcheck.com.",
+      pl: "Sprawdź VIN " + vin + ": przebieg, wypadki, historia właścicieli, ubezpieczenie i aukcje. Pełny raport natychmiast na kmcheck.com.",
       sq: "Kontrollo VIN " + vin + ": kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.",
     };
     return {
@@ -181,7 +183,7 @@ const js = `/* auto-generated — do not edit */
   function applySeoFromUrl() {
     var ORIGIN = location.origin;
     var pathname = stripBase(location.pathname);
-    var m = pathname.match(/^\\/(en|es|uk|ru|ro|ar|sq)(\\/.*)?$/);
+    var m = pathname.match(/^\\/(en|es|uk|ru|ro|pl|ar|sq)(\\/.*)?$/);
     var lang = m ? m[1] : "en";
     var rest = m && m[2] ? m[2].replace(/\\/$/, "") : "";
     var vinSeo = VIN_INDEX_RE.test(rest) ? vinSeoFallback(rest, lang) : null;

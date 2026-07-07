@@ -48,6 +48,7 @@ const SUPPORTED_LANGUAGES: { code: string; label: string; flag: string }[] = [
   { code: "es", label: "Spanish", flag: "es" },
   { code: "sq", label: "Albanian", flag: "al" },
   { code: "ro", label: "Romanian", flag: "ro" },
+  { code: "pl", label: "Polish", flag: "pl" },
   { code: "ar", label: "Arabic",  flag: "sa" },
   { code: "uk", label: "Ukrainian", flag: "ua" },
   { code: "ru", label: "Russian", flag: "ru" },

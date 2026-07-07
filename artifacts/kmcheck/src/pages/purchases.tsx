@@ -261,7 +261,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
       <SEOHead
         title={`${t("purchases_title")} — kmcheck.com`}
         description={t("purchases_subtitle")}
-        lang={lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}
+        lang={lang as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq"}
         noIndex
       />
       <ClientAreaLayout>

@@ -11,6 +11,7 @@ const loaders: Record<string, () => Promise<{ default: LegalDict }>> = {
   ru: () => import("./legal/ru.json"),
   sq: () => import("./legal/sq.json"),
   ro: () => import("./legal/ro.json"),
+  pl: () => import("./legal/pl.json"),
 };
 
 export function useLegalTranslation() {

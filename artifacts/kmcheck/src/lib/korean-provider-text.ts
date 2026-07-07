@@ -11,6 +11,7 @@ const LOCALE_BY_LANG: Record<Language, string> = {
   uk: "uk-UA",
   ru: "ru-RU",
   ro: "ro-RO",
+  pl: "pl-PL",
   sq: "sq-AL",
 };
 

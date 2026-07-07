@@ -1,5 +1,5 @@
 /**
- * QA: verify every indexable page has title + description in all 7 languages.
+ * QA: verify every indexable page has title + description in all 8 languages.
  * Usage: node artifacts/kmcheck/scripts/qa-seo.mjs
  */
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -10,7 +10,7 @@ import { SEO_OG_PAGES } from "./seo-og-config.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const seoData = JSON.parse(readFileSync(join(root, "src/lib/seo-data.json"), "utf8"));
-const langs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+const langs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
 const indexableKeys = [
   "home",
   "pricing",
@@ -123,6 +123,28 @@ if (untranslatedVin.length > 0) {
   errors += untranslatedVin.length;
 }
 
+/** Polish i18n: pl.json key parity and vin translations */
+const plI18nPath = join(root, "src/i18n/pl.json");
+if (existsSync(plI18nPath)) {
+  const plI18n = JSON.parse(readFileSync(plI18nPath, "utf8"));
+  const plKeys = new Set(Object.keys(plI18n));
+  const missingPl = enKeys.filter((k) => !plKeys.has(k));
+  if (missingPl.length > 0) {
+    console.error("pl.json missing keys:", missingPl.length);
+    errors++;
+  }
+  const untranslatedPlVin = enKeys
+    .filter((k) => k.startsWith("vin_") || k.startsWith("free_decoder"))
+    .filter((k) => plI18n[k] === enI18n[k] && !vinKeyAllowEnglish.has(k));
+  if (untranslatedPlVin.length > 0) {
+    console.error("pl.json untranslated vin/free_decoder keys:", untranslatedPlVin.slice(0, 10).join(", "));
+    errors += untranslatedPlVin.length;
+  }
+} else {
+  console.error("MISSING pl.json");
+  errors++;
+}
+
 const bootstrap = readFileSync(join(root, "public/seo-bootstrap.js"), "utf8");
 for (const lang of langs) {
   if (!bootstrap.includes(`"${lang}"`)) {
@@ -130,8 +152,8 @@ for (const lang of langs) {
     errors++;
   }
 }
-if (!bootstrap.includes("raport istoric vehicul | kmcheck")) {
-  console.error("BOOTSTRAP missing Romanian VIN title template");
+if (!bootstrap.includes("raport historii pojazdu | kmcheck")) {
+  console.error("BOOTSTRAP missing Polish VIN title template");
   errors++;
 }
 
@@ -158,6 +180,7 @@ if (errors === 0) {
   console.log(`OK — ${indexableKeys.length} pages × ${langs.length} languages verified`);
   console.log(`OK — VIN catalog SEO for ${SEO_LANGS.length} languages`);
   console.log(`OK — ${vinPageKeys.length} VIN-related static SEO pages × ${langs.length} languages`);
+  console.log("OK — pl.json i18n key parity and vin translations");
   console.log("OK — ro.json i18n key parity and vin translations");
 } else {
   console.error(`FAILED — ${errors} issue(s)`);

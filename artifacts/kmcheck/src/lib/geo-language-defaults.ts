@@ -11,6 +11,7 @@ export const DEFAULT_GEO_LANGUAGE_RULES: GeoLanguageRuleForm[] = [
   },
   { countries: ["UA"], language: "uk" },
   { countries: ["RO", "MD"], language: "ro" },
+  { countries: ["PL"], language: "pl" },
   {
     countries: [
       "SA", "AE", "EG", "IQ", "JO", "LB", "KW", "QA", "BH", "OM",

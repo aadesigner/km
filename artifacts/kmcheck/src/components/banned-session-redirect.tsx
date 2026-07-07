@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { AUTH_BANNED_STORAGE_KEY } from "@/lib/auth-context";
 
-const LANGS = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+const LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
 
 /** Sends users with a revoked banned session to sign-in with the suspension message. */
 export function BannedSessionRedirect() {

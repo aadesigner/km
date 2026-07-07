@@ -71,6 +71,7 @@ export const PLUGIN_LANGUAGE_OPTIONS = [
   { code: "es", label: "Spanish (Español)" },
   { code: "sq", label: "Albanian (Shqip)" },
   { code: "ro", label: "Romanian (Română)" },
+  { code: "pl", label: "Polish (Polski)" },
   { code: "ar", label: "Arabic" },
   { code: "uk", label: "Ukrainian" },
   { code: "ru", label: "Russian" },

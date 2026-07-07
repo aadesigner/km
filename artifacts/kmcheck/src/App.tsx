@@ -91,7 +91,7 @@ function withLang(
   return function LangWrapper(props: { params: { lang: string; [key: string]: string } }) {
     const [location] = useLocation();
     const resetKey = location.split("?")[0] ?? location;
-    const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+    const validLangs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
     if (!validLangs.includes(props.params.lang)) {
       return <Redirect to="/en" />;
     }
@@ -114,7 +114,7 @@ function withLang(
 function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" | "sign-up" }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
   const lang = validLangs.includes(params.lang) ? params.lang : "en";
 
   return (
@@ -162,7 +162,7 @@ const MaintenanceLang     = withLang(Maintenance as React.ComponentType<{ params
 function CountryLang(props: { params: { lang: string; country: string } }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   return (
     <I18nProvider initialLanguage={props.params.lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq"}>
@@ -239,7 +239,7 @@ function VinRouteByAuth(props: { params: { lang: string; id: string } }) {
 function VinResultLang(props: { params: { lang: string; id: string } }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+  const validLangs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   const isVin = isVin17(props.params.id);
   return (
@@ -273,8 +273,8 @@ function AdminPage({ children }: { children: React.ReactNode }) {
 
 function NotFoundLang() {
   const [location] = useLocation();
-  const validLangs = ["en", "es", "uk", "ru", "ro", "ar", "sq"] as const;
-  const match = location.match(/^\/(en|es|uk|ru|ro|ar|sq)(?:\/|$)/);
+  const validLangs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"] as const;
+  const match = location.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(?:\/|$)/);
   const lang = validLangs.includes((match?.[1] ?? "en") as typeof validLangs[number])
     ? (match?.[1] ?? "en") as typeof validLangs[number]
     : "en";
@@ -338,10 +338,10 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
   return <PageLoader />;
 }
 
-type RouteLang = "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq";
+type RouteLang = "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq";
 
 function parseRouteLang(lang: string): RouteLang {
-  const validLangs: RouteLang[] = ["en", "es", "uk", "ru", "ro", "ar", "sq"];
+  const validLangs: RouteLang[] = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
   return validLangs.includes(lang as RouteLang) ? lang as RouteLang : "en";
 }
 

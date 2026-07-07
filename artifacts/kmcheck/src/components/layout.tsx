@@ -27,6 +27,7 @@ const LANGS = [
   { code: "es", label: "Español",    img: "es" },
   { code: "sq", label: "Shqip",      img: "al" },
   { code: "ro", label: "Română",     img: "ro" },
+  { code: "pl", label: "Polski",     img: "pl" },
   { code: "ar", label: "العربية",    img: "sa" },
   { code: "uk", label: "Українська", img: "ua" },
   { code: "ru", label: "Русский",    img: "ru" },
@@ -513,7 +514,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   }, []);
 
   const handleLanguageChange = (lang: string) => {
-    const next = lang as "en" | "es" | "uk" | "ru" | "ro" | "ar" | "sq";
+    const next = lang as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq";
     const path = window.location.pathname;
     const newPath = path.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
     const target = newPath === path ? `/${next}` : newPath;

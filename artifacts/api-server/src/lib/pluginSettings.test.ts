@@ -41,6 +41,7 @@ describe("pluginSettings", () => {
     expect(resolveLanguageForCountry("UA", settings)).toBe("uk");
     expect(resolveLanguageForCountry("RO", settings)).toBe("ro");
     expect(resolveLanguageForCountry("MD", settings)).toBe("ro");
+    expect(resolveLanguageForCountry("PL", settings)).toBe("pl");
     expect(resolveLanguageForCountry("SA", settings)).toBe("ar");
     expect(resolveLanguageForCountry("PS", settings)).toBe("ar");
     expect(resolveLanguageForCountry("RU", settings)).toBe("ru");
