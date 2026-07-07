@@ -24,7 +24,7 @@ export {
   type PlantInfo,
   type EngineSpecs,
 } from "./vinDecoder";
-export { decodeModelEuropean } from "./vinDecoder-european";
+export { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor, isEuZzzTypeApprovalVin } from "./vinDecoder-european";
 export { decodeEuropeanBrandModel } from "./european-brands";
 export { decodeGlobalBrandModel, decodeGlobalBrand, resolveGlobalBrandMake } from "./global-brands";
 export {

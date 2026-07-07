@@ -7,7 +7,7 @@
  *   - Position 1 (index 0)   → country of origin
  */
 
-import { decodeModelEuropean } from "./vinDecoder-european";
+import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
 import { decodeEuropeanBrandModel } from "./european-brands";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
@@ -1295,6 +1295,10 @@ export function decodeTransmission(
     return null;
   }
 
+  if (hasEuZzzTypeApprovalDescriptor(upper)) {
+    return inferTransmissionFromEngine(engineDecoded);
+  }
+
   const table = lookupByWmi(upper, TRANSMISSION_CODE_MAP);
   const fromCode = table ? (table[upper[6]] ?? null) : null;
   return fromCode ?? inferTransmissionFromEngine(engineDecoded);
@@ -1350,6 +1354,8 @@ function lookupByWmi<T>(vin: string, map: Record<string, Record<string, T>>): Re
 
 export function decodeEngineCode(vin: string): string | null {
   const upper = vin.toUpperCase();
+  // EU homologation VINs (ZZZ filler) — never map position 8 to engine; it is part of the type code.
+  if (hasEuZzzTypeApprovalDescriptor(upper)) return null;
   const table = lookupByWmi(upper, ENGINE_CODE_MAP);
   if (!table) return null;
   return table[upper[7]] ?? null;   // position 8 (index 7)
@@ -1364,6 +1370,7 @@ export function decodePlantInfo(vin: string): PlantInfo | null {
 
 export function decodeBodyStyleLocal(vin: string): string | null {
   const upper = vin.toUpperCase();
+  if (hasEuZzzTypeApprovalDescriptor(upper)) return null;
   const table = lookupByWmi(upper, BODY_CODE_MAP);
   if (!table) return null;
   return table[upper[5]] ?? null;   // position 6 (index 5)
@@ -1410,7 +1417,7 @@ export function decodeVin(vin: string): VinDecodeResult {
     country: decodeCountry(upper),
     wmi,
     modelYear: upper[9] ?? "",
-    engineCode: upper[7] ?? null,       // position 8 (raw char)
+    engineCode: engineDecoded ? (upper[7] ?? null) : null,
     engineDecoded,
     engineDisplacement: specs.displacement,
     engineCylinders: specs.cylinders,

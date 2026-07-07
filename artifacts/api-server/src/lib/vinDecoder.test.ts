@@ -597,6 +597,39 @@ describe("engine code decoding", () => {
   it("unknown WMI → null", () => {
     expect(decodeEngineCode(pad("ZZZ"))).toBeNull();
   });
+
+  it("does not treat EU Audi ZZZ type-approval letter G as 2.7T Biturbo", () => {
+    // 2014 A6 allroad 3.0 TDI — positions 7–8 are platform code 4G, not US engine char G.
+    const vin = "WAUZZZ4G6EN191357";
+    expect(decodeEngineCode(vin)).toBeNull();
+    const decoded = decodeVin(vin);
+    expect(decoded.make).toBe("Audi");
+    expect(decoded.model).toBe("A6");
+    expect(decoded.year).toBe(2014);
+    expect(decoded.engineDecoded).toBeNull();
+    expect(decoded.engineCode).toBeNull();
+  });
+
+  it("does not guess engine from EU ZZZ homologation codes (BMW, Mercedes, JLR, Porsche)", () => {
+    const cases = [
+      { vin: "WDDZZZ4JB1AA12345", make: "Mercedes-Benz" },
+      { vin: "WBAZZZ310X0A12345", make: "BMW" },
+      { vin: "SALZZZBG8HA123456", make: "Land Rover" },
+      { vin: "SAJZZZBN5LCU12345", make: "Jaguar" },
+      { vin: "WP0ZZZ99ZPS123456", make: "Porsche" },
+      { vin: "WVWZZZ1KZAW123456", make: "Volkswagen" },
+    ];
+    for (const { vin, make } of cases) {
+      expect(decodeEngineCode(vin), vin).toBeNull();
+      expect(decodeVin(vin).make, vin).toBe(make);
+      expect(decodeVin(vin).engineDecoded, vin).toBeNull();
+    }
+  });
+
+  it("still decodes US-style BMW engine char when VDS is not ZZZ homologation", () => {
+    const vin = "WBA3A0E" + "B" + "000000000";
+    expect(decodeEngineCode(vin)).toContain("2.0L");
+  });
 });
 
 // ── Body style decoding ───────────────────────────────────────────────────────

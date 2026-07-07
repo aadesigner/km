@@ -1,5 +1,5 @@
 import type { VinDecodeResult } from "./vinDecoder";
-import { decodeModelEuropean } from "./vinDecoder-european";
+import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropean } from "./european-premium";
 import { isVagWmi } from "./vag-wmi";
 
@@ -193,7 +193,7 @@ function vagDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic[]
   }
 
   const wmi = vin.slice(0, 3);
-  if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+  if ((wmi.startsWith("WAU") || wmi.startsWith("TRU")) && !hasEuZzzTypeApprovalDescriptor(vin)) {
     push(out, "options", "drivetrain_badge", vin[7] === "D" ? "quattro / TDI diesel line" : null);
     if (vin[7] === "S") push(out, "options", "electrification", "e-tron electric");
   }

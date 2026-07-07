@@ -112,7 +112,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="px-5 py-5 border-b">
         <Link href="/en" className="flex items-center">
-          <KmcheckLogo variant="light" className="h-8" />
+          <KmcheckLogo className="h-8" />
         </Link>
         <div className="flex items-center gap-1.5 mt-2">
           <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />

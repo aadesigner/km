@@ -77,6 +77,20 @@ function hasZzzFiller(vin: string): boolean {
   return vin.slice(3, 6) === "ZZZ";
 }
 
+/**
+ * EU type-approval VINs use ZZZ at positions 4–6; positions 7–9 are the homologation code
+ * (e.g. Audi 4G6), not US-style engine/transmission letters at position 8.
+ * Applies to BMW, Mercedes, Audi, Porsche, VW, JLR, Peugeot, etc.
+ */
+export function hasEuZzzTypeApprovalDescriptor(vin: string): boolean {
+  return vin.toUpperCase().length >= 9 && hasZzzFiller(vin);
+}
+
+/** @deprecated Use hasEuZzzTypeApprovalDescriptor — kept as alias for clarity at call sites. */
+export function isEuZzzTypeApprovalVin(vin: string): boolean {
+  return hasEuZzzTypeApprovalDescriptor(vin);
+}
+
 /** Decode model from EU VAG/Audi ZZZ-format VINs. */
 export function decodeModelEuropean(vin: string): string | null {
   const u = vin.toUpperCase();
