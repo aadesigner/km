@@ -154,7 +154,7 @@ function SalesHeroCard({
               {[
                 { label: "This month", value: fmtEuro(monthRevenue) },
                 { label: "Checks today", value: String(checksToday) },
-                { label: "Avg order", value: fmtEuro(avgOrder) },
+                { label: "Avg paid order", value: fmtEuro(avgOrder) },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded-lg bg-white/10 backdrop-blur px-2.5 py-2 sm:px-3 sm:py-2.5 text-center">
                   <p className="text-[10px] sm:text-xs text-primary-foreground/75 leading-tight">{label}</p>

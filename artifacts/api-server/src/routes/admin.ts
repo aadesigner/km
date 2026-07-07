@@ -186,6 +186,13 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
              SELECT 1 FROM vin_lookups vl
              WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
            )) AS qualifying_payment_count,
+        (SELECT COALESCE(AVG(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND p.amount > 0
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS avg_paid_order_value,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
            AND p.created_at >= NOW() - INTERVAL '7 days'
@@ -283,6 +290,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
     total_users?: number; total_vin_checks?: number; total_revenue?: number;
     qualifying_payment_count?: number;
+    avg_paid_order_value?: number;
     revenue_this_week?: number; revenue_last_week?: number; revenue_this_month?: number;
     signups_this_week?: number;
     checks_this_week?: number; checks_last_week?: number; checks_today?: number;
@@ -334,7 +342,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     totalVinChecks: Number(agg.total_vin_checks ?? 0),
     totalRevenue,
     qualifyingPaymentCount,
-    avgOrderValue: qualifyingPaymentCount > 0 ? totalRevenue / qualifyingPaymentCount : 0,
+    avgOrderValue: Number(agg.avg_paid_order_value ?? 0),
     revenueThisWeek,
     revenueLastWeek,
     revenueThisMonth,
