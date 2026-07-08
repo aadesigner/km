@@ -90,7 +90,7 @@ export function resolveSeoFromPath(
   noIndex: boolean;
 } {
   const normalized = stripAppBasePath(pathname.split("?")[0], basePath);
-  const m = normalized.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/.*)?$/);
+  const m = normalized.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
   const lang = (m?.[1] ?? "en") as SeoLang;
   const rest = (m?.[2] ?? "").replace(/\/$/, "") || "";
   const pageKey = resolvePageKey(rest);

@@ -31,6 +31,12 @@ describe("pluginSettings", () => {
         rules: DEFAULT_PLUGIN_SETTINGS.geoLanguageRedirect.rules,
       },
     });
+    expect(resolveLanguageForCountry("DE", settings)).toBe("de");
+    expect(resolveLanguageForCountry("AT", settings)).toBe("de");
+    expect(resolveLanguageForCountry("CH", settings)).toBe("de");
+    expect(resolveLanguageForCountry("FR", settings)).toBe("fr");
+    expect(resolveLanguageForCountry("BE", settings)).toBe("fr");
+    expect(resolveLanguageForCountry("BG", settings)).toBe("bg");
     expect(resolveLanguageForCountry("AL", settings)).toBe("sq");
     expect(resolveLanguageForCountry("MK", settings)).toBe("sq");
     expect(resolveLanguageForCountry("MX", settings)).toBe("es");

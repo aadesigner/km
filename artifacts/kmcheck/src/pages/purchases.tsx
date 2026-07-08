@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLocation, Link } from "wouter";
 import { useEffect } from "react";
 import { useTranslation } from "@/i18n/context";
+import { LANG_META, type Language } from "@/lib/languages";
 import { useGetUserPayments, useGetUserStats } from "@workspace/api-client-react";
 import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
 import { ClientAreaLayout } from "@/components/client-area-layout";
@@ -40,15 +41,9 @@ type PaymentStats = {
   paymentCurrency?: string;
 };
 
-const LOCALE_MAP: Record<string, string> = {
-  en: "en-US",
-  es: "es-ES",
-  ar: "ar",
-  uk: "uk-UA",
-  ru: "ru-RU",
-  ro: "ro-RO",
-  sq: "sq-AL",
-};
+const LOCALE_MAP: Record<string, string> = Object.fromEntries(
+  Object.values(LANG_META).map((m) => [m.code, m.intl]),
+);
 
 const STATUS_STYLE: Record<string, {
   variant: "default" | "secondary" | "destructive" | "outline";
@@ -261,7 +256,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
       <SEOHead
         title={`${t("purchases_title")} — kmcheck.com`}
         description={t("purchases_subtitle")}
-        lang={lang as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq"}
+        lang={lang as Language}
         noIndex
       />
       <ClientAreaLayout>

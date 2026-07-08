@@ -45,11 +45,14 @@ type FormState = {
 
 const SUPPORTED_LANGUAGES: { code: string; label: string; flag: string }[] = [
   { code: "en", label: "English", flag: "gb" },
+  { code: "de", label: "German", flag: "de" },
   { code: "es", label: "Spanish", flag: "es" },
+  { code: "fr", label: "French", flag: "fr" },
   { code: "sq", label: "Albanian", flag: "al" },
-  { code: "ro", label: "Romanian", flag: "ro" },
   { code: "pl", label: "Polish", flag: "pl" },
-  { code: "ar", label: "Arabic",  flag: "sa" },
+  { code: "ro", label: "Romanian", flag: "ro" },
+  { code: "bg", label: "Bulgarian", flag: "bg" },
+  { code: "ar", label: "Arabic", flag: "sa" },
   { code: "uk", label: "Ukrainian", flag: "ua" },
   { code: "ru", label: "Russian", flag: "ru" },
 ];

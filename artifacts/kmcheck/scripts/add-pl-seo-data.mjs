@@ -11,14 +11,14 @@ const seoData = JSON.parse(fs.readFileSync(seoPath, "utf8"));
 
 const PL = {
   home: {
-    title: "Sprawdzenie VIN auta — przebieg, wypadki i historia salvage | kmcheck.com",
+    title: "Sprawdzenie VIN auta — przebieg, wypadki i szkoda całkowita | kmcheck.com",
     description:
-      "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i zapisy salvage dowolnego auta.",
+      "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i zapisy szkody całkowitej dowolnego auta.",
   },
   pricing: {
     title: "Cennik — raporty historii VIN | kmcheck.com",
     description:
-      "Jeden przystępny raport VIN obejmuje weryfikację przebiegu, wypadki, status salvage i kradzież. Natychmiastowa dostawa. Bez subskrypcji.",
+      "Jeden przystępny raport VIN obejmuje weryfikację przebiegu, wypadki, szkodę całkowitą i kradzież. Natychmiastowa dostawa. Bez subskrypcji.",
   },
   auth: {
     title: "Logowanie — kmcheck.com",
@@ -37,7 +37,7 @@ const PL = {
   country_usa: {
     title: "Auta z USA — sprawdzenie VIN, przebieg i historia wypadków | kmcheck.com",
     description:
-      "Sprawdź historię auta z USA po VIN: przebieg, wypadki, salvage, kradzież i aukcje. Raport natychmiast na kmcheck.com.",
+      "Sprawdź historię auta z USA po VIN: przebieg, wypadki, szkoda całkowita, kradzież i aukcje. Raport natychmiast na kmcheck.com.",
   },
   country_korea: {
     title: "Auta z Korei — sprawdzenie VIN i historia pojazdu | kmcheck.com",
@@ -47,7 +47,7 @@ const PL = {
   country_canada: {
     title: "Auta z Kanady — sprawdzenie VIN i historia pojazdu | kmcheck.com",
     description:
-      "Sprawdź auto z Kanady po VIN: przebieg, wypadki, salvage i kradzież. Natychmiastowy raport na kmcheck.com.",
+      "Sprawdź auto z Kanady po VIN: przebieg, wypadki, szkoda całkowita i kradzież. Natychmiastowy raport na kmcheck.com.",
   },
   free_decoder: {
     title: "Darmowy dekoder VIN — dekoduj numer VIN | kmcheck.com",
@@ -57,12 +57,12 @@ const PL = {
   how_it_works: {
     title: "Jak to działa — sprawdzenie VIN krok po kroku | kmcheck.com",
     description:
-      "Wpisz VIN, zapłać bezpiecznie i otrzymaj pełny raport historii w kilka sekund. Przebieg, wypadki, salvage i więcej.",
+      "Wpisz VIN, zapłać bezpiecznie i otrzymaj pełny raport historii w kilka sekund. Przebieg, wypadki, szkoda całkowita i więcej.",
   },
   faq: {
     title: "FAQ — sprawdzenie VIN i raporty historii | kmcheck.com",
     description:
-      "Odpowiedzi na pytania o sprawdzanie VIN, przebieg, wypadki, salvage, płatności i raporty historii pojazdu na kmcheck.com.",
+      "Odpowiedzi na pytania o sprawdzanie VIN, przebieg, wypadki, szkodę całkowitą, płatności i raporty historii pojazdu na kmcheck.com.",
   },
   terms: {
     title: "Regulamin — kmcheck.com",

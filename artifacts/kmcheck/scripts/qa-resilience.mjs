@@ -8,6 +8,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SUPPORTED_LANGS } from "./languages.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const apiRoot = join(root, "..", "api-server");
@@ -140,7 +141,7 @@ if (!read("src/App.tsx").includes("AuthSubPage")) {
 }
 
 // ── Static: rate-limit i18n ───────────────────────────────────────────────────
-for (const lang of ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"]) {
+for (const lang of SUPPORTED_LANGS) {
   const dict = read(`src/i18n/${lang}.json`);
   if (!dict.includes("error_rate_limit")) {
     fail(`${lang}.json missing error_rate_limit`);

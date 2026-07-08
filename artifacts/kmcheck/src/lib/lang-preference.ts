@@ -1,18 +1,20 @@
-import type { Language } from "@/i18n/context";
+import {
+  SUPPORTED_LANGS,
+  LANG_PATH_ALT,
+  isSupportedLang,
+  type Language,
+} from "@/lib/languages";
+
+export { SUPPORTED_LANGS, isSupportedLang };
+export type { Language };
 
 const LANG_KEY = "kmcheck_lang";
 const GEO_EVAL_KEY = "kmcheck_geo_evaluated";
 
-export const SUPPORTED_LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"] as const;
-
-export function isSupportedLang(seg: string): seg is Language {
-  return (SUPPORTED_LANGS as readonly string[]).includes(seg);
-}
-
 export function getStoredLangPreference(): Language | null {
   try {
     const raw = localStorage.getItem(LANG_KEY);
-    if (raw === "en" || raw === "es" || raw === "ar" || raw === "uk" || raw === "ru" || raw === "ro" || raw === "pl" || raw === "sq") return raw;
+    if (raw && isSupportedLang(raw)) return raw;
   } catch { /* private browsing */ }
   return null;
 }
@@ -52,16 +54,16 @@ export function markGeoLanguageEvaluated(): void {
 /** Paths where geo language redirect must never run (admin, auth). */
 export function isGeoRedirectExemptPath(pathname: string): boolean {
   if (pathname.startsWith("/adminx")) return true;
-  if (/^\/(en|es|uk|ru|ro|pl|ar|sq)\/(sign-in|sign-up|forgot-password|reset-password|set-password)(\/|$)/.test(pathname)) {
+  if (new RegExp(`^/(${LANG_PATH_ALT})/(sign-in|sign-up|forgot-password|reset-password|set-password)(/|$)`).test(pathname)) {
     return true;
   }
-  if (/^\/(en|es|uk|ru|ro|pl|ar|sq)\/maintenance(\/|$)/.test(pathname)) return true;
+  if (new RegExp(`^/(${LANG_PATH_ALT})/maintenance(/|$)`).test(pathname)) return true;
   return false;
 }
 
 export function extractPathLang(pathname: string): Language | null {
-  const m = pathname.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/|$)/);
-  return (m?.[1] as Language | undefined) ?? null;
+  const m = pathname.match(new RegExp(`^/(${LANG_PATH_ALT})(/|$)`));
+  return (m?.[1] && isSupportedLang(m[1]) ? m[1] : null);
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * QA: verify every indexable page has title + description in all 8 languages.
+ * QA: verify every indexable page has title + description in all languages.
  * Usage: node artifacts/kmcheck/scripts/qa-seo.mjs
  */
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -7,10 +7,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SEO_LANGS, vinSeoFromRest } from "./seo-inject.mjs";
 import { SEO_OG_PAGES } from "./seo-og-config.mjs";
+import { SUPPORTED_LANGS } from "./languages.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const seoData = JSON.parse(readFileSync(join(root, "src/lib/seo-data.json"), "utf8"));
-const langs = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
+const langs = SUPPORTED_LANGS;
 const indexableKeys = [
   "home",
   "pricing",
@@ -145,6 +146,56 @@ if (existsSync(plI18nPath)) {
   errors++;
 }
 
+/** de/fr/bg SEO must not be English placeholders */
+const EN_HOME_TITLE = seoData.home?.en?.title ?? "";
+for (const lang of ["de", "fr", "bg"]) {
+  const homeTitle = seoData.home?.[lang]?.title ?? "";
+  if (homeTitle === EN_HOME_TITLE) {
+    console.error(`${lang} home SEO title is still English placeholder`);
+    errors++;
+  }
+  const vinSeo = vinSeoFromRest(`/vin/${SAMPLE_VIN}`, lang);
+  if (lang === "de" && !vinSeo?.title?.includes("Fahrzeug")) {
+    console.error("de VIN SEO title not localized");
+    errors++;
+  }
+  if (lang === "fr" && !vinSeo?.title?.includes("Rapport")) {
+    console.error("fr VIN SEO title not localized");
+    errors++;
+  }
+  if (lang === "bg" && !/отчет|история/i.test(vinSeo?.title ?? "")) {
+    console.error("bg VIN SEO title not localized");
+    errors++;
+  }
+}
+
+function checkI18nParity(langCode, label) {
+  const path = join(root, `src/i18n/${langCode}.json`);
+  if (!existsSync(path)) {
+    console.error(`MISSING ${langCode}.json`);
+    errors++;
+    return;
+  }
+  const dict = JSON.parse(readFileSync(path, "utf8"));
+  const dictKeys = new Set(Object.keys(dict));
+  const missing = enKeys.filter((k) => !dictKeys.has(k));
+  if (missing.length > 0) {
+    console.error(`${label} missing keys:`, missing.length);
+    errors += missing.length;
+  }
+  const untranslated = enKeys
+    .filter((k) => dict[k] === enI18n[k] && !vinKeyAllowEnglish.has(k))
+    .filter((k) => !/^(admin|vin_label|vin_segment_|free_decoder_field_|free_decoder_diag_)/i.test(k));
+  if (untranslated.length > 80) {
+    console.error(`${label} too many untranslated keys (${untranslated.length}):`, untranslated.slice(0, 8).join(", "));
+    errors++;
+  }
+}
+
+checkI18nParity("de", "de.json");
+checkI18nParity("fr", "fr.json");
+checkI18nParity("bg", "bg.json");
+
 const bootstrap = readFileSync(join(root, "public/seo-bootstrap.js"), "utf8");
 for (const lang of langs) {
   if (!bootstrap.includes(`"${lang}"`)) {
@@ -152,8 +203,8 @@ for (const lang of langs) {
     errors++;
   }
 }
-if (!bootstrap.includes("raport historii pojazdu | kmcheck")) {
-  console.error("BOOTSTRAP missing Polish VIN title template");
+if (!bootstrap.includes("Fahrzeughistorienbericht")) {
+  console.error("BOOTSTRAP missing German VIN title template");
   errors++;
 }
 
@@ -182,6 +233,7 @@ if (errors === 0) {
   console.log(`OK — ${vinPageKeys.length} VIN-related static SEO pages × ${langs.length} languages`);
   console.log("OK — pl.json i18n key parity and vin translations");
   console.log("OK — ro.json i18n key parity and vin translations");
+  console.log("OK — de/fr/bg i18n key parity");
 } else {
   console.error(`FAILED — ${errors} issue(s)`);
   process.exit(1);

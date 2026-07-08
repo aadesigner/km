@@ -5,9 +5,10 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
 
 const ORIGIN = "https://kmcheck.com";
-const LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
+const LANGS = SUPPORTED_LANGS;
 const PATHS = [
   "",
   "/pricing",
@@ -21,16 +22,7 @@ const PATHS = [
   "/cars/canada",
 ];
 
-const HREFLANG = {
-  en: "en",
-  es: "es",
-  ar: "ar",
-  uk: "uk-UA",
-  ru: "ru",
-  ro: "ro",
-  pl: "pl",
-  sq: "sq-AL",
-};
+const HREFLANG = HREFLANG_MAP;
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const out = join(dir, "..", "public", "sitemap.xml");

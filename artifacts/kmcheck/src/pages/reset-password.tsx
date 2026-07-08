@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "@/i18n/context";
+import type { Language } from "@/lib/languages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,7 +85,7 @@ export default function ResetPasswordPage() {
       <SEOHead
         title={`${t("reset_title")} — kmcheck.com`}
         description={t("reset_subtitle")}
-        lang={language as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq"}
+        lang={language as Language}
         noIndex
       />
       <AuthPageShell>

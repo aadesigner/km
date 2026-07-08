@@ -12,8 +12,8 @@ export type MaintenanceStatus = {
   maintenanceMessage: string | null;
 };
 
-const AUTH_PATH_RE = /^\/(en|es|uk|ru|ro|pl|ar|sq)\/(sign-in|sign-up|forgot-password|reset-password|set-password)(\/|$)/;
-const MAINTENANCE_PATH_RE = /^\/(en|es|uk|ru|ro|pl|ar|sq)\/maintenance(\/|$)/;
+const AUTH_PATH_RE = /^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)\/(sign-in|sign-up|forgot-password|reset-password|set-password)(\/|$)/;
+const MAINTENANCE_PATH_RE = /^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)\/maintenance(\/|$)/;
 const ADMIN_PATH_RE = /^\/adminx(\/|$)/;
 
 export function isMaintenanceExemptPath(pathname: string): boolean {
@@ -25,7 +25,7 @@ export function isMaintenanceExemptPath(pathname: string): boolean {
 
 /** Map public SPA path to a maintenance restriction key. */
 export function frontendPathRestriction(pathname: string): MaintenancePartialRestriction | null {
-  const m = pathname.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/.*)?$/);
+  const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
   if (!m) return null;
   const sub = m[2] ?? "";
   if (sub === "/free-vin-decoder" || sub.startsWith("/free-vin-decoder/")) return "free_decoder";
@@ -44,7 +44,7 @@ export function isFrontendUnderMaintenance(
   if (status.maintenanceMode) {
     const partial = frontendPathRestriction(pathname);
     if (partial) return "full_site";
-    const m = pathname.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/.*)?$/);
+    const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
     const sub = m?.[2] ?? "";
     if (!sub || sub === "/") return "full_site";
     if (sub.startsWith("/terms") || sub.startsWith("/privacy")) return null;
@@ -57,6 +57,6 @@ export function isFrontendUnderMaintenance(
 }
 
 export function extractLangFromPath(pathname: string): string {
-  const m = pathname.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/|$)/);
+  const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/|$)/);
   return m?.[1] ?? "en";
 }

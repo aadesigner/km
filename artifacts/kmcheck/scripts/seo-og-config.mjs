@@ -1,6 +1,8 @@
 /** Shared OG screenshot targets — used by capture script and SEO inject. */
 
-export const SEO_OG_LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
+import { SUPPORTED_LANGS } from "./languages.mjs";
+
+export const SEO_OG_LANGS = SUPPORTED_LANGS;
 
 /** pageKey → URL path without lang prefix */
 export const SEO_OG_PAGES = [

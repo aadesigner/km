@@ -414,7 +414,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       avatarBg: COLORS[0],
       date: "janar 2025",
       resultBadge: "Km te rregulluar",
-      text: "Ne Merrjep thoshte 180 mij. Une e pash raportin, ishte te 290. Ia tregova telefonin aty ne parking dhe thash flm, s'ija vlen.",
+      text: "Ne Merrjep thoshte 180 mij. Une e pash raportin, ishte te 290. Ia tregova telefonin aty ne parking dhe thash flm, s'ia vlen.",
     },
     {
       name: "Besarta",
@@ -424,7 +424,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       stars: 4,
       avatarBg: COLORS[1],
       date: "dhjetor 2024",
-      text: "E bera me frike, pritja te dilte diqka keq. Doli mire. Shume per te lexu, po km ishin si ne kontrata. Mbas e mora te mekaniku qe e njoh e e blene.",
+      text: "E bera me frike, pritja te dilte dicka keq. Doli mire. Shume per te lexuar, po km ishin si ne kontrata. Pastaj e mora te mekaniku qe njoh, dhe e blene.",
     },
     {
       name: "Gentian",
@@ -435,7 +435,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       avatarBg: COLORS[2],
       date: "mars 2025",
       resultBadge: "Salvage nga SHBA",
-      text: "Fotot top, duket e re. Pastaj salvage Florida. Asnje fjale per kete. Disa euro raporti me shpetuan nga nje makine qe do me hajte kokens.",
+      text: "Fotot top, duket e re. Pastaj salvage Florida. Asnje fjale per kete. Disa euro raporti me shpetuan nga nje makine qe do me fundoste.",
     },
     {
       name: "Rina",
@@ -445,7 +445,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       stars: 4,
       avatarBg: COLORS[3],
       date: "nentor 2024",
-      text: "6 pronare per 4 vjet. Ai thoshte e bere familjare. Un thash jo faleminderit, ika.",
+      text: "6 pronare per 4 vjet. Ai thoshte e bere familjare. Une thash jo faleminderit, ika.",
     },
     {
       name: "Endrit",
@@ -456,7 +456,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       avatarBg: COLORS[4],
       date: "prill 2025",
       resultBadge: "3 airbag te hapura",
-      text: "Betuhej pa aksident, o vlla. 3 airbag ne raport. Kur i tregova ekranin heshti fare, vetem e shikonte.",
+      text: "Betohej pa aksident, o vlla. 3 airbag ne raport. Kur i tregova ekranin heshti fare, vetem e shikonte.",
     },
     {
       name: "Ereza",
@@ -466,7 +466,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       stars: 4,
       avatarBg: COLORS[5],
       date: "shtator 2024",
-      text: "E kontrollova para se te jap kapar. Km ok, pa lajme te kqija. Gjithsesi e mora te nje mekanik — me mire te dish.",
+      text: "E kontrollova para se te jap kapar. Km ok, pa lajme te keqija. Gjithsesi e mora te nje mekanik — me mire te dish.",
     },
     {
       name: "Fation",
@@ -477,7 +477,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       avatarBg: COLORS[6],
       date: "shkurt 2025",
       resultBadge: "Shenje vjedhjeje",
-      text: "Private nga njoftimi. Kishte shenje vjedhjeje. Une se dija fare. Cash do jepja te henen — mir qe e pash te shtunen.",
+      text: "Private nga njoftimi. Kishte shenje vjedhjeje. Une s'e dija fare. Cash do jepja te henen — mire qe e pash te shtunen.",
     },
     {
       name: "Mirela",
@@ -487,7 +487,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       stars: 4,
       avatarBg: COLORS[7],
       date: "gusht 2024",
-      text: "Po bleja nga jasht, nervohesha. Raporti ishte merzites — asgje e keqe. Kjo ishte cfare doja para se te dergoja lek.",
+      text: "Po bleja nga jashte, nervozohesha. Raporti doli i paster — asgje e keqe. Kjo ishte cfare doja para se te dergoja lek.",
     },
     {
       name: "Klevis",
@@ -498,7 +498,7 @@ const TESTIMONIALS_BY_LANG: Record<string, Testimonial[]> = {
       avatarBg: COLORS[8],
       date: "mars 2025",
       resultBadge: "Dem nga permbytja",
-      text: "Pothuajse dora e shkuar e kam dergu kaparin. Makine me permbytje, e kalu ne dy shtete. E zbulova nje dite para. Faleminderit.",
+      text: "Gati e kisha derguar kaparin. Makine me permbytje, e kaluar ne dy shtete. E zbulova nje dite para. Faleminderit.",
     },
   ],
   ar: [

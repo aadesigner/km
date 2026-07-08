@@ -13,7 +13,7 @@ type Props = {
 type State = { hasError: boolean };
 
 function parseLangFromPath(): Language {
-  const m = window.location.pathname.match(/\/(en|es|uk|ru|ro|pl|ar|sq)(?:\/|$)/);
+  const m = window.location.pathname.match(/\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(?:\/|$)/);
   return (m?.[1] ?? "en") as Language;
 }
 

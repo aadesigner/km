@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "./context";
+import type { Language } from "@/lib/languages";
 
 type LegalDict = Record<string, string>;
 
-const loaders: Record<string, () => Promise<{ default: LegalDict }>> = {
+const loaders: Record<Language, () => Promise<{ default: LegalDict }>> = {
   en: () => import("./legal/en.json"),
+  de: () => import("./legal/de.json"),
   es: () => import("./legal/es.json"),
+  fr: () => import("./legal/fr.json"),
+  sq: () => import("./legal/sq.json"),
+  pl: () => import("./legal/pl.json"),
+  ro: () => import("./legal/ro.json"),
+  bg: () => import("./legal/bg.json"),
   ar: () => import("./legal/ar.json"),
   uk: () => import("./legal/uk.json"),
   ru: () => import("./legal/ru.json"),
-  sq: () => import("./legal/sq.json"),
-  ro: () => import("./legal/ro.json"),
-  pl: () => import("./legal/pl.json"),
 };
 
 export function useLegalTranslation() {

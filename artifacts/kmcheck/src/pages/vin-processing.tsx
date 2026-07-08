@@ -1,4 +1,5 @@
 import { useTranslation } from "@/i18n/context";
+import type { Language } from "@/lib/languages";
 import { useLocation, Link } from "wouter";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLookupVin } from "@workspace/api-client-react";
@@ -67,7 +68,7 @@ export default function VinProcessing({ params }: Props) {
       <SEOHead
         title={`${t("processing_payment")} — kmcheck.com`}
         description={t("processing_desc")}
-        lang={language as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq"}
+        lang={language as Language}
         noIndex
       />
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center space-y-6">

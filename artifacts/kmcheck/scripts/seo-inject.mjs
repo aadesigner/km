@@ -11,13 +11,16 @@ import {
   DEFAULT_FAVICONS,
 } from "./country-favicon-config.mjs";
 import { isSeoOgPageKey, seoOgImagePath } from "./seo-og-config.mjs";
+import { vinSeoTemplates } from "./vin-seo-templates.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
   readFileSync(join(__dir, "../src/lib/seo-data.json"), "utf8"),
 );
 
-export const SEO_LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
+import { SUPPORTED_LANGS, HREFLANG_MAP as LANG_HREFLANG, OG_LOCALE_MAP as LANG_OG, LANG_PATH_ALT } from "./languages.mjs";
+
+export const SEO_LANGS = SUPPORTED_LANGS;
 
 export const PATH_TO_SEO_KEY = {
   "": "home",
@@ -64,30 +67,7 @@ export function vinSeoFromRest(rest, lang) {
   const m = rest.match(VIN_INDEX_RE);
   if (!m) return null;
   const vin = m[1].toUpperCase();
-  const titles = {
-    en: `VIN ${vin} — Vehicle History Report | kmcheck`,
-    es: `VIN ${vin} — Informe historial del vehículo | kmcheck`,
-    ar: `VIN ${vin} — تقرير تاريخ المركبة | kmcheck`,
-    uk: `VIN ${vin} — звіт історії авто | kmcheck`,
-    ru: `VIN ${vin} — отчёт по истории авто | kmcheck`,
-    ro: `VIN ${vin} — raport istoric vehicul | kmcheck`,
-    pl: `VIN ${vin} — raport historii pojazdu | kmcheck`,
-    sq: `VIN ${vin} — raport historiku automjeti | kmcheck`,
-  };
-  const descriptions = {
-    en: `Check VIN ${vin}: mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.`,
-    es: `Consulta VIN ${vin}: kilometraje, accidentes, historial de propietarios, seguro y subastas. Informe completo al instante en kmcheck.com.`,
-    ar: `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
-    uk: `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
-    ru: `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,
-    ro: `Verificați VIN ${vin}: kilometraj, accidente, istoric proprietari, asigurare și licitații. Raport complet instant pe kmcheck.com.`,
-    pl: `Sprawdź VIN ${vin}: przebieg, wypadki, historia właścicieli, ubezpieczenie i aukcje. Pełny raport natychmiast na kmcheck.com.`,
-    sq: `Kontrollo VIN ${vin}: kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
-  };
-  return {
-    title: titles[lang] ?? titles.en,
-    description: descriptions[lang] ?? descriptions.en,
-  };
+  return vinSeoTemplates(vin, lang);
 }
 
 export function resolvePageKey(rest) {
@@ -115,27 +95,8 @@ export function isNoIndexPath(rest, pageKey) {
   return NOINDEX_EXACT.has(rest) || rest.startsWith("/vin/");
 }
 
-export const HREFLANG_MAP = {
-  en: "en",
-  es: "es",
-  ar: "ar",
-  uk: "uk-UA",
-  ru: "ru",
-  ro: "ro",
-  pl: "pl",
-  sq: "sq-AL",
-};
-
-export const OG_LOCALE_MAP = {
-  en: "en_US",
-  es: "es_ES",
-  ar: "ar_SA",
-  uk: "uk_UA",
-  ru: "ru_RU",
-  ro: "ro_RO",
-  pl: "pl_PL",
-  sq: "sq_AL",
-};
+export const HREFLANG_MAP = LANG_HREFLANG;
+export const OG_LOCALE_MAP = LANG_OG;
 
 export const SITE_ORIGIN = "https://kmcheck.com";
 
@@ -158,7 +119,7 @@ function stripBasePath(pathname, basePath = "") {
 /** Resolve SEO for a URL pathname like /sq/pricing */
 export function resolveSeoForPath(pathname, basePath = "") {
   const path = stripBasePath(pathname.split("?")[0], basePath);
-  const m = path.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/.*)?$/);
+  const m = path.match(new RegExp(`^/(${LANG_PATH_ALT})(/.*)?$`));
   const lang = m?.[1] ?? "en";
   const rest = (m?.[2] ?? "").replace(/\/$/, "") || "";
   const vinSeo = isIndexableVinRest(rest) ? vinSeoFromRest(rest, lang) : null;

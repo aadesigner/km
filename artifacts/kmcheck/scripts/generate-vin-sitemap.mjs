@@ -6,9 +6,11 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
+
 const ORIGIN = "https://kmcheck.com";
-const LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
-const HREFLANG = { en: "en", es: "es", ar: "ar", uk: "uk-UA", ru: "ru", ro: "ro", pl: "pl", sq: "sq-AL" };
+const LANGS = SUPPORTED_LANGS;
+const HREFLANG = HREFLANG_MAP;
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const root = join(dir, "..", "..", "..");

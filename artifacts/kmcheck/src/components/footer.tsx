@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { useTranslation, ensureDict } from "@/i18n/context";
 import { KmcheckLogo } from "@/components/logo";
-import { ShieldCheck, Zap, RotateCcw, Star, Car } from "lucide-react";
+import { ShieldCheck, Zap, RotateCcw, Star, Car, ChevronUp, Check } from "lucide-react";
 import { setStoredLangPreference } from "@/lib/lang-preference";
+import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
 import { cn } from "@/lib/utils";
 
 function FlagImg({ code, size = 20 }: { code: string; size?: number }) {
@@ -22,16 +23,12 @@ function FlagImg({ code, size = 20 }: { code: string; size?: number }) {
   );
 }
 
-const LANGS = [
-  { code: "en", label: "EN", img: "gb", full: "English" },
-  { code: "es", label: "ES", img: "es", full: "Español" },
-  { code: "sq", label: "SQ", img: "al", full: "Shqip" },
-  { code: "pl", label: "PL", img: "pl", full: "Polski" },
-  { code: "ro", label: "RO", img: "ro", full: "Română" },
-  { code: "ar", label: "AR", img: "sa", full: "العربية" },
-  { code: "uk", label: "UK", img: "ua", full: "Українська" },
-  { code: "ru", label: "RU", img: "ru", full: "Русский" },
-];
+const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
+  code: l.code,
+  label: l.label,
+  short: l.short,
+  img: l.flag,
+}));
 
 const TRUST: { icon: React.ElementType; key: string; color: string; fill?: true }[] = [
   { icon: ShieldCheck, key: "trust_secure_payment", color: "text-primary" },
@@ -55,15 +52,38 @@ const LEGAL_LINKS = [
 export function Footer() {
   const { t, language, setLanguage } = useTranslation();
   const [location, setLocation] = useLocation();
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  const current = LANGS.find((l) => l.code === language) ?? LANGS[0];
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (langRef.current?.contains(e.target as Node)) return;
+      setLangOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLangOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [langOpen]);
 
   const handleLanguageChange = (lang: string) => {
-    const next = lang as "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq";
+    if (!isSupportedLang(lang)) return;
+    const next: Language = lang;
     const newPath = location.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
     const target = newPath === location ? `/${next}` : newPath;
     void ensureDict(next).then(() => {
       setStoredLangPreference(next);
       setLanguage(next);
       setLocation(target);
+      setLangOpen(false);
     });
   };
 
@@ -106,25 +126,58 @@ export function Footer() {
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25">
                 {t("footer_language")}
               </p>
-              <div className="grid grid-cols-4 gap-1.5 max-w-[9.5rem]">
-                {LANGS.map((l) => (
-                  <button
-                    key={l.code}
-                    type="button"
-                    onClick={() => handleLanguageChange(l.code)}
-                    title={l.full}
-                    aria-label={l.full}
-                    aria-pressed={language === l.code}
-                    className={cn(
-                      "flex items-center p-1.5 rounded-lg border transition-all duration-150",
-                      language === l.code
-                        ? "bg-primary/15 border-primary/40 ring-1 ring-primary/20"
-                        : "border-white/[0.1] hover:border-white/22 hover:bg-white/[0.04]",
-                    )}
+              <div ref={langRef} className="relative inline-block">
+                <button
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={langOpen}
+                  aria-label={current.label}
+                  onClick={() => setLangOpen((v) => !v)}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors min-w-[11.5rem]",
+                    langOpen
+                      ? "border-primary/45 bg-primary/15 text-white"
+                      : "border-white/[0.12] bg-white/[0.03] text-white/80 hover:border-white/22 hover:bg-white/[0.06]",
+                  )}
+                >
+                  <FlagImg code={current.img} size={18} />
+                  <span className="font-medium truncate flex-1 text-left">{current.label}</span>
+                  <ChevronUp className={cn("h-3.5 w-3.5 opacity-50 transition-transform", langOpen && "rotate-180")} />
+                </button>
+
+                {langOpen && (
+                  <div
+                    role="listbox"
+                    className="absolute bottom-full left-0 mb-2 z-30 w-[18.5rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-white/12 bg-[#0c1222] shadow-2xl shadow-black/50 p-1.5"
                   >
-                    <FlagImg code={l.img} />
-                  </button>
-                ))}
+                    <div className="grid grid-cols-2 gap-0.5 max-h-[16rem] overflow-y-auto">
+                      {LANGS.map((l) => {
+                        const active = language === l.code;
+                        return (
+                          <button
+                            key={l.code}
+                            type="button"
+                            role="option"
+                            aria-selected={active}
+                            onClick={() => handleLanguageChange(l.code)}
+                            className={cn(
+                              "flex items-center gap-2 px-2.5 py-2 rounded-xl text-left min-w-0 transition-colors",
+                              active
+                                ? "bg-primary/15 text-white"
+                                : "text-white/70 hover:bg-white/[0.06] hover:text-white",
+                            )}
+                          >
+                            <FlagImg code={l.img} size={16} />
+                            <span className={cn("text-[13px] truncate flex-1", active && "font-semibold")}>
+                              {l.label}
+                            </span>
+                            {active && <Check className="h-3 w-3 text-primary shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,14 +1,10 @@
 import { useTranslation } from "@/i18n/context";
 import { KmcheckPrintLogo } from "@/components/logo";
+import { LANG_META } from "@/lib/languages";
 
-const PRINT_LOCALE: Record<string, string> = {
-  en: "en-US",
-  es: "es-ES",
-  ar: "ar",
-  uk: "uk-UA",
-  ru: "ru-RU",
-  sq: "sq-AL",
-};
+const PRINT_LOCALE: Record<string, string> = Object.fromEntries(
+  Object.values(LANG_META).map((m) => [m.code, m.intl]),
+);
 
 type PrintReportBrandingProps = {
   vin: string;

@@ -6,6 +6,7 @@ import { translateTitleStatus } from "@/lib/translate-title-status";
 import type { PrintAuctionRow, PrintMileageRow, PrintOwnerRow, PrintRegistryRow } from "@/lib/build-print-summary";
 import { PRINT_GALLERY_PHOTO_LIMIT } from "@/lib/build-print-summary";
 import { cn } from "@/lib/utils";
+import { LANG_META } from "@/lib/languages";
 
 export type PrintSummaryHighlight = {
   date?: string | null;
@@ -258,9 +259,9 @@ export function VinPrintSummary({
       : `${ownerCount} ${t("owner_many_suffix")}`
     : null;
 
-  const printLocale: Record<string, string> = {
-    en: "en-US", ar: "ar", uk: "uk-UA", ru: "ru-RU", sq: "sq-AL",
-  };
+  const printLocale: Record<string, string> = Object.fromEntries(
+    Object.values(LANG_META).map((m) => [m.code, m.intl]),
+  );
   const generatedDate = new Date().toLocaleDateString(printLocale[language] ?? "en-US", {
     year: "numeric",
     month: "long",

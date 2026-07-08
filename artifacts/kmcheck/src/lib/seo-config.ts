@@ -1,31 +1,24 @@
+import {
+  SUPPORTED_LANGS,
+  LANG_PATH_ALT,
+  LANG_META,
+  type Language,
+} from "@/lib/languages";
+
 /** Public site origin for canonical URLs and sitemap (production). */
 export const SITE_ORIGIN = "https://kmcheck.com";
 
-export const SEO_LANGS = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"] as const;
-export type SeoLang = (typeof SEO_LANGS)[number];
+export const SEO_LANGS = SUPPORTED_LANGS;
+export type SeoLang = Language;
 
 /** BCP 47 hreflang values */
-export const HREFLANG_MAP: Record<SeoLang, string> = {
-  en: "en",
-  es: "es",
-  ar: "ar",
-  uk: "uk-UA",
-  ru: "ru",
-  ro: "ro",
-  pl: "pl",
-  sq: "sq-AL",
-};
+export const HREFLANG_MAP: Record<SeoLang, string> = Object.fromEntries(
+  SUPPORTED_LANGS.map((code) => [code, LANG_META[code].hreflang]),
+) as Record<SeoLang, string>;
 
-export const OG_LOCALE_MAP: Record<SeoLang, string> = {
-  en: "en_US",
-  es: "es_ES",
-  ar: "ar_SA",
-  uk: "uk_UA",
-  ru: "ru_RU",
-  ro: "ro_RO",
-  pl: "pl_PL",
-  sq: "sq_AL",
-};
+export const OG_LOCALE_MAP: Record<SeoLang, string> = Object.fromEntries(
+  SUPPORTED_LANGS.map((code) => [code, LANG_META[code].ogLocale]),
+) as Record<SeoLang, string>;
 
 /** Paths indexed in sitemap (without language prefix). Home = "". */
 export const INDEXABLE_PATHS = [
@@ -47,7 +40,7 @@ export function buildLocalizedPath(lang: SeoLang, path: string): string {
 }
 
 export function stripLangPrefix(pathname: string): string {
-  const stripped = pathname.replace(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/|$)/, "/");
+  const stripped = pathname.replace(new RegExp(`^/(${LANG_PATH_ALT})(/|$)`), "/");
   return stripped === "/" ? "" : stripped.replace(/\/$/, "") || "";
 }
 
@@ -62,6 +55,6 @@ export function stripAppBasePath(pathname: string, basePath = ""): string {
 
 export function parseLangFromPath(pathname: string, basePath = ""): SeoLang | null {
   const normalized = stripAppBasePath(pathname.split("?")[0], basePath);
-  const m = normalized.match(/^\/(en|es|uk|ru|ro|pl|ar|sq)(\/|$)/);
+  const m = normalized.match(new RegExp(`^/(${LANG_PATH_ALT})(/|$)`));
   return m ? (m[1] as SeoLang) : null;
 }

@@ -15,7 +15,9 @@ import {
   parseDashboardView,
 } from "@/lib/dashboard-nav";
 
-const LANGS = new Set(["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"]);
+import { SUPPORTED_LANGS } from "@/lib/languages";
+
+const LANGS = new Set<string>(SUPPORTED_LANGS);
 
 /** Pages where the logged-in bottom nav should not appear. */
 export function isClientMobileNavExcluded(pathname: string): boolean {

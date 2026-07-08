@@ -6,13 +6,16 @@ import { isRegistryRepairCostLabel, sanitizeKoreanRepairAmountText } from "@work
 
 const LOCALE_BY_LANG: Record<Language, string> = {
   en: "en-US",
+  de: "de-DE",
   es: "es-ES",
+  fr: "fr-FR",
+  sq: "sq-AL",
+  pl: "pl-PL",
+  ro: "ro-RO",
+  bg: "bg-BG",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",
-  ro: "ro-RO",
-  pl: "pl-PL",
-  sq: "sq-AL",
 };
 
 /** Albanian month names — Intl sq-AL is missing in some browsers; manual labels match sq.json tone. */

@@ -1,7 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import enTranslations from "./en.json";
+import { SUPPORTED_LANGS, type Language } from "@/lib/languages";
 
-export type Language = "en" | "es" | "uk" | "ru" | "ro" | "pl" | "ar" | "sq";
+export type { Language };
+export { SUPPORTED_LANGS };
+
 type Translations = Record<string, string>;
 
 interface I18nContextType {
@@ -13,8 +16,6 @@ interface I18nContextType {
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
-
-const ALL_LANGS: Language[] = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
 
 const dictCache: Partial<Record<Language, Translations>> = {
   en: enTranslations as Translations,
@@ -33,13 +34,16 @@ export async function loadDict(lang: Language): Promise<Translations> {
   if (!loadPromises[lang]) {
     const map: Record<Language, () => Promise<{ default: Translations }>> = {
       en: () => Promise.resolve({ default: enTranslations as Translations }),
+      de: () => import("./de.json"),
       es: () => import("./es.json"),
+      fr: () => import("./fr.json"),
+      sq: () => import("./sq.json"),
+      pl: () => import("./pl.json"),
+      ro: () => import("./ro.json"),
+      bg: () => import("./bg.json"),
       ar: () => import("./ar.json"),
       uk: () => import("./uk.json"),
       ru: () => import("./ru.json"),
-      sq: () => import("./sq.json"),
-      ro: () => import("./ro.json"),
-      pl: () => import("./pl.json"),
     };
     loadPromises[lang] = map[lang]().then((mod) => {
       dictCache[lang] = mod.default as Translations;
@@ -50,12 +54,14 @@ export async function loadDict(lang: Language): Promise<Translations> {
   return loadPromises[lang]!;
 }
 
-/** Preload other locales only after long idle (active locale loads on demand). */
+/**
+ * Soften idle preload: only warm English fallback if browsing another locale.
+ * Full 11-locale preload would overload bandwidth; each lang loads on demand.
+ */
 export function preloadOtherLocales(active: Language): void {
+  if (active === "en") return;
   const run = () => {
-    for (const lang of ALL_LANGS) {
-      if (lang !== active) void loadDict(lang);
-    }
+    void loadDict("en");
   };
   if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(run, { timeout: 45_000 });
