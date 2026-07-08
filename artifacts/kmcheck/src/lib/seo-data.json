@@ -416,47 +416,47 @@
   "how_it_works": {
     "en": {
       "title": "How VIN Check Works — 3 Steps | kmcheck.com",
-      "description": "Enter your VIN, we search provider databases, you get a full history report in seconds."
+      "description": "Get a full vehicle history report for your car. Enter your VIN to check mileage, accidents, theft, salvage, and ownership — results in seconds from provider databases."
     },
     "ar": {
       "title": "كيف يعمل فحص VIN — 3 خطوات | kmcheck.com",
-      "description": "أدخل رقم VIN، نبحث في قواعد بيانات المزودين، وتحصل على تقرير كامل خلال ثوانٍ."
+      "description": "احصل على تقرير تاريخ مركبة كامل لسيارتك. أدخل رقم VIN للتحقق من الكيلومترات والحوادث والسرقة والخردة والملكية — نتائج خلال ثوانٍ من قواعد بيانات المزودين."
     },
     "uk": {
       "title": "Як працює перевірка VIN — 3 кроки | kmcheck.com",
-      "description": "Введіть VIN, ми перевіряємо бази постачальників, ви отримуєте повний звіт за секунди."
+      "description": "Отримайте повний звіт історії вашого авто. Введіть VIN для перевірки пробігу, аварій, викрадень, тоталу та власників — за секунди з баз постачальників."
     },
     "ru": {
       "title": "Как работает проверка VIN — 3 шага | kmcheck.com",
-      "description": "Введите VIN, мы проверяем базы поставщиков, вы получаете полный отчёт за секунды."
+      "description": "Получите полный отчёт об истории автомобиля. Введите VIN для проверки пробега, аварий, угонов, тотала и владельцев — за секунды из баз поставщиков."
     },
     "sq": {
-      "title": "Si funksionon kontrolli i kilometrave me shasi | kmcheck.com",
-      "description": "Tre hapa për kontroll kilometrash, aksidentesh dhe dëmtimit total me VIN. Kërkim në baza të ofruesve, raport i plotë në sekonda."
+      "title": "Si funksionon — kontrolli me numrin e shasisë | kmcheck.com",
+      "description": "Raport i plotë i historisë së makinës. Shkruaj numrin e shasisë për kilometra, aksidente, vjedhje, dëmtim total dhe pronarë — për sekonda nga bazat e ofruesve."
     },
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
-      "description": "Introduzca su VIN, buscamos en bases de datos de proveedores y recibe un informe completo en segundos."
+      "description": "Informe completo del historial de tu coche. Introduce el VIN para comprobar kilometraje, accidentes, robos, salvamento y propietarios — en segundos desde bases de proveedores."
     },
     "ro": {
       "title": "Cum funcționează verificarea VIN — 3 pași | kmcheck.com",
-      "description": "Introduceți VIN-ul, căutăm în bazele de date ale furnizorilor, primiți raportul complet în câteva secunde."
+      "description": "Raport complet al istoricului mașinii tale. Introdu VIN-ul pentru kilometraj, accidente, furturi, daună totală și proprietari — în câteva secunde din bazele furnizorilor."
     },
     "pl": {
       "title": "Jak to działa — sprawdzenie VIN krok po kroku | kmcheck.com",
-      "description": "Wpisz VIN, zapłać bezpiecznie i otrzymaj pełny raport historii w kilka sekund. Przebieg, wypadki, szkoda całkowita i więcej."
+      "description": "Pełny raport historii twojego auta. Wpisz VIN i sprawdź przebieg, wypadki, kradzieże, szkodę całkowitą i właścicieli — wyniki w kilka sekund z baz dostawców."
     },
     "de": {
       "title": "So funktioniert's — Kilometerstand & VIN prüfen | kmcheck.com",
-      "description": "VIN eingeben, sicher bezahlen und in Sekunden den vollständigen Historienbericht erhalten. Kilometerstand, Unfälle, Totalschaden und mehr."
+      "description": "Vollständiger Fahrzeughistorienbericht für Ihr Auto. VIN eingeben und Kilometerstand, Unfälle, Diebstahl, Totalschaden und Eigentümer prüfen — in Sekunden aus Anbieterdatenbanken."
     },
     "fr": {
       "title": "Comment ça marche — vérifier le kilométrage | kmcheck.com",
-      "description": "Saisissez le VIN, payez en toute sécurité et recevez le rapport complet en quelques secondes. Kilométrage, accidents, épave et plus."
+      "description": "Rapport complet sur l'historique de votre voiture. Saisissez le VIN pour vérifier kilométrage, accidents, vols, épave et propriétaires — en quelques secondes depuis les bases des fournisseurs."
     },
     "bg": {
       "title": "Как работи — VIN проверка стъпка по стъпка | kmcheck.com",
-      "description": "Въведете VIN, платете сигурно и получете пълния отчет за секунди. Пробег, катастрофи, тотална щета и още."
+      "description": "Пълен отчет за историята на автомобила ви. Въведете VIN за пробег, катастрофи, кражби, тотална щета и собственици — за секунди от базите на доставчиците."
     }
   },
   "faq": {
