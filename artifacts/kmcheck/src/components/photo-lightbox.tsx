@@ -1,12 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
-import {
-  lightboxSlideVariants,
-  LIGHTBOX_SLIDE_TRANSITION,
-  photoNavDirection,
-} from "@/lib/photo-lightbox-slide";
+import { cn } from "@/lib/utils";
 
 type PhotoLightboxProps = {
   photos: string[];
@@ -65,12 +61,9 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
   const lastTap = useRef(0);
   const transformRef = useRef<Transform>({ scale: 1, x: 0, y: 0 });
   const mounted = typeof document !== "undefined";
-  const reduceMotion = useReducedMotion();
-  const slideVariants = useMemo(() => lightboxSlideVariants(reduceMotion), [reduceMotion]);
 
   const [transform, setTransform] = useState<Transform>({ scale: 1, x: 0, y: 0 });
   const [isGesturing, setIsGesturing] = useState(false);
-  const [slideDir, setSlideDir] = useState<1 | -1>(1);
 
   const measureImage = useCallback(() => {
     const img = imageRef.current;
@@ -111,26 +104,16 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
     setTransform({ scale: 1, x: 0, y: 0 });
   }, [index]);
 
-  const navigateTo = useCallback(
-    (target: number) => {
-      if (target === index || photos.length === 0) return;
-      setSlideDir(photoNavDirection(index, target, photos.length));
-      resetZoom();
-      onNav(target);
-    },
-    [index, onNav, photos.length, resetZoom],
-  );
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (transformRef.current.scale > 1) return;
-      if (e.key === "ArrowLeft") navigateTo((index - 1 + photos.length) % photos.length);
-      if (e.key === "ArrowRight") navigateTo((index + 1) % photos.length);
+      if (e.key === "ArrowLeft") onNav((index - 1 + photos.length) % photos.length);
+      if (e.key === "ArrowRight") onNav((index + 1) % photos.length);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [index, photos.length, onClose, navigateTo]);
+  }, [index, photos.length, onClose, onNav]);
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -273,8 +256,8 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
           Math.abs(dx) >= SWIPE_THRESHOLD &&
           Math.abs(dx) > Math.abs(dy)
         ) {
-          if (dx < 0) navigateTo((index + 1) % photos.length);
-          else navigateTo((index - 1 + photos.length) % photos.length);
+          if (dx < 0) onNav((index + 1) % photos.length);
+          else onNav((index - 1 + photos.length) % photos.length);
         }
       }
 
@@ -292,7 +275,7 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
       viewport.removeEventListener("touchmove", onTouchMove);
       viewport.removeEventListener("touchend", onTouchEnd);
     };
-  }, [applyTransform, index, navigateTo, photos.length, resetZoom]);
+  }, [applyTransform, index, onNav, photos.length, resetZoom]);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -335,9 +318,15 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
     };
   };
 
-  const goPrev = () => navigateTo((index - 1 + photos.length) % photos.length);
+  const goPrev = () => {
+    resetZoom();
+    onNav((index - 1 + photos.length) % photos.length);
+  };
 
-  const goNext = () => navigateTo((index + 1) % photos.length);
+  const goNext = () => {
+    resetZoom();
+    onNav((index + 1) % photos.length);
+  };
 
   const isZoomed = transform.scale > 1.02;
 
@@ -429,61 +418,35 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
       <div
         ref={viewportRef}
         data-lightbox-viewport
-        className="relative flex items-center justify-center w-[90vw] h-[85vh] max-h-[85dvh] touch-none overflow-hidden"
+        className="flex items-center justify-center w-[90vw] h-[85vh] max-h-[85dvh] touch-none overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {isZoomed ? (
-          <img
-            key={photos[index]}
-            ref={imageRef}
-            src={photos[index]}
-            alt={`Photo ${index + 1}`}
-            className="max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none cursor-grab active:cursor-grabbing will-change-transform"
-            style={{
-              transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
-              transition: isGesturing ? "none" : "transform 0.15s ease-out",
-            }}
-            draggable={false}
-            onLoad={() => {
-              if (transformRef.current.scale > 1.02) {
-                applyTransform({ ...transformRef.current });
-              }
-            }}
-            onMouseDown={handleMouseDown}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              if (transform.scale > 1.05) resetZoom();
-              else applyTransform({ scale: DOUBLE_TAP_SCALE, x: 0, y: 0 });
-            }}
-          />
-        ) : (
-          <AnimatePresence initial={false} custom={slideDir}>
-            <motion.img
-              key={index}
-              ref={imageRef}
-              custom={slideDir}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={LIGHTBOX_SLIDE_TRANSITION}
-              src={photos[index]}
-              alt={`Photo ${index + 1}`}
-              className="absolute max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none cursor-zoom-in"
-              draggable={false}
-              onLoad={() => {
-                if (transformRef.current.scale > 1.02) {
-                  applyTransform({ ...transformRef.current });
-                }
-              }}
-              onMouseDown={handleMouseDown}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                applyTransform({ scale: DOUBLE_TAP_SCALE, x: 0, y: 0 });
-              }}
-            />
-          </AnimatePresence>
-        )}
+        <img
+          key={photos[index]}
+          ref={imageRef}
+          src={photos[index]}
+          alt={`Photo ${index + 1}`}
+          className={cn(
+            "max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none will-change-transform",
+            isZoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in",
+          )}
+          style={{
+            transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
+            transition: isGesturing ? "none" : "transform 0.15s ease-out",
+          }}
+          draggable={false}
+          onLoad={() => {
+            if (transformRef.current.scale > 1.02) {
+              applyTransform({ ...transformRef.current });
+            }
+          }}
+          onMouseDown={handleMouseDown}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            if (transform.scale > 1.05) resetZoom();
+            else applyTransform({ scale: DOUBLE_TAP_SCALE, x: 0, y: 0 });
+          }}
+        />
       </div>
     </motion.div>,
     document.body,

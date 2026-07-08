@@ -575,7 +575,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   </Avatar>
                   <span className={cn(
                     "font-medium max-w-[100px] truncate hidden lg:block transition-colors",
-                    scrolled ? "text-sm" : "text-[15px]",
+                    scrolled ? "text-[13px]" : "text-[14px]",
                     isDarkNav ? "text-white/80" : "text-foreground",
                   )}>
                     {displayName}
