@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Car, Gauge, History, ImageIcon, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -160,13 +160,18 @@ export function vinCatalogFormFromData(data: VinCatalogData | null | undefined):
   };
 }
 
-export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalogData {
-  const odometer = form.odometer;
+function numberOrNull(raw: string): number | null {
+  const t = raw.trim();
+  if (!t) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
 
+export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalogData {
   return {
     make: form.make.trim() || null,
     model: form.model.trim() || null,
-    year: form.year ? (Number(form.year) || null) : null,
+    year: numberOrNull(form.year),
     trim: form.trim.trim() || null,
     engine: form.engine.trim() || null,
     transmission: form.transmission.trim() || null,
@@ -174,11 +179,11 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     bodyType: form.bodyType.trim() || null,
     color: form.color.trim() || null,
     country: form.country.trim() || null,
-    odometer: odometer ? (Number(odometer) || null) : null,
-    ownerCount: form.ownerCount ? (Number(form.ownerCount) || null) : null,
-    accidentCount: form.accidentCount ? (Number(form.accidentCount) || null) : null,
-    hp: form.hp ? (Number(form.hp) || null) : null,
-    cylinders: form.cylinders ? (Number(form.cylinders) || null) : null,
+    odometer: numberOrNull(form.odometer),
+    ownerCount: numberOrNull(form.ownerCount),
+    accidentCount: numberOrNull(form.accidentCount),
+    hp: numberOrNull(form.hp),
+    cylinders: numberOrNull(form.cylinders),
     titleStatus: form.titleStatus.trim() || null,
     isSalvage: form.isSalvage,
     isStolen: form.isStolen,
@@ -193,22 +198,40 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
   };
 }
 
-export function VinCatalogPhotoManager({
+/** Flush any URL still sitting in the paste field before Save / Publish. */
+export type VinCatalogPhotoManagerHandle = {
+  consumePending: () => string[];
+};
+
+export const VinCatalogPhotoManager = forwardRef<
+  VinCatalogPhotoManagerHandle,
+  {
+    photos: string[];
+    onChange: (photos: string[]) => void;
+    pendingUrl: string;
+    onPendingUrlChange: (url: string) => void;
+    compact?: boolean;
+  }
+>(function VinCatalogPhotoManager({
   photos,
   onChange,
+  pendingUrl,
+  onPendingUrlChange,
   compact = false,
-}: {
-  photos: string[];
-  onChange: (photos: string[]) => void;
-  compact?: boolean;
-}) {
-  const [newUrl, setNewUrl] = useState("");
+}, ref) {
+  const consumePending = (): string[] => {
+    const url = pendingUrl.trim();
+    if (!url) return photos;
+    const next = photos.includes(url) ? photos : [...photos, url];
+    onPendingUrlChange("");
+    onChange(next);
+    return next;
+  };
+
+  useImperativeHandle(ref, () => ({ consumePending }), [pendingUrl, photos, onChange, onPendingUrlChange]);
 
   const addPhoto = () => {
-    const url = newUrl.trim();
-    if (!url) return;
-    onChange([...photos, url]);
-    setNewUrl("");
+    consumePending();
   };
 
   const movePhoto = (from: number, to: number) => {
@@ -261,24 +284,30 @@ export function VinCatalogPhotoManager({
         <p className="text-xs text-muted-foreground italic py-2">No photos yet — paste a URL below.</p>
       )}
       <div className="flex gap-2">
-        <Input value={newUrl} onChange={(e) => setNewUrl(e.target.value)}
+        <Input value={pendingUrl} onChange={(e) => onPendingUrlChange(e.target.value)}
           placeholder="https://cdn.example.com/photo.jpg"
           className="h-8 text-xs font-mono"
+          onBlur={() => { if (pendingUrl.trim()) consumePending(); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addPhoto(); } }} />
         <Button type="button" size="sm" variant="outline" className="h-8 gap-1 shrink-0"
-          onClick={addPhoto} disabled={!newUrl.trim()}>
+          onClick={addPhoto} disabled={!pendingUrl.trim()}>
           <Plus className="h-3.5 w-3.5" />Add
         </Button>
       </div>
     </div>
   );
-}
+});
 
 type VinCatalogDataFormProps = {
   form: VinCatalogFormState;
   onChange: (patch: Partial<VinCatalogFormState>) => void;
   compact?: boolean;
   showHistorySections?: boolean;
+};
+
+export type VinCatalogDataFormHandle = {
+  /** Commit any URL still in the paste field; returns photos to use in the save payload. */
+  flushPendingPhotos: () => string[];
 };
 
 function historyRecordCount(form: VinCatalogFormState): number {
@@ -303,12 +332,26 @@ const TITLE_STATUS_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-export function VinCatalogDataForm({
+export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalogDataFormProps>(function VinCatalogDataForm({
   form,
   onChange,
   compact = false,
   showHistorySections = true,
-}: VinCatalogDataFormProps) {
+}, ref) {
+  const [pendingPhotoUrl, setPendingPhotoUrl] = useState("");
+  const photoManagerRef = useRef<VinCatalogPhotoManagerHandle>(null);
+
+  useImperativeHandle(ref, () => ({
+    flushPendingPhotos: () => {
+      const url = pendingPhotoUrl.trim();
+      if (!url) return photoManagerRef.current?.consumePending() ?? form.photos;
+      const next = form.photos.includes(url) ? form.photos : [...form.photos, url];
+      setPendingPhotoUrl("");
+      onChange({ photos: next });
+      return next;
+    },
+  }), [form.photos, pendingPhotoUrl, onChange]);
+
   const set = <K extends keyof VinCatalogFormState>(key: K, value: VinCatalogFormState[K]) => {
     onChange({ [key]: value });
   };
@@ -402,8 +445,15 @@ export function VinCatalogDataForm({
   );
 
   const photosTab = (
-    <AdminField label="Vehicle photos" hint="Paste any public HTTPS image URL. Click Add, then Save draft. Encar/Carstat URLs are proxied; other hosts load directly on reports.">
-      <VinCatalogPhotoManager photos={form.photos} onChange={(photos) => set("photos", photos)} compact={compact} />
+    <AdminField label="Vehicle photos" hint="Paste any public HTTPS image URL, then Save (Add is optional — Save also commits the paste field). Encar/Carstat URLs are proxied; other hosts load directly on reports.">
+      <VinCatalogPhotoManager
+        ref={photoManagerRef}
+        photos={form.photos}
+        onChange={(photos) => set("photos", photos)}
+        pendingUrl={pendingPhotoUrl}
+        onPendingUrlChange={setPendingPhotoUrl}
+        compact={compact}
+      />
     </AdminField>
   );
 
@@ -459,4 +509,4 @@ export function VinCatalogDataForm({
       ) : null}
     </Tabs>
   );
-}
+});

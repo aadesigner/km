@@ -8,7 +8,13 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts", "../kmcheck/src/lib/**/*.test.ts", "../../lib/korean-registry/**/*.test.ts", "../../lib/vin-decode/**/*.test.ts"],
+    include: [
+    "src/**/*.test.ts",
+    "../kmcheck/src/lib/**/*.test.ts",
+    "../kmcheck/src/components/admin/**/*.test.ts",
+    "../../lib/korean-registry/**/*.test.ts",
+    "../../lib/vin-decode/**/*.test.ts",
+  ],
     environment: "node",
     reporters: ["verbose"],
   },

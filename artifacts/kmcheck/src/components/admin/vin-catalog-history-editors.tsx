@@ -33,6 +33,7 @@ export type CatalogMileageForm = {
   date: string;
   odometer: string;
   unit: string;
+  source: string;
   condition: string;
   damage: string;
   primaryDamage: string;
@@ -122,7 +123,7 @@ export const EMPTY_INSURANCE_CLAIM: CatalogInsuranceClaimForm = {
 };
 
 export const EMPTY_MILEAGE: CatalogMileageForm = {
-  date: "", odometer: "", unit: "", condition: "", damage: "",
+  date: "", odometer: "", unit: "", source: "", condition: "", damage: "",
   primaryDamage: "", secondaryDamage: "", titleStatus: "",
   auctionPrice: "", lotStatus: "",
 };
@@ -189,6 +190,7 @@ export function normalizeMileageHistory(value: unknown): CatalogMileageForm[] {
       date: str(o.date),
       odometer: str(o.odometer),
       unit: str(o.unit),
+      source: str(o.source),
       condition: str(o.condition),
       damage: str(o.damage),
       primaryDamage: str(o.primaryDamage),
@@ -323,6 +325,7 @@ export function mileageHistoryToPayload(rows: CatalogMileageForm[]) {
   const items = rows.map((r) => rowOrNull({
     date: trimOrNull(r.date),
     unit: trimOrNull(r.unit),
+    source: trimOrNull(r.source),
     condition: trimOrNull(r.condition),
     damage: trimOrNull(r.damage),
     primaryDamage: trimOrNull(r.primaryDamage),
@@ -461,7 +464,8 @@ function CatalogListSection<T>({
   };
 
   const duplicateAt = (index: number) => {
-    const copy = { ...items[index] };
+    // Deep-clone so nested arrays (e.g. registry details) are not shared.
+    const copy = structuredClone(items[index]);
     const next = [...items];
     next.splice(index + 1, 0, copy);
     onChange(next);
@@ -659,8 +663,11 @@ export function VinCatalogHistorySections({
             <Field label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
             <Field label="Odometer" value={item.odometer} onChange={(v) => update({ odometer: v })} type="number" compact={compact} />
             <Field label="Unit" value={item.unit} onChange={(v) => update({ unit: v })} compact={compact} suggestions={ADMIN_MILEAGE_UNITS} />
+            <Field label="Source" value={item.source} onChange={(v) => update({ source: v })} compact={compact} />
             <Field label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
             <Field label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
+            <Field label="Primary damage" value={item.primaryDamage} onChange={(v) => update({ primaryDamage: v })} compact={compact} />
+            <Field label="Secondary damage" value={item.secondaryDamage} onChange={(v) => update({ secondaryDamage: v })} compact={compact} />
             <Field label="Auction price" value={item.auctionPrice} onChange={(v) => update({ auctionPrice: v })} type="number" compact={compact} />
             <Field label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
             <Field label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
@@ -703,6 +710,8 @@ export function VinCatalogHistorySections({
             <Field label="Buy now price" value={item.buyNowPrice} onChange={(v) => update({ buyNowPrice: v })} type="number" compact={compact} />
             <Field label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
             <Field label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
+            <Field label="Primary damage" value={item.primaryDamage} onChange={(v) => update({ primaryDamage: v })} compact={compact} />
+            <Field label="Secondary damage" value={item.secondaryDamage} onChange={(v) => update({ secondaryDamage: v })} compact={compact} />
             <Field label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
             <Field label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
           </div>

@@ -623,13 +623,19 @@ export interface VinDataPatch {
   odometer?: number | null;
   ownerCount?: number | null;
   accidentCount?: number | null;
+  hp?: number | null;
+  cylinders?: number | null;
+  titleStatus?: string | null;
   isSalvage?: boolean;
   isStolen?: boolean;
   country?: string | null;
   photos?: string[] | null;
   accidents?: unknown | null;
+  insuranceClaims?: unknown | null;
   mileageHistory?: unknown | null;
   ownerHistory?: unknown | null;
+  auctionHistory?: unknown | null;
+  registryHistory?: unknown | null;
   marketData?: unknown | null;
 }
 

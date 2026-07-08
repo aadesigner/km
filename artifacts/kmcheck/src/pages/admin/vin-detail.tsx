@@ -27,6 +27,7 @@ import {
   vinCatalogFormFromData,
   vinCatalogPayloadFromForm,
   type VinCatalogData,
+  type VinCatalogDataFormHandle,
   type VinCatalogFormState,
 } from "@/components/admin/vin-catalog-data-form";
 
@@ -53,6 +54,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   const [assignMsg, setAssignMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const lastHydratedAtRef = useRef<string | null>(null);
+  const formRef = useRef<VinCatalogDataFormHandle>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(userSearch), 300);
@@ -130,9 +132,10 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
 
   const handleSave = () => {
     setSaveMsg(null);
+    const photos = formRef.current?.flushPendingPhotos() ?? form.photos;
     updateMutation.mutate({
       vin,
-      data: vinCatalogPayloadFromForm(form) as Parameters<typeof updateMutation.mutate>[0]["data"],
+      data: vinCatalogPayloadFromForm({ ...form, photos }) as Parameters<typeof updateMutation.mutate>[0]["data"],
     });
   };
 
@@ -273,6 +276,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
         </CardHeader>
         <CardContent className="space-y-0 pb-0">
           <VinCatalogDataForm
+            ref={formRef}
             form={form}
             onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
           />

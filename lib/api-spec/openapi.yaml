@@ -2128,6 +2128,15 @@ components:
         accidentCount:
           type: integer
           nullable: true
+        hp:
+          type: number
+          nullable: true
+        cylinders:
+          type: integer
+          nullable: true
+        titleStatus:
+          type: string
+          nullable: true
         isSalvage:
           type: boolean
         isStolen:
@@ -2142,9 +2151,15 @@ components:
             type: string
         accidents:
           nullable: true
+        insuranceClaims:
+          nullable: true
         mileageHistory:
           nullable: true
         ownerHistory:
+          nullable: true
+        auctionHistory:
+          nullable: true
+        registryHistory:
           nullable: true
         marketData:
           nullable: true

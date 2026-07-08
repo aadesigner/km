@@ -13,6 +13,7 @@ import {
   vinCatalogFormFromData,
   vinCatalogPayloadFromForm,
   type VinCatalogData,
+  type VinCatalogDataFormHandle,
   type VinCatalogFormState,
 } from "@/components/admin/vin-catalog-data-form";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
@@ -52,6 +53,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const [exportLoading, setExportLoading] = useState(false);
   const exportLinkRef = useRef<HTMLAnchorElement>(null);
   const lastHydratedAtRef = useRef<string | null>(null);
+  const formRef = useRef<VinCatalogDataFormHandle>(null);
 
   const { data: detail, isLoading, error } = useQuery({
     queryKey: ["/api/admin/pending-vin-checks", pendingId],
@@ -79,7 +81,8 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
     setSaving(true);
     setSaveMsg(null);
     try {
-      const payload = vinCatalogPayloadFromForm(form);
+      const photos = formRef.current?.flushPendingPhotos() ?? form.photos;
+      const payload = vinCatalogPayloadFromForm({ ...form, photos });
       const r = await fetch(`${basePath}/api/admin/pending-vin-checks/${pendingId}`, {
         method: "PATCH",
         credentials: "include",
@@ -139,7 +142,8 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
     setPublishing(true);
     setPublishMsg(null);
     try {
-      const payload = vinCatalogPayloadFromForm(form);
+      const photos = formRef.current?.flushPendingPhotos() ?? form.photos;
+      const payload = vinCatalogPayloadFromForm({ ...form, photos });
       const r = await fetch(`${basePath}/api/admin/pending-vin-checks/${pendingId}/publish`, {
         method: "POST",
         credentials: "include",
@@ -315,6 +319,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
         </CardHeader>
         <CardContent className="pb-0">
           <VinCatalogDataForm
+            ref={formRef}
             form={form}
             onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
           />
