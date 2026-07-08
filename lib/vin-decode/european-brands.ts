@@ -3,17 +3,8 @@
  * Škoda, Renault, Fiat, Peugeot/Citroën (ZZZ), and SEAT.
  */
 
-type PrefixRule = { prefix: string; model: string };
+import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
 
-function matchLongestPrefix(vin: string, rules: PrefixRule[]): PrefixRule | null {
-  const sorted = [...rules].sort((a, b) => b.prefix.length - a.prefix.length);
-  for (const rule of sorted) {
-    if (vin.startsWith(rule.prefix)) return rule;
-  }
-  return null;
-}
-
-// ── Škoda — model/type code at positions 7–8 (indices 6–7) ───────────────────
 const SKODA_MODEL_78: Record<string, string> = {
   NJ: "Fabia",
   "6H": "Fabia",
@@ -39,9 +30,14 @@ const SKODA_MODEL_78: Record<string, string> = {
   NK: "Rapid",
   NF: "Citigo",
   "0G": "Rapid Spaceback",
+  NM: "Enyaq",
+  NY: "Enyaq Coupé",
+  PS: "Kamiq",
+  PX: "Kamiq",
+  RV: "Enyaq iV",
 };
 
-const SKODA_PREFIX_RULES: PrefixRule[] = [
+const SKODA_PREFIX_RULES = compilePrefixRules([
   { prefix: "TMBJP7NX", model: "Octavia" },
   { prefix: "TMBJJ7NX", model: "Octavia" },
   { prefix: "TMBJW7NP", model: "Superb" },
@@ -53,7 +49,12 @@ const SKODA_PREFIX_RULES: PrefixRule[] = [
   { prefix: "TMBLK7NZ", model: "Karoq" },
   { prefix: "TMBLK6NZ", model: "Karoq" },
   { prefix: "TMBDK6XK", model: "Kodiaq" },
-];
+  { prefix: "TMBER6NM", model: "Enyaq" },
+  { prefix: "TMBER6NY", model: "Enyaq Coupé" },
+  { prefix: "TMBLK7PS", model: "Kamiq" },
+  { prefix: "TMBLK7PX", model: "Kamiq" },
+  { prefix: "TMBAG7NW", model: "Scala" },
+]);
 
 function decodeSkodaModel(vin: string): string | null {
   if (!vin.startsWith("TMB")) return null;
@@ -65,7 +66,7 @@ function decodeSkodaModel(vin: string): string | null {
 }
 
 // ── Renault — longer VDS prefix rules (4-char MODEL_MAP_4 handles WMI + pos 4) ─
-const RENAULT_PREFIX_RULES: PrefixRule[] = [
+const RENAULT_PREFIX_RULES = compilePrefixRules([
   { prefix: "VF1RFK", model: "Captur" },
   { prefix: "VF1RJK", model: "Captur" },
   { prefix: "VF1RJH", model: "Captur" },
@@ -80,7 +81,7 @@ const RENAULT_PREFIX_RULES: PrefixRule[] = [
   { prefix: "VF1RFB", model: "Austral" },
   { prefix: "VF1RFA", model: "Scenic" },
   { prefix: "VF1RFD", model: "Espace" },
-];
+]);
 
 function isRenaultWmi(wmi: string): boolean {
   return wmi.startsWith("VF1") || wmi.startsWith("VF2") || wmi.startsWith("GA1");
@@ -110,7 +111,7 @@ const FIAT_PLATFORM_456: Record<string, string> = {
   "290": "Ducato",
 };
 
-const FIAT_PREFIX_RULES: PrefixRule[] = [
+const FIAT_PREFIX_RULES = compilePrefixRules([
   { prefix: "ZFA312", model: "500" },
   { prefix: "ZFA169", model: "Panda" },
   { prefix: "ZFA199", model: "Punto" },
@@ -118,7 +119,7 @@ const FIAT_PREFIX_RULES: PrefixRule[] = [
   { prefix: "ZFA334", model: "Tipo" },
   { prefix: "ZFA359", model: "Tipo" },
   { prefix: "ZFB312", model: "500" },
-];
+]);
 
 function isFiatWmi(wmi: string): boolean {
   return wmi.startsWith("ZFA") || wmi.startsWith("ZFB") || wmi.startsWith("ZFC");
@@ -245,12 +246,12 @@ export function decodeEuropeanBrandModel(vin: string): string | null {
   const upper = vin.toUpperCase().trim();
   if (upper.length !== 17) return null;
 
-  return (
-    decodeSkodaModel(upper)
-    ?? decodeRenaultModel(upper)
-    ?? decodeFiatModel(upper)
-    ?? decodePeugeotModel(upper)
-    ?? decodeCitroenModel(upper)
-    ?? decodeSeatModel(upper)
-  );
+  const wmi = upper.slice(0, 3);
+  if (wmi === "TMB" || wmi === "TM8") return decodeSkodaModel(upper);
+  if (isRenaultWmi(wmi)) return decodeRenaultModel(upper);
+  if (isFiatWmi(wmi)) return decodeFiatModel(upper);
+  if (wmi === "VF3") return decodePeugeotModel(upper);
+  if (wmi === "VF7") return decodeCitroenModel(upper);
+  if (wmi === "VSS" || wmi === "VS6" || wmi === "VS7") return decodeSeatModel(upper);
+  return null;
 }

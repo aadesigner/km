@@ -1,10 +1,49 @@
 import { isVagWmi } from "./vag-wmi";
 import { decodeAudiEuHomologation, homologationToDisplay } from "./eu-zzz-homologation";
+import { decodeFordEuModel, isFordEuWmi } from "./ford-eu";
+import { decodeJlrEuModel } from "./jlr-eu";
 
 /**
  * European VIN model decoding (VAG Group + Audi).
  * EU-format VINs use ZZZ filler at positions 4–6; model platform at position 7 (index 6).
  */
+
+/** Volkswagen Group — position 7–8 (preferred) and position 7 fallback */
+const VAG_MODEL_AT_78: Record<string, string> = {
+  "1K": "Golf",
+  "1Z": "Touran",
+  "1T": "Touran",
+  "3C": "Passat",
+  "3D": "Arteon",
+  "5N": "Tiguan",
+  "5M": "T-Roc",
+  "5Z": "Tiguan",
+  "6R": "T-Cross",
+  "6J": "Taigo",
+  "7P": "Touareg",
+  "7N": "Sharan",
+  "9N": "Touran",
+  "9Z": "Touran",
+  "AU": "Golf",
+  "AW": "Polo",
+  "AX": "Golf",
+  "AZ": "Touran",
+  "CJ": "ID.3",
+  "E1": "ID.4",
+  "E2": "ID.5",
+  "SH": "T-Roc",
+  "SY": "T-Roc",
+  "SK": "ID. Buzz",
+  "ST": "ID. Buzz Cargo",
+  "2H": "Amarok",
+  "2D": "Caddy",
+  "2E": "Caddy",
+  "7E": "Caddy",
+  "DF": "Sharan",
+  "CD": "Golf Variant",
+  "BP": "Arteon",
+  "6C": "Passat",
+};
 
 /** Volkswagen Group — position 7 after WV*ZZZ / WVWZZZ */
 const VAG_MODEL_AT_7: Record<string, string> = {
@@ -106,8 +145,22 @@ export function decodeModelEuropean(vin: string): string | null {
 
   const pos7 = u[6];
 
-  if (isVagPrefix(wmi)) return VAG_MODEL_AT_7[pos7] ?? null;
+  if (isVagPrefix(wmi)) {
+    if (u.length >= 8) {
+      const code78 = u.slice(6, 8);
+      const from78 = VAG_MODEL_AT_78[code78];
+      if (from78) return from78;
+    }
+    return VAG_MODEL_AT_7[pos7] ?? null;
+  }
   if (isAudiEuPrefix(wmi)) return AUDI_MODEL_AT_7[pos7] ?? null;
+
+  if (wmi.startsWith("SAL") || wmi.startsWith("SAJ")) {
+    return decodeJlrEuModel(u);
+  }
+  if (isFordEuWmi(wmi)) {
+    return decodeFordEuModel(u);
+  }
 
   return null;
 }

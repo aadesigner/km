@@ -12,20 +12,14 @@ import {
   decodeMercedesEuHomologation,
   homologationToDisplay,
 } from "./eu-zzz-homologation";
+import { decodeJlrEu } from "./jlr-eu";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
+import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
 
-type PrefixRule = { prefix: string; model: string; chassis?: string };
-
-function matchLongestPrefix(vin: string, rules: PrefixRule[]): PrefixRule | null {
-  const sorted = [...rules].sort((a, b) => b.prefix.length - a.prefix.length);
-  for (const rule of sorted) {
-    if (vin.startsWith(rule.prefix)) return rule;
-  }
-  return null;
-}
+type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
 // BMW: position 4 alone is NOT the series — 4 Series F32/F36 often uses WBA3V*.
-const BMW_RULES: PrefixRule[] = [
+const BMW_RULES = compilePrefixRules([
   { prefix: "WBA3V7", model: "4 Series", chassis: "F36 Gran Coupé" },
   { prefix: "WBA3V5", model: "4 Series", chassis: "F32 Coupé" },
   { prefix: "WBA3V3", model: "4 Series", chassis: "F33 Convertible" },
@@ -113,9 +107,9 @@ const BMW_RULES: PrefixRule[] = [
   { prefix: "WBY5", model: "i4", chassis: "G26" },
   { prefix: "WBY8", model: "i8" },
   { prefix: "WBY7", model: "iX" },
-];
+]);
 
-const MERCEDES_RULES: PrefixRule[] = [
+const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD177", model: "A-Class", chassis: "W177" },
   { prefix: "WDD118", model: "CLA", chassis: "C118" },
   { prefix: "WDD205", model: "C-Class", chassis: "W205" },
@@ -144,18 +138,18 @@ const MERCEDES_RULES: PrefixRule[] = [
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },
   { prefix: "WDDG", model: "G-Class" },
   { prefix: "WDC0", model: "GLC" },
-];
+]);
 
-const AUDI_US_RULES: PrefixRule[] = [
+const AUDI_US_RULES = compilePrefixRules([
   { prefix: "WA1L", model: "Q5" },
   { prefix: "WA1C", model: "Q5" },
   { prefix: "WA1F", model: "Q5 Sportback" },
   { prefix: "WA1A", model: "Q3" },
   { prefix: "WA1B", model: "Q7" },
   { prefix: "WA1M", model: "Q8" },
-];
+]);
 
-const AUDI_RULES: PrefixRule[] = [
+const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZ8V", model: "A3" },
   { prefix: "WAUZZZ8X", model: "A3 Sportback" },
   { prefix: "WAUZZZ8K", model: "A4" },
@@ -181,9 +175,9 @@ const AUDI_RULES: PrefixRule[] = [
   { prefix: "WAUZZZGB", model: "Q4 e-tron" },
   { prefix: "WAUZZZFR", model: "R8" },
   { prefix: "WAUZZZTR", model: "TT" },
-];
+]);
 
-const PORSCHE_RULES: PrefixRule[] = [
+const PORSCHE_RULES = compilePrefixRules([
   { prefix: "WP0ZZZ99", model: "911", chassis: "992" },
   { prefix: "WP0ZZZ97", model: "911", chassis: "991" },
   { prefix: "WP0ZZZ98", model: "Boxster/Cayman", chassis: "981/718" },
@@ -199,13 +193,15 @@ const PORSCHE_RULES: PrefixRule[] = [
   { prefix: "WP0AG", model: "Taycan" },
   { prefix: "WP1AA", model: "Cayenne" },
   { prefix: "WP1AZ", model: "Macan" },
-];
+]);
 
-const VW_RULES: PrefixRule[] = [
+const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ1K", model: "Golf", chassis: "Mk7/Mk8" },
+  { prefix: "WVWZZZ1Z", model: "Golf", chassis: "Mk7" },
   { prefix: "WVWZZZ3C", model: "Passat", chassis: "B8" },
   { prefix: "WVWZZZ3D", model: "Arteon", chassis: "3H" },
   { prefix: "WVWZZZ5N", model: "Tiguan", chassis: "AD1/AD2" },
+  { prefix: "WVWZZZ5M", model: "T-Roc" },
   { prefix: "WVWZZZ7P", model: "Touareg", chassis: "CR" },
   { prefix: "WVWZZZAW", model: "Polo", chassis: "6R/AW" },
   { prefix: "WVWZZZCJ", model: "ID.3" },
@@ -216,16 +212,39 @@ const VW_RULES: PrefixRule[] = [
   { prefix: "WVWZZZ1J", model: "Jetta", chassis: "Mk6/Mk7" },
   { prefix: "WVWZZZAA", model: "Up!" },
   { prefix: "WVWZZZ2K", model: "Golf", chassis: "Mk7" },
+  { prefix: "WVWZZZ1T", model: "Touran", chassis: "1T" },
+  { prefix: "WVWZZZ9N", model: "Touran", chassis: "5T" },
+  { prefix: "WVWZZZ9Z", model: "Touran", chassis: "5T" },
+  { prefix: "WVWZZZAZ", model: "Touran", chassis: "5T" },
+  { prefix: "WVGZZZ9N", model: "Touran", chassis: "5T" },
+  { prefix: "WVGZZZ1T", model: "Touran", chassis: "1T" },
+  { prefix: "WVWZZZSH", model: "T-Roc" },
+  { prefix: "WVWZZZCD", model: "Golf Variant", chassis: "Mk8" },
+  { prefix: "WVWZZZBP", model: "Arteon Shooting Brake" },
+  { prefix: "WVWZZZ2H", model: "Amarok" },
+  { prefix: "WVWZZZ7H", model: "Tiguan", chassis: "AD1" },
+  { prefix: "WVWZZZ7L", model: "Tiguan Allspace" },
+  { prefix: "WVWZZZ6R", model: "T-Cross" },
+  { prefix: "WVWZZZ6J", model: "Taigo" },
+  { prefix: "WVWZZZDF", model: "Sharan" },
+  { prefix: "WVWZZZ7N", model: "Sharan" },
+  { prefix: "WVWZZZ2D", model: "Caddy", chassis: "C5" },
+  { prefix: "WVWZZZ2E", model: "Caddy", chassis: "C5" },
+  { prefix: "WVWZZZ7E", model: "Caddy", chassis: "C4" },
+  { prefix: "WVWZZZ2F", model: "Caddy Maxi" },
+  { prefix: "WVWZZZSK", model: "ID. Buzz" },
+  { prefix: "WVWZZZST", model: "ID. Buzz Cargo" },
+  { prefix: "WVWZZZ6C", model: "Passat", chassis: "B9" },
   { prefix: "3VWZZZ", model: "Volkswagen", chassis: "US market" },
-];
+]);
 
-const MINI_RULES: PrefixRule[] = [
+const MINI_RULES = compilePrefixRules([
   { prefix: "WMWXP7", model: "MINI Cooper", chassis: "F56" },
   { prefix: "WMWXP9", model: "MINI Cooper", chassis: "F55" },
   { prefix: "WMWXS7", model: "MINI Clubman", chassis: "F54" },
   { prefix: "WMWXS1", model: "MINI Countryman", chassis: "F60" },
   { prefix: "WMWZP7", model: "MINI Cooper SE", chassis: "Electric" },
-];
+]);
 
 export type PremiumEuropeanDecode = {
   model: string;
@@ -244,8 +263,8 @@ function mercedesRuleVin(vin: string): string {
   return vin.startsWith("W1K") ? `WDD${vin.slice(3)}` : vin;
 }
 
-function decodeFromRules(vin: string, rules: PrefixRule[]): PremiumEuropeanDecode | null {
-  const hit = matchLongestPrefix(vin, rules);
+function decodeFromRules(vin: string, rules: readonly PremiumPrefixRule[]): PremiumEuropeanDecode | null {
+  const hit = matchLongestPrefix(vin, rules) as PremiumPrefixRule | null;
   if (!hit) return null;
   return {
     model: hit.model,
@@ -308,6 +327,18 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   }
   if (wmi.startsWith("WMW")) {
     return decodeFromRules(upper, MINI_RULES);
+  }
+  if (wmi.startsWith("SAL") || wmi.startsWith("SAJ")) {
+    if (raw.slice(3, 6) === "ZZZ") {
+      const jlr = decodeJlrEu(raw);
+      if (jlr) {
+        return {
+          model: jlr.model,
+          chassis: jlr.chassis,
+          displayModel: jlr.displayModel,
+        };
+      }
+    }
   }
   return null;
 }

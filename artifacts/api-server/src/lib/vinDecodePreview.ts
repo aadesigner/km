@@ -1,9 +1,10 @@
 import {
-  decodeFreeVin,
+  decodeVin,
+  decodeCountry,
+  decodePremiumEuropeanTrim,
   isPlausibleMake,
   isPlausibleModel,
-  type FreeDecodeResponse,
-} from "./vinDecodeFree.js";
+} from "@workspace/vin-decode";
 
 export type VinPeekIdentity = {
   make: string | null;
@@ -13,7 +14,7 @@ export type VinPeekIdentity = {
   engine: string | null;
   country: string | null;
   wmi: string;
-  decodeSource: "cache" | "nhtsa" | "local" | "hybrid";
+  decodeSource: "cache" | "local";
 };
 
 type CacheHint = {
@@ -66,27 +67,32 @@ function pickCachedField(
   return decoded;
 }
 
-function fromDecoded(decoded: FreeDecodeResponse): VinPeekIdentity {
+/** Fast local identity — WMI make, model line, model year. No NHTSA round-trip. */
+function fromLocalDecode(vin: string): VinPeekIdentity {
+  const local = decodeVin(vin);
   return {
-    make: decoded.make,
-    model: decoded.model,
-    year: decoded.year,
-    trim: decoded.trim,
-    engine: decoded.engineDecoded,
-    country: decoded.countryOfOrigin,
-    wmi: decoded.wmi,
-    decodeSource: decoded.source,
+    make: isPlausibleMake(local.make, vin) ? local.make : null,
+    model: isPlausibleModel(local.model, vin) ? local.model : null,
+    year: local.year,
+    trim: plausibleTrim(decodePremiumEuropeanTrim(vin), vin),
+    engine: local.engineDecoded,
+    country: local.country ?? decodeCountry(vin),
+    wmi: local.wmi,
+    decodeSource: "local",
   };
 }
 
-/** Hybrid NHTSA + local decode for checkout VIN preview; optional cache overrides provider data. */
+/**
+ * Checkout / peek identity decode.
+ * Uses local tables only (make, year, optional model) — instant, no VPIC wait.
+ * Rich NHTSA merge stays on GET /api/vin/decode-free for the free decoder page.
+ */
 export async function decodeVinPeek(
   vin: string,
-  checkDigitValid: boolean,
+  _checkDigitValid: boolean,
   cache?: CacheHint | null,
 ): Promise<VinPeekIdentity> {
-  const decoded = await decodeFreeVin(vin, checkDigitValid);
-  const base = fromDecoded(decoded);
+  const base = fromLocalDecode(vin);
 
   if (!cache) return base;
 
@@ -102,7 +108,7 @@ export async function decodeVinPeek(
     make: cachedMake,
     model: cachedModel,
     year: cachedYear,
-    trim: plausibleTrim(base.trim, vin),
+    trim: base.trim,
     engine: base.engine,
     country: base.country,
     wmi: base.wmi,

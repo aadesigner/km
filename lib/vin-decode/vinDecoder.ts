@@ -13,6 +13,8 @@ import { decodeEuropeanBrandModel } from "./european-brands";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
+import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
+import { decodeHyundaiToyotaModel, isHyundaiToyotaVin } from "./asian-eu";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
 // Letters I, O, Q, U, Z are never used. Digits 0 is never used.
@@ -127,6 +129,7 @@ const WMI_MAP: Record<string, string> = {
   "TSM": "Suzuki",
   // ── SOUTH KOREA ───────────────────────────────────────────────────────────
   "KMH": "Hyundai", "KMF": "Hyundai", "KM8": "Hyundai",
+  "TMA": "Hyundai", "NLH": "Hyundai",
   "KNA": "Kia", "KND": "Kia", "KNJ": "Kia",
   "KNC": "Kia", "KNP": "Kia",
   "KNM": "Renault Samsung",
@@ -142,6 +145,9 @@ const WMI_MAP: Record<string, string> = {
   "W09": "Porsche",
   // ── UK ────────────────────────────────────────────────────────────────────
   "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover",
+  "SB1": "Toyota",
+  // ── Ford Europe ───────────────────────────────────────────────────────────
+  "WF0": "Ford", "WF1": "Ford", "8AF": "Ford", "SA1": "Ford",
   "SCB": "Bentley", "SCC": "Lotus",
   "SDB": "Aston Martin",
   "SFD": "Alexander Dennis",
@@ -548,13 +554,26 @@ function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
   }
   const euBrand = decodeEuropeanBrandModel(upper);
   if (euBrand) return euBrand;
-  // EU VAG/Audi ZZZ-format: model code at position 7 — before generic 4-char map
+  // EU ZZZ type-approval VINs — before generic 4-char map
   if (upper.length >= 7 && upper.slice(3, 6) === "ZZZ") {
     const wmi = upper.slice(0, 3);
-    if (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+    if (
+      isVagWmi(wmi) ||
+      wmi.startsWith("WAU") ||
+      wmi.startsWith("TRU") ||
+      wmi.startsWith("SAL") ||
+      wmi.startsWith("SAJ") ||
+      isFordEuWmi(wmi)
+    ) {
       const eu = decodeModelEuropean(upper);
       if (eu) return eu;
     }
+  }
+  const asian = isHyundaiToyotaVin(upper) ? decodeHyundaiToyotaModel(upper) : null;
+  if (asian) return asian;
+  if (isFordEuWmi(upper.slice(0, 3))) {
+    const ford = decodeFordEuModel(upper);
+    if (ford) return ford;
   }
   const fromFour = MODEL_MAP_4[upper.slice(0, 4)];
   if (fromFour) return fromFour;

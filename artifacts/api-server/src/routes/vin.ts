@@ -1220,7 +1220,7 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
     wmi: identity.wmi,
     decodeSource: identity.decodeSource,
     fromCache,
-    localDecode: identity.decodeSource === "local" || identity.decodeSource === "hybrid",
+    localDecode: identity.decodeSource === "local",
   };
 
   if (alreadyUnlocked) {

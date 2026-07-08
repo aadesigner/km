@@ -22,6 +22,12 @@ const CASES: BrandCase[] = [
   { vin: "WVWZZZCJZAW123456", label: "VW ID.3", make: "Volkswagen", modelContains: "ID.3" },
   { vin: "1VWZZZA3ZDC050213", label: "VW Jetta US", make: "Volkswagen", modelContains: "Jetta" },
   { vin: "3VWS17AU0FM123456", label: "VW Tiguan US", make: "Volkswagen", modelContains: "Tiguan" },
+  { vin: "WVWZZZ1TZBW123456", label: "VW Touran 1T", make: "Volkswagen", modelContains: "Touran" },
+  { vin: "WVWZZZ9NZBW123456", label: "VW Touran 5T", make: "Volkswagen", modelContains: "Touran" },
+  { vin: "WVWZZZAZ1NW123456", label: "VW Touran 5T (AZ)", make: "Volkswagen", modelContains: "Touran" },
+  { vin: "WVWZZZ5MNW1234567", label: "VW T-Roc", make: "Volkswagen", modelContains: "T-Roc" },
+  { vin: "WVWZZZ2HNW1234567", label: "VW Amarok", make: "Volkswagen", modelContains: "Amarok" },
+  { vin: "WVWZZZSKNW1234567", label: "VW ID. Buzz", make: "Volkswagen", modelContains: "ID. Buzz" },
 
   // ── Audi ──────────────────────────────────────────────────────────────────
   { vin: "WAUZZZ8K1BN123456", label: "Audi A4 EU", make: "Audi", modelContains: "A4" },
@@ -79,6 +85,23 @@ const CASES: BrandCase[] = [
   { vin: "TMBJW7NP0M7012345", label: "Škoda Superb III", make: "Škoda", modelContains: "Superb" },
   { vin: "TMBER7NW5M3123456", label: "Škoda Scala", make: "Škoda", modelContains: "Scala" },
   { vin: "TMBDK6XK5MS012345", label: "Škoda Kodiaq", make: "Škoda", modelContains: "Kodiaq" },
+  { vin: "TMBER6NM5MS012345", label: "Škoda Enyaq", make: "Škoda", modelContains: "Enyaq" },
+  { vin: "TMBLK7PS5MS012345", label: "Škoda Kamiq", make: "Škoda", modelContains: "Kamiq" },
+
+  // ── Land Rover / Jaguar ───────────────────────────────────────────────────
+  { vin: "SALZZZBN1MA123456", label: "Range Rover L460", make: "Land Rover", modelContains: "Range Rover" },
+  { vin: "SALZZZLM1MA123456", label: "Defender L663", make: "Land Rover", modelContains: "Defender" },
+  { vin: "SALZZZJA1MA123456", label: "Discovery Sport", make: "Land Rover", modelContains: "Discovery Sport" },
+  { vin: "SAJZZZBG1MA123456", label: "Jaguar F-Pace", make: "Jaguar", modelContains: "F-Pace" },
+  { vin: "SAJZZZBM1MA123456", label: "Jaguar I-Pace", make: "Jaguar", modelContains: "I-Pace" },
+  { vin: "SAJZZZBN1MA123456", label: "Jaguar XF", make: "Jaguar", modelContains: "XF" },
+
+  // ── Ford Europe ───────────────────────────────────────────────────────────
+  { vin: "WF0ZZZGBJNW123456", label: "Ford Focus Mk4 EU", make: "Ford", modelContains: "Focus" },
+  { vin: "WF0ZZZU5JNW123456", label: "Ford Kuga EU", make: "Ford", modelContains: "Kuga" },
+  { vin: "WF0ZZZNUGNW123456", label: "Ford Puma EU", make: "Ford", modelContains: "Puma" },
+  { vin: "WF0ZZZM7GNW123456", label: "Ford Mustang Mach-E EU", make: "Ford", modelContains: "Mach-E" },
+  { vin: "WF0EXXWP1W1234567", label: "Ford Focus (legacy EU)", make: "Ford", modelContains: "Focus" },
 
   // ── Renault ───────────────────────────────────────────────────────────────
   { vin: "VF1RJA00012345678", label: "Renault Clio", make: "Renault", modelContains: "Clio" },
@@ -105,8 +128,12 @@ const CASES: BrandCase[] = [
   { vin: "KMHS381BGBU123456", label: "Hyundai Santa Fe Sport", make: "Hyundai", modelContains: "Santa Fe" },
   { vin: "KMHL341BGBU123456", label: "Hyundai IONIQ 5", make: "Hyundai", modelContains: "IONIQ" },
   { vin: "KM8J23A45MU123456", label: "Hyundai Tucson", make: "Hyundai", modelContains: "Tucson" },
+  { vin: "TMAH381BGBU123456", label: "Hyundai Tucson EU plant", make: "Hyundai", modelContains: "Tucson" },
+  { vin: "KMHR681BGBU123456", label: "Hyundai Kona SX2", make: "Hyundai", modelContains: "Kona" },
   { vin: "JTDKN3DU0A0123456", label: "Toyota Prius", make: "Toyota", modelContains: "Prius" },
   { vin: "JTMB1RFV0KD123456", label: "Toyota RAV4", make: "Toyota", modelContains: "RAV4" },
+  { vin: "SB1KB3B00MA123456", label: "Toyota Corolla UK", make: "Toyota", modelContains: "Corolla" },
+  { vin: "SB1B93B00MA123456", label: "Toyota C-HR UK", make: "Toyota", modelContains: "C-HR" },
   { vin: "KNDNB2A28F7123456", label: "Kia Sorento", make: "Kia", modelContains: "Sorento" },
   { vin: "KNDC34LA5P5123456", label: "Kia EV6", make: "Kia", modelContains: "EV6" },
 
