@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ObfuscatedEmailLink } from "@/components/obfuscated-email-link";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -180,34 +179,8 @@ export default function FAQ() {
         </motion.div>
       </section>
 
-      {/* Quick highlights */}
-      <section className="max-w-3xl mx-auto px-5 -mt-6 pb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { icon: Clock, label: t("faq_highlight_speed") },
-            { icon: Globe2, label: t("faq_highlight_markets") },
-            { icon: RotateCcw, label: t("faq_highlight_refund") },
-          ].map(({ icon: Icon, label }, i) => (
-            <motion.div
-              key={label}
-              custom={i}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              className="flex items-center gap-3 rounded-2xl border bg-card/80 backdrop-blur-sm px-4 py-3.5 shadow-sm"
-            >
-              <span className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Icon className="h-4 w-4 text-primary" />
-              </span>
-              <p className="text-sm font-medium leading-snug text-left">{label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       {/* FAQ by category */}
-      <section className="max-w-3xl mx-auto px-5 pb-24 space-y-10">
+      <section className="max-w-3xl mx-auto px-5 pb-24 pt-4 space-y-10">
         {categories.map((category, catIdx) => (
           <motion.div
             key={category.id}
@@ -257,18 +230,6 @@ export default function FAQ() {
           </motion.div>
         ))}
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="rounded-2xl border bg-muted/30 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-        >
-          <div>
-            <p className="text-sm font-semibold">{t("faq_still_help")}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{t("faq_still_help_desc")}</p>
-            <ObfuscatedEmailLink className="text-xs font-medium mt-2 inline-block" />
-          </div>
-        </motion.div>
       </section>
 
       {/* CTA */}

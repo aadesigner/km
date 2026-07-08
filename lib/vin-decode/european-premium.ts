@@ -47,6 +47,11 @@ const BMW_RULES: PrefixRule[] = [
   { prefix: "WBA7G", model: "7 Series", chassis: "G11 LCI" },
   { prefix: "WBA7H", model: "7 Series", chassis: "G70" },
   { prefix: "WBA7U", model: "7 Series", chassis: "G12" },
+  // X1/X2 — must beat WBA7* (WBA71 starts with WBA7)
+  { prefix: "WBA71", model: "X1", chassis: "F48/U11" },
+  { prefix: "WBA72", model: "X2", chassis: "F39" },
+  { prefix: "5YM8", model: "X1", chassis: "F48 US" },
+  { prefix: "5YM1", model: "X1" },
   { prefix: "WBA1C", model: "1 Series", chassis: "F20/F21" },
   { prefix: "WBA1H", model: "1 Series", chassis: "F40" },
   { prefix: "WBA2A", model: "2 Series", chassis: "Active Tourer (F45)" },
@@ -104,6 +109,8 @@ const BMW_RULES: PrefixRule[] = [
   { prefix: "WBS4", model: "M4" },
   { prefix: "WBS5", model: "M5" },
   { prefix: "WBY1", model: "i3" },
+  { prefix: "WBY2", model: "i7" },
+  { prefix: "WBY5", model: "i4", chassis: "G26" },
   { prefix: "WBY8", model: "i8" },
   { prefix: "WBY7", model: "iX" },
 ];
@@ -137,6 +144,15 @@ const MERCEDES_RULES: PrefixRule[] = [
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },
   { prefix: "WDDG", model: "G-Class" },
   { prefix: "WDC0", model: "GLC" },
+];
+
+const AUDI_US_RULES: PrefixRule[] = [
+  { prefix: "WA1L", model: "Q5" },
+  { prefix: "WA1C", model: "Q5" },
+  { prefix: "WA1F", model: "Q5 Sportback" },
+  { prefix: "WA1A", model: "Q3" },
+  { prefix: "WA1B", model: "Q7" },
+  { prefix: "WA1M", model: "Q8" },
 ];
 
 const AUDI_RULES: PrefixRule[] = [
@@ -223,6 +239,11 @@ function formatDisplay(model: string, chassis: string | null): string {
   return `${model} (${chassis})`;
 }
 
+/** W1K uses the same VDS chassis codes as WDD — alias for rule matching only. */
+function mercedesRuleVin(vin: string): string {
+  return vin.startsWith("W1K") ? `WDD${vin.slice(3)}` : vin;
+}
+
 function decodeFromRules(vin: string, rules: PrefixRule[]): PremiumEuropeanDecode | null {
   const hit = matchLongestPrefix(vin, rules);
   if (!hit) return null;
@@ -255,7 +276,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   const upper = normalizeVagVinForPremium(raw);
   const wmi = upper.slice(0, 3);
 
-  if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("5UX") || wmi.startsWith("4US")) {
+  if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("5UX") || wmi.startsWith("4US") || wmi.startsWith("5YM")) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeBmwEuHomologation(raw));
       if (euHit) return euHit;
@@ -267,7 +288,10 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
       const euHit = fromHomologation(decodeMercedesEuHomologation(raw));
       if (euHit) return euHit;
     }
-    return decodeFromRules(upper, MERCEDES_RULES);
+    return decodeFromRules(mercedesRuleVin(upper), MERCEDES_RULES);
+  }
+  if (wmi.startsWith("WA1")) {
+    return decodeFromRules(upper, AUDI_US_RULES);
   }
   if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
     if (raw.slice(3, 6) === "ZZZ") {

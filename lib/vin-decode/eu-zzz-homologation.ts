@@ -178,7 +178,7 @@ const MERCEDES_EU_CODES: CodeRule[] = [
   { code: "253", model: "GLC", chassis: "X253" },
   { code: "254", model: "GLC", chassis: "X254" },
   { code: "166", model: "GLE", chassis: "W166" },
-  { code: "167", model: "GLE", chassis: "W167" },
+  { code: "167", model: "GLS", chassis: "X167" },
   { code: "247", model: "GLA", chassis: "H247" },
   { code: "246", model: "B-Class", chassis: "W246" },
   { code: "463", model: "G-Class", chassis: "W463" },

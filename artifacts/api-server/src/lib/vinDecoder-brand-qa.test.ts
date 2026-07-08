@@ -33,6 +33,12 @@ const CASES: BrandCase[] = [
   { vin: "WAUZZZF1ZAN123456", label: "Audi Q8 EU (F1)", make: "Audi", modelContains: "Q8" },
   { vin: "WAUZZZ4LBAN123456", label: "Audi Q7 EU (4L)", make: "Audi", modelContains: "Q7" },
   { vin: "WVGZZZF7BN1234567", label: "Audi Q7 Bratislava (WVG)", make: "Audi", modelContains: "Q7" },
+  { vin: "WA1LFAFP5HA123456", label: "Audi Q5 US (WA1)", make: "Audi", modelContains: "Q5" },
+  { vin: "WA1AAAFV5KA123456", label: "Audi Q3 US (WA1)", make: "Audi", modelContains: "Q3" },
+  { vin: "WA1MFAFP5HA123456", label: "Audi Q8 US (WA1)", make: "Audi", modelContains: "Q8" },
+  { vin: "WAUZZZFFVAN123456", label: "Audi A3 EU", make: "Audi", modelContains: "A3" },
+  { vin: "WAUZZZF4XGN123456", label: "Audi A4 B9 EU", make: "Audi", modelContains: "A4" },
+  { vin: "WAUZZZGEAN1234567", label: "Audi Q8 e-tron EU", make: "Audi", modelContains: "Q8" },
 
   // ── Porsche ───────────────────────────────────────────────────────────────
   { vin: "WP0ZZZ99ZPS123456", label: "Porsche 911", make: "Porsche", modelContains: "911" },
@@ -49,6 +55,10 @@ const CASES: BrandCase[] = [
   { vin: "WBA6D6C53HG388222", label: "BMW 6 Series F06", make: "BMW", modelContains: "6 Series" },
   { vin: "WBAZZZ6C0X0A12345", label: "BMW 6 Series EU ZZZ", make: "BMW", modelContains: "6 Series" },
   { vin: "WBAZZZ310X0A12345", label: "BMW 3 Series EU ZZZ", make: "BMW", modelContains: "3 Series" },
+  { vin: "WBA71BX03P9R09775", label: "BMW X1 F48", make: "BMW", modelContains: "X1" },
+  { vin: "5YM81KX02M0123456", label: "BMW X1 US (5YM)", make: "BMW", modelContains: "X1" },
+  { vin: "WBY51CF00NF123456", label: "BMW i4", make: "BMW", modelContains: "i4" },
+  { vin: "5UX3V7106FJ995387", label: "BMW 4 Series US", make: "BMW", modelContains: "4 Series" },
 
   // ── Mercedes-Benz ─────────────────────────────────────────────────────────
   { vin: "WDD2130421A123456", label: "Mercedes E-Class W213", make: "Mercedes-Benz", modelContains: "E-Class" },
@@ -57,6 +67,11 @@ const CASES: BrandCase[] = [
   { vin: "WDD2531491A123456", label: "Mercedes GLC X253", make: "Mercedes-Benz", modelContains: "GLC" },
   { vin: "WDD4632761A123456", label: "Mercedes G-Class", make: "Mercedes-Benz", modelContains: "G-Class" },
   { vin: "WDDZZZ2131AA12345", label: "Mercedes E-Class EU ZZZ", make: "Mercedes-Benz", modelContains: "E-Class" },
+  { vin: "W1K2130461A123456", label: "Mercedes E-Class W1K", make: "Mercedes-Benz", modelContains: "E-Class" },
+  { vin: "W1K1770871A123456", label: "Mercedes A-Class W1K", make: "Mercedes-Benz", modelContains: "A-Class" },
+  { vin: "WDDZZZ1671AA12345", label: "Mercedes GLS EU ZZZ", make: "Mercedes-Benz", modelContains: "GLS" },
+  { vin: "WDD2140871A123456", label: "Mercedes E-Class W214", make: "Mercedes-Benz", modelContains: "E-Class" },
+  { vin: "WDD2060871A123456", label: "Mercedes C-Class W206", make: "Mercedes-Benz", modelContains: "C-Class" },
 
   // ── Škoda ─────────────────────────────────────────────────────────────────
   { vin: "TMBEP6NJ3MZ012345", label: "Škoda Fabia III", make: "Škoda", modelContains: "Fabia" },
@@ -158,6 +173,25 @@ describe("brand coverage — no cross-brand contamination", () => {
     expect(r.make).toBe("BMW");
     expect(r.model?.toLowerCase()).not.toContain("mercedes");
     expect(r.model?.toLowerCase()).not.toContain("class");
+  });
+
+  it("BMW X1 WBA71 never decodes as 7 Series", () => {
+    const r = decodeVin("WBA71BX03P9R09775");
+    expect(r.make).toBe("BMW");
+    expect(r.model?.toLowerCase()).toContain("x1");
+    expect(r.model?.toLowerCase()).not.toContain("7 series");
+  });
+
+  it("Mercedes W1K decodes as Mercedes-Benz with chassis model", () => {
+    const r = decodeVin("W1K2130461A123456");
+    expect(r.make).toBe("Mercedes-Benz");
+    expect(r.model?.toLowerCase()).toContain("e-class");
+  });
+
+  it("US Audi WA1 never returns null make", () => {
+    const r = decodeVin("WA1LFAFP5HA123456");
+    expect(r.make).toBe("Audi");
+    expect(r.model?.toLowerCase()).toContain("q5");
   });
 
   it("VW Tiguan WVG never returns null make", () => {

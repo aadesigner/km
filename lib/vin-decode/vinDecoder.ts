@@ -108,6 +108,7 @@ const WMI_MAP: Record<string, string> = {
   "5NM": "Hyundai", "5NP": "Hyundai", "5N1": "Nissan",
   "5TD": "Toyota", "5TE": "Toyota", "5TF": "Toyota",
   "5UX": "BMW",
+  "5YM": "BMW",
   "5YJ": "Tesla", "5YF": "Tesla",
   // ── CANADA ────────────────────────────────────────────────────────────────
   "2HH": "Honda", "2HK": "Honda", "2HM": "Hyundai",
@@ -132,10 +133,10 @@ const WMI_MAP: Record<string, string> = {
   "KPT": "SsangYong",
   "KPA": "SsangYong",
   // ── GERMANY ───────────────────────────────────────────────────────────────
-  "WAU": "Audi", "WAP": "Porsche",
+  "WAU": "Audi", "WAP": "Porsche", "WA1": "Audi",
   "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW",
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
-  "WDF": "Mercedes-Benz", "WME": "Smart",
+  "WDF": "Mercedes-Benz", "W1K": "Mercedes-Benz", "WME": "Smart",
   "WP0": "Porsche", "WP1": "Porsche",
   "WVW": "Volkswagen", "WVG": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
   "W09": "Porsche",
@@ -310,7 +311,7 @@ const MODEL_MAP_4: Record<string, string> = {
   "WAUC": "A4/A5",      "WAUE": "A6/A7",      "WAUA": "A8",
   "WAUJ": "A3",         "WAUM": "Q8",         "WAUS": "S/RS Series",
   "WA1L": "Q5",         "WA1B": "Q7",         "WA1A": "Q3",
-  "WA1C": "Q5",         "WA1F": "Q5 Sportback",
+  "WA1C": "Q5",         "WA1F": "Q5 Sportback", "WA1M": "Q8",
   // ── Volkswagen ────────────────────────────────────────────────────────────
   "WVWZ": "Golf",       "WVWA": "Jetta",      "WVWB": "Polo",
   "WVWH": "Passat",     "1VWB": "Passat",
@@ -497,6 +498,20 @@ const MODEL_MAP_4: Record<string, string> = {
 const MODEL_OVERRIDES: Record<string, string> = {
   // Mercedes-Benz CLS (C218/C257) — pos-5 J disambiguates from WDDL→GLE
   "WDDLJ":   "CLS-Class",
+  // Mercedes-Benz W1K (2016+ passenger cars) — same chassis codes as WDD*
+  "W1K177":  "A-Class",
+  "W1K118":  "CLA-Class",
+  "W1K205":  "C-Class",
+  "W1K206":  "C-Class",
+  "W1K213":  "E-Class",
+  "W1K214":  "E-Class",
+  "W1K222":  "S-Class",
+  "W1K223":  "S-Class",
+  "W1K253":  "GLC-Class",
+  "W1K247":  "GLA-Class",
+  "W1K167":  "GLS-Class",
+  "W1K290":  "EQS",
+  "W1K294":  "EQE",
   // Mercedes-Benz chassis codes (positions 4–6, e.g. WDD213 = E-Class W213)
   "WDD213":  "E-Class",
   "WDD205":  "C-Class",
@@ -1289,7 +1304,7 @@ export function decodeTransmission(
   const wmi3 = upper.slice(0, 3);
 
   // BMW does not encode transmission in position 7 (NHTSA marks VDS positions unused).
-  if (wmi3 === "WBA" || wmi3 === "WBS" || wmi3 === "WBY" || wmi3 === "5UX" || wmi3 === "4US") {
+  if (wmi3 === "WBA" || wmi3 === "WBS" || wmi3 === "WBY" || wmi3 === "5UX" || wmi3 === "4US" || wmi3 === "5YM") {
     const m = (model ?? decodePremiumEuropeanModel(upper) ?? "").toLowerCase();
     if (/x[1-7]\b|xm\b|\bix\b|i[3478x]|7 series|8 series/.test(m)) return "Automatic";
     const fromEngine = inferTransmissionFromEngine(engineDecoded);
@@ -1350,7 +1365,8 @@ const BODY_CODE_MAP: Record<string, Record<string, string>> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function lookupByWmi<T>(vin: string, map: Record<string, Record<string, T>>): Record<string, T> | null {
   const w3 = vin.slice(0, 3);
-  const wmiKey = isVagWmi(w3) && map.WVW ? "WVW" : w3;
+  const aliases: Record<string, string> = { W1K: "WDD", WA1: "WAU" };
+  const wmiKey = isVagWmi(w3) && map.WVW ? "WVW" : (aliases[w3] ?? w3);
   return map[wmiKey] ?? map[vin.slice(0, 2)] ?? null;
 }
 
