@@ -33,9 +33,27 @@ const PREVIEW_ROWS = [
 
 type Props = {
   className?: string;
+  demoVin?: string;
+  demoVehicle?: string;
+  demoOriginKey?: string;
+  demoScore?: number;
+  demoBadgeKey?: string;
+  demoBadgeClassName?: string;
+  demoScoreClassName?: string;
+  previewRows?: typeof PREVIEW_ROWS;
 };
 
-export function VinCheckIncludesSection({ className }: Props) {
+export function VinCheckIncludesSection({
+  className,
+  demoVin = "KNDPM3AC9K7583241",
+  demoVehicle = "2019 Kia Sportage",
+  demoOriginKey = "country_korea_name",
+  demoScore = 6.4,
+  demoBadgeKey = "report_caution",
+  demoBadgeClassName = "border-amber-500/35 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  demoScoreClassName = "text-amber-600 dark:text-amber-400",
+  previewRows = PREVIEW_ROWS,
+}: Props) {
   const { t, language } = useTranslation();
   const { displayPrice, basePrice: pricingBase, isDiscount, loading: priceLoading, fmtPrice } = useDisplayPrice();
   const reportItems = useReportItems(t);
@@ -144,16 +162,16 @@ export function VinCheckIncludesSection({ className }: Props) {
               <div className="px-5 py-4 border-b border-border/60 bg-gradient-to-br from-primary/[0.07] via-background to-background flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[10px] font-mono tracking-wider text-muted-foreground truncate">
-                    VIN · KNDPM3AC9K7583241
+                    {demoVin}
                   </p>
-                  <p className="font-bold text-base sm:text-lg tracking-tight mt-0.5">2019 Kia Sportage</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{t("country_korea_name")}</p>
+                  <p className="font-bold text-base sm:text-lg tracking-tight mt-0.5">{demoVehicle}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{t(demoOriginKey)}</p>
                 </div>
                 <Badge
                   variant="outline"
-                  className="shrink-0 rounded-lg border-amber-500/35 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1"
+                  className={cn("shrink-0 rounded-lg text-[10px] font-bold px-2.5 py-1", demoBadgeClassName)}
                 >
-                  {t("report_caution")}
+                  {t(demoBadgeKey)}
                 </Badge>
               </div>
 
@@ -162,17 +180,17 @@ export function VinCheckIncludesSection({ className }: Props) {
                   {t("mock_label_score")}
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black tabular-nums text-amber-600 dark:text-amber-400">6.4</span>
+                  <span className={cn("text-2xl font-black tabular-nums", demoScoreClassName)}>{demoScore}</span>
                   <span className="text-sm font-medium text-muted-foreground">/10</span>
                 </div>
               </div>
 
               <div className="p-5 space-y-0">
-                {PREVIEW_ROWS.map((row) => {
+                {previewRows.map((row) => {
                   const label = t(row.labelKey);
                   let value: string;
                   if (row.key === "owners") {
-                    value = `3 ${t("mock_label_owners")}`;
+                    value = `${"ownersCount" in row ? row.ownersCount : 3} ${t("mock_label_owners")}`;
                   } else if ("valueKey" in row && row.valueKey) {
                     value = row.valueKey === "demo_found"
                       ? `${"valuePrefix" in row ? row.valuePrefix ?? "" : ""}${t(row.valueKey)}`

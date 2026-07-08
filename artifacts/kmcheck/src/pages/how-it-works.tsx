@@ -1,11 +1,15 @@
 import { useState, useMemo, type FormEvent } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useLocation, Link } from "wouter";
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { HeroVinForm } from "@/components/hero-vin-form";
+import { WhatWeCheckSection } from "@/components/what-we-check-section";
+import { VinCheckIncludesSection } from "@/components/vin-check-includes-section";
 import { useAuth } from "@/lib/auth-context";
+import { useDisplayPrice } from "@/hooks/use-display-price";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import {
   Search, Database, FileText, Zap, RotateCcw, Globe2,
@@ -17,22 +21,13 @@ import { cn } from "@/lib/utils";
 const VIN_EXAMPLE = "WAUZZZ8K9NA123456";
 const DEMO_VEHICLE = "Audi A4 2022";
 
-const VIN_SEGMENTS = [
-  { chars: "WAU", tone: "bg-slate-600", labelKey: "vin_segment_country" },
-  { chars: "ZZZ", tone: "bg-primary/85", labelKey: "vin_segment_maker" },
-  { chars: "8K9", tone: "bg-emerald-600", labelKey: "vin_segment_model" },
-  { chars: "N", tone: "bg-amber-500", labelKey: "vin_segment_check" },
-  { chars: "A123456", tone: "bg-slate-700", labelKey: "vin_segment_serial" },
+const HIW_PREVIEW_ROWS = [
+  { key: "mileage", labelKey: "mock_label_mileage", value: "68,400 km", warn: false },
+  { key: "accidents", labelKey: "mock_label_accidents", valueKey: "demo_none_found", warn: false },
+  { key: "salvage", labelKey: "mock_label_salvage", valueKey: "report_clean", warn: false },
+  { key: "stolen", labelKey: "mock_label_stolen", valueKey: "mock_value_stolen", warn: false },
+  { key: "owners", labelKey: "mock_label_owners", ownersCount: 2, warn: false },
 ] as const;
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.4, ease: "easeOut" },
-  }),
-} as unknown as Variants;
 
 type Step = {
   num: string;
@@ -127,6 +122,7 @@ export default function HowItWorks() {
   const { t, language } = useTranslation();
   const [, setLocation] = useLocation();
   const { isSignedIn } = useAuth();
+  const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
   const [vin, setVin] = useState("");
   const [vinError, setVinError] = useState("");
   const seo = usePageSeo("how_it_works");
@@ -137,19 +133,10 @@ export default function HowItWorks() {
     { num: "03", label: t("hiw_step3_label"), title: t("hiw_step3_title"), desc: t("hiw_step3_desc"), icon: FileText },
   ], [t]);
 
-  const trust = useMemo(() => [
-    { icon: Zap, label: t("hiw_trust_speed") },
-    { icon: Globe2, label: t("hiw_trust_official") },
-    { icon: RotateCcw, label: t("hiw_trust_refund") },
-  ], [t]);
-
-  const reportHighlights = useMemo(() => [
-    t("hiw_report_item1"),
-    t("hiw_report_item2"),
-    t("hiw_report_item3"),
-    t("hiw_report_item4"),
-    t("hiw_report_item5"),
-    t("hiw_report_item6"),
+  const trustStrip = useMemo(() => [
+    { icon: Zap, label: t("hiw_trust_speed"), desc: t("pricing_compare_instant") },
+    { icon: Globe2, label: t("hiw_trust_official"), desc: t("pricing_compare_official") },
+    { icon: RotateCcw, label: t("hiw_trust_refund"), desc: t("money_back_desc") },
   ], [t]);
 
   const handleCheck = (e: FormEvent) => {
@@ -175,7 +162,7 @@ export default function HowItWorks() {
         canonicalPath={seo.canonicalPath}
       />
 
-      {/* Hero — title only */}
+      {/* Hero */}
       <section className="relative overflow-hidden py-14 md:py-20 px-4 border-b border-border/60">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_55%_at_50%_-15%,hsl(var(--primary)/0.11),transparent_60%)]" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(hsl(var(--foreground)/0.035)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
@@ -208,17 +195,11 @@ export default function HowItWorks() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10 md:mb-14 space-y-3"
+            className="text-center mb-10 md:mb-12"
           >
             <div className="inline-flex items-center rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground dark:border-white/15 dark:bg-white/5 dark:text-white/70">
               {t("home_badge_3_steps")}
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">
-              {t("how_it_works")}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground dark:text-white/50 max-w-2xl mx-auto leading-relaxed">
-              {t("how_it_works_desc")}
-            </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
@@ -255,135 +236,97 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      {/* Report highlights */}
-      <section className="py-14 md:py-20 px-4 bg-muted/30 border-y border-border/60">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-8 md:mb-10"
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("hiw_report_title")}</h2>
-          </motion.div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {reportHighlights.map((item, i) => (
-              <motion.div
-                key={item}
-                custom={i}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="flex items-center gap-3 rounded-xl border border-border/70 bg-card px-4 py-3.5 shadow-sm"
-              >
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm font-medium leading-snug">{item}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <WhatWeCheckSection autoRotate />
 
-      {/* VIN anatomy */}
-      <section className="py-14 md:py-20 px-4">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-8"
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("vin_anatomy_title")}</h2>
-          </motion.div>
+      <VinCheckIncludesSection
+        demoVin={VIN_EXAMPLE}
+        demoVehicle={DEMO_VEHICLE}
+        demoOriginKey="demo_card_origin_germany"
+        demoScore={9.1}
+        demoBadgeKey="report_clean"
+        demoBadgeClassName="border-green-500/35 bg-green-500/10 text-green-700 dark:text-green-400"
+        demoScoreClassName="text-green-600 dark:text-green-400"
+        previewRows={HIW_PREVIEW_ROWS}
+      />
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-2xl border border-border/70 bg-card shadow-sm p-5 md:p-6 space-y-5"
-          >
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {VIN_SEGMENTS.map(({ chars, tone }, si) =>
-                chars.split("").map((ch, ci) => (
-                  <div
-                    key={`${si}-${ci}`}
-                    className={cn(
-                      "h-10 w-9 rounded-lg text-white font-mono font-bold text-sm flex items-center justify-center shadow-sm",
-                      tone,
-                    )}
-                  >
-                    {ch}
-                  </div>
-                )),
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {VIN_SEGMENTS.map(({ tone, labelKey }) => (
-                <div key={labelKey} className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-1.5">
-                  <div className={cn("h-2 w-2 rounded-full shrink-0", tone)} />
-                  <span className="text-xs text-muted-foreground">{t(labelKey)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="rounded-xl border border-dashed border-border/70 bg-muted/25 px-4 py-3 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("vin_label")}</p>
-              <p className="text-sm font-mono tracking-[0.12em] text-foreground">{VIN_EXAMPLE}</p>
-              <p className="text-xs text-muted-foreground mt-1">{DEMO_VEHICLE}</p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Trust */}
-      <section className="px-4 pb-14 md:pb-20">
-        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-3">
-          {trust.map(({ icon: Icon, label }, i) => (
+      {/* Trust strip */}
+      <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-12 md:py-16 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.1),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+        <div className="max-w-5xl mx-auto relative grid sm:grid-cols-3 gap-4 md:gap-6">
+          {trustStrip.map(({ icon: Icon, label, desc }, i) => (
             <motion.div
               key={label}
-              custom={i}
-              initial="hidden"
-              whileInView="show"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              variants={fadeUp}
-              className="inline-flex items-center gap-2.5 rounded-full border border-border/70 bg-card px-4 py-2 text-sm font-medium"
+              transition={{ delay: i * 0.08 }}
+              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-6 hover:border-primary/30 hover:bg-white/[0.06] transition-colors"
             >
-              <Icon className="h-4 w-4 text-primary shrink-0" />
-              {label}
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
+                <Icon className="h-5 w-5 text-white" />
+              </div>
+              <p className="font-bold text-white text-sm sm:text-base mb-1.5">{label}</p>
+              <p className="text-sm text-white/50 leading-relaxed">{desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* CTA — VIN input only here */}
-      <section className="relative overflow-hidden py-16 md:py-24 px-4 border-t border-border/60">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,hsl(var(--primary)/0.08),transparent)]" />
+      {/* CTA */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-24">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
+        <div className="absolute top-8 left-16 h-40 w-40 rounded-full bg-white/8 blur-3xl" />
+        <div className="absolute bottom-8 right-16 h-48 w-48 rounded-full bg-white/8 blur-3xl" />
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-xl mx-auto text-center space-y-6"
+          className="relative z-10 max-w-2xl mx-auto text-center space-y-8"
         >
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("hiw_cta_title")}</h2>
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              {t("instant_digital_report")}
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
+              {t("hiw_cta_title")}
+            </h2>
+            <p className="text-white/70 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">{t("hiw_cta_subtitle")}</p>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <span className="text-4xl sm:text-5xl font-black text-white tabular-nums">
+              {displayPrice != null ? fmtPrice(displayPrice) : "—"}
+            </span>
+            {isDiscount && pricingBase != null && (
+              <span className="text-xl sm:text-2xl line-through text-white/35">{fmtPrice(pricingBase)}</span>
+            )}
+            <span className="text-white/50 text-sm">{t("per_report")}</span>
+          </div>
+
           <HeroVinForm
             vin={vin}
             onVinChange={(v) => { setVin(v); setVinError(""); }}
             onSubmit={handleCheck}
             error={vinError}
             placeholder={t("vin_placeholder")}
+            helpVariant="on-dark"
+            className="max-w-xl"
           />
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-            <Link href={`/${language}/pricing`} className="hover:text-primary transition-colors font-medium inline-flex items-center gap-1">
-              {t("pricing")} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <span className="hidden sm:inline opacity-40">·</span>
-            <Link href={`/${language}/free-vin-decoder`} className="hover:text-primary transition-colors font-medium inline-flex items-center gap-1">
-              {t("free_decoder_nav_link")} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <span className="hidden sm:inline opacity-40">·</span>
-            <Link href={`/${language}/faq`} className="hover:text-primary transition-colors font-medium inline-flex items-center gap-1">
-              {t("nav_faq")} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button asChild variant="outline" size="lg" className="h-11 border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent">
+              <Link href={`/${language}/pricing`}>{t("see_whats_included")}</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-11 border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent">
+              <Link href={`/${language}/free-vin-decoder`}>{t("free_decoder_nav_link")}</Link>
+            </Button>
           </div>
         </motion.div>
       </section>
