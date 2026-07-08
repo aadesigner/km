@@ -22,10 +22,13 @@ import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { SiteAnalytics } from "@/components/site-analytics";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
+import { FlagImg } from "@/components/flag-img";
+import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
   label: l.label,
+  short: l.short,
   img: l.flag,
 }));
 
@@ -52,21 +55,6 @@ const COUNTRY_LINKS = [
     countKey: "country_canada_count" as const,
   },
 ];
-
-function FlagImg({ code, size = 20, className }: { code: string; size?: number; className?: string }) {
-  const height = Math.max(8, Math.round(size * 0.75));
-  return (
-    <img
-      src={`https://flagcdn.com/${size}x${height}/${code}.png`}
-      width={size}
-      height={height}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      className={cn("rounded-[2px] object-cover shrink-0", className)}
-    />
-  );
-}
 
 const MobileMenuToggle = forwardRef<
   HTMLButtonElement,
@@ -379,6 +367,8 @@ function MobileLangPicker({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
 
+  usePrefetchPickerFlags(open);
+
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -401,31 +391,15 @@ function MobileLangPicker({
               exit={{ opacity: 0, y: -4, scale: 0.98 }}
               transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
               style={{ ...menuStyle, transformOrigin: "top right" }}
-              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5 w-[min(36rem,calc(100vw-1.5rem))]"
+              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5 w-[18.5rem] max-w-[calc(100vw-1.5rem)]"
             >
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
-                {LANGS.map((l) => {
-                  const active = language === l.code;
-                  return (
-                    <button
-                      key={l.code}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={active}
-                      onClick={() => {
-                        close();
-                        requestAnimationFrame(() => onLanguageChange(l.code));
-                      }}
-                      className="flex flex-col items-center gap-1 px-1.5 py-2 rounded-xl hover:bg-primary/[0.06] active:bg-primary/10 transition-colors text-center min-w-0"
-                    >
-                      <FlagImg code={l.img} size={20} />
-                      <span className={cn("text-[11px] leading-tight truncate w-full", active ? "font-semibold text-primary" : "text-foreground")}>
-                        {l.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              <LangPickerList
+                language={language as Language}
+                onSelect={(code) => {
+                  close();
+                  requestAnimationFrame(() => onLanguageChange(code));
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>,
@@ -455,7 +429,8 @@ function MobileLangPicker({
               : "text-foreground hover:bg-primary/[0.06]",
         )}
       >
-        <FlagImg code={current?.img ?? "gb"} size={20} />
+        <FlagImg code={current?.img ?? "gb"} size={20} priority />
+        <span className="hidden sm:inline max-w-[5.5rem] truncate text-[13px]">{current?.label}</span>
         <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
       </button>
       {menu}
@@ -478,6 +453,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const countryRef = useRef<HTMLDivElement>(null);
   const langRef    = useRef<HTMLDivElement>(null);
   const userRef    = useRef<HTMLDivElement>(null);
+
+  usePrefetchPickerFlags(langOpen);
 
   useEffect(() => {
     let ticking = false;
@@ -592,8 +569,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         : isDarkNav
         ? "bg-gradient-to-b from-black/45 to-black/15 backdrop-blur-md border-b border-white/[0.08]"
         : (isHeroTransparentNav || isAuthNavPage)
-        ? "bg-background/88 backdrop-blur-md border-b border-border/45"
-        : "bg-background/80 backdrop-blur-md border-b border-border/45",
+        ? "bg-background/70 backdrop-blur-md border-b border-border/40"
+        : "bg-background/62 backdrop-blur-md border-b border-border/40",
     )}>
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
@@ -690,7 +667,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               <button
                 onClick={() => setLangOpen(v => !v)}
                 className={cn(
-                  "flex items-center gap-1.5 px-2 rounded-full font-medium",
+                  "flex items-center gap-1.5 px-2.5 rounded-full font-medium",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
                   langOpen
                     ? isDarkNav
@@ -701,7 +678,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       : "text-foreground hover:bg-primary/[0.06]",
                 )}
               >
-                <FlagImg code={LANGS.find(l => l.code === language)?.img ?? "gb"} size={20} />
+                <FlagImg code={LANGS.find(l => l.code === language)?.img ?? "gb"} size={20} priority />
+                <span className="max-w-[5.5rem] truncate text-[13px] hidden lg:inline">
+                  {LANGS.find(l => l.code === language)?.label}
+                </span>
                 <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", langOpen && "rotate-180")} />
               </button>
 
@@ -713,21 +693,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
                     transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
                     style={{ transformOrigin: "top right" }}
-                    className={cn(dropdownCls, "right-0 w-[36rem] max-w-[calc(100vw-1.5rem)] p-1.5")}
+                    className={cn(dropdownCls, "right-0 w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}
                   >
-                    <div className="grid grid-cols-6 gap-0.5">
-                      {LANGS.map(l => (
-                        <button
-                          key={l.code}
-                          type="button"
-                          onClick={() => handleLanguageChange(l.code)}
-                          className="flex flex-col items-center gap-1 px-1.5 py-2 rounded-xl hover:bg-primary/[0.06] transition-colors text-center min-w-0"
-                        >
-                          <FlagImg code={l.img} size={20} />
-                          <span className={cn("text-[11px] leading-tight truncate w-full", language === l.code ? "font-semibold text-primary" : "text-foreground")}>{l.label}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <LangPickerList
+                      language={language}
+                      onSelect={(code) => handleLanguageChange(code)}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>

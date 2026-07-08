@@ -548,7 +548,13 @@ export default function Home() {
               {t("instant_digital_report")}
             </div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              {t("cta_title")}
+              {t("cta_title")
+                .split(/\.\s+/)
+                .map((part, i, parts) => (
+                  <span key={i} className="block">
+                    {i < parts.length - 1 ? `${part}.` : part}
+                  </span>
+                ))}
             </h2>
             <p className="text-white/65 text-base max-w-xl mx-auto">{t("cta_desc")}</p>
           </div>

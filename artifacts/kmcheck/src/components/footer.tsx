@@ -3,25 +3,12 @@ import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { useTranslation, ensureDict } from "@/i18n/context";
 import { KmcheckLogo } from "@/components/logo";
-import { ShieldCheck, Zap, RotateCcw, Star, Car, ChevronUp, Check } from "lucide-react";
+import { ShieldCheck, Zap, RotateCcw, Star, Car, ChevronUp } from "lucide-react";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
+import { FlagImg } from "@/components/flag-img";
+import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { cn } from "@/lib/utils";
-
-function FlagImg({ code, size = 20 }: { code: string; size?: number }) {
-  const height = Math.max(8, Math.round(size * 0.75));
-  return (
-    <img
-      src={`https://flagcdn.com/${size}x${height}/${code}.png`}
-      width={size}
-      height={height}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      className="rounded-[2px] object-cover shrink-0"
-    />
-  );
-}
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -56,6 +43,8 @@ export function Footer() {
   const langRef = useRef<HTMLDivElement>(null);
 
   const current = LANGS.find((l) => l.code === language) ?? LANGS[0];
+
+  usePrefetchPickerFlags(langOpen);
 
   useEffect(() => {
     if (!langOpen) return;
@@ -140,7 +129,7 @@ export function Footer() {
                       : "border-white/[0.12] bg-white/[0.03] text-white/80 hover:border-white/22 hover:bg-white/[0.06]",
                   )}
                 >
-                  <FlagImg code={current.img} size={18} />
+                  <FlagImg code={current.img} size={18} priority />
                   <span className="font-medium truncate flex-1 text-left">{current.label}</span>
                   <ChevronUp className={cn("h-3.5 w-3.5 opacity-50 transition-transform", langOpen && "rotate-180")} />
                 </button>
@@ -150,32 +139,11 @@ export function Footer() {
                     role="listbox"
                     className="absolute bottom-full left-0 mb-2 z-30 w-[18.5rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-white/12 bg-[#0c1222] shadow-2xl shadow-black/50 p-1.5"
                   >
-                    <div className="grid grid-cols-2 gap-0.5 max-h-[16rem] overflow-y-auto">
-                      {LANGS.map((l) => {
-                        const active = language === l.code;
-                        return (
-                          <button
-                            key={l.code}
-                            type="button"
-                            role="option"
-                            aria-selected={active}
-                            onClick={() => handleLanguageChange(l.code)}
-                            className={cn(
-                              "flex items-center gap-2 px-2.5 py-2 rounded-xl text-left min-w-0 transition-colors",
-                              active
-                                ? "bg-primary/15 text-white"
-                                : "text-white/70 hover:bg-white/[0.06] hover:text-white",
-                            )}
-                          >
-                            <FlagImg code={l.img} size={16} />
-                            <span className={cn("text-[13px] truncate flex-1", active && "font-semibold")}>
-                              {l.label}
-                            </span>
-                            {active && <Check className="h-3 w-3 text-primary shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <LangPickerList
+                      language={language}
+                      tone="footer"
+                      onSelect={(code) => handleLanguageChange(code)}
+                    />
                   </div>
                 )}
               </div>
@@ -186,7 +154,7 @@ export function Footer() {
             {COUNTRY_FOOTER_COLUMNS.map(({ code, slug, headingKey, linkKeys }) => (
               <div key={slug} className="space-y-5">
                 <div className="flex items-center gap-2">
-                  <FlagImg code={code} />
+                  <FlagImg code={code} priority />
                   <h3 className="text-[13px] font-semibold text-white/70">{t(headingKey)}</h3>
                 </div>
                 <ul className="space-y-3">
