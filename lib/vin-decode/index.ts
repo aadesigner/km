@@ -9,7 +9,7 @@ export {
   isValidVinFormat,
   type VinFormatIssue,
 } from "./validation";
-export { isPlausibleMake, isPlausibleModel } from "./plausibility";
+export { isPlausibleMake, isPlausibleModel, isYearLikeModelName } from "./plausibility";
 export {
   decodeVin,
   decodeCountry,

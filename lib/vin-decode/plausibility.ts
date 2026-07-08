@@ -17,3 +17,13 @@ export function isPlausibleMake(make: string | null, vin: string): boolean {
   if (compact.length >= 6 && vin.toUpperCase().includes(compact)) return false;
   return true;
 }
+
+/** True when a 4-digit model string is really a mis-decoded year (e.g. "2002"), not "3008" or "500". */
+export function isYearLikeModelName(model: string | null | undefined): boolean {
+  if (!model) return false;
+  const t = model.trim();
+  if (!/^\d{4}$/.test(t)) return false;
+  const n = parseInt(t, 10);
+  const max = new Date().getFullYear() + 2;
+  return n >= 1980 && n <= max;
+}

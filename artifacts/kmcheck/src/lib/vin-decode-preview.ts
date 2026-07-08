@@ -1,3 +1,5 @@
+import { isYearLikeModelName } from "@workspace/vin-decode";
+
 type VinPeekLike = {
   vin: string;
   make?: string | null;
@@ -42,6 +44,15 @@ function plausibleYear(year: number | null | undefined): boolean {
   return year >= 1980 && year <= new Date().getFullYear() + 2;
 }
 
+/** Strip chassis suffixes — "3 Series (G20/G21)" → "3 Series". */
+function modelLineForTitle(model: string | null | undefined, vin: string): string | null {
+  if (!model || !fieldLooksValid(model, vin)) return null;
+  const base = model.replace(/\s*\([^)]*\)/g, "").trim();
+  if (!base || isYearLikeModelName(base)) return null;
+  if (base.toLowerCase() === vin.slice(0, 3).toLowerCase()) return null;
+  return base;
+}
+
 /** True when decoder returned a plausible make + model/year (not garbage / VIN fragments). */
 export function isTrustworthyVinDecode(peek: VinPeekLike): boolean {
   const makeOk = fieldLooksValid(peek.make, peek.vin);
@@ -66,13 +77,19 @@ export function shouldShowPendingVinDoubleCheck(
   return isTrustworthyVinDecode(peek);
 }
 
-/** Checkout preview: make + year only. */
+/** Checkout preview: make + year, or make + model when year char is missing (e.g. BMW EV). */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
-  const parts: (string | number)[] = [];
+  const parts: string[] = [];
   if (peek.make) parts.push(peek.make);
-  if (peek.year != null) parts.push(peek.year);
-  return parts.length ? parts.join(" ") : null;
+  if (plausibleYear(peek.year ?? null)) {
+    parts.push(String(peek.year));
+  } else {
+    const modelLine = modelLineForTitle(peek.model, peek.vin);
+    if (modelLine) parts.push(modelLine);
+  }
+  if (parts.length < 2) return parts[0] ?? null;
+  return parts.join(" ");
 }
 
 export function formatVehiclePreview(peek: VinPeekLike): string | null {

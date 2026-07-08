@@ -4,6 +4,7 @@ import {
   decodePremiumEuropeanTrim,
   isPlausibleMake,
   isPlausibleModel,
+  isYearLikeModelName,
 } from "@workspace/vin-decode";
 
 export type VinPeekIdentity = {
@@ -70,9 +71,11 @@ function pickCachedField(
 /** Fast local identity — WMI make, model line, model year. No NHTSA round-trip. */
 function fromLocalDecode(vin: string): VinPeekIdentity {
   const local = decodeVin(vin);
+  let model = isPlausibleModel(local.model, vin) ? local.model : null;
+  if (isYearLikeModelName(model)) model = null;
   return {
     make: isPlausibleMake(local.make, vin) ? local.make : null,
-    model: isPlausibleModel(local.model, vin) ? local.model : null,
+    model,
     year: local.year,
     trim: plausibleTrim(decodePremiumEuropeanTrim(vin), vin),
     engine: local.engineDecoded,

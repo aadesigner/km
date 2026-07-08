@@ -27,8 +27,8 @@ describe("parseNhtsaApiPayload", () => {
 });
 
 describe("decodeModelEuropean", () => {
-  it("WVWZZZ + pos7 J → Jetta", () => {
-    expect(decodeModelEuropean("WVWZZZ3CZCE064077")).toBe("Arteon / Passat");
+  it("WVWZZZ + pos7 C (3C) → Passat", () => {
+    expect(decodeModelEuropean("WVWZZZ3CZCE064077")).toBe("Passat");
     expect(decodeModelEuropean("WVWZZZJZ3E123456")).toBe("Jetta");
     expect(decodeModelEuropean("WVWZZZ1KZAW123456")).toBe("Golf");
   });

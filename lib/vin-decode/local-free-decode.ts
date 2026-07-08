@@ -1,6 +1,6 @@
 import { resolveCheckDigitValid } from "./check-digit";
 import { isValidVinFormat } from "./validation";
-import { isPlausibleMake, isPlausibleModel } from "./plausibility";
+import { isPlausibleMake, isPlausibleModel, isYearLikeModelName } from "./plausibility";
 import { decodeVin, decodeCountry } from "./vinDecoder";
 import { decodeVinDiagnostics, type VinDiagnostic } from "./vin-diagnostics";
 import { decodePremiumEuropeanTrim } from "./european-premium";
@@ -39,12 +39,15 @@ export function decodeVinLocalFree(vin: string): LocalFreeDecodeResult | null {
   const checkDigitValid = resolveCheckDigitValid(normalized);
   const diagnostics = decodeVinDiagnostics(normalized, local);
   const premiumTrim = decodePremiumEuropeanTrim(normalized);
+  const rawModel = local.model;
+  const modelPlausible = isPlausibleModel(rawModel, normalized)
+    && !isYearLikeModelName(rawModel);
 
   return {
     vin: local.vin,
     year: local.year,
     make: isPlausibleMake(local.make, normalized) ? local.make : null,
-    model: isPlausibleModel(local.model, normalized) ? local.model : null,
+    model: modelPlausible ? rawModel : null,
     trim: premiumTrim,
     manufacturer: isPlausibleMake(local.make, normalized) ? local.make : null,
     vehicleType: null,
