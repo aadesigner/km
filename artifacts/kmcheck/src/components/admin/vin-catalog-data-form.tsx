@@ -7,14 +7,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AdminCheckField,
   AdminField,
+  AdminSelectField,
   AdminTextField,
 } from "@/components/admin/admin-vin-form-fields";
+import { useTranslation } from "@/i18n/context";
+import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
 import {
-  ADMIN_BODY_SUGGESTIONS,
-  ADMIN_COUNTRY_SUGGESTIONS,
-  ADMIN_FUEL_SUGGESTIONS,
-  ADMIN_TRANSMISSION_SUGGESTIONS,
-} from "@/components/admin/admin-vin-form-constants";
+  ADMIN_BODY_OPTIONS,
+  ADMIN_COLOR_OPTIONS,
+  ADMIN_FUEL_OPTIONS,
+  ADMIN_TRANSMISSION_OPTIONS,
+  buildAttrSelectOptions,
+  buildCountrySelectOptions,
+  resolveBodySelectValue,
+  resolveColorSelectValue,
+  resolveCountrySelectValue,
+  resolveFuelSelectValue,
+  resolveTransmissionSelectValue,
+} from "@/lib/vehicle-attr-options";
 import {
   VinCatalogHistorySections,
   normalizeAccidents,
@@ -338,6 +348,7 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
   compact = false,
   showHistorySections = true,
 }, ref) {
+  const { t, language } = useTranslation();
   const [pendingPhotoUrl, setPendingPhotoUrl] = useState("");
   const photoManagerRef = useRef<VinCatalogPhotoManagerHandle>(null);
 
@@ -356,6 +367,37 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
     onChange({ [key]: value });
   };
 
+  const countryLabels = useMemo(() => countryLabelsFromT(t), [t]);
+  const transmissionOptions = useMemo(
+    () => buildAttrSelectOptions(t, ADMIN_TRANSMISSION_OPTIONS, form.transmission, "—", resolveTransmissionSelectValue),
+    [t, form.transmission],
+  );
+  const fuelOptions = useMemo(
+    () => buildAttrSelectOptions(t, ADMIN_FUEL_OPTIONS, form.fuelType, "—", resolveFuelSelectValue),
+    [t, form.fuelType],
+  );
+  const bodyOptions = useMemo(
+    () => buildAttrSelectOptions(t, ADMIN_BODY_OPTIONS, form.bodyType, "—", resolveBodySelectValue),
+    [t, form.bodyType],
+  );
+  const colorOptions = useMemo(
+    () => buildAttrSelectOptions(t, ADMIN_COLOR_OPTIONS, form.color, "—", resolveColorSelectValue),
+    [t, form.color],
+  );
+  const countryOptions = useMemo(
+    () => buildCountrySelectOptions(
+      (code) => formatCountryName(code, language, countryLabels) || code.toUpperCase(),
+      form.country,
+    ),
+    [language, countryLabels, form.country],
+  );
+
+  const transmissionValue = resolveTransmissionSelectValue(form.transmission);
+  const fuelValue = resolveFuelSelectValue(form.fuelType);
+  const bodyValue = resolveBodySelectValue(form.bodyType);
+  const colorValue = resolveColorSelectValue(form.color);
+  const countryValue = resolveCountrySelectValue(form.country);
+
   const historyCount = useMemo(() => historyRecordCount(form), [form]);
   const vehicleGrid = compact
     ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
@@ -371,34 +413,40 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
       <AdminTextField label="Year" value={form.year} onChange={(v) => set("year", v)} type="number" compact={compact} />
       <AdminTextField label="Trim" value={form.trim} onChange={(v) => set("trim", v)} compact={compact} />
       <AdminTextField label="Engine" value={form.engine} onChange={(v) => set("engine", v)} compact={compact} />
-      <AdminTextField
+      <AdminSelectField
         label="Transmission"
-        value={form.transmission}
+        value={transmissionValue}
         onChange={(v) => set("transmission", v)}
-        suggestions={ADMIN_TRANSMISSION_SUGGESTIONS}
+        options={transmissionOptions}
         compact={compact}
       />
-      <AdminTextField
+      <AdminSelectField
         label="Fuel type"
-        value={form.fuelType}
+        value={fuelValue}
         onChange={(v) => set("fuelType", v)}
-        suggestions={ADMIN_FUEL_SUGGESTIONS}
+        options={fuelOptions}
         compact={compact}
       />
-      <AdminTextField
+      <AdminSelectField
         label="Body type"
-        value={form.bodyType}
+        value={bodyValue}
         onChange={(v) => set("bodyType", v)}
-        suggestions={ADMIN_BODY_SUGGESTIONS}
+        options={bodyOptions}
         compact={compact}
       />
-      <AdminTextField label="Color" value={form.color} onChange={(v) => set("color", v)} compact={compact} />
-      <AdminTextField
+      <AdminSelectField
+        label="Color"
+        value={colorValue}
+        onChange={(v) => set("color", v)}
+        options={colorOptions}
+        compact={compact}
+      />
+      <AdminSelectField
         label="Country"
-        hint="ISO code or region (e.g. kr, us)"
-        value={form.country}
+        hint="Canonical ISO / region codes — reports translate by visitor language"
+        value={countryValue}
         onChange={(v) => set("country", v)}
-        suggestions={ADMIN_COUNTRY_SUGGESTIONS}
+        options={countryOptions}
         compact={compact}
       />
     </div>

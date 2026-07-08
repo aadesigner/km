@@ -1300,5 +1300,22 @@
   "maintenance_feature_checkout": "Kasa jest tymczasowo niedostępna. Twoje konto i istniejące raporty są bezpieczne.",
   "maintenance_feature_vin_reports": "Raporty VIN są tymczasowo niedostępne podczas planowanej konserwacji.",
   "vin_lookup_disabled_title": "Sprawdzanie VIN tymczasowo niedostępne",
-  "vin_lookup_disabled_body": "Pracujemy nad ulepszeniami. Płatne sprawdzenia VIN są wstrzymane — spróbuj ponownie wkrótce."
+  "vin_lookup_disabled_body": "Pracujemy nad ulepszeniami. Płatne sprawdzenia VIN są wstrzymane — spróbuj ponownie wkrótce.",
+  "trans_semi": "Półautomatyczna",
+  "color_white": "Biały",
+  "color_black": "Czarny",
+  "color_silver": "Srebrny",
+  "color_gray": "Szary",
+  "color_blue": "Niebieski",
+  "color_red": "Czerwony",
+  "color_green": "Zielony",
+  "color_brown": "Brązowy",
+  "color_beige": "Beżowy",
+  "color_gold": "Złoty",
+  "color_orange": "Pomarańczowy",
+  "color_yellow": "Żółty",
+  "color_purple": "Fioletowy",
+  "color_pink": "Różowy",
+  "color_bronze": "Brąz metaliczny",
+  "color_maroon": "Bordowy"
 }

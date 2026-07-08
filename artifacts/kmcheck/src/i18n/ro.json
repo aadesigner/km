@@ -1300,5 +1300,22 @@
   "maintenance_feature_checkout": "Checkout-ul este temporar indisponibil. Contul și rapoartele existente sunt în siguranță.",
   "maintenance_feature_vin_reports": "Rapoartele VIN sunt temporar indisponibile în timp ce finalizăm mentenanța programată.",
   "vin_lookup_disabled_title": "Verificarea VIN temporar indisponibilă",
-  "vin_lookup_disabled_body": "Lucrăm la îmbunătățiri chiar acum. Verificările VIN plătite sunt suspendate — încercați din nou în curând."
+  "vin_lookup_disabled_body": "Lucrăm la îmbunătățiri chiar acum. Verificările VIN plătite sunt suspendate — încercați din nou în curând.",
+  "trans_semi": "Semi-automată",
+  "color_white": "Alb",
+  "color_black": "Negru",
+  "color_silver": "Argintiu",
+  "color_gray": "Gri",
+  "color_blue": "Albastru",
+  "color_red": "Roșu",
+  "color_green": "Verde",
+  "color_brown": "Maro",
+  "color_beige": "Bej",
+  "color_gold": "Auriu",
+  "color_orange": "Portocaliu",
+  "color_yellow": "Galben",
+  "color_purple": "Mov",
+  "color_pink": "Roz",
+  "color_bronze": "Bronz",
+  "color_maroon": "Vișiniu"
 }

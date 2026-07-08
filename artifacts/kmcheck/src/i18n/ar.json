@@ -1278,5 +1278,22 @@
   "maintenance_feature_checkout": "الدفع غير متاح مؤقتًا. حسابك وتقاريرك الحالية آمنة.",
   "maintenance_feature_vin_reports": "تقارير VIN غير متاحة مؤقتًا أثناء الصيانة المجدولة.",
   "vin_lookup_disabled_title": "فحص VIN غير متاح مؤقتًا",
-  "vin_lookup_disabled_body": "نعمل على تحسينات حاليًا. تم إيقاف فحص VIN المدفوع مؤقتًا — يُرجى المحاولة لاحقًا."
+  "vin_lookup_disabled_body": "نعمل على تحسينات حاليًا. تم إيقاف فحص VIN المدفوع مؤقتًا — يُرجى المحاولة لاحقًا.",
+  "trans_semi": "شبه أوتوماتيك",
+  "color_white": "أبيض",
+  "color_black": "أسود",
+  "color_silver": "فضي",
+  "color_gray": "رمادي",
+  "color_blue": "أزرق",
+  "color_red": "أحمر",
+  "color_green": "أخضر",
+  "color_brown": "بني",
+  "color_beige": "بيج",
+  "color_gold": "ذهبي",
+  "color_orange": "برتقالي",
+  "color_yellow": "أصفر",
+  "color_purple": "بنفسجي",
+  "color_pink": "وردي",
+  "color_bronze": "برونزي",
+  "color_maroon": "كستنائي"
 }

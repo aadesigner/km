@@ -126,34 +126,80 @@ function KpiCard({
   );
 }
 
+type HeroRange = "today" | "week" | "month";
+
+const HERO_RANGES: { id: HeroRange; label: string }[] = [
+  { id: "today", label: "Today" },
+  { id: "week", label: "Week" },
+  { id: "month", label: "Month" },
+];
+
 function SalesHeroCard({
-  weekRevenue, weekTrend, monthRevenue, checksToday, avgOrder,
+  range,
+  onRangeChange,
+  sales,
+  signups,
+  checks,
+  avgOrder,
+  weekTrend,
 }: {
-  weekRevenue: number; weekTrend: number | null; monthRevenue: number;
-  checksToday: number; avgOrder: number;
+  range: HeroRange;
+  onRangeChange: (r: HeroRange) => void;
+  sales: number;
+  signups: number;
+  checks: number;
+  avgOrder: number;
+  weekTrend: number | null;
 }) {
   const up = (weekTrend ?? 0) >= 0;
+  const rangeLabel = range === "today" ? "Today" : range === "week" ? "This week" : "This month";
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="border-0 shadow-md overflow-hidden bg-gradient-to-br from-primary/90 via-primary to-primary/80 text-primary-foreground">
         <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <p className="text-xs sm:text-sm font-medium text-primary-foreground/80 uppercase tracking-wide">
+              Performance
+            </p>
+            <div
+              className="inline-flex rounded-full bg-black/15 p-0.5 backdrop-blur-sm"
+              role="tablist"
+              aria-label="Hero timeframe"
+            >
+              {HERO_RANGES.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={range === id}
+                  onClick={() => onRangeChange(id)}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold transition-colors ${
+                    range === id
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-primary-foreground/80 hover:text-primary-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-primary-foreground/80 uppercase tracking-wide">
-                Sales this week
-              </p>
-              <p className="text-3xl sm:text-4xl font-bold tabular-nums mt-1">{fmtEuro(weekRevenue)}</p>
-              {weekTrend != null && (
+              <p className="text-xs text-primary-foreground/75">{rangeLabel} sales</p>
+              <p className="text-3xl sm:text-4xl font-bold tabular-nums mt-1">{fmtEuro(sales)}</p>
+              {range === "week" && weekTrend != null && (
                 <p className={`flex items-center gap-1 text-xs sm:text-sm mt-2 ${up ? "text-green-100" : "text-red-100"}`}>
                   {up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                   {Math.abs(weekTrend)}% vs last week
                 </p>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full sm:w-auto sm:min-w-[280px]">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full sm:w-auto sm:min-w-[300px]">
               {[
-                { label: "This month", value: fmtEuro(monthRevenue) },
-                { label: "Checks today", value: String(checksToday) },
+                { label: `${rangeLabel} registrations`, value: String(signups) },
+                { label: `${rangeLabel} checks`, value: String(checks) },
                 { label: "Avg paid order", value: fmtEuro(avgOrder) },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded-lg bg-white/10 backdrop-blur px-2.5 py-2 sm:px-3 sm:py-2.5 text-center">
@@ -244,12 +290,27 @@ const TOOLTIP_STYLE = {
   background: "hsl(var(--background))",
 };
 
+function sumSeriesInUtcWindow(
+  source: DaySeries[],
+  key: "count" | "revenue",
+  fromIsoInclusive: string,
+): number {
+  let total = 0;
+  for (const row of source) {
+    const d = String(row.date).substring(0, 10);
+    if (d < fromIsoInclusive) continue;
+    total += Number((row as Record<string, unknown>)[key] ?? 0);
+  }
+  return total;
+}
+
 export default function AdminOverview() {
   const { data: rawStats, isLoading, isError, error, refetch, isFetching } = useAdminGetStats({
     query: { ...ADMIN_QUERY_OPTIONS, refetchInterval: 60_000 },
   });
   const stats = rawStats as unknown as ExtendedStats | undefined;
   const [timeRange, setTimeRange] = useState<"7d" | "30d">("7d");
+  const [heroRange, setHeroRange] = useState<HeroRange>("today");
 
   const derived = useMemo(() => {
     if (!stats) return null;
@@ -258,6 +319,8 @@ export default function AdminOverview() {
     const checksSource = timeRange === "7d" ? (stats.checksByDay ?? []) : (stats.checksByDay30 ?? []);
     const revenueSource = timeRange === "7d" ? (stats.revenueByDay ?? []) : (stats.revenueByDay30 ?? []);
     const usersSource = stats.usersByDay ?? [];
+    const revenue30Source = stats.revenueByDay30 ?? [];
+    const checks30Source = stats.checksByDay30 ?? [];
 
     const checksData = fillDays(checksSource, days, "count");
     const revenueData = fillDays(revenueSource, days, "revenue");
@@ -266,6 +329,40 @@ export default function AdminOverview() {
     const lastWeekRevenue = stats.revenueLastWeek ?? 0;
     const monthRevenue = stats.revenueThisMonth ?? 0;
     const signupsThisWeek = stats.signupsThisWeek ?? 0;
+
+    const todayIso = utcDateKeyDaysAgo(0);
+    const weekStartIso = utcDateKeyDaysAgo(6);
+    const monthStartIso = (() => {
+      const now = new Date();
+      return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
+    })();
+
+    const salesToday = sumSeriesInUtcWindow(revenue30Source, "revenue", todayIso);
+    const signupsToday = sumSeriesInUtcWindow(usersSource, "count", todayIso);
+    const checksToday = stats.checksToday ?? sumSeriesInUtcWindow(checks30Source, "count", todayIso);
+    const signupsMonth = sumSeriesInUtcWindow(usersSource, "count", monthStartIso);
+    const checksMonth = sumSeriesInUtcWindow(checks30Source, "count", monthStartIso);
+    // usersByDay is 30d — week total from series (prefer server weekly when available for week)
+    const signupsWeekFromSeries = sumSeriesInUtcWindow(usersSource, "count", weekStartIso);
+    const checksWeekFromSeries = sumSeriesInUtcWindow(checks30Source, "count", weekStartIso);
+
+    const hero = {
+      today: {
+        sales: salesToday,
+        signups: signupsToday,
+        checks: checksToday,
+      },
+      week: {
+        sales: weekRevenue,
+        signups: signupsThisWeek || signupsWeekFromSeries,
+        checks: stats.checksThisWeek ?? checksWeekFromSeries,
+      },
+      month: {
+        sales: monthRevenue,
+        signups: signupsMonth,
+        checks: checksMonth,
+      },
+    } as const;
 
     return {
       days,
@@ -283,6 +380,7 @@ export default function AdminOverview() {
       avgOrder: stats.avgOrderValue ?? 0,
       totalRevStr: stats.totalRevenue != null ? fmtEuro(Number(stats.totalRevenue)) : undefined,
       cacheStr: stats.cacheHitRate != null ? `${stats.cacheHitRate.toFixed(1)}%` : undefined,
+      hero,
     };
   }, [stats, timeRange]);
 
@@ -322,11 +420,13 @@ export default function AdminOverview() {
       </div>
 
       <SalesHeroCard
-        weekRevenue={derived?.weekRevenue ?? 0}
-        weekTrend={derived?.revenueWeekTrend ?? null}
-        monthRevenue={derived?.monthRevenue ?? 0}
-        checksToday={stats?.checksToday ?? 0}
+        range={heroRange}
+        onRangeChange={setHeroRange}
+        sales={derived?.hero[heroRange].sales ?? 0}
+        signups={derived?.hero[heroRange].signups ?? 0}
+        checks={derived?.hero[heroRange].checks ?? 0}
         avgOrder={derived?.avgOrder ?? 0}
+        weekTrend={derived?.revenueWeekTrend ?? null}
       />
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">

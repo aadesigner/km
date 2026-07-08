@@ -1278,5 +1278,22 @@
   "maintenance_feature_checkout": "Оплата тимчасово недоступна. Ваш обліковий запис і звіти в безпеці.",
   "maintenance_feature_vin_reports": "Звіти VIN тимчасово недоступні під час планового обслуговування.",
   "vin_lookup_disabled_title": "Перевірка VIN тимчасово недоступна",
-  "vin_lookup_disabled_body": "Ми працюємо над покращеннями. Платна перевірка VIN призупинена — спробуйте пізніше."
+  "vin_lookup_disabled_body": "Ми працюємо над покращеннями. Платна перевірка VIN призупинена — спробуйте пізніше.",
+  "trans_semi": "Напівавтомат",
+  "color_white": "Білий",
+  "color_black": "Чорний",
+  "color_silver": "Сріблястий",
+  "color_gray": "Сірий",
+  "color_blue": "Синій",
+  "color_red": "Червоний",
+  "color_green": "Зелений",
+  "color_brown": "Коричневий",
+  "color_beige": "Бежевий",
+  "color_gold": "Золотий",
+  "color_orange": "Помаранчевий",
+  "color_yellow": "Жовтий",
+  "color_purple": "Фіолетовий",
+  "color_pink": "Рожевий",
+  "color_bronze": "Бронзовий",
+  "color_maroon": "Бордовий"
 }

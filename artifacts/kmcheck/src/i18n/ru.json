@@ -1278,5 +1278,22 @@
   "maintenance_feature_checkout": "Оплата временно недоступна. Ваш аккаунт и отчёты в безопасности.",
   "maintenance_feature_vin_reports": "Отчёты VIN временно недоступны во время планового обслуживания.",
   "vin_lookup_disabled_title": "Проверка VIN временно недоступна",
-  "vin_lookup_disabled_body": "Мы работаем над улучшениями. Платная проверка VIN приостановлена — попробуйте позже."
+  "vin_lookup_disabled_body": "Мы работаем над улучшениями. Платная проверка VIN приостановлена — попробуйте позже.",
+  "trans_semi": "Полуавтомат",
+  "color_white": "Белый",
+  "color_black": "Чёрный",
+  "color_silver": "Серебристый",
+  "color_gray": "Серый",
+  "color_blue": "Синий",
+  "color_red": "Красный",
+  "color_green": "Зелёный",
+  "color_brown": "Коричневый",
+  "color_beige": "Бежевый",
+  "color_gold": "Золотой",
+  "color_orange": "Оранжевый",
+  "color_yellow": "Жёлтый",
+  "color_purple": "Фиолетовый",
+  "color_pink": "Розовый",
+  "color_bronze": "Бронзовый",
+  "color_maroon": "Бордовый"
 }

@@ -39,6 +39,12 @@ import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { resolveLatestOdometerRecordedDate, resolveLatestRecordedOdometer } from "@/lib/resolve-latest-odometer";
 import { translateFuelType } from "@/lib/translate-fuel-type";
+import {
+  BODY_I18N_KEYS as BODY_KEYS,
+  TRANSMISSION_I18N_KEYS as TRANSMISSION_KEYS,
+  translateColor,
+  translateMappedValue,
+} from "@/lib/vehicle-attr-options";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
 import { formatMarketAuctionDate } from "@/lib/market-chart-data";
@@ -189,27 +195,10 @@ interface Props {
   params: { id: string; lang: string };
 }
 
-const TRANSMISSION_KEYS: Record<string, string> = {
-  automatic: "trans_automatic", manual: "trans_manual", cvt: "trans_cvt",
-  "dual-clutch": "trans_dct", dct: "trans_dct", amt: "trans_amt",
-};
-const BODY_KEYS: Record<string, string> = {
-  sedan: "body_sedan", saloon: "body_sedan", suv: "body_suv",
-  hatchback: "body_hatchback", coupe: "body_coupe", convertible: "body_convertible",
-  cabriolet: "body_convertible", wagon: "body_wagon", estate: "body_wagon",
-  van: "body_van", minivan: "body_minivan", pickup: "body_pickup",
-  truck: "body_truck", crossover: "body_crossover",
-};
 const SEVERITY_KEYS = ACCIDENT_SEVERITY_I18N_KEYS;
 
 function translateValue(raw: string | null | undefined, map: Record<string, string>, t: (k: string) => string): string | null {
-  if (!raw) return null;
-  const key = map[raw.toLowerCase().trim()];
-  if (key) {
-    const translated = t(key);
-    return translated !== key ? translated : raw;
-  }
-  return raw;
+  return translateMappedValue(raw, map, t) ?? (raw?.trim() || null);
 }
 
 
@@ -677,7 +666,7 @@ export default function VinPublic({ params }: Props) {
       : []),
     { icon: Gauge, label: t("free_decoder_field_transmission"), value: translateValue(data.transmission, TRANSMISSION_KEYS, t) },
     { icon: Wrench, label: t("free_decoder_field_engine"), value: data.engine },
-    { icon: Palette, label: t("color"), value: data.color },
+    { icon: Palette, label: t("color"), value: translateColor(t, data.color) ?? data.color },
     ...(data.isUnlocked
       ? [
           { icon: Box, label: t("free_decoder_field_body_type"), value: translateValue(data.bodyType, BODY_KEYS, t) ?? cleanLabel(data.bodyType) },

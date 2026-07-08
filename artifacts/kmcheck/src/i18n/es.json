@@ -1300,5 +1300,22 @@
   "maintenance_feature_checkout": "El pago no está disponible temporalmente. Su cuenta y sus informes existentes están seguros.",
   "maintenance_feature_vin_reports": "Los informes VIN no están disponibles temporalmente mientras completamos el mantenimiento programado.",
   "vin_lookup_disabled_title": "Comprobación VIN temporalmente no disponible",
-  "vin_lookup_disabled_body": "Estamos mejorando el servicio. Las comprobaciones VIN de pago están en pausa; inténtelo de nuevo en breve."
+  "vin_lookup_disabled_body": "Estamos mejorando el servicio. Las comprobaciones VIN de pago están en pausa; inténtelo de nuevo en breve.",
+  "trans_semi": "Semiautomática",
+  "color_white": "Blanco",
+  "color_black": "Negro",
+  "color_silver": "Plata",
+  "color_gray": "Gris",
+  "color_blue": "Azul",
+  "color_red": "Rojo",
+  "color_green": "Verde",
+  "color_brown": "Marrón",
+  "color_beige": "Beige",
+  "color_gold": "Dorado",
+  "color_orange": "Naranja",
+  "color_yellow": "Amarillo",
+  "color_purple": "Morado",
+  "color_pink": "Rosa",
+  "color_bronze": "Bronce",
+  "color_maroon": "Granate"
 }

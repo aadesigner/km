@@ -6,10 +6,11 @@ import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
 import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home } from "lucide-react";
+import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KmcheckLogo, KmcheckMark } from "@/components/logo";
 import { SEOHead } from "@/components/seo";
+import { useTheme } from "@/components/theme-provider";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -58,6 +59,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
   const { data: pendingOpen = 0 } = useQuery({
     queryKey: ["/api/admin/pending-vin-checks", "nav-badge"],
@@ -208,10 +211,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2 font-semibold text-sm">
-            <KmcheckMark className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2 font-semibold text-sm min-w-0">
+            <KmcheckMark className="h-5 w-5 text-primary shrink-0" />
             <span>Admin</span>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
         </header>
 
         <main className="flex-1 overflow-auto pb-[4.5rem] md:pb-0">

@@ -22,6 +22,7 @@ import {
   pathNeedingLangPrefix,
   buildLocalizedPath,
   markGeoLanguageEvaluated,
+  getStoredLangPreference,
 } from "@/lib/lang-preference";
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 
@@ -262,12 +263,15 @@ function VinResultLang(props: { params: { lang: string; id: string } }) {
 function AdminPage({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
+  const adminLang = getStoredLangPreference() ?? "en";
   return (
-    <RouteErrorBoundary scope="admin" resetKey={resetKey}>
-      <Suspense fallback={<PageLoader />}>
-        <AdminLayout>{children}</AdminLayout>
-      </Suspense>
-    </RouteErrorBoundary>
+    <I18nProvider initialLanguage={adminLang}>
+      <RouteErrorBoundary scope="admin" resetKey={resetKey}>
+        <Suspense fallback={<PageLoader />}>
+          <AdminLayout>{children}</AdminLayout>
+        </Suspense>
+      </RouteErrorBoundary>
+    </I18nProvider>
   );
 }
 

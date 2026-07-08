@@ -65,6 +65,12 @@ import {
   VinMileageGauge,
 } from "@/components/vin-mileage-animated";
 import { translateFuelType } from "@/lib/translate-fuel-type";
+import {
+  BODY_I18N_KEYS as BODY_KEYS,
+  TRANSMISSION_I18N_KEYS as TRANSMISSION_KEYS,
+  translateColor,
+  translateMappedValue,
+} from "@/lib/vehicle-attr-options";
 import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-market-value-chart";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
 import { shouldFormatAccidentLossAsKrw } from "@/lib/korean-currency";
@@ -220,27 +226,10 @@ type LookupData = {
 };
 
 // ── Value translation maps ────────────────────────────────────────────────────
-const TRANSMISSION_KEYS: Record<string, string> = {
-  automatic: "trans_automatic", manual: "trans_manual", cvt: "trans_cvt",
-  "dual-clutch": "trans_dct", dct: "trans_dct", amt: "trans_amt",
-};
-const BODY_KEYS: Record<string, string> = {
-  sedan: "body_sedan", saloon: "body_sedan", suv: "body_suv",
-  hatchback: "body_hatchback", coupe: "body_coupe", convertible: "body_convertible",
-  cabriolet: "body_convertible", wagon: "body_wagon", estate: "body_wagon",
-  van: "body_van", minivan: "body_minivan", pickup: "body_pickup",
-  truck: "body_truck", crossover: "body_crossover",
-};
 const SEVERITY_KEYS = ACCIDENT_SEVERITY_I18N_KEYS;
 
 function translateValue(raw: string | null | undefined, map: Record<string, string>, t: (k: string) => string): string | null {
-  if (!raw) return null;
-  const key = map[raw.toLowerCase().trim()];
-  if (key) {
-    const translated = t(key);
-    return translated !== key ? translated : raw;
-  }
-  return raw;
+  return translateMappedValue(raw, map, t) ?? (raw?.trim() || null);
 }
 
 // ── Score: see lib/vin-condition-score.ts ─────────────────────────────────────
@@ -1258,7 +1247,7 @@ export default function VinResult({ params }: Props) {
                   { icon: Wrench,    label: t("engine"),         value: data?.engine,      accent: "text-slate-500",  bg: "bg-slate-500/8" },
                   { icon: Zap,       label: t("hp"),             value: data?.hp ? `${data.hp} hp` : null, accent: "text-yellow-500", bg: "bg-yellow-500/8" },
                   { icon: Box,       label: t("body_type"),      value: cleanLabel(data?.bodyType) ?? translateValue(data?.bodyType, BODY_KEYS, t), accent: "text-pink-500", bg: "bg-pink-500/8" },
-                  { icon: Palette,   label: t("color"),          value: data?.color,       accent: "text-rose-500",   bg: "bg-rose-500/8" },
+                  { icon: Palette,   label: t("color"),          value: translateColor(t, data?.color) ?? data?.color, accent: "text-rose-500",   bg: "bg-rose-500/8" },
                   { icon: Settings2, label: t("cylinders"),      value: data?.cylinders ? `${data.cylinders} cyl` : null, accent: "text-indigo-500", bg: "bg-indigo-500/8" },
                 ].filter(f => f.value).map(({ icon: Icon, label, value, accent, bg }) => (
                   <div key={label} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40 min-w-0 h-full">
