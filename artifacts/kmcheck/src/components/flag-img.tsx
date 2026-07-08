@@ -11,10 +11,10 @@ const FLAG_DIMS: Record<FlagVariant, { w: number; h: number }> = {
   compact: { w: 13, h: 16 },
 };
 
-/** Retina PNG — sharper than SVG at small sizes on flagcdn. */
+/** 2× PNG — flagcdn supports WxH paths (not hNN). */
 export function flagCdnUrl(code: string, variant: FlagVariant = "default"): string {
-  const { h } = FLAG_DIMS[variant];
-  return `https://flagcdn.com/h${h * 2}/${code}.png`;
+  const { w, h } = FLAG_DIMS[variant];
+  return `https://flagcdn.com/${w * 2}x${h * 2}/${code}.png`;
 }
 
 /** Warm the browser cache before rendering a picker list. */
