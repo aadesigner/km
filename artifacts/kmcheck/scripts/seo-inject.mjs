@@ -53,8 +53,11 @@ const NOINDEX_EXACT = new Set([
   "/purchases",
   "/forgot-password",
   "/reset-password",
+  "/set-password",
   "/vin/processing",
 ]);
+
+const NOINDEX_PREFIXES = ["/adminx", "/dashboard"];
 
 const VIN_INDEX_RE = /^\/vin\/([A-HJ-NPR-Z0-9]{17})$/i;
 
@@ -92,7 +95,9 @@ export function resolvePageKey(rest) {
 export function isNoIndexPath(rest, pageKey) {
   if (pageKey === "not_found") return true;
   if (isIndexableVinRest(rest)) return false;
-  return NOINDEX_EXACT.has(rest) || rest.startsWith("/vin/");
+  if (NOINDEX_EXACT.has(rest)) return true;
+  if (NOINDEX_PREFIXES.some((p) => rest === p || rest.startsWith(`${p}/`))) return true;
+  return rest.startsWith("/vin/");
 }
 
 export const HREFLANG_MAP = LANG_HREFLANG;

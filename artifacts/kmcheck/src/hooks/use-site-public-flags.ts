@@ -30,7 +30,7 @@ export function useSitePublicFlags() {
     queryFn: ({ signal }) => fetchPublicSettings(signal),
     select: parsePublicSettings,
     staleTime: 60_000,
-    refetchInterval: () => (typeof document !== "undefined" && document.hidden ? false : 120_000),
+    refetchInterval: () => (typeof document !== "undefined" && document.hidden ? false : 300_000),
     refetchIntervalInBackground: false,
   });
 }

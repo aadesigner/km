@@ -44,11 +44,17 @@ export function vinLookupQueryKey(vin: string): readonly [string, string, string
   return ["/api/vin", "vin", normalizeVin(vin)];
 }
 
+/** Prefetch at most this many recent complete reports (avoids N× API load on large histories). */
+const HISTORY_PREFETCH_LIMIT = 4;
+
 /** @deprecated Use prefetchVinReport — summary rows must not seed the full report cache. */
 export function seedVinLookupsFromHistory(queryClient: QueryClient, lookups: VinLookup[]): void {
+  let prefetched = 0;
   for (const lookup of lookups) {
     if (lookup.status !== "complete" || !lookup.vin) continue;
+    if (prefetched >= HISTORY_PREFETCH_LIMIT) break;
     prefetchVinReport(queryClient, lookup.vin);
+    prefetched += 1;
   }
 }
 

@@ -1,11 +1,20 @@
 const CACHE_NAME = "kmcheck-vin-images-v1";
 const PREFETCH_CONCURRENCY = 6;
+/** Max images warmed per prefetchVinImages() call. */
+const MAX_URLS_PER_BATCH = 32;
+/** Cap in-memory session tracking to avoid unbounded growth. */
+const MAX_SESSION_TRACKED = 120;
 
 /** URLs that finished loading in this session — avoids spinner flash on report refetch. */
 const sessionLoadedUrls = new Set<string>();
 
 export function markVinImageSessionLoaded(url: string): void {
-  if (url) sessionLoadedUrls.add(url);
+  if (!url) return;
+  if (sessionLoadedUrls.size >= MAX_SESSION_TRACKED && !sessionLoadedUrls.has(url)) {
+    const oldest = sessionLoadedUrls.values().next().value;
+    if (oldest) sessionLoadedUrls.delete(oldest);
+  }
+  sessionLoadedUrls.add(url);
 }
 
 export function isVinImageSessionLoaded(url: string): boolean {
@@ -22,7 +31,7 @@ function isProxiedVinImage(url: string): boolean {
 
 /** Warm browser cache for VIN gallery URLs (same-origin proxied images). */
 export async function prefetchVinImages(urls: string[]): Promise<void> {
-  const unique = [...new Set(urls.filter(isProxiedVinImage))];
+  const unique = [...new Set(urls.filter(isProxiedVinImage))].slice(0, MAX_URLS_PER_BATCH);
   if (unique.length === 0) return;
 
   let cache: Cache | null = null;

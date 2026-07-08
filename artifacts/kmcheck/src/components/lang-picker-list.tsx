@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Check } from "lucide-react";
-import { FlagImg, prefetchFlags } from "@/components/flag-img";
+import { FlagImg, prefetchFlags, type FlagVariant } from "@/components/flag-img";
 import { LANG_PICKER_OPTIONS, type Language } from "@/lib/languages";
 import { cn } from "@/lib/utils";
 
@@ -15,10 +15,12 @@ export function LangPickerList({
   language,
   onSelect,
   tone = "nav",
+  flagVariant = tone === "nav" ? "compact" : "default",
 }: {
   language: Language;
   onSelect: (code: Language) => void;
   tone?: "nav" | "footer";
+  flagVariant?: FlagVariant;
 }) {
   const isFooter = tone === "footer";
 
@@ -47,7 +49,7 @@ export function LangPickerList({
                   : "text-foreground hover:bg-primary/[0.06]",
             )}
           >
-            <FlagImg code={l.flag} size={16} priority={active} />
+            <FlagImg code={l.flag} variant={flagVariant} priority={active} />
             <span className={cn("text-[13px] truncate flex-1", active && "font-semibold")}>{l.label}</span>
             {active && <Check className="h-3 w-3 text-primary shrink-0" />}
           </button>

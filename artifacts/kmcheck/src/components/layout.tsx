@@ -429,7 +429,7 @@ function MobileLangPicker({
               : "text-foreground hover:bg-primary/[0.06]",
         )}
       >
-        <FlagImg code={current?.img ?? "gb"} size={20} priority />
+        <FlagImg code={current?.img ?? "gb"} variant="compact" priority />
         <span className="hidden sm:inline max-w-[5.5rem] truncate text-[13px]">{current?.label}</span>
         <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
       </button>
@@ -666,8 +666,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <div ref={langRef} className="relative">
               <button
                 onClick={() => setLangOpen(v => !v)}
+                aria-label={LANGS.find(l => l.code === language)?.label ?? language}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 rounded-full font-medium",
+                  "flex items-center gap-1 rounded-full font-medium transition-[padding,gap] duration-150",
+                  langOpen ? "px-2" : "px-2.5 gap-1.5",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
                   langOpen
                     ? isDarkNav
@@ -678,10 +680,16 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       : "text-foreground hover:bg-primary/[0.06]",
                 )}
               >
-                <FlagImg code={LANGS.find(l => l.code === language)?.img ?? "gb"} size={20} priority />
-                <span className="max-w-[5.5rem] truncate text-[13px] hidden lg:inline">
-                  {LANGS.find(l => l.code === language)?.label}
-                </span>
+                <FlagImg
+                  code={LANGS.find(l => l.code === language)?.img ?? "gb"}
+                  variant="compact"
+                  priority
+                />
+                {!langOpen && (
+                  <span className="max-w-[5.5rem] truncate text-[13px] hidden lg:inline">
+                    {LANGS.find(l => l.code === language)?.label}
+                  </span>
+                )}
                 <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", langOpen && "rotate-180")} />
               </button>
 

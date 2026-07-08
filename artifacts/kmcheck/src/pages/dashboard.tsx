@@ -214,7 +214,7 @@ export default function Dashboard() {
         return d.thumbnailUrl ?? null;
       })
       .filter((url): url is string => typeof url === "string" && url.length > 0);
-    if (thumbUrls.length) void prefetchVinImages(thumbUrls.slice(0, 12));
+    if (thumbUrls.length) void prefetchVinImages(thumbUrls.slice(0, 8));
   }, [history?.items, queryClient]);
 
   // Pending VIN check saved in sessionStorage before auth / checkout

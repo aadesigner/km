@@ -31,7 +31,11 @@ const NOINDEX = [
   "/purchases",
   "/forgot-password",
   "/reset-password",
+  "/set-password",
+  "/vin/processing",
 ];
+
+const NOINDEX_PREFIXES = ["/adminx", "/dashboard"];
 
 const countryPageFavicons = Object.fromEntries(
   Object.keys(COUNTRY_PAGE_FAVICON_SLUGS).map((pageKey) => [
@@ -48,6 +52,7 @@ const js = `/* auto-generated — do not edit */
   var SEO_LANGS = ${JSON.stringify(SEO_LANGS)};
   var HREFLANG = ${JSON.stringify(HREFLANG_MAP)};
   var NOINDEX = ${JSON.stringify(NOINDEX)};
+  var NOINDEX_PREFIXES = ${JSON.stringify(NOINDEX_PREFIXES)};
   var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada"])};
   var BASE = ${JSON.stringify(basePath)};
   var DEFAULT_FAVICONS = ${JSON.stringify(DEFAULT_FAVICONS)};
@@ -74,10 +79,14 @@ const js = `/* auto-generated — do not edit */
 
   function isNoIndexPath(rest, pageKey) {
     if (pageKey === "not_found") return true;
-    if (NOINDEX.indexOf(rest) !== -1) return true;
-    if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
     if (VIN_INDEX_RE.test(rest)) return false;
-    return false;
+    if (NOINDEX.indexOf(rest) !== -1) return true;
+    for (var i = 0; i < NOINDEX_PREFIXES.length; i++) {
+      var p = NOINDEX_PREFIXES[i];
+      if (rest === p || rest.indexOf(p + "/") === 0) return true;
+    }
+    if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
+    return rest.indexOf("/vin/") === 0;
   }
 
   function stripBase(pathname) {

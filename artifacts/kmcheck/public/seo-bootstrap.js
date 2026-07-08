@@ -5,7 +5,8 @@
   var OG_LOCALE = {"en":"en_US","de":"de_DE","es":"es_ES","fr":"fr_FR","sq":"sq_AL","pl":"pl_PL","ro":"ro_RO","bg":"bg_BG","ar":"ar_SA","uk":"uk_UA","ru":"ru_RU"};
   var SEO_LANGS = ["en","de","es","fr","sq","pl","ro","bg","ar","uk","ru"];
   var HREFLANG = {"en":"en","de":"de","es":"es","fr":"fr","sq":"sq-AL","pl":"pl","ro":"ro","bg":"bg","ar":"ar","uk":"uk-UA","ru":"ru"};
-  var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password"];
+  var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password","/set-password","/vin/processing"];
+  var NOINDEX_PREFIXES = ["/adminx","/dashboard"];
   var VALID_COUNTRY_SLUGS = ["usa","korea","canada"];
   var BASE = "";
   var DEFAULT_FAVICONS = {"icon16":"/favicon-16x16.png","icon32":"/favicon-32x32.png","apple":"/apple-touch-icon.png"};
@@ -66,10 +67,14 @@
 
   function isNoIndexPath(rest, pageKey) {
     if (pageKey === "not_found") return true;
-    if (NOINDEX.indexOf(rest) !== -1) return true;
-    if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
     if (VIN_INDEX_RE.test(rest)) return false;
-    return false;
+    if (NOINDEX.indexOf(rest) !== -1) return true;
+    for (var i = 0; i < NOINDEX_PREFIXES.length; i++) {
+      var p = NOINDEX_PREFIXES[i];
+      if (rest === p || rest.indexOf(p + "/") === 0) return true;
+    }
+    if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
+    return rest.indexOf("/vin/") === 0;
   }
 
   function stripBase(pathname) {

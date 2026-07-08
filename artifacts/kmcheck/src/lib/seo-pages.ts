@@ -40,18 +40,6 @@ export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
   "/reset-password": "reset_password",
 };
 
-const NOINDEX_PREFIXES = [
-  "/adminx",
-  "/sign-in",
-  "/sign-up",
-  "/dashboard",
-  "/checkout",
-  "/purchases",
-  "/vin/",
-  "/forgot-password",
-  "/reset-password",
-];
-
 export function resolvePageKey(rest: string): SeoPageKey {
   const exact = PATH_TO_SEO_KEY[rest];
   if (exact) return exact;
@@ -71,13 +59,24 @@ export function resolvePageKey(rest: string): SeoPageKey {
   return "not_found";
 }
 
+const NOINDEX_PREFIXES = [
+  "/adminx",
+  "/sign-in",
+  "/sign-up",
+  "/dashboard",
+  "/checkout",
+  "/purchases",
+  "/forgot-password",
+  "/reset-password",
+  "/set-password",
+];
+
 export function isNoIndexPath(rest: string, pageKey: SeoPageKey): boolean {
   if (pageKey === "not_found") return true;
   if (isIndexableVinRest(rest)) return false;
-  return (
-    NOINDEX_PREFIXES.some((p) => rest === p.slice(1) || rest.startsWith(p.slice(1))) ||
-    (rest.startsWith("/vin/") && !isIndexableVinRest(rest))
-  );
+  if (NOINDEX_PREFIXES.some((p) => rest === p || rest.startsWith(`${p}/`))) return true;
+  if (rest === "/vin/processing" || rest.startsWith("/vin/processing/")) return true;
+  return rest.startsWith("/vin/");
 }
 
 export function resolveSeoFromPath(
