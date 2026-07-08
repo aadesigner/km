@@ -112,6 +112,14 @@ describe("vin-page-seo", () => {
     expect(seo.ogImageAlt).toBe("1991 Honda Accord");
   });
 
+  it("builds German VIN-only fallback SEO strings", () => {
+    const vin = "1HGBH41JXMN109186";
+    const seo = buildVinPageSeo("de", { vin }, "https://kmcheck.com");
+    expect(seo.title).toContain("Fahrzeughistorienbericht");
+    expect(seo.description).toContain("Kilometerstand");
+    expect(seo.canonicalPath).toBe("/de/vin/1HGBH41JXMN109186");
+  });
+
   it("emits WebPage + Vehicle JSON-LD", () => {
     const seo = buildVinPageSeo(
       "en",

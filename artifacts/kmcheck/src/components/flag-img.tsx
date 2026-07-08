@@ -1,31 +1,33 @@
 import { cn } from "@/lib/utils";
 
+const FLAG_ICONS_VERSION = "7.5.0";
+
 const prefetched = new Set<string>();
 
-export type FlagVariant = "default" | "compact";
+export type FlagVariant = "default" | "nav" | "list";
 
-const FLAG_DIMS: Record<FlagVariant, { w: number; h: number }> = {
-  /** Standard 4:3 — footer, country columns */
-  default: { w: 20, h: 15 },
-  /** Taller, narrower crop — navbar triggers & pickers */
-  compact: { w: 13, h: 16 },
+/** Display size (px) — width; height = width × 3/4 (standard 4:3 flag) */
+const FLAG_WIDTH: Record<FlagVariant, number> = {
+  nav: 14,
+  list: 16,
+  default: 18,
 };
 
-/** 2× PNG — flagcdn supports WxH paths (not hNN). */
-export function flagCdnUrl(code: string, variant: FlagVariant = "default"): string {
-  const { w, h } = FLAG_DIMS[variant];
-  return `https://flagcdn.com/${w * 2}x${h * 2}/${code}.png`;
+/**
+ * lipis/flag-icons — consistent 4:3 SVGs (not flagcdn; no circle crop).
+ * @see https://github.com/lipis/flag-icons
+ */
+export function flagUrl(code: string): string {
+  return `https://cdn.jsdelivr.net/npm/flag-icons@${FLAG_ICONS_VERSION}/flags/4x3/${code}.svg`;
 }
 
-/** Warm the browser cache before rendering a picker list. */
-export function prefetchFlags(codes: string[], variant: FlagVariant = "compact"): void {
+export function prefetchFlags(codes: string[]): void {
   if (typeof window === "undefined") return;
   for (const code of codes) {
-    const key = `${variant}:${code}`;
-    if (prefetched.has(key)) continue;
-    prefetched.add(key);
+    if (prefetched.has(code)) continue;
+    prefetched.add(code);
     const img = new Image();
-    img.src = flagCdnUrl(code, variant);
+    img.src = flagUrl(code);
   }
 }
 
@@ -37,20 +39,18 @@ export function FlagImg({
   priority = false,
 }: {
   code: string;
-  /** Overrides variant width (height follows variant aspect). */
+  /** Width in px (height follows 4:3). */
   size?: number;
   variant?: FlagVariant;
   className?: string;
-  /** Eager load for the visible/active flag in a trigger button. */
   priority?: boolean;
 }) {
-  const base = FLAG_DIMS[variant];
-  const width = size ?? base.w;
-  const height = Math.round(width * (base.h / base.w));
+  const width = size ?? FLAG_WIDTH[variant];
+  const height = Math.round((width * 3) / 4);
 
   return (
     <img
-      src={flagCdnUrl(code, variant)}
+      src={flagUrl(code)}
       width={width}
       height={height}
       alt=""
@@ -58,8 +58,8 @@ export function FlagImg({
       decoding="async"
       fetchPriority={priority ? "high" : "low"}
       className={cn(
-        "shrink-0 rounded-[3px] object-cover object-center",
-        "ring-1 ring-black/10 dark:ring-white/15 shadow-[0_0_0_0.5px_rgba(0,0,0,0.04)]",
+        "shrink-0 rounded-[2px] object-contain",
+        "shadow-[0_0_0_0.5px_rgba(0,0,0,0.08)]",
         className,
       )}
     />

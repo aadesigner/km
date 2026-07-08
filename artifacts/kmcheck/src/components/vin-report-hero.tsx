@@ -245,6 +245,12 @@ function HeroPhotoGallery({
   const touchX = useRef(0);
   const currentPhoto = photos[photoIdx] ?? photos[0] ?? null;
   const showNav = photos.length > 1 && !locked;
+  const preloadIndices = useMemo(() => {
+    if (photos.length <= 1) return [];
+    const prev = (photoIdx - 1 + photos.length) % photos.length;
+    const next = (photoIdx + 1) % photos.length;
+    return [...new Set([prev, next])];
+  }, [photoIdx, photos.length]);
   const [loaded, setLoaded] = useState<Record<number, boolean>>(() => {
     const init: Record<number, boolean> = {};
     photos.forEach((url, i) => {
@@ -253,16 +259,6 @@ function HeroPhotoGallery({
     return init;
   });
   const [failed, setFailed] = useState<Record<number, boolean>>({});
-
-  const visibleIndices = useMemo(() => {
-    if (photos.length === 0) return [];
-    const set = new Set<number>([photoIdx]);
-    if (photos.length > 1) {
-      set.add((photoIdx - 1 + photos.length) % photos.length);
-      set.add((photoIdx + 1) % photos.length);
-    }
-    return [...set];
-  }, [photoIdx, photos.length]);
 
   const markLoaded = useCallback((i: number) => {
     setLoaded((prev) => (prev[i] ? prev : { ...prev, [i]: true }));
@@ -281,9 +277,11 @@ function HeroPhotoGallery({
   const go = useCallback(
     (next: number) => {
       if (photos.length === 0) return;
-      onIndexChange((next + photos.length) % photos.length);
+      const target = (next + photos.length) % photos.length;
+      if (target === photoIdx) return;
+      onIndexChange(target);
     },
-    [photos.length, onIndexChange],
+    [photoIdx, photos.length, onIndexChange],
   );
 
   const navBtnClass =
@@ -353,19 +351,24 @@ function HeroPhotoGallery({
     >
       {currentPhoto && !failed[photoIdx] ? (
         <>
-          {visibleIndices.map((i) => (
-            <HeroPhotoFrame
-              key={i}
-              src={photos[i]!}
-              alt={vehicleTitle}
-              priority={i === photoIdx}
-              onLoaded={() => markLoaded(i)}
-              onFailed={() => markFailed(i)}
-              className={cn(
-                "absolute inset-0 max-sm:transition-none transition-opacity duration-200",
-                i === photoIdx ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none",
-                "group-hover/gallery:scale-[1.02] sm:rounded-xl",
-              )}
+          <HeroPhotoFrame
+            src={photos[photoIdx]!}
+            alt={vehicleTitle}
+            priority
+            onLoaded={() => markLoaded(photoIdx)}
+            onFailed={() => markFailed(photoIdx)}
+            className="relative sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300"
+          />
+          {preloadIndices.map((i) => (
+            <img
+              key={`preload-${i}`}
+              src={photos[i]}
+              alt=""
+              className="sr-only"
+              loading="eager"
+              decoding="async"
+              aria-hidden
+              onLoad={() => markLoaded(i)}
             />
           ))}
           {!loaded[photoIdx] && !isVinImageSessionLoaded(currentPhoto) && (

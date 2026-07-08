@@ -21,8 +21,14 @@ describe("englishPrefixRedirectTarget", () => {
   });
 
   it("maps unsupported two-letter lang slugs to /en/…", () => {
-    expect(englishPrefixRedirectTarget("/fr/pricing")).toBe("/en/pricing");
-    expect(englishPrefixRedirectTarget("/de/cars/usa")).toBe("/en/cars/usa");
+    expect(englishPrefixRedirectTarget("/xx/pricing")).toBe("/en/pricing");
+    expect(englishPrefixRedirectTarget("/zz/cars/usa")).toBe("/en/cars/usa");
+  });
+
+  it("leaves supported de/fr/bg prefixes unchanged", () => {
+    expect(englishPrefixRedirectTarget("/fr/pricing")).toBeNull();
+    expect(englishPrefixRedirectTarget("/de/cars/usa")).toBeNull();
+    expect(englishPrefixRedirectTarget("/bg/faq")).toBeNull();
   });
 
   it("exempts root, admin, and legacy country paths", () => {

@@ -123,21 +123,21 @@ export function Footer() {
                   aria-label={current.label}
                   onClick={() => setLangOpen((v) => !v)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors min-w-[11.5rem]",
+                    "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] transition-colors min-w-[10rem]",
                     langOpen
                       ? "border-primary/45 bg-primary/15 text-white"
                       : "border-white/[0.12] bg-white/[0.03] text-white/80 hover:border-white/22 hover:bg-white/[0.06]",
                   )}
                 >
-                  <FlagImg code={current.img} size={18} priority />
+                  <FlagImg code={current.img} size={16} priority />
                   <span className="font-medium truncate flex-1 text-left">{current.label}</span>
-                  <ChevronUp className={cn("h-3.5 w-3.5 opacity-50 transition-transform", langOpen && "rotate-180")} />
+                  <ChevronUp className={cn("h-3 w-3 opacity-50 transition-transform", langOpen && "rotate-180")} />
                 </button>
 
                 {langOpen && (
                   <div
                     role="listbox"
-                    className="absolute bottom-full left-0 mb-2 z-30 w-[18.5rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-white/12 bg-[#0c1222] shadow-2xl shadow-black/50 p-1.5"
+                    className="absolute bottom-full left-0 mb-1.5 z-30 w-[17rem] max-w-[calc(100vw-2.5rem)] rounded-xl border border-white/12 bg-[#0c1222] shadow-2xl shadow-black/50 p-1"
                   >
                     <LangPickerList
                       language={language}

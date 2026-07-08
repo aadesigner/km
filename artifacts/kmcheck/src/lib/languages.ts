@@ -31,7 +31,7 @@ export type LangMeta = {
   label: string;
   /** Short code for compact UIs */
   short: string;
-  /** flagcdn.com country code */
+  /** ISO 3166-1 alpha-2 for lipis/flag-icons (4:3 SVG) */
   flag: string;
   hreflang: string;
   ogLocale: string;

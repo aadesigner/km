@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  Moon, Sun, Monitor, User, Shield, LogOut, X,
+  Moon, Sun, User, Shield, LogOut, X,
   ChevronRight, ChevronDown, Check,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,180 +114,6 @@ const NAV_DROPDOWN_BASE = cn(
 /** Dropdown panel shell — motion handles enter/exit; avoid tailwind animate-in (double animation). */
 const NAV_DROPDOWN_CLS = NAV_DROPDOWN_BASE;
 
-const MOBILE_THEMES = ["light", "dark", "system"] as const;
-type MobileTheme = (typeof MOBILE_THEMES)[number];
-
-const MOBILE_THEME_ICONS: Record<MobileTheme, typeof Sun> = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-};
-
-function MobileThemeToggle({
-  theme,
-  setTheme,
-  isDarkNav,
-  scrolled,
-  labels,
-  mobileMenuOpen = false,
-}: {
-  theme: MobileTheme;
-  setTheme: (theme: MobileTheme) => void;
-  isDarkNav: boolean;
-  scrolled: boolean;
-  labels: Record<MobileTheme, string>;
-  mobileMenuOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
-  const CurrentIcon = MOBILE_THEME_ICONS[theme];
-
-  const close = useCallback(() => setOpen(false), []);
-
-  const updateMenuPosition = useCallback(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    setMenuStyle({
-      position: "fixed",
-      top: rect.bottom + 8,
-      right: Math.max(12, window.innerWidth - rect.right),
-      zIndex: 120,
-      minWidth: "9.5rem",
-    });
-  }, []);
-
-  useEffect(() => {
-    if (mobileMenuOpen) close();
-  }, [mobileMenuOpen, close]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    updateMenuPosition();
-    const onReflow = () => updateMenuPosition();
-    window.addEventListener("resize", onReflow);
-    window.addEventListener("scroll", onReflow, true);
-    return () => {
-      window.removeEventListener("resize", onReflow);
-      window.removeEventListener("scroll", onReflow, true);
-    };
-  }, [open, updateMenuPosition]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
-      close();
-    };
-    const id = window.setTimeout(() => {
-      document.addEventListener("pointerdown", onPointerDown, true);
-    }, 0);
-    return () => {
-      window.clearTimeout(id);
-      document.removeEventListener("pointerdown", onPointerDown, true);
-    };
-  }, [open, close]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, close]);
-
-  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!open) updateMenuPosition();
-    setOpen((v) => !v);
-  };
-
-  const handleSelect = (th: MobileTheme) => {
-    close();
-    requestAnimationFrame(() => setTheme(th));
-  };
-
-  const menu = mounted
-    ? createPortal(
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              ref={menuRef}
-              role="menu"
-              aria-label={labels[theme]}
-              initial={{ opacity: 0, y: -4, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              style={{ ...menuStyle, transformOrigin: "top right" }}
-              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5"
-            >
-              {MOBILE_THEMES.map((th) => {
-                const Icon = MOBILE_THEME_ICONS[th];
-                const active = theme === th;
-                return (
-                  <button
-                    key={th}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={active}
-                    onClick={() => handleSelect(th)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/[0.06] active:bg-primary/10 transition-colors text-left"
-                  >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
-                    <span className={cn("text-sm flex-1", active ? "font-semibold text-primary" : "text-foreground")}>
-                      {labels[th]}
-                    </span>
-                    {active && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                  </button>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body,
-      )
-    : null;
-
-  return (
-    <div className="relative">
-      <button
-        ref={btnRef}
-        type="button"
-        title={labels[theme]}
-        aria-label={labels[theme]}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={handleToggle}
-        className={cn(
-          "relative inline-flex shrink-0 items-center justify-center rounded-full transition-[color,background-color] duration-200",
-          scrolled ? "h-8 w-8" : "h-9 w-9",
-          open
-            ? isDarkNav
-              ? "bg-white/10 text-white"
-              : "bg-primary/10 text-primary"
-            : isDarkNav
-              ? "text-white/50 hover:text-white hover:bg-white/[0.07]"
-              : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
-        )}
-      >
-        <CurrentIcon className="h-4 w-4" />
-      </button>
-      {menu}
-    </div>
-  );
-}
-
 function MobileLangPicker({
   language,
   onLanguageChange,
@@ -313,12 +139,14 @@ function MobileLangPicker({
     const btn = btnRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
+    const margin = 12;
+    const width = Math.min(288, window.innerWidth - margin * 2);
     setMenuStyle({
       position: "fixed",
       top: rect.bottom + 8,
-      right: Math.max(12, window.innerWidth - rect.right),
-      zIndex: 120,
-      minWidth: "13rem",
+      right: margin,
+      width,
+      zIndex: 130,
     });
   }, []);
 
@@ -382,25 +210,26 @@ function MobileLangPicker({
     ? createPortal(
         <AnimatePresence>
           {open && (
-            <motion.div
-              ref={menuRef}
-              role="menu"
-              aria-label="Language"
-              initial={{ opacity: 0, y: -4, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              style={{ ...menuStyle, transformOrigin: "top right" }}
-              className="rounded-2xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl shadow-black/15 p-1.5 w-[18.5rem] max-w-[calc(100vw-1.5rem)]"
-            >
-              <LangPickerList
-                language={language as Language}
-                onSelect={(code) => {
-                  close();
-                  requestAnimationFrame(() => onLanguageChange(code));
-                }}
-              />
-            </motion.div>
+              <motion.div
+                ref={menuRef}
+                role="menu"
+                aria-label="Language"
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                style={{ ...menuStyle, transformOrigin: "top right" }}
+                className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
+              >
+                <LangPickerList
+                  language={language as Language}
+                  layout="mobile"
+                  onSelect={(code) => {
+                    close();
+                    requestAnimationFrame(() => onLanguageChange(code));
+                  }}
+                />
+              </motion.div>
           )}
         </AnimatePresence>,
         document.body,
@@ -418,7 +247,7 @@ function MobileLangPicker({
         aria-expanded={open}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-[color,background-color] duration-200",
+          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-200",
           scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
           open
             ? isDarkNav
@@ -429,8 +258,7 @@ function MobileLangPicker({
               : "text-foreground hover:bg-primary/[0.06]",
         )}
       >
-        <FlagImg code={current?.img ?? "gb"} variant="compact" priority />
-        <span className="hidden sm:inline max-w-[5.5rem] truncate text-[13px]">{current?.label}</span>
+        <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority />
         <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
       </button>
       {menu}
@@ -441,7 +269,7 @@ function MobileLangPicker({
 
 export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number }) {
   const { t, language, setLanguage } = useTranslation();
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [location, setLocation] = useLocation();
   const { isSignedIn, isLoaded, user, logout } = useAuth();
   const [scrolled, setScrolled]       = useState(false);
@@ -668,8 +496,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 onClick={() => setLangOpen(v => !v)}
                 aria-label={LANGS.find(l => l.code === language)?.label ?? language}
                 className={cn(
-                  "flex items-center gap-1 rounded-full font-medium transition-[padding,gap] duration-150",
-                  langOpen ? "px-2" : "px-2.5 gap-1.5",
+                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-150",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
                   langOpen
                     ? isDarkNav
@@ -682,14 +509,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               >
                 <FlagImg
                   code={LANGS.find(l => l.code === language)?.img ?? "gb"}
-                  variant="compact"
+                  variant="nav"
+                  size={18}
                   priority
                 />
-                {!langOpen && (
-                  <span className="max-w-[5.5rem] truncate text-[13px] hidden lg:inline">
-                    {LANGS.find(l => l.code === language)?.label}
-                  </span>
-                )}
                 <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", langOpen && "rotate-180")} />
               </button>
 
@@ -751,7 +574,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     </AvatarFallback>
                   </Avatar>
                   <span className={cn(
-                    "text-[13px] font-medium max-w-[90px] truncate hidden lg:block transition-colors",
+                    "font-medium max-w-[100px] truncate hidden lg:block transition-colors",
+                    scrolled ? "text-sm" : "text-[15px]",
                     isDarkNav ? "text-white/80" : "text-foreground",
                   )}>
                     {displayName}
@@ -844,18 +668,22 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 scrolled={scrolled}
                 mobileMenuOpen={mobileOpen}
               />
-              <MobileThemeToggle
-                theme={theme}
-                setTheme={setTheme}
-                isDarkNav={isDarkNav}
-                scrolled={scrolled}
-                mobileMenuOpen={mobileOpen}
-                labels={{
-                  light: t("theme_light"),
-                  dark: t("theme_dark"),
-                  system: t("theme_system"),
-                }}
-              />
+              <button
+                type="button"
+                onClick={toggleTheme}
+                title="Toggle theme"
+                aria-label="Toggle theme"
+                className={cn(
+                  "relative rounded-full flex items-center justify-center transition-colors duration-200",
+                  scrolled ? "h-8 w-8" : "h-9 w-9",
+                  isDarkNav
+                    ? "text-white/55 hover:text-white hover:bg-white/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+                )}
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </button>
             </div>
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>

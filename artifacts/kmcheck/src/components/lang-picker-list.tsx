@@ -15,19 +15,28 @@ export function LangPickerList({
   language,
   onSelect,
   tone = "nav",
-  flagVariant = tone === "nav" ? "compact" : "default",
+  layout = "default",
+  flagVariant = tone === "nav" ? "list" : tone === "footer" ? "list" : "default",
 }: {
   language: Language;
   onSelect: (code: Language) => void;
   tone?: "nav" | "footer";
+  /** Mobile navbar — single column, larger touch targets */
+  layout?: "default" | "mobile";
   flagVariant?: FlagVariant;
 }) {
   const isFooter = tone === "footer";
+  const isMobile = layout === "mobile";
 
   return (
     <div
       role="listbox"
-      className="grid grid-cols-1 sm:grid-cols-2 gap-0.5 max-h-[min(18rem,70vh)] overflow-y-auto overscroll-contain"
+      className={cn(
+        "grid gap-0.5 overflow-y-auto overscroll-contain",
+        isMobile
+          ? "grid-cols-1 max-h-[min(22rem,58vh)] py-0.5"
+          : "grid-cols-1 sm:grid-cols-2 max-h-[min(18rem,70vh)]",
+      )}
     >
       {LANG_PICKER_OPTIONS.map((l) => {
         const active = language === l.code;
@@ -39,19 +48,30 @@ export function LangPickerList({
             aria-selected={active}
             onClick={() => onSelect(l.code)}
             className={cn(
-              "flex items-center gap-2 px-2.5 py-2 rounded-xl text-left min-w-0 transition-colors",
+              "flex items-center gap-2.5 rounded-xl text-left min-w-0 transition-colors touch-manipulation",
+              isMobile ? "px-3 py-2.5" : isFooter ? "px-2 py-1.5" : "px-2.5 py-2",
               isFooter
                 ? active
                   ? "bg-primary/15 text-white"
                   : "text-white/70 hover:bg-white/[0.06] hover:text-white"
                 : active
                   ? "bg-primary/[0.08] text-primary"
-                  : "text-foreground hover:bg-primary/[0.06]",
+                  : "text-foreground hover:bg-primary/[0.06] active:bg-primary/10",
             )}
           >
-            <FlagImg code={l.flag} variant={flagVariant} priority={active} />
-            <span className={cn("text-[13px] truncate flex-1", active && "font-semibold")}>{l.label}</span>
-            {active && <Check className="h-3 w-3 text-primary shrink-0" />}
+            <FlagImg
+              code={l.flag}
+              variant={flagVariant}
+              priority={active}
+            />
+            <span className={cn(
+              "truncate flex-1",
+              isMobile ? "text-[15px]" : isFooter ? "text-xs" : "text-[13px]",
+              active && "font-semibold",
+            )}>
+              {l.label}
+            </span>
+            {active && <Check className={cn("text-primary shrink-0", isMobile ? "h-3.5 w-3.5" : "h-3 w-3")} />}
           </button>
         );
       })}

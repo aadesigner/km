@@ -472,7 +472,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="mb-5 text-center sm:text-left">
+                <div className="mb-5 text-center">
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                     {isSignIn ? t("auth_welcome_back") : t("auth_create_account")}
                   </h1>
