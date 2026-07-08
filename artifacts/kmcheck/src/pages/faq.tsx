@@ -27,7 +27,6 @@ import {
   CreditCard,
   RotateCcw,
   UserCircle,
-  Info,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -81,12 +80,6 @@ function ReportIncludesAnswer() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2.5 rounded-xl border border-primary/20 bg-primary/[0.05] px-3.5 py-3">
-        <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          {t("faq_a5_note")}
-        </p>
-      </div>
     </div>
   );
 }
@@ -129,13 +122,8 @@ export default function FAQ() {
   ], [t]);
 
   const flatItems = useMemo(
-    () => categories.flatMap((c) =>
-      c.items.map(({ q, a, rich }) => ({
-        q,
-        a: rich === "report" ? `${a} ${t("faq_a5_note")}` : a,
-      })),
-    ),
-    [categories, t],
+    () => categories.flatMap((c) => c.items.map(({ q, a }) => ({ q, a }))),
+    [categories],
   );
 
   const faqJsonLd = useMemo(
