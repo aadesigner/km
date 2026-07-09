@@ -210,6 +210,14 @@ export function formatCountryName(
   if (!raw?.trim()) return "";
 
   const trimmed = raw.trim();
+  if (trimmed.includes("/")) {
+    return trimmed
+      .split("/")
+      .map((part) => formatCountryName(part.trim(), lang, overrides))
+      .filter(Boolean)
+      .join(" / ");
+  }
+
   const iso2 = resolveIso2(trimmed);
 
   if (!iso2) return trimmed;
@@ -251,4 +259,22 @@ export function countryLabelsFromT(t: (key: string) => string): CountryLabelOver
     korea: t("country_korea_name"),
     canada: t("country_canada_name"),
   };
+}
+
+/** Localize VIN origin / plant country — handles legacy combined labels like "France/Spain". */
+export function formatVinOriginCountry(
+  raw: string | null | undefined,
+  lang = "en",
+  overrides?: CountryLabelOverrides,
+): string {
+  if (!raw?.trim()) return "";
+  const trimmed = raw.trim();
+  if (trimmed.includes("/")) {
+    return trimmed
+      .split("/")
+      .map((part) => formatCountryName(part.trim(), lang, overrides))
+      .filter(Boolean)
+      .join(" / ");
+  }
+  return formatCountryName(trimmed, lang, overrides) || trimmed;
 }

@@ -12,6 +12,7 @@ import {
 } from "./country-favicon-config.mjs";
 import { isSeoOgPageKey, seoOgImagePath } from "./seo-og-config.mjs";
 import { vinSeoTemplates } from "./vin-seo-templates.mjs";
+import { buildCountryPageJsonLd, isCountrySeoPageKey } from "./country-page-json-ld.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
@@ -160,7 +161,32 @@ function removeGeneratedSeoTags(html) {
     .replace(/\n?\s*<meta name="twitter:[^"]+"[^>]*>/g, "")
     .replace(/\n?\s*<link rel="canonical"[^>]*>/g, "")
     .replace(/\n?\s*<link rel="alternate" hreflang="[^"]+"[^>]*>/g, "")
-    .replace(/\n?\s*<meta property="og:locale:alternate"[^>]*>/g, "");
+    .replace(/\n?\s*<meta property="og:locale:alternate"[^>]*>/g, "")
+    .replace(/\n?\s*<script id="kmcheck-json-ld"[^>]*>[\s\S]*?<\/script>/g, "");
+}
+
+function buildCountryJsonLdScript(resolved) {
+  if (resolved.noIndex || !isCountrySeoPageKey(resolved.pageKey)) return "";
+
+  const absoluteOg = resolved.ogImage
+    ? (String(resolved.ogImage).startsWith("/")
+      ? `${SITE_ORIGIN}${resolved.ogImage}`
+      : resolved.ogImage)
+    : undefined;
+
+  const jsonLd = buildCountryPageJsonLd({
+    pageKey: resolved.pageKey,
+    title: resolved.title,
+    description: resolved.description,
+    canonicalUrl: resolved.canonicalUrl,
+    lang: HREFLANG_MAP[resolved.lang],
+    ogImage: absoluteOg,
+  });
+
+  if (!jsonLd) return "";
+
+  const safeJson = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+  return `\n    <script id="kmcheck-json-ld" type="application/ld+json">${safeJson}</script>`;
 }
 
 function buildSeoHeadBlock(resolved) {
@@ -212,7 +238,7 @@ function buildSeoHeadBlock(resolved) {
     }
   }
 
-  return `\n    ${lines.join("\n    ")}\n`;
+  return `\n    ${lines.join("\n    ")}\n${buildCountryJsonLdScript(resolved)}`;
 }
 
 function resolveFavicons(pageKey, basePath = "") {

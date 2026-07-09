@@ -66,6 +66,12 @@ if (!analyticsScope.includes("adminx") || !analyticsScope.includes("isPublicAnal
 if (!siteAnalytics.includes("isPublicAnalyticsPath") || !siteAnalytics.includes("removeInjectedAnalytics")) {
   fail("site-analytics.tsx must gate tracking and remove tags when leaving public shell");
 }
+if (!read("src/App.tsx").includes("SiteAnalytics")) {
+  fail("App.tsx AppShell must mount SiteAnalytics for global route gating");
+}
+if (read("src/components/layout.tsx").includes("SiteAnalytics")) {
+  fail("Layout must not mount SiteAnalytics (admin routes skip Layout)");
+}
 if (read("src/pages/admin/layout.tsx").includes("SiteAnalytics")) {
   fail("AdminLayout must not mount SiteAnalytics");
 }

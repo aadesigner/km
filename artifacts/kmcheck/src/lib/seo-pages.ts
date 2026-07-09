@@ -2,11 +2,13 @@ import seoData from "./seo-data.json";
 import {
   stripAppBasePath,
   SITE_ORIGIN,
+  HREFLANG_MAP,
   type SeoLang,
 } from "./seo-config";
 import { isIndexableVinRest, buildVinPageSeo, normalizeVin, type VinSeoLang } from "@workspace/vin-page-seo";
 import { resolveFavicons } from "./country-favicons";
 import { resolvePageOgImage } from "./seo-og-images";
+import { buildCountryPageJsonLd } from "../../scripts/country-page-json-ld.mjs";
 
 export type SeoPageKey = keyof typeof seoData;
 
@@ -132,13 +134,32 @@ export function getRouteSeo(
 
   const seo = getSeoEntry(resolved.lang, pageKey);
   const ogImage = resolvePageOgImage(pageKey, resolved.lang, basePath);
+  const canonicalPath = buildCanonicalPath(resolved.lang, resolved.rest);
+  const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
+  const absoluteOgImage = ogImage
+    ? (ogImage.startsWith("http") ? ogImage : `${SITE_ORIGIN}${ogImage}`)
+    : undefined;
+
+  const countryJsonLd =
+    pageKey === "country_usa" || pageKey === "country_korea" || pageKey === "country_canada"
+      ? buildCountryPageJsonLd({
+          pageKey,
+          title: seo.title,
+          description: seo.description,
+          canonicalUrl,
+          lang: HREFLANG_MAP[resolved.lang],
+          ogImage: absoluteOgImage,
+        })
+      : undefined;
+
   return {
     ...seo,
     lang: resolved.lang,
-    canonicalPath: buildCanonicalPath(resolved.lang, resolved.rest),
+    canonicalPath,
     noIndex: resolved.noIndex || pageKey === "not_found",
     favicons: resolveFavicons(pageKey, basePath),
     ogImage,
     ogImageAlt: seo.title,
+    jsonLd: countryJsonLd,
   };
 }

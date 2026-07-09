@@ -555,11 +555,7 @@ describe("year decoding — all valid model-year codes", () => {
 });
 
 // ── Country decoding ──────────────────────────────────────────────────────────
-// Country is decoded from the FIRST character of the VIN only.
-// Some regions share a prefix character (France/Spain = V, Sweden/Finland = Y).
-// T-prefix = "Switzerland" in the decoder's COUNTRY_MAP (VIN standard TA-TH),
-// which covers the TMB (Škoda) WMI even though Škoda assembles in Czech Republic.
-
+// Country is decoded from position 1, refined by WMI when V/Y prefixes are shared.
 describe("country decoding from first VIN character", () => {
   const cases: [string, string][] = [
     ["1HG", "United States"],
@@ -568,11 +564,13 @@ describe("country decoding from first VIN character", () => {
     ["WBA", "Germany"],
     ["JHM", "Japan"],
     ["SAL", "United Kingdom"],
-    ["VF1", "France/Spain"],
+    ["VF1", "France"],
     ["ZFF", "Italy"],
-    ["YV1", "Sweden/Finland"],
+    ["YV1", "Sweden"],
     ["TMB", "Switzerland"],
-    ["VS6", "France/Spain"],
+    ["VS6", "Spain"],
+    ["VF3", "France"],
+    ["VSS", "Spain"],
   ];
 
   for (const [wmi, expectedCountry] of cases) {

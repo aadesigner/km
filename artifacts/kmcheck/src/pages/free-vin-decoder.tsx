@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError } from "@/lib/translate-client-error";
 import { translateFuelType } from "@/lib/translate-fuel-type";
+import { formatVinOriginCountry, countryLabelsFromT } from "@/lib/format-country-name";
 import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
@@ -270,6 +271,10 @@ export default function FreeVinDecoder() {
     ? fmtPrice(displayPrice)
     : "...";
 
+  const countryLabels = countryLabelsFromT(t);
+  const fmtOriginCountry = (value: string | null | undefined) =>
+    value ? formatVinOriginCountry(value, language, countryLabels) : null;
+
   const allFields: (Field & { group: string })[] = displayResult ? [
     { group: "identity", label: t("free_decoder_field_year"),          value: displayResult.year ? String(displayResult.year) : null, icon: Car,       color: "text-primary" },
     { group: "identity", label: t("free_decoder_field_make"),          value: displayResult.make,                               icon: Car,       color: "text-blue-500" },
@@ -289,8 +294,8 @@ export default function FreeVinDecoder() {
     { group: "powertrain", label: t("free_decoder_field_fuel"),          value: translateFuelType(t, displayResult.fuelType), icon: Fuel,   color: "text-yellow-500" },
     { group: "powertrain", label: t("free_decoder_field_drive"),         value: displayResult.driveType,                          icon: Settings2, color: "text-teal-500" },
     { group: "powertrain", label: t("free_decoder_field_transmission"),  value: displayResult.transmissionStyle,                  icon: Settings2, color: "text-teal-500" },
-    { group: "origin", label: t("free_decoder_field_origin"),        value: displayResult.countryOfOrigin,                    icon: Globe,     color: "text-green-500" },
-    { group: "origin", label: t("free_decoder_field_plant_country"), value: displayResult.plantCountry,                       icon: Globe,     color: "text-green-600" },
+    { group: "origin", label: t("free_decoder_field_origin"),        value: fmtOriginCountry(displayResult.countryOfOrigin), icon: Globe,     color: "text-green-500" },
+    { group: "origin", label: t("free_decoder_field_plant_country"), value: fmtOriginCountry(displayResult.plantCountry),    icon: Globe,     color: "text-green-600" },
     { group: "origin", label: t("free_decoder_field_plant_city"),    value: displayResult.plantCity ?? (displayResult.plantCode ? `${t("free_decoder_field_plant_code")}: ${displayResult.plantCode}` : null), icon: Factory, color: "text-green-500" },
     { group: "safety", label: t("free_decoder_field_abs"),           value: displayResult.abs ?? null,                        icon: Shield,    color: "text-violet-500" },
     { group: "safety", label: t("free_decoder_field_esc"),           value: displayResult.esc ?? null,                        icon: Shield,    color: "text-violet-500" },

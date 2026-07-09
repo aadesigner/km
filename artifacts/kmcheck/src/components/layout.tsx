@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
-import { SiteAnalytics } from "@/components/site-analytics";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
 import { FlagImg } from "@/components/flag-img";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
@@ -879,7 +878,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col overflow-x-clip w-full">
-      <SiteAnalytics />
       <BannedSessionRedirect />
       <AnnouncementBar onHeightChange={setAnnouncementHeight} />
       <Navbar announcementOffset={announcementHeight} />

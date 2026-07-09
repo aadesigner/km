@@ -5,7 +5,6 @@ import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-re
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import { useGetVinLookup } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { Button } from "@/components/ui/button";
@@ -97,18 +96,15 @@ import {
   sanitizeRegistryHistory,
 } from "@/lib/report-display";
 
-function useAntiScrape(enabled: boolean, onBlocked?: () => void) {
+function useAntiScrape(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
-    const notify = onBlocked ?? (() => {});
     const onContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-      if ((e.target as HTMLElement).tagName === "IMG") notify();
     };
     const onDragStart = (e: DragEvent) => {
       if ((e.target as HTMLElement).tagName === "IMG") {
         e.preventDefault();
-        notify();
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -119,7 +115,6 @@ function useAntiScrape(enabled: boolean, onBlocked?: () => void) {
         (ctrl && e.key.toUpperCase() === "U")
       ) {
         e.preventDefault();
-        notify();
       }
     };
     document.addEventListener("contextmenu", onContextMenu);
@@ -130,7 +125,7 @@ function useAntiScrape(enabled: boolean, onBlocked?: () => void) {
       document.removeEventListener("dragstart", onDragStart);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [enabled, onBlocked]);
+  }, [enabled]);
 }
 
 interface Props {
@@ -460,11 +455,7 @@ export default function VinResult({ params }: Props) {
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const navLightbox = useCallback((i: number) => setLightboxIndex(i), []);
 
-  const onAntiScrapeTrigger = useCallback(() => {
-    toast({ description: t("vin_result_screenshot_notice") });
-  }, [toast, t]);
-
-  useAntiScrape(!isLoading && !!lookup, onAntiScrapeTrigger);
+  useAntiScrape(!isLoading && !!lookup);
 
   useLayoutEffect(() => {
     if (!lookupRaw?.data) return;

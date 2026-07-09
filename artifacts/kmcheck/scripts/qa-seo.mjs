@@ -22,6 +22,7 @@ const indexableKeys = [
   "privacy",
   "country_usa",
   "country_korea",
+  "country_canada",
 ];
 
 let errors = 0;
@@ -40,6 +41,13 @@ for (const key of indexableKeys) {
     }
     if (entry?.title && !entry.title.includes("kmcheck.com")) {
       console.warn(`WARN ${key}.${lang}: title missing brand`);
+    }
+    if (
+      ["home", "country_usa", "country_korea", "country_canada"].includes(key)
+      && entry?.title
+      && entry.title.length > 60
+    ) {
+      console.warn(`WARN ${key}.${lang}: title ${entry.title.length} chars (target ≤60)`);
     }
   }
 }

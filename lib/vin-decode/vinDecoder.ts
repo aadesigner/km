@@ -64,12 +64,55 @@ const COUNTRY_MAP: Record<string, string> = {
   // Asia/Oceania
   J: "Japan", K: "South Korea", L: "China",
   M: "India", N: "Turkey", P: "Philippines", R: "Taiwan",
-  // South America
+  // South America / Oceania
   "6": "Australia/New Zealand", "7": "New Zealand",
   "8": "Argentina", "9": "Brazil",
 };
 
+/** WMI prefixes that disambiguate shared position-1 country codes (V, Y, …). Longest first. */
+const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[] = [
+  { prefix: "VSX", country: "Spain" },
+  { prefix: "VS7", country: "Spain" },
+  { prefix: "VS6", country: "Spain" },
+  { prefix: "VSS", country: "Spain" },
+  { prefix: "VSK", country: "Spain" },
+  { prefix: "VR1", country: "France" },
+  { prefix: "VNK", country: "France" },
+  { prefix: "VF8", country: "France" },
+  { prefix: "VF7", country: "France" },
+  { prefix: "VF6", country: "France" },
+  { prefix: "VF5", country: "France" },
+  { prefix: "VF4", country: "France" },
+  { prefix: "VF3", country: "France" },
+  { prefix: "VF2", country: "France" },
+  { prefix: "VF1", country: "France" },
+  { prefix: "YV4", country: "Sweden" },
+  { prefix: "YV1", country: "Sweden" },
+  { prefix: "YS2", country: "Sweden" },
+];
+
+function decodeCountryFromWmi(vin: string): string | null {
+  const upper = vin.toUpperCase();
+  for (const { prefix, country } of WMI_ORIGIN_COUNTRY_PREFIXES) {
+    if (upper.startsWith(prefix)) return country;
+  }
+  const first = upper[0];
+  if (first === "V") {
+    const second = upper[1];
+    if (second === "S") return "Spain";
+    if (second === "F" || second === "R") return "France";
+  }
+  if (first === "Y") {
+    const second = upper[1];
+    if (second === "V" || second === "S") return "Sweden";
+  }
+  return null;
+}
+
 export function decodeCountry(vin: string): string | null {
+  if (!vin) return null;
+  const fromWmi = decodeCountryFromWmi(vin);
+  if (fromWmi) return fromWmi;
   return COUNTRY_MAP[vin[0].toUpperCase()] ?? null;
 }
 

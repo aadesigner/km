@@ -68,6 +68,8 @@ function injectGa(measurementId: string) {
 }
 
 function trackPageView(path: string, gaId: string | null, gtmEnabled: boolean) {
+  if (!isPublicAnalyticsPath(path)) return;
+
   if (gtmEnabled) {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -118,11 +120,9 @@ export function SiteAnalytics() {
 
   useEffect(() => {
     if (!trackable) {
-      if (injectedRef.current) {
-        removeInjectedAnalytics();
-        injectedRef.current = false;
-        configRef.current = { gtm: null, ga: null };
-      }
+      removeInjectedAnalytics();
+      injectedRef.current = false;
+      configRef.current = { gtm: null, ga: null };
       return;
     }
     if (!gtmId && !gaId) return;
@@ -134,7 +134,7 @@ export function SiteAnalytics() {
     injectedRef.current = true;
 
     trackPageView(location, gaId, !!gtmId);
-  }, [gtmId, gaId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- initial inject only
+  }, [gtmId, gaId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- inject + first pageview only
 
   useEffect(() => {
     if (!trackable || !injectedRef.current) return;
@@ -142,11 +142,6 @@ export function SiteAnalytics() {
     if (!gtm && !ga) return;
     trackPageView(location, ga, !!gtm);
   }, [location, trackable]);
-
-  useEffect(() => () => {
-    removeInjectedAnalytics();
-    injectedRef.current = false;
-  }, []);
 
   return null;
 }
