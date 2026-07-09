@@ -4,6 +4,12 @@
  */
 
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
+import {
+  decodeSeatEuHomologation,
+  decodeSeatEuModel,
+  formatSeatDisplay,
+  SEAT_EU_WMIS,
+} from "./seat-eu";
 
 const SKODA_MODEL_78: Record<string, string> = {
   NJ: "Fabia",
@@ -185,39 +191,9 @@ const CITROEN_ZZZ_AT_7: Record<string, string> = {
   Y: "C5 Aircross",
 };
 
-// ── SEAT — EU ZZZ format (VW Group) ──────────────────────────────────────────
-const SEAT_ZZZ_AT_7: Record<string, string> = {
-  "1": "Ibiza",
-  "2": "León",
-  "3": "Toledo",
-  "5": "Altea",
-  "6": "Alhambra",
-  "7": "Ateca",
-  A: "Ibiza",
-  B: "León",
-  C: "León",
-  D: "Toledo",
-  E: "Arona",
-  F: "Ateca",
-  G: "Tarraco",
-  H: "León",
-  K: "Ibiza",
-  L: "León",
-  M: "Mii",
-  N: "Arona",
-  P: "Ateca",
-  S: "Ibiza",
-  T: "Tarraco",
-  U: "Arona",
-  V: "Ibiza",
-  W: "León",
-  X: "Ateca",
-  Y: "Tarraco",
-};
-
 function decodeZzzEuropeanModel(
   vin: string,
-  wmi: string,
+  _wmi: string,
   table: Record<string, string>,
 ): string | null {
   if (vin.length < 7 || vin.slice(3, 6) !== "ZZZ") return null;
@@ -225,8 +201,7 @@ function decodeZzzEuropeanModel(
 }
 
 function decodeSeatModel(vin: string): string | null {
-  if (!vin.startsWith("VSS")) return null;
-  return decodeZzzEuropeanModel(vin, "VSS", SEAT_ZZZ_AT_7);
+  return decodeSeatEuModel(vin);
 }
 
 function decodePeugeotModel(vin: string): string | null {
@@ -252,6 +227,6 @@ export function decodeEuropeanBrandModel(vin: string): string | null {
   if (isFiatWmi(wmi)) return decodeFiatModel(upper);
   if (wmi === "VF3") return decodePeugeotModel(upper);
   if (wmi === "VF7") return decodeCitroenModel(upper);
-  if (wmi === "VSS" || wmi === "VS6" || wmi === "VS7") return decodeSeatModel(upper);
+  if ((SEAT_EU_WMIS as readonly string[]).includes(wmi)) return decodeSeatModel(upper);
   return null;
 }

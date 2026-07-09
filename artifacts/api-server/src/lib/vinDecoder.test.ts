@@ -476,7 +476,7 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["TMBZ", "Karoq"],
     // SEAT
     ["VS6A", "Ibiza"],
-    ["VS6K", "Leon"],
+    ["VS6K", "León"],
     ["VS7A", "Arona"],
     ["VS7B", "Ateca"],
     ["VS7T", "Tarraco"],

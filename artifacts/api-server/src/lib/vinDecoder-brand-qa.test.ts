@@ -123,6 +123,9 @@ const CASES: BrandCase[] = [
   // ── SEAT ──────────────────────────────────────────────────────────────────
   { vin: "VSSZZZ2FZFR123456", label: "SEAT León EU", make: "SEAT", modelContains: "León" },
   { vin: "VSSZZZ7NZFR123456", label: "SEAT Ateca EU", make: "SEAT", modelContains: "Ateca" },
+  { vin: "VSSZZZ5FZFR123456", label: "SEAT León Mk3", make: "SEAT", modelContains: "5F" },
+  { vin: "VSSZZZKHZFR123456", label: "SEAT Ateca KH", make: "SEAT", modelContains: "KH" },
+  { vin: "VSSZZZ5PZCR025966", label: "SEAT Altea XL", make: "SEAT", modelContains: "Altea" },
 
   // ── Hyundai / Toyota / Kia ────────────────────────────────────────────────
   { vin: "KMHS381BGBU123456", label: "Hyundai Santa Fe Sport", make: "Hyundai", modelContains: "Santa Fe" },

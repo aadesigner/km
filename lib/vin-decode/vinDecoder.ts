@@ -246,6 +246,7 @@ const WMI_MAP: Record<string, string> = {
   // ── SPAIN (SEAT, continued) ───────────────────────────────────────────────
   "VS6": "SEAT",
   "VS7": "SEAT",
+  "VSX": "SEAT",
   // ── FRANCE (Renault, continued) ───────────────────────────────────────────
   "VF6": "Renault",
   "VF8": "Renault",
@@ -455,7 +456,7 @@ const MODEL_MAP_4: Record<string, string> = {
   "TMBG": "Kodiaq",       "TMBK": "Kamiq",       "TMBZ": "Karoq",
   "TMBL": "Karoq",        "TMBD": "Kodiaq",      "TMBR": "Scala",
   // ── SEAT (VS6* / VS7*) ────────────────────────────────────────────────────
-  "VS6A": "Ibiza",        "VS6K": "Leon",        "VS7A": "Arona",
+  "VS6A": "Ibiza",        "VS6K": "León",        "VS7A": "Arona",
   "VS7B": "Ateca",        "VS7T": "Tarraco",
   // ── Ferrari (ZFF*) ────────────────────────────────────────────────────────
   "ZFFA": "488 GTB",      "ZFFB": "F8 Tributo",  "ZFFC": "Roma",

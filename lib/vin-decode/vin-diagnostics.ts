@@ -2,6 +2,7 @@ import type { VinDecodeResult } from "./vinDecoder";
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropean } from "./european-premium";
 import { isVagWmi } from "./vag-wmi";
+import { decodeSeatEuHomologation, formatSeatDisplay, SEAT_EU_WMIS } from "./seat-eu";
 
 function isRenaultWmiForDiag(wmi: string): boolean {
   return wmi.startsWith("VF1") || wmi.startsWith("VF2") || wmi.startsWith("GA1");
@@ -450,7 +451,17 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     push(out, "identity", "model_line", base.model);
     return;
   }
-  if (wmi.startsWith("VSS") || make.includes("seat")) {
+  if (wmi.startsWith("VSS") || (SEAT_EU_WMIS as readonly string[]).includes(wmi) || make.includes("seat")) {
+    const seat = decodeSeatEuHomologation(vin);
+    if (seat) {
+      push(out, "identity", "model_line", formatSeatDisplay(seat));
+      if (seat.platform) {
+        push(out, "identity", "platform_code", seat.platform, "SEAT type-approval / platform code (pos. 7–8)");
+      }
+      if (seat.years) {
+        push(out, "identity", "model_years", seat.years, "Approx. production years for this platform");
+      }
+    }
     vagDiagnostics(vin, base, out);
     return;
   }

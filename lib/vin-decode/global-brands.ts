@@ -231,7 +231,7 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
     return { model: decodeDaciaModel(upper), makeOverride: "Dacia" };
   }
 
-  if (upper.startsWith("VSS") || upper.startsWith("VS7")) {
+  if (upper.startsWith("VSS") || upper.startsWith("VS7") || upper.startsWith("VSX")) {
     const hit = matchLongestPrefix(upper, CUPRA_PREFIX_RULES);
     if (hit) return { model: hit.model, makeOverride: "Cupra" };
     return EMPTY_GLOBAL;

@@ -46,3 +46,9 @@ export {
   type VinDiagnostic,
   type DiagnosticCategory,
 } from "./vin-diagnostics";
+export {
+  decodeSeatEuHomologation,
+  decodeSeatEuModel,
+  formatSeatDisplay,
+  SEAT_EU_WMIS,
+} from "./seat-eu";
