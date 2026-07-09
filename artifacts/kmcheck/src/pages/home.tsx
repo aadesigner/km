@@ -238,7 +238,7 @@ export default function Home() {
             className="space-y-8 text-center"
           >
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
-              {t("hero_headline_1")}
+              {language === "sq" ? <>{t("hero_headline_1")},</> : t("hero_headline_1")}
               <br />
               <span className="block text-primary">
                 <CyclingWord />

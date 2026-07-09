@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Check, CheckCircle2, Tag, X, Loader2, ShieldCheck, Clock, RotateCcw,
+  Check, CheckCircle2, Tag, X, Loader2, ShieldCheck,
   Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +25,7 @@ import { isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
+import { CheckoutPaymentLogos } from "@/components/checkout-payment-logos";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
@@ -837,7 +838,6 @@ export default function Checkout({ params }: Props) {
     !peekLoading &&
     (peek.vehicleTooOld === true || isVehicleTooOldForLookup(peek.year));
   const paymentAllowed = !vinLookupDisabled && peek?.dataAvailable === true && !peek?.checkUnavailable && !vehicleTooOld;
-  const isManualPendingCheckout = !!peek?.manualPending && paymentAllowed;
   const vinLocked = paymentStarted && !couponResult?.isFree;
   const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
@@ -850,6 +850,12 @@ export default function Checkout({ params }: Props) {
     !showVinQualityWarning &&
     !showVehicleTooOldNotice;
   const showCouponSection = !paymentStarted && status !== "creating" && status !== "paying";
+  const showPaymentLogos =
+    paymentAllowed &&
+    !couponResult?.isFree &&
+    (status === "idle" || status === "error") &&
+    payMethod === "paypal" &&
+    !paymentStarted;
   const showLockedPreview =
     vinIsValid &&
     !peekLoading &&
@@ -1387,16 +1393,6 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
-                  {isManualPendingCheckout && !paymentStarted && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5">
-                      <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{t("checkout_manual_pending_title")}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t("checkout_manual_pending_desc")}</p>
-                      </div>
-                    </div>
-                  )}
-
                   {vinIsValid && peek?.checkUnavailable && !peek.manualPending && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -1534,7 +1530,7 @@ export default function Checkout({ params }: Props) {
                   {/* Proceed / Pay by Card / Free button */}
                   {(status === "idle" || status === "error") && (payMethod === "card" || !paymentStarted) && paymentAllowed && (
                     <Button
-                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
+                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >
@@ -1549,6 +1545,16 @@ export default function Checkout({ params }: Props) {
                     </Button>
                   )}
 
+                  {(status === "idle" || status === "error") && (payMethod === "card" || !paymentStarted) && paymentAllowed && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5">
+                      <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{t("checkout_manual_pending_title")}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t("checkout_manual_pending_desc")}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* PayPal configured — no footer note */}
                   {pubSettingsLoading || pubSettings?.paypalClientId || pubSettingsError
                     ? null
@@ -1560,21 +1566,11 @@ export default function Checkout({ params }: Props) {
               </div>
             </div>
 
-            {/* Trust badges */}
-            <div className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-4 grid grid-cols-3 gap-2 text-center">
-              {[
-                { icon: ShieldCheck, label: t("trust_secure_payment") },
-                { icon: Clock,       label: t("trust_instant_report") },
-                { icon: RotateCcw,   label: t("trust_money_back") },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5 px-1">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-tight">{label}</span>
-                </div>
-              ))}
-            </div>
+            {showPaymentLogos && (
+              <div className="rounded-2xl border border-border/60 bg-background px-4 py-1">
+                <CheckoutPaymentLogos />
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

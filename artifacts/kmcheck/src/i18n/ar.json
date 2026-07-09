@@ -550,6 +550,7 @@
   "checkout_error_card_failed": "فشل الدفع بالبطاقة. يرجى المحاولة مرة أخرى.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "بطاقة",
+  "checkout_payment_methods": "طرق الدفع:",
   "checkout_pay_by_card": "الدفع بالبطاقة",
   "checkout_card_not_available": "الدفع بالبطاقة غير متاح على هذا الحساب. يرجى استخدام PayPal.",
   "checkout_card_number": "رقم البطاقة",

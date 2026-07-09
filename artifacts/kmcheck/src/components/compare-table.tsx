@@ -20,9 +20,9 @@ type Props = {
 
 /** Tailwind must see full class strings at build time — no runtime template literals. */
 const COMPARE_GRID_COLS: Record<number, string> = {
-  /** feature + kmcheck + 2 competitors (home, korea/default) */
+  /** feature + kmcheck + 2 competitors (korea/default) */
   3: "grid-cols-[minmax(10.5rem,2fr)_repeat(3,minmax(5rem,1fr))]",
-  /** feature + kmcheck + 3 competitors (usa, canada) */
+  /** feature + kmcheck + 3 competitors (home, usa, canada) */
   4: "grid-cols-[minmax(10.5rem,2fr)_repeat(4,minmax(5rem,1fr))]",
 };
 
@@ -107,15 +107,15 @@ export function CompareTable({ market = "default" }: Props) {
   const partial = t("compare_partial");
 
   const homeRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€29.99"] },
-    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false] },
-    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false] },
-    { labelKey: "compare_row_us", values: [true, true, true] },
-    { labelKey: "compare_row_mileage", values: [true, true, true] },
-    { labelKey: "compare_row_accident", values: [true, true, true] },
-    { labelKey: "compare_row_salvage", values: [true, true, true] },
-    { labelKey: "compare_row_theft", values: [true, "US/CA", "US only"] },
-    { labelKey: "compare_row_ownership", values: [true, true, true] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "€29.99"] },
+    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
+    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false, false] },
+    { labelKey: "compare_row_us", values: [true, true, partial, true] },
+    { labelKey: "compare_row_mileage", values: [true, true, true, true] },
+    { labelKey: "compare_row_accident", values: [true, true, true, true] },
+    { labelKey: "compare_row_salvage", values: [true, true, true, true] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
+    { labelKey: "compare_row_ownership", values: [true, true, true, true] },
   ];
 
   const koreaRows: CompareRow[] = [
@@ -173,21 +173,16 @@ export function CompareTable({ market = "default" }: Props) {
         : "compare_desc";
 
   const competitors =
-    market === "usa" || market === "canada"
+    market === "home" || market === "usa" || market === "canada"
       ? [
           { name: "Carfax", subKey: "compare_comp_carfax" },
           { name: "CarVertical", subKey: "compare_comp_carvertical" },
           { name: "AutoCheck", subKey: "compare_comp_autocheck" },
         ]
-      : market === "home"
-        ? [
-            { name: "Carfax", subKey: "compare_comp_carfax" },
-            { name: "AutoCheck", subKey: "compare_comp_autocheck" },
-          ]
-        : [
-            { name: "Carfax", subKey: "compare_comp_carfax" },
-            { name: "CarVertical", subKey: "compare_comp_carvertical" },
-          ];
+      : [
+          { name: "Carfax", subKey: "compare_comp_carfax" },
+          { name: "CarVertical", subKey: "compare_comp_carvertical" },
+        ];
 
   const gridCols = compareGridCols(competitors.length);
 
@@ -314,11 +309,9 @@ export function CompareTable({ market = "default" }: Props) {
 
           <p className="text-[11px] text-muted-foreground/55 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
             {t(
-              market === "home"
-                ? "compare_disclaimer_home"
-                : market === "usa" || market === "canada"
-                  ? "compare_disclaimer_usa"
-                  : "compare_disclaimer",
+              market === "home" || market === "usa" || market === "canada"
+                ? "compare_disclaimer_usa"
+                : "compare_disclaimer",
             )}
           </p>
         </motion.div>
