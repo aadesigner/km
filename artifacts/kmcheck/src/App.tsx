@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Redirect, Router as WouterRouter, useLocation, Link } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
 import { useEffect, Suspense, type ComponentType, type ReactNode } from "react";
-import { lazyWithRetry } from "@/lib/lazy-with-retry";
+import { lazyWithRetry, CHUNK_RELOAD_KEY } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
 import { isVin17 } from "@/lib/vin-route";
@@ -27,6 +27,8 @@ import {
 } from "@/lib/lang-preference";
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
+import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
+import { Button } from "@/components/ui/button";
 
 import Home from "@/pages/home";
 // Lazy-loaded
@@ -279,11 +281,29 @@ function AdminPage({ children }: { children: React.ReactNode }) {
 
 function NotFoundLang() {
   const [location] = useLocation();
+  const { pathname } = splitRouterLocation(location);
   const validLangs = SUPPORTED_LANGS;
   const match = location.match(new RegExp(`^/(${LANG_PATH_ALT})(?:/|$)`));
   const lang = validLangs.includes((match?.[1] ?? "en") as typeof validLangs[number])
     ? (match?.[1] ?? "en") as typeof validLangs[number]
     : "en";
+
+  if (pathname.startsWith("/adminx")) {
+    return (
+      <AdminPage>
+        <div className="py-16 text-center space-y-4 max-w-md mx-auto">
+          <p className="text-5xl font-black text-primary/20 tabular-nums">404</p>
+          <h1 className="text-xl font-bold">Admin page not found</h1>
+          <p className="text-sm text-muted-foreground">
+            This admin URL does not match any panel page. Check the link or use the sidebar.
+          </p>
+          <Button asChild>
+            <Link href="/adminx">Back to admin overview</Link>
+          </Button>
+        </div>
+      </AdminPage>
+    );
+  }
 
   return (
     <I18nProvider initialLanguage={lang}>
@@ -453,7 +473,13 @@ function AdminVinDetailRoute(props: { params: { vin: string } }) {
 
 function AppRouter() {
   const [location] = useLocation();
-  const pathname = location.split("?")[0] ?? location;
+  const { pathname, suffix } = splitRouterLocation(location);
+  const normalized = normalizeAppPath(pathname);
+
+  if (normalized !== pathname) {
+    return <Redirect to={`${normalized}${suffix}`} />;
+  }
+
   const unprefixedRest = pathNeedingLangPrefix(pathname);
 
   if (unprefixedRest !== null) {
@@ -539,8 +565,8 @@ function AppShell() {
   const resetKey = location.split("?")[0] ?? location;
 
   useEffect(() => {
-    sessionStorage.removeItem("kmcheck-chunk-reload");
-  }, []);
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+  }, [resetKey]);
 
   return (
     <RouteErrorBoundary scope="app" resetKey={resetKey}>

@@ -31,11 +31,15 @@ async function importWithInlineRetry<T extends ComponentType<unknown>>(
   factory: () => Promise<{ default: T }>,
 ): Promise<{ default: T }> {
   try {
-    return await factory();
+    const result = await factory();
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+    return result;
   } catch (firstError) {
     if (!isChunkLoadError(firstError)) throw firstError;
     await sleep(CHUNK_RETRY_DELAY_MS);
-    return await factory();
+    const result = await factory();
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+    return result;
   }
 }
 

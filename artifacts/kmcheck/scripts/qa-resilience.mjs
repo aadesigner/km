@@ -5,7 +5,7 @@
  *   node artifacts/kmcheck/scripts/qa-resilience.mjs
  *   API_BASE=http://127.0.0.1:5000 node artifacts/kmcheck/scripts/qa-resilience.mjs
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SUPPORTED_LANGS } from "./languages.mjs";
@@ -144,6 +144,37 @@ for (const key of ["error_request_failed", "error_server_busy", "error_network"]
 }
 if (!read("src/App.tsx").includes("AuthSubPage")) {
   fail("App.tsx should use AuthSubPage with resetKey for password routes");
+}
+
+// ── Static: hook usage must have matching import (orphan-call guard) ───────────
+function walkSourceFiles(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) {
+      if (name === "node_modules" || name === "dist") continue;
+      walkSourceFiles(path, out);
+    } else if (/\.(tsx?|jsx?)$/.test(name)) {
+      out.push(path);
+    }
+  }
+  return out;
+}
+
+const orphanHookChecks = [
+  { hook: "useToast", import: '@/hooks/use-toast', except: ["src/hooks/use-toast.ts"] },
+];
+
+for (const { hook, import: importPath, except } of orphanHookChecks) {
+  const callRe = new RegExp(`\\b${hook}\\s*\\(`);
+  const importRe = new RegExp(`from ["']${importPath.replace(/\//g, "\\/")}["']`);
+  for (const file of walkSourceFiles(join(root, "src"))) {
+    const rel = file.slice(root.length + 1).replace(/\\/g, "/");
+    if (except.some((e) => rel === e || rel.endsWith(e))) continue;
+    const src = readFileSync(file, "utf8");
+    if (callRe.test(src) && !importRe.test(src)) {
+      fail(`${rel} calls ${hook}() without importing from ${importPath}`);
+    }
+  }
 }
 
 // ── Static: rate-limit i18n ───────────────────────────────────────────────────

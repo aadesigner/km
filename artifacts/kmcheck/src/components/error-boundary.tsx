@@ -22,7 +22,11 @@ function tStatic(lang: Language, key: string): string {
 }
 
 function DefaultFallback({ lang }: { lang: Language }) {
-  const home = `/${lang}`;
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const pathname = typeof window !== "undefined" ? window.location.pathname : `${base}/${lang}`;
+  const isAdmin = pathname.includes("/adminx");
+  const home = isAdmin ? `${base}/adminx` : `${base}/${lang}`;
+  const homeLabel = isAdmin ? "Back to admin overview" : tStatic(lang, "error_boundary_home");
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 p-8 text-center">
       <div className="text-4xl" aria-hidden>⚠️</div>
@@ -40,7 +44,7 @@ function DefaultFallback({ lang }: { lang: Language }) {
           href={home}
           className="px-4 py-2 rounded-md border border-border text-sm font-medium hover:bg-muted/50"
         >
-          {tStatic(lang, "error_boundary_home")}
+          {homeLabel}
         </a>
       </div>
     </div>
