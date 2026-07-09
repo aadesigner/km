@@ -107,15 +107,15 @@ export function CompareTable({ market = "default" }: Props) {
   const partial = t("compare_partial");
 
   const homeRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "~$10.00"] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€29.99"] },
     { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false] },
     { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false] },
-    { labelKey: "compare_row_us", values: [true, true, partial] },
-    { labelKey: "compare_row_mileage", values: [true, true, partial] },
+    { labelKey: "compare_row_us", values: [true, true, true] },
+    { labelKey: "compare_row_mileage", values: [true, true, true] },
     { labelKey: "compare_row_accident", values: [true, true, true] },
-    { labelKey: "compare_row_salvage", values: [true, true, partial] },
+    { labelKey: "compare_row_salvage", values: [true, true, true] },
     { labelKey: "compare_row_theft", values: [true, "US/CA", "US only"] },
-    { labelKey: "compare_row_ownership", values: [true, true, partial] },
+    { labelKey: "compare_row_ownership", values: [true, true, true] },
   ];
 
   const koreaRows: CompareRow[] = [
@@ -131,28 +131,28 @@ export function CompareTable({ market = "default" }: Props) {
   ];
 
   const usaRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "~$10.00"] },
-    { labelKey: "compare_row_us", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, partial, partial] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "€29.99"] },
+    { labelKey: "compare_row_us", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, partial, true] },
     { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
     { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, true, false, false] },
-    { labelKey: "compare_row_auction", values: [true, true, partial, partial] },
-    { labelKey: "compare_row_mileage", values: [true, true, true, partial] },
+    { labelKey: "compare_row_auction", values: [true, true, partial, true] },
+    { labelKey: "compare_row_mileage", values: [true, true, true, true] },
     { labelKey: "compare_row_accident", values: [true, true, true, true] },
-    { labelKey: "compare_row_salvage", values: [true, true, true, partial] },
+    { labelKey: "compare_row_salvage", values: [true, true, true, true] },
     { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
-    { labelKey: "compare_row_ownership", values: [true, true, true, partial] },
+    { labelKey: "compare_row_ownership", values: [true, true, true, true] },
   ];
 
   const canadaRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "~$10.00"] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "€29.99"] },
     { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, partial, partial] },
     { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
     { labelKey: "compare_row_us", values: [true, true, partial, true] },
-    { labelKey: "compare_row_mileage", values: [true, true, true, partial] },
+    { labelKey: "compare_row_mileage", values: [true, true, true, true] },
     { labelKey: "compare_row_accident", values: [true, true, true, true] },
-    { labelKey: "compare_row_salvage", values: [true, true, true, partial] },
+    { labelKey: "compare_row_salvage", values: [true, true, true, true] },
     { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
-    { labelKey: "compare_row_ownership", values: [true, true, true, partial] },
+    { labelKey: "compare_row_ownership", values: [true, true, true, true] },
   ];
 
   const rows =
@@ -177,12 +177,12 @@ export function CompareTable({ market = "default" }: Props) {
       ? [
           { name: "Carfax", subKey: "compare_comp_carfax" },
           { name: "CarVertical", subKey: "compare_comp_carvertical" },
-          { name: "VinAudit", subKey: "compare_comp_vinaudit" },
+          { name: "AutoCheck", subKey: "compare_comp_autocheck" },
         ]
       : market === "home"
         ? [
             { name: "Carfax", subKey: "compare_comp_carfax" },
-            { name: "VinAudit", subKey: "compare_comp_vinaudit" },
+            { name: "AutoCheck", subKey: "compare_comp_autocheck" },
           ]
         : [
             { name: "Carfax", subKey: "compare_comp_carfax" },
@@ -313,7 +313,13 @@ export function CompareTable({ market = "default" }: Props) {
           </div>
 
           <p className="text-[11px] text-muted-foreground/55 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
-            {t(market === "usa" || market === "canada" || market === "home" ? "compare_disclaimer_usa" : "compare_disclaimer")}
+            {t(
+              market === "home"
+                ? "compare_disclaimer_home"
+                : market === "usa" || market === "canada"
+                  ? "compare_disclaimer_usa"
+                  : "compare_disclaimer",
+            )}
           </p>
         </motion.div>
       </div>

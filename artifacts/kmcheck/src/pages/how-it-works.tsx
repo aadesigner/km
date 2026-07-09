@@ -9,7 +9,6 @@ import { HeroVinForm } from "@/components/hero-vin-form";
 import { WhatWeCheckSection } from "@/components/what-we-check-section";
 import { VinCheckIncludesSection } from "@/components/vin-check-includes-section";
 import { useAuth } from "@/lib/auth-context";
-import { useDisplayPrice } from "@/hooks/use-display-price";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import {
   Search, Database, FileText, Zap, RotateCcw, Globe2,
@@ -122,7 +121,6 @@ export default function HowItWorks() {
   const { t, language } = useTranslation();
   const [, setLocation] = useLocation();
   const { isSignedIn } = useAuth();
-  const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
   const [vin, setVin] = useState("");
   const [vinError, setVinError] = useState("");
   const seo = usePageSeo("how_it_works");
@@ -298,16 +296,6 @@ export default function HowItWorks() {
               {t("hiw_cta_title")}
             </h2>
             <p className="text-white/70 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">{t("hiw_cta_subtitle")}</p>
-          </div>
-
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <span className="text-4xl sm:text-5xl font-black text-white tabular-nums">
-              {displayPrice != null ? fmtPrice(displayPrice) : "—"}
-            </span>
-            {isDiscount && pricingBase != null && (
-              <span className="text-xl sm:text-2xl line-through text-white/35">{fmtPrice(pricingBase)}</span>
-            )}
-            <span className="text-white/50 text-sm">{t("per_report")}</span>
           </div>
 
           <HeroVinForm

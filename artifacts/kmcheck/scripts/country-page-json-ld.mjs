@@ -69,3 +69,15 @@ export function buildCountryPageJsonLd({
 export function isCountrySeoPageKey(pageKey) {
   return COUNTRY_PAGE_KEYS.has(pageKey);
 }
+
+/** Organization schema for the homepage (prerender + optional client reuse). */
+export function buildHomeOrganizationJsonLd(origin, description) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "kmcheck.com",
+    url: origin,
+    logo: `${origin}/apple-touch-icon.png`,
+    description,
+  };
+}

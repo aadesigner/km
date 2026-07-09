@@ -12,7 +12,7 @@ import {
 } from "./country-favicon-config.mjs";
 import { isSeoOgPageKey, seoOgImagePath } from "./seo-og-config.mjs";
 import { vinSeoTemplates } from "./vin-seo-templates.mjs";
-import { buildCountryPageJsonLd, isCountrySeoPageKey } from "./country-page-json-ld.mjs";
+import { buildCountryPageJsonLd, buildHomeOrganizationJsonLd, isCountrySeoPageKey } from "./country-page-json-ld.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
@@ -165,23 +165,29 @@ function removeGeneratedSeoTags(html) {
     .replace(/\n?\s*<script id="kmcheck-json-ld"[^>]*>[\s\S]*?<\/script>/g, "");
 }
 
-function buildCountryJsonLdScript(resolved) {
-  if (resolved.noIndex || !isCountrySeoPageKey(resolved.pageKey)) return "";
+function buildJsonLdScript(resolved) {
+  if (resolved.noIndex) return "";
 
-  const absoluteOg = resolved.ogImage
-    ? (String(resolved.ogImage).startsWith("/")
-      ? `${SITE_ORIGIN}${resolved.ogImage}`
-      : resolved.ogImage)
-    : undefined;
+  let jsonLd;
 
-  const jsonLd = buildCountryPageJsonLd({
-    pageKey: resolved.pageKey,
-    title: resolved.title,
-    description: resolved.description,
-    canonicalUrl: resolved.canonicalUrl,
-    lang: HREFLANG_MAP[resolved.lang],
-    ogImage: absoluteOg,
-  });
+  if (resolved.pageKey === "home") {
+    jsonLd = buildHomeOrganizationJsonLd(SITE_ORIGIN, resolved.description);
+  } else if (isCountrySeoPageKey(resolved.pageKey)) {
+    const absoluteOg = resolved.ogImage
+      ? (String(resolved.ogImage).startsWith("/")
+        ? `${SITE_ORIGIN}${resolved.ogImage}`
+        : resolved.ogImage)
+      : undefined;
+
+    jsonLd = buildCountryPageJsonLd({
+      pageKey: resolved.pageKey,
+      title: resolved.title,
+      description: resolved.description,
+      canonicalUrl: resolved.canonicalUrl,
+      lang: HREFLANG_MAP[resolved.lang],
+      ogImage: absoluteOg,
+    });
+  }
 
   if (!jsonLd) return "";
 
@@ -238,7 +244,7 @@ function buildSeoHeadBlock(resolved) {
     }
   }
 
-  return `\n    ${lines.join("\n    ")}\n${buildCountryJsonLdScript(resolved)}`;
+  return `\n    ${lines.join("\n    ")}\n${buildJsonLdScript(resolved)}`;
 }
 
 function resolveFavicons(pageKey, basePath = "") {

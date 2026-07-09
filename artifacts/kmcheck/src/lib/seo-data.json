@@ -17,8 +17,8 @@
       "description": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля."
     },
     "sq": {
-      "title": "Kontroll kilometrash me shasi — aksidente | kmcheck.com",
-      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidentet dhe dëmtimin total për çdo makinë."
+      "title": "Kontroll kilometrash, aksidente — me shasi | kmcheck.com",
+      "description": "Kontroll kilometrash me shasi — verifikoni kilometrat (km) origjinalë, aksidentet dhe dëmtimin total për çdo makinë."
     },
     "es": {
       "title": "Comprobar VIN — kilometraje y accidentes | kmcheck.com",
@@ -63,8 +63,8 @@
       "description": "Один отчёт VIN: пробег, ДТП, утилизация и угон. Мгновенная доставка. Без подписки."
     },
     "sq": {
-      "title": "Çmimet — Kontroll kilometrash me VIN | kmcheck.com",
-      "description": "Një raport i përballueshëm për kontroll kilometrash, aksidentesh dhe dëmtimit total me shasi. Dorëzim i menjëhershëm, pa abonim."
+      "title": "Çmimet — kontroll kilometrash me shasi | kmcheck.com",
+      "description": "Një raport për kontroll kilometrash, aksidentesh dhe dëmtimit total me shasi. Dorëzim i menjëhershëm, pa abonim."
     },
     "es": {
       "title": "Precios — Informes de historial VIN | kmcheck.com",
@@ -202,7 +202,7 @@
     },
     "sq": {
       "title": "Raporti VIN | kmcheck.com",
-      "description": "Kontrollo kilometrat, aksidentet, dëmtimin total dhe historinë e mjetit. Raport i plotë në kmcheck.com."
+      "description": "Kontroll kilometrash, aksidentesh dhe dëmtimi total për mjetin. Raport i plotë me shasi në kmcheck.com."
     },
     "es": {
       "title": "Informe VIN | kmcheck.com",
@@ -247,8 +247,8 @@
       "description": "Проверка пробега, аварий, угонов и тоталов американских авто. Мгновенный отчёт VIN по всем 50 штатам."
     },
     "sq": {
-      "title": "SHBA — kontroll kilometrash & vjedhjesh | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe regjistrave të vjedhjesh për makina nga SHBA. Raport i menjëhershëm me shasi (VIN) për të 50 shtetet."
+      "title": "Kontroll kilometrash për makina nga SHBA | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh dhe vjedhjesh për makina nga SHBA. Raport i menjëhershëm me numrin e shasisë (VIN) për të 50 shtetet."
     },
     "es": {
       "title": "Coches USA — kilometraje, accidentes y robo | kmcheck.com",
@@ -293,8 +293,8 @@
       "description": "Проверка пробега, аварий, импорта и скрытых повреждений корейских авто. Мгновенный отчёт VIN для Hyundai, Kia, Genesis."
     },
     "sq": {
-      "title": "Koreja — kontroll kilometrash & vjedhjesh | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe historisë së importit për makina nga Koreja. Raport me shasi për Hyundai, Kia dhe Genesis."
+      "title": "Kontroll kilometrash për makina nga Koreja | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh dhe vjedhjesh për makina nga Koreja. Raport me shasi për Hyundai, Kia dhe Genesis."
     },
     "es": {
       "title": "Coches Corea — kilometraje y accidentes | kmcheck.com",
@@ -339,8 +339,8 @@
       "description": "Проверка пробега, аварий, брендированных титулов и угонов канадских авто. Мгновенный отчёт VIN по всем провинциям и территориям."
     },
     "sq": {
-      "title": "Kanadaja — kontroll kilometrash & vjedhjesh | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe regjistrave të vjedhjesh për makina nga Kanadaja. Raport me shasi në të gjitha provincat."
+      "title": "Kontroll kilometrash për makina nga Kanadaja | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh dhe vjedhjesh për makina nga Kanadaja. Raport me shasi (VIN) në të gjitha provincat."
     },
     "es": {
       "title": "Coches Canadá — kilometraje y accidentes | kmcheck.com",
@@ -431,8 +431,8 @@
       "description": "Получите полный отчёт об истории автомобиля. Введите VIN для проверки пробега, аварий, угонов, тотала и владельцев — за секунды из баз поставщиков."
     },
     "sq": {
-      "title": "Si funksionon — kontrolli me numrin e shasisë | kmcheck.com",
-      "description": "Raport i plotë i historisë së makinës. Shkruaj numrin e shasisë për kilometra, aksidente, vjedhje, dëmtim total dhe pronarë — për sekonda nga bazat e ofruesve."
+      "title": "Si funksionon — kontroll kilometrash me shasi | kmcheck.com",
+      "description": "Shkruaj numrin e shasisë për kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtimi total — raport për sekonda nga bazat e ofruesve."
     },
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
@@ -477,8 +477,8 @@
       "description": "Ответы о проверке VIN, покрытии, точности данных, доставке, оплате и возвратах."
     },
     "sq": {
-      "title": "Pyetje të shpeshta — kontroll kilometrash VIN | kmcheck.com",
-      "description": "Përgjigje për kontroll kilometrash, aksidentesh, dëmtimit total me shasi, mbulimin, pagesat dhe rimbursimet në kmcheck.com."
+      "title": "Pyetje të shpeshta — kontroll kilometrash | kmcheck.com",
+      "description": "Përgjigje për kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtimit total me shasi, pagesat dhe raportet në kmcheck.com."
     },
     "es": {
       "title": "Preguntas frecuentes — Comprobación VIN | kmcheck.com",
