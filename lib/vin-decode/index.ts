@@ -11,6 +11,12 @@ export {
 } from "./validation";
 export { isPlausibleMake, isPlausibleModel, isYearLikeModelName } from "./plausibility";
 export {
+  MIN_VEHICLE_LOOKUP_YEAR,
+  plausibleDecodedYear,
+  isVehicleTooOldForLookup,
+  isVehicleEligibleForHistoryLookup,
+} from "./lookup-eligibility";
+export {
   decodeVin,
   decodeCountry,
   decodeEngineCode,

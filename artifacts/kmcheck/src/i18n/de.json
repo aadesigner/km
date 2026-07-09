@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "Vorschau konnte nicht geladen werden — Sie können trotzdem kaufen, wir rufen die Daten direkt ab.",
   "checkout_no_data_title": "Keine Daten für diese VIN verfügbar",
   "checkout_no_data_desc": "Wir haben unsere Datenbank und den Anbieter geprüft — keine Fahrzeughistorieneinträge für diese VIN gefunden. Zahlung ist deaktiviert.",
+  "checkout_vehicle_too_old_title": "Keine Daten für dieses Fahrzeug gefunden",
+  "checkout_vehicle_too_old_desc": "Bitte versuchen Sie eine andere VIN.",
   "checkout_manual_pending_title": "In den meisten Fällen innerhalb von Sekunden geliefert",
   "checkout_manual_pending_desc": "Wenn das System noch Informationen von unseren Partnern prüft, senden wir Ihnen eine E-Mail, sobald alles fertig ist.",
   "pending_report_title": "Unser System prüft alle verfügbaren Datenbanken. Sie erhalten eine E-Mail, wenn es fertig ist.",

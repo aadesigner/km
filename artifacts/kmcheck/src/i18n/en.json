@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "Could not load a preview — you can still purchase and we'll fetch the data directly.",
   "checkout_no_data_title": "No data available for this VIN",
   "checkout_no_data_desc": "We checked our database and the provider — no vehicle history records were found for this VIN. Payment is disabled.",
+  "checkout_vehicle_too_old_title": "No data found for this vehicle",
+  "checkout_vehicle_too_old_desc": "Please try another VIN.",
   "checkout_manual_pending_title": "Delivered within seconds in most cases",
   "checkout_manual_pending_desc": "If the system is still checking information from our partners, we'll email you when it's ready.",
   "pending_report_title": "Our system is checking all available databases. You'll receive an email when it's done.",

@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "Impossible de charger l'aperçu — vous pouvez toujours acheter et nous récupérerons les données directement.",
   "checkout_no_data_title": "Aucune donnée disponible pour ce VIN",
   "checkout_no_data_desc": "Nous avons consulté notre base de données et le fournisseur — aucun registre d'historique véhicule n'a été trouvé pour ce VIN. Le paiement est désactivé.",
+  "checkout_vehicle_too_old_title": "Aucune donnée trouvée pour ce véhicule",
+  "checkout_vehicle_too_old_desc": "Veuillez essayer un autre VIN.",
   "checkout_manual_pending_title": "Livré en quelques secondes dans la plupart des cas",
   "checkout_manual_pending_desc": "Si le système consulte encore les informations de nos partenaires, nous vous enverrons un e-mail lorsque ce sera prêt.",
   "pending_report_title": "Notre système consulte toutes les bases de données disponibles. Vous recevrez un e-mail lorsque ce sera terminé.",

@@ -21,6 +21,7 @@ import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import { isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
@@ -122,6 +123,7 @@ interface VinPeek {
   vinNoAccess?: boolean;
   checkUnavailable?: boolean;
   checkUnavailableCode?: string;
+  vehicleTooOld?: boolean;
   alreadyUnlocked?: boolean;
   lookupId?: number | null;
 }
@@ -829,9 +831,15 @@ export default function Checkout({ params }: Props) {
   const showVinQualityWarning = vinIsValid && !!peek && !peekLoading && !isTrustworthyVinDecode(peek);
   const showVinPendingDoubleCheck = vinIsValid && !!peek && !peekLoading && shouldShowPendingVinDoubleCheck(peek);
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
-  const paymentAllowed = !vinLookupDisabled && peek?.dataAvailable === true && !peek?.checkUnavailable;
+  const vehicleTooOld =
+    vinIsValid &&
+    !!peek &&
+    !peekLoading &&
+    (peek.vehicleTooOld === true || isVehicleTooOldForLookup(peek.year));
+  const paymentAllowed = !vinLookupDisabled && peek?.dataAvailable === true && !peek?.checkUnavailable && !vehicleTooOld;
   const isManualPendingCheckout = !!peek?.manualPending && paymentAllowed;
   const vinLocked = paymentStarted && !couponResult?.isFree;
+  const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
     vinIsValid &&
     !!peek &&
@@ -839,7 +847,8 @@ export default function Checkout({ params }: Props) {
     peek.dataAvailable === false &&
     !peek.checkUnavailable &&
     !peek.manualPending &&
-    !showVinQualityWarning;
+    !showVinQualityWarning &&
+    !showVehicleTooOldNotice;
   const showCouponSection = !paymentStarted && status !== "creating" && status !== "paying";
   const showLockedPreview =
     vinIsValid &&
@@ -1356,6 +1365,16 @@ export default function Checkout({ params }: Props) {
 
                 {/* Payment section */}
                 <div className="border-t border-border/60 pt-5 space-y-4">
+                  {showVehicleTooOldNotice && (
+                    <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("checkout_vehicle_too_old_title")}</p>
+                        <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">{t("checkout_vehicle_too_old_desc")}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {showVinNoDataNotice && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />

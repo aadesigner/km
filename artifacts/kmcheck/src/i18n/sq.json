@@ -495,6 +495,8 @@
   "checkout_preview_unavailable_desc": "Nuk mund të ngarkohej pamja — mund të blini gjithsesi dhe do të marrim të dhënat drejtpërdrejt.",
   "checkout_no_data_title": "Nuk ka të dhëna për këtë VIN",
   "checkout_no_data_desc": "Kontrolluam bazën tonë të të dhënave dhe ofruesin — nuk u gjetën regjistra historiku për këtë VIN. Pagesa është çaktivizuar.",
+  "checkout_vehicle_too_old_title": "Nuk u gjetën të dhëna për këtë automjet",
+  "checkout_vehicle_too_old_desc": "Ju lutemi provoni një VIN tjetër.",
   "checkout_manual_pending_title": "Dorëzohet brenda sekondave në shumicën e rasteve.",
   "checkout_manual_pending_desc": "Nëse sistemi vazhdon kontrollin e informacioneve nga partnerët tanë, do t'ju dërgojmë email kur të jetë gati.",
   "pending_report_title": "Sistemi ynë po kontrollon të gjitha bazat e të dhënave të disponueshme. Do të merrni një email kur të përfundojë.",

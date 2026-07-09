@@ -16,7 +16,7 @@ import {
   resolveLockedPreviewPhotoSources,
 } from "../lib/vinService.js";
 import { logger } from "../lib/logger.js";
-import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics } from "@workspace/vin-decode";
+import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
@@ -1228,6 +1228,17 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
       ...peekPayload,
       dataAvailable: true,
       alreadyUnlocked: true,
+      lookupId,
+    });
+    return;
+  }
+
+  if (isVehicleTooOldForLookup(identity.year)) {
+    res.json({
+      ...peekPayload,
+      dataAvailable: false,
+      vehicleTooOld: true,
+      alreadyUnlocked: false,
       lookupId,
     });
     return;

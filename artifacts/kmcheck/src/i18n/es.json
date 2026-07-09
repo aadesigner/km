@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "No se pudo cargar una vista previa — aún puede comprar y obtendremos los datos directamente.",
   "checkout_no_data_title": "No hay datos disponibles para este VIN",
   "checkout_no_data_desc": "Hemos revisado nuestra base de datos y el proveedor: no hay registros de historial vehicular para este VIN. El pago está deshabilitado.",
+  "checkout_vehicle_too_old_title": "No se encontraron datos para este vehículo",
+  "checkout_vehicle_too_old_desc": "Pruebe con otro VIN.",
   "checkout_manual_pending_title": "Entregado en segundos en la mayoría de los casos",
   "checkout_manual_pending_desc": "Si el sistema sigue buscando información de nuestros socios, le enviaremos un correo cuando esté listo.",
   "pending_report_title": "Estamos buscando en todas las bases de datos disponibles. Recibirá un correo cuando termine.",

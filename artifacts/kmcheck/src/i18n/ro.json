@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "Nu s-a putut încărca previzualizarea — puteți achiziționa în continuare și vom recupera datele direct.",
   "checkout_no_data_title": "Nu există date pentru acest VIN",
   "checkout_no_data_desc": "Am verificat baza noastră de date și furnizorul — nu s-au găsit înregistrări de istoric auto pentru acest VIN. Plata este dezactivată.",
+  "checkout_vehicle_too_old_title": "Nu s-au găsit date pentru acest vehicul",
+  "checkout_vehicle_too_old_desc": "Încercați un alt VIN.",
   "checkout_manual_pending_title": "Livrat în câteva secunde în majoritatea cazurilor",
   "checkout_manual_pending_desc": "Dacă sistemul verifică încă informații de la partenerii noștri, vă vom trimite un e-mail când este gata.",
   "pending_report_title": "Sistemul nostru verifică toate bazele de date disponibile. Veți primi un e-mail când este gata.",

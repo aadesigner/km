@@ -1,3 +1,4 @@
+import { decodeVin, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { db, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable } from "@workspace/db";
 import type { VinCatalog } from "@workspace/db";
 import { eq, desc, and, or, ne, inArray, sql } from "drizzle-orm";
@@ -1292,6 +1293,11 @@ export async function ensureVinPayableForPayment(userId: string, vin: string): P
 
   if (completedLookup || pendingLookup || completedPmt) {
     return { ok: false, code: "ALREADY_UNLOCKED", lookupId: completedLookup?.id ?? pendingLookup?.id ?? null };
+  }
+
+  const decodedYear = decodeVin(normalizedVin).year;
+  if (isVehicleTooOldForLookup(decodedYear)) {
+    return { ok: false, code: "VIN_NO_DATA" };
   }
 
   const catalogEntry = await getCatalogVin(normalizedVin);

@@ -494,6 +494,8 @@
   "checkout_preview_unavailable_desc": "Nie udało się załadować podglądu — nadal możesz kupić raport, a dane pobierzemy bezpośrednio.",
   "checkout_no_data_title": "Brak danych dla tego VIN",
   "checkout_no_data_desc": "Sprawdziliśmy naszą bazę i dostawcę — nie znaleziono historii pojazdu dla tego VIN. Płatność jest wyłączona.",
+  "checkout_vehicle_too_old_title": "Nie znaleziono danych dla tego pojazdu",
+  "checkout_vehicle_too_old_desc": "Spróbuj innego VIN.",
   "checkout_manual_pending_title": "Dostawa w kilka sekund w większości przypadków",
   "checkout_manual_pending_desc": "Jeśli system wciąż sprawdza informacje u naszych partnerów, wyślemy e-mail, gdy raport będzie gotowy.",
   "pending_report_title": "Nasz system sprawdza wszystkie dostępne bazy danych. Otrzymasz e-mail, gdy sprawdzenie się zakończy.",

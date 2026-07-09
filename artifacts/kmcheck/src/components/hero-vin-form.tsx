@@ -37,6 +37,7 @@ export function HeroVinForm({
   const vinLen = vin.length;
   const isComplete = vinLen === 17;
   const showMessages = Boolean(error) || Boolean(alerts);
+  const isOnDark = helpVariant === "on-dark";
 
   const onVinInput = (value: string) => onVinChange(value.replace(/\s/g, "").toUpperCase());
 
@@ -63,11 +64,16 @@ export function HeroVinForm({
 
           <div
             className={cn(
-              "hero-vin-field relative overflow-hidden rounded-2xl",
-              "border border-border/80 dark:border-white/10",
-              "bg-background dark:bg-[#0a120e]",
-              "max-sm:shadow-none sm:bg-background/95 sm:dark:bg-[#0a120e]/95 sm:backdrop-blur-sm",
-              "sm:shadow-lg sm:shadow-black/10 sm:dark:shadow-black/25 md:shadow-xl",
+              "hero-vin-field relative overflow-hidden rounded-2xl border",
+              isOnDark
+                ? "border-white/25 bg-white/[0.12] backdrop-blur-xl shadow-lg shadow-black/15 dark:bg-white/[0.08] dark:backdrop-blur-2xl dark:border-white/20"
+                : cn(
+                    "border-border/80 dark:border-white/10",
+                    "bg-background dark:bg-[#0a120e]",
+                    "sm:bg-background/95 sm:dark:bg-[#0a120e]/95 sm:backdrop-blur-sm",
+                    "sm:shadow-lg sm:shadow-black/10 sm:dark:shadow-black/25 md:shadow-xl",
+                  ),
+              !isOnDark && "max-sm:shadow-none",
             )}
           >
             <div className="hero-vin-input-wrap relative flex items-center overflow-hidden">
