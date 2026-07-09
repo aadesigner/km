@@ -18,10 +18,17 @@ type Props = {
   market?: "default" | "home" | "usa" | "korea" | "canada";
 };
 
-const GRID_COLS_BASE = "minmax(10.5rem,2fr)";
+/** Tailwind must see full class strings at build time — no runtime template literals. */
+const COMPARE_GRID_COLS: Record<number, string> = {
+  /** feature + kmcheck + 2 competitors (home, korea/default) */
+  3: "grid-cols-[minmax(10.5rem,2fr)_repeat(3,minmax(5rem,1fr))]",
+  /** feature + kmcheck + 3 competitors (usa, canada) */
+  4: "grid-cols-[minmax(10.5rem,2fr)_repeat(4,minmax(5rem,1fr))]",
+};
 
 function compareGridCols(competitorCount: number): string {
-  return `grid-cols-[${GRID_COLS_BASE}_repeat(${competitorCount + 1},minmax(5rem,1fr))]`;
+  const dataCols = competitorCount + 1; // kmcheck + competitors
+  return COMPARE_GRID_COLS[dataCols] ?? COMPARE_GRID_COLS[3];
 }
 
 function CompareCell({

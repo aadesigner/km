@@ -11,7 +11,6 @@ import {
   CheckCircle2, AlertTriangle,
   Globe, Star, ArrowRight, X,
 } from "lucide-react";
-import { VinDemoCard } from "@/components/vin-demo-card";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
@@ -238,13 +237,6 @@ export default function Home() {
             transition={{ duration: 0.55 }}
             className="space-y-8 text-center"
           >
-            <div className="mx-auto max-w-sm w-full">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-3">
-                {t("sample_report_preview_label")}
-              </p>
-              <VinDemoCard frozen showcase />
-            </div>
-
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {t("hero_headline_1")}
               <br />
