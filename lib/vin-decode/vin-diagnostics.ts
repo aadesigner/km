@@ -66,13 +66,15 @@ const BMW_SERIES: Record<string, string> = {
 };
 
 const BMW_MODEL_5: Record<string, string> = {
-  // 4 Series (F32/F33/F36 — often WBA3V* despite position 4 = "3")
-  WBA3V7: "4 Series Gran Coupé (F36)", WBA3V5: "4 Series Coupé (F32)", WBA3V3: "4 Series Convertible (F33)",
+  // 4 Series (F32/F33/F36 — ETK type codes at VDS 4–5, e.g. 3V71 = F33 Cabrio)
+  WBA3V: "4 Series Convertible (F33)", WBA3T: "4 Series Convertible (F33)", WBA3U: "4 Series Convertible (F33)",
+  WBA3N: "4 Series Coupé (F32)", WBA3R: "4 Series Coupé (F32)", WBA3P: "4 Series Coupé (F32)", WBA3S: "4 Series Coupé (F32)",
+  WBA4B: "4 Series Gran Coupé (F36)", WBA4D: "4 Series Gran Coupé (F36)",
+  "5UX3V": "4 Series Convertible (US F33)", "5UX3N": "4 Series Coupé (US F32)", "5UX3R": "4 Series Coupé (US F32)",
   // 3 Series
-  WBA3V1: "3 Series Sedan (F30)", WBA3V: "3 Series (F30/F31/F34)", WBA3W: "3 Series (G20/G21)",
+  WBA3V1: "3 Series Sedan (F30)", WBA3W: "3 Series (G20/G21)",
   WBA3C: "3 Series Coupé (E92)", WBA3B: "3 Series Convertible",
-  "5UX3V7": "4 Series Gran Coupé (US F36)", "5UX3V5": "4 Series Coupé (US F32)",
-  "5UX3V": "3 Series (US)", "5UX3W": "3 Series (US G20)",
+  "5UX3W": "3 Series (US G20)",
   // 5 Series
   WBA5E: "5 Series (G30/G31)", WBA5J: "5 Series (F10/F11)",
   WBA7G: "7 Series (G11 LCI)", WBA7C: "7 Series (G11/G12)", WBA7L: "7 Series (G70)",

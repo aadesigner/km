@@ -31,12 +31,21 @@ export function WarmCache() {
       prefetchCommonRoutes();
     };
 
-    if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(warm, { timeout: 12_000 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const timer = window.setTimeout(warm, 6_000);
-    return () => window.clearTimeout(timer);
+    let idleId: number | undefined;
+    const startId = window.setTimeout(() => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(warm, { timeout: 20_000 });
+      } else {
+        window.setTimeout(warm, 12_000);
+      }
+    }, 4_000);
+
+    return () => {
+      window.clearTimeout(startId);
+      if (idleId != null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+    };
   }, [queryClient]);
 
   useEffect(() => {

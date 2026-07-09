@@ -15,10 +15,14 @@ type CompareRow = {
 };
 
 type Props = {
-  market?: "default" | "usa" | "korea" | "canada";
+  market?: "default" | "home" | "usa" | "korea" | "canada";
 };
 
-const GRID_COLS = "grid-cols-[minmax(10.5rem,2fr)_repeat(4,minmax(5rem,1fr))]";
+const GRID_COLS_BASE = "minmax(10.5rem,2fr)";
+
+function compareGridCols(competitorCount: number): string {
+  return `grid-cols-[${GRID_COLS_BASE}_repeat(${competitorCount + 1},minmax(5rem,1fr))]`;
+}
 
 function CompareCell({
   value,
@@ -95,44 +99,63 @@ export function CompareTable({ market = "default" }: Props) {
 
   const partial = t("compare_partial");
 
+  const homeRows: CompareRow[] = [
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "~$10.00"] },
+    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false] },
+    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false] },
+    { labelKey: "compare_row_us", values: [true, true, partial] },
+    { labelKey: "compare_row_mileage", values: [true, true, partial] },
+    { labelKey: "compare_row_accident", values: [true, true, true] },
+    { labelKey: "compare_row_salvage", values: [true, true, partial] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "US only"] },
+    { labelKey: "compare_row_ownership", values: [true, true, partial] },
+  ];
+
   const koreaRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€26.99", "€29.99"] },
-    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
-    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false, false] },
-    { labelKey: "compare_row_us", values: [true, true, partial, true] },
-    { labelKey: "compare_row_mileage", values: [true, true, true, true] },
-    { labelKey: "compare_row_accident", values: [true, true, true, true] },
-    { labelKey: "compare_row_salvage", values: [true, true, true, partial] },
-    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US/CA"] },
-    { labelKey: "compare_row_ownership", values: [true, true, true, partial] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99"] },
+    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false] },
+    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, partial, false] },
+    { labelKey: "compare_row_us", values: [true, true, partial] },
+    { labelKey: "compare_row_mileage", values: [true, true, true] },
+    { labelKey: "compare_row_accident", values: [true, true, true] },
+    { labelKey: "compare_row_salvage", values: [true, true, true] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only"] },
+    { labelKey: "compare_row_ownership", values: [true, true, true] },
   ];
 
   const usaRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€29.99", "~$10.00"] },
-    { labelKey: "compare_row_us", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, true, partial] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "~$10.00"] },
+    { labelKey: "compare_row_us", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, partial, partial] },
     { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
     { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_only_us", values: [true, true, false, false] },
-    { labelKey: "compare_row_auction", values: [true, true, true, partial] },
+    { labelKey: "compare_row_auction", values: [true, true, partial, partial] },
     { labelKey: "compare_row_mileage", values: [true, true, true, partial] },
     { labelKey: "compare_row_accident", values: [true, true, true, true] },
     { labelKey: "compare_row_salvage", values: [true, true, true, partial] },
-    { labelKey: "compare_row_theft", values: [true, "US/CA", "US/CA", "US only"] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
     { labelKey: "compare_row_ownership", values: [true, true, true, partial] },
   ];
 
   const canadaRows: CompareRow[] = [
-    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€29.99", "~$10.00"] },
-    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, true, partial] },
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "~$10.00"] },
+    { labelKey: "compare_row_canadian", highlight: true, badgeKey: "compare_row_us_focus", values: [true, true, partial, partial] },
     { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
     { labelKey: "compare_row_us", values: [true, true, partial, true] },
     { labelKey: "compare_row_mileage", values: [true, true, true, partial] },
     { labelKey: "compare_row_accident", values: [true, true, true, true] },
     { labelKey: "compare_row_salvage", values: [true, true, true, partial] },
-    { labelKey: "compare_row_theft", values: [true, "US/CA", "US/CA", "US only"] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
     { labelKey: "compare_row_ownership", values: [true, true, true, partial] },
   ];
 
-  const rows = market === "usa" ? usaRows : market === "canada" ? canadaRows : koreaRows;
+  const rows =
+    market === "usa"
+      ? usaRows
+      : market === "canada"
+        ? canadaRows
+        : market === "home"
+          ? homeRows
+          : koreaRows;
 
   const descKey = market === "usa"
     ? "compare_desc_usa"
@@ -143,17 +166,23 @@ export function CompareTable({ market = "default" }: Props) {
         : "compare_desc";
 
   const competitors =
-    market === "usa"
+    market === "usa" || market === "canada"
       ? [
           { name: "Carfax", subKey: "compare_comp_carfax" },
-          { name: "AutoCheck", subKey: "compare_comp_autocheck" },
+          { name: "CarVertical", subKey: "compare_comp_carvertical" },
           { name: "VinAudit", subKey: "compare_comp_vinaudit" },
         ]
-      : [
-          { name: "Carfax", subKey: "compare_comp_carfax" },
-          { name: "CarVertical", subKey: "compare_comp_carvertical" },
-          { name: "AutoCheck", subKey: "compare_comp_autocheck" },
-        ];
+      : market === "home"
+        ? [
+            { name: "Carfax", subKey: "compare_comp_carfax" },
+            { name: "VinAudit", subKey: "compare_comp_vinaudit" },
+          ]
+        : [
+            { name: "Carfax", subKey: "compare_comp_carfax" },
+            { name: "CarVertical", subKey: "compare_comp_carvertical" },
+          ];
+
+  const gridCols = compareGridCols(competitors.length);
 
   const kmcheckSub = t("compare_kmcheck_sub");
   const priceLabel = priceLoading || displayPrice == null ? "…" : fmtPrice(displayPrice);
@@ -194,7 +223,7 @@ export function CompareTable({ market = "default" }: Props) {
               )}
             >
               {/* Header */}
-              <div className={cn("grid", GRID_COLS)}>
+              <div className={cn("grid", gridCols)}>
                 <div className="px-3.5 py-4 bg-muted/50 dark:bg-[#0e1411] border-r border-border/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.14em] flex items-end">
                   {t("pricing_compare_feature")}
                 </div>
@@ -221,7 +250,7 @@ export function CompareTable({ market = "default" }: Props) {
                 return (
                   <div
                     key={row.labelKey}
-                    className={cn("grid border-t border-border/35", GRID_COLS, even ? "bg-background" : "bg-muted/15 dark:bg-white/[0.015]")}
+                    className={cn("grid border-t border-border/35", gridCols, even ? "bg-background" : "bg-muted/15 dark:bg-white/[0.015]")}
                   >
                     <div className={featureCellClass(even, row.highlight)}>
                       <span className="leading-snug min-w-0">{t(row.labelKey)}</span>
@@ -254,7 +283,7 @@ export function CompareTable({ market = "default" }: Props) {
               })}
 
               {/* CTA row */}
-              <div className={cn("grid border-t border-border/40 bg-muted/25 dark:bg-white/[0.02]", GRID_COLS)}>
+              <div className={cn("grid border-t border-border/40 bg-muted/25 dark:bg-white/[0.02]", gridCols)}>
                 <div className="px-3.5 py-4 text-sm font-medium text-muted-foreground border-r border-border/35 bg-muted/40 dark:bg-[#0e1411]">
                   {t("compare_cta_label")}
                 </div>
@@ -267,7 +296,7 @@ export function CompareTable({ market = "default" }: Props) {
                     <Link href={`/${language}/pricing`}>{t("get_started")}</Link>
                   </Button>
                 </div>
-                {[0, 1, 2].map((vi) => (
+                {competitors.map((_, vi) => (
                   <div key={vi} className="py-4 flex items-center justify-center border-l border-border/30">
                     <span className="text-muted-foreground/20 text-base select-none" aria-hidden>—</span>
                   </div>
@@ -277,7 +306,7 @@ export function CompareTable({ market = "default" }: Props) {
           </div>
 
           <p className="text-[11px] text-muted-foreground/55 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
-            {t(market === "usa" || market === "canada" ? "compare_disclaimer_usa" : "compare_disclaimer")}
+            {t(market === "usa" || market === "canada" || market === "home" ? "compare_disclaimer_usa" : "compare_disclaimer")}
           </p>
         </motion.div>
       </div>

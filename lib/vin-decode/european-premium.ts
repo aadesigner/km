@@ -18,11 +18,78 @@ import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefi
 
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
-// BMW: position 4 alone is NOT the series — 4 Series F32/F36 often uses WBA3V*.
+/** BMW model-year char (position 10) — duplicated here to avoid circular import from vinDecoder. */
+function bmwVinModelYear(vin: string): number | null {
+  const YEAR_MAP: Record<string, number> = {
+    A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
+    J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
+    T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
+    "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005, "6": 2006,
+    "7": 2007, "8": 2008, "9": 2009,
+  };
+  const code = vin[9]?.toUpperCase();
+  if (!code) return null;
+  const base = YEAR_MAP[code];
+  if (base == null) return null;
+  const candidate = base < 2010 ? base + 30 : base;
+  const currentYear = new Date().getFullYear();
+  return candidate <= currentYear + 2 ? candidate : base;
+}
+
+/**
+ * BMW F32/F33/F36 use ETK type codes at VDS positions 4–5 (VIN indices 3–4).
+ * e.g. 3V71 = F33 428i Convertible (N26) — not F36 despite the trailing "7".
+ */
+function resolveBmwFourSeriesBody(vin: string): PremiumEuropeanDecode | null {
+  const wmi = vin.slice(0, 3);
+  if (!wmi.startsWith("WBA") && !wmi.startsWith("5UX") && !wmi.startsWith("4US")) return null;
+
+  const usSuffix = wmi.startsWith("WBA") ? "" : " (US)";
+
+  // F30 sedans that share a 3V1… prefix (must beat the 3V → F33 rule below).
+  if (vin.startsWith("WBA3V1") || vin.startsWith("5UX3V1")) {
+    return {
+      model: "3 Series",
+      chassis: `F30 Sedan${usSuffix}`,
+      displayModel: `3 Series (F30 Sedan${usSuffix})`,
+    };
+  }
+
+  const type45 = vin.slice(3, 5);
+  const year = bmwVinModelYear(vin);
+
+  if (type45 === "3V" || type45 === "3T" || type45 === "3U") {
+    const chassis = `F33 Convertible${usSuffix}`;
+    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+  }
+  if (type45 === "3N" || type45 === "3R" || type45 === "3P" || type45 === "3S") {
+    const chassis = `F32 Coupé${usSuffix}`;
+    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+  }
+
+  // F36 Gran Coupé — ETK codes 4A–4F (4C overlaps G26 from ~2021).
+  if (type45 === "4A") {
+    const chassis = year != null && year >= 2021
+      ? `G23 Convertible${usSuffix}`
+      : `F36 Gran Coupé${usSuffix}`;
+    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+  }
+  if (type45 === "4C") {
+    const chassis = year != null && year >= 2021
+      ? `G26 Gran Coupé${usSuffix}`
+      : `F36 Gran Coupé${usSuffix}`;
+    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+  }
+  if (type45 === "4B" || type45 === "4D" || type45 === "4E" || type45 === "4F") {
+    const chassis = `F36 Gran Coupé${usSuffix}`;
+    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+  }
+
+  return null;
+}
+
+// BMW: position 4 alone is NOT the series — 4 Series F32/F33/F36 use ETK type codes at 4–5.
 const BMW_RULES = compilePrefixRules([
-  { prefix: "WBA3V7", model: "4 Series", chassis: "F36 Gran Coupé" },
-  { prefix: "WBA3V5", model: "4 Series", chassis: "F32 Coupé" },
-  { prefix: "WBA3V3", model: "4 Series", chassis: "F33 Convertible" },
   { prefix: "WBA3V1", model: "3 Series", chassis: "F30 Sedan" },
   { prefix: "WBA3VG", model: "3 Series", chassis: "F31 Touring" },
   { prefix: "WBA3W", model: "3 Series", chassis: "G20/G21" },
@@ -80,14 +147,10 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBAX5", model: "X5", chassis: "G05" },
   { prefix: "WBAX6", model: "X6", chassis: "G06" },
   { prefix: "WBAX7", model: "X7", chassis: "G07" },
-  { prefix: "WBA3V", model: "3 Series", chassis: "F30/F31/F34" },
   { prefix: "WBA3", model: "3 Series" },
   { prefix: "WBA4", model: "4 Series" },
   { prefix: "WBA5", model: "5 Series" },
   { prefix: "WBA7", model: "7 Series" },
-  { prefix: "5UX3V7", model: "4 Series", chassis: "F36 Gran Coupé (US)" },
-  { prefix: "5UX3V5", model: "4 Series", chassis: "F32 Coupé (US)" },
-  { prefix: "5UX3V", model: "3 Series", chassis: "F30 (US)" },
   { prefix: "5UX3W", model: "3 Series", chassis: "G20 (US)" },
   { prefix: "5UX5J", model: "5 Series", chassis: "F10 (US)" },
   { prefix: "5UX5E", model: "5 Series", chassis: "G30 (US)" },
@@ -300,6 +363,8 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
       const euHit = fromHomologation(decodeBmwEuHomologation(raw));
       if (euHit) return euHit;
     }
+    const f4Body = resolveBmwFourSeriesBody(upper);
+    if (f4Body) return f4Body;
     return decodeFromRules(upper, BMW_RULES);
   }
   if (wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC") || wmi.startsWith("WDF") || wmi.startsWith("W1K")) {

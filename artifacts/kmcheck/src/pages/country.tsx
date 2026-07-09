@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
@@ -20,17 +20,25 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { VinDemoCard } from "@/components/vin-demo-card";
-import { CompareTable } from "@/components/compare-table";
-import { WhatWeCheckSection } from "@/components/what-we-check-section";
+import { DeferredSection } from "@/components/deferred-section";
+import { SectionFallback } from "@/components/section-fallback";
 import { CountryRisksIncludedSection } from "@/components/country-risks-included";
 import { cn } from "@/lib/utils";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import { FlagImg } from "@/components/flag-img";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+
+const CompareTable = lazy(() =>
+  import("@/components/compare-table").then((m) => ({ default: m.CompareTable })),
+);
+const WhatWeCheckSection = lazy(() =>
+  import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
+);
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -316,11 +324,10 @@ export default function CountryPage({ params }: Props) {
           >
             {/* Desktop eyebrow flag */}
             <div className="hidden lg:flex items-center justify-start gap-3">
-              <img
-                src={`https://flagcdn.com/40x30/${meta.flagImg}.png`}
-                width={40}
-                height={30}
-                alt=""
+              <FlagImg
+                code={meta.flagImg}
+                size={40}
+                priority
                 className="rounded-md shadow-md ring-1 ring-black/10"
               />
             </div>
@@ -337,12 +344,11 @@ export default function CountryPage({ params }: Props) {
               <span className="lg:hidden text-foreground/90 inline-flex items-center justify-center gap-x-2 gap-y-1 flex-wrap">
                 <span>{t(`country_${slug}_headline_origin_prefix`)}</span>
                 <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
-                  <img
-                    src={`https://flagcdn.com/48x36/${meta.flagImg}.png`}
-                    width={48}
-                    height={36}
-                    alt=""
-                    className="w-11 h-[33px] rounded-md shadow-md ring-1 ring-black/10 shrink-0"
+                  <FlagImg
+                    code={meta.flagImg}
+                    size={44}
+                    priority
+                    className="rounded-md shadow-md ring-1 ring-black/10 shrink-0"
                   />
                   <span className="text-foreground font-extrabold">{countryName}</span>
                 </span>
@@ -378,7 +384,7 @@ export default function CountryPage({ params }: Props) {
             transition={{ duration: 0.55, delay: 0.13 }}
             className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center lg:items-stretch"
           >
-            <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase />
+            <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase frozen />
 
             {/* Price line */}
             <div className="px-1 flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground text-center lg:text-start max-w-lg w-full">
@@ -407,34 +413,35 @@ export default function CountryPage({ params }: Props) {
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest shrink-0 mr-1">
             {t("popular_brands")}
           </span>
-          {meta.popularBrands.map((brand, i) => (
-            <motion.button
+          {meta.popularBrands.map((brand) => (
+            <button
               key={brand}
               type="button"
               onClick={focusVin}
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.04 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.96 }}
-              className="text-xs bg-background border rounded-full px-3.5 py-1.5 font-medium hover:border-primary hover:text-primary transition-all cursor-pointer shadow-sm"
+              className="text-xs bg-background border rounded-full px-3.5 py-1.5 font-medium hover:border-primary hover:text-primary hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
               {brand}
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
 
       {/* ─────────────────────── WHAT WE CHECK ─────────────────────── */}
-      <WhatWeCheckSection market={slug as "usa" | "korea" | "canada"} />
+      <DeferredSection minHeight={320}>
+        <Suspense fallback={<SectionFallback minHeight={320} />}>
+          <WhatWeCheckSection market={slug as "usa" | "korea" | "canada"} />
+        </Suspense>
+      </DeferredSection>
 
       {/* ─────────────────────── RISKS + INCLUDED ─────────────────────── */}
+      <DeferredSection minHeight={360}>
       <CountryRisksIncludedSection
         slug={slug as "usa" | "korea" | "canada"}
         issues={content.issues}
         included={content.included}
         severities={meta.issueSeverities}
       />
+      </DeferredSection>
 
       {/* ─────────────────────── VIN ANATOMY ─────────────────────── */}
       <section className="py-10 md:py-14 px-4">
@@ -459,19 +466,12 @@ export default function CountryPage({ params }: Props) {
             <div className="flex flex-wrap gap-1.5 justify-center">
               {meta.vinSegments.map(({ chars, color }, si) =>
                 chars.split("").map((ch, ci) => (
-                  <motion.div
+                  <div
                     key={`${si}-${ci}`}
-                    initial={{ opacity: 0, y: -8, scale: 0.7 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{
-                      delay: (si * chars.length + ci) * 0.018,
-                      type: "spring", stiffness: 300, damping: 24,
-                    }}
                     className={cn("h-9 w-8 rounded-lg text-white font-mono font-black text-xs flex items-center justify-center shadow-sm", color)}
                   >
                     {ch}
-                  </motion.div>
+                  </div>
                 ))
               )}
             </div>
@@ -504,7 +504,7 @@ export default function CountryPage({ params }: Props) {
             className="text-center mb-12 space-y-3"
           >
             <div className="inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">
-              <img src={`https://flagcdn.com/16x12/${meta.flagImg}.png`} width={16} height={12} alt="" className="rounded-sm" />
+              <FlagImg code={meta.flagImg} size={16} className="rounded-sm" />
               {countryName} {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">{t("faq")}</h2>
@@ -555,7 +555,7 @@ export default function CountryPage({ params }: Props) {
         >
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/70">
-              <img src={`https://flagcdn.com/24x18/${meta.flagImg}.png`} width={24} height={18} alt="" className="rounded-sm shadow-sm" />
+              <FlagImg code={meta.flagImg} size={24} className="rounded-sm shadow-sm" />
               {countryName} · {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
@@ -595,7 +595,11 @@ export default function CountryPage({ params }: Props) {
       </section>
 
       {/* ─────────────────────── COMPARISON TABLE ─────────────────────── */}
-      <CompareTable market={slug === "korea" ? "korea" : slug === "canada" ? "canada" : "usa"} />
+      <DeferredSection minHeight={280}>
+        <Suspense fallback={<SectionFallback minHeight={280} />}>
+          <CompareTable market={slug === "korea" ? "korea" : slug === "canada" ? "canada" : "usa"} />
+        </Suspense>
+      </DeferredSection>
 
       {/* ─────────────────────── OTHER COUNTRIES ─────────────────────── */}
       <section className="py-12 md:py-16 px-4 bg-muted/20 border-t">
@@ -623,7 +627,7 @@ export default function CountryPage({ params }: Props) {
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_50%_60%_at_80%_20%,rgba(255,255,255,0.08),transparent)]" />
                   <div className="relative z-10 space-y-4">
                     <div className="flex items-center gap-3">
-                      <img src={`https://flagcdn.com/60x45/${c.flagImg}.png`} width={60} height={45} alt="" className="rounded-md shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      <FlagImg code={c.flagImg} size={60} className="rounded-md shadow-md group-hover:scale-110 transition-transform duration-300" />
                       <div>
                         <h4 className="text-xl font-black text-white">{t(`country_${key}_name`)}</h4>
                         <p className="text-white/50 text-xs">{c.totalVehicles} {t("country_registered_vehicles")}</p>

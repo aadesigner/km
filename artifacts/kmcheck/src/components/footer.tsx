@@ -123,15 +123,15 @@ export function Footer() {
                   aria-label={current.label}
                   onClick={() => setLangOpen((v) => !v)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors min-w-[11.5rem]",
+                    "inline-flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs transition-colors max-w-[11rem]",
                     langOpen
                       ? "border-primary/50 bg-primary/20 text-white ring-1 ring-primary/35"
-                      : "border-white/[0.12] bg-white/[0.03] text-white/80 hover:border-white/22 hover:bg-white/[0.06]",
+                      : "border-white/[0.12] bg-white/[0.03] text-white/75 hover:border-white/22 hover:bg-white/[0.06]",
                   )}
                 >
-                  <FlagImg code={current.img} size={18} priority />
+                  <FlagImg code={current.img} size={15} priority />
                   <span className="font-medium truncate flex-1 text-left">{current.label}</span>
-                  <ChevronUp className={cn("h-3 w-3 opacity-50 transition-transform", langOpen && "rotate-180")} />
+                  <ChevronUp className={cn("h-2.5 w-2.5 opacity-50 transition-transform shrink-0", langOpen && "rotate-180")} />
                 </button>
 
                 {langOpen && (

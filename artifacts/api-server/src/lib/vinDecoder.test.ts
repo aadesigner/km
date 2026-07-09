@@ -497,9 +497,16 @@ describe("BMW premium model decoding", () => {
     expect(r.transmissionDecoded).toBe("Automatic");
   });
 
-  it("WBA3V7 → 4 Series Gran Coupé", () => {
+  it("WBA3V71 → 4 Series F33 Convertible", () => {
     const r = decodeVin("WBA3V7106FJ995387");
     expect(r.model).toContain("4 Series");
+    expect(r.model).toContain("F33");
+  });
+
+  it("WBA4B1 → 4 Series F36 Gran Coupé", () => {
+    const r = decodeVin("WBA4B1C59FG241156");
+    expect(r.model).toContain("4 Series");
+    expect(r.model).toContain("F36");
   });
 
   it("WBA7G → 7 Series", () => {

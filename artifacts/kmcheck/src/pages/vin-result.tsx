@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useTranslation } from "@/i18n/context";
 import { parseVinRouteParam } from "@/lib/vin-route";
 import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
@@ -466,7 +466,7 @@ export default function VinResult({ params }: Props) {
 
   useAntiScrape(!isLoading && !!lookup, onAntiScrapeTrigger);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!lookupRaw?.data) return;
     const d = lookupRaw.data as { photos?: string[] };
     const urls = (d.photos ?? []).filter((p): p is string => typeof p === "string" && p.length > 0);

@@ -11,6 +11,7 @@ import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name
 import {
   isVinImageSessionLoaded,
   markVinImageSessionLoaded,
+  warmVinImageNeighbors,
 } from "@/lib/vin-image-cache";
 
 export type VinHeroScore = {
@@ -171,6 +172,7 @@ function HeroPhotoFrame({
   alt,
   className,
   priority = false,
+  isActive = true,
   onLoaded,
   onFailed,
 }: {
@@ -178,6 +180,7 @@ function HeroPhotoFrame({
   alt: string;
   className?: string;
   priority?: boolean;
+  isActive?: boolean;
   onLoaded?: () => void;
   onFailed?: () => void;
 }) {
@@ -200,7 +203,6 @@ function HeroPhotoFrame({
 
   return (
     <img
-      key={src}
       ref={imgRef}
       src={src}
       alt={alt}
@@ -208,9 +210,10 @@ function HeroPhotoFrame({
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
       className={cn(
-        "w-full object-cover object-center transition-opacity duration-200",
+        "absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-150",
         "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
-        ready ? "opacity-100" : "opacity-0",
+        isActive && ready ? "opacity-100" : "opacity-0",
+        !isActive && "pointer-events-none",
         className,
       )}
       onLoad={notifyLoaded}
@@ -253,11 +256,13 @@ function HeroPhotoGallery({
   const touchX = useRef(0);
   const currentPhoto = photos[photoIdx] ?? photos[0] ?? null;
   const showNav = photos.length > 1 && !locked;
-  const preloadIndices = useMemo(() => {
-    if (photos.length <= 1) return [];
-    const prev = (photoIdx - 1 + photos.length) % photos.length;
-    const next = (photoIdx + 1) % photos.length;
-    return [...new Set([prev, next])];
+  const bufferIndices = useMemo(() => {
+    const n = photos.length;
+    if (n === 0) return [];
+    if (n === 1) return [0];
+    const prev = (photoIdx - 1 + n) % n;
+    const next = (photoIdx + 1) % n;
+    return [...new Set([prev, photoIdx, next])];
   }, [photoIdx, photos.length]);
   const [loadedByUrl, setLoadedByUrl] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
@@ -282,6 +287,11 @@ function HeroPhotoGallery({
     });
     setFailedByUrl({});
   }, [photos]);
+
+  useEffect(() => {
+    if (locked || photos.length === 0) return;
+    void warmVinImageNeighbors(photos, photoIdx, 2);
+  }, [locked, photos, photoIdx]);
 
   const markLoadedUrl = useCallback((url: string) => {
     setLoadedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
@@ -332,13 +342,13 @@ function HeroPhotoGallery({
               </div>
             )}
             <HeroPhotoFrame
-              key={previewSrc}
               src={previewSrc}
               alt={vehicleTitle}
               priority
+              isActive
               onLoaded={() => markLoadedUrl(previewSrc)}
               onFailed={() => markFailedUrl(previewSrc)}
-              className="relative z-[2] sm:rounded-xl blur-[5px] scale-[1.04] select-none"
+              className="z-[2] sm:rounded-xl blur-[5px] scale-[1.04] select-none"
             />
           </>
         ) : (
@@ -377,32 +387,26 @@ function HeroPhotoGallery({
       {currentPhoto && !failedByUrl[currentPhoto] ? (
         <>
           {!loadedByUrl[currentPhoto] && (
-            <div className="absolute inset-0 z-[1] flex items-center justify-center bg-muted/55 dark:bg-muted/45 pointer-events-none">
+            <div className="absolute inset-0 z-[3] flex items-center justify-center bg-muted/55 dark:bg-muted/45 pointer-events-none">
               <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground/80 animate-spin" />
             </div>
           )}
-          <HeroPhotoFrame
-            key={currentPhoto}
-            src={currentPhoto}
-            alt={vehicleTitle}
-            priority
-            onLoaded={() => markLoadedUrl(currentPhoto)}
-            onFailed={() => markFailedUrl(currentPhoto)}
-            className="relative z-[2] sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300"
-          />
-          {preloadIndices.map((i) => {
+          {bufferIndices.map((i) => {
             const url = photos[i];
-            if (!url || url === currentPhoto) return null;
+            if (!url || failedByUrl[url]) return null;
+            const isActive = i === photoIdx;
             return (
-              <img
-                key={`preload-${url}`}
+              <HeroPhotoFrame
+                key={url}
                 src={url}
-                alt=""
-                className="sr-only"
-                loading="eager"
-                decoding="async"
-                aria-hidden
-                onLoad={() => markLoadedUrl(url)}
+                alt={isActive ? vehicleTitle : ""}
+                priority={isActive}
+                isActive={isActive}
+                onLoaded={() => markLoadedUrl(url)}
+                onFailed={() => markFailedUrl(url)}
+                className={cn(
+                  isActive ? "z-[2] sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300" : "z-[1]",
+                )}
               />
             );
           })}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -487,7 +487,7 @@ export default function VinPublic({ params }: Props) {
     }
   }, [forbidden, language, setLocation]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!data) return;
     const all = (data.photos ?? (data.thumbnailUrl ? [data.thumbnailUrl] : [])).filter(
       (p): p is string => typeof p === "string" && p.length > 0,

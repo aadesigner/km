@@ -48,13 +48,24 @@ export function HeroVinForm({
       <div className={cn(disabled && "opacity-60 pointer-events-none")}>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3 px-1">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.12em] text-primary/90">
+            <span
+              className={cn(
+                "text-[11px] sm:text-xs font-semibold uppercase tracking-[0.12em]",
+                isOnDark ? "text-white/90" : "text-primary/90",
+              )}
+            >
               {t("vin_check")}
             </span>
             <span
               className={cn(
                 "text-[11px] sm:text-xs font-mono font-semibold tabular-nums transition-colors",
-                isComplete ? "text-primary" : "text-muted-foreground/80",
+                isOnDark
+                  ? isComplete
+                    ? "text-white"
+                    : "text-white/80"
+                  : isComplete
+                    ? "text-primary"
+                    : "text-muted-foreground/80",
               )}
               aria-live="polite"
             >
@@ -66,7 +77,7 @@ export function HeroVinForm({
             className={cn(
               "hero-vin-field relative overflow-hidden rounded-2xl border",
               isOnDark
-                ? "border-white/25 bg-white/[0.12] backdrop-blur-xl shadow-lg shadow-black/15 dark:bg-white/[0.08] dark:backdrop-blur-2xl dark:border-white/20"
+                ? "border-white/35 bg-white/20 backdrop-blur-xl shadow-lg shadow-black/20 dark:bg-white/15 dark:backdrop-blur-2xl dark:border-white/30"
                 : cn(
                     "border-border/80 dark:border-white/10",
                     "bg-background dark:bg-[#0a120e]",
@@ -77,7 +88,14 @@ export function HeroVinForm({
             )}
           >
             <div className="hero-vin-input-wrap relative flex items-center overflow-hidden">
-              <Search className="absolute left-3.5 sm:left-5 h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem] text-primary/60 dark:text-primary/50 sm:text-muted-foreground sm:dark:text-white/35 shrink-0 z-10 pointer-events-none" />
+              <Search
+                className={cn(
+                  "absolute left-3.5 sm:left-5 h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem] shrink-0 z-10 pointer-events-none",
+                  isOnDark
+                    ? "text-white/65"
+                    : "text-primary/60 dark:text-primary/50 sm:text-muted-foreground sm:dark:text-white/35",
+                )}
+              />
               <Input
                 ref={inputRef}
                 className={cn(
@@ -85,8 +103,10 @@ export function HeroVinForm({
                   "pl-11 sm:pl-14 pr-[7.5rem] sm:pr-[10.5rem]",
                   "text-[16px] sm:text-lg",
                   "border-0 focus-visible:ring-0 focus-visible:outline-none rounded-none shadow-none bg-transparent",
-                  "font-mono tracking-[0.14em] sm:tracking-widest text-foreground dark:text-white",
-                  "placeholder:text-muted-foreground/75 dark:placeholder:text-white/30 placeholder:tracking-normal",
+                  "font-mono tracking-[0.14em] sm:tracking-widest placeholder:tracking-normal",
+                  isOnDark
+                    ? "text-white placeholder:text-white/55"
+                    : "text-foreground dark:text-white placeholder:text-muted-foreground/75 dark:placeholder:text-white/30",
                 )}
                 placeholder={placeholder}
                 value={vin}

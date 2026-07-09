@@ -790,7 +790,7 @@ export default function FreeVinDecoder() {
             <p className="text-sm text-muted-foreground font-medium">{t("free_decoder_decoded_vin")}</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               {[
-                { label: "BMW 4 Series", vin: "WBA3V7106FJ995387" },
+                { label: "BMW 4 Series Cabrio", vin: "WBA3V7106FJ995387" },
                 { label: "Honda Civic", vin: "1HGBH41JXMN109186" },
                 { label: "Hyundai Elantra", vin: "KMHD35LE1JA103867" },
               ].map(({ label, vin: v }) => (

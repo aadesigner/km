@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isVinImageSessionLoaded, markVinImageSessionLoaded, warmVinImageNeighbors } from "@/lib/vin-image-cache";
 
 type PhotoLightboxProps = {
   photos: string[];
@@ -64,6 +65,29 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
 
   const [transform, setTransform] = useState<Transform>({ scale: 1, x: 0, y: 0 });
   const [isGesturing, setIsGesturing] = useState(false);
+  const [activeReady, setActiveReady] = useState(() =>
+    isVinImageSessionLoaded(photos[index] ?? ""),
+  );
+
+  const bufferIndices = useMemo(() => {
+    const n = photos.length;
+    if (n === 0) return [];
+    if (n === 1) return [0];
+    const prev = (index - 1 + n) % n;
+    const next = (index + 1) % n;
+    return [...new Set([prev, index, next])];
+  }, [index, photos.length]);
+
+  useEffect(() => {
+    if (photos.length === 0) return;
+    void warmVinImageNeighbors(photos, index, 2);
+    const src = photos[index] ?? "";
+    setActiveReady(isVinImageSessionLoaded(src));
+    const img = imageRef.current;
+    if (img?.complete && img.naturalWidth > 0) {
+      setActiveReady(true);
+    }
+  }, [photos, index]);
 
   const measureImage = useCallback(() => {
     const img = imageRef.current;
@@ -418,35 +442,64 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
       <div
         ref={viewportRef}
         data-lightbox-viewport
-        className="flex items-center justify-center w-[90vw] h-[85vh] max-h-[85dvh] touch-none overflow-hidden"
+        className="relative flex items-center justify-center w-[90vw] h-[85vh] max-h-[85dvh] touch-none overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          key={photos[index]}
-          ref={imageRef}
-          src={photos[index]}
-          alt={`Photo ${index + 1}`}
-          className={cn(
-            "max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none will-change-transform",
-            isZoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in",
-          )}
-          style={{
-            transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
-            transition: isGesturing ? "none" : "transform 0.15s ease-out",
-          }}
-          draggable={false}
-          onLoad={() => {
-            if (transformRef.current.scale > 1.02) {
-              applyTransform({ ...transformRef.current });
-            }
-          }}
-          onMouseDown={handleMouseDown}
-          onDoubleClick={(e) => {
-            e.stopPropagation();
-            if (transform.scale > 1.05) resetZoom();
-            else applyTransform({ scale: DOUBLE_TAP_SCALE, x: 0, y: 0 });
-          }}
-        />
+        {!activeReady && (
+          <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none">
+            <div className="h-9 w-9 rounded-full border-2 border-white/25 border-t-white/80 animate-spin" />
+          </div>
+        )}
+        {bufferIndices.map((i) => {
+          const src = photos[i];
+          if (!src) return null;
+          const isActive = i === index;
+          return (
+            <img
+              key={src}
+              ref={isActive ? imageRef : undefined}
+              src={src}
+              alt={isActive ? `Photo ${index + 1}` : ""}
+              aria-hidden={!isActive}
+              className={cn(
+                "max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none will-change-transform",
+                isActive ? "relative z-[2]" : "absolute inset-0 m-auto opacity-0 pointer-events-none",
+                isActive && (isZoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"),
+                isActive && !activeReady && "opacity-0",
+              )}
+              style={
+                isActive
+                  ? {
+                      transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
+                      transition: isGesturing ? "none" : "transform 0.15s ease-out",
+                    }
+                  : undefined
+              }
+              draggable={false}
+              decoding="async"
+              loading={isActive ? "eager" : "lazy"}
+              fetchPriority={isActive ? "high" : "low"}
+              onLoad={() => {
+                if (!isActive) return;
+                markVinImageSessionLoaded(src);
+                setActiveReady(true);
+                if (transformRef.current.scale > 1.02) {
+                  applyTransform({ ...transformRef.current });
+                }
+              }}
+              onMouseDown={isActive ? handleMouseDown : undefined}
+              onDoubleClick={
+                isActive
+                  ? (e) => {
+                      e.stopPropagation();
+                      if (transform.scale > 1.05) resetZoom();
+                      else applyTransform({ scale: DOUBLE_TAP_SCALE, x: 0, y: 0 });
+                    }
+                  : undefined
+              }
+            />
+          );
+        })}
       </div>
     </motion.div>,
     document.body,

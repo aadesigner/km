@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -135,6 +135,8 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Pro
   const features = useWhatWeCheckFeatures(t, market);
   const [activeCheck, setActiveCheck] = useState(0);
   const [checksPaused, setChecksPaused] = useState(false);
+  const [sectionInView, setSectionInView] = useState(!autoRotate);
+  const sectionRef = useRef<HTMLElement>(null);
   const sectionSubtitle = whatWeCheckSubtitle(t, market, subtitle);
 
   useEffect(() => {
@@ -142,13 +144,30 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Pro
   }, [market, sectionSubtitle]);
 
   useEffect(() => {
-    if (!autoRotate || checksPaused) return;
+    if (!autoRotate) return;
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setSectionInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setSectionInView(true);
+      },
+      { rootMargin: "120px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [autoRotate]);
+
+  useEffect(() => {
+    if (!autoRotate || checksPaused || !sectionInView) return;
     const timer = setInterval(() => setActiveCheck((i) => (i + 1) % features.length), 4500);
     return () => clearInterval(timer);
-  }, [autoRotate, checksPaused, features.length]);
+  }, [autoRotate, checksPaused, features.length, sectionInView]);
 
   return (
-    <section className="relative z-[1] py-12 md:py-20 px-4 overflow-hidden bg-background">
+    <section ref={sectionRef} className="relative z-[1] py-12 md:py-20 px-4 overflow-hidden bg-background">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.06),transparent_65%)]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 

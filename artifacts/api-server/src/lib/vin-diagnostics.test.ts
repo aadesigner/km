@@ -17,10 +17,10 @@ describe("decodeVinDiagnostics", () => {
     expect(items.some((d) => d.labelKey === "check_digit")).toBe(true);
   });
 
-  it("BMW 4 Series F36 gets correct series (WBA3V7 prefix)", () => {
+  it("BMW 4 Series F33 gets correct body (3V71 ETK code)", () => {
     const vin = "WBA3V7106FJ995387";
     expect(diagValues(vin, "series")).toContain("4 Series");
-    expect(diagValues(vin, "model_line")).toContain("4 Series (F36 Gran Coupé)");
+    expect(diagValues(vin, "model_line")).toContain("4 Series (F33 Convertible)");
     expect(diagValues(vin, "manufacturer_family")).toContain("BMW");
   });
 

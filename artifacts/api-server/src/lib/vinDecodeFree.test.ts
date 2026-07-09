@@ -52,11 +52,12 @@ describe("decodeVin european integration", () => {
     expect(r.model).toBe("Q5");
   });
 
-  it("BMW WBA3V7 decodes as 4 Series Gran Coupé, not 3 Series", () => {
+  it("BMW WBA3V71 decodes as 4 Series F33 Convertible, not Gran Coupé", () => {
     const r = decodeVin("WBA3V7106FJ995387");
     expect(r.make).toBe("BMW");
     expect(r.model).toContain("4 Series");
-    expect(r.model).toContain("F36");
+    expect(r.model).toContain("F33");
+    expect(r.model).not.toContain("F36");
   });
 
   it("BMW Spartanburg X7 (WBA21) decodes as X7, not 2 Series", () => {

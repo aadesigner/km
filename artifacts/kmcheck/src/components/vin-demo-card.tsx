@@ -4,6 +4,7 @@ import { AlertTriangle, ShieldAlert, Gauge, Fingerprint, Users } from "lucide-re
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
 import { DemoCarPhoto, preloadDemoCarPhotos } from "@/components/demo-car-photo";
+import { FlagImg } from "@/components/flag-img";
 import { demoCarPhotoUrl } from "@/lib/demo-car-photos";
 
 export interface DemoCar {
@@ -531,7 +532,6 @@ export function VinDemoCard({
   const { t } = useTranslation();
   const pool = useMemo(() => carsForCountry(country), [country]);
   const cars = frozen ? [pickFrozenCar(pool)] : pool;
-  const photoUrls = useMemo(() => cars.map((c) => c.photo), [cars]);
 
   const [idx, setIdx] = useState(0);
 
@@ -546,8 +546,15 @@ export function VinDemoCard({
   }, [cars.length, frozen]);
 
   useEffect(() => {
-    preloadDemoCarPhotos(photoUrls);
-  }, [photoUrls]);
+    if (cars.length === 0) return;
+    const urls = frozen
+      ? [cars[0]!.photo]
+      : [
+          cars[idx]?.photo,
+          cars[(idx + 1) % cars.length]?.photo,
+        ].filter((u): u is string => Boolean(u));
+    preloadDemoCarPhotos(urls);
+  }, [cars, frozen, idx]);
 
   const car = cars[idx] ?? cars[0];
   if (!car) return null;
@@ -647,11 +654,7 @@ export function VinDemoCard({
         {frozen ? (
           <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img
-                src={`https://flagcdn.com/20x15/${displayFlag}.png`}
-                width={20} height={15} alt=""
-                className="rounded-sm shadow-sm"
-              />
+              <FlagImg code={displayFlag} size={20} className="rounded-sm shadow-sm" />
               <span className="font-mono text-[10px] text-white/80 tracking-widest drop-shadow">
                 {truncVin(car.vin)}
               </span>
@@ -672,11 +675,7 @@ export function VinDemoCard({
               transition={{ duration: 0.4 }}
             >
               <div className="flex items-center gap-2">
-                <img
-                  src={`https://flagcdn.com/20x15/${displayFlag}.png`}
-                  width={20} height={15} alt=""
-                  className="rounded-sm shadow-sm"
-                />
+                <FlagImg code={displayFlag} size={20} className="rounded-sm shadow-sm" />
                 <span className="font-mono text-[10px] text-white/80 tracking-widest drop-shadow">
                   {truncVin(car.vin)}
                 </span>

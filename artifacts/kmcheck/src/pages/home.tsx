@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
@@ -11,10 +11,10 @@ import {
   CheckCircle2, AlertTriangle,
   Globe, Star, ArrowRight, X,
 } from "lucide-react";
-import { CompareTable } from "@/components/compare-table";
+import { VinDemoCard } from "@/components/vin-demo-card";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
-import { VinCheckIncludesSection } from "@/components/vin-check-includes-section";
-import { WhatWeCheckSection } from "@/components/what-we-check-section";
+import { DeferredSection } from "@/components/deferred-section";
+import { SectionFallback } from "@/components/section-fallback";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,11 +22,21 @@ import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
-import { getTestimonials, shuffleTestimonials } from "@/data/testimonials";
+import { getTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+
+const CompareTable = lazy(() =>
+  import("@/components/compare-table").then((m) => ({ default: m.CompareTable })),
+);
+const WhatWeCheckSection = lazy(() =>
+  import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
+);
+const VinCheckIncludesSection = lazy(() =>
+  import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
+);
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -228,6 +238,13 @@ export default function Home() {
             transition={{ duration: 0.55 }}
             className="space-y-8 text-center"
           >
+            <div className="mx-auto max-w-sm w-full">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-3">
+                {t("sample_report_preview_label")}
+              </p>
+              <VinDemoCard frozen showcase />
+            </div>
+
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {t("hero_headline_1")}
               <br />
@@ -281,7 +298,11 @@ export default function Home() {
         </div>
       </section>
 
-      <WhatWeCheckSection autoRotate />
+      <DeferredSection minHeight={320}>
+        <Suspense fallback={<SectionFallback minHeight={320} />}>
+          <WhatWeCheckSection autoRotate />
+        </Suspense>
+      </DeferredSection>
 
       {/* ── HOW IT WORKS ── */}
       <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-16 md:py-24 px-4">
@@ -403,9 +424,14 @@ export default function Home() {
         </div>
       </section>
 
-      <VinCheckIncludesSection />
+      <DeferredSection minHeight={360}>
+        <Suspense fallback={<SectionFallback minHeight={360} />}>
+          <VinCheckIncludesSection />
+        </Suspense>
+      </DeferredSection>
 
       {/* ── TESTIMONIALS ── */}
+      <DeferredSection minHeight={420}>
       <section className="py-16 md:py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -523,9 +549,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </DeferredSection>
 
       {/* ── COMPARISON TABLE ── */}
-      <CompareTable />
+      <DeferredSection minHeight={280}>
+        <Suspense fallback={<SectionFallback minHeight={280} />}>
+          <CompareTable market="home" />
+        </Suspense>
+      </DeferredSection>
 
       {/* ── BOTTOM CTA ── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-24">
@@ -540,13 +571,6 @@ export default function Home() {
           className="relative z-10 max-w-3xl mx-auto text-center space-y-8"
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-              </span>
-              {t("instant_digital_report")}
-            </div>
             {(() => {
               const [line1, ...rest] = t("cta_title").split(/\.\s+/);
               const line2 = rest.join(". ").trim();
