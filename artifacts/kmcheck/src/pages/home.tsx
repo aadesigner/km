@@ -547,15 +547,22 @@ export default function Home() {
               </span>
               {t("instant_digital_report")}
             </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              {t("cta_title")
-                .split(/\.\s+/)
-                .map((part, i, parts) => (
-                  <span key={i} className="block">
-                    {i < parts.length - 1 ? `${part}.` : part}
-                  </span>
-                ))}
-            </h2>
+            {(() => {
+              const [line1, ...rest] = t("cta_title").split(/\.\s+/);
+              const line2 = rest.join(". ").trim();
+              return (
+                <div className="space-y-2 md:space-y-3">
+                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.05] tracking-tight">
+                    {line1}.
+                  </h2>
+                  {line2 ? (
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white/88 leading-snug">
+                      {line2.endsWith(".") ? line2 : `${line2}.`}
+                    </h3>
+                  ) : null}
+                </div>
+              );
+            })()}
             <p className="text-white/65 text-base max-w-xl mx-auto">{t("cta_desc")}</p>
           </div>
 

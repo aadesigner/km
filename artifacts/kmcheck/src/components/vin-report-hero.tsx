@@ -182,13 +182,16 @@ function HeroPhotoFrame({
   onFailed?: () => void;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const [ready, setReady] = useState(() => isVinImageSessionLoaded(src));
 
   const notifyLoaded = useCallback(() => {
+    setReady(true);
     markVinImageSessionLoaded(src);
     onLoaded?.();
   }, [src, onLoaded]);
 
   useEffect(() => {
+    setReady(isVinImageSessionLoaded(src));
     const img = imgRef.current;
     if (img?.complete && img.naturalWidth > 0) {
       notifyLoaded();
@@ -197,6 +200,7 @@ function HeroPhotoFrame({
 
   return (
     <img
+      key={src}
       ref={imgRef}
       src={src}
       alt={alt}
@@ -204,12 +208,16 @@ function HeroPhotoFrame({
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
       className={cn(
-        "w-full object-cover object-center",
+        "w-full object-cover object-center transition-opacity duration-200",
         "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+        ready ? "opacity-100" : "opacity-0",
         className,
       )}
       onLoad={notifyLoaded}
-      onError={() => onFailed?.()}
+      onError={() => {
+        setReady(false);
+        onFailed?.();
+      }}
     />
   );
 }
@@ -251,27 +259,42 @@ function HeroPhotoGallery({
     const next = (photoIdx + 1) % photos.length;
     return [...new Set([prev, next])];
   }, [photoIdx, photos.length]);
-  const [loaded, setLoaded] = useState<Record<number, boolean>>(() => {
-    const init: Record<number, boolean> = {};
-    photos.forEach((url, i) => {
-      if (isVinImageSessionLoaded(url)) init[i] = true;
+  const [loadedByUrl, setLoadedByUrl] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    photos.forEach((url) => {
+      if (isVinImageSessionLoaded(url)) init[url] = true;
     });
     return init;
   });
-  const [failed, setFailed] = useState<Record<number, boolean>>({});
+  const [failedByUrl, setFailedByUrl] = useState<Record<string, boolean>>({});
 
-  const markLoaded = useCallback((i: number) => {
-    setLoaded((prev) => (prev[i] ? prev : { ...prev, [i]: true }));
-    setFailed((prev) => {
-      if (!prev[i]) return prev;
+  useEffect(() => {
+    setLoadedByUrl((prev) => {
       const next = { ...prev };
-      delete next[i];
+      let changed = false;
+      for (const url of photos) {
+        if (isVinImageSessionLoaded(url) && !next[url]) {
+          next[url] = true;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    setFailedByUrl({});
+  }, [photos]);
+
+  const markLoadedUrl = useCallback((url: string) => {
+    setLoadedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
+    setFailedByUrl((prev) => {
+      if (!prev[url]) return prev;
+      const next = { ...prev };
+      delete next[url];
       return next;
     });
   }, []);
 
-  const markFailed = useCallback((i: number) => {
-    setFailed((prev) => (prev[i] ? prev : { ...prev, [i]: true }));
+  const markFailedUrl = useCallback((url: string) => {
+    setFailedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
   }, []);
 
   const go = useCallback(
@@ -290,7 +313,7 @@ function HeroPhotoGallery({
   if (locked) {
     const previewSrc = photos[0] ?? null;
     const previewReady = previewSrc
-      ? (loaded[0] || isVinImageSessionLoaded(previewSrc)) && !failed[0]
+      ? loadedByUrl[previewSrc] && !failedByUrl[previewSrc]
       : false;
 
     return (
@@ -301,27 +324,29 @@ function HeroPhotoGallery({
           className,
         )}
       >
-        {previewSrc && !failed[0] ? (
-          <HeroPhotoFrame
-            src={previewSrc}
-            alt={vehicleTitle}
-            priority
-            onLoaded={() => markLoaded(0)}
-            onFailed={() => markFailed(0)}
-            className="relative sm:rounded-xl blur-[5px] scale-[1.04] select-none"
-          />
+        {previewSrc && !failedByUrl[previewSrc] ? (
+          <>
+            {!previewReady && (
+              <div className="absolute inset-0 z-[1] flex items-center justify-center bg-muted/55 pointer-events-none">
+                <div className="h-7 w-7 rounded-full border-2 border-muted-foreground/25 border-t-muted-foreground/70 animate-spin" />
+              </div>
+            )}
+            <HeroPhotoFrame
+              key={previewSrc}
+              src={previewSrc}
+              alt={vehicleTitle}
+              priority
+              onLoaded={() => markLoadedUrl(previewSrc)}
+              onFailed={() => markFailedUrl(previewSrc)}
+              className="relative z-[2] sm:rounded-xl blur-[5px] scale-[1.04] select-none"
+            />
+          </>
         ) : (
           <HeroPhotoPlaceholder
             vehicleTitle={vehicleTitle}
             label={photoPlaceholderLabel}
             pendingScan={pendingPhotoScan}
           />
-        )}
-
-        {previewSrc && !previewReady && !failed[0] && (
-          <div className="absolute inset-0 z-[2] flex items-center justify-center bg-muted/30 pointer-events-none">
-            <div className="h-7 w-7 rounded-full border-2 border-muted-foreground/25 border-t-muted-foreground/70 animate-spin" />
-          </div>
         )}
 
         {lockedLabel && (
@@ -349,33 +374,38 @@ function HeroPhotoGallery({
         if (Math.abs(dx) > 40) go(photoIdx + (dx < 0 ? 1 : -1));
       } : undefined}
     >
-      {currentPhoto && !failed[photoIdx] ? (
+      {currentPhoto && !failedByUrl[currentPhoto] ? (
         <>
-          <HeroPhotoFrame
-            src={photos[photoIdx]!}
-            alt={vehicleTitle}
-            priority
-            onLoaded={() => markLoaded(photoIdx)}
-            onFailed={() => markFailed(photoIdx)}
-            className="relative sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300"
-          />
-          {preloadIndices.map((i) => (
-            <img
-              key={`preload-${i}`}
-              src={photos[i]}
-              alt=""
-              className="sr-only"
-              loading="eager"
-              decoding="async"
-              aria-hidden
-              onLoad={() => markLoaded(i)}
-            />
-          ))}
-          {!loaded[photoIdx] && !isVinImageSessionLoaded(currentPhoto) && (
-            <div className="absolute inset-0 z-[2] flex items-center justify-center bg-black/5 pointer-events-none">
-              <div className="h-7 w-7 rounded-full border-2 border-white/40 border-t-white/90 animate-spin" />
+          {!loadedByUrl[currentPhoto] && (
+            <div className="absolute inset-0 z-[1] flex items-center justify-center bg-muted/55 dark:bg-muted/45 pointer-events-none">
+              <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground/80 animate-spin" />
             </div>
           )}
+          <HeroPhotoFrame
+            key={currentPhoto}
+            src={currentPhoto}
+            alt={vehicleTitle}
+            priority
+            onLoaded={() => markLoadedUrl(currentPhoto)}
+            onFailed={() => markFailedUrl(currentPhoto)}
+            className="relative z-[2] sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300"
+          />
+          {preloadIndices.map((i) => {
+            const url = photos[i];
+            if (!url || url === currentPhoto) return null;
+            return (
+              <img
+                key={`preload-${url}`}
+                src={url}
+                alt=""
+                className="sr-only"
+                loading="eager"
+                decoding="async"
+                aria-hidden
+                onLoad={() => markLoadedUrl(url)}
+              />
+            );
+          })}
         </>
       ) : (
         <HeroPhotoPlaceholder

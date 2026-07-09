@@ -49,11 +49,11 @@ export function LangPickerList({
             onClick={() => onSelect(l.code)}
             className={cn(
               "flex items-center gap-2.5 rounded-xl text-left min-w-0 transition-colors touch-manipulation",
-              isMobile ? "px-3 py-2.5" : isFooter ? "px-2 py-1.5" : "px-2.5 py-2",
+              isMobile ? "px-3 py-2.5" : isFooter ? "px-3 py-2.5" : "px-2.5 py-2",
               isFooter
                 ? active
-                  ? "bg-primary/15 text-white"
-                  : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+                  ? "bg-primary/20 text-white ring-1 ring-primary/40 shadow-sm shadow-primary/10"
+                  : "text-white/75 hover:bg-white/[0.07] hover:text-white"
                 : active
                   ? "bg-primary/[0.08] text-primary"
                   : "text-foreground hover:bg-primary/[0.06] active:bg-primary/10",
@@ -66,12 +66,12 @@ export function LangPickerList({
             />
             <span className={cn(
               "truncate flex-1",
-              isMobile ? "text-[15px]" : isFooter ? "text-xs" : "text-[13px]",
+              isMobile ? "text-[15px]" : isFooter ? "text-sm" : "text-[13px]",
               active && "font-semibold",
             )}>
               {l.label}
             </span>
-            {active && <Check className={cn("text-primary shrink-0", isMobile ? "h-3.5 w-3.5" : "h-3 w-3")} />}
+            {active && <Check className={cn("text-primary shrink-0", isMobile ? "h-3.5 w-3.5" : isFooter ? "h-4 w-4" : "h-3 w-3")} />}
           </button>
         );
       })}
