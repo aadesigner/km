@@ -449,8 +449,6 @@ export default function VinResult({ params }: Props) {
   const [expandedAccidents, setExpandedAccidents] = useState<Set<number>>(new Set());
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const { toast } = useToast();
-
   const openLightbox = useCallback((i: number) => setLightboxIndex(i), []);
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
   const navLightbox = useCallback((i: number) => setLightboxIndex(i), []);

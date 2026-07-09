@@ -220,7 +220,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
       });
       loadHistory(lookupsPage);
       invalidateUsers();
-      void loadUser();
+      void refetchUser();
     } catch { /* silent */ }
     finally { setRevokingId(null); }
   };
@@ -535,7 +535,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => { unbanUser.mutate({ userId: user.id }); void loadUser(); }}
+                  onClick={() => { unbanUser.mutate({ userId: user.id }); void refetchUser(); }}
                   disabled={unbanUser.isPending}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Unban
@@ -544,7 +544,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={() => { banUser.mutate({ userId: user.id, data: { reason: "Admin action" } }); void loadUser(); }}
+                  onClick={() => { banUser.mutate({ userId: user.id, data: { reason: "Admin action" } }); void refetchUser(); }}
                   disabled={banUser.isPending}
                 >
                   <Ban className="h-3.5 w-3.5 mr-1.5" />
