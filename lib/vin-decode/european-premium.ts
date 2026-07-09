@@ -177,6 +177,9 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD118", model: "CLA", chassis: "C118" },
   { prefix: "WDD205", model: "C-Class", chassis: "W205" },
   { prefix: "WDD206", model: "C-Class", chassis: "W206" },
+  { prefix: "WDD204", model: "C-Class", chassis: "W204" },
+  { prefix: "WDD203", model: "C-Class", chassis: "W203" },
+  { prefix: "WDD202", model: "C-Class", chassis: "W202" },
   { prefix: "WDD213", model: "E-Class", chassis: "W213" },
   { prefix: "WDD214", model: "E-Class", chassis: "W214" },
   { prefix: "WDD222", model: "S-Class", chassis: "W222" },
@@ -199,9 +202,25 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD192", model: "AMG GT", chassis: "C192" },
   { prefix: "WDD197", model: "SL", chassis: "R232" },
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },
-  { prefix: "WDDG", model: "G-Class" },
-  { prefix: "WDC0", model: "GLC" },
 ]);
+
+/** Mercedes passenger cars — position 4 series letter (when pos. 4–6 is not a 3-digit chassis code). */
+const MERCEDES_PASSENGER_SERIES_AT_4: Record<string, { model: string; chassis: string }> = {
+  H: { model: "C-Class", chassis: "W202" },
+  R: { model: "C-Class", chassis: "W203" },
+  G: { model: "C-Class", chassis: "W204" },
+  W: { model: "C-Class", chassis: "W205" },
+  A: { model: "C-Class", chassis: "W206" },
+};
+
+/** Mercedes SUVs (WDC / W1N / 4JG) — position 4 platform letter. */
+const MERCEDES_SUV_SERIES_AT_4: Record<string, { model: string; chassis: string }> = {
+  Y: { model: "G-Class", chassis: "W463" },
+  W: { model: "G-Class", chassis: "W465" },
+  R: { model: "G-Class", chassis: "W463" },
+  C: { model: "G-Class", chassis: "W463" },
+  "0": { model: "GLC", chassis: "X253" },
+};
 
 const AUDI_US_RULES = compilePrefixRules([
   { prefix: "WA1L", model: "Q5" },
@@ -321,9 +340,61 @@ function formatDisplay(model: string, chassis: string | null): string {
   return `${model} (${chassis})`;
 }
 
-/** W1K uses the same VDS chassis codes as WDD — alias for rule matching only. */
+/** W1K / WDB / WDC / WDF share VDS chassis codes with WDD — alias for rule matching only. */
 function mercedesRuleVin(vin: string): string {
-  return vin.startsWith("W1K") ? `WDD${vin.slice(3)}` : vin;
+  if (vin.startsWith("W1K")) return `WDD${vin.slice(3)}`;
+  if (vin.startsWith("WDB") || vin.startsWith("WDC") || vin.startsWith("WDF")) return `WDD${vin.slice(3)}`;
+  return vin;
+}
+
+function isMercedesPassengerWmi(wmi: string): boolean {
+  return wmi.startsWith("WDD") || wmi.startsWith("W1K") || wmi.startsWith("WDB") || wmi.startsWith("WDF");
+}
+
+function isMercedesSuvWmi(wmi: string): boolean {
+  return wmi.startsWith("WDC") || wmi === "W1N" || wmi.startsWith("4JG");
+}
+
+function mercedesHasChassisDigits(vin: string): boolean {
+  return /^\d{3}$/.test(mercedesRuleVin(vin).slice(3, 6));
+}
+
+function decodeMercedesSeriesAt4(
+  vin: string,
+  seriesMap: Record<string, { model: string; chassis: string }>,
+): PremiumEuropeanDecode | null {
+  const hit = seriesMap[vin[3]];
+  if (!hit) return null;
+  return {
+    model: hit.model,
+    chassis: hit.chassis,
+    displayModel: formatDisplay(hit.model, hit.chassis),
+  };
+}
+
+function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
+  const wmi = upper.slice(0, 3);
+  const ruleVin = mercedesRuleVin(upper);
+
+  if (mercedesHasChassisDigits(upper)) {
+    const chassisHit = decodeFromRules(ruleVin, MERCEDES_RULES);
+    if (chassisHit) return chassisHit;
+  }
+
+  const longHit = decodeFromRules(ruleVin, MERCEDES_RULES);
+  if (longHit) return longHit;
+
+  if (isMercedesSuvWmi(wmi)) {
+    const suvHit = decodeMercedesSeriesAt4(upper, MERCEDES_SUV_SERIES_AT_4);
+    if (suvHit) return suvHit;
+  }
+
+  if (isMercedesPassengerWmi(wmi)) {
+    const passHit = decodeMercedesSeriesAt4(ruleVin, MERCEDES_PASSENGER_SERIES_AT_4);
+    if (passHit) return passHit;
+  }
+
+  return null;
 }
 
 function decodeFromRules(vin: string, rules: readonly PremiumPrefixRule[]): PremiumEuropeanDecode | null {
@@ -367,12 +438,12 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
     if (f4Body) return f4Body;
     return decodeFromRules(upper, BMW_RULES);
   }
-  if (wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC") || wmi.startsWith("WDF") || wmi.startsWith("W1K")) {
+  if (isMercedesPassengerWmi(wmi) || isMercedesSuvWmi(wmi)) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeMercedesEuHomologation(raw));
       if (euHit) return euHit;
     }
-    return decodeFromRules(mercedesRuleVin(upper), MERCEDES_RULES);
+    return decodeMercedesPremium(upper);
   }
   if (wmi.startsWith("WA1")) {
     return decodeFromRules(upper, AUDI_US_RULES);

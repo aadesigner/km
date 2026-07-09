@@ -43,6 +43,7 @@ function wmiFamily(wmi: string): string | null {
     WBA: "BMW", WBS: "BMW M", WBY: "BMW i", WBR: "BMW",
     "5UX": "BMW USA", "4US": "BMW USA",
     WDD: "Mercedes-Benz", WDB: "Mercedes-Benz", WDC: "Mercedes-Benz", WDF: "Mercedes-Benz",
+    W1K: "Mercedes-Benz", W1N: "Mercedes-Benz", "4JG": "Mercedes-Benz",
     WAU: "Audi", TRU: "Audi",
     WVW: "Volkswagen", WVG: "Volkswagen", WV1: "VW Commercial", WV2: "VW Commercial",
     WP0: "Porsche", WP1: "Porsche",
@@ -139,6 +140,7 @@ function bmwDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic[]
 // ── Mercedes-Benz ─────────────────────────────────────────────────────────────
 const MERCEDES_CHASSIS: Record<string, string> = {
   WDD177: "A-Class (W177)", WDD118: "CLA (C118)", WDD205: "C-Class (W205)", WDD206: "C-Class (W206)",
+  WDD204: "C-Class (W204)", WDD203: "C-Class (W203)", WDD202: "C-Class (W202)",
   WDD213: "E-Class (W213)", WDD214: "E-Class (W214)", WDD222: "S-Class (W222)", WDD223: "S-Class (W223)",
   WDD253: "GLC (X253)", WDD254: "GLC (X254)", WDD166: "GLE (W166)", WDD167: "GLS (X167)",
   WDD247: "GLA (H247)", WDD463: "G-Class (W463/W465)", WDD290: "EQS (V297)",
@@ -382,7 +384,11 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     bmwDiagnostics(vin, base, out);
     return;
   }
-  if (wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC") || make.includes("mercedes")) {
+  if (
+    wmi.startsWith("WDD") || wmi.startsWith("WDB") || wmi.startsWith("WDC")
+    || wmi.startsWith("W1K") || wmi === "W1N" || wmi.startsWith("4JG")
+    || make.includes("mercedes")
+  ) {
     mercedesDiagnostics(vin, base, out);
     return;
   }

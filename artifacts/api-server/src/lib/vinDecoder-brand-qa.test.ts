@@ -78,6 +78,10 @@ const CASES: BrandCase[] = [
   { vin: "WDDZZZ1671AA12345", label: "Mercedes GLS EU ZZZ", make: "Mercedes-Benz", modelContains: "GLS" },
   { vin: "WDD2140871A123456", label: "Mercedes E-Class W214", make: "Mercedes-Benz", modelContains: "E-Class" },
   { vin: "WDD2060871A123456", label: "Mercedes C-Class W206", make: "Mercedes-Benz", modelContains: "C-Class" },
+  { vin: "WDD2040491A123456", label: "Mercedes C-Class W204", make: "Mercedes-Benz", modelContains: "C-Class" },
+  { vin: "WDB4632361A123456", label: "Mercedes G-Class WDB", make: "Mercedes-Benz", modelContains: "G-Class" },
+  { vin: "WDDGF8HB6LA123456", label: "Mercedes C-Class W204 letter VDS", make: "Mercedes-Benz", modelContains: "C-Class" },
+  { vin: "W1NYC7HJ0LX340589", label: "Mercedes G-Class W1N", make: "Mercedes-Benz", modelContains: "G-Class" },
 
   // ── Škoda ─────────────────────────────────────────────────────────────────
   { vin: "TMBEP6NJ3MZ012345", label: "Škoda Fabia III", make: "Škoda", modelContains: "Fabia" },
