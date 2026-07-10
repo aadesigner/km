@@ -20,6 +20,8 @@ const PATHS = [
   "/cars/usa",
   "/cars/korea",
   "/cars/canada",
+  "/cars/china",
+  "/cars/uae",
 ];
 
 const HREFLANG = HREFLANG_MAP;

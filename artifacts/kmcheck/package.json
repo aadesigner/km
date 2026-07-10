@@ -7,6 +7,7 @@
     "dev": "node scripts/generate-favicons.mjs && node scripts/generate-country-favicons.mjs && node scripts/generate-seo-bootstrap.mjs && vite --config vite.config.ts --host 0.0.0.0",
     "build": "node scripts/generate-favicons.mjs && node scripts/generate-country-favicons.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-vin-sitemap.mjs && node scripts/generate-seo-bootstrap.mjs && node scripts/fetch-demo-car-photos.mjs && vite build --config vite.config.ts && node scripts/generate-prerender-html.mjs && node scripts/minify-dist.mjs",
     "i18n:de-fr-bg": "node scripts/build-de-fr-bg-i18n.mjs",
+    "i18n:zh": "node scripts/build-zh-i18n.mjs",
     "seo:add-de-fr-bg": "node scripts/add-de-fr-bg-seo-data.mjs",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -85,5 +86,8 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "react-simple-maps": "^3.0.0"
   }
 }

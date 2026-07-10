@@ -23,6 +23,8 @@ const indexableKeys = [
   "country_usa",
   "country_korea",
   "country_canada",
+  "country_china",
+  "country_uae",
 ];
 
 let errors = 0;
@@ -43,7 +45,7 @@ for (const key of indexableKeys) {
       console.warn(`WARN ${key}.${lang}: title missing brand`);
     }
     if (
-      ["home", "country_usa", "country_korea", "country_canada"].includes(key)
+      ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_uae"].includes(key)
       && entry?.title
       && entry.title.length > 60
     ) {
@@ -285,6 +287,8 @@ const SQ_TITLE_KEYS = [
   "country_usa",
   "country_korea",
   "country_canada",
+  "country_china",
+  "country_uae",
 ];
 for (const key of SQ_TITLE_KEYS) {
   const title = (seoData[key]?.sq?.title ?? "").toLowerCase();
@@ -306,7 +310,7 @@ if (existsSync(sqI18nPath)) {
     console.warn('WARN sq.json: hero_headline_1 should be "Kontroll kilometrash" (static homepage H1)');
     sqWarn++;
   }
-  for (const slug of ["usa", "korea", "canada"]) {
+  for (const slug of ["usa", "korea", "canada", "china", "uae"]) {
     if (sqI18n[`country_${slug}_headline_verb`] !== "Kontroll") {
       console.warn(`WARN sq.json: country_${slug}_headline_verb should be Kontroll`);
       sqWarn++;

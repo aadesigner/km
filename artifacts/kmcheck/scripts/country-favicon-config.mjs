@@ -3,6 +3,8 @@ export const COUNTRY_PAGE_FAVICON_SLUGS = {
   country_usa: "usa",
   country_korea: "korea",
   country_canada: "canada",
+  country_china: "china",
+  country_uae: "uae",
 };
 
 export const DEFAULT_FAVICONS = {

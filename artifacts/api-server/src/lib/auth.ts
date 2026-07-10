@@ -139,6 +139,7 @@ export async function readSessionUserId(req: Request): Promise<string | undefine
   try {
     const { sub, jti } = await verifyJwt(token);
     if (jti && (await isTokenRevoked(jti))) return undefined;
+    req.userId = sub;
     return sub;
   } catch {
     return undefined;

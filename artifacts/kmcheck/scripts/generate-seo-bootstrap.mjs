@@ -53,7 +53,7 @@ const js = `/* auto-generated — do not edit */
   var HREFLANG = ${JSON.stringify(HREFLANG_MAP)};
   var NOINDEX = ${JSON.stringify(NOINDEX)};
   var NOINDEX_PREFIXES = ${JSON.stringify(NOINDEX_PREFIXES)};
-  var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada"])};
+  var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada", "china", "uae"])};
   var BASE = ${JSON.stringify(basePath)};
   var DEFAULT_FAVICONS = ${JSON.stringify(DEFAULT_FAVICONS)};
   var COUNTRY_PAGE_FAVICONS = ${JSON.stringify(countryPageFavicons)};
@@ -69,6 +69,8 @@ const js = `/* auto-generated — do not edit */
       if (VALID_COUNTRY_SLUGS.indexOf(slug) !== -1) {
         if (slug === "korea") return "country_korea";
         if (slug === "canada") return "country_canada";
+        if (slug === "china") return "country_china";
+        if (slug === "uae") return "country_uae";
         return "country_usa";
       }
       return "not_found";
@@ -156,7 +158,7 @@ const js = `/* auto-generated — do not edit */
   }
 
   var OG_PAGE_KEYS = ${JSON.stringify(Object.fromEntries(
-    ["home", "country_usa", "country_korea", "country_canada"].map((k) => [k, true]),
+    ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_uae"].map((k) => [k, true]),
   ))};
 
   function applyFavicons(pageKey) {

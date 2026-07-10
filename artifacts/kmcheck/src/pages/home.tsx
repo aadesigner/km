@@ -1,6 +1,4 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { useLocation, Link } from "wouter";
@@ -12,20 +10,17 @@ import {
   Globe, ArrowRight, X,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
+import { CoverageMapVisual } from "@/components/coverage-map-visual";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
-import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
-import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { getTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { TestimonialsSlider } from "@/components/testimonials-slider";
-import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
-import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 const CompareTable = lazy(() =>
@@ -37,8 +32,6 @@ const WhatWeCheckSection = lazy(() =>
 const VinCheckIncludesSection = lazy(() =>
   import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
 );
-
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function useCountries(t: (k: string) => string) {
   return [
@@ -59,6 +52,18 @@ function useCountries(t: (k: string) => string) {
       accentFrom: "from-red-600", accentTo: "to-slate-600",
       tint: "from-red-500/[0.07] via-transparent to-slate-500/[0.05]",
       highlights: ["home_country_canada_h0", "home_country_canada_h1", "home_country_canada_h2"] as const,
+    },
+    {
+      slug: "china", flagCode: "cn", name: t("country_china_name"), count: t("country_china_count"),
+      accentFrom: "from-red-600", accentTo: "to-amber-600",
+      tint: "from-red-500/[0.07] via-transparent to-amber-500/[0.05]",
+      highlights: ["home_country_china_h0", "home_country_china_h1", "home_country_china_h2"] as const,
+    },
+    {
+      slug: "uae", flagCode: "ae", name: t("country_uae_name"), count: t("country_uae_count"),
+      accentFrom: "from-emerald-600", accentTo: "to-red-600",
+      tint: "from-emerald-500/[0.07] via-transparent to-red-500/[0.05]",
+      highlights: ["home_country_uae_h0", "home_country_uae_h1", "home_country_uae_h2"] as const,
     },
   ];
 }
@@ -121,54 +126,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { isSignedIn, user } = useAuth();
   const [vin, setVin] = useState("");
-  const [error, setError] = useState("");
   const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
-
-  const normalizedHomeVin = vin.trim().toUpperCase();
-  const homeLocalDecode = useMemo(
-    () => (normalizedHomeVin.length === 17 ? decodeVinLocalFree(normalizedHomeVin) : null),
-    [normalizedHomeVin],
-  );
-
-  const showVinRecheckHint =
-    normalizedHomeVin.length === 17
-    && !getVinValidationErrorKey(normalizedHomeVin)
-    && !!homeLocalDecode
-    && !isTrustworthyVinDecode({
-      vin: normalizedHomeVin,
-      make: homeLocalDecode.make,
-      model: homeLocalDecode.model,
-      year: homeLocalDecode.year ?? null,
-    });
-  const homeDecodeTrustworthy = !!homeLocalDecode && isTrustworthyVinDecode({
-    vin: normalizedHomeVin,
-    make: homeLocalDecode.make,
-    model: homeLocalDecode.model,
-    year: homeLocalDecode.year ?? null,
-  });
-  const { data: homePeek } = useQuery({
-    queryKey: ["/api/vin/peek", "home", normalizedHomeVin],
-    enabled: isSignedIn && normalizedHomeVin.length === 17 && homeDecodeTrustworthy,
-    queryFn: async () => {
-      const r = await fetch(`${basePath}/api/vin/peek/${encodeURIComponent(normalizedHomeVin)}`, {
-        credentials: "include",
-      });
-      if (!r.ok) throw new Error("peek_error");
-      return r.json() as {
-        manualPending?: boolean;
-        dataAvailable?: boolean;
-        checkUnavailable?: boolean;
-      };
-    },
-    staleTime: 60_000,
-  });
-  const showHomePendingDoubleCheck = !!homePeek && shouldShowPendingVinDoubleCheck({
-    vin: normalizedHomeVin,
-    make: homeLocalDecode?.make,
-    model: homeLocalDecode?.model,
-    year: homeLocalDecode?.year ?? null,
-    ...homePeek,
-  });
 
   const STEPS = useSteps(t);
   const COUNTRIES = useCountries(t);
@@ -180,9 +138,6 @@ export default function Home() {
     e.preventDefault();
     if (vinLookupDisabled) return;
     const v = vin.trim().toUpperCase();
-    const validationKey = getVinValidationErrorKey(v);
-    if (validationKey) { setError(t(validationKey)); return; }
-    setError("");
     if (!isSignedIn) {
       const authPath = redirectGuestForVinCheckout(v, language);
       if (authPath) setLocation(authPath);
@@ -213,14 +168,19 @@ export default function Home() {
       />
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3rem+var(--site-header-offset,84px))] pb-12 md:pt-[calc(5rem+var(--site-header-offset,84px))] md:pb-20 lg:pt-[calc(7rem+var(--site-header-offset,84px))] lg:pb-28">
+      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(3.75rem+var(--site-header-offset,84px))] pb-12 md:pt-[calc(5.25rem+var(--site-header-offset,84px))] md:pb-16 lg:pt-[calc(7.25rem+var(--site-header-offset,84px))] lg:pb-20">
         {/* Base layers */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.07] dark:opacity-[0.20]" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_55%_at_50%_-5%,rgba(34,197,94,0.20),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-5%,rgba(34,197,94,0.42),transparent)]" />
         <div className="absolute inset-0 -z-10 hidden dark:block bg-[radial-gradient(ellipse_50%_40%_at_0%_100%,rgba(34,197,94,0.08),transparent)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-28 lg:h-40 -z-10 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 sm:h-32 lg:h-44 -z-10 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        {/* Fade hero into next section — above maps so wings don't look cropped */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-0 right-0 z-[5] h-10 sm:h-14 lg:h-16 bg-gradient-to-t from-background via-background/70 to-transparent"
+        />
 
         {/* Ambient orbs — CSS only (no JS animation loop) */}
         <div
@@ -236,21 +196,44 @@ export default function Home() {
           className="hero-orb-c pointer-events-none absolute bottom-24 left-[42%] h-32 w-32 rounded-full bg-primary/8 blur-2xl -z-10 hidden lg:block"
         />
 
-        <div className="relative max-w-6xl mx-auto z-10">
-          <div className="max-w-3xl mx-auto">
+        {/* Large maps pinned to viewport left / right — not centered */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-4 top-[calc(1.5rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(58vw,720px)] max-w-[720px] -translate-y-8 xl:-translate-y-10 opacity-95 dark:opacity-90"
+        >
+          <CoverageMapVisual side="left" showLivePings className="h-full w-full" />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-6 top-[calc(1.75rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(70vw,900px)] max-w-[900px] translate-x-[5%] -translate-y-7 xl:translate-x-[7%] xl:-translate-y-9 opacity-95 dark:opacity-90"
+        >
+          <CoverageMapVisual side="right" showLivePings className="h-full w-full" />
+        </div>
 
+        <div className="relative max-w-6xl mx-auto z-10">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-8 text-center"
+            className="space-y-6 md:space-y-7 text-center pt-4 pb-4 md:pt-5 md:pb-6"
           >
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
-              {language === "sq" ? <>{t("hero_headline_1")},</> : t("hero_headline_1")}
-              <br />
-              <span className="block text-primary">
-                <CyclingWord />
-              </span>
+              {language === "zh" ? (
+                <>
+                  {t("hero_headline_lead")}
+                  <span className="text-primary">
+                    <CyclingWord />
+                  </span>
+                </>
+              ) : (
+                <>
+                  {language === "sq" ? <>{t("hero_headline_1")},</> : t("hero_headline_1")}
+                  <br />
+                  <span className="block text-primary">
+                    <CyclingWord />
+                  </span>
+                </>
+              )}
             </h1>
             <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
               {t("hero_subtext")}
@@ -260,47 +243,19 @@ export default function Home() {
 
             <HeroVinForm
               vin={vin}
-              onVinChange={(v) => { setVin(v); setError(""); }}
+              onVinChange={setVin}
               onSubmit={handleCheck}
-              error={error}
               disabled={vinLookupDisabled}
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
-              alerts={(showVinRecheckHint || showHomePendingDoubleCheck) ? (
-                <AnimatePresence>
-                  {showVinRecheckHint && (
-                    <motion.div
-                      key="vin-recheck-hint"
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <VinDecodeRecheckHint />
-                    </motion.div>
-                  )}
-                  {showHomePendingDoubleCheck && (
-                    <motion.div
-                      key="vin-pending-double-check"
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <VinPendingDoubleCheckHint />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              ) : null}
             />
 
           </motion.div>
-          </div>
         </div>
       </section>
 
-      <DeferredSection minHeight={320}>
-        <Suspense fallback={<SectionFallback minHeight={320} />}>
-          <WhatWeCheckSection autoRotate />
+      <DeferredSection minHeight={160} rootMargin="480px 0px">
+        <Suspense fallback={<SectionFallback minHeight={160} />}>
+          <WhatWeCheckSection autoRotate className="pt-12 md:pt-16 lg:pt-20 pb-12 md:pb-20" />
         </Suspense>
       </DeferredSection>
 
@@ -365,7 +320,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("countries_title")}</h2>
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {COUNTRIES.map((c, i) => (
               <motion.div
                 key={c.slug}

@@ -58,7 +58,7 @@ function splitIssue(text: string): { title: string; detail?: string } {
 }
 
 type Props = {
-  slug: "usa" | "korea" | "canada";
+  slug: "usa" | "korea" | "canada" | "china" | "uae";
   issues: string[];
   included: string[];
   severities: Severity[];

@@ -10,6 +10,8 @@ export const SEO_OG_PAGES = [
   { pageKey: "country_usa", rest: "/cars/usa" },
   { pageKey: "country_korea", rest: "/cars/korea" },
   { pageKey: "country_canada", rest: "/cars/canada" },
+  { pageKey: "country_china", rest: "/cars/china" },
+  { pageKey: "country_uae", rest: "/cars/uae" },
 ];
 
 export const SEO_OG_WIDTH = 1200;

@@ -14,6 +14,11 @@ export const GEO_PLUGIN_COUNTRIES = [
   { code: "US", name: "United States" },
   { code: "CA", name: "Canada" },
   { code: "KR", name: "South Korea" },
+  { code: "CN", name: "China" },
+  { code: "TW", name: "Taiwan" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "MO", name: "Macau" },
+  { code: "SG", name: "Singapore" },
   { code: "GB", name: "United Kingdom" },
   { code: "DE", name: "Germany" },
   { code: "AT", name: "Austria" },
@@ -85,6 +90,7 @@ export const PLUGIN_LANGUAGE_OPTIONS = [
   { code: "ar", label: "Arabic" },
   { code: "uk", label: "Ukrainian" },
   { code: "ru", label: "Russian" },
+  { code: "zh", label: "Chinese (中文)" },
 ] as const;
 
 export type PluginLanguageCode = (typeof PLUGIN_LANGUAGE_OPTIONS)[number]["code"];

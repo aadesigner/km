@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   normalizePluginSettings,
   resolveLanguageForCountry,
+  mergeMissingChineseGeoRule,
   DEFAULT_PLUGIN_SETTINGS,
 } from "./pluginSettings.js";
 import { isCrawlerUserAgent } from "./crawlerDetection.js";
@@ -51,6 +52,10 @@ describe("pluginSettings", () => {
     expect(resolveLanguageForCountry("SA", settings)).toBe("ar");
     expect(resolveLanguageForCountry("PS", settings)).toBe("ar");
     expect(resolveLanguageForCountry("RU", settings)).toBe("ru");
+    expect(resolveLanguageForCountry("CN", settings)).toBe("zh");
+    expect(resolveLanguageForCountry("TW", settings)).toBe("zh");
+    expect(resolveLanguageForCountry("HK", settings)).toBe("zh");
+    expect(resolveLanguageForCountry("SG", settings)).toBe("zh");
     expect(resolveLanguageForCountry("US", settings)).toBeNull();
     expect(resolveLanguageForCountry("IL", settings)).toBeNull();
   });
@@ -72,6 +77,29 @@ describe("pluginSettings", () => {
       geoLanguageRedirect: { enabled: false, rules: DEFAULT_PLUGIN_SETTINGS.geoLanguageRedirect.rules },
     });
     expect(resolveLanguageForCountry("AL", disabled)).toBeNull();
+  });
+
+  it("accepts zh in normalized rules", () => {
+    const settings = normalizePluginSettings({
+      geoLanguageRedirect: {
+        enabled: true,
+        rules: [{ countries: ["CN", "TW"], language: "zh" }],
+      },
+    });
+    expect(settings.geoLanguageRedirect.rules[0]?.language).toBe("zh");
+    expect(resolveLanguageForCountry("CN", settings)).toBe("zh");
+  });
+
+  it("merges missing Chinese regions into existing plugin settings", () => {
+    const current = normalizePluginSettings({
+      geoLanguageRedirect: {
+        enabled: true,
+        rules: DEFAULT_PLUGIN_SETTINGS.geoLanguageRedirect.rules.filter((r) => r.language !== "zh"),
+      },
+    });
+    const merged = mergeMissingChineseGeoRule(current);
+    expect(resolveLanguageForCountry("CN", merged)).toBe("zh");
+    expect(resolveLanguageForCountry("TW", merged)).toBe("zh");
   });
 });
 

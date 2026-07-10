@@ -44,6 +44,7 @@ export async function loadDict(lang: Language): Promise<Translations> {
       ar: () => import("./ar.json"),
       uk: () => import("./uk.json"),
       ru: () => import("./ru.json"),
+      zh: () => import("./zh.json"),
     };
     loadPromises[lang] = map[lang]().then((mod) => {
       dictCache[lang] = mod.default as Translations;

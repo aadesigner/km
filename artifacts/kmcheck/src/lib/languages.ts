@@ -1,7 +1,7 @@
 /**
  * Single source of truth for site languages.
  * Display / picker priority (user-defined):
- * en → de → es → fr → sq → pl → ro → bg → ar → uk → ru
+ * en → de → es → fr → sq → pl → ro → bg → ar → uk → ru → zh
  */
 export const SUPPORTED_LANGS = [
   "en",
@@ -15,6 +15,7 @@ export const SUPPORTED_LANGS = [
   "ar",
   "uk",
   "ru",
+  "zh",
 ] as const;
 
 export type Language = (typeof SUPPORTED_LANGS)[number];
@@ -52,6 +53,7 @@ export const LANG_META: Record<Language, LangMeta> = {
   ar: { code: "ar", label: "العربية", short: "AR", flag: "sa", hreflang: "ar", ogLocale: "ar_SA", intl: "ar" },
   uk: { code: "uk", label: "Українська", short: "UK", flag: "ua", hreflang: "uk-UA", ogLocale: "uk_UA", intl: "uk-UA" },
   ru: { code: "ru", label: "Русский", short: "RU", flag: "ru", hreflang: "ru", ogLocale: "ru_RU", intl: "ru-RU" },
+  zh: { code: "zh", label: "中文", short: "ZH", flag: "cn", hreflang: "zh-Hans", ogLocale: "zh_CN", intl: "zh-CN" },
 };
 
 /** Ordered list for navbar / footer / admin pickers */

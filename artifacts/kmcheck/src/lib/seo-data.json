@@ -43,6 +43,10 @@
     "bg": {
       "title": "VIN проверка — пробег, катастрофи, тотал | kmcheck.com",
       "description": "Мигновена проверка на VIN — потвърдете реалния пробег, разкрийте пълната история на катастрофи и записи за тотална щета за всеки автомобил."
+    },
+    "zh": {
+      "title": "汽车VIN查询 — 里程、事故与报废 | kmcheck.com",
+      "description": "即时VIN查询 — 核实真实里程、揭露完整事故历史和任何车辆的报废记录。"
     }
   },
   "pricing": {
@@ -89,6 +93,10 @@
     "bg": {
       "title": "Цени — отчети за история на VIN | kmcheck.com",
       "description": "Един достъпен VIN отчет: пробег, катастрофи, тотална щета и кражба. Мигновена доставка. Без абонамент."
+    },
+    "zh": {
+      "title": "价格 — 每车VIN历史报告 | kmcheck.com",
+      "description": "一份实惠的VIN报告涵盖里程核实、事故、报废状态和盗抢。即时交付，无需订阅。"
     }
   },
   "auth": {
@@ -135,6 +143,10 @@
     "bg": {
       "title": "Вход — kmcheck.com",
       "description": "Влезте или създайте безплатен акаунт за мигновени VIN проверки и достъп до отчети за история."
+    },
+    "zh": {
+      "title": "登录 — kmcheck.com",
+      "description": "登录或创建免费账户，进行即时VIN查询并访问您的车辆历史报告。"
     }
   },
   "dashboard": {
@@ -181,6 +193,10 @@
     "bg": {
       "title": "Моите отчети — история VIN | kmcheck.com",
       "description": "Прегледайте отчетите за история на автомобили и направете нови VIN проверки."
+    },
+    "zh": {
+      "title": "我的报告 — VIN历史 | kmcheck.com",
+      "description": "查看您的车辆历史报告并进行新的VIN查询。"
     }
   },
   "vin_result": {
@@ -227,6 +243,10 @@
     "bg": {
       "title": "Отчет за история на VIN — kmcheck.com",
       "description": "Пълен отчет: пробег, катастрофи, собственици, застраховка и търгове. Мигновен достъп след покупка."
+    },
+    "zh": {
+      "title": "VIN报告 | kmcheck.com",
+      "description": "查询里程、事故和完整车辆历史。kmcheck.com即时报告。"
     }
   },
   "country_usa": {
@@ -273,6 +293,10 @@
     "bg": {
       "title": "Авто от САЩ — VIN, пробег и катастрофи | kmcheck.com",
       "description": "Проверете история на внос от САЩ по VIN: пробег, катастрофи, тотална щета, кражба и търгове. Мигновен отчет на kmcheck.com."
+    },
+    "zh": {
+      "title": "美国汽车里程、事故与盗抢查询 | kmcheck.com",
+      "description": "查询美国汽车的里程、事故、盗抢和报废记录。覆盖全部50个州的即时VIN报告。"
     }
   },
   "country_korea": {
@@ -319,6 +343,10 @@
     "bg": {
       "title": "Автомобили от Корея — VIN проверка и история | kmcheck.com",
       "description": "Проверете корейски внос по VIN: пробег, катастрофи, експорт и търгове. Пълен отчет на kmcheck.com."
+    },
+    "zh": {
+      "title": "韩国汽车 — 里程、事故与历史 | kmcheck.com",
+      "description": "查询韩国汽车的里程、事故、进口历史和隐藏损伤。现代、起亚和捷尼赛思即时VIN报告。"
     }
   },
   "country_canada": {
@@ -365,6 +393,10 @@
     "bg": {
       "title": "Автомобили от Канада — VIN проверка и история | kmcheck.com",
       "description": "Проверете канадски автомобил по VIN: пробег, катастрофи, тотална щета и кражба. Мигновен отчет на kmcheck.com."
+    },
+    "zh": {
+      "title": "加拿大汽车 — 里程、事故与历史 | kmcheck.com",
+      "description": "查询加拿大汽车的里程、事故、标记产权和盗抢记录。覆盖所有省份和地区的即时VIN报告。"
     }
   },
   "free_decoder": {
@@ -411,6 +443,10 @@
     "bg": {
       "title": "Безплатен VIN декодер — декодиране на VIN номер | kmcheck.com",
       "description": "Безплатен VIN декодер: година, марка, модел и комплектация. Проверете VIN и поръчайте пълен отчет на kmcheck.com."
+    },
+    "zh": {
+      "title": "免费VIN解码 — 年份、品牌、型号 | kmcheck.com",
+      "description": "免费解码任何17位VIN。年份、品牌、型号、发动机和车身类型。无需注册。"
     }
   },
   "how_it_works": {
@@ -457,6 +493,10 @@
     "bg": {
       "title": "Как работи — VIN проверка стъпка по стъпка | kmcheck.com",
       "description": "Пълен отчет за историята на автомобила ви. Въведете VIN за пробег, катастрофи, кражби, тотална щета и собственици — за секунди от базите на доставчиците."
+    },
+    "zh": {
+      "title": "VIN查询如何运作 — 3步 | kmcheck.com",
+      "description": "获取完整车辆历史报告。输入VIN查询里程、事故、盗抢、报废和所有权 — 数秒内从供应商数据库返回结果。"
     }
   },
   "faq": {
@@ -503,6 +543,10 @@
     "bg": {
       "title": "ЧЗВ — VIN проверка и отчети за история | kmcheck.com",
       "description": "Отговори за VIN проверки, пробег, катастрофи, тотална щета, плащания и отчети за история на kmcheck.com."
+    },
+    "zh": {
+      "title": "VIN查询常见问题 | kmcheck.com",
+      "description": "关于VIN查询、覆盖范围、数据准确性、交付、付款和退款的解答。"
     }
   },
   "terms": {
@@ -549,6 +593,10 @@
     "bg": {
       "title": "Общи условия — kmcheck.com",
       "description": "Общи условия за kmcheck.com и услугите за VIN отчети."
+    },
+    "zh": {
+      "title": "服务条款 | kmcheck.com",
+      "description": "kmcheck.com VIN历史报告、付款、退款和数据可用性的服务条款。"
     }
   },
   "privacy": {
@@ -595,6 +643,10 @@
     "bg": {
       "title": "Поверителност — kmcheck.com",
       "description": "Как kmcheck.com събира, използва и защитава вашите лични данни."
+    },
+    "zh": {
+      "title": "隐私政策与Cookie政策 | kmcheck.com",
+      "description": "kmcheck.com如何收集、使用和保护您的数据。包含Cookie政策。"
     }
   },
   "not_found": {
@@ -641,6 +693,10 @@
     "bg": {
       "title": "Страницата не е намерена — kmcheck.com",
       "description": "Заявената страница не съществува. Върнете се на kmcheck.com за VIN проверка."
+    },
+    "zh": {
+      "title": "页面未找到 | kmcheck.com",
+      "description": "您查找的页面不存在或可能已被移动。"
     }
   },
   "sign_up": {
@@ -687,6 +743,10 @@
     "bg": {
       "title": "Регистрация — kmcheck.com",
       "description": "Създайте безплатен kmcheck акаунт, за да запазвате VIN отчети и по-бързо да проверявате история."
+    },
+    "zh": {
+      "title": "创建账户 — kmcheck.com",
+      "description": "创建免费kmcheck账户，进行即时VIN查询并访问您的车辆历史报告。"
     }
   },
   "checkout": {
@@ -733,6 +793,10 @@
     "bg": {
       "title": "Плащане — VIN отчет | kmcheck.com",
       "description": "Сигурно плащане за VIN отчет. Мигновен достъп след потвърждение."
+    },
+    "zh": {
+      "title": "结账 — kmcheck.com",
+      "description": "安全完成您的VIN历史报告购买。"
     }
   },
   "purchases": {
@@ -779,6 +843,10 @@
     "bg": {
       "title": "Покупки — kmcheck.com",
       "description": "История на покупките на VIN отчети и достъп до предишни отчети."
+    },
+    "zh": {
+      "title": "购买历史 — kmcheck.com",
+      "description": "查看您的VIN报告购买记录和收据。"
     }
   },
   "forgot_password": {
@@ -825,6 +893,10 @@
     "bg": {
       "title": "Забравена парола — kmcheck.com",
       "description": "Нулирайте паролата на kmcheck акаунта си, за да възстановите достъп до VIN отчети."
+    },
+    "zh": {
+      "title": "忘记密码 — kmcheck.com",
+      "description": "重置您的kmcheck账户密码。"
     }
   },
   "reset_password": {
@@ -871,6 +943,110 @@
     "bg": {
       "title": "Нова парола — kmcheck.com",
       "description": "Задайте нова парола за kmcheck акаунта си."
+    },
+    "zh": {
+      "title": "重置密码 — kmcheck.com",
+      "description": "为您的kmcheck账户选择新密码。"
+    }
+  },
+  "country_china": {
+    "en": {
+      "title": "Chinese Cars — Mileage, Accidents & History | kmcheck.com",
+      "description": "Check car mileage, accidents, odometer fraud and salvage records for Chinese cars. Instant VIN report for BYD, Geely, NIO and imports."
+    },
+    "de": {
+      "title": "China-Importe — Kilometerstand & Unfälle | kmcheck.com",
+      "description": "Chinesische Fahrzeuge per VIN prüfen: Kilometerstand, Unfälle, Tachomanipulation und Totalschaden. Sofortbericht für BYD, Geely, NIO und Importe."
+    },
+    "es": {
+      "title": "Coches China — kilometraje y accidentes | kmcheck.com",
+      "description": "Verifique kilometraje, accidentes, fraude del odómetro y registros de salvamento en coches chinos. Informe VIN para BYD, Geely, NIO e importaciones."
+    },
+    "fr": {
+      "title": "Chine — kilométrage, accidents & épave | kmcheck.com",
+      "description": "Vérifiez un véhicule chinois par VIN : kilométrage, accidents, fraude au compteur et épave. Rapport instantané pour BYD, Geely, NIO et imports."
+    },
+    "sq": {
+      "title": "Kontroll kilometrash për makina nga Kina | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh dhe mashtrim odometri për makina nga Kina. Raport VIN për BYD, Geely, NIO dhe importe."
+    },
+    "pl": {
+      "title": "Auta z Chin — VIN, przebieg i wypadki | kmcheck.com",
+      "description": "Sprawdź auto z Chin po VIN: przebieg, wypadki, fałszowanie licznika i szkoda całkowita. Raport dla BYD, Geely, NIO i importów."
+    },
+    "ro": {
+      "title": "Mașini China — VIN, kilometraj și accidente | kmcheck.com",
+      "description": "Verificați mașinile chinezești: kilometraj, accidente, fraudă odometru și daună totală. Raport VIN pentru BYD, Geely, NIO și importuri."
+    },
+    "bg": {
+      "title": "Автомобили от Китай — VIN, пробег и катастрофи | kmcheck.com",
+      "description": "Проверете китайски автомобил по VIN: пробег, катастрофи, манипулация на одометъра и тотална щета. Отчет за BYD, Geely, NIO и внос."
+    },
+    "ar": {
+      "title": "تحقق من كيلومترات وحوادث السيارات الصينية | kmcheck.com",
+      "description": "تحقق من الكيلومترات والحوادث وتلاعب العداد وسجلات الإتلاف للسيارات الصينية. تقرير VIN فوري لـ BYD وGeely وNIO والواردات."
+    },
+    "uk": {
+      "title": "Китайські авто — пробіг, аварії, історія | kmcheck.com",
+      "description": "Перевірка пробігу, аварій, шахрайства з одометром і списань китайських авто. Миттєвий звіт VIN для BYD, Geely, NIO та імпорту."
+    },
+    "ru": {
+      "title": "Китайские авто — пробег, аварии, история | kmcheck.com",
+      "description": "Проверка пробега, аварий, скрутки одометра и утилизации китайских авто. Мгновенный отчёт VIN для BYD, Geely, NIO и импорта."
+    },
+    "zh": {
+      "title": "中国汽车 — 里程、事故与历史 | kmcheck.com",
+      "description": "查询中国汽车的里程、事故、调表和报废记录。比亚迪、吉利、蔚来即时VIN报告。"
+    }
+  },
+  "country_uae": {
+    "en": {
+      "title": "UAE Cars — Mileage, Accidents & Import History | kmcheck.com",
+      "description": "Check car mileage, accidents, flood damage and import history for UAE cars. Instant VIN report for Dubai, Abu Dhabi and GCC imports."
+    },
+    "de": {
+      "title": "VAE-Importe — Kilometerstand & Unfälle | kmcheck.com",
+      "description": "Fahrzeuge aus den VAE per VIN prüfen: Kilometerstand, Unfälle, Hochwasserschäden und Importhistorie. Sofortbericht für Dubai, Abu Dhabi und GCC."
+    },
+    "es": {
+      "title": "Coches EAU — kilometraje y accidentes | kmcheck.com",
+      "description": "Verifique kilometraje, accidentes, daños por inundación e historial de importación en coches de los EAU. Informe VIN para Dubái, Abu Dabi y CCG."
+    },
+    "fr": {
+      "title": "EAU — kilométrage, accidents & import | kmcheck.com",
+      "description": "Vérifiez un véhicule des EAU par VIN : kilométrage, accidents, inondation et historique d'import. Rapport instantané pour Dubaï, Abou Dabi et CCG."
+    },
+    "sq": {
+      "title": "Kontroll kilometrash për makina nga Emiratet | kmcheck.com",
+      "description": "Kontroll kilometrash, aksidentesh, dëmtimesh përmbytjeje dhe historie importi për makina nga Emiratet. Raport VIN për Dubai, Abu Dhabi dhe GCC."
+    },
+    "pl": {
+      "title": "Auta ze ZEA — VIN, przebieg i wypadki | kmcheck.com",
+      "description": "Sprawdź auto ze ZEA po VIN: przebieg, wypadki, szkody powodziowe i historia importu. Raport dla Dubaju, Abu Zabi i GCC."
+    },
+    "ro": {
+      "title": "Mașini EAU — VIN, kilometraj și accidente | kmcheck.com",
+      "description": "Verificați mașinile din EAU: kilometraj, accidente, daune inundație și istoric import. Raport VIN pentru Dubai, Abu Dhabi și GCC."
+    },
+    "bg": {
+      "title": "Автомобили от ОАЕ — VIN, пробег и катастрофи | kmcheck.com",
+      "description": "Проверете автомобил от ОАЕ по VIN: пробег, катастрофи, щети от наводнение и вносна история. Отчет за Дубай, Абу Даби и GCC."
+    },
+    "ar": {
+      "title": "تحقق من كيلومترات وحوادث السيارات الإماراتية | kmcheck.com",
+      "description": "تحقق من الكيلومترات والحوادث وأضرار الفيضانات وتاريخ الاستيراد للسيارات الإماراتية. تقرير VIN فوري لدبي وأبوظبي ومجلس التعاون."
+    },
+    "uk": {
+      "title": "Авто з ОАЕ — пробіг, аварії, історія | kmcheck.com",
+      "description": "Перевірка пробігу, аварій, шкоди від повені та імпорту авто з ОАЕ. Миттєвий звіт VIN для Дубаї, Абу-Дабі та GCC."
+    },
+    "ru": {
+      "title": "Авто из ОАЭ — пробег, аварии, история | kmcheck.com",
+      "description": "Проверка пробега, аварий, повреждений от наводнений и импорта авто из ОАЭ. Мгновенный отчёт VIN для Дубая, Абу-Даби и GCC."
+    },
+    "zh": {
+      "title": "阿联酋汽车 — 里程、事故与进口历史 | kmcheck.com",
+      "description": "查询阿联酋汽车的里程、事故、水淹损伤和进口历史。迪拜、阿布扎比及海合会即时VIN报告。"
     }
   }
 }

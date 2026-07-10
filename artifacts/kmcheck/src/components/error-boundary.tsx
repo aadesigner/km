@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { readDict, type Language } from "@/i18n/context";
+import { LANG_PATH_ALT } from "@/lib/languages";
 import { isChunkLoadError, shouldAttemptChunkReload } from "@/lib/lazy-with-retry";
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 type State = { hasError: boolean };
 
 function parseLangFromPath(): Language {
-  const m = window.location.pathname.match(/\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(?:\/|$)/);
+  const m = window.location.pathname.match(new RegExp(`/(${LANG_PATH_ALT})(?:/|$)`));
   return (m?.[1] ?? "en") as Language;
 }
 

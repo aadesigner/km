@@ -3,12 +3,42 @@ import { getStoredLangPreference } from "@/lib/lang-preference";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const GEO_HINT_CACHE_KEY = "kmcheck_geo_hint_v1";
+const GEO_HINT_TTL_MS = 5 * 60 * 1000;
+
 export type GeoLanguageResponse = {
   enabled: boolean;
   suggestedLanguage: Language | null;
   countryCode: string | null;
   crawler?: boolean;
 };
+
+type CachedGeoHint = { at: number; data: GeoLanguageResponse };
+
+function readCachedGeoHint(): GeoLanguageResponse | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(GEO_HINT_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedGeoHint;
+    if (Date.now() - parsed.at > GEO_HINT_TTL_MS) return null;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedGeoHint(data: GeoLanguageResponse): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(
+      GEO_HINT_CACHE_KEY,
+      JSON.stringify({ at: Date.now(), data } satisfies CachedGeoHint),
+    );
+  } catch {
+    // quota / private mode
+  }
+}
 
 export function geoLanguageApiUrl(): string {
   const params = new URLSearchParams();
@@ -21,13 +51,18 @@ export function geoLanguageApiUrl(): string {
 }
 
 export async function fetchGeoLanguageHint(): Promise<GeoLanguageResponse | null> {
+  const cached = readCachedGeoHint();
+  if (cached) return cached;
+
   try {
     const r = await fetch(geoLanguageApiUrl(), {
       credentials: "include",
       headers: { Accept: "application/json" },
     });
     if (!r.ok) return null;
-    return (await r.json()) as GeoLanguageResponse;
+    const data = (await r.json()) as GeoLanguageResponse;
+    if (!data.crawler) writeCachedGeoHint(data);
+    return data;
   } catch {
     return null;
   }

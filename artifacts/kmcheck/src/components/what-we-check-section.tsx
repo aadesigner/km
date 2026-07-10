@@ -14,6 +14,7 @@ type Props = {
   subtitle?: string;
   market?: WhatWeCheckMarket;
   autoRotate?: boolean;
+  className?: string;
 };
 
 function WhatWeCheckDetailPanel({
@@ -130,7 +131,7 @@ function WhatWeCheckNavButton({
   );
 }
 
-export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Props) {
+export function WhatWeCheckSection({ subtitle, market, autoRotate = false, className }: Props) {
   const { t } = useTranslation();
   const features = useWhatWeCheckFeatures(t, market);
   const [activeCheck, setActiveCheck] = useState(0);
@@ -167,7 +168,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false }: Pro
   }, [autoRotate, checksPaused, features.length, sectionInView]);
 
   return (
-    <section ref={sectionRef} className="relative z-[1] py-12 md:py-20 px-4 overflow-hidden bg-background">
+    <section ref={sectionRef} className={cn("relative z-[1] py-12 md:py-20 px-4 overflow-hidden bg-background", className)}>
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_20%_50%,hsl(var(--primary)/0.06),transparent_65%)]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 

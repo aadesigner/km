@@ -88,6 +88,69 @@ const CARS = [
       "2018 Volkswagen Tiguan 12.2.17.jpg",
     ],
   },
+  // China — domestic EV demos
+  {
+    out: "byd-han-ev.jpg",
+    wiki: ["BYD Han EV.jpg", "BYD Han DM-i.jpg"],
+  },
+  {
+    out: "nio-et5.jpg",
+    wiki: ["NIO ET5.jpg", "NIO ET5 front.jpg"],
+  },
+  {
+    out: "byd-seal.jpg",
+    wiki: ["BYD Seal EV.jpg", "BYD Seal.jpg"],
+  },
+  {
+    out: "xpeng-p7.jpg",
+    wiki: ["XPeng P7.jpg", "Xpeng P7 front.jpg"],
+  },
+  {
+    out: "zeekr-001.jpg",
+    wiki: ["Zeekr 001.jpg", "Zeekr 001 front.jpg"],
+  },
+  // UAE — luxury import demos (incl. Dubai supercar scene)
+  {
+    out: "audi-r8.jpg",
+    wiki: [
+      "2020 Audi R8 V10 5.2 Front.jpg",
+      "Audi R8 V10 Plus.jpg",
+      "2017 Audi R8 V10 plus front.jpg",
+    ],
+  },
+  {
+    out: "porsche-911.jpg",
+    wiki: [
+      "2019 Porsche 911 Carrera S S-A 3.0 Front.jpg",
+      "Porsche 911 (992) Carrera GTS.jpg",
+      "2006 Porsche 911 Carrera 4 S 4.0 Front.jpg",
+    ],
+  },
+  {
+    out: "ferrari-488.jpg",
+    wiki: [
+      "2017 Ferrari 488 GTB Automatic 3.9 Front.jpg",
+      "Ferrari 488 GTB (cropped).jpg",
+      "Ferrari 488 GTB 3.9 '15 (16618969907) (cropped).jpg",
+    ],
+  },
+  {
+    out: "lamborghini-huracan.jpg",
+    wiki: [
+      "Lamborghini Huracán LP 610-4 (16618969907).jpg",
+      "Lamborghini Huracan LP610-4 (17339329770).jpg",
+      "2015 Lamborghini Huracán LP 610-4.jpg",
+      "JBR Beach Supercar Rental-Dubai UAE-Andres Larin.jpg",
+    ],
+  },
+  {
+    out: "mercedes-amg-gt.jpg",
+    wiki: [
+      "Mercedes-AMG GT C190 front.jpg",
+      "2018 Mercedes-AMG GT.jpg",
+      "Mercedes-AMG GT (C190) front.jpg",
+    ],
+  },
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

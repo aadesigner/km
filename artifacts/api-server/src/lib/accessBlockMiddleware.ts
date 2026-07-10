@@ -1,7 +1,4 @@
 import type { Request, Response, NextFunction } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { readSessionUserId } from "./auth.js";
 import {
   checkAccessBlock,
   resolveBlockCountryFromRequest,
@@ -22,19 +19,6 @@ export async function accessBlockMiddleware(
   if (req.isAdmin) {
     next();
     return;
-  }
-
-  const userId = await readSessionUserId(req);
-  if (userId) {
-    const [user] = await db
-      .select({ isAdmin: usersTable.isAdmin })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId))
-      .limit(1);
-    if (user?.isAdmin) {
-      next();
-      return;
-    }
   }
 
   const ip = resolveBlockIpFromRequest(req);

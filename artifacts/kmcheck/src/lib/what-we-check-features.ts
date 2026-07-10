@@ -2,7 +2,7 @@ import {
   Gauge, AlertTriangle, ShieldCheck, Lock, type LucideIcon,
 } from "lucide-react";
 
-export type WhatWeCheckMarket = "usa" | "korea" | "canada";
+export type WhatWeCheckMarket = "usa" | "korea" | "canada" | "china" | "uae";
 
 type FeatureId = "mileage" | "accidents" | "salvage" | "theft";
 
@@ -43,12 +43,26 @@ const COUNTRY_INCLUDE_INDICES: Record<WhatWeCheckMarket, Record<FeatureId, numbe
     salvage: [3, 2, 0, 1],
     theft: [5, 4, 0, 3],
   },
+  china: {
+    mileage: [4, 2, 0, 1],
+    accidents: [1, 0, 2, 3],
+    salvage: [3, 1, 0, 2],
+    theft: [5, 4, 0, 1],
+  },
+  uae: {
+    mileage: [4, 0, 2, 1],
+    accidents: [1, 2, 0, 3],
+    salvage: [3, 2, 0, 1],
+    theft: [5, 4, 0, 3],
+  },
 };
 
 const COUNTRY_EXAMPLE_INDICES: Record<WhatWeCheckMarket, Record<FeatureId, number>> = {
   usa: { mileage: 2, accidents: 1, salvage: 0, theft: 5 },
   korea: { mileage: 1, accidents: 0, salvage: 3, theft: 4 },
   canada: { mileage: 2, accidents: 1, salvage: 0, theft: 3 },
+  china: { mileage: 2, accidents: 0, salvage: 1, theft: 4 },
+  uae: { mileage: 2, accidents: 1, salvage: 0, theft: 3 },
 };
 
 function countryIncluded(t: (k: string) => string, market: WhatWeCheckMarket, index: number) {

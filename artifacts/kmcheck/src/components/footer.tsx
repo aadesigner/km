@@ -1,33 +1,85 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useEffect, useRef, useState } from "react";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { useTranslation, ensureDict } from "@/i18n/context";
 import { KmcheckLogo } from "@/components/logo";
-import { ShieldCheck, Zap, RotateCcw, Star, Car, ChevronUp } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
-import { FlagImg } from "@/components/flag-img";
+import { FlagImg, prefetchFlags } from "@/components/flag-img";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
   label: l.label,
-  short: l.short,
   img: l.flag,
 }));
 
-const TRUST: { icon: React.ElementType; key: string; color: string; fill?: true }[] = [
-  { icon: ShieldCheck, key: "trust_secure_payment", color: "text-primary" },
-  { icon: Zap, key: "trust_instant_report", color: "text-blue-400" },
-  { icon: RotateCcw, key: "trust_money_back", color: "text-amber-400" },
-  { icon: Star, key: "trust_rating", color: "text-yellow-400", fill: true },
-];
-
 const COUNTRY_FOOTER_COLUMNS = [
-  { code: "us", slug: "usa", headingKey: "footer_usa_heading", linkKeys: ["footer_usa_link_1", "footer_usa_link_2", "footer_usa_link_3", "footer_usa_link_4"] },
-  { code: "kr", slug: "korea", headingKey: "footer_korea_heading", linkKeys: ["footer_korea_link_1", "footer_korea_link_2", "footer_korea_link_3", "footer_korea_link_4"] },
-  { code: "ca", slug: "canada", headingKey: "footer_canada_heading", linkKeys: ["footer_canada_link_1", "footer_canada_link_2", "footer_canada_link_3", "footer_canada_link_4"] },
+  {
+    code: "us",
+    slug: "usa",
+    headingKey: "footer_usa_heading",
+    linkKeys: [
+      "footer_usa_link_1",
+      "footer_usa_link_2",
+      "footer_usa_link_3",
+      "footer_usa_link_4",
+    ],
+  },
+  {
+    code: "kr",
+    slug: "korea",
+    headingKey: "footer_korea_heading",
+    linkKeys: [
+      "footer_korea_link_1",
+      "footer_korea_link_2",
+      "footer_korea_link_3",
+      "footer_korea_link_4",
+    ],
+  },
+  {
+    code: "ca",
+    slug: "canada",
+    headingKey: "footer_canada_heading",
+    linkKeys: [
+      "footer_canada_link_1",
+      "footer_canada_link_2",
+      "footer_canada_link_3",
+      "footer_canada_link_4",
+    ],
+  },
+  {
+    code: "cn",
+    slug: "china",
+    headingKey: "footer_china_heading",
+    linkKeys: [
+      "footer_china_link_1",
+      "footer_china_link_2",
+      "footer_china_link_3",
+      "footer_china_link_4",
+    ],
+  },
+  {
+    code: "ae",
+    slug: "uae",
+    headingKey: "footer_uae_heading",
+    linkKeys: [
+      "footer_uae_link_1",
+      "footer_uae_link_2",
+      "footer_uae_link_3",
+      "footer_uae_link_4",
+    ],
+  },
+] as const;
+
+const COMPANY_LINKS = [
+  { path: "how-it-works", labelKey: "nav_how_it_works" },
+  { path: "pricing", labelKey: "pricing" },
+  { path: "faq", labelKey: "nav_faq" },
+  { path: "free-vin-decoder", labelKey: "free_decoder_nav_link" },
+  { path: "dashboard", labelKey: "my_reports" },
 ] as const;
 
 const LEGAL_LINKS = [
@@ -35,6 +87,8 @@ const LEGAL_LINKS = [
   { href: (lang: string) => `/${lang}/privacy`, labelKey: "privacy" },
   { href: (lang: string) => `/${lang}/privacy#cookies`, labelKey: "cookies" },
 ] as const;
+
+const FOOTER_FLAG_CODES = COUNTRY_FOOTER_COLUMNS.map((c) => c.code);
 
 export function Footer() {
   const { t, language, setLanguage } = useTranslation();
@@ -45,6 +99,10 @@ export function Footer() {
   const current = LANGS.find((l) => l.code === language) ?? LANGS[0];
 
   usePrefetchPickerFlags(langOpen);
+
+  useEffect(() => {
+    prefetchFlags(FOOTER_FLAG_CODES);
+  }, []);
 
   useEffect(() => {
     if (!langOpen) return;
@@ -76,38 +134,18 @@ export function Footer() {
     });
   };
 
-  const footerLink =
-    "text-[13px] text-white/42 hover:text-white transition-colors duration-200 leading-snug";
+  const seoLinkCls =
+    "text-[12px] leading-snug text-white/42 transition-colors hover:text-white/88";
 
   return (
-    <footer className="relative bg-[#080c18] text-white mt-auto print:hidden overflow-hidden">
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/55 to-transparent" />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(34,197,94,0.05),transparent)]" />
-
-      <div className="relative border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-5 py-4">
-          <div className="flex flex-wrap items-center justify-center gap-2.5 md:gap-3">
-            {TRUST.map(({ icon: Icon, key, color, fill }) => (
-              <span
-                key={key}
-                className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-medium text-white/55"
-              >
-                <Icon className={cn("h-3.5 w-3.5 shrink-0", color, fill && "fill-yellow-400")} />
-                {t(key as Parameters<typeof t>[0])}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-5 pt-14 pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
-          <div className="lg:col-span-3 space-y-6">
-            <PrefetchLink href={`/${language}`} className="inline-flex items-center group">
-              <KmcheckLogo variant="dark" className="h-9 group-hover:opacity-90 transition-opacity" />
+    <footer className="mt-auto border-t border-white/[0.06] bg-[#060a12] text-white print:hidden">
+      <div className="mx-auto max-w-7xl px-5 py-10 md:py-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+          <div className="space-y-5 lg:col-span-3">
+            <PrefetchLink href={`/${language}`} className="inline-flex group">
+              <KmcheckLogo variant="dark" className="h-8 transition-opacity group-hover:opacity-90" />
             </PrefetchLink>
-
-            <p className="text-[13px] text-white/38 leading-relaxed max-w-[220px]">
+            <p className="max-w-[240px] text-[12px] leading-relaxed text-white/38">
               {t("footer_tagline")}
             </p>
 
@@ -123,86 +161,82 @@ export function Footer() {
                   aria-label={current.label}
                   onClick={() => setLangOpen((v) => !v)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs transition-colors max-w-[11rem]",
+                    "inline-flex min-w-[11rem] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors",
                     langOpen
-                      ? "border-primary/50 bg-primary/20 text-white ring-1 ring-primary/35"
-                      : "border-white/[0.12] bg-white/[0.03] text-white/75 hover:border-white/22 hover:bg-white/[0.06]",
+                      ? "border-primary/50 bg-primary/15 text-white"
+                      : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20",
                   )}
                 >
-                  <FlagImg code={current.img} size={15} priority />
-                  <span className="font-medium truncate flex-1 text-left">{current.label}</span>
-                  <ChevronUp className={cn("h-2.5 w-2.5 opacity-50 transition-transform shrink-0", langOpen && "rotate-180")} />
+                  <FlagImg code={current.img} size={14} priority />
+                  <span className="flex-1 truncate text-left font-medium">{current.label}</span>
+                  <ChevronUp
+                    className={cn("h-3 w-3 opacity-50 transition-transform", langOpen && "rotate-180")}
+                  />
                 </button>
-
                 {langOpen && (
                   <div
                     role="listbox"
-                    className="absolute bottom-full left-0 mb-2 z-30 w-[20rem] max-w-[calc(100vw-2.5rem)] rounded-xl border border-white/12 bg-[#0c1222] shadow-2xl shadow-black/50 p-1.5"
+                    className="absolute bottom-full right-0 z-30 mb-2 w-[18rem] max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-[#0b1019] p-1.5 shadow-xl"
                   >
-                    <LangPickerList
-                      language={language}
-                      tone="footer"
-                      onSelect={(code) => handleLanguageChange(code)}
-                    />
+                    <LangPickerList language={language} tone="footer" onSelect={handleLanguageChange} />
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-8 lg:pr-4">
+          <nav
+            aria-label={t("footer_countries")}
+            className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-6 lg:grid-cols-5"
+          >
             {COUNTRY_FOOTER_COLUMNS.map(({ code, slug, headingKey, linkKeys }) => (
-              <div key={slug} className="space-y-5">
-                <div className="flex items-center gap-2">
-                  <FlagImg code={code} priority />
-                  <h3 className="text-[13px] font-semibold text-white/70">{t(headingKey)}</h3>
-                </div>
-                <ul className="space-y-3">
+              <div key={slug} className="min-w-0 space-y-3">
+                <PrefetchLink
+                  href={`/${language}/cars/${slug}`}
+                  className="group inline-flex max-w-full items-center gap-2"
+                >
+                  <FlagImg code={code} size={16} className="shrink-0 rounded-[2px]" />
+                  <span className="truncate text-[13px] font-semibold text-white/72 transition-colors group-hover:text-white">
+                    {t(headingKey)}
+                  </span>
+                </PrefetchLink>
+                <ul className="space-y-2">
                   {linkKeys.map((labelKey) => (
                     <li key={labelKey}>
-                      <Link
-                        href={`/${language}/cars/${slug}`}
-                        className={cn(footerLink, "group flex items-start gap-1.5")}
-                      >
-                        <Car className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-40 transition-opacity" />
+                      <PrefetchLink href={`/${language}/cars/${slug}`} className={seoLinkCls}>
                         {t(labelKey)}
-                      </Link>
+                      </PrefetchLink>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
-          </div>
+          </nav>
 
-          <div className="lg:col-span-3 lg:justify-self-end space-y-5 min-w-[10rem]">
-            <h3 className="text-[13px] font-semibold text-white/70">{t("footer_company")}</h3>
-            <ul className="space-y-3">
-              {[
-                { href: `/${language}/how-it-works`, label: t("nav_how_it_works") },
-                { href: `/${language}/pricing`, label: t("pricing") },
-                { href: `/${language}/free-vin-decoder`, label: t("free_decoder_nav_link") },
-                { href: `/${language}/dashboard`, label: t("my_reports") },
-              ].map(({ href, label }) => (
-                <li key={href}>
-                  <PrefetchLink href={href} className={footerLink}>
-                    {label}
+          <nav aria-label={t("footer_company")} className="space-y-3 lg:col-span-3 lg:justify-self-end">
+            <p className="text-[13px] font-semibold text-white/72">{t("footer_company")}</p>
+            <ul className="space-y-2.5">
+              {COMPANY_LINKS.map(({ path, labelKey }) => (
+                <li key={path}>
+                  <PrefetchLink href={`/${language}/${path}`} className={seoLinkCls}>
+                    {t(labelKey)}
                   </PrefetchLink>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
-        <div className="border-t border-white/[0.06] mt-14 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-white/22">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] pt-6 sm:flex-row">
+          <p className="text-[11px] text-white/28">
             © {new Date().getFullYear()} kmcheck.com · {t("footer_rights")}
           </p>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             {LEGAL_LINKS.map(({ href, labelKey }) => (
               <PrefetchLink
                 key={labelKey}
                 href={href(language)}
-                className="text-white/35 hover:text-white/80 transition-colors"
+                className="text-[11px] text-white/35 transition-colors hover:text-white/75"
               >
                 {t(labelKey)}
               </PrefetchLink>

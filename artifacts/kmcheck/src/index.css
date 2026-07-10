@@ -11,6 +11,12 @@
   animation-duration: 0.01s;
 }
 
+/* Checkout payment marks — light/grey on dark UI (logos ship with dark text) */
+.dark .checkout-payment-logo-img {
+  opacity: 0.78;
+  filter: brightness(0) invert(1);
+}
+
 @media print {
   @page {
     size: A4 portrait;
@@ -684,9 +690,8 @@
     -webkit-filter: none !important;
   }
 
-  /* Safari iOS: box-shadow + backdrop-blur bleed past overflow:hidden onto the next section */
+  /* Safari iOS: backdrop-blur can bleed past overflow:hidden — disable blur on small screens, keep shadow */
   .hero-vin-field {
-    box-shadow: none !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -696,7 +701,9 @@
   }
 
   .hero-vin-field:focus-within {
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12) !important;
+    box-shadow:
+      0 0 0 3px hsl(var(--primary) / 0.12),
+      0 12px 34px -10px hsl(var(--primary) / 0.28) !important;
   }
 
   .hero-orb-a {
@@ -729,6 +736,252 @@
   50% { opacity: 0.65; }
 }
 
+@keyframes coverage-region-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes coverage-arc-flow {
+  to { stroke-dashoffset: -28; }
+}
+
+@keyframes coverage-data-rise {
+  0% { opacity: 0; transform: translateY(6px); }
+  12% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-32px); }
+}
+
+.coverage-region-pulse {
+  animation: coverage-region-pulse 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px hsl(var(--primary) / 0.28));
+}
+
+.coverage-map-svg-edge {
+  display: block;
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1200 / 560;
+}
+
+.coverage-map-edge-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes coverage-live-ping {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  65% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(2.15);
+    opacity: 0;
+  }
+}
+
+.coverage-map-live-ring {
+  animation: coverage-live-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.coverage-map-live-dot {
+  fill: hsl(var(--primary));
+  animation: coverage-map-live-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes coverage-map-live-dot {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.coverage-map-live-label-layer {
+  pointer-events: none;
+}
+
+.coverage-map-live-label {
+  animation: coverage-map-live-label-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.coverage-map-live-label-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.96);
+  border: 0.85px solid hsl(var(--primary) / 0.35);
+  font-family: inherit;
+}
+
+.coverage-map-live-label-dot {
+  flex-shrink: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  animation: coverage-map-live-dot 1.6s ease-in-out infinite;
+}
+
+.coverage-map-live-label-text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes coverage-map-live-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coverage-map-live-marker {
+  pointer-events: none;
+}
+
+.coverage-map-edge-left::after {
+  background:
+    linear-gradient(to right, hsl(var(--background) / 0.32) 0%, transparent 14%),
+    linear-gradient(to left, hsl(var(--background) / 0.18) 0%, transparent 16%),
+    linear-gradient(
+      to top,
+      hsl(var(--background) / 0.78) 0%,
+      hsl(var(--background) / 0.48) 18%,
+      hsl(var(--background) / 0.22) 38%,
+      hsl(var(--background) / 0.08) 58%,
+      transparent 82%
+    );
+}
+
+.coverage-map-edge-right::after {
+  /* Inner (center) edge: very soft — map continues under hero copy */
+  background:
+    linear-gradient(to left, transparent 0%, transparent 38%, hsl(var(--background) / 0.06) 58%, hsl(var(--background) / 0.14) 72%, hsl(var(--background) / 0.22) 86%, hsl(var(--background) / 0.08) 96%, transparent 100%),
+    linear-gradient(to right, hsl(var(--background) / 0.2) 0%, hsl(var(--background) / 0.08) 10%, transparent 22%),
+    linear-gradient(
+      to top,
+      hsl(var(--background) / 0.72) 0%,
+      hsl(var(--background) / 0.42) 16%,
+      hsl(var(--background) / 0.18) 36%,
+      hsl(var(--background) / 0.06) 56%,
+      transparent 80%
+    );
+}
+
+.dark .coverage-map-edge-left::after {
+  background:
+    linear-gradient(to right, rgb(4 13 8 / 0.34) 0%, transparent 14%),
+    linear-gradient(to left, rgb(4 13 8 / 0.16) 0%, transparent 16%),
+    linear-gradient(
+      to top,
+      rgb(4 13 8 / 0.62) 0%,
+      rgb(4 13 8 / 0.38) 18%,
+      rgb(4 13 8 / 0.18) 38%,
+      rgb(4 13 8 / 0.06) 58%,
+      transparent 82%
+    );
+}
+
+.dark .coverage-map-edge-right::after {
+  /* Match hero #040d08 — avoid harsh dark band on inner edge */
+  background:
+    linear-gradient(to left, transparent 0%, transparent 42%, rgb(4 13 8 / 0.04) 60%, rgb(4 13 8 / 0.1) 78%, rgb(4 13 8 / 0.06) 92%, transparent 100%),
+    linear-gradient(to right, rgb(4 13 8 / 0.16) 0%, rgb(4 13 8 / 0.06) 10%, transparent 22%),
+    linear-gradient(
+      to top,
+      rgb(4 13 8 / 0.52) 0%,
+      rgb(4 13 8 / 0.3) 16%,
+      rgb(4 13 8 / 0.14) 36%,
+      rgb(4 13 8 / 0.05) 56%,
+      transparent 80%
+    );
+}
+
+.coverage-map-edge-left {
+  mask-image:
+    linear-gradient(to right, #000 0%, #000 52%, rgba(0, 0, 0, 0.9) 62%, rgba(0, 0, 0, 0.62) 76%, rgba(0, 0, 0, 0.28) 90%, transparent 100%),
+    linear-gradient(to bottom, #000 0%, #000 42%, rgba(0, 0, 0, 0.86) 54%, rgba(0, 0, 0, 0.58) 68%, rgba(0, 0, 0, 0.26) 84%, transparent 100%),
+    linear-gradient(to left, #000 0%, #000 90%, rgba(0, 0, 0, 0.42) 96%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, #000 0%, #000 52%, rgba(0, 0, 0, 0.9) 62%, rgba(0, 0, 0, 0.62) 76%, rgba(0, 0, 0, 0.28) 90%, transparent 100%),
+    linear-gradient(to bottom, #000 0%, #000 42%, rgba(0, 0, 0, 0.86) 54%, rgba(0, 0, 0, 0.58) 68%, rgba(0, 0, 0, 0.26) 84%, transparent 100%),
+    linear-gradient(to left, #000 0%, #000 90%, rgba(0, 0, 0, 0.42) 96%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+
+.coverage-map-edge-right {
+  /* Long inner fade so Europe extends beneath center text; outer right + bottom fade for Africa / Australia */
+  mask-image:
+    linear-gradient(
+      to left,
+      #000 0%,
+      #000 46%,
+      rgba(0, 0, 0, 0.94) 56%,
+      rgba(0, 0, 0, 0.82) 66%,
+      rgba(0, 0, 0, 0.62) 76%,
+      rgba(0, 0, 0, 0.38) 86%,
+      rgba(0, 0, 0, 0.16) 94%,
+      transparent 100%
+    ),
+    linear-gradient(to bottom, #000 0%, #000 40%, rgba(0, 0, 0, 0.88) 52%, rgba(0, 0, 0, 0.6) 66%, rgba(0, 0, 0, 0.28) 82%, transparent 100%),
+    linear-gradient(to right, #000 0%, #000 58%, rgba(0, 0, 0, 0.82) 68%, rgba(0, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.2) 92%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(
+      to left,
+      #000 0%,
+      #000 46%,
+      rgba(0, 0, 0, 0.94) 56%,
+      rgba(0, 0, 0, 0.82) 66%,
+      rgba(0, 0, 0, 0.62) 76%,
+      rgba(0, 0, 0, 0.38) 86%,
+      rgba(0, 0, 0, 0.16) 94%,
+      transparent 100%
+    ),
+    linear-gradient(to bottom, #000 0%, #000 40%, rgba(0, 0, 0, 0.88) 52%, rgba(0, 0, 0, 0.6) 66%, rgba(0, 0, 0, 0.28) 82%, transparent 100%),
+    linear-gradient(to right, #000 0%, #000 58%, rgba(0, 0, 0, 0.82) 68%, rgba(0, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.2) 92%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+
+.coverage-arc-flow {
+  stroke-dasharray: 5 9;
+  animation: coverage-arc-flow 3.8s linear infinite;
+}
+
+.coverage-data-rise {
+  animation: coverage-data-rise 3.4s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-orb-a,
   .hero-orb-b,
@@ -737,6 +990,16 @@
   }
 
   .pending-vin-border-scan {
+    animation: none !important;
+  }
+
+  .coverage-region-pulse,
+  .coverage-arc-flow,
+  .coverage-data-rise,
+  .coverage-map-live-ring,
+  .coverage-map-live-label,
+  .coverage-map-live-dot,
+  .coverage-map-live-label-dot {
     animation: none !important;
   }
 }

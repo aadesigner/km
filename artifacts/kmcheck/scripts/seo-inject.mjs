@@ -34,6 +34,8 @@ export const PATH_TO_SEO_KEY = {
   "/cars/usa": "country_usa",
   "/cars/korea": "country_korea",
   "/cars/canada": "country_canada",
+  "/cars/china": "country_china",
+  "/cars/uae": "country_uae",
   "/sign-in": "auth",
   "/sign-up": "sign_up",
   "/dashboard": "dashboard",
@@ -44,7 +46,7 @@ export const PATH_TO_SEO_KEY = {
   "/reset-password": "reset_password",
 };
 
-const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada"]);
+const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "uae"]);
 
 const NOINDEX_EXACT = new Set([
   "/sign-in",
@@ -83,6 +85,8 @@ export function resolvePageKey(rest) {
     if (slug && VALID_COUNTRY_SLUGS.has(slug)) {
       if (slug === "korea") return "country_korea";
       if (slug === "canada") return "country_canada";
+      if (slug === "china") return "country_china";
+      if (slug === "uae") return "country_uae";
       return "country_usa";
     }
     return "not_found";

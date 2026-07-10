@@ -7,6 +7,8 @@ declare global {
   namespace Express {
     interface Request {
       isAdmin?: boolean;
+      /** True once session userId / admin role has been resolved for this request. */
+      sessionAdminResolved?: boolean;
     }
   }
 }
@@ -20,6 +22,7 @@ export async function requestContextMiddleware(
   try {
     const userId = await readSessionUserId(req);
     if (!userId) {
+      req.sessionAdminResolved = true;
       next();
       return;
     }
@@ -29,7 +32,8 @@ export async function requestContextMiddleware(
       .from(usersTable)
       .where(eq(usersTable.id, userId))
       .limit(1);
-    if (user?.isAdmin) req.isAdmin = true;
+    req.isAdmin = user?.isAdmin === true;
+    req.sessionAdminResolved = true;
     next();
   } catch {
     next();

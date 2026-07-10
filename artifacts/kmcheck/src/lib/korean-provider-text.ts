@@ -16,6 +16,7 @@ const LOCALE_BY_LANG: Record<Language, string> = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru-RU",
+  zh: "zh-CN",
 };
 
 /** Albanian month names — Intl sq-AL is missing in some browsers; manual labels match sq.json tone. */

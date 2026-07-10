@@ -7,6 +7,7 @@ import {
 
 /** Public site origin for canonical URLs and sitemap (production). */
 export const SITE_ORIGIN = "https://kmcheck.com";
+export { LANG_PATH_ALT };
 
 export const SEO_LANGS = SUPPORTED_LANGS;
 export type SeoLang = Language;
@@ -32,6 +33,8 @@ export const INDEXABLE_PATHS = [
   "/cars/usa",
   "/cars/korea",
   "/cars/canada",
+  "/cars/china",
+  "/cars/uae",
 ] as const;
 
 export function buildLocalizedPath(lang: SeoLang, path: string): string {

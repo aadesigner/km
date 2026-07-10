@@ -1,8 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
 import { getSettings } from "./settingsCache.js";
-import { readSessionUserId } from "./auth.js";
 import {
   isApiPathUnderMaintenance,
   isExemptMaintenanceApiPath,
@@ -43,19 +40,6 @@ export async function maintenanceMiddleware(
   if (!isApiPathUnderMaintenance(req.path, state)) {
     next();
     return;
-  }
-
-  const userId = await readSessionUserId(req);
-  if (userId) {
-    const [user] = await db
-      .select({ isAdmin: usersTable.isAdmin })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId))
-      .limit(1);
-    if (user?.isAdmin) {
-      next();
-      return;
-    }
   }
 
   const restriction = state.maintenanceMode ? "full_site" : (state.maintenanceRestrictions[0] ?? null);

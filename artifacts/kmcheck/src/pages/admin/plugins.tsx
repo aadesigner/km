@@ -194,6 +194,7 @@ export default function AdminPlugins() {
           Search engine crawlers are excluded. Direct links like <code className="text-xs bg-muted px-1 rounded">/sq/…</code> are never changed.
           {" "}Local test: open <code className="text-xs bg-muted px-1 rounded">/?geo_country=AL</code> (dev only).
           {" "}Palestine (<code className="text-xs bg-muted px-1 rounded">PS</code>) is in the Arabic rule; Israel (<code className="text-xs bg-muted px-1 rounded">IL</code>) is never redirected.
+          {" "}Chinese-speaking regions (<code className="text-xs bg-muted px-1 rounded">CN</code>, <code className="text-xs bg-muted px-1 rounded">TW</code>, <code className="text-xs bg-muted px-1 rounded">HK</code>, <code className="text-xs bg-muted px-1 rounded">MO</code>, <code className="text-xs bg-muted px-1 rounded">SG</code>) default to 中文 — editable below.
         </p>
       </div>
 
@@ -305,7 +306,7 @@ export default function AdminPlugins() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Default rules are pre-configured for Albanian, Ukrainian, Arabic, and Russian-speaking regions.
+            Default rules are pre-configured for Albanian, Ukrainian, Arabic, Russian, and Chinese-speaking regions.
             Use <strong>Restore default rules</strong> after upgrades, then enable the switch and save.
             Requires a country header from your CDN (e.g. Cloudflare <code className="bg-muted px-1 rounded">CF-IPCountry</code>).
             Without it, no redirect occurs. QA locally with{" "}

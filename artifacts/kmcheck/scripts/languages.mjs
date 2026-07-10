@@ -14,6 +14,7 @@ export const SUPPORTED_LANGS = [
   "ar",
   "uk",
   "ru",
+  "zh",
 ];
 
 export const LANG_PATH_ALT = SUPPORTED_LANGS.join("|");
@@ -30,6 +31,7 @@ export const HREFLANG_MAP = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
+  zh: "zh-Hans",
 };
 
 export const OG_LOCALE_MAP = {
@@ -44,4 +46,5 @@ export const OG_LOCALE_MAP = {
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
+  zh: "zh_CN",
 };

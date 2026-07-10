@@ -15,6 +15,9 @@ const ROUTE_LOADERS: Record<string, () => Promise<unknown>> = {
   privacy: () => import("@/pages/privacy"),
   usa: () => import("@/pages/country"),
   korea: () => import("@/pages/country"),
+  canada: () => import("@/pages/country"),
+  china: () => import("@/pages/country"),
+  uae: () => import("@/pages/country"),
   "sign-in": () => import("@/pages/auth"),
   "sign-up": () => import("@/pages/auth"),
 };

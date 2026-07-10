@@ -1,5 +1,7 @@
-export const PLUGIN_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru"] as const;
-export type PluginLanguage = (typeof PLUGIN_LANGS)[number];
+export const PLUGIN_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru", "zh"] as const;
+/** Chinese-speaking regions — default geo redirect target is `zh` (Simplified). */
+export const CHINESE_SPEAKING_COUNTRIES = ["CN", "TW", "HK", "MO", "SG"] as const;
+
 
 /** Never geo-redirect these ISO codes — even if added to a rule by mistake. */
 export const GEO_REDIRECT_BLOCKLIST = ["IL"] as const;
@@ -43,6 +45,7 @@ export const DEFAULT_GEO_LANGUAGE_RULES: GeoLanguageRule[] = [
     language: "ar",
   },
   { countries: ["RU", "BY", "KZ", "KG"], language: "ru" },
+  { countries: ["CN", "TW", "HK", "MO", "SG"], language: "zh" },
 ];
 
 export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
@@ -93,6 +96,32 @@ export function normalizeGeoLanguageRules(input: unknown): GeoLanguageRule[] {
     out.push({ countries, language });
   }
   return out;
+}
+
+export function mergeMissingChineseGeoRule(settings: PluginSettings): PluginSettings {
+  const assigned = new Set(settings.geoLanguageRedirect.rules.flatMap((rule) => rule.countries));
+  const missing = CHINESE_SPEAKING_COUNTRIES.filter((code) => !assigned.has(code));
+  if (missing.length === 0) return settings;
+
+  const rules = settings.geoLanguageRedirect.rules.map((rule) => ({
+    countries: [...rule.countries],
+    language: rule.language,
+  }));
+  const zhRule = rules.find((rule) => rule.language === "zh");
+  if (zhRule) {
+    for (const code of missing) {
+      if (!zhRule.countries.includes(code)) zhRule.countries.push(code);
+    }
+  } else {
+    rules.push({ countries: [...missing], language: "zh" });
+  }
+
+  return normalizePluginSettings({
+    geoLanguageRedirect: {
+      ...settings.geoLanguageRedirect,
+      rules,
+    },
+  });
 }
 
 export function normalizePluginSettings(input: unknown): PluginSettings {

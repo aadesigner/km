@@ -3,6 +3,7 @@ import {
   stripAppBasePath,
   SITE_ORIGIN,
   HREFLANG_MAP,
+  LANG_PATH_ALT,
   type SeoLang,
 } from "./seo-config";
 import { isIndexableVinRest, buildVinPageSeo, normalizeVin, type VinSeoLang } from "@workspace/vin-page-seo";
@@ -16,7 +17,7 @@ export const SEO_DATA = seoData as {
   [K in SeoPageKey]: Record<SeoLang, { title: string; description: string }>;
 };
 
-const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada"]);
+const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "uae"]);
 
 /** Map URL path (without lang prefix) → SEO_DATA key */
 export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
@@ -30,6 +31,8 @@ export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
   "/cars/usa": "country_usa",
   "/cars/korea": "country_korea",
   "/cars/canada": "country_canada",
+  "/cars/china": "country_china",
+  "/cars/uae": "country_uae",
   "/sign-in": "auth",
   "/sign-up": "sign_up",
   "/dashboard": "dashboard",
@@ -51,6 +54,8 @@ export function resolvePageKey(rest: string): SeoPageKey {
     if (slug && VALID_COUNTRY_SLUGS.has(slug)) {
       if (slug === "korea") return "country_korea";
       if (slug === "canada") return "country_canada";
+      if (slug === "china") return "country_china";
+      if (slug === "uae") return "country_uae";
       return "country_usa";
     }
     return "not_found";
@@ -91,7 +96,7 @@ export function resolveSeoFromPath(
   noIndex: boolean;
 } {
   const normalized = stripAppBasePath(pathname.split("?")[0], basePath);
-  const m = normalized.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
+  const m = normalized.match(new RegExp(`^/(${LANG_PATH_ALT})(/.*)?$`));
   const lang = (m?.[1] ?? "en") as SeoLang;
   const rest = (m?.[2] ?? "").replace(/\/$/, "") || "";
   const pageKey = resolvePageKey(rest);
@@ -142,6 +147,7 @@ export function getRouteSeo(
 
   const countryJsonLd =
     pageKey === "country_usa" || pageKey === "country_korea" || pageKey === "country_canada"
+      || pageKey === "country_china" || pageKey === "country_uae"
       ? buildCountryPageJsonLd({
           pageKey,
           title: seo.title,

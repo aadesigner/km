@@ -17,6 +17,8 @@ const FLAG_CODES = {
   usa: "us",
   korea: "kr",
   canada: "ca",
+  china: "cn",
+  uae: "ae",
 };
 
 const SIZES = [

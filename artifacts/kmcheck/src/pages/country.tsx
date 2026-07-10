@@ -43,6 +43,7 @@ const WhatWeCheckSection = lazy(() =>
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Severity = "high" | "medium" | "low";
+type CountryMarket = "usa" | "korea" | "canada" | "china" | "uae";
 
 interface CountryMeta {
   flagImg: string;
@@ -110,6 +111,42 @@ const COUNTRY_META: Record<string, CountryMeta> = {
       { chars: "FB2",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
       { chars: "F",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
       { chars: "59CH501000", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
+    ],
+  },
+  china: {
+    flagImg: "cn",
+    gradient: "from-red-900 via-amber-900 to-red-950",
+    vinPrefix: "L, LE",
+    totalVehicles: "350M+",
+    topRisk: "Odometer fraud",
+    popularBrands: ["BYD", "NIO", "XPeng", "Zeekr", "Geely", "Li Auto", "Chery", "GAC"],
+    issueIndices: [0, 1, 2],
+    issueSeverities: ["high", "high", "medium"],
+    vinExample: "LSJW74U92NZ123456",
+    vinSegments: [
+      { chars: "L",          color: "bg-primary",    labelKey: "vin_segment_country" },
+      { chars: "SJ",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
+      { chars: "W74",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
+      { chars: "U",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
+      { chars: "92NZ123456", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
+    ],
+  },
+  uae: {
+    flagImg: "ae",
+    gradient: "from-emerald-900 via-slate-800 to-red-900",
+    vinPrefix: "J, W, 5",
+    totalVehicles: "3M+",
+    topRisk: "Import flood damage",
+    popularBrands: ["Audi", "Porsche", "Ferrari", "Lamborghini", "Mercedes-Benz", "BMW", "Bentley", "Lexus"],
+    issueIndices: [0, 1, 2],
+    issueSeverities: ["high", "high", "medium"],
+    vinExample: "JTEBR3FJ40K123456",
+    vinSegments: [
+      { chars: "J",          color: "bg-primary",    labelKey: "vin_segment_country" },
+      { chars: "TE",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
+      { chars: "BR3",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
+      { chars: "F",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
+      { chars: "J40K123456", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
     ],
   },
 };
@@ -242,14 +279,14 @@ export default function CountryPage({ params }: Props) {
     </AnimatePresence>
   ) : null;
 
-  const countryKey = slug === "korea"
-    ? "country_korea"
-    : slug === "canada"
-      ? "country_canada"
-      : slug === "usa"
-        ? "country_usa"
-        : "not_found";
-  const seo = usePageSeo(countryKey as "country_usa" | "country_korea" | "country_canada" | "not_found");
+  const countryKey =
+    slug === "korea" ? "country_korea"
+      : slug === "canada" ? "country_canada"
+        : slug === "china" ? "country_china"
+          : slug === "uae" ? "country_uae"
+            : slug === "usa" ? "country_usa"
+              : "not_found";
+  const seo = usePageSeo(countryKey);
 
   const {
     displayPrice: rawDisplay, basePrice: rawBase,
@@ -384,7 +421,7 @@ export default function CountryPage({ params }: Props) {
             transition={{ duration: 0.55, delay: 0.13 }}
             className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-stretch w-full min-w-0 lg:max-w-[380px] lg:justify-self-end"
           >
-            <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase />
+            <VinDemoCard country={slug as CountryMarket} showcase />
 
             {/* Price line */}
             <div className="px-1 flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground text-center lg:text-start max-w-lg w-full">
@@ -429,14 +466,14 @@ export default function CountryPage({ params }: Props) {
       {/* ─────────────────────── WHAT WE CHECK ─────────────────────── */}
       <DeferredSection minHeight={320}>
         <Suspense fallback={<SectionFallback minHeight={320} />}>
-          <WhatWeCheckSection market={slug as "usa" | "korea" | "canada"} />
+          <WhatWeCheckSection market={slug as CountryMarket} />
         </Suspense>
       </DeferredSection>
 
       {/* ─────────────────────── RISKS + INCLUDED ─────────────────────── */}
       <DeferredSection minHeight={360}>
       <CountryRisksIncludedSection
-        slug={slug as "usa" | "korea" | "canada"}
+        slug={slug as CountryMarket}
         issues={content.issues}
         included={content.included}
         severities={meta.issueSeverities}
@@ -597,7 +634,13 @@ export default function CountryPage({ params }: Props) {
       {/* ─────────────────────── COMPARISON TABLE ─────────────────────── */}
       <DeferredSection minHeight={280}>
         <Suspense fallback={<SectionFallback minHeight={280} />}>
-          <CompareTable market={slug === "korea" ? "korea" : slug === "canada" ? "canada" : "usa"} />
+          <CompareTable market={
+            slug === "korea" ? "korea"
+              : slug === "canada" ? "canada"
+                : slug === "china" ? "china"
+                  : slug === "uae" ? "uae"
+                    : "usa"
+          } />
         </Suspense>
       </DeferredSection>
 

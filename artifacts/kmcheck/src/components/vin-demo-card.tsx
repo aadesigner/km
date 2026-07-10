@@ -11,7 +11,7 @@ export interface DemoCar {
   vin: string;
   name: string;
   year: number;
-  origin: "USA" | "Korea" | "Germany";
+  origin: "USA" | "Korea" | "Germany" | "China" | "UAE";
   flagImg: string;
   photo: string;
   score: number;
@@ -240,6 +240,170 @@ export const ALL_CARS: DemoCar[] = [
     salvage: false,
     stolen: false,
   },
+
+  /* China — domestic EVs */
+  {
+    vin: "LFVVB9E75N3012847",
+    name: "BYD Han EV",
+    year: 2023,
+    origin: "China",
+    flagImg: "cn",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("byd-han-ev.jpg"),
+    score: 9.4,
+    mileage: 18_600,
+    accidents: 0,
+    owners: 1,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "LJNBBABA5PA012847",
+    name: "NIO ET5",
+    year: 2022,
+    origin: "China",
+    flagImg: "cn",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("nio-et5.jpg"),
+    score: 9.1,
+    mileage: 32_400,
+    accidents: 0,
+    owners: 1,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "LC0C76C49R0123456",
+    name: "BYD Seal",
+    year: 2023,
+    origin: "China",
+    flagImg: "cn",
+    unit: "km",
+    condition: "CAUTION",
+    photo: demoCarPhotoUrl("byd-seal.jpg"),
+    score: 6.6,
+    mileage: 54_200,
+    accidents: 1,
+    owners: 2,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "LXPV2A4C8MA012345",
+    name: "XPeng P7",
+    year: 2021,
+    origin: "China",
+    flagImg: "cn",
+    unit: "km",
+    condition: "CAUTION",
+    photo: demoCarPhotoUrl("xpeng-p7.jpg"),
+    score: 6.2,
+    mileage: 78_900,
+    accidents: 1,
+    owners: 3,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "L6T79T2E3ND012345",
+    name: "Zeekr 001",
+    year: 2022,
+    origin: "China",
+    flagImg: "cn",
+    unit: "km",
+    condition: "RISK",
+    photo: demoCarPhotoUrl("zeekr-001.jpg"),
+    score: 3.6,
+    mileage: 112_000,
+    accidents: 2,
+    owners: 4,
+    salvage: true,
+    stolen: false,
+  },
+
+  /* UAE — luxury imports */
+  {
+    vin: "WUAZZZFX7LN012345",
+    name: "Audi R8",
+    year: 2020,
+    origin: "UAE",
+    flagImg: "ae",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("audi-r8.jpg"),
+    score: 9.5,
+    mileage: 22_400,
+    accidents: 0,
+    owners: 1,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "WP0AB2A99KS712345",
+    name: "Porsche 911 Carrera",
+    year: 2019,
+    origin: "UAE",
+    flagImg: "ae",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("porsche-911.jpg"),
+    score: 9.2,
+    mileage: 31_800,
+    accidents: 0,
+    owners: 1,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "ZFF80AMA0J0234567",
+    name: "Ferrari 488 GTB",
+    year: 2017,
+    origin: "UAE",
+    flagImg: "ae",
+    unit: "km",
+    condition: "CAUTION",
+    photo: demoCarPhotoUrl("ferrari-488.jpg"),
+    score: 6.5,
+    mileage: 48_600,
+    accidents: 1,
+    owners: 2,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "ZHWUT5ZF4KLA01234",
+    name: "Lamborghini Huracán",
+    year: 2018,
+    origin: "UAE",
+    flagImg: "ae",
+    unit: "km",
+    condition: "CAUTION",
+    photo: demoCarPhotoUrl("lamborghini-huracan.jpg"),
+    score: 6.0,
+    mileage: 36_200,
+    accidents: 1,
+    owners: 2,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "WDDWJ6EB5KA012345",
+    name: "Mercedes-AMG GT",
+    year: 2019,
+    origin: "UAE",
+    flagImg: "ae",
+    unit: "km",
+    condition: "RISK",
+    photo: demoCarPhotoUrl("mercedes-amg-gt.jpg"),
+    score: 3.2,
+    mileage: 89_500,
+    accidents: 2,
+    owners: 3,
+    salvage: true,
+    stolen: false,
+  },
 ];
 
 const CONDITION_LABEL_KEYS: Record<DemoCar["condition"], string> = {
@@ -292,13 +456,19 @@ function truncVin(vin: string) {
   return `${vin.slice(0, 8)}···${vin.slice(-4)}`;
 }
 
-function carsForCountry(country?: "usa" | "korea" | "canada"): DemoCar[] {
+function carsForCountry(country?: "usa" | "korea" | "canada" | "china" | "uae"): DemoCar[] {
   if (!country) return ALL_CARS;
   if (country === "korea") {
     return ALL_CARS.filter((c) => c.origin === "Korea" || c.origin === "Germany");
   }
   if (country === "canada") {
     return ALL_CARS.filter((c) => c.origin === "USA" || c.origin === "Germany");
+  }
+  if (country === "china") {
+    return ALL_CARS.filter((c) => c.origin === "China");
+  }
+  if (country === "uae") {
+    return ALL_CARS.filter((c) => c.origin === "UAE");
   }
   return ALL_CARS.filter((c) => c.origin === "USA");
 }
@@ -309,7 +479,11 @@ function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
       ? "demo_card_origin_korea"
       : car.origin === "Germany"
         ? "demo_card_origin_germany"
-        : "demo_card_origin_usa";
+        : car.origin === "China"
+          ? "demo_card_origin_china"
+          : car.origin === "UAE"
+            ? "demo_card_origin_uae"
+            : "demo_card_origin_usa";
   return t(originKey);
 }
 
@@ -569,7 +743,7 @@ export function VinDemoCard({
   frozen = false,
   heroSide = false,
 }: {
-  country?: "usa" | "korea" | "canada";
+  country?: "usa" | "korea" | "canada" | "china" | "uae";
   showcase?: boolean;
   /** Single static preview — no carousel, transitions, or dot nav. */
   frozen?: boolean;

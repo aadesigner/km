@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getGetCurrentPricingQueryOptions } from "@workspace/api-client-react";
 import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { prefetchAuthAreaRoutes, prefetchCommonRoutes } from "@/lib/prefetch-route";
+import { prefetchFlags } from "@/components/flag-img";
 import { prefetchVinPageChunk } from "@/lib/prefetch-vin-report";
 import { prefetchPublicSettings } from "@/lib/public-settings";
 import { useAuth } from "@/lib/auth-context";
@@ -29,6 +30,7 @@ export function WarmCache() {
       );
       prefetchPublicSettings(queryClient);
       prefetchCommonRoutes();
+      prefetchFlags(["us", "kr", "ca", "cn", "ae"]);
     };
 
     let idleId: number | undefined;

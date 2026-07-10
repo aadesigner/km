@@ -12,8 +12,12 @@ export type MaintenanceStatus = {
   maintenanceMessage: string | null;
 };
 
-const AUTH_PATH_RE = /^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)\/(sign-in|sign-up|forgot-password|reset-password|set-password)(\/|$)/;
-const MAINTENANCE_PATH_RE = /^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)\/maintenance(\/|$)/;
+import { LANG_PATH_ALT } from "@/lib/languages";
+
+const LANG_PATH_RE = new RegExp(`^/(${LANG_PATH_ALT})`);
+
+const AUTH_PATH_RE = new RegExp(`^/(${LANG_PATH_ALT})/(sign-in|sign-up|forgot-password|reset-password|set-password)(/|$)`);
+const MAINTENANCE_PATH_RE = new RegExp(`^/(${LANG_PATH_ALT})/maintenance(/|$)`);
 const ADMIN_PATH_RE = /^\/adminx(\/|$)/;
 
 export function isMaintenanceExemptPath(pathname: string): boolean {
@@ -25,7 +29,7 @@ export function isMaintenanceExemptPath(pathname: string): boolean {
 
 /** Map public SPA path to a maintenance restriction key. */
 export function frontendPathRestriction(pathname: string): MaintenancePartialRestriction | null {
-  const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
+  const m = pathname.match(new RegExp(`^/(${LANG_PATH_ALT})(/.*)?$`));
   if (!m) return null;
   const sub = m[2] ?? "";
   if (sub === "/free-vin-decoder" || sub.startsWith("/free-vin-decoder/")) return "free_decoder";
@@ -44,7 +48,7 @@ export function isFrontendUnderMaintenance(
   if (status.maintenanceMode) {
     const partial = frontendPathRestriction(pathname);
     if (partial) return "full_site";
-    const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/.*)?$/);
+    const m = pathname.match(new RegExp(`^/(${LANG_PATH_ALT})(/.*)?$`));
     const sub = m?.[2] ?? "";
     if (!sub || sub === "/") return "full_site";
     if (sub.startsWith("/terms") || sub.startsWith("/privacy")) return null;
@@ -57,6 +61,6 @@ export function isFrontendUnderMaintenance(
 }
 
 export function extractLangFromPath(pathname: string): string {
-  const m = pathname.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ar|uk|ru)(\/|$)/);
+  const m = pathname.match(new RegExp(`^/(${LANG_PATH_ALT})(/|$)`));
   return m?.[1] ?? "en";
 }

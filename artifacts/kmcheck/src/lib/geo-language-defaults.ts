@@ -23,4 +23,5 @@ export const DEFAULT_GEO_LANGUAGE_RULES: GeoLanguageRuleForm[] = [
     language: "ar",
   },
   { countries: ["RU", "BY", "KZ", "KG"], language: "ru" },
+  { countries: ["CN", "TW", "HK", "MO", "SG"], language: "zh" },
 ];
