@@ -25,6 +25,8 @@ import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
+import { FreeDecoderSeoSection } from "@/components/free-decoder-seo-section";
+import { FREE_DECODER_BRAND_CARDS } from "@/lib/free-decoder-brands";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -416,7 +418,7 @@ export default function FreeVinDecoder() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={loading || registerRequired || (rcEnabled && !rcReady)}
+                disabled={loading || registerRequired || (rcEnabled && !rcReady) || normalizedVin.length !== 17}
                 className="absolute right-2 h-10 rounded-xl px-6 font-semibold shadow-md shadow-primary/20"
               >
                 {loading ? (
@@ -726,10 +728,10 @@ export default function FreeVinDecoder() {
         )}
       </AnimatePresence>
 
-      {/* ── EMPTY STATE / WHAT YOU GET ── */}
-      {!result && !loading && (
-        <section className="px-4 pb-24 max-w-5xl mx-auto">
-
+      {/* ── SEO CONTENT (always visible for crawlers & users) ── */}
+      <section className="px-4 pb-24 max-w-5xl mx-auto">
+        {!result && !loading && (
+          <>
           {/* What you get grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
             {[
@@ -790,31 +792,33 @@ export default function FreeVinDecoder() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center space-y-4"
+            className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center space-y-4 mb-16"
           >
-            <p className="text-sm text-muted-foreground font-medium">{t("free_decoder_decoded_vin")}</p>
+            <p className="text-sm text-muted-foreground font-medium">{t("free_decoder_example_try")}</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              {[
-                { label: "BMW 4 Series Cabrio", vin: "WBA3V7106FJ995387" },
-                { label: "Honda Civic", vin: "1HGBH41JXMN109186" },
-                { label: "Hyundai Elantra", vin: "KMHD35LE1JA103867" },
-              ].map(({ label, vin: v }) => (
+              {FREE_DECODER_BRAND_CARDS.slice(0, 3).map((brand) => (
                 <button
-                  key={v}
+                  key={brand.sampleVin}
                   type="button"
-                  onClick={() => setVin(v)}
+                  onClick={() => { setVin(brand.sampleVin); setError(""); }}
                   className="flex items-center gap-2 rounded-xl border bg-background px-4 py-2.5 text-xs font-medium hover:border-primary hover:text-primary hover:shadow-[0_0_12px_rgba(34,197,94,0.15)] transition-all"
                 >
                   <Car className="h-3.5 w-3.5" />
-                  {label}
-                  <span className="font-mono text-muted-foreground">{v.slice(0, 8)}…</span>
+                  {t(`free_decoder_brand_${brand.id}_title`)}
+                  <span className="font-mono text-muted-foreground">{brand.sampleVin.slice(0, 8)}…</span>
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               ))}
             </div>
           </motion.div>
-        </section>
-      )}
+          </>
+        )}
+
+        <FreeDecoderSeoSection
+          onTryVin={(v) => { setVin(v); setError(""); }}
+          onUnlock={result ? handleUnlockFullReport : undefined}
+        />
+      </section>
     </div>
   );
 }

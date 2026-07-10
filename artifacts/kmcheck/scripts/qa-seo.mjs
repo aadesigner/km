@@ -320,7 +320,7 @@ if (existsSync(sqI18nPath)) {
       sqWarn++;
     }
     const cycling = [0, 1, 2, 3].map((i) => sqI18n[`country_${slug}_cycling_${i}`] ?? "");
-    const expected = ["kilometrash", "aksidentesh", "vjedhjesh", "dëmtimi total"];
+    const expected = ["kilometrash", "aksidentesh", "vjedhjesh", "shkatërrimi"];
     for (let i = 0; i < 4; i++) {
       if (cycling[i] !== expected[i]) {
         console.warn(`WARN sq.json: country_${slug}_cycling_${i} expected "${expected[i]}", got "${cycling[i]}"`);

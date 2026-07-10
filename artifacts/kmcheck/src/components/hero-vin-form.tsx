@@ -46,8 +46,16 @@ export function HeroVinForm({
 
   const onVinInput = (value: string) => onVinChange(value.replace(/\s/g, "").toUpperCase());
 
+  const handleFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (disabled || !isComplete) return;
+    onSubmit(e);
+  };
+
+  const submitDisabled = Boolean(disabled) || !isComplete;
+
   return (
-    <form onSubmit={onSubmit} className={cn("max-w-lg sm:max-w-xl w-full mx-auto space-y-3 text-left", className)}>
+    <form onSubmit={handleFormSubmit} className={cn("max-w-lg sm:max-w-xl w-full mx-auto space-y-3 text-left", className)}>
       <VinLookupDisabledBanner compact />
 
       <div className={cn(disabled && "opacity-60 pointer-events-none")}>
@@ -125,7 +133,7 @@ export function HeroVinForm({
               <Button
                 type="submit"
                 size="lg"
-                disabled={disabled}
+                disabled={submitDisabled}
                 className={cn(
                   "hero-vin-submit absolute right-1.5 sm:right-2.5 z-10",
                   "h-9 sm:h-10 md:h-11 rounded-lg sm:rounded-xl",

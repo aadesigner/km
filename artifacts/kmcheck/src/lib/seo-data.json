@@ -51,7 +51,7 @@
   },
   "pricing": {
     "en": {
-      "title": "Pricing - VIN history report price per car - kmcheck.com",
+      "title": "Pricing — VIN history report | kmcheck.com",
       "description": "One affordable VIN report covers mileage verification, accidents, salvage status and theft. Instant delivery. No subscription."
     },
     "ar": {
@@ -401,52 +401,52 @@
   },
   "free_decoder": {
     "en": {
-      "title": "Free VIN Decoder — Year, Make, Model | kmcheck.com",
-      "description": "Decode any 17-digit VIN free. Year, make, model, engine, body style and check digit. No registration."
+      "title": "Free VIN Decoder — BMW, Audi, Mercedes & All Brands | kmcheck.com",
+      "description": "Decode any 17-digit VIN free. BMW VIN decoder, Audi VIN decoder, Toyota, Ford & more. Year, make, model, engine — no registration."
     },
     "ar": {
-      "title": "فك تشفير VIN مجاناً — السنة والماركة والموديل | kmcheck.com",
-      "description": "فك تشفير أي VIN من 17 رقماً مجاناً. السنة والماركة والموديل والمحرك ونوع الهيكل. بدون تسجيل."
+      "title": "فك تشفير VIN مجاني — BMW وAudi وMercedes | kmcheck.com",
+      "description": "فك أي VIN من 17 خانة مجاناً. BMW وAudi وMercedes وToyota. السنة والماركة والطراز — بدون تسجيل."
     },
     "uk": {
-      "title": "Безкоштовний декодер VIN — рік, марка, модель | kmcheck.com",
-      "description": "Декодуйте VIN миттєво та безкоштовно. Рік, марка, модель, двигун і тип кузова. Без реєстрації."
+      "title": "Безкоштовний VIN-декодер — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Розшифруйте 17-значний VIN безкоштовно. BMW, Audi, Mercedes, Toyota. Рік, марка, модель — без реєстрації."
     },
     "ru": {
-      "title": "Бесплатный декодер VIN — год, марка, модель | kmcheck.com",
-      "description": "Декодируйте VIN бесплатно. Год, марка, модель, двигатель и тип кузова. Без регистрации."
+      "title": "Бесплатный VIN-декодер — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Расшифруйте 17-значный VIN бесплатно. BMW, Audi, Mercedes, Toyota. Год, марка, модель — без регистрации."
     },
     "sq": {
-      "title": "Dekodues VIN falas — numri i shasisë | kmcheck.com",
-      "description": "Dekodoni shasinë (VIN) falas: viti, marka, modeli. Për kontroll kilometrash, aksidentesh dhe dëmtimit total, zhbllokoni raportin e plotë."
+      "title": "Dekodues VIN falas — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Dekodoni VIN 17-shifror falas. Dekodues BMW, Audi, Mercedes, Toyota. Viti, marka, modeli, motori — pa regjistrim."
     },
     "es": {
-      "title": "Decodificador VIN gratuito — Año, marca, modelo | kmcheck.com",
-      "description": "Decodifique cualquier VIN de 17 dígitos gratis. Año, marca, modelo, motor y carrocería. Sin registro."
+      "title": "Decodificador VIN gratis — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Decodifique VIN 17 dígitos gratis. Decodificador BMW, Audi, Mercedes, Toyota. Año, marca, modelo — sin registro."
     },
     "ro": {
-      "title": "Decodor VIN gratuit — An, marcă, model | kmcheck.com",
-      "description": "Decodați gratuit orice VIN de 17 caractere. An, marcă, model, motor, caroserie și cifră de control. Fără înregistrare."
+      "title": "Decodor VIN gratuit — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Decodați VIN 17 caractere gratuit. Decodor BMW, Audi, Mercedes, Toyota. An, marcă, model — fără înregistrare."
     },
     "pl": {
-      "title": "Darmowy dekoder VIN — dekoduj numer VIN | kmcheck.com",
-      "description": "Darmowy dekoder VIN: rok, marka, model i specyfikacja. Sprawdź VIN i zamów pełny raport historii na kmcheck.com."
+      "title": "Darmowy dekoder VIN — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Zdekoduj VIN 17 znaków za darmo. Dekoder BMW, Audi, Mercedes, Toyota. Rok, marka, model — bez rejestracji."
     },
     "de": {
-      "title": "Kostenloser VIN-Decoder — Fahrgestellnummer prüfen | kmcheck.com",
-      "description": "Kostenloser VIN-Decoder: Baujahr, Marke, Modell und Ausstattung. VIN prüfen und vollständigen Historienbericht auf kmcheck.com bestellen."
+      "title": "Kostenloser VIN-Decoder — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "VIN kostenlos dekodieren: BMW, Audi, Mercedes, VW, Toyota. Baujahr, Marke, Modell, Motor — ohne Registrierung."
     },
     "fr": {
-      "title": "Décodeur VIN gratuit — numéro VIN | kmcheck.com",
-      "description": "Décodeur VIN gratuit : année, marque, modèle et équipement. Vérifiez le VIN et commandez le rapport complet sur kmcheck.com."
+      "title": "Décodeur VIN gratuit — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Décodez tout VIN 17 caractères gratuitement. BMW, Audi, Mercedes, Toyota. Année, marque, modèle — sans inscription."
     },
     "bg": {
-      "title": "Безплатен VIN декодер — декодиране на VIN номер | kmcheck.com",
-      "description": "Безплатен VIN декодер: година, марка, модел и комплектация. Проверете VIN и поръчайте пълен отчет на kmcheck.com."
+      "title": "Безплатен VIN декодер — BMW, Audi, Mercedes | kmcheck.com",
+      "description": "Декодирайте 17-цифрен VIN безплатно. BMW, Audi, Mercedes, Toyota. Година, марка, модел — без регистрация."
     },
     "zh": {
-      "title": "免费VIN解码 — 年份、品牌、型号 | kmcheck.com",
-      "description": "免费解码任何17位VIN。年份、品牌、型号、发动机和车身类型。无需注册。"
+      "title": "免费 VIN 解码器 — BMW、Audi、Mercedes | kmcheck.com",
+      "description": "免费解码 17 位 VIN。BMW、Audi、Mercedes、Toyota 解码器。年份、品牌、型号 — 无需注册。"
     }
   },
   "how_it_works": {

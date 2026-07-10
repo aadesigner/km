@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Moon, Sun, User, Shield, LogOut, X,
-  ChevronRight, ChevronDown, Check, Globe,
+  ChevronRight, ChevronDown, Check,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
@@ -406,163 +406,6 @@ function MobileLangPicker({
     </div>
   );
 }
-
-function MobileCountryPicker({
-  language,
-  isDarkNav,
-  scrolled,
-  mobileMenuOpen = false,
-  isActive,
-}: {
-  language: string;
-  isDarkNav: boolean;
-  scrolled: boolean;
-  mobileMenuOpen?: boolean;
-  isActive: (slug: string) => boolean;
-}) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
-
-  const close = useCallback(() => setOpen(false), []);
-  const currentCountry = COUNTRY_LINKS.find((c) => isActive(c.slug));
-
-  const updateMenuPosition = useCallback(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
-    const margin = 12;
-    const width = Math.min(288, window.innerWidth - margin * 2);
-    setMenuStyle({
-      position: "fixed",
-      top: btn.getBoundingClientRect().bottom + 8,
-      right: margin,
-      width,
-      zIndex: 130,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (mobileMenuOpen) close();
-  }, [mobileMenuOpen, close]);
-
-  useEffect(() => {
-    if (!open) return;
-    prefetchFlags(NAV_COUNTRY_FLAGS);
-  }, [open]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    updateMenuPosition();
-    const onReflow = () => updateMenuPosition();
-    window.addEventListener("resize", onReflow);
-    window.addEventListener("scroll", onReflow, true);
-    return () => {
-      window.removeEventListener("resize", onReflow);
-      window.removeEventListener("scroll", onReflow, true);
-    };
-  }, [open, updateMenuPosition]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
-      close();
-    };
-    const id = window.setTimeout(() => {
-      document.addEventListener("pointerdown", onPointerDown, true);
-    }, 0);
-    return () => {
-      window.clearTimeout(id);
-      document.removeEventListener("pointerdown", onPointerDown, true);
-    };
-  }, [open, close]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, close]);
-
-  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!open) updateMenuPosition();
-    setOpen((v) => !v);
-  };
-
-  const menu = mounted
-    ? createPortal(
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              ref={menuRef}
-              role="menu"
-              aria-label={t("nav_country")}
-              initial={{ opacity: 0, y: -6, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-              style={{ ...menuStyle, transformOrigin: "top right" }}
-              className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-1.5 max-h-[min(70vh,24rem)] overflow-y-auto overscroll-y-contain"
-            >
-              <CountryNavMenuGroups
-                language={language}
-                layout="mobile"
-                isActive={isActive}
-                onNavigate={close}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body,
-      )
-    : null;
-
-  return (
-    <div className="relative">
-      <button
-        ref={btnRef}
-        type="button"
-        title={t("nav_country")}
-        aria-label={t("nav_country")}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={handleToggle}
-        className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
-          scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
-          open || currentCountry
-            ? isDarkNav
-              ? "bg-white/10 text-white"
-              : "bg-primary/10 text-primary"
-            : isDarkNav
-              ? "text-white/75 hover:bg-white/10 hover:text-white"
-              : "text-foreground hover:bg-primary/[0.06]",
-        )}
-      >
-        {currentCountry ? (
-          <FlagImg code={currentCountry.img} variant="nav" size={18} priority />
-        ) : (
-          <Globe className="h-4 w-4 shrink-0" aria-hidden />
-        )}
-        <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
-      </button>
-      {menu}
-    </div>
-  );
-}
-
 
 export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number }) {
   const { t, language, setLanguage } = useTranslation();
@@ -961,13 +804,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
           {/* Mobile menu */}
           <div className="md:hidden flex items-center gap-1.5">
             <div className={utilityClusterCls}>
-              <MobileCountryPicker
-                language={language}
-                isDarkNav={isDarkNav}
-                scrolled={scrolled}
-                mobileMenuOpen={mobileOpen}
-                isActive={(slug) => isOnPage(`cars/${slug}`)}
-              />
               <MobileLangPicker
                 language={language}
                 onLanguageChange={handleLanguageChange}
