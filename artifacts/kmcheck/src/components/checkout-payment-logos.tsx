@@ -7,16 +7,19 @@ const PAYMENT_LOGOS = [
     file: "paypal6.png",
     alt: "PayPal",
     boxClassName: "h-14 w-28 sm:h-16 sm:w-32",
+    wrapperClassName: "",
   },
   {
     file: "mastercard666.png",
     alt: "Mastercard",
     boxClassName: "h-16 w-[7.75rem] sm:h-[4.5rem] sm:w-[9rem]",
+    wrapperClassName: "dark:px-2.5 dark:py-1.5",
   },
   {
     file: "visa6.png",
     alt: "Visa",
     boxClassName: "h-12 w-24 sm:h-14 sm:w-28",
+    wrapperClassName: "",
   },
 ] as const;
 
@@ -24,12 +27,13 @@ export function CheckoutPaymentLogos({ className }: { className?: string }) {
   return (
     <div className={cn(className)}>
       <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-        {PAYMENT_LOGOS.map(({ file, alt, boxClassName }) => (
+        {PAYMENT_LOGOS.map(({ file, alt, boxClassName, wrapperClassName }) => (
           <span
             key={file}
             className={cn(
               "inline-flex items-center justify-center rounded-lg px-3.5 py-2 dark:bg-neutral-100 dark:shadow-sm dark:ring-1 dark:ring-black/5",
               boxClassName,
+              wrapperClassName,
             )}
           >
             <img

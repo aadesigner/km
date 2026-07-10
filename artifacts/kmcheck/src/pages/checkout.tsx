@@ -67,6 +67,7 @@ const PREVIEW_BLUR = "text-[12px] font-semibold tabular-nums text-foreground/80 
 type PaypalHostedFieldsInstance = {
   submit: (opts?: { contingencies?: string[] }) => Promise<{ orderId: string; liabilityShifted?: boolean }>;
   on: (event: string, handler: (evt: unknown) => void) => void;
+  teardown?: () => Promise<void> | void;
 };
 
 declare global {
@@ -193,6 +194,7 @@ export default function Checkout({ params }: Props) {
   /** Ignore spurious PayPal onError/onCancel while capture + lookup are running. */
   const paypalFlowPhaseRef = useRef<"idle" | "approving" | "fulfilling" | "done">("idle");
   const paidDeliveryRetryRef = useRef(false);
+  const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
 
@@ -258,6 +260,11 @@ export default function Checkout({ params }: Props) {
       setLocation(guestVinAuthPath(language));
     }
   }, [isLoaded, isSignedIn, language, setLocation, vin]);
+
+  useEffect(() => {
+    checkoutActiveRef.current = true;
+    return () => { checkoutActiveRef.current = false; };
+  }, []);
 
   // Reset payment state whenever the VIN changes — prevents stale "no data" / error UI bleeding across VINs
   useEffect(() => {
@@ -394,7 +401,11 @@ export default function Checkout({ params }: Props) {
       }
     };
     init();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      void hostedFieldsRef.current?.teardown?.();
+      hostedFieldsRef.current = null;
+    };
   }, [payMethod, pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, resolvedTheme, t]);
 
   const validateVin = () => {
@@ -560,8 +571,10 @@ export default function Checkout({ params }: Props) {
         paypalFlowPhaseRef.current = "fulfilling";
         const maxAttempts = 90;
         for (let poll = 0; poll < maxAttempts; poll++) {
+          if (!checkoutActiveRef.current) return false;
           if (poll > 0) await new Promise((r) => setTimeout(r, 1000));
           const pollResp = await fetch(`${basePath}/api/vin/${data.id}`, { credentials: "include" });
+          if (!checkoutActiveRef.current) return false;
           const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
           if (!pollResp.ok) continue;
           if (pollData.status === "complete" || pollData.status === "pending_manual") {
@@ -838,6 +851,25 @@ export default function Checkout({ params }: Props) {
     !peekLoading &&
     (peek.vehicleTooOld === true || isVehicleTooOldForLookup(peek.year));
   const paymentAllowed = !vinLookupDisabled && peek?.dataAvailable === true && !peek?.checkUnavailable && !vehicleTooOld;
+  const paymentSettingsReady = !pubSettingsLoading && !!pubSettings;
+  const checkoutDataReady =
+    vinIsValid &&
+    !peekLoading &&
+    !!peek &&
+    paymentAllowed &&
+    paymentSettingsReady;
+  const showPaymentMethodTabs =
+    checkoutDataReady &&
+    !!pubSettings?.paypalEnableCards &&
+    !!pubSettings?.paypalClientId &&
+    !couponResult?.isFree &&
+    cardEligible === "yes" &&
+    !paymentStarted &&
+    (status === "idle" || status === "error");
+  const showProceedButton =
+    checkoutDataReady &&
+    (status === "idle" || status === "error") &&
+    (payMethod === "card" || !paymentStarted);
   const vinLocked = paymentStarted && !couponResult?.isFree;
   const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
@@ -1408,7 +1440,7 @@ export default function Checkout({ params }: Props) {
                   )}
 
                   {/* Payment method tabs — PayPal vs Card */}
-                  {pubSettings?.paypalEnableCards && !couponResult?.isFree && pubSettings?.paypalClientId && cardEligible !== "no" && paymentAllowed && (
+                  {showPaymentMethodTabs && (
                     <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1">
                       <button
                         type="button"
@@ -1528,7 +1560,7 @@ export default function Checkout({ params }: Props) {
                   )}
 
                   {/* Proceed / Pay by Card / Free button */}
-                  {(status === "idle" || status === "error") && (payMethod === "card" || !paymentStarted) && paymentAllowed && (
+                  {showProceedButton && (
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
@@ -1545,7 +1577,7 @@ export default function Checkout({ params }: Props) {
                     </Button>
                   )}
 
-                  {(status === "idle" || status === "error") && (payMethod === "card" || !paymentStarted) && paymentAllowed && (
+                  {showProceedButton && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5">
                       <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       <div>
