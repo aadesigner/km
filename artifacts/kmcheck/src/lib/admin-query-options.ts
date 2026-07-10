@@ -17,3 +17,11 @@ export const ADMIN_QUERY_OPTIONS = {
   refetchOnReconnect: true,
   retry: shouldRetryAdminQuery,
 } as const;
+
+/** Stats poll shared by AdminLayout sidebar badge + dashboard (single cache entry). */
+export const ADMIN_STATS_QUERY = {
+  ...ADMIN_QUERY_OPTIONS,
+  staleTime: 60_000,
+  refetchInterval: 60_000,
+  refetchIntervalInBackground: false,
+} as const;

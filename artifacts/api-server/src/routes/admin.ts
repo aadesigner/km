@@ -28,6 +28,14 @@ import {
   type JsonImportRecord,
 } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger";
+import {
+  normalizeDailyCounts,
+  normalizeDailyRevenue,
+  normalizePaymentStatusCounts,
+  normalizeRecentPayments,
+  sliceSeriesFrom,
+  utcDateIsoDaysAgo,
+} from "../lib/adminStats.js";
 import { forEachJsonArrayRecord } from "../lib/streamJsonArray.js";
 import { runCleanupJobs } from "../lib/cleanupJobs.js";
 import { invalidateSettingsCache } from "../lib/settingsCache.js";
@@ -195,61 +203,112 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
            )) AS avg_paid_order_value,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND p.created_at >= NOW() - INTERVAL '7 days'
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
            AND EXISTS (
              SELECT 1 FROM vin_lookups vl
              WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
            )) AS revenue_this_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND p.created_at >= NOW() - INTERVAL '14 days'
-           AND p.created_at < NOW() - INTERVAL '7 days'
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
+           AND (p.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
            AND EXISTS (
              SELECT 1 FROM vin_lookups vl
              WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
            )) AS revenue_last_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND p.created_at >= DATE_TRUNC('month', NOW())
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
            AND EXISTS (
              SELECT 1 FROM vin_lookups vl
              WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
            )) AS revenue_this_month,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
+           AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_last_month,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_today,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE p.status IN ('completed', 'revoked')
+           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day'
+           AND EXISTS (
+             SELECT 1 FROM vin_lookups vl
+             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+           )) AS revenue_yesterday,
         (SELECT COUNT(*)::int FROM users u
-         WHERE u.created_at >= NOW() - INTERVAL '7 days') AS signups_this_week,
-        COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '7 days')::int AS checks_this_week,
-        COUNT(*) FILTER (WHERE vl.created_at >= NOW() - INTERVAL '14 days' AND vl.created_at < NOW() - INTERVAL '7 days')::int AS checks_last_week,
-        COUNT(*) FILTER (WHERE vl.created_at >= CURRENT_DATE)::int AS checks_today
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_this_week,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
+           AND (u.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_last_week,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS signups_this_month,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
+           AND (u.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS signups_last_month,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date) AS signups_today,
+        (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day') AS signups_yesterday,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
+        )::int AS checks_this_week,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
+            AND (vl.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
+        )::int AS checks_last_week,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
+        )::int AS checks_this_month,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
+            AND (vl.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
+        )::int AS checks_last_month,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date
+        )::int AS checks_today,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day'
+        )::int AS checks_yesterday
       FROM vin_lookups vl
     `),
     db.select({ total: count(), cached: sql<number>`sum(case when from_cache then 1 else 0 end)` }).from(vinLookupsTable),
     db.select({ activeProviders: count() }).from(providersTable).where(eq(providersTable.isActive, true)),
-    // Single 30-day series for checks (frontend filters to 7d if needed)
+    // 90-day series for checks (frontend slices to 7d / 30d / 90d)
     db.execute(sql`
-      SELECT DATE(created_at) as date, COUNT(*)::int as count
+      SELECT (created_at AT TIME ZONE 'UTC')::date as date, COUNT(*)::int as count
       FROM vin_lookups
-      WHERE created_at >= NOW() - INTERVAL '30 days'
-      GROUP BY DATE(created_at)
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      GROUP BY (created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
-    // Single 30-day series for revenue
+    // 90-day series for revenue
     db.execute(sql`
-      SELECT DATE(p.created_at) as date, COALESCE(SUM(p.amount), 0)::float as revenue
+      SELECT (p.created_at AT TIME ZONE 'UTC')::date as date, COALESCE(SUM(p.amount), 0)::float as revenue
       FROM payments p
       WHERE p.status IN ('completed', 'revoked')
-        AND p.created_at >= NOW() - INTERVAL '30 days'
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
         AND EXISTS (
           SELECT 1 FROM vin_lookups vl
           WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
         )
-      GROUP BY DATE(p.created_at)
+      GROUP BY (p.created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
     db.execute(sql`
-      SELECT DATE(created_at) as date, COUNT(*)::int as count
+      SELECT (created_at AT TIME ZONE 'UTC')::date as date, COUNT(*)::int as count
       FROM users
-      WHERE created_at >= NOW() - INTERVAL '30 days'
-      GROUP BY DATE(created_at)
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      GROUP BY (created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
     db.execute(sql`
@@ -291,25 +350,33 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     total_users?: number; total_vin_checks?: number; total_revenue?: number;
     qualifying_payment_count?: number;
     avg_paid_order_value?: number;
-    revenue_this_week?: number; revenue_last_week?: number; revenue_this_month?: number;
-    signups_this_week?: number;
-    checks_this_week?: number; checks_last_week?: number; checks_today?: number;
+    revenue_this_week?: number; revenue_last_week?: number;
+    revenue_this_month?: number; revenue_last_month?: number;
+    revenue_today?: number; revenue_yesterday?: number;
+    signups_this_week?: number; signups_last_week?: number;
+    signups_this_month?: number; signups_last_month?: number;
+    signups_today?: number; signups_yesterday?: number;
+    checks_this_week?: number; checks_last_week?: number;
+    checks_this_month?: number; checks_last_month?: number;
+    checks_today?: number; checks_yesterday?: number;
   };
 
   const total = cacheHitData[0]?.total ?? 0;
   const cached = Number(cacheHitData[0]?.cached ?? 0);
   const cacheHitRate = total > 0 ? (cached / total) * 100 : 0;
 
-  const checksBy30 = checksByDay30.rows as Array<{ date: string; count: number }>;
-  const cutoff = new Date();
-  cutoff.setUTCDate(cutoff.getUTCDate() - 7);
-  const cutoffStr = cutoff.toISOString().substring(0, 10);
+  const checksBy90 = normalizeDailyCounts(checksByDay30.rows as Array<{ date: unknown; count: unknown }>);
+  const revenueBy90 = normalizeDailyRevenue(revenueByDay30.rows as Array<{ date: unknown; revenue: unknown }>);
+  const usersBy90 = normalizeDailyCounts(usersByDay.rows as Array<{ date: unknown; count: unknown }>);
+  const cutoff7Str = utcDateIsoDaysAgo(6);
+  const cutoff30Str = utcDateIsoDaysAgo(29);
 
   const totalRevenue = Number(agg.total_revenue ?? 0);
   const qualifyingPaymentCount = Number(agg.qualifying_payment_count ?? 0);
   const revenueThisWeek = Number(agg.revenue_this_week ?? 0);
   const revenueLastWeek = Number(agg.revenue_last_week ?? 0);
   const revenueThisMonth = Number(agg.revenue_this_month ?? 0);
+  const revenueLastMonth = Number(agg.revenue_last_month ?? 0);
 
   const recentPendingVinChecks = await (async () => {
     if (recentPendingRows.length === 0) return [];
@@ -346,18 +413,33 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     revenueThisWeek,
     revenueLastWeek,
     revenueThisMonth,
+    revenueLastMonth,
+    revenueToday: Number(agg.revenue_today ?? 0),
+    revenueYesterday: Number(agg.revenue_yesterday ?? 0),
     signupsThisWeek: Number(agg.signups_this_week ?? 0),
+    signupsLastWeek: Number(agg.signups_last_week ?? 0),
+    signupsThisMonth: Number(agg.signups_this_month ?? 0),
+    signupsLastMonth: Number(agg.signups_last_month ?? 0),
+    signupsToday: Number(agg.signups_today ?? 0),
+    signupsYesterday: Number(agg.signups_yesterday ?? 0),
     checksToday: Number(agg.checks_today ?? 0),
+    checksYesterday: Number(agg.checks_yesterday ?? 0),
+    checksThisMonth: Number(agg.checks_this_month ?? 0),
+    checksLastMonth: Number(agg.checks_last_month ?? 0),
     cacheHitRate: Math.round(cacheHitRate * 10) / 10,
     activeProviders: activeProviders ?? 0,
-    // Serve the full 30-day series; frontend slices to 7d
-    checksByDay: checksBy30.filter(r => String(r.date).substring(0, 10) >= cutoffStr),
-    revenueByDay: (revenueByDay30.rows as Array<{ date: string; revenue: number }>).filter(r => String(r.date).substring(0, 10) >= cutoffStr),
-    checksByDay30: checksBy30,
-    revenueByDay30: revenueByDay30.rows as Array<{ date: string; revenue: number }>,
-    usersByDay: usersByDay.rows as Array<{ date: string; count: number }>,
-    recentPayments: recentPaymentsRaw.rows,
-    paymentStatusCounts: paymentStatusCountsRaw.rows,
+    checksByDay: sliceSeriesFrom(checksBy90, cutoff7Str),
+    revenueByDay: sliceSeriesFrom(revenueBy90, cutoff7Str),
+    checksByDay30: sliceSeriesFrom(checksBy90, cutoff30Str),
+    revenueByDay30: sliceSeriesFrom(revenueBy90, cutoff30Str),
+    checksByDay90: checksBy90,
+    revenueByDay90: revenueBy90,
+    usersByDay: usersBy90,
+    usersByDay90: usersBy90,
+    recentPayments: normalizeRecentPayments(recentPaymentsRaw.rows as Array<Record<string, unknown>>),
+    paymentStatusCounts: normalizePaymentStatusCounts(
+      paymentStatusCountsRaw.rows as Array<{ status: unknown; count: unknown }>,
+    ),
     checksThisWeek: Number(agg.checks_this_week ?? 0),
     checksLastWeek: Number(agg.checks_last_week ?? 0),
     pendingVinChecksOpen: pendingVinChecksOpen ?? 0,

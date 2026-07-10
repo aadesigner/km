@@ -3,7 +3,8 @@ import { useLocation, Link } from "wouter";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
-import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
+import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home, Moon, Sun } from "lucide-react";
@@ -13,6 +14,8 @@ import { SEOHead } from "@/components/seo";
 import { useTheme } from "@/components/theme-provider";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+type AdminStatsNav = { pendingVinChecksOpen?: number };
 
 const navGroups = [
   {
@@ -58,23 +61,17 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, isLoaded } = useAuth();
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
+  const { pathname } = splitRouterLocation(location);
+  const navPath = normalizeAppPath(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
-  const { data: pendingOpen = 0 } = useQuery({
-    queryKey: ["/api/admin/pending-vin-checks", "nav-badge"],
-    queryFn: async () => {
-      const r = await fetch(`${basePath}/api/admin/pending-vin-checks?page=1&limit=1`, { credentials: "include" });
-      if (!r.ok) return 0;
-      const d = await r.json() as { total?: number };
-      return d.total ?? 0;
-    },
+  const { data: navStats } = useQuery({
+    ...getAdminGetStatsQueryOptions({ query: ADMIN_STATS_QUERY }),
     enabled: isLoaded && isSignedIn && user?.isAdmin === true,
-    ...ADMIN_QUERY_OPTIONS,
-    staleTime: 60_000,
-    refetchInterval: 60_000,
   });
+  const pendingOpen = (navStats as AdminStatsNav | undefined)?.pendingVinChecksOpen ?? 0;
 
   const isAdmin = user?.isAdmin === true;
 
@@ -88,7 +85,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded || !isAdmin) return;
     void queryClient.prefetchQuery({
-      ...getAdminGetStatsQueryOptions({ query: { ...ADMIN_QUERY_OPTIONS } }),
+      ...getAdminGetStatsQueryOptions({ query: ADMIN_STATS_QUERY }),
     });
   }, [isLoaded, isAdmin, queryClient]);
 
@@ -130,7 +127,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <div className="space-y-0.5">
               {items.map(({ href, label: itemLabel, icon: Icon, ...rest }) => {
                 const exact = (rest as { exact?: boolean }).exact;
-                const isActive = exact ? location === href : location.startsWith(href);
+                const isActive = exact ? navPath === href : navPath.startsWith(href);
                 const showPendingBadge = href === "/adminx/pending-vin-checks" && pendingOpen > 0;
                 return (
                   <Link
@@ -180,8 +177,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SEOHead title="Admin — kmcheck.com" description="kmcheck administration panel" lang="en" noIndex />
-    <div className="flex min-h-screen bg-muted/30">
-      <aside className="hidden md:flex w-60 bg-background border-r flex-col shrink-0">
+    <div className="flex min-h-screen bg-muted/20">
+      <aside className="hidden md:flex w-60 bg-background/80 backdrop-blur-md border-r border-border/60 flex-col shrink-0">
         <SidebarContent />
       </aside>
 
@@ -226,7 +223,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 overflow-auto pb-[4.5rem] md:pb-0">
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          <div className="p-3 sm:p-4 lg:p-6 max-w-[88rem] mx-auto">
             {children}
           </div>
         </main>
@@ -238,7 +235,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-4">
             {mobileBottomNav.map(({ href, label, icon: Icon, ...rest }) => {
               const exact = (rest as { exact?: boolean }).exact;
-              const isActive = exact ? location === href : location.startsWith(href);
+              const isActive = exact ? navPath === href : navPath.startsWith(href);
               const showBadge = href === "/adminx/pending-vin-checks" && pendingOpen > 0;
               return (
                 <Link

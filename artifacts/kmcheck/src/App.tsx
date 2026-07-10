@@ -28,9 +28,10 @@ import {
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
-import { Button } from "@/components/ui/button";
 
 import Home from "@/pages/home";
+import { AdminLayout } from "@/pages/admin/layout";
+import AdminNotFound from "@/pages/admin/not-found";
 // Lazy-loaded
 const Pricing       = lazyWithRetry(() => import("@/pages/pricing"));
 const Dashboard     = lazyWithRetry(() => import("@/pages/dashboard"));
@@ -40,7 +41,6 @@ const VinProcessing = lazyWithRetry(() => import("@/pages/vin-processing"));
 const CountryPage   = lazyWithRetry(() => import("@/pages/country"));
 const Terms         = lazyWithRetry(() => import("@/pages/terms"));
 const Privacy       = lazyWithRetry(() => import("@/pages/privacy"));
-const AdminLayout   = lazyWithRetry(() => import("@/pages/admin/layout").then(m => ({ default: m.AdminLayout })));
 const AdminOverview  = lazyWithRetry(() => import("@/pages/admin/index"));
 const AdminUsers     = lazyWithRetry(() => import("@/pages/admin/users"));
 const AdminUserDetail = lazyWithRetry(() => import("@/pages/admin/user-detail"));
@@ -271,11 +271,17 @@ function AdminPage({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider initialLanguage={adminLang}>
       <RouteErrorBoundary scope="admin" resetKey={resetKey}>
-        <Suspense fallback={<PageLoader />}>
-          <AdminLayout>{children}</AdminLayout>
-        </Suspense>
+        <AdminLayout>{children}</AdminLayout>
       </RouteErrorBoundary>
     </I18nProvider>
+  );
+}
+
+function AdminCatchAllRoute() {
+  return (
+    <AdminPage>
+      <AdminNotFound />
+    </AdminPage>
   );
 }
 
@@ -295,20 +301,7 @@ function NotFoundLang() {
   }
 
   if (pathname.startsWith("/adminx")) {
-    return (
-      <AdminPage>
-        <div className="py-16 text-center space-y-4 max-w-md mx-auto">
-          <p className="text-5xl font-black text-primary/20 tabular-nums">404</p>
-          <h1 className="text-xl font-bold">Admin page not found</h1>
-          <p className="text-sm text-muted-foreground">
-            This admin URL does not match any panel page. Check the link or use the sidebar.
-          </p>
-          <Button asChild>
-            <Link href="/adminx">Back to admin overview</Link>
-          </Button>
-        </div>
-      </AdminPage>
-    );
+    return <AdminCatchAllRoute />;
   }
 
   return (
@@ -542,6 +535,7 @@ function AppRouter() {
         <Route path="/adminx/vin/:vin" component={AdminVinDetailRoute} />
         <Route path="/adminx/transactions" component={AdminTransactionsRoute} />
         <Route path="/adminx/announcements" component={AdminAnnouncementsRoute} />
+        <Route path="/adminx/:rest*" component={AdminCatchAllRoute} />
 
         {/* VIN routes */}
         <Route path="/:lang/vin/processing" component={VinProcessingLang} />
