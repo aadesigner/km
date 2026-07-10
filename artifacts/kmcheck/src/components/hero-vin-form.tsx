@@ -19,6 +19,9 @@ type HeroVinFormProps = {
   inputRef?: RefObject<HTMLInputElement | null>;
   className?: string;
   helpVariant?: "default" | "on-dark";
+  /** When set, always use this i18n key for the submit button (e.g. check_vin_short). */
+  submitLabelKey?: string;
+  showHelp?: boolean;
 };
 
 export function HeroVinForm({
@@ -32,6 +35,8 @@ export function HeroVinForm({
   inputRef,
   className,
   helpVariant = "default",
+  submitLabelKey,
+  showHelp = true,
 }: HeroVinFormProps) {
   const { t } = useTranslation();
   const vinLen = vin.length;
@@ -128,7 +133,7 @@ export function HeroVinForm({
                   "max-sm:shadow-none sm:shadow-md md:shadow-lg sm:shadow-primary/25 sm:hover:shadow-primary/40 sm:transition-shadow",
                 )}
               >
-                <VinCheckSubmitLabel />
+                {submitLabelKey ? t(submitLabelKey) : <VinCheckSubmitLabel />}
               </Button>
             </div>
 
@@ -146,7 +151,7 @@ export function HeroVinForm({
         </div>
       </div>
 
-      <WhereToFindVinHelp variant={helpVariant} />
+      {showHelp && <WhereToFindVinHelp variant={helpVariant} />}
     </form>
   );
 }

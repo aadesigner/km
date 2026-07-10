@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { readDict, type Language } from "@/i18n/context";
+import { isChunkLoadError, shouldAttemptChunkReload } from "@/lib/lazy-with-retry";
 
 type Props = {
   children: ReactNode;
@@ -70,6 +71,9 @@ export class RouteErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     const scope = this.props.scope ?? "app";
     console.error(`[kmcheck:${scope}]`, error, info.componentStack);
+    if (isChunkLoadError(error) && shouldAttemptChunkReload()) {
+      window.location.reload();
+    }
   }
 
   render() {

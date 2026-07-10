@@ -365,6 +365,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     };
   }, [isLoaded, isSignedIn, mode]);
 
+  const isSignIn = mode === "sign-in";
+  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
+
   // Signed-in users redirect; guests see the form immediately (don't wait on /me).
   if (isSignedIn || (user !== null && !isLoaded)) {
     return (
@@ -428,8 +431,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
   };
 
-  const isSignIn = mode === "sign-in";
-  const seo = usePageSeo(isSignIn ? "auth" : "sign_up");
   const submitDisabled = loading || (!isSignIn && !acceptedTerms);
 
   return (

@@ -320,13 +320,17 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     const path = window.location.pathname;
     const newPath = path.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
     const target = newPath === path ? `/${next}` : newPath;
-    void ensureDict(next).then(() => {
-      setStoredLangPreference(next);
-      setLanguage(next);
-      setLocation(target);
-      setMobileOpen(false);
-      setLangOpen(false);
-    });
+    void ensureDict(next)
+      .catch(() => {
+        // Still switch language — English fallback strings apply if locale bundle failed.
+      })
+      .finally(() => {
+        setStoredLangPreference(next);
+        setLanguage(next);
+        setLocation(target);
+        setMobileOpen(false);
+        setLangOpen(false);
+      });
   };
 
   const handleLogout = async () => {
@@ -341,14 +345,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const isOnPage    = (seg: string) => location.includes(`/${seg}`);
   const isHome      = /^\/[a-z]{2}\/?$/.test(location) || location === "/";
   const isCountry   = isOnPage("cars");
-  const isHeroTransparentNav = isHome || isCountry || isOnPage("how-it-works");
+  const isHeroTransparentNav = isHome || isCountry || isOnPage("pricing");
   const isAuthNavPage =
     isOnPage("sign-in")
     || isOnPage("sign-up")
     || isOnPage("forgot-password")
     || isOnPage("reset-password")
     || isOnPage("set-password");
-  const isMarketingTransparentNav = isOnPage("pricing") || isOnPage("faq");
+  const isMarketingTransparentNav = isOnPage("faq") || isOnPage("how-it-works");
   const isDarkNav =
     resolvedTheme === "dark"
     && (

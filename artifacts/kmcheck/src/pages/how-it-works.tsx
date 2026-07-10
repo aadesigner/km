@@ -160,16 +160,16 @@ export default function HowItWorks() {
         canonicalPath={seo.canonicalPath}
       />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-14 md:py-20 px-4 border-b border-border/60">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_55%_at_50%_-15%,hsl(var(--primary)/0.11),transparent_60%)]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(hsl(var(--foreground)/0.035)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
+      {/* Hero — same green glow under navbar as FAQ */}
+      <section className="relative overflow-hidden py-14 md:py-20 px-4 text-center border-b border-border/60">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(var(--primary)/0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto text-center space-y-5"
+          className="relative max-w-2xl mx-auto space-y-5"
         >
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary bg-primary/10 border border-primary/15 px-3 py-1 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5" />

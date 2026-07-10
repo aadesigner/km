@@ -5,20 +5,29 @@ import { useTranslation } from "@/i18n/context";
 
 type Props = {
   className?: string;
+  /** On lg+ align strip with left column copy; mobile stays centered */
+  desktopAlign?: "center" | "start";
 };
 
-export function HomeStatsStrip({ className }: Props) {
+export function HomeStatsStrip({ className, desktopAlign = "center" }: Props) {
   const { t } = useTranslation();
   const stats = useHomeStats(t);
+  const rowClass =
+    desktopAlign === "start"
+      ? "mx-auto lg:mx-0 flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2"
+      : "mx-auto flex flex-wrap items-center justify-center gap-1.5 sm:gap-2";
 
   return (
     <div className={cn("home-stats-strip relative z-[1] pt-1 sm:pt-1.5", className)}>
-      <div className="mx-auto flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+      <div className={rowClass}>
         <span className="text-[11px] sm:text-xs font-medium text-muted-foreground/55 dark:text-white/40 shrink-0">
           {t("home_stats_from")}
         </span>
         <ul
-          className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2"
+          className={cn(
+            "flex flex-wrap items-center gap-1.5 sm:gap-2",
+            desktopAlign === "start" ? "justify-center lg:justify-start" : "justify-center",
+          )}
           role="list"
         >
           {stats.map((stat) => (

@@ -206,3 +206,31 @@ export function faqPageJsonLd(items: { q: string; a: string }[]) {
     })),
   };
 }
+
+export function productOfferJsonLd(params: {
+  name: string;
+  description: string;
+  url: string;
+  price: number;
+  currency: string;
+}) {
+  const validUntil = new Date();
+  validUntil.setFullYear(validUntil.getFullYear() + 1);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: params.name,
+    description: params.description,
+    url: params.url,
+    brand: { "@type": "Brand", name: "kmcheck.com" },
+    offers: {
+      "@type": "Offer",
+      url: params.url,
+      priceCurrency: params.currency,
+      price: params.price.toFixed(2),
+      availability: "https://schema.org/OnlineOnly",
+      priceValidUntil: validUntil.toISOString().split("T")[0],
+    },
+  };
+}

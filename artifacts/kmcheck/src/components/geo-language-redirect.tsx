@@ -59,7 +59,11 @@ export function GeoLanguageRedirect() {
           }
 
           markGeoLanguageEvaluated();
-          await ensureDict(target);
+          try {
+            await ensureDict(target);
+          } catch {
+            // Redirect anyway — English fallback strings apply if locale bundle failed.
+          }
           const newPath = replacePathLang(pathname, urlLang as Language, target);
           const search = typeof window !== "undefined" ? window.location.search : "";
           const hash = typeof window !== "undefined" ? window.location.hash : "";

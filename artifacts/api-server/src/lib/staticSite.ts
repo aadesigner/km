@@ -11,6 +11,14 @@ import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlI
 const ONE_YEAR_SEC = 31_536_000;
 const ONE_DAY_SEC = 86_400;
 
+/** Missing build assets must 404 — never return index.html (breaks dynamic import). */
+const STATIC_ASSET_PATH_RE = /\.(?:js|mjs|css|map|woff2?|png|jpe?g|webp|svg|ico|gif|txt|xml)$/i;
+
+function isStaticAssetRequest(reqPath: string): boolean {
+  const path = reqPath.toLowerCase();
+  return path.includes("/assets/") || STATIC_ASSET_PATH_RE.test(path);
+}
+
 function resolvePublicDir(): string | null {
   const fromEnv = process.env.PUBLIC_DIR?.trim();
   if (fromEnv && existsSync(fromEnv)) return fromEnv;
@@ -173,6 +181,10 @@ export function mountStaticSite(app: Express): string | null {
     }
     const urlPath = req.path === "/" ? "/index.html" : req.path;
     if (sendSpaFile(publicDir, urlPath, res)) return;
+    if (isStaticAssetRequest(req.path)) {
+      res.status(404).type("text/plain").send("Not found");
+      return;
+    }
     if (await sendSpaFallback(publicDir, urlPath, req, res)) return;
     res.status(404).send("Not found");
   });

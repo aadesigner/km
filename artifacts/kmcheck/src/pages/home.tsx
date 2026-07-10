@@ -7,9 +7,9 @@ import { useLocation, Link } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
-  ShieldCheck, Search, Clock, FileText, ChevronRight, ChevronLeft,
-  CheckCircle2, AlertTriangle,
-  Globe, Star, ArrowRight, X,
+  ShieldCheck, Search, Clock, FileText, ChevronRight,
+  CheckCircle2,
+  Globe, ArrowRight, X,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
 import { DeferredSection } from "@/components/deferred-section";
@@ -23,6 +23,7 @@ import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { getTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
+import { TestimonialsSlider } from "@/components/testimonials-slider";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
@@ -70,31 +71,46 @@ function useSteps(t: (k: string) => string) {
   ];
 }
 
-const CYCLING_KEYS = [
+const DEFAULT_CYCLING_KEYS = [
   "cycling_mileage_rollbacks",
   "cycling_hidden_accidents",
   "cycling_salvage_titles",
   "cycling_theft_records",
 ] as const;
 
+/** Extra / reordered hero cycling phrases per locale */
+const CYCLING_KEYS_BY_LANG: Partial<Record<string, readonly string[]>> = {
+  sq: [
+    "cycling_vehicle_history",
+    "cycling_mileage_rollbacks",
+    "cycling_hidden_accidents",
+    "cycling_salvage_titles",
+    "cycling_theft_records",
+  ],
+};
+
 function CyclingWord() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const keys = CYCLING_KEYS_BY_LANG[language] ?? DEFAULT_CYCLING_KEYS;
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % CYCLING_KEYS.length), 4200);
+    setIdx(0);
+  }, [language]);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % keys.length), 4200);
     return () => clearInterval(id);
-  }, []);
+  }, [keys.length]);
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.span
-        key={idx}
+        key={`${language}-${idx}`}
         className="inline"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        {t(CYCLING_KEYS[idx])}
+        {t(keys[idx])}
       </motion.span>
     </AnimatePresence>
   );
@@ -157,14 +173,6 @@ export default function Home() {
   const STEPS = useSteps(t);
   const COUNTRIES = useCountries(t);
   const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
-  const [tmIdx, setTmIdx] = useState(0);
-  const [tmPaused, setTmPaused] = useState(false);
-  useEffect(() => { setTmIdx(0); }, [language]);
-  useEffect(() => {
-    if (tmPaused) return;
-    const timer = setInterval(() => setTmIdx(i => (i + 1) % TESTIMONIALS.length), 5500);
-    return () => clearInterval(timer);
-  }, [tmPaused, TESTIMONIALS.length]);
 
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
 
@@ -424,123 +432,7 @@ export default function Home() {
 
       {/* ── TESTIMONIALS ── */}
       <DeferredSection minHeight={420}>
-      <section className="py-16 md:py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10 space-y-3"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/40 bg-yellow-400/5 px-3.5 py-1.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              {t("testimonials_trust_badge")}
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold">{t("testimonials_title")}</h2>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto">{t("testimonials_subtitle")}</p>
-          </motion.div>
-
-          {/* Slider */}
-          <div
-            className="relative"
-            onMouseEnter={() => setTmPaused(true)}
-            onMouseLeave={() => setTmPaused(false)}
-          >
-            {/* Prev */}
-            <button
-              onClick={() => setTmIdx(i => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 sm:-translate-x-5 z-10 h-10 w-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors shrink-0"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            {/* Next */}
-            <button
-              onClick={() => setTmIdx(i => (i + 1) % TESTIMONIALS.length)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 sm:translate-x-5 z-10 h-10 w-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors shrink-0"
-              aria-label="Next"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-
-            {/* Card */}
-            <AnimatePresence mode="wait">
-              {(() => {
-                const tm = TESTIMONIALS[tmIdx % Math.max(TESTIMONIALS.length, 1)];
-                if (!tm) return null;
-                return (
-                  <motion.div
-                    key={tmIdx}
-                    initial={{ opacity: 0, x: 32 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -32 }}
-                    transition={{ duration: 0.22 }}
-                    className="mx-8 sm:mx-10 bg-background rounded-3xl border border-border/70 p-7 md:p-9 shadow-sm"
-                  >
-                    {/* Stars + date */}
-                    <div className="flex items-center justify-between gap-2 mb-5">
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(s => (
-                          <Star key={s} className={`h-4 w-4 ${s <= tm.stars ? "fill-yellow-400 text-yellow-400" : "fill-muted-foreground/15 text-muted-foreground/25"}`} />
-                        ))}
-                      </div>
-                      {tm.date && <span className="text-xs text-muted-foreground/60">{tm.date}</span>}
-                    </div>
-
-                    {/* Quote */}
-                    <p className="text-base md:text-lg leading-relaxed text-foreground/85 mb-5 min-h-[72px]">
-                      "{tm.text}"
-                    </p>
-
-                    {/* Result badge */}
-                    {tm.resultBadge && (
-                      <div className="inline-flex items-center gap-1.5 mb-5 rounded-lg px-2.5 py-1 text-[11px] font-semibold bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400">
-                        <AlertTriangle className="h-3 w-3 shrink-0" />
-                        {tm.resultBadge}
-                      </div>
-                    )}
-
-                    {/* Author */}
-                    <div className="flex items-center gap-3 pt-5 border-t border-border/50">
-                      <div className={`h-11 w-11 rounded-full ${tm.avatarBg} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
-                        {tm.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-sm truncate">{tm.name}</span>
-                          <img src={`https://flagcdn.com/${tm.flagCode}.svg`} alt="" className="h-3.5 w-auto rounded-sm shrink-0" />
-                        </div>
-                        <p className="text-[11px] text-muted-foreground truncate">{tm.car}</p>
-                      </div>
-                      <span className="text-[10px] text-green-600 dark:text-green-400 font-semibold flex items-center gap-1 shrink-0">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> {t("auth_verified_purchase")}
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              })()}
-            </AnimatePresence>
-
-            {/* Dot indicators */}
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setTmIdx(i)}
-                  className={cn(
-                    "rounded-full transition-all duration-200",
-                    i === tmIdx
-                      ? "w-5 h-2 bg-primary"
-                      : "w-2 h-2 bg-muted-foreground/25 hover:bg-muted-foreground/50"
-                  )}
-                  aria-label={`Go to review ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        <TestimonialsSlider testimonials={TESTIMONIALS} />
       </DeferredSection>
 
       {/* ── COMPARISON TABLE ── */}

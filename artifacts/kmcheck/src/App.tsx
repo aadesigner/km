@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
 import { useEffect, Suspense, type ComponentType, type ReactNode } from "react";
-import { lazyWithRetry, CHUNK_RELOAD_KEY } from "@/lib/lazy-with-retry";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
 import { isVin17 } from "@/lib/vin-route";
@@ -288,6 +288,12 @@ function NotFoundLang() {
     ? (match?.[1] ?? "en") as typeof validLangs[number]
     : "en";
 
+  // Safety net: unprefixed paths (e.g. /pricing) should redirect, not 404.
+  const unprefixedRest = pathNeedingLangPrefix(pathname);
+  if (unprefixedRest !== null) {
+    return <UnprefixedPathLangRedirect pathname={pathname} />;
+  }
+
   if (pathname.startsWith("/adminx")) {
     return (
       <AdminPage>
@@ -326,7 +332,11 @@ function RootLangRedirect() {
     void resolveRootEntryLanguage().then(async (lang) => {
       if (cancelled) return;
       markGeoLanguageEvaluated();
-      await ensureDict(lang);
+      try {
+        await ensureDict(lang);
+      } catch {
+        // Navigate anyway — English fallback strings apply if locale bundle failed.
+      }
       setLocation(`/${lang}${search}${hash}`, { replace: true });
     });
 
@@ -352,7 +362,11 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
     void resolveRootEntryLanguage().then(async (lang) => {
       if (cancelled) return;
       markGeoLanguageEvaluated();
-      await ensureDict(lang);
+      try {
+        await ensureDict(lang);
+      } catch {
+        // Navigate anyway — English fallback strings apply if locale bundle failed.
+      }
       setLocation(`${buildLocalizedPath(lang, rest)}${search}${hash}`, { replace: true });
     });
 
@@ -563,10 +577,6 @@ function AppRouter() {
 function AppShell() {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
-
-  useEffect(() => {
-    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-  }, [resetKey]);
 
   return (
     <RouteErrorBoundary scope="app" resetKey={resetKey}>

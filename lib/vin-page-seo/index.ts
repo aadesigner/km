@@ -142,7 +142,7 @@ const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   },
   sq: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Kontrollo ${vehicle} (VIN ${vin}): kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet.${specsPart} Raport i menjëhershëm në kmcheck.com.`;
+    return `Kontrollo ${vehicle} (VIN ${vin}): kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet.${specsPart} Raport i menjëhershëm në kmcheck.com.`;
   },
 };
 
@@ -157,7 +157,7 @@ const VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> = {
   ro: (vin) => `Verificați VIN ${vin}: kilometraj, accidente, istoric proprietari, asigurare și licitații. Raport complet instant pe kmcheck.com.`,
   pl: (vin) => `Sprawdź VIN ${vin}: przebieg, wypadki, historia właścicieli, ubezpieczenie i aukcje. Pełny raport natychmiast na kmcheck.com.`,
   bg: (vin) => `Проверете VIN ${vin}: пробег, катастрофи, история на собственици, застраховка и търгове. Пълен отчет мигновено на kmcheck.com.`,
-  sq: (vin) => `Kontrollo VIN ${vin}: kilometrazhin, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
+  sq: (vin) => `Kontrollo VIN ${vin}: kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
 };
 
 export function buildVinOnlyPageTitle(lang: VinSeoLang, vin: string): string {
