@@ -158,7 +158,13 @@ function ReportCard({
   const make = vd?.make;
   const model = vd?.model;
   const year = vd?.year;
-  const vehicleName = make && model ? `${year ? `${year} ` : ""}${make} ${model}` : null;
+  const isPendingManual = lookup.status === "pending_manual";
+  const pendingVehicleName = [year ? String(year) : null, make ?? null].filter(Boolean).join(" ") || null;
+  const vehicleName = isPendingManual
+    ? pendingVehicleName
+    : make && model
+      ? `${year ? `${year} ` : ""}${make} ${model}`
+      : null;
   const accidentSignalInput = {
     accidents: vd?.accidents as Array<{ severity?: string | null }> | undefined,
     accidentCount: vd?.accidentCount,
@@ -191,11 +197,18 @@ function ReportCard({
     <div
       className={cn(
         "report-list-card relative flex items-center gap-2.5 sm:gap-4 bg-background rounded-xl sm:rounded-2xl border px-2.5 py-2.5 sm:px-4 sm:py-3 shadow-sm transition-all text-[13px] sm:text-sm",
+        isPendingManual && "border-primary/30 bg-primary/[0.03]",
         viewable
           ? "hover:border-primary/45 hover:shadow-md cursor-pointer group"
           : "hover:border-border/80",
       )}
     >
+      {isPendingManual && (
+        <>
+          <div className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl border border-primary/25" />
+          <div className="pending-vin-border-scan pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl" />
+        </>
+      )}
       {viewable && (
         <PrefetchLink
           href={reportHref}
@@ -239,9 +252,13 @@ function ReportCard({
             </div>
             <span className="text-[11px] sm:text-xs text-muted-foreground tabular-nums font-medium">{odometer!.toLocaleString()} km</span>
           </div>
-        ) : (
+        ) : !isPendingManual ? (
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
             {new Date(lookup.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+          </p>
+        ) : (
+          <p className="text-[11px] sm:text-xs text-primary/80 mt-1 font-medium">
+            {t("processing")}
           </p>
         )}
         {isSalvage && (
