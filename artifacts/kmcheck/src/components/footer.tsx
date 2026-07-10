@@ -135,7 +135,7 @@ export function Footer() {
   };
 
   const seoLinkCls =
-    "text-[12px] leading-snug text-white/42 transition-colors hover:text-white/88";
+    "text-[13px] leading-snug text-white/45 transition-colors hover:text-white/90";
 
   return (
     <footer className="mt-auto border-t border-white/[0.06] bg-[#060a12] text-white print:hidden">
@@ -187,20 +187,20 @@ export function Footer() {
 
           <nav
             aria-label={t("footer_countries")}
-            className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-6 lg:grid-cols-5"
+            className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-5 md:gap-x-6 lg:col-span-7 lg:gap-x-8 xl:gap-x-10"
           >
             {COUNTRY_FOOTER_COLUMNS.map(({ code, slug, headingKey, linkKeys }) => (
-              <div key={slug} className="min-w-0 space-y-3">
+              <div key={slug} className="min-w-0 space-y-3.5">
                 <PrefetchLink
                   href={`/${language}/cars/${slug}`}
-                  className="group inline-flex max-w-full items-center gap-2"
+                  className="group inline-flex max-w-full items-center gap-2.5"
                 >
-                  <FlagImg code={code} size={16} className="shrink-0 rounded-[2px]" />
-                  <span className="truncate text-[13px] font-semibold text-white/72 transition-colors group-hover:text-white">
+                  <FlagImg code={code} size={18} className="shrink-0 rounded-[2px]" />
+                  <span className="truncate text-sm font-semibold text-white/78 transition-colors group-hover:text-white">
                     {t(headingKey)}
                   </span>
                 </PrefetchLink>
-                <ul className="space-y-2">
+                <ul className="space-y-2.5">
                   {linkKeys.map((labelKey) => (
                     <li key={labelKey}>
                       <PrefetchLink href={`/${language}/cars/${slug}`} className={seoLinkCls}>
@@ -213,7 +213,7 @@ export function Footer() {
             ))}
           </nav>
 
-          <nav aria-label={t("footer_company")} className="space-y-3 lg:col-span-3 lg:justify-self-end">
+          <nav aria-label={t("footer_company")} className="space-y-3 lg:col-span-2 lg:justify-self-end lg:min-w-[9.5rem]">
             <p className="text-[13px] font-semibold text-white/72">{t("footer_company")}</p>
             <ul className="space-y-2.5">
               {COMPANY_LINKS.map(({ path, labelKey }) => (

@@ -30,19 +30,19 @@ const PHOTOS = [
   {
     out: "registration-doc.jpg",
     candidates: [
-      "SPECIMEN EU Greek Vehicle Registration from 2004.jpg",
-      "Zulassungsbescheinigung Teil 1.jpg",
+      "Fahrzeugschein mit Schlüsselnummern.jpg",
+      "Crv wikipedia.jpg",
       "1947 - Vehicle Registration Card - Allentown PA.jpg",
-      "IRELAND 1999 -IRISH MOTOR VEHICLE REGISTRATION CERTIFICATE - Flickr - woody1778a.jpg",
+      "Zulassungsbescheinigung Teil 1.jpg",
+      "SPECIMEN EU Greek Vehicle Registration from 2004.jpg",
     ],
   },
   {
     out: "insurance-card.jpg",
     candidates: [
-      "1947 - Vehicle Registration Card - Allentown PA.jpg",
-      "IRELAND 1999 -IRISH MOTOR VEHICLE REGISTRATION CERTIFICATE - Flickr - woody1778a.jpg",
-      "SPECIMEN EU Greek Vehicle Registration from 2004.jpg",
-      "Vehicle registration certificate, United States.jpg",
+      "Ho-an Insurance Agency automobile insurance card 12YL07756.jpg",
+      "Car insurance.jpg",
+      "IVK.png",
     ],
   },
 ];

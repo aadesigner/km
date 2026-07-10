@@ -28,6 +28,7 @@ import {
 import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
+import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
 import Home from "@/pages/home";
 import { AdminLayout } from "@/pages/admin/layout";
@@ -300,13 +301,9 @@ function NotFoundLang() {
     return <UnprefixedPathLangRedirect pathname={pathname} />;
   }
 
-  // Should not run — admin paths are handled by AdminSwitch. Recover instead of 404 flash.
-  const adminPath = normalizeAppPath(pathname);
-  if (adminPath === "/adminx") {
-    return <AdminOverviewRoute />;
-  }
-  if (adminPath.startsWith("/adminx/")) {
-    return <AdminCatchAllRoute />;
+  // Safety net: admin paths are handled by AdminSwitch — never public 404.
+  if (isAdminAppPath(pathname)) {
+    return <AdminSwitch />;
   }
 
   return (
@@ -483,35 +480,64 @@ function AdminVinDetailRoute(props: { params: { vin: string } }) {
   );
 }
 
+function AdminRouteOutlet() {
+  const [location] = useLocation();
+  const { pathname } = splitRouterLocation(location);
+  const match = matchAdminRoute(pathname);
+
+  switch (match.id) {
+    case "overview":
+      return <AdminOverviewRoute />;
+    case "analytics":
+      return <AdminAnalyticsRoute />;
+    case "users":
+      return <AdminUsersRoute />;
+    case "user-detail":
+      return <AdminUserDetailRoute params={{ userId: match.userId }} />;
+    case "lookups":
+      return <AdminLookupsRoute />;
+    case "providers":
+      return <AdminProvidersRoute />;
+    case "pricing":
+      return <AdminPricingRoute />;
+    case "settings":
+      return <AdminSettingsRoute />;
+    case "plugins":
+      return <AdminPluginsRoute />;
+    case "logs":
+      return <AdminLogsRoute />;
+    case "coupons":
+      return <AdminCouponsRoute />;
+    case "emails":
+      return <AdminEmailsRoute />;
+    case "security":
+      return <AdminSecurityRoute />;
+    case "vin-catalog":
+      return <AdminVinCatalogRoute />;
+    case "pending-vin-checks":
+      return <AdminPendingVinChecksRoute />;
+    case "pending-vin-detail":
+      return <AdminPendingVinDetailRoute params={{ id: match.checkId }} />;
+    case "vin-detail":
+      return <AdminVinDetailRoute params={{ vin: match.vin }} />;
+    case "transactions":
+      return <AdminTransactionsRoute />;
+    case "announcements":
+      return <AdminAnnouncementsRoute />;
+    case "not-found":
+      return <AdminCatchAllRoute />;
+    default:
+      return <AdminOverviewRoute />;
+  }
+}
+
 /** Isolated admin router — never competes with /:lang in the public Switch. */
 function AdminSwitch() {
   return (
     <>
       <ScrollToTop />
       <MaintenanceGuard>
-        <Switch>
-          <Route path="/adminx" component={AdminOverviewRoute} />
-          <Route path="/adminx/analytics" component={AdminAnalyticsRoute} />
-          <Route path="/adminx/users/:userId" component={AdminUserDetailRoute} />
-          <Route path="/adminx/users" component={AdminUsersRoute} />
-          <Route path="/adminx/lookups" component={AdminLookupsRoute} />
-          <Route path="/adminx/providers" component={AdminProvidersRoute} />
-          <Route path="/adminx/pricing" component={AdminPricingRoute} />
-          <Route path="/adminx/settings" component={AdminSettingsRoute} />
-          <Route path="/adminx/plugins" component={AdminPluginsRoute} />
-          <Route path="/adminx/logs" component={AdminLogsRoute} />
-          <Route path="/adminx/coupons" component={AdminCouponsRoute} />
-          <Route path="/adminx/emails" component={AdminEmailsRoute} />
-          <Route path="/adminx/security" component={AdminSecurityRoute} />
-          <Route path="/adminx/vin-catalog" component={AdminVinCatalogRoute} />
-          <Route path="/adminx/pending-vin-checks/:id" component={AdminPendingVinDetailRoute} />
-          <Route path="/adminx/pending-vin-checks" component={AdminPendingVinChecksRoute} />
-          <Route path="/adminx/vin/:vin" component={AdminVinDetailRoute} />
-          <Route path="/adminx/transactions" component={AdminTransactionsRoute} />
-          <Route path="/adminx/announcements" component={AdminAnnouncementsRoute} />
-          {/* :rest+ requires a subpath — never matches bare /adminx */}
-          <Route path="/adminx/:rest+" component={AdminCatchAllRoute} />
-        </Switch>
+        <AdminRouteOutlet />
       </MaintenanceGuard>
     </>
   );
@@ -532,7 +558,7 @@ function AppRouter() {
     return <UnprefixedPathLangRedirect pathname={pathname} />;
   }
 
-  if (normalized === "/adminx" || normalized.startsWith("/adminx/")) {
+  if (isAdminAppPath(pathname)) {
     return <AdminSwitch />;
   }
 

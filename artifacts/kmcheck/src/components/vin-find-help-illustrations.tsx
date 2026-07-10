@@ -34,15 +34,17 @@ const SCENE_LAYOUT: Record<SceneId, SceneLayout> = {
   },
   documents: {
     src: "registration-doc.jpg",
-    objectPosition: "42% 38%",
-    lookClass: "top-[8%] left-1/2 -translate-x-1/2",
-    vinClass: "bottom-[22%] left-[8%] w-[56%] max-w-[210px]",
+    objectPosition: "54% 50%",
+    imageScale: 1.12,
+    lookClass: "top-[8%] left-[8%] sm:left-[10%]",
+    vinClass: "bottom-[16%] left-[10%] w-[54%] max-w-[210px]",
   },
   insurance: {
     src: "insurance-card.jpg",
-    objectPosition: "45% 42%",
-    lookClass: "top-[10%] right-[6%] sm:right-[8%]",
-    vinClass: "bottom-[24%] left-[10%] w-[58%] max-w-[210px]",
+    objectPosition: "48% 52%",
+    imageScale: 1.1,
+    lookClass: "top-[8%] right-[8%] sm:right-[10%]",
+    vinClass: "bottom-[18%] left-[10%] w-[56%] max-w-[210px]",
   },
 };
 

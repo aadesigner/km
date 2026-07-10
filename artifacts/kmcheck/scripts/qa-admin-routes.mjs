@@ -28,6 +28,7 @@ const layout = read("src/pages/admin/layout.tsx");
 const index = read("src/pages/admin/index.tsx");
 const notFound = read("src/pages/admin/not-found.tsx");
 const adminQueryOpts = read("src/lib/admin-query-options.ts");
+const adminRoutes = read("src/lib/admin-routes.ts");
 
 // ── Admin 404 must stay inside admin shell ───────────────────────────────────
 if (!notFound.includes("Admin page not found")) {
@@ -36,30 +37,28 @@ if (!notFound.includes("Admin page not found")) {
 if (!app.includes("AdminNotFound")) {
   fail("App.tsx must import AdminNotFound");
 }
-if (!app.includes('path="/adminx/:rest+"')) {
-  fail("App.tsx must register /adminx/:rest+ catch-all (requires subpath — never matches bare /adminx)");
+if (!app.includes("function AdminRouteOutlet")) {
+  fail("App.tsx must resolve admin paths via AdminRouteOutlet (no wouter catch-all)");
+}
+if (!app.includes("matchAdminRoute")) {
+  fail("App.tsx must use matchAdminRoute for deterministic admin routing");
 }
 if (!app.includes("function AdminSwitch")) {
   fail("App.tsx must isolate admin routes in AdminSwitch");
 }
-if (!app.includes('normalized === "/adminx" || normalized.startsWith("/adminx/")')) {
-  fail("AppRouter must branch to AdminSwitch before the public Switch");
+if (!app.includes("isAdminAppPath(pathname)")) {
+  fail("AppRouter and NotFoundLang must branch on isAdminAppPath");
 }
 if (!app.includes("normalizeAppPath")) {
   fail("App.tsx AppRouter must normalize paths (trailing slash fix)");
 }
-if (!app.includes('if (adminPath === "/adminx")')) {
-  fail("NotFoundLang must recover bare /adminx to overview instead of admin 404");
+if (!app.includes("isAdminAppPath(pathname)")) {
+  fail("NotFoundLang must delegate any admin path to AdminSwitch");
 }
 
-// Catch-all must come after concrete admin routes
-const catchIdx = app.indexOf('path="/adminx/:rest+"');
-const usersIdx = app.indexOf('path="/adminx/users"');
-const overviewIdx = app.indexOf('path="/adminx" component={AdminOverviewRoute}');
-if (catchIdx < 0 || usersIdx < 0 || overviewIdx < 0) {
-  fail("App.tsx missing expected admin routes");
-} else if (!(overviewIdx < usersIdx && usersIdx < catchIdx)) {
-  fail("/adminx catch-all must be registered after specific admin routes");
+// Catch-all must not use greedy wouter wildcards for /adminx
+if (app.includes('path="/adminx/:rest*"') || app.includes('path="/adminx/:rest+"')) {
+  fail("App.tsx must not use wouter /adminx/:rest* or :rest+ catch-all routes");
 }
 
 // Admin overview should be eagerly imported (first /adminx load must not wait on a lazy chunk)
@@ -73,22 +72,10 @@ if (!app.includes('import { AdminLayout } from "@/pages/admin/layout"')) {
 }
 
 // ── Nav links must have matching routes ───────────────────────────────────────
-const navHrefs = [...layout.matchAll(/href: "(\/adminx[^"]*)"/g)].map((m) => m[1]);
+const navHrefs = [...new Set([...layout.matchAll(/href: "(\/adminx[^"]*)"/g)].map((m) => m[1]))];
 for (const href of navHrefs) {
-  const needle = href.includes(":")
-    ? href.split("/:")[0]
-    : href;
-  if (!app.includes(`path="${href}"`) && !app.includes(`"${needle}`)) {
-    // allow partial paths for detail routes
-    if (!app.includes(needle.replace("/adminx", "/adminx"))) {
-      fail(`admin nav href ${href} has no obvious Route in App.tsx`);
-    }
-  }
-}
-
-for (const href of navHrefs) {
-  if (!app.includes(`"${href}"`)) {
-    fail(`admin nav href ${href} missing from App.tsx routes`);
+  if (!adminRoutes.includes(`"${href}"`)) {
+    fail(`admin nav href ${href} missing from admin-routes.ts EXACT_ROUTES`);
   }
 }
 
@@ -117,14 +104,85 @@ if (!layout.includes("getAdminGetStatsQueryOptions")) {
   fail("AdminLayout should read pending count from admin stats query cache");
 }
 
-if (!layout.includes("splitRouterLocation") && !layout.includes("normalizeAppPath")) {
-  fail("AdminLayout should match nav active state on normalized pathname");
+if (!layout.includes("normalizeAdminPath") && !layout.includes("splitRouterLocation")) {
+  fail("AdminLayout should match nav active state on normalized admin pathname");
 }
 
 // ── AdminPage should not wrap eager layout in Suspense ───────────────────────
 const adminPageMatch = app.match(/function AdminPage[\s\S]*?^}/m);
 if (adminPageMatch && adminPageMatch[0].includes("<Suspense") && adminPageMatch[0].includes("<AdminLayout")) {
   fail("AdminPage must not Suspense-wrap eager AdminLayout (causes full-shell loader flash)");
+}
+
+// ── Route matrix (regression: bare /adminx must never be not-found) ───────────
+function normalizeAppPath(pathname) {
+  if (!pathname) return "/";
+  let path = pathname.replace(/\/{2,}/g, "/");
+  if (path.length > 1 && path.endsWith("/")) path = path.replace(/\/+$/, "");
+  return path || "/";
+}
+function normalizeAdminPath(pathname) {
+  const stripped = pathname.startsWith("~") ? pathname.slice(1) : pathname;
+  return normalizeAppPath(stripped);
+}
+function matchAdminRoute(pathname) {
+  const path = normalizeAdminPath(pathname);
+  const exact = {
+    "/adminx": "overview",
+    "/adminx/analytics": "analytics",
+    "/adminx/users": "users",
+    "/adminx/lookups": "lookups",
+    "/adminx/providers": "providers",
+    "/adminx/pricing": "pricing",
+    "/adminx/settings": "settings",
+    "/adminx/plugins": "plugins",
+    "/adminx/logs": "logs",
+    "/adminx/coupons": "coupons",
+    "/adminx/emails": "emails",
+    "/adminx/security": "security",
+    "/adminx/vin-catalog": "vin-catalog",
+    "/adminx/pending-vin-checks": "pending-vin-checks",
+    "/adminx/transactions": "transactions",
+    "/adminx/announcements": "announcements",
+  }[path];
+  if (exact) return { id: exact };
+  if (/^\/adminx\/users\/([^/]+)$/.test(path)) return { id: "user-detail" };
+  if (/^\/adminx\/pending-vin-checks\/([^/]+)$/.test(path)) return { id: "pending-vin-detail" };
+  if (/^\/adminx\/vin\/([^/]+)$/.test(path)) return { id: "vin-detail" };
+  if (path.startsWith("/adminx/")) return { id: "not-found" };
+  return { id: "not-found" };
+}
+
+const routeMatrix = [
+  ["/adminx", "overview"],
+  ["/adminx/", "overview"],
+  ["~/adminx", "overview"],
+  ["/adminx/analytics", "analytics"],
+  ["/adminx/users", "users"],
+  ["/adminx/users/abc", "user-detail"],
+  ["/adminx/pending-vin-checks", "pending-vin-checks"],
+  ["/adminx/pending-vin-checks/42", "pending-vin-detail"],
+  ["/adminx/vin/1HGCM82633A123456", "vin-detail"],
+  ["/adminx/logs", "logs"],
+  ["/adminx/bad-page", "not-found"],
+];
+for (const [path, expected] of routeMatrix) {
+  const got = matchAdminRoute(path).id;
+  if (got !== expected) {
+    fail(`matchAdminRoute(${path}) => ${got}, expected ${expected}`);
+  }
+}
+
+const outletCases = [
+  "overview", "analytics", "users", "user-detail", "lookups", "providers", "pricing",
+  "settings", "plugins", "logs", "coupons", "emails", "security", "vin-catalog",
+  "pending-vin-checks", "pending-vin-detail", "vin-detail", "transactions",
+  "announcements", "not-found",
+];
+for (const id of outletCases) {
+  if (!app.includes(`case "${id}":`)) {
+    fail(`AdminRouteOutlet missing switch case for "${id}"`);
+  }
 }
 
 if (errors > 0) {

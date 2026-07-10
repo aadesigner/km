@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
 import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
-import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
+import { splitRouterLocation } from "@/lib/normalize-app-path";
+import { normalizeAdminPath } from "@/lib/admin-routes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home, Moon, Sun } from "lucide-react";
@@ -62,7 +63,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const { pathname } = splitRouterLocation(location);
-  const navPath = normalizeAppPath(pathname);
+  const navPath = normalizeAdminPath(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
