@@ -258,7 +258,7 @@ function ReportCard({
           </p>
         ) : (
           <p className="text-[11px] sm:text-xs text-primary/80 mt-1 font-medium">
-            {t("processing")}
+            {t("pending_searching_databases")}
           </p>
         )}
         {isSalvage && (

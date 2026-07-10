@@ -6,7 +6,7 @@ import { useState, useMemo, type FormEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  CheckCircle2, ShieldCheck, RotateCcw, Star,
+  CheckCircle2, ShieldCheck, RotateCcw,
   Sparkles, CreditCard, UserCircle, Zap, FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -64,25 +64,29 @@ function PricingHeroPrice({
   const [whole, fraction] = amount.toFixed(2).split(".");
 
   if (loading) {
-    return <Skeleton className="h-16 w-48 mx-auto rounded-lg bg-white/10" />;
+    return <Skeleton className="h-14 w-44 mx-auto rounded-lg bg-white/10" />;
   }
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {showDiscount && baseAmount != null && baseAmount > amount && (
-        <span className="text-base sm:text-lg font-medium text-white/40 line-through tabular-nums">
-          {currencySymbol}
-          {baseAmount.toFixed(2)}
-        </span>
-      )}
-      <div className="inline-flex items-start tabular-nums leading-none">
-        <span className="text-2xl sm:text-3xl font-semibold text-white/90 pt-1.5 pr-0.5">
-          {currencySymbol}
-        </span>
-        <span className="text-[3.75rem] sm:text-[4.25rem] font-black text-white tracking-tighter">
-          {whole}
-          <span className="text-[0.42em] font-bold text-white/80 align-top">.{fraction}</span>
-        </span>
+      <div className="inline-flex items-end justify-center gap-2 sm:gap-3 tabular-nums leading-none">
+        {showDiscount && baseAmount != null && baseAmount > amount && (
+          <span className="text-lg sm:text-xl font-medium text-white/40 line-through pb-1 sm:pb-1.5">
+            {currencySymbol}
+            {baseAmount.toFixed(2)}
+          </span>
+        )}
+        <div className="inline-flex items-end leading-none">
+          <span className="text-xl sm:text-2xl font-semibold text-white/90 pb-1 sm:pb-1.5 pe-0.5">
+            {currencySymbol}
+          </span>
+          <span className="text-[3.35rem] sm:text-[3.75rem] font-black text-white tracking-tighter">
+            {whole}
+          </span>
+          <span className="text-xl sm:text-2xl font-bold text-white/80 pb-1 sm:pb-1.5 ps-1 sm:ps-1.5">
+            .{fraction}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -215,20 +219,6 @@ export default function Pricing() {
                   <RotateCcw className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>{t("money_back")}</span>
                 </p>
-              </div>
-
-              <div className="flex justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2 rounded-2xl border border-border/70 bg-background/70 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 shadow-sm">
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold tabular-nums">120,000+</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground dark:text-white/50">
-                    {t("stats_reports")}
-                  </span>
-                </div>
               </div>
             </motion.div>
             </div>

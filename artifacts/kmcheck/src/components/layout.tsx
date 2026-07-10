@@ -609,14 +609,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                         {t("my_reports")}
                       </PrefetchLink>
                       {isAdmin && (
-                        <Link
+                        <PrefetchLink
                           href="/adminx"
                           onClick={() => setUserOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
                         >
                           <Shield className="h-3.5 w-3.5 text-muted-foreground" />
                           {t("admin")}
-                        </Link>
+                        </PrefetchLink>
                       )}
                       <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
                         <button
@@ -805,7 +805,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           asChild
                           onClick={() => setMobileOpen(false)}
                         >
-                          <Link href="/adminx">{t("admin")}</Link>
+                          <PrefetchLink href="/adminx">{t("admin")}</PrefetchLink>
                         </Button>
                       ) : (
                         <div />

@@ -12,6 +12,7 @@ import { getErrorStatus } from "@/lib/api-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   CheckCircle2, Clock, XCircle, AlertTriangle, ShoppingBag,
@@ -117,6 +118,7 @@ function PaymentHistoryCard({ payment, locale, index }: { payment: Payment; loca
     minute: "2-digit",
   });
   const showListPrice = (payment.discountAmount ?? 0) > 0;
+  const accordionValue = `payment-${payment.id}`;
 
   return (
     <motion.div
@@ -124,59 +126,80 @@ function PaymentHistoryCard({ payment, locale, index }: { payment: Payment; loca
       initial="hidden"
       animate="show"
       custom={index}
-      className="rounded-xl border bg-background p-4 sm:p-5 shadow-sm"
+      className="rounded-xl border bg-background shadow-sm overflow-hidden"
     >
-      <div className="flex items-start gap-3 sm:gap-4 mb-4 pb-4 border-b border-border/60">
-        <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
-          <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-bold tabular-nums text-lg sm:text-xl">
-            {formatMoney(payment.currency, payment.amount)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {dateStr} · {timeStr}
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2.5">
-        <DetailRow label={t("purchase_detail_date")}>{dateStr}</DetailRow>
-        <DetailRow label={t("purchase_detail_time")}>{timeStr}</DetailRow>
-        <DetailRow label={t("purchase_detail_vin")}>
-          {payment.vin ? (
-            <span className="font-mono font-semibold tracking-wide">{payment.vin}</span>
-          ) : (
-            <span className="text-muted-foreground">{t("unknown_vin")}</span>
-          )}
-        </DetailRow>
-        <DetailRow label={t("purchase_detail_status")}>
-          <PaymentStatusBadge status={payment.status} />
-        </DetailRow>
-        <DetailRow label={t("purchase_detail_list_price")}>
-          <span className="tabular-nums font-medium">
-            {formatMoney(payment.currency, listPrice(payment))}
-          </span>
-          {showListPrice && (
-            <span className="text-muted-foreground text-xs ml-2">
-              (−{formatMoney(payment.currency, payment.discountAmount!)})
-            </span>
-          )}
-        </DetailRow>
-        <DetailRow label={t("purchase_detail_amount_paid")}>
-          <span className="tabular-nums font-semibold text-foreground">
-            {formatMoney(payment.currency, payment.amount)}
-          </span>
-        </DetailRow>
-        <DetailRow label={t("purchase_detail_payment_method")}>
-          {paymentMethodLabel(payment, t)}
-        </DetailRow>
-        {payment.couponCode && (
-          <DetailRow label={t("coupon")}>
-            <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{payment.couponCode}</span>
-          </DetailRow>
-        )}
-      </div>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value={accordionValue} className="border-b-0">
+          <AccordionTrigger className="px-4 sm:px-5 py-4 sm:py-5 hover:no-underline">
+            <div className="flex items-start gap-3 sm:gap-4 w-full text-left">
+              <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
+                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="font-bold tabular-nums text-lg sm:text-xl">
+                      {formatMoney(payment.currency, payment.amount)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {dateStr} · {timeStr}
+                    </p>
+                    <p className="text-xs sm:text-sm text-foreground/80 mt-1 truncate">
+                      {payment.vin ? (
+                        <span className="font-mono font-semibold tracking-wide">{payment.vin}</span>
+                      ) : (
+                        <span className="text-muted-foreground">{t("unknown_vin")}</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <PaymentStatusBadge status={payment.status} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-border/60">
+            <div className="space-y-2.5 pt-4">
+              <DetailRow label={t("purchase_detail_date")}>{dateStr}</DetailRow>
+              <DetailRow label={t("purchase_detail_time")}>{timeStr}</DetailRow>
+              <DetailRow label={t("purchase_detail_vin")}>
+                {payment.vin ? (
+                  <span className="font-mono font-semibold tracking-wide">{payment.vin}</span>
+                ) : (
+                  <span className="text-muted-foreground">{t("unknown_vin")}</span>
+                )}
+              </DetailRow>
+              <DetailRow label={t("purchase_detail_status")}>
+                <PaymentStatusBadge status={payment.status} />
+              </DetailRow>
+              <DetailRow label={t("purchase_detail_list_price")}>
+                <span className="tabular-nums font-medium">
+                  {formatMoney(payment.currency, listPrice(payment))}
+                </span>
+                {showListPrice && (
+                  <span className="text-muted-foreground text-xs ml-2">
+                    (−{formatMoney(payment.currency, payment.discountAmount!)})
+                  </span>
+                )}
+              </DetailRow>
+              <DetailRow label={t("purchase_detail_amount_paid")}>
+                <span className="tabular-nums font-semibold text-foreground">
+                  {formatMoney(payment.currency, payment.amount)}
+                </span>
+              </DetailRow>
+              <DetailRow label={t("purchase_detail_payment_method")}>
+                {paymentMethodLabel(payment, t)}
+              </DetailRow>
+              {payment.couponCode && (
+                <DetailRow label={t("coupon")}>
+                  <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{payment.couponCode}</span>
+                </DetailRow>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </motion.div>
   );
 }

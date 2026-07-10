@@ -313,7 +313,7 @@ export default function CountryPage({ params }: Props) {
         {/* Fade to background */}
         <div className="absolute bottom-0 left-0 right-0 h-40 -z-10 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_minmax(280px,340px)] gap-8 lg:gap-10 items-center pb-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] gap-8 lg:gap-10 items-center pb-20">
 
           {/* Left */}
           <motion.div
@@ -382,9 +382,9 @@ export default function CountryPage({ params }: Props) {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.13 }}
-            className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center lg:items-stretch"
+            className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-stretch w-full min-w-0 lg:max-w-[380px] lg:justify-self-end"
           >
-            <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase frozen />
+            <VinDemoCard country={slug as "usa" | "korea" | "canada"} showcase />
 
             {/* Price line */}
             <div className="px-1 flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground text-center lg:text-start max-w-lg w-full">

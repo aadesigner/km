@@ -8,6 +8,7 @@ const ROUTE_LOADERS: Record<string, () => Promise<unknown>> = {
   faq: () => import("@/pages/faq"),
   dashboard: () => import("@/pages/dashboard"),
   purchases: () => import("@/pages/purchases"),
+  adminx: () => import("@/pages/admin/index"),
   checkout: () => import("@/pages/checkout"),
   "free-vin-decoder": () => import("@/pages/free-vin-decoder"),
   terms: () => import("@/pages/terms"),

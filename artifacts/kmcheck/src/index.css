@@ -710,8 +710,8 @@
 }
 
 @keyframes pending-vin-border-scan {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% { background-position: 220% 0; }
+  100% { background-position: -220% 0; }
 }
 
 @keyframes hero-orb-drift-a {
@@ -760,7 +760,7 @@
       transparent 100%
     );
   background-size: 220% 100%;
-  animation: pending-vin-border-scan 2.8s linear infinite;
+  animation: pending-vin-border-scan 5.2s linear infinite;
   opacity: 0.9;
 }
 

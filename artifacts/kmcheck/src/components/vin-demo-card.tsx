@@ -313,6 +313,15 @@ function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
   return t(originKey);
 }
 
+function demoCarMakeModel(car: DemoCar): { make: string; model: string } {
+  const splitAt = car.name.indexOf(" ");
+  if (splitAt === -1) return { make: car.name, model: "" };
+  return {
+    make: car.name.slice(0, splitAt),
+    model: car.name.slice(splitAt + 1),
+  };
+}
+
 const LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/40";
 const ICO = "h-3.5 w-3.5 shrink-0 text-muted-foreground/50 dark:text-white/25";
 
@@ -327,7 +336,7 @@ function DemoCardShowcase({
   accentClass: string;
   condition: DemoCar["condition"];
   wide?: boolean;
-  /** Country pages — no right-edge shadow / heavy 3D on desktop */
+  /** Flat mode — minimal tilt, no hover depth (legacy) */
   flat?: boolean;
 }) {
   const { dir } = useTranslation();
@@ -335,10 +344,16 @@ function DemoCardShowcase({
   const stageRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const isRtl = dir === "rtl";
-  /** Pivot from inner edge; card faces the hero column. */
+  /** Country hero — subtle text-facing tilt without thick edge / heavy shadows */
+  const countryFace = wide && flat;
+  /** Pivot from inner edge; card faces the hero / text column. */
   const transformOrigin = isRtl ? "100% 50%" : "0% 50%";
-  const baseRotateY = isRtl ? 14 : -14;
-  const baseRotateX = 4;
+  const baseRotateY = countryFace
+    ? isRtl ? 9 : -9
+    : isRtl ? (wide ? 22 : 14) : wide ? -22 : -14;
+  const baseRotateX = countryFace ? 2 : wide ? 6 : 4;
+  const depthZ = countryFace ? 0 : wide ? 36 : 18;
+  const edgeDepthZ = wide ? -20 : -14;
   const [tilt, setTilt] = useState({ x: baseRotateX, y: baseRotateY });
 
   const conditionGlow = {
@@ -369,43 +384,62 @@ function DemoCardShowcase({
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
     setTilt({
-      x: baseRotateX - py * 2.2,
-      y: baseRotateY + px * 3.2,
+      x: baseRotateX - py * (countryFace ? 1.6 : wide ? 2.8 : 2.2),
+      y: baseRotateY + px * (countryFace ? 2.4 : wide ? 4 : 3.2),
     });
   };
 
-  const cardTransform = isDesktop && !flat
-    ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(18px)`
+  const cardShadow = countryFace
+    ? ""
+    : flat
+    ? "shadow-md shadow-black/8 dark:shadow-black/30"
+    : !isDesktop
+      ? "shadow-2xl shadow-black/15 dark:shadow-black/40"
+      : wide
+        ? "shadow-[0_24px_48px_-22px_rgba(0,0,0,0.17)] dark:shadow-[0_28px_52px_-20px_rgba(0,0,0,0.4)]"
+        : isRtl
+          ? "shadow-[-18px_24px_44px_-18px_rgba(0,0,0,0.32)] dark:shadow-[-20px_28px_50px_-16px_rgba(0,0,0,0.6)]"
+          : "shadow-[18px_24px_44px_-18px_rgba(0,0,0,0.32)] dark:shadow-[20px_28px_50px_-16px_rgba(0,0,0,0.6)]";
+
+  const cardTransform = isDesktop && (!flat || countryFace)
+    ? depthZ > 0
+      ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(${depthZ}px)`
+      : `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`
     : isDesktop && flat
-      ? "rotateY(-4deg) rotateX(1deg)"
-      : "rotateY(-6deg) rotateX(2deg)";
+      ? `rotateY(${isRtl ? 4 : -4}deg) rotateX(1deg)`
+      : `rotateY(${isRtl ? 6 : -6}deg) rotateX(2deg)`;
 
   return (
     <div
       ref={stageRef}
       className={cn(
         "relative w-full min-w-0 mx-auto lg:mx-0 lg:ms-auto",
-        flat ? "pt-4 pb-0 max-w-[min(100%,380px)]" : "py-1 md:py-2 lg:py-3",
+        flat
+          ? "pt-1 pb-0 w-full max-w-[min(100%,380px)]"
+          : cn("py-1 md:py-2 lg:py-3", wide && "pb-6 lg:pb-8"),
         wide && !flat ? "max-w-[min(100%,420px)]" : !flat ? "max-w-[min(100%,320px)]" : "",
       )}
       style={
-        flat
+        flat && !countryFace
           ? undefined
           : {
-              perspective: "1600px",
-              perspectiveOrigin: isRtl ? "65% 42%" : "35% 42%",
+              perspective: countryFace ? "1400px" : wide ? "1100px" : "1600px",
+              perspectiveOrigin: countryFace || wide
+                ? isRtl ? "78% 42%" : "22% 42%"
+                : isRtl ? "65% 42%" : "35% 42%",
             }
       }
-      onPointerMove={flat ? undefined : onPointerMove}
-      onPointerLeave={flat ? undefined : resetTilt}
+      onPointerMove={flat && !countryFace ? undefined : onPointerMove}
+      onPointerLeave={flat && !countryFace ? undefined : resetTilt}
     >
       {!flat && (
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -inset-8 -z-20 rounded-[2rem] opacity-50 blur-3xl",
+          "pointer-events-none absolute -inset-8 -z-20 rounded-[2rem] blur-3xl",
           "bg-gradient-to-br to-transparent",
           conditionGlow,
+          wide ? "opacity-35" : "opacity-50",
         )}
       />
       )}
@@ -415,8 +449,9 @@ function DemoCardShowcase({
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute -bottom-3 h-14 w-[76%] rounded-[100%] blur-2xl opacity-60 -z-10",
-          isRtl ? "right-[8%] bg-primary/15" : "left-[8%] bg-primary/15",
+          "pointer-events-none absolute rounded-[100%] blur-2xl -z-10",
+          wide ? "bottom-0 h-12 w-[68%] opacity-40" : "-bottom-3 h-14 w-[76%] opacity-60",
+          isRtl ? "right-[14%] bg-primary/12" : "left-[14%] bg-primary/12",
         )}
         style={{ transform: "rotateX(78deg) scaleY(0.45)" }}
       />
@@ -424,9 +459,9 @@ function DemoCardShowcase({
 
       <motion.div
         className="relative w-full [transform-style:preserve-3d]"
-        animate={reduceMotion || !isDesktop || flat ? undefined : { y: [0, -5, 0] }}
+        animate={reduceMotion || !isDesktop || (flat && !countryFace) ? undefined : { y: [0, -5, 0] }}
         transition={
-          reduceMotion || !isDesktop || flat
+          reduceMotion || !isDesktop || (flat && !countryFace)
             ? undefined
             : { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }
@@ -434,33 +469,43 @@ function DemoCardShowcase({
         <div
           className={cn(
             "relative w-full [transform-style:preserve-3d]",
-            isDesktop && !flat && "transition-transform duration-300 ease-out",
+            isDesktop && (!flat || countryFace) && "transition-transform duration-300 ease-out",
           )}
           style={{
             transformOrigin,
             transform: cardTransform,
           }}
         >
-          {/* Card thickness — outer edge depth */}
-          {isDesktop && !flat && (
+          {/* Card thickness — outer edge depth (homepage cards only) */}
+          {isDesktop && !flat && !countryFace && (
             <div
               aria-hidden
               className={cn(
-                "pointer-events-none absolute top-4 bottom-4 w-2.5 rounded-sm hidden md:block",
+                "pointer-events-none absolute top-3 bottom-3 rounded-sm hidden md:block",
+                wide ? "w-3" : "w-2.5 top-4 bottom-4",
                 isRtl
-                  ? "-left-2 bg-gradient-to-l from-black/30 to-black/12 dark:from-black/55 dark:to-black/20"
-                  : "-right-2 bg-gradient-to-r from-black/30 to-black/12 dark:from-black/55 dark:to-black/20",
+                  ? "-left-2.5 bg-gradient-to-l from-black/35 via-black/18 to-black/8 dark:from-black/60 dark:via-black/30 dark:to-black/15"
+                  : "-right-2.5 bg-gradient-to-r from-black/35 via-black/18 to-black/8 dark:from-black/60 dark:via-black/30 dark:to-black/15",
               )}
-              style={{ transform: "translateZ(-14px)" }}
+              style={{ transform: `translateZ(${edgeDepthZ}px)` }}
             />
           )}
 
-          {!flat && (
+          {isDesktop && !flat && wide && !countryFace && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-2xl hidden md:block bg-black/[0.06] dark:bg-black/30 border border-black/10 dark:border-white/5"
+              style={{ transform: "translateZ(-10px)" }}
+            />
+          )}
+
+          {!flat && !countryFace && (
           <div
             aria-hidden
             className={cn(
-              "pointer-events-none absolute -bottom-5 h-8 w-[90%] hidden md:block -z-20 rounded-[100%] blur-xl",
-              isRtl ? "right-[5%] bg-black/25 dark:bg-black/45" : "left-[5%] bg-black/25 dark:bg-black/45",
+              "pointer-events-none absolute hidden md:block -z-20 rounded-[100%] blur-xl",
+              wide ? "-bottom-4 h-6 w-[72%] opacity-35" : "-bottom-5 h-8 w-[90%]",
+              isRtl ? "right-[8%] bg-black/20 dark:bg-black/35" : "left-[8%] bg-black/20 dark:bg-black/35",
             )}
             style={{ transform: "rotateX(82deg) scaleY(0.5)" }}
           />
@@ -469,17 +514,12 @@ function DemoCardShowcase({
           <div
             className={cn(
               "relative rounded-2xl overflow-hidden [transform-style:preserve-3d]",
-              "border border-white/30 dark:border-white/12",
-              "bg-white dark:bg-[#0d1117]",
-              flat
-                ? "shadow-md shadow-black/8 dark:shadow-black/30"
+              countryFace
+                ? "border border-border/60 bg-background shadow-none"
                 : cn(
-                  isDesktop && !isRtl
-                    && "shadow-[18px_24px_44px_-18px_rgba(0,0,0,0.32)] dark:shadow-[20px_28px_50px_-16px_rgba(0,0,0,0.6)]",
-                  isDesktop && isRtl
-                    && "shadow-[-18px_24px_44px_-18px_rgba(0,0,0,0.32)] dark:shadow-[-20px_28px_50px_-16px_rgba(0,0,0,0.6)]",
-                  !isDesktop && "shadow-2xl shadow-black/15 dark:shadow-black/40",
-                  accentClass,
+                  "border border-white/30 dark:border-white/12",
+                  "bg-white dark:bg-[#0d1117]",
+                  flat ? cardShadow : cn(cardShadow, !wide && accentClass),
                 ),
             )}
           >
@@ -487,10 +527,10 @@ function DemoCardShowcase({
               <div
                 aria-hidden
                 className={cn(
-                  "pointer-events-none absolute inset-y-0 w-[3px] hidden md:block z-20",
+                  "pointer-events-none absolute inset-y-0 w-[2px] hidden md:block z-20",
                   isRtl
-                    ? "right-0 bg-gradient-to-l from-white/30 to-transparent"
-                    : "left-0 bg-gradient-to-r from-white/35 to-transparent",
+                    ? "right-0 bg-gradient-to-l from-white/25 to-transparent"
+                    : "left-0 bg-gradient-to-r from-white/30 to-transparent",
                 )}
               />
             )}
@@ -499,8 +539,15 @@ function DemoCardShowcase({
                 aria-hidden
                 className="pointer-events-none absolute inset-0 hidden md:block z-10 rounded-2xl"
                 style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 38%, transparent 62%, rgba(0,0,0,0.04) 100%)",
+                  background: countryFace
+                    ? isRtl
+                      ? "linear-gradient(225deg, rgba(255,255,255,0.08) 0%, transparent 40%)"
+                      : "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 40%)"
+                    : wide
+                      ? isRtl
+                        ? "linear-gradient(225deg, rgba(255,255,255,0.14) 0%, transparent 32%, transparent 68%, rgba(0,0,0,0.05) 100%)"
+                        : "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 32%, transparent 68%, rgba(0,0,0,0.05) 100%)"
+                      : "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 38%, transparent 62%, rgba(0,0,0,0.04) 100%)",
                 }}
               />
             )}
@@ -576,6 +623,188 @@ export function VinDemoCard({
   // Korean max = 320k km → red above 224k km (70%)
   const maxMileage = car.unit === "mi" ? 200_000 : 320_000;
   const mileagePct = Math.min(100, Math.round((car.mileage / maxMileage) * 100));
+
+  if (showcase && !heroSide) {
+    const slideFlag =
+      country === "canada" && car.origin === "USA" ? "ca" : car.flagImg;
+    const { make, model } = demoCarMakeModel(car);
+
+    return (
+      <DemoCardShowcase wide flat accentClass="" condition={car.condition}>
+        <div className="overflow-hidden rounded-2xl bg-background">
+          <div className={cn("h-0.5 bg-gradient-to-r", c.accentBar)} />
+
+          <div className="relative">
+            <div className="relative h-36 overflow-hidden bg-muted/35">
+              {cars.map((slideCar, slideIdx) => {
+                const isActive = slideIdx === idx;
+                const isNext = slideIdx === (idx + 1) % cars.length;
+                return (
+                  <div
+                    key={slideCar.vin}
+                    className={cn(
+                      "absolute inset-0 transition-opacity duration-500 ease-out",
+                      isActive ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none",
+                    )}
+                    aria-hidden={!isActive}
+                  >
+                    <DemoCarPhoto
+                      src={slideCar.photo}
+                      alt={`${slideCar.year} ${slideCar.name}`}
+                      eager={isActive || isNext}
+                    />
+                  </div>
+                );
+              })}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <AnimatePresence mode="wait">
+                <div
+                  key={car.vin + "-overlay"}
+                  className="absolute top-3 left-3 right-3 flex items-center justify-between gap-3"
+                >
+                  <div className="inline-flex items-center rounded-full bg-black/45 p-1.5 backdrop-blur-sm">
+                    <FlagImg code={slideFlag} size={18} className="rounded-sm shadow-sm" />
+                  </div>
+                  <span className={cn(
+                    "rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide backdrop-blur-sm",
+                    c.badge,
+                  )}>
+                    {t(CONDITION_LABEL_KEYS[car.condition])}
+                  </span>
+                </div>
+              </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <div
+                  key={car.vin + "-hero"}
+                  className="absolute inset-x-0 bottom-0 p-3"
+                >
+                  <div className="flex items-end justify-between gap-2.5">
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-white leading-tight truncate">
+                        {car.year} {make}{model ? ` ${model}` : ""}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-white/60 truncate">
+                        {subtitle}
+                      </p>
+                    </div>
+                    <div className="shrink-0 rounded-lg border border-white/15 bg-black/35 px-2.5 py-1.5 text-center backdrop-blur-sm">
+                      <p className={cn("text-lg font-black tabular-nums leading-none", c.scoreColor)}>
+                        {car.score.toFixed(1)}
+                      </p>
+                      <p className="mt-0.5 text-[8px] font-semibold uppercase tracking-wide text-white/55">
+                        {t("demo_trust_score")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </AnimatePresence>
+            </div>
+
+          <AnimatePresence mode="wait">
+            <div key={car.vin + "-stats"}>
+              <div className="grid grid-cols-3 gap-1 border-b border-border/60 bg-card/30 px-3 py-2">
+                <div className="min-w-0 text-center">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{t("year")}</p>
+                  <p className="mt-0.5 text-xs font-bold tabular-nums">{car.year}</p>
+                </div>
+                <div className="min-w-0 text-center border-x border-border/50 px-1">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{t("make")}</p>
+                  <p className="mt-0.5 text-xs font-bold truncate" title={make}>{make}</p>
+                </div>
+                <div className="min-w-0 text-center">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{t("model")}</p>
+                  <p className="mt-0.5 text-xs font-bold truncate" title={model || car.name}>{model || car.name}</p>
+                </div>
+              </div>
+
+              <div className="border-b border-border/60 bg-muted/[0.15] px-3 py-2">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Gauge className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("demo_odometer")}
+                    </span>
+                  </div>
+                  <span className={cn("text-xs font-bold tabular-nums", milTextColor(mileagePct))}>
+                    {car.mileage.toLocaleString()} {car.unit}
+                  </span>
+                </div>
+                <div className="h-1 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
+                  <div
+                    className={cn("h-1 rounded-full", milColor(mileagePct))}
+                    style={{ width: `${mileagePct}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 p-2.5">
+                <div className="rounded-lg border border-border/60 bg-card/80 px-2.5 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className={cn("h-3.5 w-3.5", car.accidents === 0 ? "text-primary/70" : car.accidents >= 3 ? "text-red-500" : "text-amber-500")} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_accidents")}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "mt-1 text-xs font-bold",
+                    car.accidents === 0 ? "text-primary" : car.accidents >= 3 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+                  )}>
+                    {car.accidents === 0 ? t("demo_none_found") : `${car.accidents} ${t("demo_found")}`}
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/60 bg-card/80 px-2.5 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <Users className={cn("h-3.5 w-3.5", car.owners <= 1 ? "text-primary/70" : car.owners >= 4 ? "text-red-500" : "text-amber-500")} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_owners")}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "mt-1 text-xs font-bold",
+                    car.owners <= 1 ? "text-primary" : car.owners >= 4 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+                  )}>
+                    {car.owners === 1 ? t("owner_single") : `${car.owners} ${t("mock_label_owners")}`}
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/60 bg-card/80 px-2.5 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldAlert className={cn("h-3.5 w-3.5", car.salvage ? "text-red-500" : "text-primary/70")} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_salvage")}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "mt-1 text-xs font-bold",
+                    car.salvage ? "text-red-600 dark:text-red-400" : "text-primary",
+                  )}>
+                    {car.salvage ? t("demo_flagged") : t("report_clean")}
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/60 bg-card/80 px-2.5 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <Fingerprint className={cn("h-3.5 w-3.5", car.stolen ? "text-red-500" : "text-primary/70")} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("theft_records")}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "mt-1 text-xs font-bold",
+                    car.stolen ? "text-red-600 dark:text-red-400" : "text-primary",
+                  )}>
+                    {car.stolen ? t("theft_flagged") : t("report_not_stolen")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </AnimatePresence>
+          </div>
+        </div>
+      </DemoCardShowcase>
+    );
+  }
 
   const card = (
     <div className={cn(
@@ -955,14 +1184,6 @@ export function VinDemoCard({
       )}
     </div>
   );
-
-  if (showcase && !heroSide) {
-    return (
-      <DemoCardShowcase wide flat accentClass="" condition={car.condition}>
-        {card}
-      </DemoCardShowcase>
-    );
-  }
 
   if (heroSide) {
     return (
