@@ -36,18 +36,24 @@ if (!notFound.includes("Admin page not found")) {
 if (!app.includes("AdminNotFound")) {
   fail("App.tsx must import AdminNotFound");
 }
-if (!app.includes('path="/adminx/:rest*"')) {
-  fail("App.tsx must register /adminx/:rest* catch-all before global 404");
+if (!app.includes('path="/adminx/:rest+"')) {
+  fail("App.tsx must register /adminx/:rest+ catch-all (requires subpath — never matches bare /adminx)");
+}
+if (!app.includes("function AdminSwitch")) {
+  fail("App.tsx must isolate admin routes in AdminSwitch");
+}
+if (!app.includes('normalized === "/adminx" || normalized.startsWith("/adminx/")')) {
+  fail("AppRouter must branch to AdminSwitch before the public Switch");
 }
 if (!app.includes("normalizeAppPath")) {
   fail("App.tsx AppRouter must normalize paths (trailing slash fix)");
 }
-if (!app.includes('if (pathname.startsWith("/adminx"))')) {
-  fail("NotFoundLang must delegate /adminx/* to AdminCatchAllRoute as safety net");
+if (!app.includes('if (adminPath === "/adminx")')) {
+  fail("NotFoundLang must recover bare /adminx to overview instead of admin 404");
 }
 
 // Catch-all must come after concrete admin routes
-const catchIdx = app.indexOf('path="/adminx/:rest*"');
+const catchIdx = app.indexOf('path="/adminx/:rest+"');
 const usersIdx = app.indexOf('path="/adminx/users"');
 const overviewIdx = app.indexOf('path="/adminx" component={AdminOverviewRoute}');
 if (catchIdx < 0 || usersIdx < 0 || overviewIdx < 0) {
@@ -56,7 +62,12 @@ if (catchIdx < 0 || usersIdx < 0 || overviewIdx < 0) {
   fail("/adminx catch-all must be registered after specific admin routes");
 }
 
-// AdminLayout should be eagerly imported (avoids chunk-load 404 flashes)
+// Admin overview should be eagerly imported (first /adminx load must not wait on a lazy chunk)
+if (!app.includes('import AdminOverview from "@/pages/admin/index"')) {
+  fail("AdminOverview must be eagerly imported in App.tsx");
+}
+
+// AdminLayout should be eagerly imported (avoids chunk-load shell flashes)
 if (!app.includes('import { AdminLayout } from "@/pages/admin/layout"')) {
   fail("AdminLayout must be eagerly imported in App.tsx");
 }

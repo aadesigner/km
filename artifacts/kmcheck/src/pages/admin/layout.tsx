@@ -106,7 +106,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isSignedIn || !isAdmin) return null;
+  if (!isSignedIn || !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Skeleton className="h-8 w-48" />
+      </div>
+    );
+  }
 
   const SidebarContent = () => (
     <>

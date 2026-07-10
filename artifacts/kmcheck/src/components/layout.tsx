@@ -31,10 +31,27 @@ const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   img: l.flag,
 }));
 
+const COUNTRY_CONTINENTS = ["americas", "asia"] as const;
+type CountryContinent = (typeof COUNTRY_CONTINENTS)[number];
+
+const CONTINENT_LABEL_KEY: Record<CountryContinent, "nav_continent_americas" | "nav_continent_asia"> = {
+  americas: "nav_continent_americas",
+  asia: "nav_continent_asia",
+};
+
 const COUNTRY_LINKS = [
+  {
+    slug: "canada",
+    img: "ca",
+    continent: "americas" as const,
+    labelKey: "country_canada_label" as const,
+    nameKey: "country_canada_name" as const,
+    countKey: "country_canada_count" as const,
+  },
   {
     slug: "usa",
     img: "us",
+    continent: "americas" as const,
     labelKey: "country_usa_label" as const,
     nameKey: "country_usa_name" as const,
     countKey: "country_usa_count" as const,
@@ -42,34 +59,143 @@ const COUNTRY_LINKS = [
   {
     slug: "korea",
     img: "kr",
+    continent: "asia" as const,
     labelKey: "country_korea_label" as const,
     nameKey: "country_korea_name" as const,
     countKey: "country_korea_count" as const,
   },
   {
-    slug: "canada",
-    img: "ca",
-    labelKey: "country_canada_label" as const,
-    nameKey: "country_canada_name" as const,
-    countKey: "country_canada_count" as const,
-  },
-  {
-    slug: "china",
-    img: "cn",
-    labelKey: "country_china_label" as const,
-    nameKey: "country_china_name" as const,
-    countKey: "country_china_count" as const,
-  },
-  {
     slug: "uae",
     img: "ae",
+    continent: "asia" as const,
     labelKey: "country_uae_label" as const,
     nameKey: "country_uae_name" as const,
     countKey: "country_uae_count" as const,
   },
+  {
+    slug: "china",
+    img: "cn",
+    continent: "asia" as const,
+    labelKey: "country_china_label" as const,
+    nameKey: "country_china_name" as const,
+    countKey: "country_china_count" as const,
+  },
 ] as const;
 
 const NAV_COUNTRY_FLAGS = COUNTRY_LINKS.map((link) => link.img);
+
+function CountryNavMenuGroups({
+  language,
+  isActive,
+  onNavigate,
+  layout = "desktop",
+}: {
+  language: string;
+  isActive: (slug: string) => boolean;
+  onNavigate?: () => void;
+  layout?: "desktop" | "mobile";
+}) {
+  const { t } = useTranslation();
+  const groups = COUNTRY_CONTINENTS.map((continent) => ({
+    continent,
+    items: COUNTRY_LINKS.filter((link) => link.continent === continent),
+  }));
+
+  if (layout === "mobile") {
+    return (
+      <>
+        {groups.map((group, groupIndex) => (
+          <div key={group.continent}>
+            <p
+              className={cn(
+                "px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground",
+                groupIndex > 0 ? "pt-3" : "pt-1",
+              )}
+            >
+              {t(CONTINENT_LABEL_KEY[group.continent])}
+            </p>
+            {group.items.map(({ slug, img, labelKey }) => {
+              const active = isActive(slug);
+              return (
+                <PrefetchLink
+                  key={slug}
+                  href={`/${language}/cars/${slug}`}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-100",
+                    active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                  )}
+                >
+                  <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" />
+                  <span className="flex-1">{t(labelKey)}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </PrefetchLink>
+              );
+            })}
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <div className="py-1" role="menu">
+      {groups.map((group, groupIndex) => (
+        <div
+          key={group.continent}
+          className={cn(groupIndex > 0 && "mt-1 border-t border-border/45")}
+        >
+          <p className="px-2.5 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/75">
+            {t(CONTINENT_LABEL_KEY[group.continent])}
+          </p>
+          <ul className="pb-0.5">
+            {group.items.map(({ slug, img, nameKey, countKey }) => {
+              const active = isActive(slug);
+              return (
+                <li key={slug} role="none">
+                  <PrefetchLink
+                    href={`/${language}/cars/${slug}`}
+                    role="menuitem"
+                    onClick={onNavigate}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors duration-100",
+                      active
+                        ? "bg-primary/[0.08] ring-1 ring-primary/15"
+                        : "hover:bg-muted/60 dark:hover:bg-white/[0.05]",
+                    )}
+                  >
+                    <FlagImg code={img} size={22} className="shrink-0 rounded-[3px] shadow-sm" />
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          "block text-[13px] font-medium leading-tight",
+                          active ? "text-primary" : "text-foreground",
+                        )}
+                      >
+                        {t(nameKey)}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[11px] leading-tight text-muted-foreground">
+                        {t(countKey)}
+                      </span>
+                    </span>
+                    {active ? (
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                    ) : (
+                      <ChevronRight
+                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity duration-100 group-hover:opacity-100"
+                        aria-hidden
+                      />
+                    )}
+                  </PrefetchLink>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const MobileMenuToggle = forwardRef<
   HTMLButtonElement,
@@ -232,7 +358,7 @@ function MobileLangPicker({
                 initial={{ opacity: 0, y: -6, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
                 style={{ ...menuStyle, transformOrigin: "top right" }}
                 className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
               >
@@ -262,7 +388,7 @@ function MobileLangPicker({
         aria-expanded={open}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-200",
+          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
           scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
           open
             ? isDarkNav
@@ -472,45 +598,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
                   className={cn(
                     dropdownCls,
-                    "left-0 w-[17.5rem] rounded-xl p-1 shadow-lg shadow-black/[0.06] dark:shadow-black/25",
+                    "left-0 w-[19.5rem] p-1.5",
                   )}
                 >
-                  <p className="px-3 pt-2.5 pb-1 text-[11px] leading-snug text-muted-foreground">
-                    {t("nav_country_mega_subtitle")}
-                  </p>
-                  <ul className="py-1" role="menu">
-                    {COUNTRY_LINKS.map(({ slug, img, nameKey, countKey }) => {
-                      const active = isOnPage(`cars/${slug}`);
-                      return (
-                        <li key={slug} role="none">
-                          <PrefetchLink
-                            href={`/${language}/cars/${slug}`}
-                            role="menuitem"
-                            onClick={() => setCountryOpen(false)}
-                            className={cn(
-                              "flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-100",
-                              active
-                                ? "bg-foreground/[0.06] dark:bg-white/[0.07]"
-                                : "hover:bg-muted/55 dark:hover:bg-white/[0.04]",
-                            )}
-                          >
-                            <FlagImg code={img} size={20} className="shrink-0 rounded-[2px]" />
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-[13px] font-medium leading-none text-foreground">
-                                {t(nameKey)}
-                              </span>
-                              <span className="mt-1 block truncate text-[11px] leading-none text-muted-foreground">
-                                {t(countKey)}
-                              </span>
-                            </span>
-                            {active && (
-                              <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-                            )}
-                          </PrefetchLink>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <CountryNavMenuGroups
+                    language={language}
+                    isActive={(slug) => isOnPage(`cars/${slug}`)}
+                    onNavigate={() => setCountryOpen(false)}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -545,7 +640,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 onClick={() => setLangOpen(v => !v)}
                 aria-label={LANGS.find(l => l.code === language)?.label ?? language}
                 className={cn(
-                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-150",
+                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
                   langOpen
                     ? isDarkNav
@@ -571,7 +666,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     initial={{ opacity: 0, y: -4, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.11, ease: [0.22, 1, 0.36, 1] }}
                     style={{ transformOrigin: "top right" }}
                     className={cn(dropdownCls, "right-0 w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}
                   >
@@ -810,21 +905,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   {t("footer_countries")}
                 </p>
 
-                {COUNTRY_LINKS.map(({ slug, img, labelKey }) => (
-                  <PrefetchLink
-                    key={slug}
-                    href={`/${language}/cars/${slug}`}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                      isOnPage(`cars/${slug}`) ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
-                    )}
-                  >
-                    <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" />
-                    <span className="flex-1">{t(labelKey)}</span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                  </PrefetchLink>
-                ))}
+                <CountryNavMenuGroups
+                  language={language}
+                  layout="mobile"
+                  isActive={(slug) => isOnPage(`cars/${slug}`)}
+                  onNavigate={() => setMobileOpen(false)}
+                />
 
               </nav>
 

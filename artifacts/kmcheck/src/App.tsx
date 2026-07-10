@@ -32,6 +32,7 @@ import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path"
 import Home from "@/pages/home";
 import { AdminLayout } from "@/pages/admin/layout";
 import AdminNotFound from "@/pages/admin/not-found";
+import AdminOverview from "@/pages/admin/index";
 // Lazy-loaded
 const Pricing       = lazyWithRetry(() => import("@/pages/pricing"));
 const Dashboard     = lazyWithRetry(() => import("@/pages/dashboard"));
@@ -41,7 +42,6 @@ const VinProcessing = lazyWithRetry(() => import("@/pages/vin-processing"));
 const CountryPage   = lazyWithRetry(() => import("@/pages/country"));
 const Terms         = lazyWithRetry(() => import("@/pages/terms"));
 const Privacy       = lazyWithRetry(() => import("@/pages/privacy"));
-const AdminOverview  = lazyWithRetry(() => import("@/pages/admin/index"));
 const AdminUsers     = lazyWithRetry(() => import("@/pages/admin/users"));
 const AdminUserDetail = lazyWithRetry(() => import("@/pages/admin/user-detail"));
 const AdminLookups   = lazyWithRetry(() => import("@/pages/admin/lookups"));
@@ -300,7 +300,12 @@ function NotFoundLang() {
     return <UnprefixedPathLangRedirect pathname={pathname} />;
   }
 
-  if (pathname.startsWith("/adminx")) {
+  // Should not run — admin paths are handled by AdminSwitch. Recover instead of 404 flash.
+  const adminPath = normalizeAppPath(pathname);
+  if (adminPath === "/adminx") {
+    return <AdminOverviewRoute />;
+  }
+  if (adminPath.startsWith("/adminx/")) {
     return <AdminCatchAllRoute />;
   }
 
@@ -478,6 +483,40 @@ function AdminVinDetailRoute(props: { params: { vin: string } }) {
   );
 }
 
+/** Isolated admin router — never competes with /:lang in the public Switch. */
+function AdminSwitch() {
+  return (
+    <>
+      <ScrollToTop />
+      <MaintenanceGuard>
+        <Switch>
+          <Route path="/adminx" component={AdminOverviewRoute} />
+          <Route path="/adminx/analytics" component={AdminAnalyticsRoute} />
+          <Route path="/adminx/users/:userId" component={AdminUserDetailRoute} />
+          <Route path="/adminx/users" component={AdminUsersRoute} />
+          <Route path="/adminx/lookups" component={AdminLookupsRoute} />
+          <Route path="/adminx/providers" component={AdminProvidersRoute} />
+          <Route path="/adminx/pricing" component={AdminPricingRoute} />
+          <Route path="/adminx/settings" component={AdminSettingsRoute} />
+          <Route path="/adminx/plugins" component={AdminPluginsRoute} />
+          <Route path="/adminx/logs" component={AdminLogsRoute} />
+          <Route path="/adminx/coupons" component={AdminCouponsRoute} />
+          <Route path="/adminx/emails" component={AdminEmailsRoute} />
+          <Route path="/adminx/security" component={AdminSecurityRoute} />
+          <Route path="/adminx/vin-catalog" component={AdminVinCatalogRoute} />
+          <Route path="/adminx/pending-vin-checks/:id" component={AdminPendingVinDetailRoute} />
+          <Route path="/adminx/pending-vin-checks" component={AdminPendingVinChecksRoute} />
+          <Route path="/adminx/vin/:vin" component={AdminVinDetailRoute} />
+          <Route path="/adminx/transactions" component={AdminTransactionsRoute} />
+          <Route path="/adminx/announcements" component={AdminAnnouncementsRoute} />
+          {/* :rest+ requires a subpath — never matches bare /adminx */}
+          <Route path="/adminx/:rest+" component={AdminCatchAllRoute} />
+        </Switch>
+      </MaintenanceGuard>
+    </>
+  );
+}
+
 function AppRouter() {
   const [location] = useLocation();
   const { pathname, suffix } = splitRouterLocation(location);
@@ -491,6 +530,10 @@ function AppRouter() {
 
   if (unprefixedRest !== null) {
     return <UnprefixedPathLangRedirect pathname={pathname} />;
+  }
+
+  if (normalized === "/adminx" || normalized.startsWith("/adminx/")) {
+    return <AdminSwitch />;
   }
 
   return (
@@ -514,28 +557,6 @@ function AppRouter() {
         <Route path="/:lang/forgot-password" component={ForgotPasswordRoute} />
         <Route path="/:lang/reset-password" component={ResetPasswordRoute} />
         <Route path="/:lang/set-password" component={SetPasswordRoute} />
-
-        {/* Admin routes — must come before /:lang/* patterns to avoid /adminx being matched as a lang segment */}
-        <Route path="/adminx" component={AdminOverviewRoute} />
-        <Route path="/adminx/analytics" component={AdminAnalyticsRoute} />
-        <Route path="/adminx/users/:userId" component={AdminUserDetailRoute} />
-        <Route path="/adminx/users" component={AdminUsersRoute} />
-        <Route path="/adminx/lookups" component={AdminLookupsRoute} />
-        <Route path="/adminx/providers" component={AdminProvidersRoute} />
-        <Route path="/adminx/pricing" component={AdminPricingRoute} />
-        <Route path="/adminx/settings" component={AdminSettingsRoute} />
-        <Route path="/adminx/plugins" component={AdminPluginsRoute} />
-        <Route path="/adminx/logs" component={AdminLogsRoute} />
-        <Route path="/adminx/coupons" component={AdminCouponsRoute} />
-        <Route path="/adminx/emails" component={AdminEmailsRoute} />
-        <Route path="/adminx/security" component={AdminSecurityRoute} />
-        <Route path="/adminx/vin-catalog" component={AdminVinCatalogRoute} />
-        <Route path="/adminx/pending-vin-checks/:id" component={AdminPendingVinDetailRoute} />
-        <Route path="/adminx/pending-vin-checks" component={AdminPendingVinChecksRoute} />
-        <Route path="/adminx/vin/:vin" component={AdminVinDetailRoute} />
-        <Route path="/adminx/transactions" component={AdminTransactionsRoute} />
-        <Route path="/adminx/announcements" component={AdminAnnouncementsRoute} />
-        <Route path="/adminx/:rest*" component={AdminCatchAllRoute} />
 
         {/* VIN routes */}
         <Route path="/:lang/vin/processing" component={VinProcessingLang} />

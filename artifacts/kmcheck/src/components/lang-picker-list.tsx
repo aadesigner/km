@@ -48,7 +48,7 @@ export function LangPickerList({
             aria-selected={active}
             onClick={() => onSelect(l.code)}
             className={cn(
-              "flex items-center gap-2.5 rounded-xl text-left min-w-0 transition-colors touch-manipulation",
+              "flex items-center gap-2.5 rounded-xl text-left min-w-0 transition-colors duration-100 touch-manipulation",
               isMobile ? "px-3 py-2.5" : isFooter ? "px-3 py-2.5" : "px-2.5 py-2",
               isFooter
                 ? active
