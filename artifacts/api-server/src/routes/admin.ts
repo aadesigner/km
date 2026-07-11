@@ -28,6 +28,7 @@ import {
   type JsonImportRecord,
 } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger";
+import { fetchOnlinePresenceStats } from "../lib/userPresence.js";
 import {
   normalizeDailyCounts,
   normalizeDailyRevenue,
@@ -176,6 +177,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     paymentStatusCountsRaw,
     [{ pendingVinChecksOpen }],
     recentPendingRows,
+    onlinePresence,
   ] = await Promise.all([
     // Merge totals + today count + weekly trends into one query
     db.execute(sql`
@@ -344,6 +346,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       .where(eq(pendingVinChecksTable.status, "open"))
       .orderBy(desc(pendingVinChecksTable.updatedAt))
       .limit(5),
+    fetchOnlinePresenceStats(),
   ]);
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
@@ -444,6 +447,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     checksLastWeek: Number(agg.checks_last_week ?? 0),
     pendingVinChecksOpen: pendingVinChecksOpen ?? 0,
     recentPendingVinChecks,
+    onlinePresence,
   });
 });
 

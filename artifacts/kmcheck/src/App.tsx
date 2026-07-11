@@ -14,6 +14,7 @@ import NotFound from "@/pages/not-found";
 import { isVin17 } from "@/lib/vin-route";
 import { WarmCache } from "@/components/warm-cache";
 import { SiteAnalytics } from "@/components/site-analytics";
+import { PresenceHeartbeat } from "@/components/presence-heartbeat";
 import { RouteErrorBoundary } from "@/components/error-boundary";
 import { MaintenanceGuard } from "@/components/maintenance-guard";
 import { GeoLanguageRedirect } from "@/components/geo-language-redirect";
@@ -651,6 +652,7 @@ function AppShell() {
   return (
     <RouteErrorBoundary scope="app" resetKey={resetKey}>
       <AuthProvider>
+        <PresenceHeartbeat />
         <SiteAnalytics />
         <WarmCache />
         <TooltipProvider>

@@ -19,6 +19,7 @@ import {
   isLinkedInOAuthConfigured,
   getLinkedInOAuthCredentials,
 } from "../lib/oauthSettings.js";
+import { touchUserPresence, sanitizePresencePath } from "../lib/userPresence.js";
 
 const router = Router();
 
@@ -1388,6 +1389,10 @@ router.get("/auth/me", async (req, res) => {
     const configuredDays = await getConfiguredSessionDays();
     const { expiresAt } = await refreshSessionIfNeeded(res, user.id, token, configuredDays);
 
+    if (!user.isAdmin) {
+      void touchUserPresence(user.id, null).catch(() => {});
+    }
+
     res.json({
       user: getPublicUser(user),
       sessionExpiresAt: expiresAt.toISOString(),
@@ -1395,6 +1400,18 @@ router.get("/auth/me", async (req, res) => {
   } catch {
     clearAuthCookie(res);
     res.json({ user: null });
+  }
+});
+
+// POST /auth/presence — lightweight signed-in activity ping (throttled server-side).
+router.post("/auth/presence", requireAuth, async (req, res) => {
+  try {
+    const path = sanitizePresencePath(req.body?.path);
+    await touchUserPresence(req.userId!, path);
+    res.json({ ok: true });
+  } catch (err) {
+    logger.warn({ err }, "presence update failed");
+    res.status(500).json({ error: "Presence update failed" });
   }
 });
 

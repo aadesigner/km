@@ -63,6 +63,19 @@ export type ExtendedStats = {
     make?: string | null;
     model?: string | null;
   }>;
+  onlinePresence?: {
+    onlineNow: number;
+    activeToday: number;
+    activeYesterday: number;
+    activeThisMonth: number;
+    usersOnlineNow: Array<{
+      id: string;
+      email: string;
+      name: string | null;
+      lastSeenAt: string;
+      lastSeenPath: string | null;
+    }>;
+  };
 };
 
 export function utcDateKeyDaysAgo(daysAgo: number): string {

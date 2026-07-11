@@ -270,6 +270,20 @@ function StatusChip({ status }: { status: string }) {
   );
 }
 
+function formatLastSeen(iso: string): string {
+  const secs = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  return `${hours}h ago`;
+}
+
+function truncatePath(path: string | null | undefined, max = 42): string {
+  if (!path) return "—";
+  return path.length > max ? `${path.slice(0, max - 1)}…` : path;
+}
+
 export default function AdminOverview() {
   const { data: rawStats, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useAdminGetStats({
     query: ADMIN_STATS_QUERY,
@@ -381,6 +395,67 @@ export default function AdminOverview() {
               <ArrowRight className="h-3.5 w-3.5 text-amber-600 shrink-0" />
             </Panel>
           </Link>
+        )}
+
+        {/* Online users */}
+        {stats?.onlinePresence && (
+          <section>
+            <SectionHead title="Online users" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4 mb-3">
+              <StatCell
+                label="Now (5 min)"
+                value={String(stats.onlinePresence.onlineNow)}
+                icon={Activity}
+                highlight={stats.onlinePresence.onlineNow > 0}
+              />
+              <StatCell label="Today" value={String(stats.onlinePresence.activeToday)} icon={Users} />
+              <StatCell label="Yesterday" value={String(stats.onlinePresence.activeYesterday)} icon={Users} />
+              <StatCell label="This month" value={String(stats.onlinePresence.activeThisMonth)} icon={Users} />
+            </div>
+            <Panel className="overflow-hidden">
+              <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2">
+                <h3 className="text-xs md:text-sm font-semibold flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  Currently online
+                </h3>
+                <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                  {stats.onlinePresence.usersOnlineNow.length} shown
+                </span>
+              </div>
+              {stats.onlinePresence.usersOnlineNow.length === 0 ? (
+                <p className="text-xs md:text-sm text-muted-foreground text-center py-7">
+                  No users online in the last 5 minutes
+                </p>
+              ) : (
+                <div className="divide-y divide-border/40 max-h-72 overflow-y-auto">
+                  {stats.onlinePresence.usersOnlineNow.map((u) => (
+                    <Link key={u.id} href={`/adminx/users/${u.id}`}>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/30 transition-colors">
+                        <div className="h-8 w-8 md:h-9 md:w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                          <Users className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs md:text-sm font-medium truncate">{u.name || u.email}</p>
+                          <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+                        </div>
+                        <div className="text-right shrink-0 max-w-[45%] sm:max-w-[40%]">
+                          <p className="text-[11px] md:text-xs font-mono text-muted-foreground truncate" title={u.lastSeenPath ?? undefined}>
+                            {truncatePath(u.lastSeenPath)}
+                          </p>
+                          <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                            {formatLastSeen(u.lastSeenAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          </section>
         )}
 
         {/* Period stats */}
