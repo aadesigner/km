@@ -11,7 +11,7 @@ import crypto from "crypto";
 import { getSettings } from "../lib/settingsCache.js";
 import { shouldBootstrapAdmin } from "../lib/adminBootstrap.js";
 import { clientIpKey } from "../lib/trustedClient.js";
-import { oauthInitLimiter } from "../lib/expensiveEndpointLimiter.js";
+import { oauthInitLimiter, presenceHeartbeatLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
 import {
   isFacebookOAuthConfigured,
@@ -1390,7 +1390,7 @@ router.get("/auth/me", async (req, res) => {
     const { expiresAt } = await refreshSessionIfNeeded(res, user.id, token, configuredDays);
 
     if (!user.isAdmin) {
-      void touchUserPresence(user.id, null).catch(() => {});
+      void touchUserPresence(user.id, null);
     }
 
     res.json({
@@ -1404,15 +1404,10 @@ router.get("/auth/me", async (req, res) => {
 });
 
 // POST /auth/presence — lightweight signed-in activity ping (throttled server-side).
-router.post("/auth/presence", requireAuth, async (req, res) => {
-  try {
-    const path = sanitizePresencePath(req.body?.path);
-    await touchUserPresence(req.userId!, path);
-    res.json({ ok: true });
-  } catch (err) {
-    logger.warn({ err }, "presence update failed");
-    res.status(500).json({ error: "Presence update failed" });
-  }
+router.post("/auth/presence", presenceHeartbeatLimiter, requireAuth, async (req, res) => {
+  const path = sanitizePresencePath(req.body?.path);
+  await touchUserPresence(req.userId!, path);
+  res.json({ ok: true });
 });
 
 export default router;

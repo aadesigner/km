@@ -27,12 +27,18 @@ export function PresenceHeartbeat() {
         return;
       }
       lastSentRef.current = { path: pathname, at: now };
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 8_000);
       void fetch(`${basePath}/api/auth/presence`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path: pathname }),
-      }).catch(() => {});
+        signal: ctrl.signal,
+        keepalive: true,
+      })
+        .catch(() => {})
+        .finally(() => window.clearTimeout(timer));
     };
 
     ping();

@@ -73,3 +73,16 @@ export const oauthInitLimiter = rateLimit({
     return raw === "unknown" ? raw : ipKeyGenerator(raw);
   },
 });
+
+/** Signed-in presence heartbeat — bounded per user; server also throttles DB writes. */
+export const presenceHeartbeatLimiter = rateLimit({
+  windowMs: 60_000,
+  max: envRateMax("PRESENCE_HEARTBEAT_RATE_MAX", 4, 8),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: true },
+  keyGenerator: userOrIpKey,
+  handler: (_req, res) => {
+    res.status(200).json({ ok: true });
+  },
+});
