@@ -601,7 +601,11 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const normalizedVin = vin.toUpperCase();
 
-  const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const user = await db
+    .select({ isBanned: usersTable.isBanned })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
   if (user[0]?.isBanned) {
     res.status(403).json({ error: "Account suspended" });
     return;
@@ -1008,7 +1012,11 @@ router.get("/vin/wait-update/:vin", requireAuth, async (req, res) => {
   const sinceMs = Number(sinceRaw);
   const since = Number.isFinite(sinceMs) && sinceMs > 0 ? sinceMs : 0;
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [user] = await db
+    .select({ isAdmin: usersTable.isAdmin })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
 
   const loadClientLookup = async () => {
     const row = await findCompleteUserLookup(userId, vin);
@@ -1108,7 +1116,11 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [user] = await db
+    .select({ isAdmin: usersTable.isAdmin })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
   if (lookup.userId !== userId && !user?.isAdmin) {
     res.status(403).json({ error: "Forbidden" });
     return;

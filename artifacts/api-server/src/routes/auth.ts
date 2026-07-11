@@ -20,6 +20,12 @@ import {
   getLinkedInOAuthCredentials,
 } from "../lib/oauthSettings.js";
 import { touchUserPresence, sanitizePresencePath } from "../lib/userPresence.js";
+import {
+  authSessionUserSelect,
+  oauthUserSelect,
+  toPublicUser,
+  type AuthSessionUser,
+} from "../lib/authUserSelect.js";
 
 const router = Router();
 
@@ -81,6 +87,8 @@ const loginLimiter = rateLimit({
   message: { error: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => clientIpKey(req),
+  validate: { ip: false },
 });
 
 const registerLimiter = rateLimit({
@@ -193,66 +201,59 @@ async function checkRecaptcha(
   req?: { headers?: { host?: string } },
   opts?: { minScore?: number; acceptSuccessOnly?: boolean },
 ): Promise<{ blocked: boolean; reason?: string }> {
-  const [settings] = await db
-    .select({
-      recaptchaEnabled: systemSettingsTable.recaptchaEnabled,
-      recaptchaSecretKey: systemSettingsTable.recaptchaSecretKey,
-      recaptchaMinScore: systemSettingsTable.recaptchaMinScore,
-    })
-    .from(systemSettingsTable)
-    .orderBy(desc(systemSettingsTable.id))
-    .limit(1);
+  try {
+    const [settings] = await db
+      .select({
+        recaptchaEnabled: systemSettingsTable.recaptchaEnabled,
+        recaptchaSecretKey: systemSettingsTable.recaptchaSecretKey,
+        recaptchaMinScore: systemSettingsTable.recaptchaMinScore,
+      })
+      .from(systemSettingsTable)
+      .orderBy(desc(systemSettingsTable.id))
+      .limit(1);
 
-  if (!settings?.recaptchaEnabled || !settings.recaptchaSecretKey) {
-    return { blocked: false };
-  }
-  if (isRecaptchaRelaxedForRequest(req)) {
-    return { blocked: false };
-  }
-  if (!token) {
-    return { blocked: true, reason: "Security verification is required. Please reload the page and try again." };
-  }
+    if (!settings?.recaptchaEnabled || !settings.recaptchaSecretKey) {
+      return { blocked: false };
+    }
+    if (isRecaptchaRelaxedForRequest(req)) {
+      return { blocked: false };
+    }
+    if (!token) {
+      return { blocked: true, reason: "Security verification is required. Please reload the page and try again." };
+    }
 
-  const minScore = opts?.minScore ?? settings.recaptchaMinScore ?? 0.5;
-  const result = await verifyRecaptchaToken(
-    token,
-    settings.recaptchaSecretKey,
-    minScore,
-    { acceptSuccessOnly: opts?.acceptSuccessOnly },
-  );
-  if (result.outage) {
-    return { blocked: false };
-  }
-  if (!result.ok) {
-    logger.warn({
+    const minScore = opts?.minScore ?? settings.recaptchaMinScore ?? 0.5;
+    const result = await verifyRecaptchaToken(
+      token,
+      settings.recaptchaSecretKey,
       minScore,
-      score: result.score,
-      errorCodes: result.errorCodes,
-    }, "reCAPTCHA verification failed for auth request");
-    return { blocked: true, reason: "Security check failed. Please try again." };
+      { acceptSuccessOnly: opts?.acceptSuccessOnly },
+    );
+    if (result.outage) {
+      return { blocked: false };
+    }
+    if (!result.ok) {
+      logger.warn({
+        minScore,
+        score: result.score,
+        errorCodes: result.errorCodes,
+      }, "reCAPTCHA verification failed for auth request");
+      return { blocked: true, reason: "Security check failed. Please try again." };
+    }
+    return { blocked: false };
+  } catch (err) {
+    logger.warn({ err }, "reCAPTCHA check failed — allowing auth request through");
+    return { blocked: false };
   }
-  return { blocked: false };
 }
 
-type PublicUserSource = Pick<
-  typeof usersTable.$inferSelect,
-  "id" | "email" | "name" | "avatarUrl" | "isAdmin" | "isBanned" | "passwordHash" | "createdAt"
->;
+type PublicUserSource = AuthSessionUser;
 
 function getPublicUser(user: PublicUserSource) {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    avatarUrl: user.avatarUrl,
-    isAdmin: user.isAdmin,
-    isBanned: user.isBanned,
-    hasPassword: !!user.passwordHash,
-    createdAt: user.createdAt,
-  };
+  return toPublicUser(user);
 }
 
-async function syncUserAdminFlag(user: typeof usersTable.$inferSelect): Promise<typeof usersTable.$inferSelect> {
+async function syncUserAdminFlag(user: AuthSessionUser): Promise<AuthSessionUser> {
   return user;
 }
 
@@ -293,7 +294,11 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     return;
   }
 
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, normalizedEmail)).limit(1);
+  const [existing] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(eq(usersTable.email, normalizedEmail))
+    .limit(1);
   if (existing) {
     res.status(409).json({ error: "An account with this email already exists" });
     return;
@@ -310,7 +315,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     passwordHash,
     isAdmin,
     lastLoginAt: new Date(),
-  }).returning();
+  }).returning(authSessionUserSelect);
 
   if (!user) {
     res.status(500).json({ error: "Failed to create account" });
@@ -355,6 +360,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
 
 // POST /auth/login
 router.post("/auth/login", loginLimiter, async (req, res) => {
+  try {
   const { email, password, recaptchaToken } = req.body as {
     email?: string;
     password?: string;
@@ -407,7 +413,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
   );
 
   // Check failed login lockout per (email, IP, context)
-  const [{ failCount }] = await db
+  const failRows = await db
     .select({ failCount: count() })
     .from(loginAttemptsTable)
     .where(and(
@@ -416,6 +422,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
       eq(loginAttemptsTable.context, loginContext),
       gte(loginAttemptsTable.attemptedAt, lockoutSince),
     ));
+  const failCount = failRows[0]?.failCount ?? 0;
 
   if (Number(failCount) >= maxFailed) {
     logger.warn({ msg: "auth_login_lockout", email: normalizedEmail, ip: clientIp, context: loginContext, failCount: Number(failCount) });
@@ -426,16 +433,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
   // Keep login independent of optional profile/presence columns so additive
   // schema rollouts cannot break authentication.
   const [user] = await db
-    .select({
-      id: usersTable.id,
-      email: usersTable.email,
-      name: usersTable.name,
-      avatarUrl: usersTable.avatarUrl,
-      passwordHash: usersTable.passwordHash,
-      isAdmin: usersTable.isAdmin,
-      isBanned: usersTable.isBanned,
-      createdAt: usersTable.createdAt,
-    })
+    .select(authSessionUserSelect)
     .from(usersTable)
     .where(eq(usersTable.email, normalizedEmail))
     .limit(1);
@@ -472,12 +470,25 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     updatedAt: new Date(),
   }).where(eq(usersTable.id, user.id));
 
-  const token = await signJwt(user.id, sessionDays);
+  let token: string;
+  try {
+    token = await signJwt(user.id, sessionDays);
+  } catch (err) {
+    logger.error({ err, userId: user.id }, "auth_login_jwt_failed");
+    res.status(503).json({ error: "Login is temporarily unavailable. Please try again." });
+    return;
+  }
   setAuthCookie(res, token, sessionDays);
 
   logger.info({ msg: "auth_login", userId: user.id, email: normalizedEmail });
 
   res.json({ user: getPublicUser(user) });
+  } catch (err) {
+    logger.error({ err, msg: "auth_login_unhandled" }, "Login handler error");
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 });
 
 // POST /auth/forgot-password
@@ -514,7 +525,11 @@ router.post("/auth/forgot-password", forgotPasswordIpLimiter, forgotPasswordEmai
   res.json({ ok: true });
 
   try {
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, normalizedEmail)).limit(1);
+    const [user] = await db
+      .select({ id: usersTable.id, passwordHash: usersTable.passwordHash })
+      .from(usersTable)
+      .where(eq(usersTable.email, normalizedEmail))
+      .limit(1);
     // OAuth-only accounts have no local password to reset
     if (!user || !user.passwordHash) return;
 
@@ -800,10 +815,10 @@ router.get("/auth/facebook/callback", async (req, res) => {
   const oauthIp = clientIpKey(req);
 
   // Find or create user
-  let [user] = await db.select().from(usersTable).where(eq(usersTable.facebookId, facebookId)).limit(1);
+  let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.facebookId, facebookId)).limit(1);
 
   if (!user) {
-    const [existingByEmail] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    const [existingByEmail] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existingByEmail) {
       const [updated] = await db.update(usersTable)
         .set({
@@ -814,7 +829,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
           updatedAt: new Date(),
         })
         .where(eq(usersTable.id, existingByEmail.id))
-        .returning();
+        .returning(oauthUserSelect);
       user = updated;
       logger.info({ msg: "facebook_oauth_link", userId: existingByEmail.id, email });
     }
@@ -833,12 +848,12 @@ router.get("/auth/facebook/callback", async (req, res) => {
         authProvider: "facebook",
         isAdmin,
         lastLoginAt: new Date(),
-      }).returning();
+      }).returning(authSessionUserSelect);
       user = created;
       logger.info({ msg: "facebook_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
-      const [existing] = await db.select().from(usersTable)
+      const [existing] = await db.select(oauthUserSelect).from(usersTable)
         .where(or(eq(usersTable.facebookId, facebookId), eq(usersTable.email, email)))
         .limit(1);
       user = existing;
@@ -1021,11 +1036,11 @@ router.get("/auth/google/callback", async (req, res) => {
   const oauthIp = clientIpKey(req);
 
   // Find or create user
-  let [user] = await db.select().from(usersTable).where(eq(usersTable.googleId, googleSub)).limit(1);
+  let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.googleId, googleSub)).limit(1);
 
   if (!user) {
     // Try linking by email
-    const [existingByEmail] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    const [existingByEmail] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existingByEmail) {
       const [updated] = await db.update(usersTable)
         .set({
@@ -1037,7 +1052,7 @@ router.get("/auth/google/callback", async (req, res) => {
           updatedAt: new Date(),
         })
         .where(eq(usersTable.id, existingByEmail.id))
-        .returning();
+        .returning(oauthUserSelect);
       user = updated;
       logger.info({ msg: "google_oauth_link", userId: existingByEmail.id, email });
     }
@@ -1056,12 +1071,12 @@ router.get("/auth/google/callback", async (req, res) => {
         authProvider: "google",
         isAdmin,
         lastLoginAt: new Date(),
-      }).returning();
+      }).returning(authSessionUserSelect);
       user = created;
       logger.info({ msg: "google_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
-      const [existing] = await db.select().from(usersTable)
+      const [existing] = await db.select(oauthUserSelect).from(usersTable)
         .where(or(eq(usersTable.googleId, googleSub), eq(usersTable.email, email)))
         .limit(1);
       user = existing;
@@ -1248,10 +1263,10 @@ router.get("/auth/linkedin/callback", async (req, res) => {
   const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
 
-  let [user] = await db.select().from(usersTable).where(eq(usersTable.linkedinId, linkedinId)).limit(1);
+  let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.linkedinId, linkedinId)).limit(1);
 
   if (!user) {
-    const [existingByEmail] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    const [existingByEmail] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (existingByEmail) {
       const [updated] = await db.update(usersTable)
         .set({
@@ -1262,7 +1277,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
           updatedAt: new Date(),
         })
         .where(eq(usersTable.id, existingByEmail.id))
-        .returning();
+        .returning(oauthUserSelect);
       user = updated;
       logger.info({ msg: "linkedin_oauth_link", userId: existingByEmail.id, email });
     }
@@ -1282,12 +1297,12 @@ router.get("/auth/linkedin/callback", async (req, res) => {
         isAdmin,
         lastLoginAt: new Date(),
         lastLoginIp: oauthIp,
-      }).returning();
+      }).returning(authSessionUserSelect);
       user = created;
       logger.info({ msg: "linkedin_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
-      const [existing] = await db.select().from(usersTable)
+      const [existing] = await db.select(oauthUserSelect).from(usersTable)
         .where(or(eq(usersTable.linkedinId, linkedinId), eq(usersTable.email, email)))
         .limit(1);
       user = existing;
@@ -1332,7 +1347,7 @@ router.post("/auth/set-password", requireAuth, async (req, res) => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [user] = await db.select(authSessionUserSelect).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -1347,7 +1362,7 @@ router.post("/auth/set-password", requireAuth, async (req, res) => {
   const [updated] = await db.update(usersTable)
     .set({ passwordHash, updatedAt: new Date() })
     .where(eq(usersTable.id, userId))
-    .returning();
+    .returning(authSessionUserSelect);
 
   if (!updated) {
     res.status(500).json({ error: "Failed to set password" });
@@ -1384,42 +1399,60 @@ router.get("/auth/me", async (req, res) => {
     return;
   }
 
+  let sub: string;
+  let jti: string | undefined;
   try {
-    const { sub, jti } = await verifyJwt(token);
-    if (jti && await isTokenRevoked(jti)) {
-      clearAuthCookie(res);
-      res.json({ user: null });
-      return;
-    }
-    let [user] = await db.select().from(usersTable).where(eq(usersTable.id, sub)).limit(1);
+    const payload = await verifyJwt(token);
+    sub = payload.sub;
+    jti = payload.jti;
+  } catch {
+    clearAuthCookie(res);
+    res.json({ user: null });
+    return;
+  }
+
+  if (jti && await isTokenRevoked(jti)) {
+    clearAuthCookie(res);
+    res.json({ user: null });
+    return;
+  }
+
+  try {
+    const [user] = await db
+      .select(authSessionUserSelect)
+      .from(usersTable)
+      .where(eq(usersTable.id, sub))
+      .limit(1);
     if (!user) {
       clearAuthCookie(res);
       res.json({ user: null });
       return;
     }
 
-    user = await syncUserAdminFlag(user);
+    const synced = await syncUserAdminFlag(user);
 
-    if (user.isBanned) {
+    if (synced.isBanned) {
       clearAuthCookie(res);
       res.json({ user: null, banned: true });
       return;
     }
 
     const configuredDays = await getConfiguredSessionDays();
-    const { expiresAt } = await refreshSessionIfNeeded(res, user.id, token, configuredDays);
+    const { expiresAt } = await refreshSessionIfNeeded(res, synced.id, token, configuredDays);
 
-    if (!user.isAdmin) {
-      void touchUserPresence(user.id, null);
+    if (!synced.isAdmin) {
+      void touchUserPresence(synced.id, null);
     }
 
     res.json({
-      user: getPublicUser(user),
+      user: getPublicUser(synced),
       sessionExpiresAt: expiresAt.toISOString(),
     });
-  } catch {
-    clearAuthCookie(res);
-    res.json({ user: null });
+  } catch (err) {
+    logger.error({ err, userId: sub }, "auth_me_failed");
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Unable to load session" });
+    }
   }
 });
 

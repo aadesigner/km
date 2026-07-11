@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, usersTable, vinLookupsTable, paymentsTable } from "@workspace/db";
 import { eq, desc, count, sum, and, gte, ne, type SQL } from "drizzle-orm";
 import { requireAuth } from "../lib/auth.js";
+import { authSessionUserSelect } from "../lib/authUserSelect.js";
 import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import { transformVinPhotoData } from "../lib/imageProxy.js";
 import { mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
@@ -31,7 +32,11 @@ function activeUserLookupWhere(userId: string): SQL {
 router.get("/user/profile", requireAuth, async (req, res) => {
   const userId = req.userId!;
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [user] = await db
+    .select(authSessionUserSelect)
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;

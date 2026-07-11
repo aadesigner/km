@@ -300,6 +300,19 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
   const recaptchaPrimeAtRef = useRef(0);
 
+  /** Sign-in and sign-up share one form — reset sensitive fields when switching tabs. */
+  const switchAuthMode = (nextMode: "sign-in" | "sign-up") => {
+    setMode(nextMode);
+    setError("");
+    setPassword("");
+    setShowPassword(false);
+    recaptchaPrimeRef.current = null;
+    if (nextMode === "sign-in") {
+      setName("");
+      setAcceptedTerms(false);
+    }
+  };
+
   const recaptchaAction = mode === "sign-in" ? "login" : "register";
 
   const primeRecaptcha = () => {
@@ -447,7 +460,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
                     : "text-muted-foreground hover:text-foreground",
                 )}
-                onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}
+                onClick={() => switchAuthMode("sign-in")}
               >
                 {t("sign_in")}
               </button>
@@ -459,7 +472,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
                     : "text-muted-foreground hover:text-foreground",
                 )}
-                onClick={() => { setMode("sign-up"); setError(""); }}
+                onClick={() => switchAuthMode("sign-up")}
               >
                 {t("sign_up")}
               </button>
@@ -682,14 +695,14 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               {isSignIn ? (
                 <>
                   {t("auth_no_account")}{" "}
-                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-up"); setError(""); }}>
+                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => switchAuthMode("sign-up")}>
                     {t("auth_sign_up_free")}
                   </button>
                 </>
               ) : (
                 <>
                   {t("auth_have_account")}{" "}
-                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => { setMode("sign-in"); setError(""); setAcceptedTerms(false); }}>
+                  <button type="button" className="text-primary font-semibold hover:underline" onClick={() => switchAuthMode("sign-in")}>
                     {t("sign_in")}
                   </button>
                 </>
