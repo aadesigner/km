@@ -2,13 +2,13 @@ import { db, usersTable } from "@workspace/db";
 import { and, desc, eq, isNotNull, sql, type SQL } from "drizzle-orm";
 import { logger } from "./logger.js";
 
-const THROTTLE_MS = 20_000;
+const THROTTLE_MS = 35_000;
 const MAX_PATH_LEN = 180;
 const MAX_THROTTLE_MAP = 2_000;
 const STATS_CACHE_MS = 45_000;
 const ADMIN_PRESENCE_PREFIX = "/adminx";
 
-/** In-process throttle — one DB write per user per ~20s on the same path; path changes write immediately. */
+/** In-process throttle — one DB write per user per ~35s on the same path; path changes write immediately. */
 const lastTouchAt = new Map<string, number>();
 const lastTouchPath = new Map<string, string>();
 
