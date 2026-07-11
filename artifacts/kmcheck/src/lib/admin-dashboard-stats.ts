@@ -73,7 +73,18 @@ export type ExtendedStats = {
       email: string;
       name: string | null;
       lastSeenAt: string;
-      lastSeenPath: string | null;
+    }>;
+    usersActiveToday: Array<{
+      id: string;
+      email: string;
+      name: string | null;
+      lastSeenAt: string;
+    }>;
+    usersActiveYesterday: Array<{
+      id: string;
+      email: string;
+      name: string | null;
+      lastSeenAt: string;
     }>;
   };
 };

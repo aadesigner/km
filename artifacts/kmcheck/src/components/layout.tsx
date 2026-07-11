@@ -748,18 +748,19 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
               <AnimatePresence>
                 {langOpen && (
-                  <motion.div
-                    {...NAV_DROPDOWN_MOTION}
-                    style={{ transformOrigin: "top right" }}
-                    className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
-                  >
-                    <div className={cn(dropdownCls, "w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}>
-                      <LangPickerList
-                        language={language}
-                        onSelect={(code) => handleLanguageChange(code)}
-                      />
-                    </div>
-                  </motion.div>
+                  <div className={cn(NAV_DROPDOWN_ANCHOR, "left-1/2 -translate-x-1/2")}>
+                    <motion.div
+                      {...NAV_DROPDOWN_MOTION}
+                      style={{ transformOrigin: "top center" }}
+                    >
+                      <div className={cn(dropdownCls, "w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}>
+                        <LangPickerList
+                          language={language}
+                          onSelect={(code) => handleLanguageChange(code)}
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
             </div>

@@ -93,6 +93,8 @@ function StatCell({
   icon: Icon,
   highlight,
   size = "compact",
+  onClick,
+  selected,
 }: {
   label: string;
   value: string;
@@ -101,10 +103,13 @@ function StatCell({
   icon?: React.ElementType;
   highlight?: boolean;
   size?: "main" | "compact";
+  onClick?: () => void;
+  selected?: boolean;
 }) {
   const isMain = size === "main";
+  const interactive = Boolean(onClick);
 
-  return (
+  const panel = (
     <Panel
       className={cn(
         "px-3 py-2.5 sm:px-3.5 sm:py-3",
@@ -114,6 +119,8 @@ function StatCell({
         ],
         !isMain && "md:px-4 md:py-3.5",
         highlight && "border-primary/30 bg-primary/[0.03]",
+        selected && "ring-2 ring-primary/50 border-primary/40",
+        interactive && !selected && "hover:bg-muted/20",
       )}
     >
       {isMain ? (
@@ -166,6 +173,19 @@ function StatCell({
         </>
       )}
     </Panel>
+  );
+
+  if (!interactive) return panel;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-lg md:rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+      aria-pressed={selected}
+    >
+      {panel}
+    </button>
   );
 }
 
@@ -279,9 +299,109 @@ function formatLastSeen(iso: string): string {
   return `${hours}h ago`;
 }
 
-function truncatePath(path: string | null | undefined, max = 42): string {
-  if (!path) return "—";
-  return path.length > max ? `${path.slice(0, max - 1)}…` : path;
+type PresencePeriod = "now" | "today" | "yesterday";
+
+const PRESENCE_PERIOD_LABELS: Record<PresencePeriod, string> = {
+  now: "Currently online (5 min)",
+  today: "Active today",
+  yesterday: "Active yesterday",
+};
+
+const PRESENCE_EMPTY_LABELS: Record<PresencePeriod, string> = {
+  now: "No users online in the last 5 minutes",
+  today: "No users were active today",
+  yesterday: "No users were active yesterday",
+};
+
+function formatPresenceLastActive(iso: string, period: PresencePeriod): string {
+  if (period === "now") return formatLastSeen(iso);
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+type PresenceUser = NonNullable<ExtendedStats["onlinePresence"]>["usersOnlineNow"][number];
+const PRESENCE_PAGE_SIZE = 10;
+
+function PresenceUserList({
+  users,
+  period,
+}: {
+  users: PresenceUser[];
+  period: PresencePeriod;
+}) {
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(users.length / PRESENCE_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const start = (safePage - 1) * PRESENCE_PAGE_SIZE;
+  const visibleUsers = users.slice(start, start + PRESENCE_PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [period, users]);
+
+  if (users.length === 0) {
+    return (
+      <p className="text-xs md:text-sm text-muted-foreground text-center py-7">
+        {PRESENCE_EMPTY_LABELS[period]}
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="divide-y divide-border/40">
+        {visibleUsers.map((u) => (
+          <Link key={u.id} href={`/adminx/users/${u.id}`}>
+            <div className="flex items-center gap-2.5 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/30 transition-colors">
+              <div className="h-8 w-8 md:h-9 md:w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs md:text-sm font-medium truncate">{u.name || u.email}</p>
+                <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+              </div>
+              <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums shrink-0">
+                {formatPresenceLastActive(u.lastSeenAt, period)}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+      {pageCount > 1 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-border/40 px-3.5 py-2.5 md:px-4">
+          <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+            Showing {start + 1}-{Math.min(start + PRESENCE_PAGE_SIZE, users.length)} of {users.length}
+          </p>
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {Array.from({ length: pageCount }).map((_, idx) => {
+              const pageNumber = idx + 1;
+              const active = pageNumber === safePage;
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setPage(pageNumber)}
+                  className={cn(
+                    "h-7 min-w-7 rounded-md px-2 text-[11px] md:text-xs font-medium transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                  )}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function AdminOverview() {
@@ -292,6 +412,7 @@ export default function AdminOverview() {
   const [period, setPeriod] = useState<DashboardPeriod>("today");
   const [chartMetric, setChartMetric] = useState<ChartMetric>("revenue");
   const [chartRange, setChartRange] = useState<ChartRange>(30);
+  const [presencePeriod, setPresencePeriod] = useState<PresencePeriod>("now");
 
   const [chartHeight, setChartHeight] = useState(200);
 
@@ -336,6 +457,14 @@ export default function AdminOverview() {
       cacheStr: `${Number(stats.cacheHitRate || 0).toFixed(1)}%`,
     };
   }, [stats, period, chartMetric, chartRange]);
+
+  const presenceUsers = useMemo(() => {
+    const p = stats?.onlinePresence;
+    if (!p) return [];
+    if (presencePeriod === "today") return p.usersActiveToday ?? [];
+    if (presencePeriod === "yesterday") return p.usersActiveYesterday ?? [];
+    return p.usersOnlineNow ?? [];
+  }, [stats?.onlinePresence, presencePeriod]);
 
   const lastUpdated = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })
@@ -397,67 +526,6 @@ export default function AdminOverview() {
           </Link>
         )}
 
-        {/* Online users */}
-        {stats?.onlinePresence && (
-          <section>
-            <SectionHead title="Online users" />
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4 mb-3">
-              <StatCell
-                label="Now (5 min)"
-                value={String(stats.onlinePresence.onlineNow)}
-                icon={Activity}
-                highlight={stats.onlinePresence.onlineNow > 0}
-              />
-              <StatCell label="Today" value={String(stats.onlinePresence.activeToday)} icon={Users} />
-              <StatCell label="Yesterday" value={String(stats.onlinePresence.activeYesterday)} icon={Users} />
-              <StatCell label="This month" value={String(stats.onlinePresence.activeThisMonth)} icon={Users} />
-            </div>
-            <Panel className="overflow-hidden">
-              <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2">
-                <h3 className="text-xs md:text-sm font-semibold flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                  </span>
-                  Currently online
-                </h3>
-                <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
-                  {stats.onlinePresence.usersOnlineNow.length} shown
-                </span>
-              </div>
-              {stats.onlinePresence.usersOnlineNow.length === 0 ? (
-                <p className="text-xs md:text-sm text-muted-foreground text-center py-7">
-                  No users online in the last 5 minutes
-                </p>
-              ) : (
-                <div className="divide-y divide-border/40 max-h-72 overflow-y-auto">
-                  {stats.onlinePresence.usersOnlineNow.map((u) => (
-                    <Link key={u.id} href={`/adminx/users/${u.id}`}>
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/30 transition-colors">
-                        <div className="h-8 w-8 md:h-9 md:w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                          <Users className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs md:text-sm font-medium truncate">{u.name || u.email}</p>
-                          <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
-                        </div>
-                        <div className="text-right shrink-0 max-w-[45%] sm:max-w-[40%]">
-                          <p className="text-[11px] md:text-xs font-mono text-muted-foreground truncate" title={u.lastSeenPath ?? undefined}>
-                            {truncatePath(u.lastSeenPath)}
-                          </p>
-                          <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
-                            {formatLastSeen(u.lastSeenAt)}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </Panel>
-          </section>
-        )}
-
         {/* Period stats */}
         <section>
           <SectionHead title="Performance" />
@@ -491,6 +559,58 @@ export default function AdminOverview() {
             />
           </div>
         </section>
+
+        {/* Online users */}
+        {stats?.onlinePresence && (
+          <section>
+            <SectionHead title="Online users" />
+            <p className="text-[11px] md:text-xs text-muted-foreground -mt-2 mb-3">
+              Signed-in customers on public pages. Admin accounts are not listed here.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4 mb-3">
+              <StatCell
+                label="Now (5 min)"
+                value={String(stats.onlinePresence.onlineNow)}
+                icon={Activity}
+                highlight={stats.onlinePresence.onlineNow > 0}
+                onClick={() => setPresencePeriod("now")}
+                selected={presencePeriod === "now"}
+              />
+              <StatCell
+                label="Today"
+                value={String(stats.onlinePresence.activeToday)}
+                icon={Users}
+                onClick={() => setPresencePeriod("today")}
+                selected={presencePeriod === "today"}
+              />
+              <StatCell
+                label="Yesterday"
+                value={String(stats.onlinePresence.activeYesterday)}
+                icon={Users}
+                onClick={() => setPresencePeriod("yesterday")}
+                selected={presencePeriod === "yesterday"}
+              />
+              <StatCell label="This month" value={String(stats.onlinePresence.activeThisMonth)} icon={Users} />
+            </div>
+            <Panel className="overflow-hidden">
+              <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2">
+                <h3 className="text-xs md:text-sm font-semibold flex items-center gap-2">
+                  {presencePeriod === "now" && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                    </span>
+                  )}
+                  {PRESENCE_PERIOD_LABELS[presencePeriod]}
+                </h3>
+                <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                  {presenceUsers.length} shown
+                </span>
+              </div>
+              <PresenceUserList users={presenceUsers} period={presencePeriod} />
+            </Panel>
+          </section>
+        )}
 
         {/* Lifetime + ops strip */}
         <section>

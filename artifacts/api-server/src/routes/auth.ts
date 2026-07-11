@@ -1440,10 +1440,6 @@ router.get("/auth/me", async (req, res) => {
     const configuredDays = await getConfiguredSessionDays();
     const { expiresAt } = await refreshSessionIfNeeded(res, synced.id, token, configuredDays);
 
-    if (!synced.isAdmin) {
-      void touchUserPresence(synced.id, null);
-    }
-
     res.json({
       user: getPublicUser(synced),
       sessionExpiresAt: expiresAt.toISOString(),
@@ -1456,10 +1452,13 @@ router.get("/auth/me", async (req, res) => {
   }
 });
 
-// POST /auth/presence — lightweight signed-in activity ping (throttled server-side).
-router.post("/auth/presence", presenceHeartbeatLimiter, requireAuth, async (req, res) => {
+// POST /auth/presence — signed-in customers only; auth first, then per-user rate limit.
+// Outsiders without a session get 401. Invalid/admin paths are ignored (no write).
+router.post("/auth/presence", requireAuth, presenceHeartbeatLimiter, async (req, res) => {
   const path = sanitizePresencePath(req.body?.path);
-  await touchUserPresence(req.userId!, path);
+  if (path) {
+    await touchUserPresence(req.userId!, path);
+  }
   res.json({ ok: true });
 });
 

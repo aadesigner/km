@@ -1,24 +1,28 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
+import { isAdminAppPath } from "@/lib/admin-routes";
+import { isTrackablePresencePath } from "@/lib/presence-path";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-const HEARTBEAT_MS = 120_000;
-const MIN_RESEND_MS = 90_000;
+const HEARTBEAT_MS = 20_000;
+const MIN_RESEND_MS = 18_000;
 
-/** Lightweight signed-in user presence — throttled client + server. Skips admin accounts. */
+/** Lightweight signed-in user presence on public pages only — heartbeat every ~20s. */
 export function PresenceHeartbeat() {
-  const { isSignedIn, isLoaded, user } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const [location] = useLocation();
   const lastSentRef = useRef({ path: "", at: 0 });
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || user?.isAdmin) return;
+    if (!isLoaded || !isSignedIn) return;
 
     const pathname = location.split("?")[0]?.split("#")[0] ?? location;
+    if (isAdminAppPath(pathname) || !isTrackablePresencePath(pathname)) return;
 
     const ping = () => {
       if (document.visibilityState === "hidden") return;
+      if (isAdminAppPath(pathname) || !isTrackablePresencePath(pathname)) return;
       const now = Date.now();
       if (
         lastSentRef.current.path === pathname
@@ -51,7 +55,7 @@ export function PresenceHeartbeat() {
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [isLoaded, isSignedIn, user?.isAdmin, location]);
+  }, [isLoaded, isSignedIn, location]);
 
   return null;
 }

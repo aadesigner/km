@@ -74,15 +74,17 @@ export const oauthInitLimiter = rateLimit({
   },
 });
 
-/** Signed-in presence heartbeat — bounded per user; server also throttles DB writes. */
+/** Signed-in presence heartbeat — per authenticated user; DB writes throttled ~20s per path. */
 export const presenceHeartbeatLimiter = rateLimit({
   windowMs: 60_000,
-  max: envRateMax("PRESENCE_HEARTBEAT_RATE_MAX", 4, 8),
+  max: envRateMax("PRESENCE_HEARTBEAT_RATE_MAX", 6, 12),
   standardHeaders: true,
   legacyHeaders: false,
   message: { ok: true },
   keyGenerator: userOrIpKey,
+  validate: { ip: false },
   handler: (_req, res) => {
+    // Soft-limit: do not tip off scanners with 429; no DB write happens after this.
     res.status(200).json({ ok: true });
   },
 });
