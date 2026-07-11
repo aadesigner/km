@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MouseEvent, type MutableRefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
@@ -18,7 +18,6 @@ import { KmcheckLogo } from "@/components/logo";
 import { BannedSessionRedirect } from "@/components/banned-session-redirect";
 import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
-import { navigateToAdmin } from "@/lib/go-admin";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
@@ -123,7 +122,7 @@ function CountryNavMenuGroups({
                   href={`/${language}/cars/${slug}`}
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-100",
+                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-75",
                     active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
                   )}
                 >
@@ -159,7 +158,7 @@ function CountryNavMenuGroups({
                     role="menuitem"
                     onClick={onNavigate}
                     className={cn(
-                      "group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors duration-100",
+                      "group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors duration-75",
                       active
                         ? "bg-primary/[0.08] ring-1 ring-primary/15"
                         : "hover:bg-muted/60 dark:hover:bg-white/[0.05]",
@@ -256,6 +255,13 @@ const NAV_DROPDOWN_PANEL = cn(
 /** Positions panel below trigger; pt-2 bridges the gap for hover travel. */
 const NAV_DROPDOWN_ANCHOR = "absolute top-full z-[110] pt-2";
 
+const NAV_DROPDOWN_MOTION = {
+  initial: { opacity: 0, y: -2, scale: 0.99 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -2, scale: 0.99 },
+  transition: { duration: 0.07, ease: [0.22, 1, 0.36, 1] },
+} as const;
+
 /** Dropdown panel shell — motion handles enter/exit; avoid tailwind animate-in (double animation). */
 const NAV_DROPDOWN_CLS = NAV_DROPDOWN_PANEL;
 
@@ -266,7 +272,7 @@ function navDropdownHoverProps(
   timers: MutableRefObject<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>,
   setOpen: Dispatch<SetStateAction<boolean>>,
   closeOthers: () => void,
-  delayMs = 140,
+  delayMs = 80,
 ) {
   return {
     onMouseEnter: () => {
@@ -286,6 +292,18 @@ function navDropdownHoverProps(
         setOpen(false);
       }, delayMs);
     },
+  };
+}
+
+/** Desktop dropdown triggers — hover opens via parent wrapper; click must not toggle. */
+function navDropdownTriggerProps(open: boolean, label?: string) {
+  return {
+    type: "button" as const,
+    tabIndex: -1,
+    "aria-haspopup": "menu" as const,
+    "aria-expanded": open,
+    ...(label ? { "aria-label": label } : {}),
+    onClick: (e: MouseEvent<HTMLButtonElement>) => e.preventDefault(),
   };
 }
 
@@ -392,7 +410,7 @@ function MobileLangPicker({
                 initial={{ opacity: 0, y: -6, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.08, ease: [0.22, 1, 0.36, 1] }}
                 style={{ ...menuStyle, transformOrigin: "top right" }}
                 className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
               >
@@ -556,12 +574,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     setUserOpen(false);
   };
 
-  const goToAdmin = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigateToAdmin(setLocation, () => {
-      setUserOpen(false);
-      setMobileOpen(false);
-    });
+  const closeMenus = () => {
+    setUserOpen(false);
+    setMobileOpen(false);
   };
 
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -589,7 +604,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative px-3.5 rounded-xl font-medium transition-colors",
+    "relative px-3.5 rounded-xl font-medium transition-colors duration-75",
     scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
     active
       ? isDarkNav
@@ -653,7 +668,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeLangAndUser)}
           >
             <button
-              onClick={() => setCountryOpen(v => !v)}
+              {...navDropdownTriggerProps(countryOpen, t("nav_country"))}
               className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
             >
               {t("nav_country")}
@@ -664,10 +679,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <AnimatePresence>
               {countryOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                  {...NAV_DROPDOWN_MOTION}
                   className={cn(NAV_DROPDOWN_ANCHOR, "left-0")}
                 >
                   <div className={cn(dropdownCls, "w-[19.5rem] p-1.5")}>
@@ -712,8 +724,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               {...navDropdownHoverProps("lang", hoverCloseTimers, setLangOpen, closeCountryAndUser)}
             >
               <button
-                onClick={() => setLangOpen(v => !v)}
-                aria-label={LANGS.find(l => l.code === language)?.label ?? language}
+                {...navDropdownTriggerProps(langOpen, LANGS.find(l => l.code === language)?.label ?? language)}
                 className={cn(
                   "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
@@ -738,10 +749,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               <AnimatePresence>
                 {langOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                    transition={{ duration: 0.11, ease: [0.22, 1, 0.36, 1] }}
+                    {...NAV_DROPDOWN_MOTION}
                     style={{ transformOrigin: "top right" }}
                     className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
                   >
@@ -761,7 +769,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               onClick={toggleTheme}
               title="Toggle theme"
               className={cn(
-                "relative rounded-full flex items-center justify-center transition-colors duration-200",
+                "relative rounded-full flex items-center justify-center transition-colors duration-75",
                 scrolled ? "h-8 w-8" : "h-9 w-9",
                 isDarkNav
                   ? "text-white/55 hover:text-white hover:bg-white/10"
@@ -786,9 +794,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 {...navDropdownHoverProps("user", hoverCloseTimers, setUserOpen, closeCountryAndLang)}
               >
                 <button
-                  onClick={() => setUserOpen(v => !v)}
+                  {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors outline-none",
+                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors duration-75 outline-none",
                     isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
                   )}
                 >
@@ -805,16 +813,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   )}>
                     {displayName}
                   </span>
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-all duration-200", isDarkNav ? "text-white/35" : "text-muted-foreground", userOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-75", isDarkNav ? "text-white/35" : "text-muted-foreground", userOpen && "rotate-180")} />
                 </button>
 
                 <AnimatePresence>
                   {userOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                      transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                      {...NAV_DROPDOWN_MOTION}
                       style={{ transformOrigin: "top right" }}
                       className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
                     >
@@ -826,7 +831,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       <PrefetchLink
                         href={`/${language}/dashboard`}
                         onClick={() => setUserOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors duration-75 rounded-lg mx-1.5"
                       >
                         <User className="h-3.5 w-3.5 text-muted-foreground" />
                         {t("my_reports")}
@@ -834,8 +839,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       {isAdmin && (
                         <PrefetchLink
                           href="/adminx"
-                          onClick={goToAdmin}
-                          className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
+                          onClick={closeMenus}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors duration-75 rounded-lg mx-1.5"
                         >
                           <Shield className="h-3.5 w-3.5 text-muted-foreground" />
                           {t("admin")}
@@ -844,7 +849,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 transition-colors rounded-lg"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 transition-colors duration-75 rounded-lg"
                         >
                           <LogOut className="h-3.5 w-3.5" />
                           {t("logout")}
@@ -861,7 +866,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "font-medium rounded-full transition-colors",
+                    "font-medium rounded-full transition-colors duration-75",
                     scrolled ? "h-9 px-3.5 text-sm" : "h-10 px-4 text-[15px]",
                     isDarkNav
                       ? "text-white/60 hover:text-white hover:bg-white/[0.07]"
@@ -901,7 +906,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 title="Toggle theme"
                 aria-label="Toggle theme"
                 className={cn(
-                  "relative rounded-full flex items-center justify-center transition-colors duration-200",
+                  "relative rounded-full flex items-center justify-center transition-colors duration-75",
                   scrolled ? "h-8 w-8" : "h-9 w-9",
                   isDarkNav
                     ? "text-white/55 hover:text-white hover:bg-white/10"
@@ -1021,7 +1026,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           asChild
                           onClick={() => setMobileOpen(false)}
                         >
-                          <PrefetchLink href="/adminx" onClick={goToAdmin}>{t("admin")}</PrefetchLink>
+                          <PrefetchLink href="/adminx" onClick={closeMenus}>{t("admin")}</PrefetchLink>
                         </Button>
                       ) : (
                         <div />

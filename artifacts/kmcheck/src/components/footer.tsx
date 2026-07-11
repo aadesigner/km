@@ -143,7 +143,7 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="space-y-5 lg:col-span-3">
             <PrefetchLink href={`/${language}`} className="inline-flex group">
-              <KmcheckLogo variant="dark" className="h-8 transition-opacity group-hover:opacity-90" />
+              <KmcheckLogo variant="dark" className="h-9 md:h-10 transition-opacity group-hover:opacity-90" />
             </PrefetchLink>
             <p className="max-w-[240px] text-[12px] leading-relaxed text-white/38">
               {t("footer_tagline")}
