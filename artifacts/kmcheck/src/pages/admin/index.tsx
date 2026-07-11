@@ -621,9 +621,6 @@ export default function AdminOverview() {
                   ])}
                   onChange={setPresencePeriod}
                 />
-                <p className="text-[11px] md:text-xs text-muted-foreground mt-2.5">
-                  Signed-in customers only · admin accounts excluded
-                </p>
               </div>
               <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2 bg-card">
                 <h3 className="text-xs md:text-sm font-semibold flex items-center gap-2">
