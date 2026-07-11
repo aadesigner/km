@@ -7,7 +7,7 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
-import { useEffect, Suspense, type ComponentType, type ReactNode } from "react";
+import { useEffect, Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
@@ -278,13 +278,6 @@ function AdminPage({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AdminCatchAllRoute() {
-  return (
-    <AdminPage>
-      <AdminNotFound />
-    </AdminPage>
-  );
-}
 
 function NotFoundLang() {
   const [location] = useLocation();
@@ -420,115 +413,84 @@ function SetPasswordRoute(props: { params: { lang: string } }) {
   );
 }
 
-function createAdminRoute(Page: ComponentType) {
-  function AdminRoute() {
-    return (
-      <AdminPage>
-        <Suspense fallback={<PageLoader />}>
-          <Page />
-        </Suspense>
-      </AdminPage>
-    );
-  }
-  return AdminRoute;
-}
-
-const AdminOverviewRoute = createAdminRoute(AdminOverview);
-const AdminAnalyticsRoute = createAdminRoute(AdminAnalytics);
-const AdminUsersRoute = createAdminRoute(AdminUsers);
-const AdminLookupsRoute = createAdminRoute(AdminLookups);
-const AdminProvidersRoute = createAdminRoute(AdminProviders);
-const AdminPricingRoute = createAdminRoute(AdminPricing);
-const AdminSettingsRoute = createAdminRoute(AdminSettings);
-const AdminPluginsRoute = createAdminRoute(AdminPlugins);
-const AdminLogsRoute = createAdminRoute(AdminLogs);
-const AdminCouponsRoute = createAdminRoute(AdminCoupons);
-const AdminEmailsRoute = createAdminRoute(AdminEmails);
-const AdminSecurityRoute = createAdminRoute(AdminSecurity);
-const AdminVinCatalogRoute = createAdminRoute(AdminVinCatalog);
-const AdminPendingVinChecksRoute = createAdminRoute(AdminPendingVinChecks);
-const AdminTransactionsRoute = createAdminRoute(AdminTransactions);
-const AdminAnnouncementsRoute = createAdminRoute(AdminAnnouncements);
-
-function AdminUserDetailRoute(props: { params: { userId: string } }) {
-  return (
-    <AdminPage>
-      <Suspense fallback={<PageLoader />}>
-        <AdminUserDetail params={props.params} />
-      </Suspense>
-    </AdminPage>
-  );
-}
-
-function AdminPendingVinDetailRoute(props: { params: { id: string } }) {
-  return (
-    <AdminPage>
-      <Suspense fallback={<PageLoader />}>
-        <AdminPendingVinDetail params={props.params} />
-      </Suspense>
-    </AdminPage>
-  );
-}
-
-function AdminVinDetailRoute(props: { params: { vin: string } }) {
-  return (
-    <AdminPage>
-      <Suspense fallback={<PageLoader />}>
-        <AdminVinDetail params={props.params} />
-      </Suspense>
-    </AdminPage>
-  );
-}
-
 function AdminRouteOutlet() {
   const [location] = useLocation();
   const { pathname } = splitRouterLocation(location);
   const match = matchAdminRoute(pathname);
 
+  let page: React.ReactNode;
   switch (match.id) {
     case "overview":
-      return <AdminOverviewRoute />;
+      page = <AdminOverview />;
+      break;
     case "analytics":
-      return <AdminAnalyticsRoute />;
+      page = <AdminAnalytics />;
+      break;
     case "users":
-      return <AdminUsersRoute />;
+      page = <AdminUsers />;
+      break;
     case "user-detail":
-      return <AdminUserDetailRoute params={{ userId: match.userId }} />;
+      page = <AdminUserDetail params={{ userId: match.userId }} />;
+      break;
     case "lookups":
-      return <AdminLookupsRoute />;
+      page = <AdminLookups />;
+      break;
     case "providers":
-      return <AdminProvidersRoute />;
+      page = <AdminProviders />;
+      break;
     case "pricing":
-      return <AdminPricingRoute />;
+      page = <AdminPricing />;
+      break;
     case "settings":
-      return <AdminSettingsRoute />;
+      page = <AdminSettings />;
+      break;
     case "plugins":
-      return <AdminPluginsRoute />;
+      page = <AdminPlugins />;
+      break;
     case "logs":
-      return <AdminLogsRoute />;
+      page = <AdminLogs />;
+      break;
     case "coupons":
-      return <AdminCouponsRoute />;
+      page = <AdminCoupons />;
+      break;
     case "emails":
-      return <AdminEmailsRoute />;
+      page = <AdminEmails />;
+      break;
     case "security":
-      return <AdminSecurityRoute />;
+      page = <AdminSecurity />;
+      break;
     case "vin-catalog":
-      return <AdminVinCatalogRoute />;
+      page = <AdminVinCatalog />;
+      break;
     case "pending-vin-checks":
-      return <AdminPendingVinChecksRoute />;
+      page = <AdminPendingVinChecks />;
+      break;
     case "pending-vin-detail":
-      return <AdminPendingVinDetailRoute params={{ id: match.checkId }} />;
+      page = <AdminPendingVinDetail params={{ id: match.checkId }} />;
+      break;
     case "vin-detail":
-      return <AdminVinDetailRoute params={{ vin: match.vin }} />;
+      page = <AdminVinDetail params={{ vin: match.vin }} />;
+      break;
     case "transactions":
-      return <AdminTransactionsRoute />;
+      page = <AdminTransactions />;
+      break;
     case "announcements":
-      return <AdminAnnouncementsRoute />;
+      page = <AdminAnnouncements />;
+      break;
     case "not-found":
-      return <AdminCatchAllRoute />;
+      page = <AdminNotFound />;
+      break;
     default:
-      return <AdminOverviewRoute />;
+      page = <AdminOverview />;
   }
+
+  return (
+    <AdminPage>
+      <Suspense fallback={<PageLoader />}>
+        {page}
+      </Suspense>
+    </AdminPage>
+  );
 }
 
 /** Isolated admin router — never competes with /:lang in the public Switch. */

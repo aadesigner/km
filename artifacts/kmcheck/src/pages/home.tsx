@@ -5,9 +5,9 @@ import { useLocation, Link } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
-  ShieldCheck, Search, Clock, FileText, ChevronRight,
+  ShieldCheck, Search, FileText,
   CheckCircle2,
-  Globe, ArrowRight, X,
+  Globe, ArrowRight,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
 import { CoverageMapVisual } from "@/components/coverage-map-visual";
@@ -18,11 +18,11 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
-import { getTestimonials } from "@/data/testimonials";
 import { HeroVinForm } from "@/components/hero-vin-form";
-import { TestimonialsSlider } from "@/components/testimonials-slider";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
+// Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
+// only shown at lg+. Skip mounting on smaller screens to avoid wasted SVG work.
 const CompareTable = lazy(() =>
   import("@/components/compare-table").then((m) => ({ default: m.CompareTable })),
 );
@@ -32,6 +32,23 @@ const WhatWeCheckSection = lazy(() =>
 const VinCheckIncludesSection = lazy(() =>
   import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
 );
+const HomepageTestimonials = lazy(() => import("@/components/homepage-testimonials"));
+
+/** True at the lg breakpoint (1024px+) where the decorative hero maps are visible. */
+function useHeroMapsEnabled() {
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return false;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const update = () => setEnabled(mql.matches);
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return enabled;
+}
 
 function useCountries(t: (k: string) => string) {
   return [
@@ -130,9 +147,9 @@ export default function Home() {
 
   const STEPS = useSteps(t);
   const COUNTRIES = useCountries(t);
-  const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
 
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
+  const heroMapsEnabled = useHeroMapsEnabled();
 
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,13 +218,17 @@ export default function Home() {
           aria-hidden
           className="pointer-events-none absolute -left-4 top-[calc(1.5rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(58vw,720px)] max-w-[720px] -translate-y-8 xl:-translate-y-10 opacity-95 dark:opacity-90"
         >
-          <CoverageMapVisual side="left" showLivePings className="h-full w-full" />
+          {heroMapsEnabled && (
+            <CoverageMapVisual side="left" showLivePings className="h-full w-full" />
+          )}
         </div>
         <div
           aria-hidden
           className="pointer-events-none absolute -right-6 top-[calc(1.75rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(70vw,900px)] max-w-[900px] translate-x-[5%] -translate-y-7 xl:translate-x-[7%] xl:-translate-y-9 opacity-95 dark:opacity-90"
         >
-          <CoverageMapVisual side="right" showLivePings className="h-full w-full" />
+          {heroMapsEnabled && (
+            <CoverageMapVisual side="right" showLivePings className="h-full w-full" />
+          )}
         </div>
 
         <div className="relative max-w-6xl mx-auto z-10">
@@ -342,6 +363,11 @@ export default function Home() {
                           <img
                             src={`https://flagcdn.com/${c.flagCode}.svg`}
                             alt=""
+                            width={43}
+                            height={32}
+                            loading="lazy"
+                            decoding="async"
+                            fetchPriority="low"
                             className="h-8 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
                           />
                           <h3 className="text-xl font-bold tracking-tight">{c.name}</h3>
@@ -387,7 +413,9 @@ export default function Home() {
 
       {/* ── TESTIMONIALS ── */}
       <DeferredSection minHeight={420}>
-        <TestimonialsSlider testimonials={TESTIMONIALS} />
+        <Suspense fallback={<SectionFallback minHeight={420} />}>
+          <HomepageTestimonials />
+        </Suspense>
       </DeferredSection>
 
       {/* ── COMPARISON TABLE ── */}

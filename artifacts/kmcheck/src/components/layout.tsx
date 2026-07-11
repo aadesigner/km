@@ -18,6 +18,7 @@ import { KmcheckLogo } from "@/components/logo";
 import { BannedSessionRedirect } from "@/components/banned-session-redirect";
 import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
+import { prefetchAdminArea, scheduleAdminNavigation } from "@/lib/go-admin";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
@@ -495,6 +496,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     setUserOpen(false);
   };
 
+  const goToAdmin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    scheduleAdminNavigation(setLocation, () => {
+      setUserOpen(false);
+      setMobileOpen(false);
+    });
+  };
+
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
   const isAdmin     = user?.isAdmin === true;
   const isOnPage    = (seg: string) => location.includes(`/${seg}`);
@@ -751,7 +760,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       {isAdmin && (
                         <PrefetchLink
                           href="/adminx"
-                          onClick={() => setUserOpen(false)}
+                          onClick={goToAdmin}
+                          onMouseEnter={() => prefetchAdminArea()}
+                          onFocus={() => prefetchAdminArea()}
                           className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
                         >
                           <Shield className="h-3.5 w-3.5 text-muted-foreground" />
@@ -937,7 +948,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           asChild
                           onClick={() => setMobileOpen(false)}
                         >
-                          <PrefetchLink href="/adminx">{t("admin")}</PrefetchLink>
+                          <PrefetchLink href="/adminx" onClick={goToAdmin}>{t("admin")}</PrefetchLink>
                         </Button>
                       ) : (
                         <div />

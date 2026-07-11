@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { Suspense, useMemo, useState, useEffect } from "react";
 import { useAdminGetStats } from "@workspace/api-client-react";
 import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
@@ -11,10 +11,7 @@ import {
   Activity, UserPlus, BarChart3, Zap,
 } from "lucide-react";
 import { Link } from "wouter";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { cn } from "@/lib/utils";
 import {
   type ExtendedStats,
@@ -41,18 +38,13 @@ const CHART_METRICS: { id: ChartMetric; label: string; color: string; grad: stri
   { id: "signups", label: "Signups", color: BRAND_LIGHT, grad: "gradUsers" },
 ];
 
+const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
+
 const PAYMENT_STATUS_STYLES: Record<string, { bar: string; dot: string }> = {
   completed: { bar: "bg-primary", dot: "bg-primary" },
   pending: { bar: "bg-amber-500", dot: "bg-amber-500" },
   failed: { bar: "bg-red-500", dot: "bg-red-500" },
   revoked: { bar: "bg-orange-500", dot: "bg-orange-500" },
-};
-
-const TOOLTIP_STYLE = {
-  fontSize: 11,
-  borderRadius: 8,
-  border: "1px solid hsl(var(--border))",
-  background: "hsl(var(--popover))",
 };
 
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -472,49 +464,17 @@ export default function AdminOverview() {
             </div>
           </div>
           <div className="pl-0 pr-1 pt-3 pb-4 md:px-2 md:pb-5">
-            <ResponsiveContainer width="100%" height={chartHeight}>
-              <AreaChart data={derived?.chartData ?? []} margin={{ top: 4, right: 8, left: -8, bottom: 0 }}>
-                <defs>
-                  <linearGradient id={derived?.activeChart.grad ?? "gradRevenue"} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={derived?.activeChart.color ?? BRAND} stopOpacity={0.2} />
-                    <stop offset="100%" stopColor={derived?.activeChart.color ?? BRAND} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" vertical={false} />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval={chartRange === 90 ? 13 : chartRange === 30 ? 4 : 0}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  width={chartMetric === "revenue" ? 42 : 28}
-                  tickFormatter={(v) => (chartMetric === "revenue" ? `€${v}` : String(v))}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  contentStyle={TOOLTIP_STYLE}
-                  formatter={(v) => [
-                    chartMetric === "revenue" ? fmtEuro(Number(v)) : v,
-                    derived?.activeChart.label ?? "",
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke={derived?.activeChart.color ?? BRAND}
-                  strokeWidth={2}
-                  fill={`url(#${derived?.activeChart.grad ?? "gradRevenue"})`}
-                  dot={false}
-                  activeDot={{ r: 3, strokeWidth: 0 }}
-                  isAnimationActive={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="w-full rounded-lg" style={{ height: chartHeight }} />}>
+              <AdminDashboardChart
+                height={chartHeight}
+                data={derived?.chartData ?? []}
+                chartMetric={chartMetric}
+                chartRange={chartRange}
+                strokeColor={derived?.activeChart.color ?? BRAND}
+                gradId={derived?.activeChart.grad ?? "gradRevenue"}
+                seriesLabel={derived?.activeChart.label ?? ""}
+              />
+            </Suspense>
           </div>
         </Panel>
 

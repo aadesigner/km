@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,18 @@ export function TestimonialsSlider({
   }, [tmPaused, testimonials.length]);
 
   const tm = testimonials[tmIdx % Math.max(testimonials.length, 1)];
+  const handleSwipe = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeDistance = 50;
+    const swipeVelocity = 500;
+
+    if (info.offset.x <= -swipeDistance || info.velocity.x <= -swipeVelocity) {
+      setTmIdx((i) => (i + 1) % testimonials.length);
+    } else if (info.offset.x >= swipeDistance || info.velocity.x >= swipeVelocity) {
+      setTmIdx((i) => (i - 1 + testimonials.length) % testimonials.length);
+    }
+
+    setTmPaused(false);
+  };
 
   return (
     <section className={cn("py-16 md:py-24 px-4", className)}>
@@ -85,7 +97,13 @@ export function TestimonialsSlider({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -32 }}
                 transition={{ duration: 0.22 }}
-                className="mx-8 sm:mx-10 bg-background rounded-3xl border border-border/70 p-7 md:p-9 shadow-sm"
+                drag={testimonials.length > 1 ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.18}
+                dragSnapToOrigin
+                onDragStart={() => setTmPaused(true)}
+                onDragEnd={handleSwipe}
+                className="mx-8 touch-pan-y select-none cursor-grab active:cursor-grabbing sm:mx-10 bg-background rounded-3xl border border-border/70 p-7 md:p-9 shadow-sm"
               >
                 <div className="flex items-center justify-between gap-2 mb-5">
                   <div className="flex gap-0.5">

@@ -8,7 +8,11 @@ const ROUTE_LOADERS: Record<string, () => Promise<unknown>> = {
   faq: () => import("@/pages/faq"),
   dashboard: () => import("@/pages/dashboard"),
   purchases: () => import("@/pages/purchases"),
-  adminx: () => import("@/pages/admin/index"),
+  adminx: () => Promise.all([
+    import("@/pages/admin/layout"),
+    import("@/pages/admin/index"),
+    import("@/pages/admin/admin-dashboard-chart").catch(() => {}),
+  ]),
   checkout: () => import("@/pages/checkout"),
   "free-vin-decoder": () => import("@/pages/free-vin-decoder"),
   terms: () => import("@/pages/terms"),

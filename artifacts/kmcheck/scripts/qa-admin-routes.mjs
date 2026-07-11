@@ -26,6 +26,7 @@ function read(rel) {
 const app = read("src/App.tsx");
 const layout = read("src/pages/admin/layout.tsx");
 const index = read("src/pages/admin/index.tsx");
+const chart = read("src/pages/admin/admin-dashboard-chart.tsx");
 const notFound = read("src/pages/admin/not-found.tsx");
 const adminQueryOpts = read("src/lib/admin-query-options.ts");
 const adminRoutes = read("src/lib/admin-routes.ts");
@@ -86,8 +87,8 @@ if (index.includes("framer-motion")) {
 if (!index.includes("useMemo")) {
   fail("admin dashboard must memoize derived chart data");
 }
-if (!index.includes("isAnimationActive={false}")) {
-  fail("recharts Area must disable animation (isAnimationActive={false})");
+if (!chart.includes("isAnimationActive={false}")) {
+  fail("admin-dashboard-chart must disable animation (isAnimationActive={false})");
 }
 if (
   (index.includes("refetchInterval") || adminQueryOpts.includes("ADMIN_STATS_QUERY"))
