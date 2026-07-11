@@ -413,84 +413,151 @@ function SetPasswordRoute(props: { params: { lang: string } }) {
   );
 }
 
+function AdminRouteShell({ children, lazy = false }: { children: ReactNode; lazy?: boolean }) {
+  return (
+    <AdminPage>
+      {lazy ? (
+        <Suspense fallback={<PageLoader />}>
+          {children}
+        </Suspense>
+      ) : children}
+    </AdminPage>
+  );
+}
+
 function AdminRouteOutlet() {
   const [location] = useLocation();
   const { pathname } = splitRouterLocation(location);
   const match = matchAdminRoute(pathname);
 
-  let page: React.ReactNode;
   switch (match.id) {
     case "overview":
-      page = <AdminOverview />;
-      break;
-    case "analytics":
-      page = <AdminAnalytics />;
-      break;
-    case "users":
-      page = <AdminUsers />;
-      break;
-    case "user-detail":
-      page = <AdminUserDetail params={{ userId: match.userId }} />;
-      break;
-    case "lookups":
-      page = <AdminLookups />;
-      break;
-    case "providers":
-      page = <AdminProviders />;
-      break;
-    case "pricing":
-      page = <AdminPricing />;
-      break;
-    case "settings":
-      page = <AdminSettings />;
-      break;
-    case "plugins":
-      page = <AdminPlugins />;
-      break;
-    case "logs":
-      page = <AdminLogs />;
-      break;
-    case "coupons":
-      page = <AdminCoupons />;
-      break;
-    case "emails":
-      page = <AdminEmails />;
-      break;
-    case "security":
-      page = <AdminSecurity />;
-      break;
-    case "vin-catalog":
-      page = <AdminVinCatalog />;
-      break;
-    case "pending-vin-checks":
-      page = <AdminPendingVinChecks />;
-      break;
-    case "pending-vin-detail":
-      page = <AdminPendingVinDetail params={{ id: match.checkId }} />;
-      break;
-    case "vin-detail":
-      page = <AdminVinDetail params={{ vin: match.vin }} />;
-      break;
-    case "transactions":
-      page = <AdminTransactions />;
-      break;
-    case "announcements":
-      page = <AdminAnnouncements />;
-      break;
+      return (
+        <AdminRouteShell>
+          <AdminOverview />
+        </AdminRouteShell>
+      );
     case "not-found":
-      page = <AdminNotFound />;
-      break;
+      return (
+        <AdminRouteShell>
+          <AdminNotFound />
+        </AdminRouteShell>
+      );
+    case "analytics":
+      return (
+        <AdminRouteShell lazy>
+          <AdminAnalytics />
+        </AdminRouteShell>
+      );
+    case "users":
+      return (
+        <AdminRouteShell lazy>
+          <AdminUsers />
+        </AdminRouteShell>
+      );
+    case "user-detail":
+      return (
+        <AdminRouteShell lazy>
+          <AdminUserDetail params={{ userId: match.userId }} />
+        </AdminRouteShell>
+      );
+    case "lookups":
+      return (
+        <AdminRouteShell lazy>
+          <AdminLookups />
+        </AdminRouteShell>
+      );
+    case "providers":
+      return (
+        <AdminRouteShell lazy>
+          <AdminProviders />
+        </AdminRouteShell>
+      );
+    case "pricing":
+      return (
+        <AdminRouteShell lazy>
+          <AdminPricing />
+        </AdminRouteShell>
+      );
+    case "settings":
+      return (
+        <AdminRouteShell lazy>
+          <AdminSettings />
+        </AdminRouteShell>
+      );
+    case "plugins":
+      return (
+        <AdminRouteShell lazy>
+          <AdminPlugins />
+        </AdminRouteShell>
+      );
+    case "logs":
+      return (
+        <AdminRouteShell lazy>
+          <AdminLogs />
+        </AdminRouteShell>
+      );
+    case "coupons":
+      return (
+        <AdminRouteShell lazy>
+          <AdminCoupons />
+        </AdminRouteShell>
+      );
+    case "emails":
+      return (
+        <AdminRouteShell lazy>
+          <AdminEmails />
+        </AdminRouteShell>
+      );
+    case "security":
+      return (
+        <AdminRouteShell lazy>
+          <AdminSecurity />
+        </AdminRouteShell>
+      );
+    case "vin-catalog":
+      return (
+        <AdminRouteShell lazy>
+          <AdminVinCatalog />
+        </AdminRouteShell>
+      );
+    case "pending-vin-checks":
+      return (
+        <AdminRouteShell lazy>
+          <AdminPendingVinChecks />
+        </AdminRouteShell>
+      );
+    case "pending-vin-detail":
+      return (
+        <AdminRouteShell lazy>
+          <AdminPendingVinDetail params={{ id: match.checkId }} />
+        </AdminRouteShell>
+      );
+    case "vin-detail":
+      return (
+        <AdminRouteShell lazy>
+          <AdminVinDetail params={{ vin: match.vin }} />
+        </AdminRouteShell>
+      );
+    case "transactions":
+      return (
+        <AdminRouteShell lazy>
+          <AdminTransactions />
+        </AdminRouteShell>
+      );
+    case "announcements":
+      return (
+        <AdminRouteShell lazy>
+          <AdminAnnouncements />
+        </AdminRouteShell>
+      );
     default:
-      page = <AdminOverview />;
+      return (
+        <AdminRouteShell>
+          <AdminOverview />
+        </AdminRouteShell>
+      );
   }
-
-  return (
-    <AdminPage>
-      <Suspense fallback={<PageLoader />}>
-        {page}
-      </Suspense>
-    </AdminPage>
-  );
 }
 
 /** Isolated admin router — never competes with /:lang in the public Switch. */

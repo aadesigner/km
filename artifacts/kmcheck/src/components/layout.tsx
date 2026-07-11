@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
@@ -18,7 +18,7 @@ import { KmcheckLogo } from "@/components/logo";
 import { BannedSessionRedirect } from "@/components/banned-session-redirect";
 import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
-import { prefetchAdminArea, scheduleAdminNavigation } from "@/lib/go-admin";
+import { navigateToAdmin } from "@/lib/go-admin";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
@@ -248,13 +248,46 @@ const MobileMenuToggle = forwardRef<
 ));
 MobileMenuToggle.displayName = "MobileMenuToggle";
 
-const NAV_DROPDOWN_BASE = cn(
-  "absolute top-[calc(100%+8px)] z-[110] min-w-[9.5rem] rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10",
+const NAV_DROPDOWN_PANEL = cn(
+  "min-w-[9.5rem] rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10",
   "overflow-hidden",
 );
 
+/** Positions panel below trigger; pt-2 bridges the gap for hover travel. */
+const NAV_DROPDOWN_ANCHOR = "absolute top-full z-[110] pt-2";
+
 /** Dropdown panel shell — motion handles enter/exit; avoid tailwind animate-in (double animation). */
-const NAV_DROPDOWN_CLS = NAV_DROPDOWN_BASE;
+const NAV_DROPDOWN_CLS = NAV_DROPDOWN_PANEL;
+
+type NavDropdownKey = "country" | "lang" | "user";
+
+function navDropdownHoverProps(
+  key: NavDropdownKey,
+  timers: MutableRefObject<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>,
+  setOpen: Dispatch<SetStateAction<boolean>>,
+  closeOthers: () => void,
+  delayMs = 140,
+) {
+  return {
+    onMouseEnter: () => {
+      const timer = timers.current[key];
+      if (timer) {
+        clearTimeout(timer);
+        timers.current[key] = null;
+      }
+      closeOthers();
+      setOpen(true);
+    },
+    onMouseLeave: () => {
+      const existing = timers.current[key];
+      if (existing) clearTimeout(existing);
+      timers.current[key] = setTimeout(() => {
+        timers.current[key] = null;
+        setOpen(false);
+      }, delayMs);
+    },
+  };
+}
 
 function MobileLangPicker({
   language,
@@ -422,6 +455,33 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const countryRef = useRef<HTMLDivElement>(null);
   const langRef    = useRef<HTMLDivElement>(null);
   const userRef    = useRef<HTMLDivElement>(null);
+  const hoverCloseTimers = useRef<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>({
+    country: null,
+    lang: null,
+    user: null,
+  });
+
+  const closeCountryAndLang = useCallback(() => {
+    setCountryOpen(false);
+    setLangOpen(false);
+  }, []);
+
+  const closeLangAndUser = useCallback(() => {
+    setLangOpen(false);
+    setUserOpen(false);
+  }, []);
+
+  const closeCountryAndUser = useCallback(() => {
+    setCountryOpen(false);
+    setUserOpen(false);
+  }, []);
+
+  useEffect(() => () => {
+    for (const key of Object.keys(hoverCloseTimers.current) as NavDropdownKey[]) {
+      const timer = hoverCloseTimers.current[key];
+      if (timer) clearTimeout(timer);
+    }
+  }, []);
 
   usePrefetchPickerFlags(langOpen);
 
@@ -498,7 +558,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
   const goToAdmin = (e: React.MouseEvent) => {
     e.preventDefault();
-    scheduleAdminNavigation(setLocation, () => {
+    navigateToAdmin(setLocation, () => {
       setUserOpen(false);
       setMobileOpen(false);
     });
@@ -587,7 +647,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
           <div className="hidden md:flex items-center gap-0.5">
           {/* Search by Country — desktop */}
-          <div ref={countryRef} className="relative">
+          <div
+            ref={countryRef}
+            className="relative"
+            {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeLangAndUser)}
+          >
             <button
               onClick={() => setCountryOpen(v => !v)}
               className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
@@ -604,16 +668,15 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-                  className={cn(
-                    dropdownCls,
-                    "left-0 w-[19.5rem] p-1.5",
-                  )}
+                  className={cn(NAV_DROPDOWN_ANCHOR, "left-0")}
                 >
-                  <CountryNavMenuGroups
-                    language={language}
-                    isActive={(slug) => isOnPage(`cars/${slug}`)}
-                    onNavigate={() => setCountryOpen(false)}
-                  />
+                  <div className={cn(dropdownCls, "w-[19.5rem] p-1.5")}>
+                    <CountryNavMenuGroups
+                      language={language}
+                      isActive={(slug) => isOnPage(`cars/${slug}`)}
+                      onNavigate={() => setCountryOpen(false)}
+                    />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -643,7 +706,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
             <div className={utilityClusterCls}>
             {/* Language picker */}
-            <div ref={langRef} className="relative">
+            <div
+              ref={langRef}
+              className="relative"
+              {...navDropdownHoverProps("lang", hoverCloseTimers, setLangOpen, closeCountryAndUser)}
+            >
               <button
                 onClick={() => setLangOpen(v => !v)}
                 aria-label={LANGS.find(l => l.code === language)?.label ?? language}
@@ -676,12 +743,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
                     transition={{ duration: 0.11, ease: [0.22, 1, 0.36, 1] }}
                     style={{ transformOrigin: "top right" }}
-                    className={cn(dropdownCls, "right-0 w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}
+                    className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
                   >
-                    <LangPickerList
-                      language={language}
-                      onSelect={(code) => handleLanguageChange(code)}
-                    />
+                    <div className={cn(dropdownCls, "w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}>
+                      <LangPickerList
+                        language={language}
+                        onSelect={(code) => handleLanguageChange(code)}
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -711,7 +780,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             {!isLoaded ? (
               <div className={cn("rounded-full bg-muted/80 animate-pulse", scrolled ? "h-9 w-24" : "h-10 w-28")} aria-hidden />
             ) : isSignedIn ? (
-              <div ref={userRef} className="relative">
+              <div
+                ref={userRef}
+                className="relative"
+                {...navDropdownHoverProps("user", hoverCloseTimers, setUserOpen, closeCountryAndLang)}
+              >
                 <button
                   onClick={() => setUserOpen(v => !v)}
                   className={cn(
@@ -743,8 +816,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       exit={{ opacity: 0, y: -4, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
                       style={{ transformOrigin: "top right" }}
-                      className={cn(dropdownCls, "right-0 w-56 py-1.5")}
+                      className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
                     >
+                      <div className={cn(dropdownCls, "w-56 py-1.5")}>
                       <div className="px-4 py-3 border-b border-border/60 mb-1">
                         {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
                         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -761,8 +835,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                         <PrefetchLink
                           href="/adminx"
                           onClick={goToAdmin}
-                          onMouseEnter={() => prefetchAdminArea()}
-                          onFocus={() => prefetchAdminArea()}
                           className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors rounded-lg mx-1.5"
                         >
                           <Shield className="h-3.5 w-3.5 text-muted-foreground" />
@@ -777,6 +849,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           <LogOut className="h-3.5 w-3.5" />
                           {t("logout")}
                         </button>
+                      </div>
                       </div>
                     </motion.div>
                   )}

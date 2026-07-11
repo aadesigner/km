@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAdminGetStats } from "@workspace/api-client-react";
 import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
@@ -11,7 +11,7 @@ import {
   Activity, UserPlus, BarChart3, Zap,
 } from "lucide-react";
 import { Link } from "wouter";
-import { lazyWithRetry } from "@/lib/lazy-with-retry";
+import AdminDashboardChart from "@/pages/admin/admin-dashboard-chart";
 import { cn } from "@/lib/utils";
 import {
   type ExtendedStats,
@@ -37,8 +37,6 @@ const CHART_METRICS: { id: ChartMetric; label: string; color: string; grad: stri
   { id: "checks", label: "Checks", color: BRAND_MUTED, grad: "gradChecks" },
   { id: "signups", label: "Signups", color: BRAND_LIGHT, grad: "gradUsers" },
 ];
-
-const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
 
 const PAYMENT_STATUS_STYLES: Record<string, { bar: string; dot: string }> = {
   completed: { bar: "bg-primary", dot: "bg-primary" },
@@ -463,18 +461,16 @@ export default function AdminOverview() {
               />
             </div>
           </div>
-          <div className="pl-0 pr-1 pt-3 pb-4 md:px-2 md:pb-5">
-            <Suspense fallback={<Skeleton className="w-full rounded-lg" style={{ height: chartHeight }} />}>
-              <AdminDashboardChart
-                height={chartHeight}
-                data={derived?.chartData ?? []}
-                chartMetric={chartMetric}
-                chartRange={chartRange}
-                strokeColor={derived?.activeChart.color ?? BRAND}
-                gradId={derived?.activeChart.grad ?? "gradRevenue"}
-                seriesLabel={derived?.activeChart.label ?? ""}
-              />
-            </Suspense>
+          <div className="pl-0 pr-1 pt-3 pb-4 md:px-2 md:pb-5" style={{ minHeight: chartHeight }}>
+            <AdminDashboardChart
+              height={chartHeight}
+              data={derived?.chartData ?? []}
+              chartMetric={chartMetric}
+              chartRange={chartRange}
+              strokeColor={derived?.activeChart.color ?? BRAND}
+              gradId={derived?.activeChart.grad ?? "gradRevenue"}
+              seriesLabel={derived?.activeChart.label ?? ""}
+            />
           </div>
         </Panel>
 

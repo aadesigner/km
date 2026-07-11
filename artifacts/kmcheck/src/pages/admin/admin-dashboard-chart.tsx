@@ -37,7 +37,8 @@ export default function AdminDashboardChart({
   seriesLabel,
 }: Props) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div className="w-full min-w-0" style={{ minHeight: height }}>
+      <ResponsiveContainer width="100%" height={height} minWidth={1}>
       <AreaChart data={data} margin={{ top: 4, right: 8, left: -8, bottom: 0 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -80,5 +81,6 @@ export default function AdminDashboardChart({
         />
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }
