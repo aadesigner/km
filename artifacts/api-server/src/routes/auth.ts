@@ -234,7 +234,12 @@ async function checkRecaptcha(
   return { blocked: false };
 }
 
-function getPublicUser(user: typeof usersTable.$inferSelect) {
+type PublicUserSource = Pick<
+  typeof usersTable.$inferSelect,
+  "id" | "email" | "name" | "avatarUrl" | "isAdmin" | "isBanned" | "passwordHash" | "createdAt"
+>;
+
+function getPublicUser(user: PublicUserSource) {
   return {
     id: user.id,
     email: user.email,
@@ -418,7 +423,22 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, normalizedEmail)).limit(1);
+  // Keep login independent of optional profile/presence columns so additive
+  // schema rollouts cannot break authentication.
+  const [user] = await db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      name: usersTable.name,
+      avatarUrl: usersTable.avatarUrl,
+      passwordHash: usersTable.passwordHash,
+      isAdmin: usersTable.isAdmin,
+      isBanned: usersTable.isBanned,
+      createdAt: usersTable.createdAt,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.email, normalizedEmail))
+    .limit(1);
 
   if (!user || !user.passwordHash) {
     await db.insert(loginAttemptsTable).values({ email: normalizedEmail, ip: clientIp, context: loginContext });
