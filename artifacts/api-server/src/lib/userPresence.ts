@@ -2,7 +2,7 @@ import { db, usersTable } from "@workspace/db";
 import { and, desc, eq, isNotNull, sql, type SQL } from "drizzle-orm";
 import { logger } from "./logger.js";
 
-const THROTTLE_MS = 35_000;
+const THROTTLE_MS = 60_000;
 const MAX_THROTTLE_MAP = 2_000;
 const STATS_CACHE_MS = 45_000;
 
@@ -10,7 +10,7 @@ export const PRESENCE_PAGE_SIZE = 10;
 
 export type PresencePeriod = "now" | "today" | "yesterday";
 
-/** In-process throttle — one DB write per user per ~35s (single Railway instance). */
+/** In-process throttle — one DB write per user per ~60s (single Railway instance). */
 const lastTouchAt = new Map<string, number>();
 
 let countsCache: { at: number; data: OnlinePresenceCounts } | null = null;

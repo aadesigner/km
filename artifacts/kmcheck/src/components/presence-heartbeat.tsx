@@ -5,10 +5,10 @@ import { isAdminAppPath } from "@/lib/admin-routes";
 import { isTrackablePresencePath } from "@/lib/presence-path";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-const HEARTBEAT_MS = 35_000;
-const MIN_RESEND_MS = 32_000;
+const HEARTBEAT_MS = 60_000;
+const MIN_RESEND_MS = 55_000;
 
-/** Lightweight signed-in presence on public pages — heartbeat every ~35s, no page tracking. */
+/** Lightweight signed-in presence on public pages — heartbeat every ~60s, no page tracking. */
 export function PresenceHeartbeat() {
   const { isSignedIn, isLoaded } = useAuth();
   const [location] = useLocation();
