@@ -11,7 +11,7 @@ const PAYMENT_LOGOS = [
   {
     file: "mastercard666.png",
     alt: "Mastercard",
-    boxClassName: "h-16 w-[7.75rem] sm:h-[4.5rem] sm:w-[9rem]",
+    boxClassName: "h-16 w-[7.75rem] sm:h-[4.5rem] sm:w-[9rem] dark:hidden",
   },
   {
     file: "visa6.png",

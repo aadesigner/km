@@ -11,12 +11,6 @@
   animation-duration: 0.01s;
 }
 
-/* Checkout payment marks — light/grey on dark UI (logos ship with dark text) */
-.dark .checkout-payment-logo-img {
-  opacity: 0.78;
-  filter: brightness(0) invert(1);
-}
-
 @media print {
   @page {
     size: A4 portrait;

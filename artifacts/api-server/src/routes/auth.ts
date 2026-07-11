@@ -19,7 +19,7 @@ import {
   isLinkedInOAuthConfigured,
   getLinkedInOAuthCredentials,
 } from "../lib/oauthSettings.js";
-import { touchUserPresence, sanitizePresencePath } from "../lib/userPresence.js";
+import { touchUserPresence } from "../lib/userPresence.js";
 import {
   authSessionUserSelect,
   oauthUserSelect,
@@ -1453,12 +1453,8 @@ router.get("/auth/me", async (req, res) => {
 });
 
 // POST /auth/presence — signed-in customers only; auth first, then per-user rate limit.
-// Outsiders without a session get 401. Invalid/admin paths are ignored (no write).
 router.post("/auth/presence", requireAuth, presenceHeartbeatLimiter, async (req, res) => {
-  const path = sanitizePresencePath(req.body?.path);
-  if (path) {
-    await touchUserPresence(req.userId!, path);
-  }
+  await touchUserPresence(req.userId!);
   res.json({ ok: true });
 });
 

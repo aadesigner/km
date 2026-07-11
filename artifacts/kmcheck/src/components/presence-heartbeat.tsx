@@ -8,11 +8,11 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const HEARTBEAT_MS = 35_000;
 const MIN_RESEND_MS = 32_000;
 
-/** Lightweight signed-in user presence on public pages only — heartbeat every ~35s. */
+/** Lightweight signed-in presence on public pages — heartbeat every ~35s, no page tracking. */
 export function PresenceHeartbeat() {
   const { isSignedIn, isLoaded } = useAuth();
   const [location] = useLocation();
-  const lastSentRef = useRef({ path: "", at: 0 });
+  const lastSentAtRef = useRef(0);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
@@ -22,22 +22,14 @@ export function PresenceHeartbeat() {
 
     const ping = () => {
       if (document.visibilityState === "hidden") return;
-      if (isAdminAppPath(pathname) || !isTrackablePresencePath(pathname)) return;
       const now = Date.now();
-      if (
-        lastSentRef.current.path === pathname
-        && now - lastSentRef.current.at < MIN_RESEND_MS
-      ) {
-        return;
-      }
-      lastSentRef.current = { path: pathname, at: now };
+      if (now - lastSentAtRef.current < MIN_RESEND_MS) return;
+      lastSentAtRef.current = now;
       const ctrl = new AbortController();
       const timer = window.setTimeout(() => ctrl.abort(), 8_000);
       void fetch(`${basePath}/api/auth/presence`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: pathname }),
         signal: ctrl.signal,
         keepalive: true,
       })

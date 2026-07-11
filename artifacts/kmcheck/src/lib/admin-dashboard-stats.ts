@@ -67,25 +67,6 @@ export type ExtendedStats = {
     onlineNow: number;
     activeToday: number;
     activeYesterday: number;
-    activeThisMonth: number;
-    usersOnlineNow: Array<{
-      id: string;
-      email: string;
-      name: string | null;
-      lastSeenAt: string;
-    }>;
-    usersActiveToday: Array<{
-      id: string;
-      email: string;
-      name: string | null;
-      lastSeenAt: string;
-    }>;
-    usersActiveYesterday: Array<{
-      id: string;
-      email: string;
-      name: string | null;
-      lastSeenAt: string;
-    }>;
   };
 };
 

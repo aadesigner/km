@@ -28,7 +28,7 @@ import {
   type JsonImportRecord,
 } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger";
-import { fetchOnlinePresenceStats } from "../lib/userPresence.js";
+import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
   normalizeDailyCounts,
   normalizeDailyRevenue,
@@ -449,6 +449,17 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     recentPendingVinChecks,
     onlinePresence,
   });
+});
+
+router.get("/admin/presence-users", requireAdmin, async (req, res) => {
+  const periodRaw = String(req.query.period ?? "now");
+  if (!["now", "today", "yesterday"].includes(periodRaw)) {
+    res.status(400).json({ error: "Invalid period" });
+    return;
+  }
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+  const data = await fetchPresenceUsersPage(periodRaw as PresencePeriod, page);
+  res.json(data);
 });
 
 // ── USERS ─────────────────────────────────────────────────────────────────────

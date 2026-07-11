@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAdminGetStats } from "@workspace/api-client-react";
-import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
+import { ADMIN_QUERY_OPTIONS, ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import {
 const BRAND = "hsl(142, 76%, 36%)";
 const BRAND_LIGHT = "hsl(142, 76%, 36%)";
 const BRAND_MUTED = "hsl(142, 45%, 55%)";
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const PERIODS: DashboardPeriod[] = ["today", "yesterday", "week", "month", "quarter"];
 const CHART_RANGES: ChartRange[] = [7, 30, 90];
@@ -47,7 +49,7 @@ const PAYMENT_STATUS_STYLES: Record<string, { bar: string; dot: string }> = {
 
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <div className={cn("rounded-lg md:rounded-xl border border-border/50 bg-card", className)}>
+    <div className={cn("rounded-lg md:rounded-xl border border-border/50 bg-card shadow-sm", className)}>
       {children}
     </div>
   );
@@ -56,13 +58,18 @@ function Panel({ className, children }: { className?: string; children: React.Re
 function SectionHead({
   title,
   action,
+  icon: Icon,
 }: {
   title: string;
   action?: React.ReactNode;
+  icon?: React.ElementType;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2 mb-2 md:mb-3">
-      <h2 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">{title}</h2>
+    <div className="flex items-center justify-between gap-2 mb-2.5 md:mb-3">
+      <div className="flex items-center gap-2 min-w-0">
+        {Icon && <Icon className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />}
+        <h2 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wide">{title}</h2>
+      </div>
       {action}
     </div>
   );
@@ -301,8 +308,8 @@ function formatLastSeen(iso: string): string {
 
 type PresencePeriod = "now" | "today" | "yesterday";
 
-const PRESENCE_PERIOD_LABELS: Record<PresencePeriod, string> = {
-  now: "Currently online (5 min)",
+const PRESENCE_LIST_LABELS: Record<PresencePeriod, string> = {
+  now: "Currently online",
   today: "Active today",
   yesterday: "Active yesterday",
 };
@@ -312,6 +319,13 @@ const PRESENCE_EMPTY_LABELS: Record<PresencePeriod, string> = {
   today: "No users were active today",
   yesterday: "No users were active yesterday",
 };
+
+function presenceUserInitials(user: { name: string | null; email: string }): string {
+  const source = user.name?.trim() || user.email.trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
 
 function formatPresenceLastActive(iso: string, period: PresencePeriod): string {
   if (period === "now") return formatLastSeen(iso);
@@ -323,84 +337,92 @@ function formatPresenceLastActive(iso: string, period: PresencePeriod): string {
   });
 }
 
-type PresenceUser = NonNullable<ExtendedStats["onlinePresence"]>["usersOnlineNow"][number];
-const PRESENCE_PAGE_SIZE = 10;
+type PresenceUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  lastSeenAt: string;
+};
+
+type PresenceUsersPage = {
+  users: PresenceUser[];
+  page: number;
+  pageSize: number;
+  total: number;
+  pageCount: number;
+};
+
+async function fetchPresenceUsersPage(period: PresencePeriod, page: number): Promise<PresenceUsersPage> {
+  const res = await fetch(
+    `${basePath}/api/admin/presence-users?period=${encodeURIComponent(period)}&page=${page}`,
+    { credentials: "include" },
+  );
+  if (!res.ok) throw new Error("Failed to load online users");
+  return res.json() as Promise<PresenceUsersPage>;
+}
 
 function PresenceUserList({
   users,
   period,
+  loading,
 }: {
   users: PresenceUser[];
   period: PresencePeriod;
+  loading?: boolean;
 }) {
-  const [page, setPage] = useState(1);
-  const pageCount = Math.max(1, Math.ceil(users.length / PRESENCE_PAGE_SIZE));
-  const safePage = Math.min(page, pageCount);
-  const start = (safePage - 1) * PRESENCE_PAGE_SIZE;
-  const visibleUsers = users.slice(start, start + PRESENCE_PAGE_SIZE);
-
-  useEffect(() => {
-    setPage(1);
-  }, [period, users]);
+  if (loading) {
+    return (
+      <div className="divide-y divide-border/40">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 px-3.5 py-2.5 md:px-4 md:py-3">
+            <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3.5 w-32" />
+              <Skeleton className="h-3 w-44" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (users.length === 0) {
     return (
-      <p className="text-xs md:text-sm text-muted-foreground text-center py-7">
-        {PRESENCE_EMPTY_LABELS[period]}
-      </p>
+      <div className="flex flex-col items-center justify-center py-10 md:py-12 px-4 text-center">
+        <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center mb-3">
+          <Users className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <p className="text-xs md:text-sm text-muted-foreground">{PRESENCE_EMPTY_LABELS[period]}</p>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="divide-y divide-border/40">
-        {visibleUsers.map((u) => (
-          <Link key={u.id} href={`/adminx/users/${u.id}`}>
-            <div className="flex items-center gap-2.5 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/30 transition-colors">
-              <div className="h-8 w-8 md:h-9 md:w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                <Users className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs md:text-sm font-medium truncate">{u.name || u.email}</p>
-                <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
-              </div>
-              <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums shrink-0">
-                {formatPresenceLastActive(u.lastSeenAt, period)}
-              </p>
+    <div className="divide-y divide-border/40">
+      {users.map((u) => (
+        <Link key={u.id} href={`/adminx/users/${u.id}`}>
+          <div className="group flex items-center gap-3 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
+            <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
+              {presenceUserInitials(u)}
             </div>
-          </Link>
-        ))}
-      </div>
-      {pageCount > 1 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-border/40 px-3.5 py-2.5 md:px-4">
-          <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
-            Showing {start + 1}-{Math.min(start + PRESENCE_PAGE_SIZE, users.length)} of {users.length}
-          </p>
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {Array.from({ length: pageCount }).map((_, idx) => {
-              const pageNumber = idx + 1;
-              const active = pageNumber === safePage;
-              return (
-                <button
-                  key={pageNumber}
-                  type="button"
-                  onClick={() => setPage(pageNumber)}
-                  className={cn(
-                    "h-7 min-w-7 rounded-md px-2 text-[11px] md:text-xs font-medium transition-colors",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted",
-                  )}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {pageNumber}
-                </button>
-              );
-            })}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
+                {u.name || u.email}
+              </p>
+              {u.name && (
+                <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                {formatPresenceLastActive(u.lastSeenAt, period)}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 transition-colors" />
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -413,6 +435,19 @@ export default function AdminOverview() {
   const [chartMetric, setChartMetric] = useState<ChartMetric>("revenue");
   const [chartRange, setChartRange] = useState<ChartRange>(30);
   const [presencePeriod, setPresencePeriod] = useState<PresencePeriod>("now");
+  const [presencePage, setPresencePage] = useState(1);
+
+  useEffect(() => {
+    setPresencePage(1);
+  }, [presencePeriod]);
+
+  const { data: presencePageData, isLoading: presenceUsersLoading, isFetching: presenceUsersFetching } = useQuery({
+    queryKey: ["admin", "presence-users", presencePeriod, presencePage],
+    queryFn: () => fetchPresenceUsersPage(presencePeriod, presencePage),
+    enabled: Boolean(stats?.onlinePresence),
+    ...ADMIN_QUERY_OPTIONS,
+    staleTime: 30_000,
+  });
 
   const [chartHeight, setChartHeight] = useState(200);
 
@@ -458,13 +493,21 @@ export default function AdminOverview() {
     };
   }, [stats, period, chartMetric, chartRange]);
 
-  const presenceUsers = useMemo(() => {
-    const p = stats?.onlinePresence;
-    if (!p) return [];
-    if (presencePeriod === "today") return p.usersActiveToday ?? [];
-    if (presencePeriod === "yesterday") return p.usersActiveYesterday ?? [];
-    return p.usersOnlineNow ?? [];
-  }, [stats?.onlinePresence, presencePeriod]);
+  const presenceCounts = useMemo(() => ({
+    now: stats?.onlinePresence?.onlineNow ?? 0,
+    today: stats?.onlinePresence?.activeToday ?? 0,
+    yesterday: stats?.onlinePresence?.activeYesterday ?? 0,
+  }), [stats?.onlinePresence]);
+
+  const presenceUsers = presencePageData?.users ?? [];
+  const presencePageCount = presencePageData?.pageCount ?? 1;
+  const presenceTotal = presencePageData?.total ?? 0;
+  const presenceRangeStart = presenceTotal === 0
+    ? 0
+    : ((presencePageData?.page ?? presencePage) - 1) * (presencePageData?.pageSize ?? 10) + 1;
+  const presenceRangeEnd = presenceTotal === 0
+    ? 0
+    : Math.min(presenceRangeStart + presenceUsers.length - 1, presenceTotal);
 
   const lastUpdated = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })
@@ -491,13 +534,16 @@ export default function AdminOverview() {
     >
       <div className="space-y-4 md:space-y-5 lg:space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 pb-1">
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight">Dashboard</h1>
             {lastUpdated && (
-              <p className="text-xs md:text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                Updated {lastUpdated}
+              <p className="text-xs md:text-sm text-muted-foreground mt-1.5 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-30" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                </span>
+                Live · updated {lastUpdated}
               </p>
             )}
           </div>
@@ -528,7 +574,7 @@ export default function AdminOverview() {
 
         {/* Period stats */}
         <section>
-          <SectionHead title="Performance" />
+          <SectionHead title="Performance" icon={BarChart3} />
           <div className="mb-2.5 md:mb-3">
             <PillTabs value={period} options={PERIODS.map((p) => ({ id: p, label: PERIOD_LABELS[p] }))} onChange={setPeriod} />
           </div>
@@ -563,58 +609,66 @@ export default function AdminOverview() {
         {/* Online users */}
         {stats?.onlinePresence && (
           <section>
-            <SectionHead title="Online users" />
-            <p className="text-[11px] md:text-xs text-muted-foreground -mt-2 mb-3">
-              Signed-in customers on public pages. Admin accounts are not listed here.
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4 mb-3">
-              <StatCell
-                label="Now (5 min)"
-                value={String(stats.onlinePresence.onlineNow)}
-                icon={Activity}
-                highlight={stats.onlinePresence.onlineNow > 0}
-                onClick={() => setPresencePeriod("now")}
-                selected={presencePeriod === "now"}
-              />
-              <StatCell
-                label="Today"
-                value={String(stats.onlinePresence.activeToday)}
-                icon={Users}
-                onClick={() => setPresencePeriod("today")}
-                selected={presencePeriod === "today"}
-              />
-              <StatCell
-                label="Yesterday"
-                value={String(stats.onlinePresence.activeYesterday)}
-                icon={Users}
-                onClick={() => setPresencePeriod("yesterday")}
-                selected={presencePeriod === "yesterday"}
-              />
-              <StatCell label="This month" value={String(stats.onlinePresence.activeThisMonth)} icon={Users} />
-            </div>
+            <SectionHead title="Online users" icon={Activity} />
             <Panel className="overflow-hidden">
-              <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2">
+              <div className="px-3.5 pt-3.5 pb-2.5 md:px-4 md:pt-4 md:pb-3 border-b border-border/40 bg-muted/20">
+                <PillTabs
+                  value={presencePeriod}
+                  options={([
+                    { id: "now" as const, label: `Now · ${presenceCounts.now}` },
+                    { id: "today" as const, label: `Today · ${presenceCounts.today}` },
+                    { id: "yesterday" as const, label: `Yesterday · ${presenceCounts.yesterday}` },
+                  ])}
+                  onChange={setPresencePeriod}
+                />
+                <p className="text-[11px] md:text-xs text-muted-foreground mt-2.5">
+                  Signed-in customers only · admin accounts excluded
+                </p>
+              </div>
+              <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2 bg-card">
                 <h3 className="text-xs md:text-sm font-semibold flex items-center gap-2">
-                  {presencePeriod === "now" && (
+                  {presencePeriod === "now" && presenceCounts.now > 0 && (
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                     </span>
                   )}
-                  {PRESENCE_PERIOD_LABELS[presencePeriod]}
+                  {PRESENCE_LIST_LABELS[presencePeriod]}
                 </h3>
                 <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
-                  {presenceUsers.length} shown
+                  {presenceTotal} user{presenceTotal === 1 ? "" : "s"}
                 </span>
               </div>
-              <PresenceUserList users={presenceUsers} period={presencePeriod} />
+              <PresenceUserList
+                users={presenceUsers}
+                period={presencePeriod}
+                loading={presenceUsersLoading && !presencePageData}
+              />
+              {presencePageCount > 1 && (
+                <div className="border-t border-border/40 px-3.5 py-2.5 md:px-4 md:py-3 bg-muted/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                    <p className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                      {presenceUsersFetching && !presenceUsersLoading ? "Updating… · " : ""}
+                      Showing {presenceRangeStart}-{presenceRangeEnd} of {presenceTotal}
+                    </p>
+                    <PillTabs
+                      value={presencePage}
+                      options={Array.from({ length: presencePageCount }).map((_, idx) => ({
+                        id: idx + 1,
+                        label: `Page ${idx + 1}`,
+                      }))}
+                      onChange={setPresencePage}
+                    />
+                  </div>
+                </div>
+              )}
             </Panel>
           </section>
         )}
 
         {/* Lifetime + ops strip */}
         <section>
-          <SectionHead title="Totals" />
+          <SectionHead title="Totals" icon={Zap} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4">
             <StatCell label="All-time revenue" value={derived?.totalRevStr ?? "—"} icon={DollarSign} />
             <StatCell label="VIN checks" value={String(stats?.totalVinChecks ?? "—")} icon={Zap} />
@@ -703,7 +757,7 @@ export default function AdminOverview() {
 
         {/* Quick actions */}
         <section>
-          <SectionHead title="Quick actions" />
+          <SectionHead title="Quick actions" icon={ArrowRight} />
           <div className="grid grid-cols-2 gap-2.5 md:gap-3">
             <ActionRow href="/adminx/pending-vin-checks" icon={Clock} label="Pending checks" badge={derived?.pendingOpen} />
             <ActionRow href="/adminx/vin-catalog" icon={Database} label="VIN catalog" />
