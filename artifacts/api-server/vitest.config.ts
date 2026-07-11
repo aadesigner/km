@@ -8,7 +8,6 @@ export default defineConfig({
     },
   },
   test: {
-    setupFiles: ["./vitest.setup.ts"],
     include: [
     "src/**/*.test.ts",
     "../kmcheck/src/lib/**/*.test.ts",
