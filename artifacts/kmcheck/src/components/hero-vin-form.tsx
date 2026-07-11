@@ -146,9 +146,17 @@ export function HeroVinForm({
             </div>
 
             {showMessages && (
-              <div className="hero-vin-card-messages space-y-2 px-3 pb-3 pt-2 border-t border-border/40 dark:border-white/[0.06]">
+              <div className={cn(
+                "hero-vin-card-messages space-y-2 px-3 pb-3 pt-2 border-t",
+                isOnDark ? "border-white/15" : "border-border/40 dark:border-white/[0.06]",
+              )}>
                 {error && (
-                  <p className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                  <p className={cn(
+                    "rounded-lg border px-3 py-2 text-sm",
+                    isOnDark
+                      ? "border-red-300/40 bg-red-500/15 text-red-50"
+                      : "border-destructive/25 bg-destructive/5 text-destructive",
+                  )}>
                     {error}
                   </p>
                 )}

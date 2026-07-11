@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   type ActiveMapLivePing,
+  type CoverageLiveCity,
   type CoverageLiveEventKey,
   COVERAGE_LIVE_EVENT_KEYS,
   citiesForMapRegion,
@@ -16,7 +17,9 @@ function pickEventKey(): CoverageLiveEventKey {
 }
 
 type Options = {
-  region: MapLivePingRegion;
+  region?: MapLivePingRegion;
+  /** When set, overrides region-based city pool (country focus maps). */
+  cities?: CoverageLiveCity[];
   maxPings?: number;
   maxLabels?: number;
   enabled?: boolean;
@@ -25,6 +28,7 @@ type Options = {
 /** Spawn random decorative pings on map cities — illustrative only. */
 export function useCoverageMapLivePings({
   region,
+  cities,
   maxPings = 10,
   maxLabels = 3,
   enabled = true,
@@ -37,7 +41,7 @@ export function useCoverageMapLivePings({
       return;
     }
 
-    const pool = citiesForMapRegion(region);
+    const pool = cities ?? (region ? citiesForMapRegion(region) : []);
     if (pool.length === 0) return;
 
     let cancelled = false;
@@ -69,7 +73,7 @@ export function useCoverageMapLivePings({
       cancelled = true;
       clearInterval(interval);
     };
-  }, [enabled, maxLabels, maxPings, region]);
+  }, [cities, enabled, maxLabels, maxPings, region]);
 
   return pings;
 }

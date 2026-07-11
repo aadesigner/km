@@ -55,6 +55,11 @@ export function citiesForMapRegion(region: MapLivePingRegion): CoverageLiveCity[
   return COVERAGE_LIVE_CITIES.filter((c) => c.region === region);
 }
 
+export function citiesForCountry(cityIds: string[]): CoverageLiveCity[] {
+  const idSet = new Set(cityIds);
+  return COVERAGE_LIVE_CITIES.filter((c) => idSet.has(c.id));
+}
+
 export type ActiveMapLivePing = {
   pingId: string;
   city: CoverageLiveCity;

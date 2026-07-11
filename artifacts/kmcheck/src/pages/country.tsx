@@ -54,8 +54,6 @@ interface CountryMeta {
   popularBrands: string[];
   issueIndices: number[];
   issueSeverities: Severity[];
-  vinExample: string;
-  vinSegments: { chars: string; color: string; labelKey: string }[];
 }
 
 const COUNTRY_META: Record<string, CountryMeta> = {
@@ -68,14 +66,6 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     popularBrands: ["Ford", "Chevrolet", "Toyota", "Honda", "Ram", "GMC", "Jeep", "Tesla"],
     issueIndices: [0, 1, 2],
     issueSeverities: ["high", "high", "medium"],
-    vinExample: "1HGBH41JXMN109186",
-    vinSegments: [
-      { chars: "1",         color: "bg-primary",    labelKey: "vin_segment_country" },
-      { chars: "HG",        color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
-      { chars: "BH4",       color: "bg-violet-500", labelKey: "vin_segment_model"   },
-      { chars: "1",         color: "bg-amber-500",  labelKey: "vin_segment_check"   },
-      { chars: "XMN109186", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
-    ],
   },
   korea: {
     flagImg: "kr",
@@ -86,14 +76,6 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     popularBrands: ["Hyundai", "Kia", "Genesis", "Ssangyong", "GM Korea", "Renault Korea", "BMW", "Toyota"],
     issueIndices: [0, 1, 3],
     issueSeverities: ["high", "high", "medium"],
-    vinExample: "KMHD35LE1JA103867",
-    vinSegments: [
-      { chars: "K",          color: "bg-primary",    labelKey: "vin_segment_country" },
-      { chars: "MH",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
-      { chars: "D35",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
-      { chars: "L",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
-      { chars: "E0JA103867", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
-    ],
   },
   canada: {
     flagImg: "ca",
@@ -104,14 +86,6 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     popularBrands: ["Toyota", "Honda", "Ford", "Chevrolet", "GMC", "Ram", "Hyundai", "Kia"],
     issueIndices: [0, 1, 2],
     issueSeverities: ["high", "high", "medium"],
-    vinExample: "2HGFB2F59CH501000",
-    vinSegments: [
-      { chars: "2",          color: "bg-primary",    labelKey: "vin_segment_country" },
-      { chars: "HG",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
-      { chars: "FB2",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
-      { chars: "F",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
-      { chars: "59CH501000", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
-    ],
   },
   china: {
     flagImg: "cn",
@@ -122,14 +96,6 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     popularBrands: ["BYD", "NIO", "XPeng", "Zeekr", "Geely", "Li Auto", "Chery", "GAC"],
     issueIndices: [0, 1, 2],
     issueSeverities: ["high", "high", "medium"],
-    vinExample: "LSJW74U92NZ123456",
-    vinSegments: [
-      { chars: "L",          color: "bg-primary",    labelKey: "vin_segment_country" },
-      { chars: "SJ",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
-      { chars: "W74",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
-      { chars: "U",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
-      { chars: "92NZ123456", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
-    ],
   },
   uae: {
     flagImg: "ae",
@@ -140,14 +106,6 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     popularBrands: ["Audi", "Porsche", "Ferrari", "Lamborghini", "Mercedes-Benz", "BMW", "Bentley", "Lexus"],
     issueIndices: [0, 1, 2],
     issueSeverities: ["high", "high", "medium"],
-    vinExample: "JTEBR3FJ40K123456",
-    vinSegments: [
-      { chars: "J",          color: "bg-primary",    labelKey: "vin_segment_country" },
-      { chars: "TE",         color: "bg-blue-500",   labelKey: "vin_segment_maker"   },
-      { chars: "BR3",        color: "bg-violet-500", labelKey: "vin_segment_model"   },
-      { chars: "F",          color: "bg-amber-500",  labelKey: "vin_segment_check"   },
-      { chars: "J40K123456", color: "bg-slate-500",  labelKey: "vin_segment_serial"  },
-    ],
   },
 };
 
@@ -170,7 +128,7 @@ function CountryCyclingHeadline({ slug }: { slug: string }) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % keys.length), 2600);
+    const id = setInterval(() => setIdx(i => (i + 1) % keys.length), 3800);
     return () => clearInterval(id);
   }, [keys.length]);
 
@@ -252,7 +210,9 @@ export default function CountryPage({ params }: Props) {
     year: countryLocalDecode?.year ?? null,
     ...countryPeek,
   });
-  const vinFormAlerts = (showVinRecheckHint || showCountryPendingDoubleCheck) ? (
+  const vinFormAlerts = (variant: "default" | "on-dark") => (
+    showVinRecheckHint || showCountryPendingDoubleCheck
+  ) ? (
     <AnimatePresence>
       {showVinRecheckHint && (
         <motion.div
@@ -262,7 +222,7 @@ export default function CountryPage({ params }: Props) {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.25 }}
         >
-          <VinDecodeRecheckHint />
+          <VinDecodeRecheckHint variant={variant} />
         </motion.div>
       )}
       {showCountryPendingDoubleCheck && (
@@ -273,7 +233,7 @@ export default function CountryPage({ params }: Props) {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.25 }}
         >
-          <VinPendingDoubleCheckHint />
+          <VinPendingDoubleCheckHint variant={variant} />
         </motion.div>
       )}
     </AnimatePresence>
@@ -294,6 +254,25 @@ export default function CountryPage({ params }: Props) {
   } = useDisplayPrice();
   const displayPrice = rawDisplay ?? 0;
   const basePrice    = rawBase    ?? 0;
+
+  const heroPriceLine = (
+    <div className="px-1 flex items-center justify-center gap-2 text-sm text-muted-foreground text-center w-full mx-auto">
+      <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+      <span>
+        {t("country_cta_desc")}{" "}
+        {priceLoading ? (
+          <Skeleton className="h-4 w-12 rounded inline-block align-middle" />
+        ) : (
+          <span className="inline-flex items-baseline gap-1.5">
+            <span className="font-bold text-primary">{fmtPrice(displayPrice)}</span>
+            {isDiscount && basePrice > displayPrice && (
+              <span className="line-through text-muted-foreground/60 text-xs">{fmtPrice(basePrice)}</span>
+            )}
+          </span>
+        )}
+      </span>
+    </div>
+  );
 
   if (!meta || !content) {
     return (
@@ -350,7 +329,7 @@ export default function CountryPage({ params }: Props) {
         {/* Fade to background */}
         <div className="absolute bottom-0 left-0 right-0 h-40 -z-10 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] gap-8 lg:gap-10 items-center pb-20">
+        <div className="max-w-7xl mx-auto pb-20 relative z-10 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-center">
 
           {/* Left */}
           <motion.div
@@ -369,7 +348,6 @@ export default function CountryPage({ params }: Props) {
               />
             </div>
 
-            {/* Headline */}
             <h1 className="text-[2.65rem] sm:text-4xl md:text-5xl lg:text-[3.35rem] xl:text-[3.65rem] font-extrabold tracking-tight leading-[1.1]">
               {(() => {
                 const verb = t(`country_${slug}_headline_verb`);
@@ -377,7 +355,6 @@ export default function CountryPage({ params }: Props) {
               })()}
               <CountryCyclingHeadline slug={slug} />
               <br />
-              {/* Mobile — flag beside country name on its own line */}
               <span className="lg:hidden text-foreground/90 inline-flex items-center justify-center gap-x-2 gap-y-1 flex-wrap">
                 <span>{t(`country_${slug}_headline_origin_prefix`)}</span>
                 <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
@@ -390,13 +367,12 @@ export default function CountryPage({ params }: Props) {
                   <span className="text-foreground font-extrabold">{countryName}</span>
                 </span>
               </span>
-              {/* Desktop — full origin line (flag stays in eyebrow above) */}
               <span className="hidden lg:inline text-foreground/90">
                 {t(`country_${slug}_headline_origin`)}
               </span>
             </h1>
 
-            <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-sm md:text-base text-muted-foreground mx-auto lg:mx-0 max-w-lg leading-relaxed">
               {content.description}
             </p>
 
@@ -410,35 +386,20 @@ export default function CountryPage({ params }: Props) {
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
               inputRef={vinRef}
               className="relative z-20 lg:mx-0"
-              alerts={vinFormAlerts}
+              alerts={vinFormAlerts("default")}
             />
           </motion.div>
 
-          {/* Right */}
+          {/* Right — demo card */}
           <motion.div
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.13 }}
-            className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-stretch w-full min-w-0 lg:max-w-[380px] lg:justify-self-end"
+            className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center w-full min-w-0 lg:max-w-[400px] lg:justify-self-end lg:-translate-x-8"
           >
-            <VinDemoCard country={slug as CountryMarket} showcase />
-
-            {/* Price line */}
-            <div className="px-1 flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground text-center lg:text-start max-w-lg w-full">
-              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-              <span>
-                {t("country_cta_desc")}{" "}
-                {priceLoading ? (
-                  <Skeleton className="h-4 w-12 rounded inline-block align-middle" />
-                ) : (
-                  <span className="inline-flex items-baseline gap-1.5">
-                    <span className="font-bold text-primary">{fmtPrice(displayPrice)}</span>
-                    {isDiscount && basePrice > displayPrice && (
-                      <span className="line-through text-muted-foreground/60 text-xs">{fmtPrice(basePrice)}</span>
-                    )}
-                  </span>
-                )}
-              </span>
+            <div className="flex w-full flex-col items-center gap-3">
+              <VinDemoCard country={slug as CountryMarket} showcase countryPage />
+              {heroPriceLine}
             </div>
           </motion.div>
         </div>
@@ -479,57 +440,6 @@ export default function CountryPage({ params }: Props) {
         severities={meta.issueSeverities}
       />
       </DeferredSection>
-
-      {/* ─────────────────────── VIN ANATOMY ─────────────────────── */}
-      <section className="py-10 md:py-14 px-4">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-6 space-y-1.5"
-          >
-            <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">{t("vin_anatomy_title")}</h2>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="rounded-2xl border bg-background shadow-sm p-5 space-y-4"
-          >
-            {/* Character blocks */}
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {meta.vinSegments.map(({ chars, color }, si) =>
-                chars.split("").map((ch, ci) => (
-                  <div
-                    key={`${si}-${ci}`}
-                    className={cn("h-9 w-8 rounded-lg text-white font-mono font-black text-xs flex items-center justify-center shadow-sm", color)}
-                  >
-                    {ch}
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              {meta.vinSegments.map(({ chars, color, labelKey }) => (
-                <div key={labelKey} className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2.5 py-1">
-                  <div className={cn("h-2 w-2 rounded-full shrink-0", color)} />
-                  <span className="font-mono text-[11px] font-bold">{chars.length > 5 ? chars.slice(0, 3) + "…" : chars}</span>
-                  <span className="text-[11px] text-muted-foreground">= {t(labelKey)}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-xl bg-muted/50 border border-dashed px-4 py-2.5 text-center">
-              <p className="text-xs text-muted-foreground/60 font-mono tracking-[0.2em]">{meta.vinExample}</p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* ─────────────────────── FAQ ─────────────────────── */}
       <section className="py-20 md:py-28 px-4 bg-muted/25 dark:bg-white/[0.015] border-t">
@@ -578,11 +488,23 @@ export default function CountryPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ─────────────────────── COMPARISON TABLE ─────────────────────── */}
+      <DeferredSection minHeight={280}>
+        <Suspense fallback={<SectionFallback minHeight={280} />}>
+          <CompareTable market={
+            slug === "korea" ? "korea"
+              : slug === "canada" ? "canada"
+                : slug === "china" ? "china"
+                  : slug === "uae" ? "uae"
+                    : "usa"
+          } />
+        </Suspense>
+      </DeferredSection>
+
       {/* ─────────────────────── CTA ─────────────────────── */}
-      <section className="relative overflow-hidden bg-[#070c18] py-20 md:py-28 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(34,197,94,0.17),transparent)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(#1e2d40_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.22] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+      <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-16 md:py-24 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50 pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -591,14 +513,14 @@ export default function CountryPage({ params }: Props) {
           className="max-w-2xl mx-auto text-center space-y-8 relative z-10"
         >
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/70">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-semibold text-white/70">
               <FlagImg code={meta.flagImg} size={24} className="rounded-sm shadow-sm" />
               {countryName} · {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
               {t("country_cta_heading").replace("{country}", countryName)}
             </h2>
-            <div className="text-white/45 text-base leading-relaxed">
+            <div className="text-white/50 text-base leading-relaxed">
               {t("country_cta_desc")}{" "}
               {priceLoading ? (
                 <Skeleton className="h-5 w-14 rounded inline-block align-middle bg-white/15" />
@@ -621,28 +543,15 @@ export default function CountryPage({ params }: Props) {
             disabled={vinLookupDisabled}
             placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
             helpVariant="on-dark"
-            alerts={vinFormAlerts}
+            alerts={vinFormAlerts("on-dark")}
           />
 
-          <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/35">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-white/45" />{t("trust_secure_payment")}</span>
-            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-white/45" />{t("trust_instant_report")}</span>
+          <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-white/50">
+            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-white/60" />{t("trust_secure_payment")}</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-white/60" />{t("trust_instant_report")}</span>
           </div>
         </motion.div>
       </section>
-
-      {/* ─────────────────────── COMPARISON TABLE ─────────────────────── */}
-      <DeferredSection minHeight={280}>
-        <Suspense fallback={<SectionFallback minHeight={280} />}>
-          <CompareTable market={
-            slug === "korea" ? "korea"
-              : slug === "canada" ? "canada"
-                : slug === "china" ? "china"
-                  : slug === "uae" ? "uae"
-                    : "usa"
-          } />
-        </Suspense>
-      </DeferredSection>
 
       {/* ─────────────────────── OTHER COUNTRIES ─────────────────────── */}
       <section className="py-12 md:py-16 px-4 bg-muted/20 border-t">

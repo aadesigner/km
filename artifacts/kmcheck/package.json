@@ -88,6 +88,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "react-simple-maps": "^3.0.0"
+    "react-simple-maps": "^3.0.0",
+    "world-atlas": "^2.0.2"
   }
 }

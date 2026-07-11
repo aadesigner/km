@@ -1,9 +1,11 @@
 import { useTranslation } from "@/i18n/context";
 import type { ActiveMapLivePing } from "@/lib/coverage-live-events";
+import { cn } from "@/lib/utils";
 import { Marker } from "react-simple-maps";
 
 type Props = {
   pings: ActiveMapLivePing[];
+  highlightPingId?: string | null;
 };
 
 const CARD_W_LTR = 88;
@@ -28,7 +30,7 @@ function LiveFeedLabel({ eventKey }: { eventKey: string }) {
   );
 }
 
-export function CoverageMapLiveMarkers({ pings }: Props) {
+export function CoverageMapLiveMarkers({ pings, highlightPingId = null }: Props) {
   const { dir } = useTranslation();
   const cardW = dir === "rtl" ? CARD_W_RTL : CARD_W_LTR;
   const labelOffsetY = -(CARD_H + CARET_H + GAP);
@@ -38,25 +40,26 @@ export function CoverageMapLiveMarkers({ pings }: Props) {
       {pings.map((ping, i) => {
         const { city, eventKey, showLabel, pingId } = ping;
         const delay = `${i * 0.3}s`;
+        const highlighted = pingId === highlightPingId;
 
         return (
           <Marker key={pingId} coordinates={city.coordinates}>
             <g className="coverage-map-live-marker" style={{ animationDelay: delay }}>
               <circle
-                r={16}
-                fill="hsl(var(--primary) / 0.2)"
-                className="coverage-map-live-ring"
+                r={highlighted ? 20 : 16}
+                fill={highlighted ? "hsl(var(--primary) / 0.32)" : "hsl(var(--primary) / 0.2)"}
+                className={cn("coverage-map-live-ring", highlighted && "coverage-map-live-ring-active")}
               />
               <circle
-                r={4.25}
+                r={highlighted ? 5.25 : 4.25}
                 fill="hsl(var(--primary))"
                 stroke="hsl(var(--background))"
-                strokeWidth={1.5}
+                strokeWidth={highlighted ? 2 : 1.5}
               />
 
               {showLabel && (
                 <g transform={`translate(${-cardW / 2}, ${labelOffsetY})`} className="coverage-map-live-label-layer">
-                  <g className="coverage-map-live-label">
+                  <g className={cn("coverage-map-live-label", highlighted && "coverage-map-live-label-active")}>
                     <foreignObject x={0} y={0} width={cardW} height={CARD_H}>
                       <LiveFeedLabel eventKey={eventKey} />
                     </foreignObject>

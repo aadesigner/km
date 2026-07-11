@@ -6,6 +6,12 @@ import { useTranslation } from "@/i18n/context";
 import { DemoCarPhoto, preloadDemoCarPhotos } from "@/components/demo-car-photo";
 import { FlagImg } from "@/components/flag-img";
 import { demoCarPhotoUrl } from "@/lib/demo-car-photos";
+import { demoCarIndexForLiveEvent } from "@/lib/demo-live-feed-link";
+import { mileageColor } from "@/lib/mileage-color";
+import { LANG_META } from "@/lib/languages";
+import { localizeProviderDate } from "@/lib/korean-provider-text";
+import type { Language } from "@/lib/languages";
+import type { ActiveMapLivePing } from "@/lib/coverage-live-events";
 
 export interface DemoCar {
   vin: string;
@@ -456,6 +462,24 @@ function truncVin(vin: string) {
   return `${vin.slice(0, 8)}···${vin.slice(-4)}`;
 }
 
+function DemoVinBlurredTail({ vin, className }: { vin: string; className?: string }) {
+  const visible = vin.slice(0, -5);
+  const masked = vin.slice(-5);
+  return (
+    <span
+      className={cn(
+        "inline-flex min-w-0 max-w-full items-center font-mono font-semibold tabular-nums text-foreground/85",
+        className,
+      )}
+    >
+      <span className="truncate">{visible}</span>
+      <span className="shrink-0 blur-[3px] select-none" aria-hidden>
+        {masked}
+      </span>
+    </span>
+  );
+}
+
 function carsForCountry(country?: "usa" | "korea" | "canada" | "china" | "uae"): DemoCar[] {
   if (!country) return ALL_CARS;
   if (country === "korea") {
@@ -485,6 +509,79 @@ function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
             ? "demo_card_origin_uae"
             : "demo_card_origin_usa";
   return t(originKey);
+}
+
+const DEMO_ODO_MAX_KM = 300_000;
+const KM_PER_MI = 1.609_34;
+
+function demoMileageToKm(mileage: number, unit: DemoCar["unit"]): number {
+  return unit === "mi" ? Math.round(mileage * KM_PER_MI) : mileage;
+}
+
+function demoCarVinSeed(vin: string): number {
+  let hash = 0;
+  for (let i = 0; i < vin.length; i++) {
+    hash = (hash * 31 + vin.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+/** Last registration date — 3–12 months before today, stable per VIN. */
+function demoLastRecordedDate(car: DemoCar): Date {
+  const seed = demoCarVinSeed(car.vin);
+  const daysAgo = 90 + (seed % 276);
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date;
+}
+
+function formatDemoRecordedDate(date: Date, language: Language): string {
+  const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const localized = localizeProviderDate(iso, language);
+  if (localized) return localized;
+  return date.toLocaleDateString(LANG_META[language].intl, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function DemoMileageTimeline({ car }: { car: DemoCar }) {
+  const { t, language } = useTranslation();
+  const recordedDate = useMemo(() => demoLastRecordedDate(car), [car]);
+  const latestKm = demoMileageToKm(car.mileage, car.unit);
+  const odoCol = mileageColor(latestKm);
+  const odoPct = Math.min(100, (latestKm / DEMO_ODO_MAX_KM) * 100);
+
+  return (
+    <div className="border-b border-border/60 bg-muted/[0.15] px-3 py-2.5">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Gauge className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {t("demo_odometer")}
+          </span>
+        </div>
+        <span className={cn("text-[11px] font-bold tabular-nums shrink-0", odoCol.text)}>
+          {car.mileage.toLocaleString()} {car.unit}
+        </span>
+      </div>
+
+      <div className="h-1 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
+        <div
+          className={cn("h-full rounded-full", odoCol.bar)}
+          style={{ width: `${odoPct}%` }}
+        />
+      </div>
+
+      <p className="mt-1.5 text-[9px] text-muted-foreground">
+        {t("demo_mileage_last_recorded")}{" "}
+        <span className="font-medium text-foreground/75 tabular-nums">
+          {formatDemoRecordedDate(recordedDate, language)}
+        </span>
+      </p>
+    </div>
+  );
 }
 
 function demoCarMakeModel(car: DemoCar): { make: string; model: string } {
@@ -587,7 +684,8 @@ function DemoCardShowcase({
     <div
       ref={stageRef}
       className={cn(
-        "relative w-full min-w-0 mx-auto lg:mx-0 lg:ms-auto",
+        "relative w-full min-w-0 mx-auto",
+        countryFace ? "" : "lg:mx-0 lg:ms-auto",
         flat
           ? "pt-1 pb-0 w-full max-w-[min(100%,380px)]"
           : cn("py-1 md:py-2 lg:py-3", wide && "pb-6 lg:pb-8"),
@@ -742,6 +840,10 @@ export function VinDemoCard({
   showcase = false,
   frozen = false,
   heroSide = false,
+  overlay = false,
+  embedded = false,
+  livePing,
+  countryPage = false,
 }: {
   country?: "usa" | "korea" | "canada" | "china" | "uae";
   showcase?: boolean;
@@ -749,22 +851,36 @@ export function VinDemoCard({
   frozen?: boolean;
   /** Homepage hero flanks — larger layout beside the VIN form. */
   heroSide?: boolean;
+  /** Compact card for map overlay on country pages. */
+  overlay?: boolean;
+  /** Inside a shared panel shell — skip outer card chrome. */
+  embedded?: boolean;
+  /** When set on overlay cards, syncs carousel to decorative map pings. */
+  livePing?: ActiveMapLivePing | null;
+  /** Richer showcase layout on country landing pages. */
+  countryPage?: boolean;
 }) {
   const { t } = useTranslation();
   const pool = useMemo(() => carsForCountry(country), [country]);
   const cars = frozen ? [pickFrozenCar(pool)] : pool;
 
   const [idx, setIdx] = useState(0);
+  const liveSync = overlay && livePing !== undefined;
 
   useEffect(() => {
     setIdx((i) => (cars.length === 0 ? 0 : i % cars.length));
   }, [cars.length]);
 
   useEffect(() => {
-    if (frozen || cars.length === 0) return;
+    if (!liveSync || !livePing || cars.length === 0) return;
+    setIdx(demoCarIndexForLiveEvent(cars, livePing.eventKey));
+  }, [liveSync, livePing, cars]);
+
+  useEffect(() => {
+    if (frozen || cars.length === 0 || liveSync) return;
     const timer = setInterval(() => setIdx(i => (i + 1) % cars.length), 5000);
     return () => clearInterval(timer);
-  }, [cars.length, frozen]);
+  }, [cars.length, frozen, liveSync]);
 
   useEffect(() => {
     if (cars.length === 0) return;
@@ -782,7 +898,7 @@ export function VinDemoCard({
   const displayFlag = country === "canada" && car.origin === "USA" ? "ca" : car.flagImg;
   const subtitle = demoCardSubtitle(car, t);
   const c = COND[car.condition];
-  const compact = showcase && !heroSide;
+  const compact = showcase && !heroSide && !overlay;
   const rowClass = cn(
     compact ? "px-3 py-1.5" : "px-5 py-3",
     "flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.05] last:border-0",
@@ -803,13 +919,184 @@ export function VinDemoCard({
       country === "canada" && car.origin === "USA" ? "ca" : car.flagImg;
     const { make, model } = demoCarMakeModel(car);
 
+    if (overlay) {
+      const cardBody = (
+        <>
+          {livePing && (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={livePing.pingId}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.28 }}
+                className="flex items-center gap-2 border-b border-primary/25 bg-primary/[0.08] px-2.5 py-1.5"
+              >
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[9px] font-bold text-foreground">
+                    {t(livePing.city.cityLabelKey)} · {t(livePing.eventKey)}
+                  </p>
+                  <p className="truncate text-[8px] text-muted-foreground">
+                    {t("demo_live_preview")}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-primary">
+                  {t("live_feed_badge")}
+                </span>
+              </motion.div>
+            </AnimatePresence>
+          )}
+
+          <div className={cn("h-0.5 bg-gradient-to-r", c.accentBar)} />
+
+          <div className="relative">
+            <div className="relative h-28 overflow-hidden bg-muted/35">
+              {cars.map((slideCar, slideIdx) => {
+                const isActive = slideIdx === idx;
+                const isNext = slideIdx === (idx + 1) % cars.length;
+                return (
+                  <div
+                    key={slideCar.vin}
+                    className={cn(
+                      "absolute inset-0 transition-opacity duration-500 ease-out",
+                      isActive ? "opacity-100 z-[1]" : "opacity-0 z-0 pointer-events-none",
+                    )}
+                    aria-hidden={!isActive}
+                  >
+                    <DemoCarPhoto
+                      src={slideCar.photo}
+                      alt={`${slideCar.year} ${slideCar.name}`}
+                      eager={isActive || isNext}
+                    />
+                  </div>
+                );
+              })}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2">
+                <div className="inline-flex items-center rounded-full bg-black/45 p-1 backdrop-blur-sm">
+                  <FlagImg code={slideFlag} size={16} className="rounded-sm shadow-sm" />
+                </div>
+                <span className={cn(
+                  "rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wide backdrop-blur-sm",
+                  c.badge,
+                )}>
+                  {t(CONDITION_LABEL_KEYS[car.condition])}
+                </span>
+              </div>
+              <div className="absolute inset-x-0 bottom-0 p-2.5">
+                <div className="flex items-end justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white leading-tight truncate">
+                      {car.year} {make}{model ? ` ${model}` : ""}
+                    </p>
+                    <p className="mt-0.5 text-[9px] text-white/60 truncate">
+                      {subtitle}
+                    </p>
+                  </div>
+                  <div className="shrink-0 rounded-md border border-white/15 bg-black/35 px-2 py-1 text-center backdrop-blur-sm">
+                    <p className={cn("text-base font-black tabular-nums leading-none", c.scoreColor)}>
+                      {car.score.toFixed(1)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <div key={car.vin + "-overlay-stats"}>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 bg-muted/[0.15] px-2.5 py-2">
+                  <div className="min-w-0">
+                    <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("demo_odometer")}
+                    </p>
+                    <p className={cn("text-[11px] font-bold tabular-nums", milTextColor(mileagePct))}>
+                      {car.mileage.toLocaleString()} {car.unit}
+                    </p>
+                  </div>
+                  <div className="min-w-0 text-end">
+                    <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_accidents")}
+                    </p>
+                    <p className={cn(
+                      "text-[11px] font-bold",
+                      car.accidents === 0 ? "text-primary" : car.accidents >= 3 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+                    )}>
+                      {car.accidents === 0 ? t("demo_none_found") : `${car.accidents} ${t("demo_found")}`}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_owners")}
+                    </p>
+                    <p className={cn(
+                      "text-[11px] font-bold",
+                      car.owners <= 1 ? "text-primary" : car.owners >= 4 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+                    )}>
+                      {car.owners === 1 ? t("owner_single") : `${car.owners} ${t("mock_label_owners")}`}
+                    </p>
+                  </div>
+                  <div className="min-w-0 text-end">
+                    <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("mock_label_salvage")}
+                    </p>
+                    <p className={cn(
+                      "text-[11px] font-bold",
+                      car.salvage ? "text-red-600 dark:text-red-400" : "text-primary",
+                    )}>
+                      {car.salvage ? t("demo_flagged") : t("report_clean")}
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-border/50 px-2.5 py-1.5">
+                  <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("vin_label")}
+                  </p>
+                  <div className="mt-0.5">
+                    <DemoVinBlurredTail vin={car.vin} className="text-[10px]" />
+                  </div>
+                </div>
+              </div>
+            </AnimatePresence>
+          </div>
+        </>
+      );
+
+      if (embedded) {
+        return <div className="w-full">{cardBody}</div>;
+      }
+
+      return (
+        <motion.div
+          key={livePing?.pingId ?? "idle"}
+          initial={livePing ? { scale: 0.985, opacity: 0.92 } : false}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          className={cn(
+            "w-full max-w-[300px] overflow-hidden rounded-2xl bg-background/95 shadow-xl shadow-black/10 backdrop-blur-sm dark:shadow-black/45",
+            livePing
+              ? "ring-2 ring-primary/45 shadow-primary/10"
+              : "ring-1 ring-black/10 dark:ring-white/10",
+          )}
+        >
+          {cardBody}
+        </motion.div>
+      );
+    }
+
     return (
       <DemoCardShowcase wide flat accentClass="" condition={car.condition}>
         <div className="overflow-hidden rounded-2xl bg-background">
           <div className={cn("h-0.5 bg-gradient-to-r", c.accentBar)} />
 
           <div className="relative">
-            <div className="relative h-36 overflow-hidden bg-muted/35">
+            <div className={cn(
+              "relative overflow-hidden bg-muted/35",
+              countryPage ? "h-40" : "h-36",
+            )}>
               {cars.map((slideCar, slideIdx) => {
                 const isActive = slideIdx === idx;
                 const isNext = slideIdx === (idx + 1) % cars.length;
@@ -876,6 +1163,17 @@ export function VinDemoCard({
 
           <AnimatePresence mode="wait">
             <div key={car.vin + "-stats"}>
+              {countryPage && (
+                <div className="border-b border-border/60 bg-card/30 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("vin_label")}
+                    </p>
+                    <DemoVinBlurredTail vin={car.vin} className="text-[10px]" />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-1 border-b border-border/60 bg-card/30 px-3 py-2">
                 <div className="min-w-0 text-center">
                   <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{t("year")}</p>
@@ -891,25 +1189,29 @@ export function VinDemoCard({
                 </div>
               </div>
 
-              <div className="border-b border-border/60 bg-muted/[0.15] px-3 py-2">
-                <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <Gauge className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {t("demo_odometer")}
+              {countryPage ? (
+                <DemoMileageTimeline car={car} />
+              ) : (
+                <div className="border-b border-border/60 bg-muted/[0.15] px-3 py-2">
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Gauge className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {t("demo_odometer")}
+                      </span>
+                    </div>
+                    <span className={cn("text-xs font-bold tabular-nums", milTextColor(mileagePct))}>
+                      {car.mileage.toLocaleString()} {car.unit}
                     </span>
                   </div>
-                  <span className={cn("text-xs font-bold tabular-nums", milTextColor(mileagePct))}>
-                    {car.mileage.toLocaleString()} {car.unit}
-                  </span>
+                  <div className="h-1 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
+                    <div
+                      className={cn("h-1 rounded-full", milColor(mileagePct))}
+                      style={{ width: `${mileagePct}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-1 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
-                  <div
-                    className={cn("h-1 rounded-full", milColor(mileagePct))}
-                    style={{ width: `${mileagePct}%` }}
-                  />
-                </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-1.5 p-2.5">
                 <div className="rounded-lg border border-border/60 bg-card/80 px-2.5 py-2">

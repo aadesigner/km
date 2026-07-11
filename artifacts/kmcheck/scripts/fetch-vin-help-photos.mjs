@@ -30,20 +30,17 @@ const PHOTOS = [
   {
     out: "registration-doc.jpg",
     candidates: [
-      "Fahrzeugschein mit Schlüsselnummern.jpg",
-      "Crv wikipedia.jpg",
       "1947 - Vehicle Registration Card - Allentown PA.jpg",
-      "Zulassungsbescheinigung Teil 1.jpg",
+      "1950 - Vehicle Registration Card - Allentown PA.jpg",
+      "Vehicle Registration Card - Allentown PA.jpg",
       "SPECIMEN EU Greek Vehicle Registration from 2004.jpg",
     ],
   },
   {
-    out: "insurance-card.jpg",
-    candidates: [
-      "Ho-an Insurance Agency automobile insurance card 12YL07756.jpg",
-      "Car insurance.jpg",
-      "IVK.png",
-    ],
+    out: "insurance-card.svg",
+    candidates: [],
+    /** Bundled English SVG — Wikimedia insurance samples are often non-English (e.g. Taiwan). */
+    skipFetch: true,
   },
 ];
 
@@ -84,6 +81,10 @@ async function download(url) {
 
 let failed = 0;
 for (const photo of PHOTOS) {
+  if (photo.skipFetch) {
+    console.log(`Skipping ${photo.out} (bundled asset)`);
+    continue;
+  }
   process.stdout.write(`Fetching ${photo.out} … `);
   let saved = false;
   for (const wiki of photo.candidates) {

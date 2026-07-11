@@ -1,3 +1,4 @@
+import { InsuranceCardIllustration } from "@/components/insurance-card-illustration";
 import { cn } from "@/lib/utils";
 
 const VIN_SAMPLE = "1HGBH41JXMN109186";
@@ -7,7 +8,7 @@ const vinHelpPhoto = (file: string) => {
   return `${base}/vin-help/${file}`;
 };
 
-type SceneId = "dashboard" | "door" | "documents" | "insurance";
+type SceneId = "dashboard" | "door" | "documents";
 
 type SceneLayout = {
   src: string;
@@ -34,18 +35,16 @@ const SCENE_LAYOUT: Record<SceneId, SceneLayout> = {
   },
   documents: {
     src: "registration-doc.jpg",
-    objectPosition: "54% 50%",
-    imageScale: 1.12,
+    objectPosition: "50% 42%",
+    imageScale: 1.05,
     lookClass: "top-[8%] left-[8%] sm:left-[10%]",
-    vinClass: "bottom-[16%] left-[10%] w-[54%] max-w-[210px]",
+    vinClass: "bottom-[22%] left-[12%] w-[52%] max-w-[200px]",
   },
-  insurance: {
-    src: "insurance-card.jpg",
-    objectPosition: "48% 52%",
-    imageScale: 1.1,
-    lookClass: "top-[8%] right-[8%] sm:right-[10%]",
-    vinClass: "bottom-[18%] left-[10%] w-[56%] max-w-[210px]",
-  },
+};
+
+const INSURANCE_SCENE_LAYOUT = {
+  lookClass: "top-[8%] right-[8%] sm:right-[10%]",
+  vinClass: "bottom-[22%] left-[8%] w-[62%] max-w-[240px]",
 };
 
 type SceneProps = {
@@ -144,7 +143,7 @@ function PhotoVinScene({
           objectPosition: layout.objectPosition,
           transform: layout.imageScale ? `scale(${layout.imageScale})` : undefined,
         }}
-        loading="lazy"
+        loading="eager"
         decoding="async"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
@@ -179,8 +178,37 @@ export function VinHelpSceneDocuments(props: SceneProps) {
   return <PhotoVinScene sceneId="documents" {...props} />;
 }
 
-export function VinHelpSceneInsurance(props: SceneProps) {
-  return <PhotoVinScene sceneId="insurance" {...props} />;
+export function VinHelpSceneInsurance({
+  vinLabel,
+  lookHereLabel,
+  className,
+}: SceneProps) {
+  const layout = INSURANCE_SCENE_LAYOUT;
+  const lookPos = layout.lookClass;
+  const vinPos = layout.vinClass;
+
+  return (
+    <div className={cn("relative w-full h-full min-h-[210px] sm:min-h-[250px] overflow-hidden bg-slate-100", className)}>
+      <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-5">
+        <InsuranceCardIllustration className="max-h-full max-w-full drop-shadow-md" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+
+      <div className={cn("absolute z-10", lookPos)}>
+        <LookHereBadge label={lookHereLabel} />
+      </div>
+
+      <div className={cn("absolute z-10", vinPos)}>
+        <div className="relative">
+          <span
+            aria-hidden
+            className="absolute -inset-1 rounded-lg bg-primary/35 blur-sm animate-pulse"
+          />
+          <VinHighlight vinLabel={vinLabel} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export const VIN_HELP_SCENES = {

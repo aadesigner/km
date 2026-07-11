@@ -792,6 +792,15 @@
   transform-box: fill-box;
 }
 
+.coverage-map-live-ring-active {
+  animation: coverage-live-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.coverage-map-live-label-active .coverage-map-live-label-chip {
+  border-color: hsl(var(--primary) / 0.55);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
 .coverage-map-live-dot {
   fill: hsl(var(--primary));
   animation: coverage-map-live-dot 1.6s ease-in-out infinite;
@@ -971,6 +980,136 @@
     linear-gradient(to bottom, #000 0%, #000 40%, rgba(0, 0, 0, 0.88) 52%, rgba(0, 0, 0, 0.6) 66%, rgba(0, 0, 0, 0.28) 82%, transparent 100%),
     linear-gradient(to right, #000 0%, #000 58%, rgba(0, 0, 0, 0.82) 68%, rgba(0, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0.2) 92%, transparent 100%);
   -webkit-mask-composite: source-in;
+}
+
+.country-focus-map-panel {
+  overflow: visible;
+}
+
+/* Match hero dot grid + emerald glow so the map feels embedded, not pasted on. */
+.country-focus-map-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.07;
+  background: radial-gradient(#16a34a 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.country-focus-map-panel::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 88% 72% at 58% 42%,
+    rgb(34 197 94 / 0.1),
+    transparent 68%
+  );
+}
+
+.dark .country-focus-map-panel::before {
+  opacity: 0.18;
+}
+
+.dark .country-focus-map-panel::after {
+  background: radial-gradient(
+    ellipse 88% 72% at 58% 42%,
+    rgb(34 197 94 / 0.16),
+    transparent 68%
+  );
+}
+
+/*
+ * Radial vignette — soft edge dissolve into hero (never fully opaque).
+ */
+.country-focus-map-vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    radial-gradient(
+      ellipse 92% 86% at 54% 44%,
+      transparent 0%,
+      transparent 38%,
+      rgb(236 253 245 / 0.06) 52%,
+      rgb(236 253 245 / 0.18) 66%,
+      rgb(236 253 245 / 0.34) 78%,
+      rgb(236 253 245 / 0.48) 88%,
+      rgb(236 253 245 / 0.55) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(236 253 245 / 0.12) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgb(236 253 245 / 0.1) 100%
+    );
+}
+
+.country-focus-map-vignette-left {
+  pointer-events: none;
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 44%;
+  z-index: 4;
+  background: linear-gradient(
+    to right,
+    rgb(236 253 245 / 0.42) 0%,
+    rgb(236 253 245 / 0.24) 22%,
+    rgb(236 253 245 / 0.1) 42%,
+    rgb(236 253 245 / 0.04) 62%,
+    transparent 100%
+  );
+}
+
+.dark .country-focus-map-vignette {
+  background:
+    radial-gradient(
+      ellipse 92% 86% at 54% 44%,
+      transparent 0%,
+      transparent 38%,
+      rgb(4 13 8 / 0.06) 52%,
+      rgb(4 13 8 / 0.18) 66%,
+      rgb(4 13 8 / 0.32) 78%,
+      rgb(4 13 8 / 0.44) 88%,
+      rgb(4 13 8 / 0.52) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(4 13 8 / 0.14) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgb(4 13 8 / 0.12) 100%
+    );
+}
+
+.dark .country-focus-map-vignette-left {
+  background: linear-gradient(
+    to right,
+    rgb(4 13 8 / 0.4) 0%,
+    rgb(4 13 8 / 0.22) 22%,
+    rgb(4 13 8 / 0.1) 42%,
+    rgb(4 13 8 / 0.04) 62%,
+    transparent 100%
+  );
+}
+
+.country-focus-map-atmosphere {
+  display: none;
+}
+
+.country-focus-map-svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+  max-height: none;
+  aspect-ratio: 1050 / 750;
 }
 
 .coverage-arc-flow {

@@ -8,7 +8,12 @@ declare module "react-simple-maps" {
 
   export const ComposableMap: ComponentType<{
     projection?: string;
-    projectionConfig?: { scale?: number; center?: [number, number] };
+    projectionConfig?: {
+      scale?: number;
+      center?: [number, number];
+      rotate?: [number, number];
+      parallels?: [number, number];
+    };
     width?: number;
     height?: number;
     className?: string;
