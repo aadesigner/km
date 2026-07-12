@@ -196,6 +196,7 @@ export default function Checkout({ params }: Props) {
   /** Ignore spurious PayPal onError/onCancel while capture + lookup are running. */
   const paypalFlowPhaseRef = useRef<"idle" | "approving" | "fulfilling" | "done">("idle");
   const paidDeliveryRetryRef = useRef(false);
+  const paypalResumeAttemptedRef = useRef(false);
   const freeCouponPaymentIdRef = useRef<number | null>(null);
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
@@ -276,6 +277,7 @@ export default function Checkout({ params }: Props) {
     pendingPaypalOrderRef.current = null;
     paypalFlowPhaseRef.current = "idle";
     paidDeliveryRetryRef.current = false;
+    paypalResumeAttemptedRef.current = false;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   }, [normalizedVin]);
@@ -290,9 +292,10 @@ export default function Checkout({ params }: Props) {
   // Redirect to existing report if VIN already unlocked
   useEffect(() => {
     if (peek?.alreadyUnlocked && peek.lookupId && normalizedVin.length === 17) {
-      setLocation(`/${language}/vin/${normalizedVin}`);
+      goToVinReport(normalizedVin);
     }
-  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin, language, setLocation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- redirect once when peek resolves
+  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin]);
 
   // Inject PayPal SDK once we have the client ID; include hosted-fields component when cards enabled
   useEffect(() => {
@@ -791,8 +794,8 @@ export default function Checkout({ params }: Props) {
       peek?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current ?? undefined;
     const paidNeedsDelivery = !!(peek?.alreadyUnlocked && !peek.lookupId);
     const freeNeedsDelivery = !!(
-      couponResult?.isFree
-      && (peek?.deliveryInProgress || pendingFreePaymentId)
+      (peek?.deliveryInProgress || pendingFreePaymentId)
+      && pendingFreePaymentId
       && !peek?.lookupId
     );
     if (!paidNeedsDelivery && !freeNeedsDelivery) return;
@@ -811,9 +814,51 @@ export default function Checkout({ params }: Props) {
     peek?.lookupId,
     peek?.deliveryInProgress,
     peek?.pendingFreeCouponPaymentId,
-    couponResult?.isFree,
     normalizedVin,
     status,
+  ]);
+
+  // Resume PayPal capture when session has a pending order but return URL lost ?token=.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !vinIsValid || peekLoading) return;
+    if (paypalResumeAttemptedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("token")) return;
+
+    let raw: string | null = null;
+    try {
+      raw = sessionStorage.getItem(PAYPAL_CHECKOUT_SESSION_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    let parsed: { orderId?: string; vin?: string };
+    try {
+      parsed = JSON.parse(raw) as { orderId?: string; vin?: string };
+    } catch {
+      return;
+    }
+
+    const orderId = parsed.orderId?.toUpperCase() ?? "";
+    const sessionVin = parsed.vin?.toUpperCase() ?? "";
+    if (!/^[A-Z0-9]{8,20}$/.test(orderId)) return;
+    if (sessionVin !== normalizedVin) return;
+    if (peek?.alreadyUnlocked && peek.lookupId) return;
+
+    paypalResumeAttemptedRef.current = true;
+    pendingPaypalOrderRef.current = orderId;
+    setPaymentStarted(true);
+    void finalizePaidCheckout(orderId, normalizedVin);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot session resume
+  }, [
+    isLoaded,
+    isSignedIn,
+    vinIsValid,
+    peekLoading,
+    normalizedVin,
+    peek?.alreadyUnlocked,
+    peek?.lookupId,
   ]);
 
   // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
