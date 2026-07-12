@@ -7,7 +7,7 @@ import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
   ShieldCheck, Search, FileText,
   CheckCircle2,
-  Globe, ArrowRight,
+  Globe, ArrowRight, Zap, RotateCcw,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
 import { DeferredSection } from "@/components/deferred-section";
@@ -438,61 +438,114 @@ export default function Home() {
       </DeferredSection>
 
       {/* ── BOTTOM CTA ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-24">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
-        <div className="absolute top-8 left-16 h-40 w-40 rounded-full bg-white/8 blur-3xl" />
-        <div className="absolute bottom-8 right-16 h-48 w-48 rounded-full bg-white/8 blur-3xl" />
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative z-10 max-w-3xl mx-auto text-center space-y-8"
-        >
-          <div className="space-y-4">
-            {(() => {
-              const [line1, ...rest] = t("cta_title").split(/\.\s+/);
-              const line2 = rest.join(". ").trim();
-              return (
-                <div className="space-y-2 md:space-y-3">
-                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.05] tracking-tight">
-                    {line1}.
-                  </h2>
-                  {line2 ? (
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white/88 leading-snug">
-                      {line2.endsWith(".") ? line2 : `${line2}.`}
-                    </h3>
-                  ) : null}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#031912] via-[#041a14] to-[#060a12] py-14 md:py-16 px-4 pb-10 md:pb-12">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_0%,rgba(34,197,94,0.28),transparent_65%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_100%_20%,rgba(52,211,153,0.1),transparent_50%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(74,222,128,0.18)_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.12] [mask-image:linear-gradient(180deg,#000_0%,#000_55%,transparent_100%)]" />
+
+        <div className="max-w-5xl mx-auto relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45 }}
+            className="relative overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-b from-emerald-950/45 via-emerald-950/20 to-[#060a12] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm"
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
+              {/* Left — headline & value */}
+              <div className="flex flex-col justify-center text-center lg:text-left px-6 py-7 sm:px-8 sm:py-8 lg:px-10 space-y-4 border-b lg:border-b-0 lg:border-r border-emerald-400/10">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-100/85 w-fit mx-auto lg:mx-0">
+                  <FileText className="h-3.5 w-3.5 text-emerald-300" />
+                  {t("pricing_hero_eyebrow")}
                 </div>
-              );
-            })()}
-            <p className="text-white/65 text-base max-w-xl mx-auto">{t("cta_desc")}</p>
-          </div>
 
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <span className="text-5xl font-black text-white tabular-nums">
-              {displayPrice != null ? fmtPrice(displayPrice) : "—"}
-            </span>
-            {isDiscount && (
-              <span className="text-2xl line-through text-white/35">
-                {pricingBase != null ? fmtPrice(pricingBase) : null}
-              </span>
-            )}
-            <span className="text-white/50 text-sm">{t("per_report")}</span>
-            {isDiscount && (
-              <Badge className="bg-orange-500 text-white border-0">{t("limited_time")}</Badge>
-            )}
-          </div>
+                {(() => {
+                  const [line1, ...rest] = t("cta_title").split(/\.\s+/);
+                  const line2 = rest.join(". ").trim();
+                  return (
+                    <div className="space-y-2">
+                      <h2 className="text-[1.9rem] sm:text-[2.35rem] md:text-[2.6rem] font-extrabold text-white leading-[1.1] tracking-tight">
+                        {line1}.
+                      </h2>
+                      {line2 ? (
+                        <p className="text-base sm:text-lg text-emerald-200/75 font-medium leading-snug">
+                          {line2.endsWith(".") ? line2 : `${line2}.`}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
+                })()}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button asChild size="lg" className="h-13 px-10 text-base font-bold bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20">
-              <Link href={`/${language}/pricing`}>{t("get_started")}</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="h-12 border-white/30 text-white hover:bg-white/10 hover:text-white">
-              <Link href={`/${language}/pricing`}>{t("see_whats_included")}</Link>
-            </Button>
-          </div>
-        </motion.div>
+                <p className="text-[13px] sm:text-sm text-white/50 leading-relaxed max-w-[18rem] mx-auto lg:mx-0">
+                  {t("cta_desc")}
+                </p>
+
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 pt-0.5">
+                  {[
+                    { icon: Zap, label: t("trust_instant_report") },
+                    { icon: RotateCcw, label: t("trust_money_back") },
+                  ].map(({ icon: Icon, label }) => (
+                    <span key={label} className="inline-flex items-center gap-1.5 text-[12px] text-white/55">
+                      <Icon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right — price & action */}
+              <div className="flex flex-col">
+                <div className="relative px-6 py-5 sm:px-7 sm:py-6 text-center lg:text-left bg-gradient-to-br from-emerald-600/90 via-emerald-700/85 to-emerald-800/90">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-20%,rgba(255,255,255,0.15),transparent)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.1]" />
+
+                  <div className="relative space-y-1">
+                    {isDiscount && (
+                      <Badge className="mb-1 bg-orange-500 text-white border-0 text-[11px] font-bold shadow-sm shadow-orange-900/30">
+                        {t("limited_time")}
+                      </Badge>
+                    )}
+                    <div className="flex items-end justify-center lg:justify-start gap-2.5 flex-wrap">
+                      <span className="text-[2.5rem] sm:text-5xl font-black text-white tabular-nums leading-none tracking-tight">
+                        {displayPrice != null ? fmtPrice(displayPrice) : "—"}
+                      </span>
+                      {isDiscount && (
+                        <span className="text-base line-through text-white/40 tabular-nums pb-1.5">
+                          {pricingBase != null ? fmtPrice(pricingBase) : null}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[13px] text-white/70">{t("per_report")}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-center gap-2.5 px-6 py-5 sm:px-7 sm:py-6 bg-[#060a12] flex-1">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="w-full h-11 font-bold bg-white text-emerald-900 hover:bg-emerald-50 shadow-md shadow-black/20 gap-2"
+                  >
+                    <Link href={`/${language}/pricing`}>
+                      {t("get_started")}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="w-full h-10 border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/20"
+                  >
+                    <Link href={`/${language}/pricing`}>{t("see_whats_included")}</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
     </div>
   );
