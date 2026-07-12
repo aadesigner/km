@@ -158,3 +158,20 @@ export function useRecaptcha() {
 
   return { getToken, executeRecaptchaToken, enabled, ready, settingsLoaded, siteKey: settings.siteKey };
 }
+
+/** Wait briefly and retry — checkout must not POST without a token when reCAPTCHA is on. */
+export async function obtainRecaptchaToken(
+  getToken: (action?: string) => Promise<string | null>,
+  enabled: boolean,
+  action = "checkout",
+): Promise<string | null> {
+  if (!enabled) return null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const token = await getToken(action);
+    if (token) return token;
+    if (attempt < 4) {
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  return null;
+}

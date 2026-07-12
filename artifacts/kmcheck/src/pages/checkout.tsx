@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { useRecaptcha, obtainRecaptchaToken } from "@/hooks/use-recaptcha";
 import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -142,7 +142,7 @@ export default function Checkout({ params }: Props) {
   const { isSignedIn, isLoaded, user } = useAuth();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { getToken: getRecaptchaToken } = useRecaptcha();
+  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady } = useRecaptcha();
   const { resolvedTheme } = useTheme();
 
   const LOCKED_ROWS = [
@@ -611,7 +611,13 @@ export default function Checkout({ params }: Props) {
 
   const createOrder = async (nvin: string): Promise<string | null> => {
     setStatus("creating");
-    const recaptchaToken = await getRecaptchaToken("checkout") ?? undefined;
+    setErrorMsg("");
+    const recaptchaToken = await obtainRecaptchaToken(getRecaptchaToken, rcEnabled, "checkout") ?? undefined;
+    if (rcEnabled && !recaptchaToken) {
+      setErrorMsg(t("error_recaptcha_failed"));
+      setStatus("error");
+      return null;
+    }
     try {
       const resp = await fetch(`${basePath}/api/payments/create-paypal-order`, {
         method: "POST",
@@ -917,7 +923,10 @@ export default function Checkout({ params }: Props) {
     if (!hostedFieldsRef.current) { setErrorMsg(t("checkout_error_card_not_ready")); setStatus("error"); return; }
     setPaymentStarted(true);
     hostedFieldsCreateOrderRef.current = async () => {
-      const recaptchaToken = await getRecaptchaToken("checkout") ?? undefined;
+      const recaptchaToken = await obtainRecaptchaToken(getRecaptchaToken, rcEnabled, "checkout") ?? undefined;
+      if (rcEnabled && !recaptchaToken) {
+        throw new Error(t("error_recaptcha_failed"));
+      }
       const resp = await fetch(`${basePath}/api/payments/create-paypal-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -974,6 +983,7 @@ export default function Checkout({ params }: Props) {
   };
 
   const isBusy = status === "creating" || status === "paying";
+  const rcBlockingCheckout = rcEnabled && !rcReady;
   const vehicleTitle = peek ? formatVehicleTitle(peek) : null;
   const showDecoderPreview = !!peek && !peekLoading && !!vehicleTitle;
   const showVinQualityWarning = vinIsValid && !!peek && !peekLoading && !isTrustworthyVinDecode(peek);
@@ -1698,10 +1708,12 @@ export default function Checkout({ params }: Props) {
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
-                      disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
+                      disabled={isBusy || rcBlockingCheckout || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >
                       {isBusy
                         ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("processing")}…</>
+                        : rcBlockingCheckout
+                          ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("error_recaptcha_loading")}</>
                         : couponResult?.isFree
                           ? <><Zap className="h-4 w-4" />{t("get_free_report")}</>
                           : payMethod === "card"
