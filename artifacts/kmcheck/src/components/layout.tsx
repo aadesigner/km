@@ -274,7 +274,7 @@ function navDropdownHoverProps(
   timers: MutableRefObject<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>,
   setOpen: Dispatch<SetStateAction<boolean>>,
   closeOthers: () => void,
-  delayMs = 80,
+  delayMs = 40,
 ) {
   return {
     onMouseEnter: () => {
@@ -442,7 +442,7 @@ function MobileLangPicker({
         aria-expanded={open}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
+          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out",
           scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
           open
             ? isDarkNav
@@ -454,6 +454,13 @@ function MobileLangPicker({
         )}
       >
         <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority />
+        <ChevronDown
+          className={cn(
+            "h-3 w-3 transition-transform duration-100",
+            isDarkNav ? "text-white/40" : "text-muted-foreground",
+            open && "rotate-180",
+          )}
+        />
       </button>
       {menu}
     </div>
@@ -595,7 +602,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative px-3.5 rounded-xl font-medium transition-colors duration-75",
+    "relative px-3.5 rounded-xl font-medium transition-colors duration-50 ease-out",
     scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
     active
       ? isDarkNav
@@ -603,7 +610,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         : "text-primary"
       : isDarkNav
         ? "text-white/65 hover:text-white"
-        : "text-foreground/85 hover:text-foreground",
+        : "text-foreground/75 hover:text-foreground",
     isDarkNav
       ? "hover:bg-white/[0.08]"
       : "hover:bg-primary/[0.06]",
@@ -723,7 +730,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               <button
                 {...navDropdownTriggerProps(langOpen, LANGS.find(l => l.code === language)?.label ?? language)}
                 className={cn(
-                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-100",
+                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out",
                   scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
                   langOpen
                     ? isDarkNav
@@ -739,6 +746,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   variant="nav"
                   size={18}
                   priority
+                />
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 transition-transform duration-100",
+                    isDarkNav ? "text-white/40" : "text-muted-foreground",
+                    langOpen && "rotate-180",
+                  )}
                 />
               </button>
 
@@ -766,7 +780,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               onClick={toggleTheme}
               title="Toggle theme"
               className={cn(
-                "relative rounded-full flex items-center justify-center transition-colors duration-75",
+                "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
                 scrolled ? "h-8 w-8" : "h-9 w-9",
                 isDarkNav
                   ? "text-white/55 hover:text-white hover:bg-white/10"
@@ -793,7 +807,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 <button
                   {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors duration-75 outline-none",
+                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors duration-50 ease-out outline-none",
                     isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
                   )}
                 >
@@ -869,7 +883,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "font-medium rounded-full transition-colors duration-75",
+                    "font-medium rounded-full transition-colors duration-50 ease-out",
                     scrolled ? "h-9 px-3.5 text-sm" : "h-10 px-4 text-[15px]",
                     isDarkNav
                       ? "text-white/60 hover:text-white hover:bg-white/[0.07]"
@@ -909,7 +923,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 title="Toggle theme"
                 aria-label="Toggle theme"
                 className={cn(
-                  "relative rounded-full flex items-center justify-center transition-colors duration-75",
+                  "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
                   scrolled ? "h-8 w-8" : "h-9 w-9",
                   isDarkNav
                     ? "text-white/55 hover:text-white hover:bg-white/10"
@@ -964,7 +978,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors touch-manipulation active:bg-primary/10",
-                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
                   )}
                 >
                   {t("nav_how_it_works")}
@@ -975,7 +989,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
                   )}
                 >
                   {t("pricing")}
@@ -986,7 +1000,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                    isOnPage("faq") ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                    isOnPage("faq") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
                   )}
                 >
                   {t("nav_faq")}
