@@ -131,6 +131,13 @@ export function clearRecaptchaSettingsCache(): void {
   _cached = null;
 }
 
+/** Inject script (if needed) and wait until grecaptcha is callable. */
+export async function ensureRecaptchaReady(siteKey: string): Promise<boolean> {
+  if (!siteKey) return false;
+  injectRecaptchaScript(siteKey);
+  return waitForGrecaptcha(siteKey);
+}
+
 export function useRecaptcha() {
   const [settings, setSettings] = useState<RcSettings>({ enabled: false, siteKey: null });
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -191,11 +198,11 @@ export async function obtainRecaptchaToken(
   action = "checkout",
 ): Promise<string | null> {
   if (!enabled) return null;
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     const token = await getToken(action);
     if (token) return token;
-    if (attempt < 4) {
-      await new Promise((r) => setTimeout(r, 500));
+    if (attempt < 7) {
+      await new Promise((r) => setTimeout(r, 400));
     }
   }
   return null;

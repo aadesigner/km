@@ -1,7 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
-import { useRecaptcha, resolveRecaptchaToken, executeRecaptchaToken } from "@/hooks/use-recaptcha";
+import {
+  resolveRecaptchaToken,
+  executeRecaptchaToken,
+  ensureRecaptchaReady,
+  clearRecaptchaSettingsCache,
+} from "@/hooks/use-recaptcha";
 import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -148,7 +153,6 @@ export default function Checkout({ params }: Props) {
   const { isSignedIn, isLoaded, user } = useAuth();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const { resolvedTheme } = useTheme();
 
   const LOCKED_ROWS = [
@@ -221,6 +225,33 @@ export default function Checkout({ params }: Props) {
     ...CHECKOUT_QUERY_OPTIONS,
   });
   useQueryRecovery(pubSettingsError && !!pubSettings, pubSettingsFetching, refetchPubSettings);
+
+  const checkoutRcSiteKey = pubSettings?.recaptchaSiteKey ?? null;
+  const checkoutRcEnabled = !!(pubSettings?.recaptchaEnabled && checkoutRcSiteKey);
+  const [checkoutRcReady, setCheckoutRcReady] = useState(false);
+
+  useEffect(() => {
+    clearRecaptchaSettingsCache();
+  }, [checkoutRcEnabled, checkoutRcSiteKey]);
+
+  useEffect(() => {
+    if (!checkoutRcEnabled || !checkoutRcSiteKey) {
+      setCheckoutRcReady(true);
+      return;
+    }
+    let cancelled = false;
+    setCheckoutRcReady(false);
+    void ensureRecaptchaReady(checkoutRcSiteKey).then((ok) => {
+      if (!cancelled) setCheckoutRcReady(ok);
+    });
+    return () => { cancelled = true; };
+  }, [checkoutRcEnabled, checkoutRcSiteKey]);
+
+  const getCheckoutRecaptchaToken = useCallback(async (action: string) => {
+    if (!checkoutRcSiteKey) return null;
+    await ensureRecaptchaReady(checkoutRcSiteKey);
+    return executeRecaptchaToken(checkoutRcSiteKey, action);
+  }, [checkoutRcSiteKey]);
 
   // VIN peek — only fires when VIN is exactly 17 chars, has no invalid chars, and user is signed in
   const normalizedVin = vin.trim().toUpperCase();
@@ -630,6 +661,11 @@ export default function Checkout({ params }: Props) {
       const data = await resp.json() as CouponResult & { error?: string };
       if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
       setCouponResult(data);
+      if (checkoutRcEnabled && checkoutRcSiteKey) {
+        void executeRecaptchaToken(checkoutRcSiteKey, "checkout").then((token) => {
+          if (token) recaptchaPrimeRef.current = Promise.resolve(token);
+        });
+      }
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
     } finally {
@@ -647,24 +683,24 @@ export default function Checkout({ params }: Props) {
   };
 
   const primeCheckoutRecaptcha = () => {
-    if (!rcEnabled || !rcSiteKey || status === "creating" || status === "paying") return;
+    if (!checkoutRcEnabled || !checkoutRcSiteKey || status === "creating" || status === "paying") return;
     const now = Date.now();
     if (recaptchaPrimeRef.current && now - recaptchaPrimeAtRef.current < 800) return;
     recaptchaPrimeAtRef.current = now;
-    recaptchaPrimeRef.current = rcReady
-      ? executeRecaptchaToken(rcSiteKey, "checkout")
-      : getRecaptchaToken("checkout");
+    recaptchaPrimeRef.current = checkoutRcReady
+      ? executeRecaptchaToken(checkoutRcSiteKey, "checkout")
+      : getCheckoutRecaptchaToken("checkout");
   };
 
   const fetchCheckoutRecaptchaToken = async (): Promise<string | undefined> => {
     const primed = recaptchaPrimeRef.current;
     recaptchaPrimeRef.current = null;
     const token = await resolveRecaptchaToken({
-      enabled: rcEnabled,
-      siteKey: rcSiteKey,
+      enabled: checkoutRcEnabled,
+      siteKey: checkoutRcSiteKey,
       action: "checkout",
       primed,
-      getToken: getRecaptchaToken,
+      getToken: getCheckoutRecaptchaToken,
     });
     return token ?? undefined;
   };
@@ -673,7 +709,7 @@ export default function Checkout({ params }: Props) {
     setStatus("creating");
     setErrorMsg("");
     const recaptchaToken = await fetchCheckoutRecaptchaToken();
-    if (rcEnabled && !recaptchaToken) {
+    if (checkoutRcEnabled && !recaptchaToken) {
       setErrorMsg(t("error_recaptcha_failed"));
       setStatus("error");
       return null;
@@ -1035,7 +1071,7 @@ export default function Checkout({ params }: Props) {
     setPaymentStarted(true);
     hostedFieldsCreateOrderRef.current = async () => {
       const recaptchaToken = await fetchCheckoutRecaptchaToken();
-      if (rcEnabled && !recaptchaToken) {
+      if (checkoutRcEnabled && !recaptchaToken) {
         throw new Error(t("error_recaptcha_failed"));
       }
       const resp = await fetch(`${basePath}/api/payments/create-paypal-order`, {
@@ -1095,7 +1131,7 @@ export default function Checkout({ params }: Props) {
   };
 
   const isBusy = status === "creating" || status === "paying";
-  const rcBlockingCheckout = rcEnabled && !rcReady;
+  const rcBlockingCheckout = checkoutRcEnabled && (!checkoutRcReady || pubSettingsLoading);
   const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;
   const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
   const showVinQualityWarning = vinIsValid && !!peekForVin && !peekLoadingUi && !isTrustworthyVinDecode(peekForVin);
