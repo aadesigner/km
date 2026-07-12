@@ -442,10 +442,10 @@ export default function AdminOverview() {
   }, [presencePeriod]);
 
   const { data: presencePageData, isLoading: presenceUsersLoading, isFetching: presenceUsersFetching } = useQuery<PresenceUsersPage>({
+    ...ADMIN_QUERY_OPTIONS,
     queryKey: ["admin", "presence-users", presencePeriod, presencePage],
     queryFn: () => fetchPresenceUsersPage(presencePeriod, presencePage),
     enabled: Boolean(stats?.onlinePresence),
-    ...ADMIN_QUERY_OPTIONS,
     staleTime: 30_000,
   });
 

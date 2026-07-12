@@ -125,25 +125,25 @@ function fillCouponDays(
 
 function useCoupons() {
   return useQuery<Coupon[]>({
+    ...ADMIN_QUERY_OPTIONS,
     queryKey: ["/api/admin/coupons"],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/admin/coupons`, { credentials: "include" });
       if (!r.ok) throw createClientFetchError("coupons", r.status);
       return r.json();
     },
-    ...ADMIN_QUERY_OPTIONS,
   });
 }
 
 function useCouponStats(days: number) {
   return useQuery<CouponStats>({
+    ...ADMIN_QUERY_OPTIONS,
     queryKey: ["/api/admin/coupons/stats", days],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/admin/coupons/stats?days=${days}`, { credentials: "include" });
       if (!r.ok) throw createClientFetchError("coupon_stats", r.status);
       return r.json();
     },
-    ...ADMIN_QUERY_OPTIONS,
   });
 }
 

@@ -1,4 +1,4 @@
-declare module "*country-page-json-ld.mjs" {
+declare module "../../scripts/country-page-json-ld.mjs" {
   export function buildCountryPageJsonLd(params: {
     pageKey: string;
     title: string;

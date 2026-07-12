@@ -9,6 +9,7 @@ import {
 import { isIndexableVinRest, buildVinPageSeo, normalizeVin, type VinSeoLang } from "@workspace/vin-page-seo";
 import { resolveFavicons } from "./country-favicons";
 import { resolvePageOgImage } from "./seo-og-images";
+// @ts-expect-error ESM build script — no generated .d.ts
 import { buildCountryPageJsonLd } from "../../scripts/country-page-json-ld.mjs";
 
 export type SeoPageKey = keyof typeof seoData;

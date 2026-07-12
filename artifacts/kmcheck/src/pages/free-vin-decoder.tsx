@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError } from "@/lib/translate-client-error";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { formatVinOriginCountry, countryLabelsFromT } from "@/lib/format-country-name";
-import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
+import { STATIC_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
@@ -163,11 +163,7 @@ export default function FreeVinDecoder() {
   }>({
     queryKey: ["/api/payments/public-settings"],
     queryFn: () => fetch(`${basePath}/api/payments/public-settings`).then((r) => r.json()),
-    staleTime: STATIC_QUERY_OPTIONS.staleTime,
-    gcTime: STATIC_QUERY_OPTIONS.gcTime,
-    refetchOnWindowFocus: STATIC_QUERY_OPTIONS.refetchOnWindowFocus,
-    refetchOnMount: STATIC_QUERY_OPTIONS.refetchOnMount,
-    refetchOnReconnect: STATIC_QUERY_OPTIONS.refetchOnReconnect,
+    ...spreadQueryExtras<{ freeVinDecoderRequireSignIn?: boolean }>(STATIC_QUERY_OPTIONS),
   });
 
   const registerRequired = !settingsLoading

@@ -1,4 +1,4 @@
-import { Link, type LinkProps } from "wouter";
+import { Link } from "wouter";
 import { prefetchRouteFromHref } from "@/lib/prefetch-route";
 import { prefetchVinFromHref } from "@/lib/prefetch-vin-report";
 import { queryClient } from "@/lib/query-client";
@@ -12,8 +12,6 @@ type Props = {
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   role?: string;
 };
-
-const PrefetchWouterLink = Link as React.FC<LinkProps & { role?: string }>;
 
 /** wouter Link that prefetches the target page chunk (and VIN data when applicable) on hover/focus. */
 export function PrefetchLink({ to, href, children, className, onClick, role }: Props) {
@@ -36,7 +34,7 @@ export function PrefetchLink({ to, href, children, className, onClick, role }: P
   };
 
   return (
-    <PrefetchWouterLink
+    <Link
       to={path}
       className={className}
       role={role}
@@ -45,6 +43,6 @@ export function PrefetchLink({ to, href, children, className, onClick, role }: P
       onClick={onClick}
     >
       {children}
-    </PrefetchWouterLink>
+    </Link>
   );
 }

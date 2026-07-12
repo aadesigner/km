@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
-import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
+import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import {
@@ -212,7 +212,7 @@ export default function Checkout({ params }: Props) {
       if (!r.ok) throw new Error("public_settings_failed");
       return r.json() as Promise<PublicSettings>;
     },
-    ...CHECKOUT_QUERY_OPTIONS,
+    ...spreadQueryExtras<PublicSettings>(CHECKOUT_QUERY_OPTIONS),
   });
   useQueryRecovery(pubSettingsError && !!pubSettings, pubSettingsFetching, refetchPubSettings);
 
@@ -236,7 +236,7 @@ export default function Checkout({ params }: Props) {
     },
     enabled: vinIsValid && !!isSignedIn,
     retry: false,
-    ...CHECKOUT_QUERY_OPTIONS,
+    ...spreadQueryExtras<VinPeek>(CHECKOUT_QUERY_OPTIONS),
   });
 
   const peekForVin = peekMatchesVin(peek, normalizedVin) ? peek : undefined;
