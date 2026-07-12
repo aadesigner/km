@@ -1,5 +1,5 @@
 /** Earliest model year we offer paid history lookups for. */
-export const MIN_VEHICLE_LOOKUP_YEAR = 2009;
+export const MIN_VEHICLE_LOOKUP_YEAR = 2008;
 
 export function plausibleDecodedYear(year: number | null | undefined): year is number {
   if (year == null || !Number.isFinite(year)) return false;

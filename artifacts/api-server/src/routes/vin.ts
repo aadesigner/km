@@ -168,24 +168,36 @@ async function checkRecaptchaFreeDecoder(
 ): Promise<{ blocked: boolean; reason?: string }> {
   if (!settings.recaptchaEnabled || !settings.recaptchaSecretKey) return { blocked: false };
   if (!token) return { blocked: true, reason: "Security verification required. Please reload the page and try again." };
-  try {
-    const body = new URLSearchParams({ secret: settings.recaptchaSecretKey, response: token });
-    const resp = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-      signal: AbortSignal.timeout(5000),
-    });
-    const data = await resp.json() as { success: boolean; score?: number };
-    const minScore = settings.recaptchaMinScore ?? 0.5;
-    if (!data.success || (data.score ?? 1) < minScore) {
+  const minScore = settings.recaptchaMinScore ?? 0.5;
+  const endpoints = [
+    "https://www.google.com/recaptcha/api/siteverify",
+    "https://www.recaptcha.net/recaptcha/api/siteverify",
+  ];
+  let networkOnly = true;
+  for (const endpoint of endpoints) {
+    try {
+      const body = new URLSearchParams({ secret: settings.recaptchaSecretKey, response: token });
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+        signal: AbortSignal.timeout(5000),
+      });
+      networkOnly = false;
+      const data = await resp.json() as { success: boolean; score?: number };
+      if (data.success && (data.score ?? 1) >= minScore) {
+        return { blocked: false };
+      }
       return { blocked: true, reason: "Security check failed. Please try again." };
+    } catch {
+      logger.warn({ endpoint }, "reCAPTCHA siteverify unreachable for free decoder — trying fallback");
     }
-    return { blocked: false };
-  } catch {
-    logger.warn("reCAPTCHA siteverify unreachable for free decoder — allowing through");
-    return { blocked: false }; // fail-open on network error
   }
+  if (networkOnly) {
+    logger.warn("reCAPTCHA siteverify unreachable for free decoder — allowing through");
+    return { blocked: false };
+  }
+  return { blocked: true, reason: "Security check failed. Please try again." };
 }
 
 // ── Image proxy helpers ───────────────────────────────────────────────────────

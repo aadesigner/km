@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
-import { useRecaptcha, obtainRecaptchaToken } from "@/hooks/use-recaptcha";
+import { useRecaptcha, resolveRecaptchaToken, executeRecaptchaToken } from "@/hooks/use-recaptcha";
 import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -148,7 +148,7 @@ export default function Checkout({ params }: Props) {
   const { isSignedIn, isLoaded, user } = useAuth();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady } = useRecaptcha();
+  const { getToken: getRecaptchaToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
   const { resolvedTheme } = useTheme();
 
   const LOCKED_ROWS = [
@@ -205,6 +205,8 @@ export default function Checkout({ params }: Props) {
   const paypalResumeAttemptedRef = useRef(false);
   const checkoutRedirectedRef = useRef<string | null>(null);
   const freeCouponPaymentIdRef = useRef<number | null>(null);
+  const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
+  const recaptchaPrimeAtRef = useRef(0);
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
@@ -644,10 +646,33 @@ export default function Checkout({ params }: Props) {
     paypalInstanceRef.current = null;
   };
 
+  const primeCheckoutRecaptcha = () => {
+    if (!rcEnabled || !rcSiteKey || status === "creating" || status === "paying") return;
+    const now = Date.now();
+    if (recaptchaPrimeRef.current && now - recaptchaPrimeAtRef.current < 800) return;
+    recaptchaPrimeAtRef.current = now;
+    recaptchaPrimeRef.current = rcReady
+      ? executeRecaptchaToken(rcSiteKey, "checkout")
+      : getRecaptchaToken("checkout");
+  };
+
+  const fetchCheckoutRecaptchaToken = async (): Promise<string | undefined> => {
+    const primed = recaptchaPrimeRef.current;
+    recaptchaPrimeRef.current = null;
+    const token = await resolveRecaptchaToken({
+      enabled: rcEnabled,
+      siteKey: rcSiteKey,
+      action: "checkout",
+      primed,
+      getToken: getRecaptchaToken,
+    });
+    return token ?? undefined;
+  };
+
   const createOrder = async (nvin: string): Promise<string | null> => {
     setStatus("creating");
     setErrorMsg("");
-    const recaptchaToken = await obtainRecaptchaToken(getRecaptchaToken, rcEnabled, "checkout") ?? undefined;
+    const recaptchaToken = await fetchCheckoutRecaptchaToken();
     if (rcEnabled && !recaptchaToken) {
       setErrorMsg(t("error_recaptcha_failed"));
       setStatus("error");
@@ -1009,7 +1034,7 @@ export default function Checkout({ params }: Props) {
     if (!hostedFieldsRef.current) { setErrorMsg(t("checkout_error_card_not_ready")); setStatus("error"); return; }
     setPaymentStarted(true);
     hostedFieldsCreateOrderRef.current = async () => {
-      const recaptchaToken = await obtainRecaptchaToken(getRecaptchaToken, rcEnabled, "checkout") ?? undefined;
+      const recaptchaToken = await fetchCheckoutRecaptchaToken();
       if (rcEnabled && !recaptchaToken) {
         throw new Error(t("error_recaptcha_failed"));
       }
@@ -1794,6 +1819,8 @@ export default function Checkout({ params }: Props) {
                   {showProceedButton && (
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
+                      onPointerDown={primeCheckoutRecaptcha}
+                      onTouchStart={primeCheckoutRecaptcha}
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || rcBlockingCheckout || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >

@@ -1,4 +1,4 @@
-import { executeRecaptchaToken } from "@/hooks/use-recaptcha";
+import { resolveRecaptchaToken } from "@/hooks/use-recaptcha";
 import { readAuthFieldValue } from "@/lib/auth-form-values";
 import { getPasswordErrorMessage, isPasswordStrongEnough } from "@/lib/password-policy";
 
@@ -41,15 +41,6 @@ export async function resolveAuthRecaptchaToken(opts: {
   primed: Promise<string | null> | null;
   getToken: (action: string) => Promise<string | null>;
 }): Promise<string | undefined> {
-  if (!opts.enabled || !opts.siteKey) return undefined;
-
-  if (opts.primed) {
-    const fromPrime = await opts.primed;
-    if (fromPrime) return fromPrime;
-  }
-
-  const quick = await executeRecaptchaToken(opts.siteKey, opts.action);
-  if (quick) return quick;
-
-  return (await opts.getToken(opts.action)) ?? undefined;
+  const token = await resolveRecaptchaToken(opts);
+  return token ?? undefined;
 }

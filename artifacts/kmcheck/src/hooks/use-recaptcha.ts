@@ -106,6 +106,31 @@ export function executeRecaptchaToken(siteKey: string, action: string): Promise<
   });
 }
 
+/** Primed gesture token → quick execute → full wait/load retries. */
+export async function resolveRecaptchaToken(opts: {
+  enabled: boolean;
+  siteKey: string | null;
+  action: string;
+  primed: Promise<string | null> | null;
+  getToken: (action: string) => Promise<string | null>;
+}): Promise<string | null> {
+  if (!opts.enabled || !opts.siteKey) return null;
+
+  if (opts.primed) {
+    const fromPrime = await opts.primed;
+    if (fromPrime) return fromPrime;
+  }
+
+  const quick = await executeRecaptchaToken(opts.siteKey, opts.action);
+  if (quick) return quick;
+
+  return obtainRecaptchaToken(opts.getToken, true, opts.action);
+}
+
+export function clearRecaptchaSettingsCache(): void {
+  _cached = null;
+}
+
 export function useRecaptcha() {
   const [settings, setSettings] = useState<RcSettings>({ enabled: false, siteKey: null });
   const [settingsLoaded, setSettingsLoaded] = useState(false);

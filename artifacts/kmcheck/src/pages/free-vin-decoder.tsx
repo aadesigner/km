@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree, isNorthAmericanMarketVin, type VinDiagnostic } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { useRecaptcha, resolveRecaptchaToken, executeRecaptchaToken } from "@/hooks/use-recaptcha";
 import { useAuth } from "@/lib/auth-context";
 import { buildUnlockCheckoutTarget } from "@/lib/checkout-vin-flow";
 import { getCachedFreeDecode, setCachedFreeDecode } from "@/lib/free-decode-cache";
@@ -95,7 +95,9 @@ function refreshDecodeFromLocal(result: DecodeResult): DecodeResult {
 export default function FreeVinDecoder() {
   const { t, language } = useTranslation();
   const { displayPrice, fmtPrice } = useDisplayPrice();
-  const { getToken, enabled: rcEnabled, ready: rcReady } = useRecaptcha();
+  const { getToken, enabled: rcEnabled, ready: rcReady, siteKey: rcSiteKey } = useRecaptcha();
+  const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
+  const recaptchaPrimeAtRef = useRef(0);
   const { isSignedIn, isLoaded, refreshUser } = useAuth();
   const [, setLocation] = useLocation();
   const [vin, setVin] = useState("");
@@ -177,6 +179,16 @@ export default function FreeVinDecoder() {
 
   const seo = usePageSeo("free_decoder");
 
+  const primeDecoderRecaptcha = () => {
+    if (!rcEnabled || !rcSiteKey || loading) return;
+    const now = Date.now();
+    if (recaptchaPrimeRef.current && now - recaptchaPrimeAtRef.current < 800) return;
+    recaptchaPrimeAtRef.current = now;
+    recaptchaPrimeRef.current = rcReady
+      ? executeRecaptchaToken(rcSiteKey, "free_decoder")
+      : getToken("free_decoder");
+  };
+
   const handleDecode = async (e: React.FormEvent) => {
     e.preventDefault();
     const v = normalizedVin;
@@ -207,7 +219,15 @@ export default function FreeVinDecoder() {
     setLoading(true);
     setEnriching(!!local);
     try {
-      const rc = await getToken("free_decoder");
+      const primed = recaptchaPrimeRef.current;
+      recaptchaPrimeRef.current = null;
+      const rc = await resolveRecaptchaToken({
+        enabled: rcEnabled,
+        siteKey: rcSiteKey,
+        action: "free_decoder",
+        primed,
+        getToken,
+      });
       if (rcEnabled && !rc) {
         setError(t("error_recaptcha_failed"));
         if (!local) setResult(null);
@@ -418,6 +438,8 @@ export default function FreeVinDecoder() {
               <Button
                 type="submit"
                 size="lg"
+                onPointerDown={primeDecoderRecaptcha}
+                onTouchStart={primeDecoderRecaptcha}
                 disabled={loading || registerRequired || (rcEnabled && !rcReady) || normalizedVin.length !== 17}
                 className="absolute right-2 h-10 rounded-xl px-6 font-semibold shadow-md shadow-primary/20"
               >

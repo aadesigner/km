@@ -171,17 +171,31 @@ router.get("/payments/public-settings", async (req, res) => {
   });
 });
 
-async function verifyRecaptcha(token: string, secretKey: string): Promise<boolean> {
-  try {
-    const resp = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${encodeURIComponent(secretKey)}&response=${encodeURIComponent(token)}`,
-      { method: "POST", signal: AbortSignal.timeout(5000) }
-    );
-    const data = await resp.json() as { success: boolean; score?: number };
-    return data.success && (data.score ?? 1) >= 0.3;
-  } catch {
-    return false;
+async function verifyRecaptcha(
+  token: string,
+  secretKey: string,
+  minScore = 0.5,
+): Promise<boolean> {
+  const endpoints = [
+    "https://www.google.com/recaptcha/api/siteverify",
+    "https://www.recaptcha.net/recaptcha/api/siteverify",
+  ];
+  for (const endpoint of endpoints) {
+    try {
+      const body = new URLSearchParams({ secret: secretKey, response: token });
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+        signal: AbortSignal.timeout(5000),
+      });
+      const data = await resp.json() as { success: boolean; score?: number };
+      if (data.success && (data.score ?? 1) >= minScore) return true;
+    } catch {
+      // try next endpoint
+    }
   }
+  return false;
 }
 
 // ── Coupon validation helper ──────────────────────────────────────────────────
@@ -294,7 +308,11 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
     && !isRecaptchaRelaxedForRequest(req);
   if (rcRequired) {
     if (!recaptchaToken) { res.status(400).json({ error: "reCAPTCHA token required", code: "RECAPTCHA_REQUIRED" }); return; }
-    const valid = await verifyRecaptcha(recaptchaToken, settingsRow.recaptchaSecretKey);
+    const valid = await verifyRecaptcha(
+      recaptchaToken,
+      settingsRow.recaptchaSecretKey,
+      settingsRow.recaptchaMinScore ?? 0.5,
+    );
     if (!valid) { res.status(400).json({ error: "reCAPTCHA verification failed", code: "RECAPTCHA_FAILED" }); return; }
   }
 
