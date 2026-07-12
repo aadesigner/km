@@ -483,6 +483,61 @@ export default function Checkout({ params }: Props) {
     return false;
   };
 
+  const recoverVinDelivery = async (
+    lookupId: number | undefined,
+    reportVin: string,
+    paymentId?: number,
+  ): Promise<boolean> => {
+    if (await tryResumeVinDelivery(lookupId, reportVin)) return true;
+    for (let i = 0; i < 6; i++) {
+      await new Promise((r) => setTimeout(r, 400));
+      if (!checkoutActiveRef.current) return false;
+      if (await tryResumeVinDelivery(lookupId, reportVin)) return true;
+    }
+    if (couponResult?.isFree && paymentId) {
+      try {
+        const resp = await fetch(`${basePath}/api/vin/lookup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ vin: reportVin, paymentId }),
+        });
+        const data = await resp.json() as {
+          id?: number;
+          vin?: string;
+          status?: string;
+          fulfilling?: boolean;
+        };
+        if ((resp.status === 202 || data.status === "fulfilling" || data.fulfilling) && data.id) {
+          for (let poll = 0; poll < 30; poll++) {
+            if (!checkoutActiveRef.current) return false;
+            if (poll > 0) await new Promise((r) => setTimeout(r, 1000));
+            if (await tryResumeVinDelivery(data.id, reportVin)) return true;
+          }
+          if (await tryResumeVinDelivery(data.id, reportVin)) return true;
+        } else if (resp.ok && data.id) {
+          completeCheckoutDelivery(data.vin ?? reportVin);
+          return true;
+        }
+      } catch {
+        // fall through to failure
+      }
+    }
+    return false;
+  };
+
+  const failVinDelivery = async (
+    lookupId: number | undefined,
+    reportVin: string,
+    paymentId: number | undefined,
+    message: string,
+  ): Promise<boolean> => {
+    if (await recoverVinDelivery(lookupId, reportVin, paymentId)) return true;
+    setErrorMsg(message);
+    setStatus("error");
+    return false;
+  };
+
   const handleUnlockVinForEdit = () => {
     setPaymentStarted(false);
     paypalInstanceRef.current?.close();
@@ -642,16 +697,15 @@ export default function Checkout({ params }: Props) {
             return true;
           }
           if (pollData.status === "error") {
-            if (await tryResumeVinDelivery(data.id, nvin)) return true;
-            setErrorMsg(translateClientError(t, pollData.code, pollData.error));
-            setStatus("error");
-            return false;
+            return failVinDelivery(
+              data.id,
+              nvin,
+              paymentId,
+              translateClientError(t, pollData.code, pollData.error),
+            );
           }
         }
-        if (await tryResumeVinDelivery(data.id, nvin)) return true;
-        setErrorMsg(deliveryFetchErrorMsg());
-        setStatus("error");
-        return false;
+        return failVinDelivery(data.id, nvin, paymentId, deliveryFetchErrorMsg());
       }
 
       if (resp.ok && data.id) {
@@ -682,10 +736,8 @@ export default function Checkout({ params }: Props) {
       if (attempt === 0) {
         return submitVinLookup(nvin, undefined, paymentId, 1);
       }
-      if (await tryResumeVinDelivery(undefined, nvin)) return true;
-      setErrorMsg(deliveryFetchErrorMsg());
-      setStatus("error");
-      return false;
+      if (await recoverVinDelivery(undefined, nvin, paymentId)) return true;
+      return failVinDelivery(undefined, nvin, paymentId, deliveryFetchErrorMsg());
     }
   };
 
@@ -756,29 +808,6 @@ export default function Checkout({ params }: Props) {
     couponResult?.isFree,
     normalizedVin,
     status,
-  ]);
-
-  // Free coupon — if checkout errored but delivery may still be running, resume or retry.
-  useEffect(() => {
-    if (status !== "error" || normalizedVin.length !== 17 || !couponResult?.isFree) return;
-    let cancelled = false;
-    void (async () => {
-      if (await tryResumeVinDelivery(peek?.lookupId ?? undefined, normalizedVin)) {
-        if (!cancelled) setErrorMsg("");
-        return;
-      }
-      const paymentId = peek?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current;
-      if (!paymentId || cancelled) return;
-      const ok = await submitVinLookup(normalizedVin, undefined, paymentId);
-      if (!cancelled && ok) setErrorMsg("");
-    })();
-    return () => { cancelled = true; };
-  }, [
-    status,
-    couponResult?.isFree,
-    peek?.lookupId,
-    peek?.pendingFreeCouponPaymentId,
-    normalizedVin,
   ]);
 
   // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
