@@ -128,6 +128,8 @@ interface VinPeek {
   vehicleTooOld?: boolean;
   alreadyUnlocked?: boolean;
   lookupId?: number | null;
+  deliveryInProgress?: boolean;
+  pendingFreeCouponPaymentId?: number | null;
 }
 
 interface Props {
@@ -194,6 +196,7 @@ export default function Checkout({ params }: Props) {
   /** Ignore spurious PayPal onError/onCancel while capture + lookup are running. */
   const paypalFlowPhaseRef = useRef<"idle" | "approving" | "fulfilling" | "done">("idle");
   const paidDeliveryRetryRef = useRef(false);
+  const freeCouponPaymentIdRef = useRef<number | null>(null);
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
@@ -427,6 +430,59 @@ export default function Checkout({ params }: Props) {
     setLocation(`/${language}/vin/${target}`);
   };
 
+  type VinDeliveryProbe = { status?: string; vin?: string };
+
+  const fetchVinDeliveryStatus = async (
+    lookupId: number | undefined,
+    reportVin: string,
+  ): Promise<VinDeliveryProbe | null> => {
+    const urls = [
+      lookupId != null ? `${basePath}/api/vin/${lookupId}` : null,
+      `${basePath}/api/vin/${encodeURIComponent(reportVin)}`,
+    ].filter((url): url is string => Boolean(url));
+
+    for (const url of urls) {
+      try {
+        const r = await fetch(url, { credentials: "include" });
+        if (!r.ok) continue;
+        return await r.json() as VinDeliveryProbe;
+      } catch {
+        // try next probe URL
+      }
+    }
+    return null;
+  };
+
+  const isDeliverableVinStatus = (deliveryStatus?: string) =>
+    deliveryStatus === "complete" || deliveryStatus === "pending_manual";
+
+  const isStillRetrievingVinStatus = (deliveryStatus?: string) =>
+    deliveryStatus === "fulfilling";
+
+  const completeCheckoutDelivery = (reportVin: string) => {
+    setStatus("success");
+    paypalFlowPhaseRef.current = "done";
+    sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+    goToVinReport(reportVin);
+  };
+
+  const deliveryFetchErrorMsg = () =>
+    couponResult?.isFree
+      ? t("checkout_error_free_coupon_fetch")
+      : t("checkout_error_payment_fetch");
+
+  const tryResumeVinDelivery = async (
+    lookupId: number | undefined,
+    reportVin: string,
+  ): Promise<boolean> => {
+    const probe = await fetchVinDeliveryStatus(lookupId, reportVin);
+    if (isDeliverableVinStatus(probe?.status) || isStillRetrievingVinStatus(probe?.status)) {
+      completeCheckoutDelivery(probe?.vin ?? reportVin);
+      return true;
+    }
+    return false;
+  };
+
   const handleUnlockVinForEdit = () => {
     setPaymentStarted(false);
     paypalInstanceRef.current?.close();
@@ -530,7 +586,11 @@ export default function Checkout({ params }: Props) {
         setStatus("error");
         return null;
       }
-      if (data.free && data.paymentId) { await submitVinLookup(nvin, undefined, data.paymentId); return null; }
+      if (data.free && data.paymentId) {
+        freeCouponPaymentIdRef.current = data.paymentId;
+        await submitVinLookup(nvin, undefined, data.paymentId);
+        return null;
+      }
       return data.orderId ?? null;
     } catch {
       setErrorMsg(t("checkout_error_payment_create"));
@@ -569,7 +629,7 @@ export default function Checkout({ params }: Props) {
 
       if ((resp.status === 202 || data.status === "fulfilling" || data.fulfilling) && data.id) {
         paypalFlowPhaseRef.current = "fulfilling";
-        const maxAttempts = 90;
+        const maxAttempts = 120;
         for (let poll = 0; poll < maxAttempts; poll++) {
           if (!checkoutActiveRef.current) return false;
           if (poll > 0) await new Promise((r) => setTimeout(r, 1000));
@@ -578,28 +638,24 @@ export default function Checkout({ params }: Props) {
           const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
           if (!pollResp.ok) continue;
           if (pollData.status === "complete" || pollData.status === "pending_manual") {
-            setStatus("success");
-            paypalFlowPhaseRef.current = "done";
-            sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
-            goToVinReport(pollData.vin ?? nvin);
+            completeCheckoutDelivery(pollData.vin ?? nvin);
             return true;
           }
           if (pollData.status === "error") {
+            if (await tryResumeVinDelivery(data.id, nvin)) return true;
             setErrorMsg(translateClientError(t, pollData.code, pollData.error));
             setStatus("error");
             return false;
           }
         }
-        setErrorMsg(t("checkout_error_payment_fetch"));
+        if (await tryResumeVinDelivery(data.id, nvin)) return true;
+        setErrorMsg(deliveryFetchErrorMsg());
         setStatus("error");
         return false;
       }
 
       if (resp.ok && data.id) {
-        setStatus("success");
-        paypalFlowPhaseRef.current = "done";
-        sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
-        goToVinReport(data.vin ?? nvin);
+        completeCheckoutDelivery(data.vin ?? nvin);
         return true;
       }
 
@@ -626,7 +682,8 @@ export default function Checkout({ params }: Props) {
       if (attempt === 0) {
         return submitVinLookup(nvin, undefined, paymentId, 1);
       }
-      setErrorMsg(t("checkout_error_payment_fetch"));
+      if (await tryResumeVinDelivery(undefined, nvin)) return true;
+      setErrorMsg(deliveryFetchErrorMsg());
       setStatus("error");
       return false;
     }
@@ -669,16 +726,60 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  // Paid but report not delivered yet — retry lookup without charging again.
+  // Paid or free-coupon delivery still in flight — retry lookup without charging again.
   useEffect(() => {
-    if (!peek?.alreadyUnlocked || peek.lookupId || normalizedVin.length !== 17) return;
+    if (normalizedVin.length !== 17) return;
+    const pendingFreePaymentId =
+      peek?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current ?? undefined;
+    const paidNeedsDelivery = !!(peek?.alreadyUnlocked && !peek.lookupId);
+    const freeNeedsDelivery = !!(
+      couponResult?.isFree
+      && (peek?.deliveryInProgress || pendingFreePaymentId)
+      && !peek?.lookupId
+    );
+    if (!paidNeedsDelivery && !freeNeedsDelivery) return;
     if (paidDeliveryRetryRef.current) return;
     if (paypalFlowPhaseRef.current !== "idle" || status === "paying" || status === "creating") return;
     paidDeliveryRetryRef.current = true;
-    void submitVinLookup(normalizedVin).then((ok) => {
+    void submitVinLookup(
+      normalizedVin,
+      undefined,
+      freeNeedsDelivery ? pendingFreePaymentId : undefined,
+    ).then((ok) => {
       if (!ok) paidDeliveryRetryRef.current = false;
     });
-  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin, status]);
+  }, [
+    peek?.alreadyUnlocked,
+    peek?.lookupId,
+    peek?.deliveryInProgress,
+    peek?.pendingFreeCouponPaymentId,
+    couponResult?.isFree,
+    normalizedVin,
+    status,
+  ]);
+
+  // Free coupon — if checkout errored but delivery may still be running, resume or retry.
+  useEffect(() => {
+    if (status !== "error" || normalizedVin.length !== 17 || !couponResult?.isFree) return;
+    let cancelled = false;
+    void (async () => {
+      if (await tryResumeVinDelivery(peek?.lookupId ?? undefined, normalizedVin)) {
+        if (!cancelled) setErrorMsg("");
+        return;
+      }
+      const paymentId = peek?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current;
+      if (!paymentId || cancelled) return;
+      const ok = await submitVinLookup(normalizedVin, undefined, paymentId);
+      if (!cancelled && ok) setErrorMsg("");
+    })();
+    return () => { cancelled = true; };
+  }, [
+    status,
+    couponResult?.isFree,
+    peek?.lookupId,
+    peek?.pendingFreeCouponPaymentId,
+    normalizedVin,
+  ]);
 
   // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
   useEffect(() => {
@@ -805,7 +906,11 @@ export default function Checkout({ params }: Props) {
         throw new Error(translateClientError(t, data.code, data.error));
       }
       if (!resp.ok || data.error) throw new Error(data.error ?? "Failed to create order");
-      if (data.free && data.paymentId) { await submitVinLookup(nvin, undefined, data.paymentId); throw new Error("__free__"); }
+      if (data.free && data.paymentId) {
+        freeCouponPaymentIdRef.current = data.paymentId;
+        await submitVinLookup(nvin, undefined, data.paymentId);
+        throw new Error("__free__");
+      }
       if (!data.orderId) throw new Error("No order ID returned");
       return data.orderId;
     };
@@ -1555,7 +1660,7 @@ export default function Checkout({ params }: Props) {
                   {status === "paying" && (
                     <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {t("processing_payment")}
+                      {couponResult?.isFree ? t("processing_retrieving_data") : t("processing_payment")}
                     </div>
                   )}
 

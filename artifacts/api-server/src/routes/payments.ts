@@ -331,6 +331,30 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
   }
 
   if (finalPrice === 0) {
+    const [existingPendingFree] = await db.select().from(paymentsTable)
+      .where(and(
+        eq(paymentsTable.userId, userId),
+        eq(paymentsTable.vin, normalizedVin),
+        eq(paymentsTable.status, "pending"),
+        eq(paymentsTable.amount, 0),
+        sql`${paymentsTable.couponCode} IS NOT NULL`,
+      ))
+      .orderBy(desc(paymentsTable.id))
+      .limit(1);
+
+    if (existingPendingFree) {
+      logger.info({
+        msg: "payment_reused",
+        type: "free_coupon_pending",
+        paymentId: existingPendingFree.id,
+        userId,
+        vin: normalizedVin,
+        couponCode: existingPendingFree.couponCode ?? null,
+      });
+      res.json({ free: true, paymentId: existingPendingFree.id, vin: normalizedVin });
+      return;
+    }
+
     if (appliedCoupon) {
       const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
       if (!reserved) {

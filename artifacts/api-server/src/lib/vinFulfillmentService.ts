@@ -71,6 +71,37 @@ async function countFreeCoupon(paymentId: number, couponCode: string): Promise<v
   }
 }
 
+function isTransientProviderError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  return (
+    err.name === "TimeoutError"
+    || err.name === "AbortError"
+    || msg.includes("timeout")
+    || msg.includes("aborted")
+    || msg.includes("fetch failed")
+    || msg.includes("network")
+    || msg.includes("econnreset")
+    || msg.includes("socket")
+    || msg.includes("could not reach")
+  );
+}
+
+async function fetchFromProviderWithRetry(
+  vin: string,
+  baseUrl: string,
+  apiKey: string,
+): Promise<Awaited<ReturnType<typeof fetchFromProvider>>> {
+  try {
+    return await fetchFromProvider(vin, baseUrl, apiKey);
+  } catch (err) {
+    if (!isTransientProviderError(err)) throw err;
+    logger.warn({ err, vin }, "Transient provider error — retrying local-report once");
+    await new Promise((r) => setTimeout(r, 2000));
+    return await fetchFromProvider(vin, baseUrl, apiKey);
+  }
+}
+
 async function failFreeCouponPayment(paymentId: number, couponCode: string | null): Promise<void> {
   try {
     await db.update(paymentsTable)
@@ -243,7 +274,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           throw new Error("Provider API key not configured");
         }
 
-        const data = await fetchFromProvider(normalizedVin, provider.baseUrl, provider.apiKey);
+        const data = await fetchFromProviderWithRetry(normalizedVin, provider.baseUrl, provider.apiKey);
         const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
         await db.update(vinLookupsTable).set({
           status: "complete",

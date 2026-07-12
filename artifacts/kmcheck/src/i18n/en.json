@@ -584,6 +584,7 @@
   "checkout_error_coupon_failed": "Failed to validate coupon. Please try again.",
   "checkout_error_payment_create": "Failed to create payment. Please try again.",
   "checkout_error_payment_fetch": "Failed to fetch VIN data. Your payment was received — contact support.",
+  "checkout_error_free_coupon_fetch": "We couldn't deliver your report yet. Your free coupon is still valid — please try again in a moment.",
   "checkout_error_paypal_load": "PayPal failed to load. Please refresh and try again.",
   "checkout_error_capture": "Payment capture failed. Please try again or contact support.",
   "checkout_error_payment_failed": "Payment failed. Please try again.",

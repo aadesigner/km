@@ -1178,7 +1178,7 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
   const checkDigitValid = resolveCheckDigitValid(vin);
 
   // Check if this user already has a completed lookup or payment for this VIN
-  const [[completedLookup], [pendingLookup], [completedPmt]] = await Promise.all([
+  const [[completedLookup], [pendingLookup], [completedPmt], [fulfillingLookup], [pendingFreePmt]] = await Promise.all([
     db.select({ id: vinLookupsTable.id })
       .from(vinLookupsTable)
       .where(and(
@@ -1205,9 +1205,31 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
         eq(paymentsTable.status, "completed")
       ))
       .limit(1),
+    db.select({ id: vinLookupsTable.id })
+      .from(vinLookupsTable)
+      .where(and(
+        eq(vinLookupsTable.userId, req.userId!),
+        eq(vinLookupsTable.vin, vin),
+        eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
+      ))
+      .orderBy(desc(vinLookupsTable.id))
+      .limit(1),
+    db.select({ id: paymentsTable.id })
+      .from(paymentsTable)
+      .where(and(
+        eq(paymentsTable.userId, req.userId!),
+        eq(paymentsTable.vin, vin),
+        eq(paymentsTable.status, "pending"),
+        eq(paymentsTable.amount, 0),
+        sql`${paymentsTable.couponCode} IS NOT NULL`,
+      ))
+      .orderBy(desc(paymentsTable.id))
+      .limit(1),
   ]);
   const alreadyUnlocked = !!(completedLookup || pendingLookup || completedPmt);
-  const lookupId = completedLookup?.id ?? pendingLookup?.id ?? null;
+  const deliveryInProgress = !!(fulfillingLookup || pendingFreePmt);
+  const lookupId = completedLookup?.id ?? pendingLookup?.id ?? fulfillingLookup?.id ?? null;
+  const pendingFreeCouponPaymentId = pendingFreePmt?.id ?? null;
 
   const [cached, catalog] = await Promise.all([
     getCachedVinForPeek(vin),
@@ -1233,6 +1255,8 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
     decodeSource: identity.decodeSource,
     fromCache,
     localDecode: identity.decodeSource === "local",
+    deliveryInProgress,
+    pendingFreeCouponPaymentId,
   };
 
   if (alreadyUnlocked) {
