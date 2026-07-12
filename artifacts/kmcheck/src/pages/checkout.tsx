@@ -20,7 +20,12 @@ import { translateClientError, translateCouponError } from "@/lib/translate-clie
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
-import { formatVehicleTitle, isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import {
+  formatVehicleTitle,
+  isTrustworthyVinDecode,
+  peekMatchesVin,
+  shouldShowPendingVinDoubleCheck,
+} from "@/lib/vin-decode-preview";
 import { isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
@@ -197,6 +202,7 @@ export default function Checkout({ params }: Props) {
   const paypalFlowPhaseRef = useRef<"idle" | "approving" | "fulfilling" | "done">("idle");
   const paidDeliveryRetryRef = useRef(false);
   const paypalResumeAttemptedRef = useRef(false);
+  const checkoutRedirectedRef = useRef<string | null>(null);
   const freeCouponPaymentIdRef = useRef<number | null>(null);
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
@@ -235,6 +241,10 @@ export default function Checkout({ params }: Props) {
     retry: false,
     ...CHECKOUT_QUERY_OPTIONS,
   });
+
+  const peekForVin = peekMatchesVin(peek, normalizedVin) ? peek : undefined;
+  const peekStale = !!peek && !peekMatchesVin(peek, normalizedVin);
+  const peekLoadingUi = peekLoading || (vinIsValid && !!isSignedIn && peekStale);
 
   const {
     displayPrice: salePrice,
@@ -278,6 +288,7 @@ export default function Checkout({ params }: Props) {
     paypalFlowPhaseRef.current = "idle";
     paidDeliveryRetryRef.current = false;
     paypalResumeAttemptedRef.current = false;
+    checkoutRedirectedRef.current = null;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   }, [normalizedVin]);
@@ -289,13 +300,25 @@ export default function Checkout({ params }: Props) {
     }
   }, [normalizedVin, vinHasInvalidChars]);
 
+  // While payment/delivery runs, refresh peek so we can redirect once the VIN unlocks.
+  useEffect(() => {
+    if (status !== "paying" && status !== "creating") return;
+    if (!vinIsValid || !isSignedIn) return;
+    const refreshPeek = () => {
+      void queryClient.invalidateQueries({ queryKey: ["/api/vin/peek", normalizedVin] });
+    };
+    refreshPeek();
+    const timer = setInterval(refreshPeek, 5000);
+    return () => clearInterval(timer);
+  }, [status, vinIsValid, isSignedIn, normalizedVin, queryClient]);
+
   // Redirect to existing report if VIN already unlocked
   useEffect(() => {
-    if (peek?.alreadyUnlocked && peek.lookupId && normalizedVin.length === 17) {
+    if (peekForVin?.alreadyUnlocked && peekForVin.lookupId && normalizedVin.length === 17) {
       goToVinReport(normalizedVin);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- redirect once when peek resolves
-  }, [peek?.alreadyUnlocked, peek?.lookupId, normalizedVin]);
+  }, [peekForVin?.alreadyUnlocked, peekForVin?.lookupId, normalizedVin]);
 
   // Inject PayPal SDK once we have the client ID; include hosted-fields component when cards enabled
   useEffect(() => {
@@ -425,6 +448,8 @@ export default function Checkout({ params }: Props) {
 
   const goToVinReport = (reportVin: string) => {
     const target = normalizeCheckoutVin(reportVin);
+    if (checkoutRedirectedRef.current === target) return;
+    checkoutRedirectedRef.current = target;
     sessionStorage.removeItem(PENDING_VIN_KEY);
     sessionStorage.removeItem(CHECKOUT_VIN_KEY);
     // A VIN was just unlocked — refresh the (cached) client-area lists so the
@@ -697,21 +722,29 @@ export default function Checkout({ params }: Props) {
         for (let poll = 0; poll < maxAttempts; poll++) {
           if (!checkoutActiveRef.current) return false;
           if (poll > 0) await new Promise((r) => setTimeout(r, 1000));
-          const pollResp = await fetch(`${basePath}/api/vin/${data.id}`, { credentials: "include" });
-          if (!checkoutActiveRef.current) return false;
-          const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
-          if (!pollResp.ok) continue;
-          if (pollData.status === "complete" || pollData.status === "pending_manual") {
-            completeCheckoutDelivery(pollData.vin ?? nvin);
-            return true;
-          }
-          if (pollData.status === "error") {
-            return failVinDelivery(
-              data.id,
-              nvin,
-              paymentId,
-              translateClientError(t, pollData.code, pollData.error),
-            );
+          try {
+            const pollResp = await fetch(`${basePath}/api/vin/${data.id}`, { credentials: "include" });
+            if (!checkoutActiveRef.current) return false;
+            if (!pollResp.ok) continue;
+            const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
+            if (
+              pollData.status === "complete"
+              || pollData.status === "pending_manual"
+              || pollData.status === "fulfilling"
+            ) {
+              completeCheckoutDelivery(pollData.vin ?? nvin);
+              return true;
+            }
+            if (pollData.status === "error") {
+              return failVinDelivery(
+                data.id,
+                nvin,
+                paymentId,
+                translateClientError(t, pollData.code, pollData.error),
+              );
+            }
+          } catch {
+            // transient poll failure — keep trying
           }
         }
         return failVinDelivery(data.id, nvin, paymentId, deliveryFetchErrorMsg());
@@ -791,12 +824,12 @@ export default function Checkout({ params }: Props) {
   useEffect(() => {
     if (normalizedVin.length !== 17) return;
     const pendingFreePaymentId =
-      peek?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current ?? undefined;
-    const paidNeedsDelivery = !!(peek?.alreadyUnlocked && !peek.lookupId);
+      peekForVin?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current ?? undefined;
+    const paidNeedsDelivery = !!(peekForVin?.alreadyUnlocked && !peekForVin.lookupId);
     const freeNeedsDelivery = !!(
-      (peek?.deliveryInProgress || pendingFreePaymentId)
+      (peekForVin?.deliveryInProgress || pendingFreePaymentId)
       && pendingFreePaymentId
-      && !peek?.lookupId
+      && !peekForVin?.lookupId
     );
     if (!paidNeedsDelivery && !freeNeedsDelivery) return;
     if (paidDeliveryRetryRef.current) return;
@@ -810,17 +843,17 @@ export default function Checkout({ params }: Props) {
       if (!ok) paidDeliveryRetryRef.current = false;
     });
   }, [
-    peek?.alreadyUnlocked,
-    peek?.lookupId,
-    peek?.deliveryInProgress,
-    peek?.pendingFreeCouponPaymentId,
+    peekForVin?.alreadyUnlocked,
+    peekForVin?.lookupId,
+    peekForVin?.deliveryInProgress,
+    peekForVin?.pendingFreeCouponPaymentId,
     normalizedVin,
     status,
   ]);
 
   // Resume PayPal capture when session has a pending order but return URL lost ?token=.
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || !vinIsValid || peekLoading) return;
+    if (!isLoaded || !isSignedIn || !vinIsValid || peekLoadingUi) return;
     if (paypalResumeAttemptedRef.current) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("token")) return;
@@ -844,7 +877,7 @@ export default function Checkout({ params }: Props) {
     const sessionVin = parsed.vin?.toUpperCase() ?? "";
     if (!/^[A-Z0-9]{8,20}$/.test(orderId)) return;
     if (sessionVin !== normalizedVin) return;
-    if (peek?.alreadyUnlocked && peek.lookupId) return;
+    if (peekForVin?.alreadyUnlocked && peekForVin.lookupId) return;
 
     paypalResumeAttemptedRef.current = true;
     pendingPaypalOrderRef.current = orderId;
@@ -855,10 +888,10 @@ export default function Checkout({ params }: Props) {
     isLoaded,
     isSignedIn,
     vinIsValid,
-    peekLoading,
+    peekLoadingUi,
     normalizedVin,
-    peek?.alreadyUnlocked,
-    peek?.lookupId,
+    peekForVin?.alreadyUnlocked,
+    peekForVin?.lookupId,
   ]);
 
   // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
@@ -1029,22 +1062,22 @@ export default function Checkout({ params }: Props) {
 
   const isBusy = status === "creating" || status === "paying";
   const rcBlockingCheckout = rcEnabled && !rcReady;
-  const vehicleTitle = peek ? formatVehicleTitle(peek) : null;
-  const showDecoderPreview = !!peek && !peekLoading && !!vehicleTitle;
-  const showVinQualityWarning = vinIsValid && !!peek && !peekLoading && !isTrustworthyVinDecode(peek);
-  const showVinPendingDoubleCheck = vinIsValid && !!peek && !peekLoading && shouldShowPendingVinDoubleCheck(peek);
+  const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;
+  const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
+  const showVinQualityWarning = vinIsValid && !!peekForVin && !peekLoadingUi && !isTrustworthyVinDecode(peekForVin);
+  const showVinPendingDoubleCheck = vinIsValid && !!peekForVin && !peekLoadingUi && shouldShowPendingVinDoubleCheck(peekForVin);
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
   const vehicleTooOld =
     vinIsValid &&
-    !!peek &&
-    !peekLoading &&
-    (peek.vehicleTooOld === true || isVehicleTooOldForLookup(peek.year));
-  const paymentAllowed = !vinLookupDisabled && peek?.dataAvailable === true && !peek?.checkUnavailable && !vehicleTooOld;
+    !!peekForVin &&
+    !peekLoadingUi &&
+    (peekForVin.vehicleTooOld === true || isVehicleTooOldForLookup(peekForVin.year));
+  const paymentAllowed = !vinLookupDisabled && peekForVin?.dataAvailable === true && !peekForVin?.checkUnavailable && !vehicleTooOld;
   const paymentSettingsReady = !pubSettingsLoading && !!pubSettings;
   const checkoutDataReady =
     vinIsValid &&
-    !peekLoading &&
-    !!peek &&
+    !peekLoadingUi &&
+    !!peekForVin &&
     paymentAllowed &&
     paymentSettingsReady;
   const showPaymentMethodTabs =
@@ -1063,11 +1096,11 @@ export default function Checkout({ params }: Props) {
   const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
     vinIsValid &&
-    !!peek &&
-    !peekLoading &&
-    peek.dataAvailable === false &&
-    !peek.checkUnavailable &&
-    !peek.manualPending &&
+    !!peekForVin &&
+    !peekLoadingUi &&
+    peekForVin.dataAvailable === false &&
+    !peekForVin.checkUnavailable &&
+    !peekForVin.manualPending &&
     !showVinQualityWarning &&
     !showVehicleTooOldNotice;
   const showCouponSection = !paymentStarted && status !== "creating" && status !== "paying";
@@ -1079,11 +1112,11 @@ export default function Checkout({ params }: Props) {
     !paymentStarted;
   const showLockedPreview =
     vinIsValid &&
-    !peekLoading &&
+    !peekLoadingUi &&
     !peekError &&
-    !!peek &&
-    peek.dataAvailable === true &&
-    !peek.checkUnavailable &&
+    !!peekForVin &&
+    peekForVin.dataAvailable === true &&
+    !peekForVin.checkUnavailable &&
     !showVinQualityWarning;
 
   const seoLang = parseLangFromPath(window.location.pathname, import.meta.env.BASE_URL.replace(/\/$/, "")) ?? language;
@@ -1285,9 +1318,9 @@ export default function Checkout({ params }: Props) {
                         {t("checkout_vin_char_count").replace("{count}", String(normalizedVin.length))}
                       </span>
                       {vinIsValid && (
-                        peekLoading
+                        peekLoadingUi
                           ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          : peek
+                          : peekForVin
                             ? <CheckCircle2 className="h-4 w-4 text-green-500" />
                             : peekError
                               ? <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -1328,14 +1361,14 @@ export default function Checkout({ params }: Props) {
                   </div>
                   <p className="text-sm sm:text-base font-medium max-w-xs leading-snug">{t("checkout_enter_vin_prompt")}</p>
                 </div>
-              ) : peekLoading ? (
+              ) : peekLoadingUi ? (
                 <div className="space-y-2.5 px-5 sm:px-6 py-5">
                   <Skeleton className="h-7 w-48 rounded-lg" />
                   <Skeleton className="h-4 w-28 rounded" />
                 </div>
-              ) : showDecoderPreview && peek ? (
+              ) : showDecoderPreview && peekForVin ? (
                 <motion.div
-                  key={peek.vin}
+                  key={peekForVin.vin}
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
@@ -1345,14 +1378,14 @@ export default function Checkout({ params }: Props) {
                     {vehicleTitle}
                   </h2>
                   <p className="text-muted-foreground/60 dark:text-white/25 text-[10px] sm:text-[11px] font-mono tracking-wide mt-1 break-all">
-                    {peek.vin}
+                    {peekForVin.vin}
                   </p>
                 </motion.div>
-              ) : peek && vinIsValid && !peekLoading ? (
+              ) : peekForVin && vinIsValid && !peekLoadingUi ? (
                 <div className="flex flex-col items-center text-center gap-3 px-5 sm:px-6 py-4 sm:py-2">
                   <div className="inline-flex items-center gap-2 rounded-xl border bg-muted/40 px-3 py-2 max-w-full">
                     <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                    <span className="font-mono text-xs sm:text-sm tracking-wider break-all">{peek.vin}</span>
+                    <span className="font-mono text-xs sm:text-sm tracking-wider break-all">{peekForVin.vin}</span>
                   </div>
                   <div>
                     <p className="text-sm font-semibold">{t("checkout_vin_ready_title")}</p>
@@ -1608,20 +1641,20 @@ export default function Checkout({ params }: Props) {
                       <div>
                         <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("vin_not_in_db")}</p>
                         <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">
-                          {peek.vinNoAccess ? t("checkout_vin_no_access_desc") : t("checkout_no_data_desc")}
+                          {peekForVin?.vinNoAccess ? t("checkout_vin_no_access_desc") : t("checkout_no_data_desc")}
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {vinIsValid && peek?.checkUnavailable && !peek.manualPending && (
+                  {vinIsValid && peekForVin?.checkUnavailable && !peekForVin.manualPending && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t("checkout_check_unavailable_title")}</p>
                         <p className="text-xs text-amber-600/80 dark:text-amber-500 mt-0.5">
-                          {peek.checkUnavailableCode
-                            ? translateClientError(t, peek.checkUnavailableCode)
+                          {peekForVin.checkUnavailableCode
+                            ? translateClientError(t, peekForVin.checkUnavailableCode)
                             : t("checkout_check_unavailable_desc")}
                         </p>
                       </div>

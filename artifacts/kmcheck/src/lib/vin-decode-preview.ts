@@ -53,6 +53,13 @@ function modelLineForTitle(model: string | null | undefined, vin: string): strin
   return base;
 }
 
+/** Peek response belongs to the VIN currently in the input (guards stale React Query data). */
+export function peekMatchesVin(peek: VinPeekLike | null | undefined, vin: string): boolean {
+  const normalized = vin.trim().toUpperCase();
+  if (!normalized || !peek?.vin) return false;
+  return peek.vin.trim().toUpperCase() === normalized;
+}
+
 /** True when decoder returned a plausible make + model/year (not garbage / VIN fragments). */
 export function isTrustworthyVinDecode(peek: VinPeekLike): boolean {
   const makeOk = fieldLooksValid(peek.make, peek.vin);

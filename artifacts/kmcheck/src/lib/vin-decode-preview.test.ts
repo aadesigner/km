@@ -1,6 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { decodeVin } from "@workspace/vin-decode";
-import { formatVehicleTitle, isTrustworthyVinDecode } from "./vin-decode-preview";
+import { formatVehicleTitle, isTrustworthyVinDecode, peekMatchesVin } from "./vin-decode-preview";
+
+describe("peekMatchesVin", () => {
+  it("matches same VIN case-insensitively", () => {
+    expect(peekMatchesVin({ vin: "1nxbr32e77z123456" }, "1NXBR32E77Z123456")).toBe(true);
+  });
+
+  it("rejects stale peek from a different VIN", () => {
+    expect(peekMatchesVin({ vin: "5YJSA1E47HF000001" }, "2T1BURHE0JC123456")).toBe(false);
+  });
+});
 
 describe("formatVehicleTitle", () => {
   it("shows make + year when year decodes", () => {
