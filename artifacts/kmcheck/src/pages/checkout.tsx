@@ -20,6 +20,7 @@ import { translateClientError, translateCouponError } from "@/lib/translate-clie
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS } from "@/lib/query-options";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
+import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import {
   formatVehicleTitle,
   isTrustworthyVinDecode,
@@ -316,7 +317,7 @@ export default function Checkout({ params }: Props) {
   // Redirect to existing report if VIN already unlocked
   useEffect(() => {
     if (peekForVin?.alreadyUnlocked && peekForVin.lookupId && normalizedVin.length === 17) {
-      goToVinReport(normalizedVin);
+      goToVinReport(normalizedVin, peekForVin.lookupId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- redirect once when peek resolves
   }, [peekForVin?.alreadyUnlocked, peekForVin?.lookupId, normalizedVin]);
@@ -447,16 +448,20 @@ export default function Checkout({ params }: Props) {
     return v;
   };
 
-  const goToVinReport = (reportVin: string) => {
+  const goToVinReport = (reportVin: string, lookupId?: number) => {
     const target = normalizeCheckoutVin(reportVin);
-    if (checkoutRedirectedRef.current === target) return;
-    checkoutRedirectedRef.current = target;
+    const redirectKey = lookupId != null ? `id:${lookupId}` : target;
+    if (checkoutRedirectedRef.current === redirectKey) return;
+    checkoutRedirectedRef.current = redirectKey;
     sessionStorage.removeItem(PENDING_VIN_KEY);
     sessionStorage.removeItem(CHECKOUT_VIN_KEY);
+    // Clear any stale 404 from a prior visit to this VIN route before delivery finished.
+    invalidateVinReportCaches(queryClient, target, lookupId);
     // A VIN was just unlocked — refresh the (cached) client-area lists so the
     // dashboard shows it when the user navigates back, despite refetchOnMount:false.
     refreshClientAreaAfterUnlock(queryClient);
-    setLocation(`/${language}/vin/${target}`);
+    const pathSegment = lookupId != null ? String(lookupId) : target;
+    setLocation(`/${language}/vin/${pathSegment}`);
   };
 
   type VinDeliveryProbe = { status?: string; vin?: string };
@@ -488,12 +493,12 @@ export default function Checkout({ params }: Props) {
   const isStillRetrievingVinStatus = (deliveryStatus?: string) =>
     deliveryStatus === "fulfilling";
 
-  const completeCheckoutDelivery = (reportVin: string) => {
+  const completeCheckoutDelivery = (reportVin: string, lookupId?: number) => {
     setStatus("success");
     paypalFlowPhaseRef.current = "done";
     freeCouponPaymentIdRef.current = null;
     sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
-    goToVinReport(reportVin);
+    goToVinReport(reportVin, lookupId);
   };
 
   const deliveryFetchErrorMsg = () =>
@@ -507,7 +512,7 @@ export default function Checkout({ params }: Props) {
   ): Promise<boolean> => {
     const probe = await fetchVinDeliveryStatus(lookupId, reportVin);
     if (isDeliverableVinStatus(probe?.status) || isStillRetrievingVinStatus(probe?.status)) {
-      completeCheckoutDelivery(probe?.vin ?? reportVin);
+      completeCheckoutDelivery(probe?.vin ?? reportVin, lookupId);
       return true;
     }
     return false;
@@ -546,7 +551,7 @@ export default function Checkout({ params }: Props) {
           }
           if (await tryResumeVinDelivery(data.id, reportVin)) return true;
         } else if (resp.ok && data.id) {
-          completeCheckoutDelivery(data.vin ?? reportVin);
+          completeCheckoutDelivery(data.vin ?? reportVin, data.id);
           return true;
         }
       } catch {
@@ -657,9 +662,10 @@ export default function Checkout({ params }: Props) {
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
+        lookupId?: number | null;
       };
       if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
-        goToVinReport(nvin);
+        goToVinReport(nvin, data.lookupId ?? undefined);
         return null;
       }
       if (data.code === "VIN_NO_DATA") {
@@ -734,7 +740,7 @@ export default function Checkout({ params }: Props) {
               || pollData.status === "pending_manual"
               || pollData.status === "fulfilling"
             ) {
-              completeCheckoutDelivery(pollData.vin ?? nvin);
+              completeCheckoutDelivery(pollData.vin ?? nvin, data.id);
               return true;
             }
             if (pollData.status === "error") {
@@ -753,7 +759,7 @@ export default function Checkout({ params }: Props) {
       }
 
       if (resp.ok && data.id) {
-        completeCheckoutDelivery(data.vin ?? nvin);
+        completeCheckoutDelivery(data.vin ?? nvin, data.id);
         return true;
       }
 
@@ -1015,9 +1021,10 @@ export default function Checkout({ params }: Props) {
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
+        lookupId?: number | null;
       };
       if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
-        goToVinReport(nvin);
+        goToVinReport(nvin, data.lookupId ?? undefined);
         throw new Error("__redirect__");
       }
       if (data.code === "VIN_NO_DATA" || data.code === "VIN_CHECK_UNAVAILABLE") {

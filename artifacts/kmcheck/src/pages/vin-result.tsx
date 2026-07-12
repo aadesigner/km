@@ -443,7 +443,7 @@ export default function VinResult({ params }: Props) {
   const loadError = isVinString ? vinFetchError : lookupByIdError;
   const isFetching = isVinString ? fetchingVin : fetchingById;
   const refetchLookup = isVinString ? refetchVin : refetchById;
-  const isLoadingInitial = isLoading && !lookup;
+  const isLoadingInitial = !lookup && (isLoading || isFetching);
   useQueryRecovery(!!isFetchError && !!lookup, isFetching, refetchLookup);
   const [, setLocation] = useLocation();
   const [expandedAccidents, setExpandedAccidents] = useState<Set<number>>(new Set());
