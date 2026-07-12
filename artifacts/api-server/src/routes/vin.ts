@@ -997,6 +997,7 @@ router.get("/vin/resolve/:id", requireAuth, async (req, res) => {
       or(
         eq(vinLookupsTable.status, "complete"),
         eq(vinLookupsTable.status, "pending_manual"),
+        eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
       ),
     ))
     .limit(1);

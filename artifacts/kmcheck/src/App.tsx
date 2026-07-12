@@ -185,31 +185,26 @@ function CountryLang(props: { params: { lang: string; country: string } }) {
   );
 }
 
-function VinNumericRedirect({ lang, id }: { lang: string; id: string }) {
+/** Signed-in report route by numeric lookup ID (checkout redirects here while status is fulfilling). */
+function VinLookupRoute(props: { params: { lang: string; id: string } }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [, setLocation] = useLocation();
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   useEffect(() => {
     if (!isLoaded) return;
-
     if (!isSignedIn) {
-      setLocation(`/${lang}/sign-in`, { replace: true });
-      return;
+      setLocation(`/${props.params.lang}/sign-in`, { replace: true });
     }
+  }, [isLoaded, isSignedIn, setLocation, props.params.lang]);
 
-    const qs = window.location.search;
-    fetch(`${basePath}/api/vin/resolve/${id}`, { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(({ vin }: { vin: string }) => {
-        setLocation(`/${lang}/vin/${vin}${qs}`, { replace: true });
-      })
-      .catch(() => {
-        setLocation(`/${lang}/dashboard`, { replace: true });
-      });
-  }, [lang, id, isLoaded, isSignedIn, setLocation, basePath]);
+  if (!isLoaded) return <PageLoader />;
+  if (!isSignedIn) return <PageLoader />;
 
-  return <PageLoader />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <VinResult params={props.params} />
+    </Suspense>
+  );
 }
 
 function stripLegacyShareParam(): void {
@@ -257,7 +252,7 @@ function VinResultLang(props: { params: { lang: string; id: string } }) {
           <Suspense fallback={<PageLoader />}>
             {isVin
               ? <VinRouteByAuth params={props.params} />
-              : <VinNumericRedirect lang={props.params.lang} id={props.params.id} />
+              : <VinLookupRoute params={props.params} />
             }
           </Suspense>
         </RouteErrorBoundary>
