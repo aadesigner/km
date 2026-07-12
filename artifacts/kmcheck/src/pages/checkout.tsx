@@ -1182,9 +1182,9 @@ export default function Checkout({ params }: Props) {
           return (
             <nav
               aria-label={t("checkout_title")}
-              className="mb-8 sm:mb-10 mx-auto w-full max-w-lg px-4 sm:px-6"
+              className="mb-6 sm:mb-10 mx-auto w-full max-w-sm sm:max-w-lg px-3 sm:px-6"
             >
-              <ol className="flex items-start">
+              <ol className="flex items-start justify-center sm:justify-stretch w-full">
                 {steps.map((step, i) => {
                   const isComplete = i < currentStep;
                   const isCurrent = i === currentStep;
@@ -1195,10 +1195,13 @@ export default function Checkout({ params }: Props) {
                   return (
                     <li
                       key={step.labelKey}
-                      className={cn("flex items-start", i < steps.length - 1 && "flex-1")}
+                      className={cn(
+                        "flex items-start shrink-0",
+                        i < steps.length - 1 && "sm:flex-1 sm:min-w-0",
+                      )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
-                      <div className="flex flex-col items-center gap-2 w-[5rem] sm:w-[5.5rem] shrink-0">
+                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-[4rem] sm:w-[5.5rem] shrink-0">
                         <motion.div
                           initial={false}
                           animate={{
@@ -1206,9 +1209,9 @@ export default function Checkout({ params }: Props) {
                           }}
                           transition={{ type: "spring", stiffness: 400, damping: 28 }}
                           className={cn(
-                            "relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-shadow duration-300",
+                            "relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-shadow duration-300",
                             isComplete && "bg-primary text-primary-foreground shadow-md shadow-primary/20",
-                            isCurrent && !isComplete && "bg-primary/12 text-primary ring-2 ring-primary/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_hsl(var(--primary)/0.12)]",
+                            isCurrent && !isComplete && "bg-primary/12 text-primary ring-2 ring-primary/80 ring-offset-1 sm:ring-offset-2 ring-offset-background shadow-[0_0_0_1px_hsl(var(--primary)/0.12)]",
                             isUpcoming && "bg-muted/50 text-muted-foreground/70 ring-1 ring-border/80",
                           )}
                         >
@@ -1236,7 +1239,7 @@ export default function Checkout({ params }: Props) {
                         </motion.div>
                         <span
                           className={cn(
-                            "text-[10px] sm:text-xs text-center leading-tight max-w-[5rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
+                            "text-[10px] sm:text-xs text-center leading-tight max-w-[4rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
                             isComplete && "font-semibold text-foreground/85",
                             isCurrent && "font-bold text-primary",
                             isUpcoming && "font-medium text-muted-foreground",
@@ -1248,7 +1251,7 @@ export default function Checkout({ params }: Props) {
 
                       {i < steps.length - 1 && (
                         <div
-                          className="relative mt-[18px] sm:mt-5 mx-1 sm:mx-2 h-1 flex-1 min-w-[1.5rem] rounded-full bg-muted/90 overflow-hidden"
+                          className="relative mt-4 sm:mt-5 w-6 sm:w-auto sm:mx-2 h-0.5 sm:h-1 sm:flex-1 sm:min-w-[1.5rem] rounded-full bg-muted/90 overflow-hidden shrink-0"
                           aria-hidden
                         >
                           <motion.div
@@ -1494,6 +1497,42 @@ export default function Checkout({ params }: Props) {
               <div className="px-5 sm:px-6 py-3.5 border-b bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-transparent">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("order_summary")}</p>
                 <p className="font-bold text-base">{t("checkout_report_title")}</p>
+
+                {/* Mobile — vehicle identity under report line (desktop shows full card below) */}
+                <div className="lg:hidden mt-3">
+                  {vinIsValid && peekLoadingUi ? (
+                    <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3 space-y-2">
+                      <Skeleton className="h-4 w-32 rounded" />
+                      <Skeleton className="h-3.5 w-44 rounded" />
+                    </div>
+                  ) : vinIsValid && peekForVin ? (
+                    <div className="rounded-lg border border-primary/15 bg-background/70 dark:bg-background/40 px-3.5 py-3">
+                      {vehicleTitle ? (
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="h-8 w-8 rounded-lg bg-primary/10 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
+                            <Car className="h-4 w-4 text-primary" />
+                          </div>
+                          <p className="font-semibold text-sm leading-snug text-foreground truncate min-w-0 flex-1">
+                            {vehicleTitle}
+                          </p>
+                        </div>
+                      ) : null}
+                      <div
+                        className={cn(
+                          "flex items-center gap-2 min-w-0",
+                          vehicleTitle && "mt-2.5 pt-2.5 border-t border-border/50",
+                        )}
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">
+                          {t("vin_label")}
+                        </span>
+                        <span className="font-mono text-[11px] tracking-wide text-foreground/75 truncate">
+                          {peekForVin.vin}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div className="px-5 sm:px-6 py-3 space-y-3">
                 {/* Price breakdown */}
