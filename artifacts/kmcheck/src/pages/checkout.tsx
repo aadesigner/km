@@ -1491,11 +1491,11 @@ export default function Checkout({ params }: Props) {
 
             {/* Unified payment panel */}
             <div className="rounded-2xl border border-border/80 bg-background/90 backdrop-blur-sm overflow-hidden shadow-md shadow-black/[0.03] dark:shadow-black/20 ring-1 ring-black/[0.03] dark:ring-white/[0.04]">
-              <div className="px-5 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-transparent">
+              <div className="px-5 sm:px-6 py-3.5 border-b bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-transparent">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("order_summary")}</p>
                 <p className="font-bold text-base">{t("checkout_report_title")}</p>
               </div>
-              <div className="px-5 sm:px-6 py-5 space-y-4">
+              <div className="px-5 sm:px-6 py-4 space-y-3.5">
                 {/* Price breakdown */}
                 <div className="space-y-2 text-sm">
                   {isDiscount && standardPrice != null && promoDiscountAmount > 0 ? (
@@ -1544,7 +1544,7 @@ export default function Checkout({ params }: Props) {
                       <span>−{fmtPrice(couponDiscountAmount)}</span>
                     </div>
                   )}
-                  <div className="rounded-xl bg-muted/40 border border-border/50 px-4 py-3 flex justify-between items-center mt-2 gap-3">
+                  <div className="rounded-xl bg-muted/40 border border-border/50 px-4 py-2.5 flex justify-between items-center mt-1.5 gap-3">
                     <span className="font-bold text-base">{t("total")}</span>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
                       {!pricingLoading && isDiscount && promoSavePercent > 0 && finalPrice > 0 && (
@@ -1567,7 +1567,7 @@ export default function Checkout({ params }: Props) {
 
                 {/* Coupon — hidden once user proceeds to payment */}
                 {showCouponSection && (
-                <div className="border-t border-border/60 pt-4">
+                <div className="border-t border-border/60 pt-3">
                   {!couponResult && (
                     <button
                       type="button"
@@ -1631,7 +1631,7 @@ export default function Checkout({ params }: Props) {
                 )}
 
                 {/* Payment section */}
-                <div className="border-t border-border/60 pt-5 space-y-4">
+                <div className="border-t border-border/60 pt-4 space-y-3">
                   {showVehicleTooOldNotice && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -1791,7 +1791,7 @@ export default function Checkout({ params }: Props) {
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
-                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
+                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >
