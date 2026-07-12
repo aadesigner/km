@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useTranslation } from "@/i18n/context";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { motion, type Variants } from "framer-motion";
 import { SEOHead, usePageSeo, faqPageJsonLd } from "@/components/seo";
+import { HeroVinForm } from "@/components/hero-vin-form";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth-context";
+import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +29,7 @@ import {
   CreditCard,
   RotateCcw,
   UserCircle,
+  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -87,7 +90,24 @@ function ReportIncludesAnswer() {
 export default function FAQ() {
   const { t, language } = useTranslation();
   const [, setLocation] = useLocation();
+  const { isSignedIn } = useAuth();
+  const [vin, setVin] = useState("");
+  const [vinError, setVinError] = useState("");
   const seo = usePageSeo("faq");
+
+  const handleCheck = (e: FormEvent) => {
+    e.preventDefault();
+    const v = vin.trim().toUpperCase();
+    if (!v) { setVinError(t("vin_error_required")); return; }
+    if (v.length !== 17) { setVinError(t("vin_error_length")); return; }
+    setVinError("");
+    if (!isSignedIn) {
+      const authPath = redirectGuestForVinCheckout(v, language);
+      if (authPath) { setLocation(authPath); return; }
+    }
+    sessionStorage.setItem("checkout_vin", v);
+    setLocation(`/${language}/checkout`);
+  };
 
   const categories: FaqCategory[] = useMemo(() => [
     {
@@ -221,24 +241,65 @@ export default function FAQ() {
       </section>
 
       {/* CTA */}
-      <section className="bg-primary/[0.05] border-t py-20 px-5 text-center">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
-          className="max-w-xl mx-auto"
+          className="relative z-10 max-w-2xl mx-auto text-center space-y-7"
         >
-          <Badge variant="secondary" className="mb-4">{t("instant_report")}</Badge>
-          <h2 className="text-3xl font-black tracking-tight mb-3">{t("hiw_cta_title")}</h2>
-          <p className="text-muted-foreground mb-8">{t("hiw_cta_subtitle")}</p>
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              {t("faq_cta_eyebrow")}
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight">
+              {t("faq_cta_title")}
+            </h2>
+            <p className="text-white/70 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+              {t("faq_cta_subtitle")}
+            </p>
+          </div>
+
+          <HeroVinForm
+            vin={vin}
+            onVinChange={(v) => { setVin(v); setVinError(""); }}
+            onSubmit={handleCheck}
+            error={vinError}
+            placeholder={t("vin_placeholder")}
+            helpVariant="on-dark"
+            className="max-w-xl mx-auto"
+          />
+
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {[
+              { icon: Zap, label: t("trust_instant_report") },
+              { icon: RotateCcw, label: t("money_back") },
+            ].map(({ icon: Icon, label }) => (
+              <span key={label} className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-white/65">
+                <Icon className="h-3.5 w-3.5 text-white/80 shrink-0" />
+                {label}
+              </span>
+            ))}
+          </div>
+
           <Button
+            asChild
+            variant="outline"
             size="lg"
-            className="rounded-full px-8 gap-2 text-base"
-            onClick={() => setLocation(`/${language}`)}
+            className="h-11 border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent"
           >
-            {t("hiw_cta_btn")}
-            <ArrowRight className="h-4 w-4" />
+            <Link href={`/${language}/pricing`}>
+              {t("see_whats_included")}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Link>
           </Button>
         </motion.div>
       </section>
