@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
+import { prefetchFlags } from "@/components/flag-img";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 // Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
@@ -152,6 +153,11 @@ export default function Home() {
 
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
   const heroMapsEnabled = useHeroMapsEnabled();
+
+  useEffect(() => {
+    if (!heroMapsEnabled) return;
+    prefetchFlags(["ca", "us", "kr", "cn", "ae"]);
+  }, [heroMapsEnabled]);
 
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();

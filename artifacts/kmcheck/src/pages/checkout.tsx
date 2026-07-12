@@ -1495,7 +1495,7 @@ export default function Checkout({ params }: Props) {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("order_summary")}</p>
                 <p className="font-bold text-base">{t("checkout_report_title")}</p>
               </div>
-              <div className="px-5 sm:px-6 py-4 space-y-3.5">
+              <div className="px-5 sm:px-6 py-3 space-y-3">
                 {/* Price breakdown */}
                 <div className="space-y-2 text-sm">
                   {isDiscount && standardPrice != null && promoDiscountAmount > 0 ? (
@@ -1567,7 +1567,7 @@ export default function Checkout({ params }: Props) {
 
                 {/* Coupon — hidden once user proceeds to payment */}
                 {showCouponSection && (
-                <div className="border-t border-border/60 pt-3">
+                <div className="border-t border-border/60 pt-2">
                   {!couponResult && (
                     <button
                       type="button"
@@ -1631,7 +1631,7 @@ export default function Checkout({ params }: Props) {
                 )}
 
                 {/* Payment section */}
-                <div className="border-t border-border/60 pt-4 space-y-3">
+                <div className="border-t border-border/60 pt-2 space-y-2">
                   {showVehicleTooOldNotice && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -1716,7 +1716,7 @@ export default function Checkout({ params }: Props) {
                   )}
 
                   {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
-                  {paymentAllowed && (
+                  {paymentAllowed && !couponResult?.isFree && (
                     <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
                   )}
 
@@ -1791,7 +1791,7 @@ export default function Checkout({ params }: Props) {
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
-                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
+                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-0.5"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >

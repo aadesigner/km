@@ -1135,6 +1135,10 @@
   .coverage-map-live-label-dot {
     animation: none !important;
   }
+
+  .coverage-map-edge-panel {
+    transition: none !important;
+  }
 }
 
 .pending-vin-border-scan {

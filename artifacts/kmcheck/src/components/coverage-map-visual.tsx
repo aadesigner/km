@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "@/i18n/context";
 import { flagUrl } from "@/components/flag-img";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,46 @@ function liveRegionForSide(side: Props["side"]): MapLivePingRegion {
   return side === "left" ? "americas" : "asia";
 }
 
+function loadFlag(code: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = flagUrl(code);
+  });
+}
+
+function waitForPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
+function useCoverageMapReady(side: Props["side"]) {
+  const [ready, setReady] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+
+  useEffect(() => {
+    if (ready) return;
+
+    let cancelled = false;
+    const flagCodes = MARKERS.filter((m) => m.side === side).map((m) => m.code);
+
+    Promise.all([waitForPaint(), ...flagCodes.map(loadFlag)]).then(() => {
+      if (!cancelled) setReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [side, ready]);
+
+  return ready;
+}
+
 export function CoverageMapVisual({ className, side, showLivePings = false }: Props) {
   const { t } = useTranslation();
   const isLeft = side === "left";
@@ -92,6 +133,7 @@ export function CoverageMapVisual({ className, side, showLivePings = false }: Pr
     enabled: showLivePings,
   });
   const pulseCoords = showLivePings ? [] : DATA_PULSE_COORDS;
+  const mapReady = useCoverageMapReady(side);
 
   const coverageLabel = [
     t("country_usa_name"),
@@ -106,7 +148,8 @@ export function CoverageMapVisual({ className, side, showLivePings = false }: Pr
       <span className="sr-only">{coverageLabel}</span>
       <div
         className={cn(
-          "coverage-map-edge-panel relative h-full w-full overflow-hidden select-none pointer-events-none",
+          "coverage-map-edge-panel relative h-full w-full overflow-hidden select-none pointer-events-none transition-opacity duration-700 ease-out",
+          mapReady ? "opacity-100" : "opacity-0",
           isLeft ? "coverage-map-edge-left" : "coverage-map-edge-right",
           className,
         )}
