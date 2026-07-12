@@ -1,10 +1,11 @@
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { useTranslation } from "@/i18n/context";
 import { parseVinRouteParam } from "@/lib/vin-route";
 import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
+import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import { useGetVinLookup } from "@workspace/api-client-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { Button } from "@/components/ui/button";
@@ -394,6 +395,8 @@ function MileageTimeline({
 
 export default function VinResult({ params }: Props) {
   const { t, language } = useTranslation();
+  const queryClient = useQueryClient();
+  const clientAreaSyncedRef = useRef(false);
   const seo = usePageSeo("vin_result");
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
   const route = parseVinRouteParam(params.id);
@@ -461,6 +464,15 @@ export default function VinResult({ params }: Props) {
     const urls = (d.photos ?? []).filter((p): p is string => typeof p === "string" && p.length > 0);
     if (urls.length) void prefetchVinImages(urls);
   }, [lookupRaw]);
+
+  // Sync dashboard / purchases lists once delivery finishes (checkout may redirect while still fulfilling).
+  useEffect(() => {
+    if (!lookup) return;
+    if (lookup.status !== "complete" && lookup.status !== "pending_manual") return;
+    if (clientAreaSyncedRef.current) return;
+    clientAreaSyncedRef.current = true;
+    refreshClientAreaAfterUnlock(queryClient);
+  }, [lookup?.status, lookup?.id, queryClient]);
 
   const isFulfilling = lookup?.status === "fulfilling";
 

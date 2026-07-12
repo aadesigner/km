@@ -49,6 +49,7 @@ function StatusBadge({ status }: { status: VinLookupStatus | string }) {
     complete: { variant: "default", icon: <CheckCircle2 className="h-3 w-3 mr-1" />, className: "bg-green-500 hover:bg-green-600 text-white border-0" },
     pending: { variant: "secondary", icon: <Clock className="h-3 w-3 mr-1" /> },
     pending_manual: { variant: "secondary", icon: <Clock className="h-3 w-3 mr-1" />, className: "bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/35" },
+    fulfilling: { variant: "secondary", icon: <Clock className="h-3 w-3 mr-1" /> },
     processing: { variant: "outline", icon: <AlertCircle className="h-3 w-3 mr-1" /> },
     error: { variant: "destructive", icon: <XCircle className="h-3 w-3 mr-1" /> },
   };
@@ -58,6 +59,7 @@ function StatusBadge({ status }: { status: VinLookupStatus | string }) {
     error: t("failed"),
     pending: t("pending"),
     pending_manual: t("pending_report_badge"),
+    fulfilling: t("processing_retrieving_data"),
     processing: t("processing"),
   };
   return (
