@@ -13,6 +13,20 @@ export const BRAND_ASSETS = {
   favicon: `${basePath}/favicon-32x32.png`,
 } as const;
 
+const prefetchedBrand = new Set<string>();
+
+/** Warm navbar wordmarks so the mobile sidebar logo does not flash on open. */
+export function prefetchBrandAssets(): void {
+  if (typeof window === "undefined") return;
+  for (const src of [BRAND_ASSETS.logoWhite, BRAND_ASSETS.logoDark]) {
+    if (prefetchedBrand.has(src)) continue;
+    prefetchedBrand.add(src);
+    const img = new Image();
+    img.decoding = "sync";
+    img.src = src;
+  }
+}
+
 export type KmcheckLogoVariant = "light" | "dark";
 
 /** Full horizontal kmcheck.com wordmark. */

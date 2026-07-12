@@ -108,6 +108,7 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   overlayClassName?: string
+  forceMount?: true
 }
 
 const SheetContent = React.forwardRef<

@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getGetCurrentPricingQueryOptions } from "@workspace/api-client-react";
 import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
 import { prefetchAuthAreaRoutes, prefetchCommonRoutes } from "@/lib/prefetch-route";
-import { prefetchFlags } from "@/components/flag-img";
+import { prefetchNavMenuAssets } from "@/lib/nav-assets";
 import { prefetchVinPageChunk } from "@/lib/prefetch-vin-report";
 import { prefetchPublicSettings } from "@/lib/public-settings";
 import { useAuth } from "@/lib/auth-context";
@@ -23,6 +23,9 @@ export function WarmCache() {
   useEffect(() => {
     if (prefersReducedNetwork()) return;
 
+    // Navbar icons are tiny — warm immediately so mobile sidebar opens without flashes.
+    prefetchNavMenuAssets();
+
     const warm = () => {
       if (typeof document !== "undefined" && document.hidden) return;
       void queryClient.prefetchQuery(
@@ -30,7 +33,6 @@ export function WarmCache() {
       );
       prefetchPublicSettings(queryClient);
       prefetchCommonRoutes();
-      prefetchFlags(["us", "kr", "ca", "cn", "ae"]);
     };
 
     let idleId: number | undefined;

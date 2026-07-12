@@ -10,7 +10,6 @@ import {
   Globe, ArrowRight,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
-import { CoverageMapVisual } from "@/components/coverage-map-visual";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
 import { cn } from "@/lib/utils";
@@ -33,6 +32,9 @@ const VinCheckIncludesSection = lazy(() =>
   import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
 );
 const HomepageTestimonials = lazy(() => import("@/components/homepage-testimonials"));
+const CoverageMapVisual = lazy(() =>
+  import("@/components/coverage-map-visual").then((m) => ({ default: m.CoverageMapVisual })),
+);
 
 /** True at the lg breakpoint (1024px+) where the decorative hero maps are visible. */
 function useHeroMapsEnabled() {
@@ -219,7 +221,9 @@ export default function Home() {
           className="pointer-events-none absolute -left-4 top-[calc(1.5rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(58vw,720px)] max-w-[720px] -translate-y-8 xl:-translate-y-10 opacity-95 dark:opacity-90"
         >
           {heroMapsEnabled && (
-            <CoverageMapVisual side="left" showLivePings className="h-full w-full" />
+            <Suspense fallback={null}>
+              <CoverageMapVisual side="left" showLivePings className="h-full w-full" />
+            </Suspense>
           )}
         </div>
         <div
@@ -227,7 +231,9 @@ export default function Home() {
           className="pointer-events-none absolute -right-6 top-[calc(1.75rem+var(--site-header-offset,84px))] bottom-0 z-0 hidden lg:flex w-[min(70vw,900px)] max-w-[900px] translate-x-[5%] -translate-y-7 xl:translate-x-[7%] xl:-translate-y-9 opacity-95 dark:opacity-90"
         >
           {heroMapsEnabled && (
-            <CoverageMapVisual side="right" showLivePings className="h-full w-full" />
+            <Suspense fallback={null}>
+              <CoverageMapVisual side="right" showLivePings className="h-full w-full" />
+            </Suspense>
           )}
         </div>
 

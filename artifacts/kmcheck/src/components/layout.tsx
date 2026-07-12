@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MouseEvent, type MutableRefObject, type SetStateAction } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MouseEvent as ReactMouseEvent, type MutableRefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
@@ -21,8 +21,10 @@ import { setStoredLangPreference } from "@/lib/lang-preference";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
-import { FlagImg, prefetchFlags } from "@/components/flag-img";
+import { FlagImg } from "@/components/flag-img";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
+import { NavAssetWarmup } from "@/components/nav-asset-warmup";
+import { prefetchNavMenuAssets } from "@/lib/nav-assets";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -303,7 +305,7 @@ function navDropdownTriggerProps(open: boolean, label?: string) {
     "aria-haspopup": "menu" as const,
     "aria-expanded": open,
     ...(label ? { "aria-label": label } : {}),
-    onClick: (e: MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+    onClick: (e: ReactMouseEvent<HTMLButtonElement>) => e.preventDefault(),
   };
 }
 
@@ -452,7 +454,6 @@ function MobileLangPicker({
         )}
       >
         <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority />
-        <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", open && "rotate-180")} />
       </button>
       {menu}
     </div>
@@ -504,17 +505,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   usePrefetchPickerFlags(langOpen);
 
   useEffect(() => {
-    if (!countryOpen) return;
-    prefetchFlags(NAV_COUNTRY_FLAGS);
-  }, [countryOpen]);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-    prefetchFlags(NAV_COUNTRY_FLAGS);
-  }, [mobileOpen]);
-
-  const prefetchMobileNavFlags = useCallback(() => {
-    prefetchFlags(NAV_COUNTRY_FLAGS);
+    prefetchNavMenuAssets();
   }, []);
 
   useEffect(() => {
@@ -539,7 +530,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   }, [location]);
 
   useEffect(() => {
-    const close = (e: MouseEvent) => {
+    const close = (e: globalThis.MouseEvent) => {
       if (countryRef.current && !countryRef.current.contains(e.target as Node)) setCountryOpen(false);
       if (langRef.current    && !langRef.current.contains(e.target as Node))    setLangOpen(false);
       if (userRef.current    && !userRef.current.contains(e.target as Node))    setUserOpen(false);
@@ -612,7 +603,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         : "text-primary"
       : isDarkNav
         ? "text-white/65 hover:text-white"
-        : "text-muted-foreground hover:text-foreground",
+        : "text-foreground/85 hover:text-foreground",
     isDarkNav
       ? "hover:bg-white/[0.08]"
       : "hover:bg-primary/[0.06]",
@@ -672,7 +663,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
             >
               {t("nav_country")}
-              <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform duration-100", countryOpen && "rotate-180")} />
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 transition-transform duration-100",
+                  isDarkNav ? "text-white/40" : "text-muted-foreground",
+                  countryOpen && "rotate-180",
+                )}
+              />
               {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
             </button>
 
@@ -743,7 +740,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   size={18}
                   priority
                 />
-                <ChevronDown className={cn("h-3 w-3 opacity-40 transition-transform duration-100", langOpen && "rotate-180")} />
               </button>
 
               <AnimatePresence>
@@ -814,7 +810,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   )}>
                     {displayName}
                   </span>
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-75", isDarkNav ? "text-white/35" : "text-muted-foreground", userOpen && "rotate-180")} />
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 transition-transform duration-75",
+                      isDarkNav ? "text-white/40" : "text-muted-foreground",
+                      userOpen && "rotate-180",
+                    )}
+                  />
                 </button>
 
                 <AnimatePresence>
@@ -925,11 +927,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   scrolled={scrolled}
                   isDarkNav={isDarkNav}
                   label={mobileOpen ? t("nav_close_menu") : t("nav_open_menu")}
-                  onPointerDown={prefetchMobileNavFlags}
+                  onPointerDown={prefetchNavMenuAssets}
                 />
               </SheetTrigger>
 
             <SheetContent
+              forceMount
               side="right"
               speed="fast"
               overlayClassName="z-[110] touch-none"
@@ -1104,6 +1107,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col overflow-x-clip w-full">
+      <NavAssetWarmup />
       <BannedSessionRedirect />
       <AnnouncementBar onHeightChange={setAnnouncementHeight} />
       <Navbar announcementOffset={announcementHeight} />

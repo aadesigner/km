@@ -19,10 +19,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo } from "@/components/seo";
-import { VinDemoCard } from "@/components/vin-demo-card";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
-import { CountryRisksIncludedSection } from "@/components/country-risks-included";
 import { cn } from "@/lib/utils";
 import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
@@ -38,6 +36,12 @@ const CompareTable = lazy(() =>
 );
 const WhatWeCheckSection = lazy(() =>
   import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
+);
+const VinDemoCard = lazy(() =>
+  import("@/components/vin-demo-card").then((m) => ({ default: m.VinDemoCard })),
+);
+const CountryRisksIncludedSection = lazy(() =>
+  import("@/components/country-risks-included").then((m) => ({ default: m.CountryRisksIncludedSection })),
 );
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -398,7 +402,9 @@ export default function CountryPage({ params }: Props) {
             className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center w-full min-w-0 lg:max-w-[400px] lg:justify-self-end lg:-translate-x-8"
           >
             <div className="flex w-full flex-col items-center gap-3">
-              <VinDemoCard country={slug as CountryMarket} showcase countryPage />
+              <Suspense fallback={<SectionFallback minHeight={520} />}>
+                <VinDemoCard country={slug as CountryMarket} showcase countryPage />
+              </Suspense>
               {heroPriceLine}
             </div>
           </motion.div>
@@ -433,12 +439,14 @@ export default function CountryPage({ params }: Props) {
 
       {/* ─────────────────────── RISKS + INCLUDED ─────────────────────── */}
       <DeferredSection minHeight={360}>
-      <CountryRisksIncludedSection
-        slug={slug as CountryMarket}
-        issues={content.issues}
-        included={content.included}
-        severities={meta.issueSeverities}
-      />
+        <Suspense fallback={<SectionFallback minHeight={360} />}>
+          <CountryRisksIncludedSection
+            slug={slug as CountryMarket}
+            issues={content.issues}
+            included={content.included}
+            severities={meta.issueSeverities}
+          />
+        </Suspense>
       </DeferredSection>
 
       {/* ─────────────────────── FAQ ─────────────────────── */}
