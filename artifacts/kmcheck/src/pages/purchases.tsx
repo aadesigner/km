@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import { useTranslation } from "@/i18n/context";
 import { LANG_META, type Language } from "@/lib/languages";
 import { useGetUserPayments, useGetUserStats } from "@workspace/api-client-react";
-import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
+import { CLIENT_AREA_QUERY_OPTIONS, orvalQuery } from "@/lib/query-options";
+import type { PaymentHistoryPage, UserStats } from "@workspace/api-client-react";
 import { ClientAreaLayout } from "@/components/client-area-layout";
 import { ClientQueryFallback } from "@/components/client-query-fallback";
 import { getErrorStatus } from "@/lib/api-error";
@@ -26,7 +27,7 @@ import { fadeUp } from "@/lib/motion-variants";
 
 type Payment = {
   id: number;
-  vin: string | null;
+  vin?: string | null;
   amount: number;
   currency: string;
   status: string;
@@ -225,7 +226,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
   const authReady = isSignedIn;
   const { data, isLoading, isError, error, refetch, isFetching } = useGetUserPayments(
     { page, limit: 20 },
-    { query: { enabled: authReady, queryKey: ["/api/user/payments", { page, limit: 20 }], ...CLIENT_AREA_QUERY_OPTIONS } },
+    { query: { enabled: authReady, ...orvalQuery<PaymentHistoryPage>(CLIENT_AREA_QUERY_OPTIONS) } },
   );
   const {
     data: stats,
@@ -235,7 +236,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
     refetch: refetchStats,
     isFetching: statsFetching,
   } = useGetUserStats({
-    query: { enabled: authReady, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS },
+    query: { enabled: authReady, ...orvalQuery<UserStats>(CLIENT_AREA_QUERY_OPTIONS) },
   });
 
   const paymentStats = stats as (typeof stats & PaymentStats) | undefined;

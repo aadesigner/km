@@ -1,4 +1,6 @@
 import { getErrorStatus } from "@/lib/api-error";
+import { orvalQuery, type SharedQueryExtras } from "@/lib/query-options";
+import type { AdminStats, AdminUserPage, AdminVinPage, SystemSettings } from "@workspace/api-client-react";
 
 function shouldRetryAdminQuery(failureCount: number, error: unknown): boolean {
   if (failureCount >= 3) return false;
@@ -8,20 +10,30 @@ function shouldRetryAdminQuery(failureCount: number, error: unknown): boolean {
   return true;
 }
 
-/** Shared React Query options for admin pages — tolerate cold starts without error flashes. */
-export const ADMIN_QUERY_OPTIONS = {
+const ADMIN_QUERY_BASE: SharedQueryExtras = {
   staleTime: 30_000,
   gcTime: 10 * 60 * 1000,
   refetchOnWindowFocus: false,
   refetchOnMount: true,
   refetchOnReconnect: true,
   retry: shouldRetryAdminQuery,
-} as const;
+};
 
-/** Stats poll shared by AdminLayout sidebar badge + dashboard (single cache entry). */
-export const ADMIN_STATS_QUERY = {
-  ...ADMIN_QUERY_OPTIONS,
+/** Shared React Query options for admin pages — safe to spread into useQuery. */
+export const ADMIN_QUERY_OPTIONS = ADMIN_QUERY_BASE;
+
+const ADMIN_STATS_QUERY_BASE: SharedQueryExtras = {
+  ...ADMIN_QUERY_BASE,
   staleTime: 60_000,
   refetchInterval: 60_000,
   refetchIntervalInBackground: false,
-} as const;
+};
+
+/** For orval admin hooks (useAdminGetStats, etc.). */
+export const adminStatsQuery = () => orvalQuery<AdminStats>(ADMIN_STATS_QUERY_BASE);
+export const adminUsersQuery = () => orvalQuery<AdminUserPage>(ADMIN_QUERY_BASE);
+export const adminVinLookupsQuery = () => orvalQuery<AdminVinPage>(ADMIN_QUERY_BASE);
+export const adminSettingsQuery = () => orvalQuery<SystemSettings>(ADMIN_QUERY_BASE);
+
+/** @deprecated Use adminStatsQuery() for orval hooks; ADMIN_QUERY_OPTIONS for useQuery spreads. */
+export const ADMIN_STATS_QUERY = ADMIN_STATS_QUERY_BASE;

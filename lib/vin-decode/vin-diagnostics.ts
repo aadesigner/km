@@ -220,6 +220,8 @@ const TOYOTA_LINE_4: Record<string, string> = {
   JTNB: "Camry", JTDW: "Prius", JTMA: "Highlander / Kluger",
   "4T1B": "Camry (US)", "4T3B": "RAV4 (US)", "4T4B": "RAV4 (US)",
   "5TDY": "Sienna", "5TFD": "Tundra", "5TFW": "Tundra CrewMax",
+  "5YFS": "Corolla (US, Mississippi)", "5YFB": "Corolla (US, Mississippi)",
+  "5YFT": "Corolla (US, Mississippi)",
   "2T2B": "RX (Lexus)", "2T3B": "NX (Lexus)",
 };
 

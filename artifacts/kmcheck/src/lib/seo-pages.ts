@@ -133,6 +133,7 @@ export function getRouteSeo(
       noIndex: false,
       jsonLd: seo.jsonLd,
       ogImage: seo.ogImage,
+      ogImageAlt: seo.title,
       favicons: resolveFavicons(undefined, basePath),
     };
   }

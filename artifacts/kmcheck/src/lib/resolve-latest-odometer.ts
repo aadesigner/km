@@ -36,7 +36,7 @@ function collectDatedReadings(input: MileageSourceInput): DatedReading[] {
 
   if (input.odometer != null && input.odometer > 0) {
     const listingMatch = input.mileageHistory?.find((e) => e.odometer === input.odometer);
-    add(input.odometer, listingMatch?.date);
+    add(input.odometer, (listingMatch as { date?: string | null } | undefined)?.date);
   }
 
   for (const entry of input.mileageHistory ?? []) {

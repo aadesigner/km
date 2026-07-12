@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decodeVin } from "./vinDecoder";
-import { decodeTeslaSpec } from "./tesla";
+import { decodeTeslaSpec, isTeslaVin } from "./tesla";
 import { decodeBydSpec } from "./byd";
 import { decodeZeekrSpec } from "./zeekr";
 import { decodeXiaomiSpec } from "./xiaomi";
@@ -89,6 +89,22 @@ describe("Xiaomi decoder", () => {
 
   it("decodes SU7 from HXM WMI", () => {
     expect(decodeXiaomiSpec("HXM0000000R123456")?.model).toBe("SU7");
+  });
+});
+
+describe("Toyota USA 5YF (not Tesla)", () => {
+  it("does not treat 5YF as a Tesla WMI", () => {
+    expect(isTeslaVin("5YFS4MCE0NP127131")).toBe(false);
+    expect(decodeTeslaSpec("5YFS4MCE0NP127131")).toBeNull();
+  });
+
+  it("decodes Mississippi Corolla VIN as Toyota Corolla", () => {
+    const r = decodeVin("5YFS4MCE0NP127131");
+    expect(r.make).toBe("Toyota");
+    expect(r.model).toBe("Corolla");
+    expect(r.year).toBe(2022);
+    expect(r.plantCity).toBe("Blue Springs, MS");
+    expect(r.engineDecoded).toContain("2.0L");
   });
 });
 

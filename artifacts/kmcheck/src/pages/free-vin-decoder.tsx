@@ -65,7 +65,7 @@ interface DecodeResult {
   diagnostics?: VinDiagnostic[];
 }
 
-type Field = { label: string; value: string | null; icon: React.ElementType; color: string };
+type Field = { label: string; value: string | null | undefined; icon: React.ElementType; color: string };
 
 function translateValue(raw: string | null | undefined, map: Record<string, string>, t: (k: string) => string): string | null {
   if (!raw) return null;
@@ -138,8 +138,8 @@ export default function FreeVinDecoder() {
         checkUnavailable?: boolean;
       };
     },
-    staleTime: 60_000,
     ...STATIC_QUERY_OPTIONS,
+    staleTime: 60_000,
   });
 
   const showDecoderPendingDoubleCheck = !!displayResult && !!decoderPeek && shouldShowPendingVinDoubleCheck({
@@ -163,7 +163,11 @@ export default function FreeVinDecoder() {
   }>({
     queryKey: ["/api/payments/public-settings"],
     queryFn: () => fetch(`${basePath}/api/payments/public-settings`).then((r) => r.json()),
-    ...STATIC_QUERY_OPTIONS,
+    staleTime: STATIC_QUERY_OPTIONS.staleTime,
+    gcTime: STATIC_QUERY_OPTIONS.gcTime,
+    refetchOnWindowFocus: STATIC_QUERY_OPTIONS.refetchOnWindowFocus,
+    refetchOnMount: STATIC_QUERY_OPTIONS.refetchOnMount,
+    refetchOnReconnect: STATIC_QUERY_OPTIONS.refetchOnReconnect,
   });
 
   const registerRequired = !settingsLoading

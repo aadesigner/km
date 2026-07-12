@@ -3,7 +3,7 @@ import { useLocation, Link } from "wouter";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
-import { ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
+import { adminStatsQuery } from "@/lib/admin-query-options";
 import { splitRouterLocation } from "@/lib/normalize-app-path";
 import { normalizeAdminPath } from "@/lib/admin-routes";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,7 +69,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
   const { data: navStats } = useQuery({
-    ...getAdminGetStatsQueryOptions({ query: ADMIN_STATS_QUERY }),
+    ...getAdminGetStatsQueryOptions({ query: adminStatsQuery() }),
     enabled: isLoaded && isSignedIn && user?.isAdmin === true,
   });
   const pendingOpen = (navStats as AdminStatsNav | undefined)?.pendingVinChecksOpen ?? 0;
@@ -86,7 +86,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded || !isAdmin) return;
     void queryClient.prefetchQuery({
-      ...getAdminGetStatsQueryOptions({ query: ADMIN_STATS_QUERY }),
+      ...getAdminGetStatsQueryOptions({ query: adminStatsQuery() }),
     });
   }, [isLoaded, isAdmin, queryClient]);
 

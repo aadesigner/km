@@ -1,5 +1,5 @@
-import { useGetCurrentPricing } from "@workspace/api-client-react";
-import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
+import { useGetCurrentPricing, type PricingConfig } from "@workspace/api-client-react";
+import { STATIC_QUERY_OPTIONS, orvalQuery } from "@/lib/query-options";
 import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
 import { formatDisplayPrice, normalizeCatalogPrice } from "@/lib/format-display-price";
 
@@ -15,7 +15,7 @@ export interface DisplayPriceResult {
 
 export function useDisplayPrice(): DisplayPriceResult {
   const { data: pricing, isLoading } = useGetCurrentPricing({
-    query: { ...STATIC_QUERY_OPTIONS },
+    query: orvalQuery<PricingConfig>(STATIC_QUERY_OPTIONS),
   });
 
   const active = pricing ?? (isLoading ? DEFAULT_PRICING : null);

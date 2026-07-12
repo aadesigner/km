@@ -155,7 +155,7 @@ const WMI_MAP: Record<string, string> = {
   "5TD": "Toyota", "5TE": "Toyota", "5TF": "Toyota",
   "5UX": "BMW",
   "5YM": "BMW",
-  "5YJ": "Tesla", "5YF": "Tesla",
+  "5YJ": "Tesla", "5YF": "Toyota",
   // ── CANADA ────────────────────────────────────────────────────────────────
   "2HH": "Honda", "2HK": "Honda", "2HM": "Hyundai",
   // ── MEXICO ────────────────────────────────────────────────────────────────
@@ -332,6 +332,7 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Toyota ────────────────────────────────────────────────────────────────
   "4T1B": "Camry",      "4T1G": "Camry Hybrid",
   "2T1B": "Corolla",    "2T1G": "Corolla",
+  "5YFB": "Corolla",    "5YFS": "Corolla",    "5YFT": "Corolla",    "5YFP": "Corolla",
   "4T3B": "RAV4",
   "5TDB": "Sienna",     "5TDK": "Sienna",     "5TDY": "Sequoia",
   "5TFR": "Tundra",     "5TFT": "Tundra",     "5TFU": "Tacoma",
@@ -590,6 +591,12 @@ const MODEL_OVERRIDES: Record<string, string> = {
   "JHMC":    "Accord",
   "JHME":    "Civic",
   "JHMF":    "Civic",
+  // Toyota USA Mississippi (5YF* — Corolla)
+  "5YFS4":   "Corolla",
+  "5YFT4":   "Corolla",
+  "5YFB4":   "Corolla",
+  "5YFP4":   "Corolla",
+  "5YFBU":   "Corolla",
 };
 
 function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
@@ -805,6 +812,11 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
   },
   "2T1": {
     A: "1.8L I4 (2ZR-FE)", B: "1.8L I4 Hybrid (2ZR-FXE)", R: "2.0L I4 (M20A-FXS)",
+  },
+  // Toyota USA Mississippi (5YF* — Corolla at Blue Springs)
+  "5YF": {
+    B: "1.8L I4 (2ZR-FE)", C: "1.8L I4 Hybrid (2ZR-FXE)", E: "2.0L I4 (M20A-FKS)",
+    M: "2.0L I4 (M20A-FKS)", R: "2.0L I4 (M20A-FXS Hybrid)",
   },
   // Mazda Japan (JM1* / JM3*)
   JM1: {
@@ -1078,7 +1090,6 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   "7G2": TESLA_PLANTS,
   LRW: TESLA_PLANTS,
   XP7: TESLA_PLANTS,
-  "7SA": { F: { city: "Fremont, CA", country: "USA" } },
   // Volvo — position 11 factory code (NHTSA MY2019+ decoder)
   YV1: VOLVO_PLANTS,
   YV4: VOLVO_PLANTS,
@@ -1214,6 +1225,10 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     A: { city: "Takaoka, Aichi",       country: "Japan" },
     B: { city: "Blue Springs, MS",     country: "USA"   },
     R: { city: "Ohira, Miyagi",        country: "Japan" },
+  },
+  // Toyota USA Mississippi (5YF* — Corolla)
+  "5YF": {
+    P: { city: "Blue Springs, MS",     country: "USA"   },
   },
   // ── Acura USA (JH4* / 19U*) ──────────────────────────────────────────────
   "JH4": {

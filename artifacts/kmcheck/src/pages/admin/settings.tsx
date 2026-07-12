@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAdminGetSettings, useAdminUpdateSettings } from "@workspace/api-client-react";
-import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { adminSettingsQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -137,7 +137,7 @@ export default function AdminSettings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: settings, isLoading, isError, error, refetch, isFetching } = useAdminGetSettings({
-    query: ADMIN_QUERY_OPTIONS,
+    query: adminSettingsQuery(),
   });
 
   const notifySaved = (label: string) => {

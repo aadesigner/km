@@ -19,10 +19,9 @@ function LiveFeedLabel({ eventKey }: { eventKey: string }) {
 
   return (
     <div
-      // foreignObject HTML namespace
-      xmlns="http://www.w3.org/1999/xhtml"
       dir={dir}
       className="coverage-map-live-label-chip"
+      {...({ xmlns: "http://www.w3.org/1999/xhtml" } as React.HTMLAttributes<HTMLDivElement>)}
     >
       <span className="coverage-map-live-label-dot" aria-hidden />
       <span className="coverage-map-live-label-text">{t(eventKey)}</span>

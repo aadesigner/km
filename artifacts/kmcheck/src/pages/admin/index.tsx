@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminGetStats } from "@workspace/api-client-react";
-import { ADMIN_QUERY_OPTIONS, ADMIN_STATS_QUERY } from "@/lib/admin-query-options";
+import { ADMIN_QUERY_OPTIONS, adminStatsQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -428,7 +428,7 @@ function PresenceUserList({
 
 export default function AdminOverview() {
   const { data: rawStats, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useAdminGetStats({
-    query: ADMIN_STATS_QUERY,
+    query: adminStatsQuery(),
   });
   const stats = rawStats as unknown as ExtendedStats | undefined;
   const [period, setPeriod] = useState<DashboardPeriod>("today");
@@ -441,7 +441,7 @@ export default function AdminOverview() {
     setPresencePage(1);
   }, [presencePeriod]);
 
-  const { data: presencePageData, isLoading: presenceUsersLoading, isFetching: presenceUsersFetching } = useQuery({
+  const { data: presencePageData, isLoading: presenceUsersLoading, isFetching: presenceUsersFetching } = useQuery<PresenceUsersPage>({
     queryKey: ["admin", "presence-users", presencePeriod, presencePage],
     queryFn: () => fetchPresenceUsersPage(presencePeriod, presencePage),
     enabled: Boolean(stats?.onlinePresence),
@@ -576,7 +576,7 @@ export default function AdminOverview() {
         <section>
           <SectionHead title="Performance" icon={BarChart3} />
           <div className="mb-2.5 md:mb-3">
-            <PillTabs value={period} options={PERIODS.map((p) => ({ id: p, label: PERIOD_LABELS[p] }))} onChange={setPeriod} />
+            <PillTabs<DashboardPeriod> value={period} options={PERIODS.map((p) => ({ id: p, label: PERIOD_LABELS[p] }))} onChange={(id) => setPeriod(id)} />
           </div>
           <div className="grid grid-cols-3 gap-2.5 md:gap-5">
             <StatCell
@@ -612,14 +612,14 @@ export default function AdminOverview() {
             <SectionHead title="Online users" icon={Activity} />
             <Panel className="overflow-hidden">
               <div className="px-3.5 pt-3.5 pb-2.5 md:px-4 md:pt-4 md:pb-3 border-b border-border/40 bg-muted/20">
-                <PillTabs
+                <PillTabs<PresencePeriod>
                   value={presencePeriod}
                   options={([
                     { id: "now" as const, label: `Now · ${presenceCounts.now}` },
                     { id: "today" as const, label: `Today · ${presenceCounts.today}` },
                     { id: "yesterday" as const, label: `Yesterday · ${presenceCounts.yesterday}` },
                   ])}
-                  onChange={setPresencePeriod}
+                  onChange={(id) => setPresencePeriod(id)}
                 />
               </div>
               <div className="px-3.5 py-2.5 md:px-4 md:py-3 border-b border-border/40 flex items-center justify-between gap-2 bg-card">
@@ -648,13 +648,13 @@ export default function AdminOverview() {
                       {presenceUsersFetching && !presenceUsersLoading ? "Updating… · " : ""}
                       Showing {presenceRangeStart}-{presenceRangeEnd} of {presenceTotal}
                     </p>
-                    <PillTabs
+                    <PillTabs<number>
                       value={presencePage}
                       options={Array.from({ length: presencePageCount }).map((_, idx) => ({
                         id: idx + 1,
                         label: `Page ${idx + 1}`,
                       }))}
-                      onChange={setPresencePage}
+                      onChange={(id) => setPresencePage(id)}
                     />
                   </div>
                 </div>
@@ -695,15 +695,15 @@ export default function AdminOverview() {
               </span>
             </div>
             <div className="flex flex-wrap gap-1">
-              <PillTabs
+              <PillTabs<ChartMetric>
                 value={chartMetric}
                 options={CHART_METRICS.map((m) => ({ id: m.id, label: m.label }))}
-                onChange={setChartMetric}
+                onChange={(id) => setChartMetric(id)}
               />
-              <PillTabs
+              <PillTabs<ChartRange>
                 value={chartRange}
                 options={CHART_RANGES.map((r) => ({ id: r, label: `${r}d` }))}
-                onChange={setChartRange}
+                onChange={(id) => setChartRange(id)}
               />
             </div>
           </div>

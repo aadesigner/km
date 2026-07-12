@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
-import { ADMIN_QUERY_OPTIONS } from "@/lib/admin-query-options";
+import { adminUsersQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
@@ -46,7 +46,7 @@ export default function AdminUsers() {
   };
 
   const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams, {
-    query: ADMIN_QUERY_OPTIONS,
+    query: adminUsersQuery(),
   });
   const banUser = useAdminBanUser({
     mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }) },

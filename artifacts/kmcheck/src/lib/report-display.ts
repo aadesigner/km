@@ -213,7 +213,7 @@ export function sanitizeMileageHistory<T extends MileageHistoryLike>(
       .map((entry) => {
         const raw = entry.odometer ?? (entry as { mileage?: number | null }).mileage;
         const odometer =
-          raw == null || raw === "" ? null : Number(raw);
+          raw == null || (typeof raw === "string" && raw === "") ? null : Number(raw);
         return {
           ...entry,
           odometer: odometer != null && Number.isFinite(odometer) && odometer > 0 ? odometer : entry.odometer,

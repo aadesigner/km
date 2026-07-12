@@ -60,6 +60,15 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "YARKA3", model: "Yaris", chassis: "XP210 FR" },
   { prefix: "VF1BT9", model: "Toyota Proace" },
   { prefix: "VF1BT8", model: "Toyota Proace City" },
+  // Toyota USA Mississippi (5YF* — Corolla sedan/hatch)
+  { prefix: "5YFS4", model: "Corolla", chassis: "E210 2.0L" },
+  { prefix: "5YFT4", model: "Corolla", chassis: "E210" },
+  { prefix: "5YFB4", model: "Corolla", chassis: "E210" },
+  { prefix: "5YFP4", model: "Corolla", chassis: "E210" },
+  { prefix: "5YFBU", model: "Corolla", chassis: "E170" },
+  { prefix: "5YFB", model: "Corolla" },
+  { prefix: "5YFS", model: "Corolla" },
+  { prefix: "5YFT", model: "Corolla" },
 ]);
 
 function isHyundaiVin(vin: string): boolean {
@@ -82,6 +91,7 @@ function isToyotaExtendedVin(vin: string): boolean {
     || vin.startsWith("JTD")
     || vin.startsWith("YAR")
     || vin.startsWith("VF1BT")
+    || vin.startsWith("5YF")
   );
 }
 

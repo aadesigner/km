@@ -10,7 +10,8 @@ import {
   useDeleteUserVinLookup,
 } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { CLIENT_AREA_QUERY_OPTIONS } from "@/lib/query-options";
+import { CLIENT_AREA_QUERY_OPTIONS, orvalQuery } from "@/lib/query-options";
+import type { UserStats } from "@workspace/api-client-react";
 import {
   DEFAULT_USER_HISTORY_SUMMARY,
   fetchUserHistory,
@@ -166,7 +167,7 @@ export default function Dashboard() {
     ...CLIENT_AREA_QUERY_OPTIONS,
   });
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErr, refetch: refetchStats, isFetching: statsFetching } = useGetUserStats(
-    { query: { enabled: authReady, queryKey: ["/api/user/stats"], ...CLIENT_AREA_QUERY_OPTIONS } },
+    { query: { enabled: authReady, ...orvalQuery<UserStats>(CLIENT_AREA_QUERY_OPTIONS) } },
   );
 
   const deleteLookup = useDeleteUserVinLookup({

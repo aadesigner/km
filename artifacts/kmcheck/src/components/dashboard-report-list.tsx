@@ -183,7 +183,7 @@ function ReportCard({
       : isSalvage
         ? t("badge_salvage")
         : t("dashboard_no_accidents");
-  const photoUrl = resolveReportPhotoUrl(vd);
+  const photoUrl = resolveReportPhotoUrl(vd ?? undefined);
   const reportHref = `/${language}/vin/${lookup.vin}`;
   const viewable = isViewableReportStatus(lookup.status);
 

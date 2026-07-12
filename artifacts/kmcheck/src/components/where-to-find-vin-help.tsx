@@ -52,7 +52,7 @@ type Props = {
 };
 
 export function WhereToFindVinHelp({ variant = "default", className }: Props) {
-  const { t, dir } = useTranslation();
+  const { t, dir, language } = useTranslation();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -121,7 +121,7 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
           )}
         >
           <div className="px-4 pt-5 pb-4 sm:px-6 sm:pt-6 md:px-8 md:pt-7 border-b bg-muted/30">
-            <DialogHeader className={cn("text-center sm:text-start", dir === "ar" && "sm:text-right")}>
+            <DialogHeader className={cn("text-center sm:text-start", language === "ar" && "sm:text-right")}>
               <DialogTitle className="text-lg sm:text-xl md:text-[1.35rem] pr-8 leading-snug">{t("vin_find_help_title")}</DialogTitle>
               <DialogDescription className="sr-only">
                 {t("vin_find_help_intro")}
@@ -175,14 +175,14 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
                   <Scene
                     vinLabel={vinLabel}
                     lookHereLabel={t("vin_find_scene_look_here")}
-                    rtl={dir === "ar"}
+                    rtl={language === "ar"}
                     className="absolute inset-0"
                   />
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            <div className={cn("space-y-1.5 text-center sm:text-start", dir === "ar" && "sm:text-right")}>
+            <div className={cn("space-y-1.5 text-center sm:text-start", language === "ar" && "sm:text-right")}>
               <h3 className="font-bold text-sm sm:text-base md:text-lg text-foreground">{t(loc.titleKey)}</h3>
               <p className="text-sm md:text-[0.9375rem] text-muted-foreground leading-relaxed text-pretty">{t(loc.descKey)}</p>
             </div>
@@ -190,7 +190,7 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
             <div className={cn(
               "flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/[0.06] px-3.5 py-3",
               "text-center sm:text-start",
-              dir === "ar" && "sm:text-right",
+              language === "ar" && "sm:text-right",
             )}
             >
               <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5 hidden sm:block" />

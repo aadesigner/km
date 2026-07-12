@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getGetCurrentPricingQueryOptions } from "@workspace/api-client-react";
-import { STATIC_QUERY_OPTIONS } from "@/lib/query-options";
+import { getGetCurrentPricingQueryOptions, type PricingConfig } from "@workspace/api-client-react";
+import { STATIC_QUERY_OPTIONS, orvalQuery } from "@/lib/query-options";
 import { prefetchAuthAreaRoutes, prefetchCommonRoutes } from "@/lib/prefetch-route";
 import { prefetchNavMenuAssets } from "@/lib/nav-assets";
 import { prefetchVinPageChunk } from "@/lib/prefetch-vin-report";
@@ -29,7 +29,7 @@ export function WarmCache() {
     const warm = () => {
       if (typeof document !== "undefined" && document.hidden) return;
       void queryClient.prefetchQuery(
-        getGetCurrentPricingQueryOptions({ query: { ...STATIC_QUERY_OPTIONS } }),
+        getGetCurrentPricingQueryOptions({ query: orvalQuery<PricingConfig>(STATIC_QUERY_OPTIONS) }),
       );
       prefetchPublicSettings(queryClient);
       prefetchCommonRoutes();

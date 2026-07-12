@@ -4,16 +4,21 @@ import { prefetchVinFromHref } from "@/lib/prefetch-vin-report";
 import { queryClient } from "@/lib/query-client";
 import { useAuth } from "@/lib/auth-context";
 
-type Props = LinkProps & {
+type Props = {
+  to?: string;
+  href?: string;
   children: React.ReactNode;
   className?: string;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  role?: string;
 };
 
+const PrefetchWouterLink = Link as React.FC<LinkProps & { role?: string }>;
+
 /** wouter Link that prefetches the target page chunk (and VIN data when applicable) on hover/focus. */
-export function PrefetchLink({ href, children, className, onClick, ...rest }: Props) {
+export function PrefetchLink({ to, href, children, className, onClick, role }: Props) {
   const { isSignedIn } = useAuth();
-  const path = typeof href === "string" ? href : "";
+  const path = to ?? href ?? "";
 
   const warmHref = () => {
     prefetchRouteFromHref(path, { isSignedIn });
@@ -26,20 +31,20 @@ export function PrefetchLink({ href, children, className, onClick, ...rest }: Pr
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(run, { timeout: 120 });
     } else {
-      window.setTimeout(run, 0);
+      globalThis.setTimeout(run, 0);
     }
   };
 
   return (
-    <Link
-      href={href}
+    <PrefetchWouterLink
+      to={path}
       className={className}
+      role={role}
       onMouseEnter={scheduleWarmHref}
       onFocus={scheduleWarmHref}
       onClick={onClick}
-      {...rest}
     >
       {children}
-    </Link>
+    </PrefetchWouterLink>
   );
 }

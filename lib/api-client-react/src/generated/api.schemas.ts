@@ -29,6 +29,8 @@ export type VinLookupStatus = typeof VinLookupStatus[keyof typeof VinLookupStatu
 
 export const VinLookupStatus = {
   pending: 'pending',
+  pending_manual: 'pending_manual',
+  fulfilling: 'fulfilling',
   complete: 'complete',
   error: 'error',
 } as const;
@@ -99,6 +101,15 @@ export interface MarketData {
   lastAuctionDate?: string | null;
 }
 
+export interface InsuranceClaimRecord {
+  /** @nullable */
+  date?: string | null;
+  /** @nullable */
+  type?: string | null;
+  /** @nullable */
+  lossAmount?: number | null;
+}
+
 export interface VinData {
   /** @nullable */
   make?: string | null;
@@ -134,6 +145,9 @@ export interface VinData {
   isSalvage?: boolean | null;
   /** @nullable */
   isStolen?: boolean | null;
+  /** @nullable */
+  odometerLocked?: boolean | null;
+  insuranceClaims?: InsuranceClaimRecord[];
   photos?: string[];
   accidents?: AccidentRecord[];
   mileageHistory?: MileageRecord[];
@@ -714,7 +728,11 @@ export interface SystemSettingsUpdate {
   recaptchaMinScore?: number;
   googleClientId?: string | null;
   googleClientSecret?: string | null;
-  logRetentionDays?: number;
+  facebookAppId?: string | null;
+  facebookAppSecret?: string | null;
+  linkedinClientId?: string | null;
+  linkedinClientSecret?: string | null;
+  logRetentionDays?: number | null;
   failedTxnRetentionDays?: number;
   krwPerUsd?: number;
 }

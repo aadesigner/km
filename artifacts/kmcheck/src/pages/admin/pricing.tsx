@@ -31,7 +31,12 @@ export default function AdminPricing() {
     }
   });
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    basePrice: number;
+    discountPrice: number;
+    discountEnabled: boolean;
+    currency: string;
+  }>({
     basePrice: DEFAULT_PRICING.basePrice,
     discountPrice: DEFAULT_PRICING.discountPrice,
     discountEnabled: DEFAULT_PRICING.discountEnabled,

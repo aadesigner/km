@@ -23,13 +23,24 @@ function useReportItems(t: (k: string) => string) {
   ] satisfies Array<{ icon: LucideIcon; label: string; color: string; bg: string; ring: string }>;
 }
 
-const PREVIEW_ROWS = [
+type PreviewRow = {
+  key: string;
+  labelKey: string;
+  value?: string;
+  valueKey?: string;
+  valuePrefix?: string;
+  warn: boolean;
+  highlight?: boolean;
+  ownersCount?: number;
+};
+
+const PREVIEW_ROWS: readonly PreviewRow[] = [
   { key: "mileage", labelKey: "mock_label_mileage", value: "138,600 km", warn: true, highlight: true },
   { key: "accidents", labelKey: "mock_label_accidents", valueKey: "demo_found", valuePrefix: "2 ", warn: true },
   { key: "salvage", labelKey: "mock_label_salvage", valueKey: "mock_value_salvage", warn: false },
   { key: "stolen", labelKey: "mock_label_stolen", valueKey: "mock_value_stolen", warn: false },
   { key: "owners", labelKey: "mock_label_owners", warn: true },
-] as const;
+];
 
 type Props = {
   className?: string;
@@ -40,7 +51,7 @@ type Props = {
   demoBadgeKey?: string;
   demoBadgeClassName?: string;
   demoScoreClassName?: string;
-  previewRows?: typeof PREVIEW_ROWS;
+  previewRows?: readonly PreviewRow[];
 };
 
 export function VinCheckIncludesSection({
@@ -196,7 +207,7 @@ export function VinCheckIncludesSection({
                       ? `${"valuePrefix" in row ? row.valuePrefix ?? "" : ""}${t(row.valueKey)}`
                       : t(row.valueKey);
                   } else {
-                    value = row.value;
+                    value = row.value ?? "";
                   }
                   const isMileage = row.key === "mileage";
 

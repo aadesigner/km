@@ -95,7 +95,7 @@ export function VinReportErrorView({
 
 export function resolveVinReportErrorKind(error: unknown): VinReportErrorKind {
   if (error && typeof error === "object") {
-    const tagged = error as { kind?: VinReportErrorKind; notFound?: boolean; forbidden?: boolean; authRequired?: boolean; serverError?: boolean };
+    const tagged = error as { kind?: VinReportErrorKind; notFound?: boolean; forbidden?: boolean; authRequired?: boolean; serverError?: boolean; rateLimited?: boolean };
     if (tagged.kind) return tagged.kind;
     if (tagged.notFound) return "not_found";
     if (tagged.forbidden) return "forbidden";
