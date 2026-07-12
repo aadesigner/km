@@ -291,6 +291,11 @@ function HeroPhotoGallery({
   useEffect(() => {
     if (locked || photos.length === 0) return;
     void warmVinImageNeighbors(photos, photoIdx, 2);
+    // Eagerly warm the last photo — often missed when user swipes quickly to the end.
+    const last = photos[photos.length - 1];
+    if (last && photoIdx >= photos.length - 2) {
+      void warmVinImageNeighbors(photos, photos.length - 1, 0);
+    }
   }, [locked, photos, photoIdx]);
 
   const markLoadedUrl = useCallback((url: string) => {
@@ -397,7 +402,7 @@ function HeroPhotoGallery({
             const isActive = i === photoIdx;
             return (
               <HeroPhotoFrame
-                key={url}
+                key={`${i}-${url}`}
                 src={url}
                 alt={isActive ? vehicleTitle : ""}
                 priority={isActive}

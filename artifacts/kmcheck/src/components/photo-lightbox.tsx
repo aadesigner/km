@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/i18n/context";
 import { isVinImageSessionLoaded, markVinImageSessionLoaded, warmVinImageNeighbors } from "@/lib/vin-image-cache";
 
 type PhotoLightboxProps = {
@@ -52,6 +53,7 @@ function clampScale(scale: number): number {
 
 /** Full-screen photo viewer with keyboard nav, touch swipe, pinch-zoom, and locked background scroll. */
 export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxProps) {
+  const { t } = useTranslation();
   const overlayRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -68,6 +70,7 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
   const [activeReady, setActiveReady] = useState(() =>
     isVinImageSessionLoaded(photos[index] ?? ""),
   );
+  const [activeFailed, setActiveFailed] = useState(false);
 
   const bufferIndices = useMemo(() => {
     const n = photos.length;
@@ -82,12 +85,24 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
     if (photos.length === 0) return;
     void warmVinImageNeighbors(photos, index, 2);
     const src = photos[index] ?? "";
+    setActiveFailed(false);
     setActiveReady(isVinImageSessionLoaded(src));
     const img = imageRef.current;
     if (img?.complete && img.naturalWidth > 0) {
       setActiveReady(true);
+    } else if (img?.complete && img.naturalWidth === 0) {
+      setActiveFailed(true);
     }
   }, [photos, index]);
+
+  /** Stop infinite spinner if upstream image hangs without firing onError. */
+  useEffect(() => {
+    if (activeReady || activeFailed) return;
+    const src = photos[index] ?? "";
+    if (!src) return;
+    const timer = window.setTimeout(() => setActiveFailed(true), 18_000);
+    return () => window.clearTimeout(timer);
+  }, [photos, index, activeReady, activeFailed]);
 
   const measureImage = useCallback(() => {
     const img = imageRef.current;
@@ -445,9 +460,14 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
         className="relative flex items-center justify-center w-[90vw] h-[85vh] max-h-[85dvh] touch-none overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {!activeReady && (
+        {!activeReady && !activeFailed && (
           <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none">
             <div className="h-9 w-9 rounded-full border-2 border-white/25 border-t-white/80 animate-spin" />
+          </div>
+        )}
+        {activeFailed && (
+          <div className="absolute inset-0 z-[1] flex flex-col items-center justify-center gap-2 pointer-events-none text-white/70">
+            <p className="text-sm font-medium">{t("report_no_photo_found")}</p>
           </div>
         )}
         {bufferIndices.map((i) => {
@@ -456,7 +476,7 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
           const isActive = i === index;
           return (
             <img
-              key={src}
+              key={`${i}-${src}`}
               ref={isActive ? imageRef : undefined}
               src={src}
               alt={isActive ? `Photo ${index + 1}` : ""}
@@ -465,7 +485,8 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
                 "max-h-[85dvh] max-w-[90vw] rounded-xl object-contain shadow-2xl select-none will-change-transform",
                 isActive ? "relative z-[2]" : "absolute inset-0 m-auto opacity-0 pointer-events-none",
                 isActive && (isZoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"),
-                isActive && !activeReady && "opacity-0",
+                isActive && !activeReady && !activeFailed && "opacity-0",
+                isActive && activeFailed && "opacity-0",
               )}
               style={
                 isActive
@@ -477,15 +498,21 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
               }
               draggable={false}
               decoding="async"
-              loading={isActive ? "eager" : "lazy"}
+              loading={isActive || i === (index + 1) % photos.length ? "eager" : "lazy"}
               fetchPriority={isActive ? "high" : "low"}
               onLoad={() => {
-                if (!isActive) return;
                 markVinImageSessionLoaded(src);
+                if (!isActive) return;
+                setActiveFailed(false);
                 setActiveReady(true);
                 if (transformRef.current.scale > 1.02) {
                   applyTransform({ ...transformRef.current });
                 }
+              }}
+              onError={() => {
+                if (!isActive) return;
+                setActiveFailed(true);
+                setActiveReady(false);
               }}
               onMouseDown={isActive ? handleMouseDown : undefined}
               onDoubleClick={
