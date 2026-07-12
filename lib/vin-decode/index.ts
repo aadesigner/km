@@ -52,3 +52,40 @@ export {
   formatSeatDisplay,
   SEAT_EU_WMIS,
 } from "./seat-eu";
+export {
+  decodeVolvoModel,
+  decodeVolvoSpec,
+  isVolvoVin,
+  VOLVO_WMIS,
+  type VolvoSpec,
+} from "./volvo";
+export {
+  decodeTeslaModel,
+  decodeTeslaSpec,
+  isTeslaVin,
+  TESLA_WMIS,
+} from "./tesla";
+export {
+  decodeBydModel,
+  decodeBydSpec,
+  isBydVin,
+  BYD_WMIS,
+} from "./byd";
+export {
+  decodeZeekrModel,
+  decodeZeekrSpec,
+  isZeekrVin,
+  ZEEKR_WMIS,
+} from "./zeekr";
+export {
+  decodeXiaomiModel,
+  decodeXiaomiSpec,
+  isXiaomiVin,
+  XIAOMI_WMIS,
+} from "./xiaomi";
+export {
+  resolveBrandVinSpec,
+  resolveBrandVinModel,
+  resolveBrandVinMake,
+  type BrandVinSpec,
+} from "./brand-vin-spec";

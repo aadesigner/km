@@ -1,12 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
-import {
-  resolveRecaptchaToken,
-  executeRecaptchaToken,
-  ensureRecaptchaReady,
-  clearRecaptchaSettingsCache,
-} from "@/hooks/use-recaptcha";
 import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -104,8 +98,6 @@ declare global {
 interface PublicSettings {
   paypalClientId: string | null;
   paypalSandbox: boolean;
-  recaptchaEnabled: boolean;
-  recaptchaSiteKey: string | null;
   paypalEnableCards: boolean;
 }
 
@@ -209,8 +201,6 @@ export default function Checkout({ params }: Props) {
   const paypalResumeAttemptedRef = useRef(false);
   const checkoutRedirectedRef = useRef<string | null>(null);
   const freeCouponPaymentIdRef = useRef<number | null>(null);
-  const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
-  const recaptchaPrimeAtRef = useRef(0);
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
@@ -225,33 +215,6 @@ export default function Checkout({ params }: Props) {
     ...CHECKOUT_QUERY_OPTIONS,
   });
   useQueryRecovery(pubSettingsError && !!pubSettings, pubSettingsFetching, refetchPubSettings);
-
-  const checkoutRcSiteKey = pubSettings?.recaptchaSiteKey ?? null;
-  const checkoutRcEnabled = !!(pubSettings?.recaptchaEnabled && checkoutRcSiteKey);
-  const [checkoutRcReady, setCheckoutRcReady] = useState(false);
-
-  useEffect(() => {
-    clearRecaptchaSettingsCache();
-  }, [checkoutRcEnabled, checkoutRcSiteKey]);
-
-  useEffect(() => {
-    if (!checkoutRcEnabled || !checkoutRcSiteKey) {
-      setCheckoutRcReady(true);
-      return;
-    }
-    let cancelled = false;
-    setCheckoutRcReady(false);
-    void ensureRecaptchaReady(checkoutRcSiteKey).then((ok) => {
-      if (!cancelled) setCheckoutRcReady(ok);
-    });
-    return () => { cancelled = true; };
-  }, [checkoutRcEnabled, checkoutRcSiteKey]);
-
-  const getCheckoutRecaptchaToken = useCallback(async (action: string) => {
-    if (!checkoutRcSiteKey) return null;
-    await ensureRecaptchaReady(checkoutRcSiteKey);
-    return executeRecaptchaToken(checkoutRcSiteKey, action);
-  }, [checkoutRcSiteKey]);
 
   // VIN peek — only fires when VIN is exactly 17 chars, has no invalid chars, and user is signed in
   const normalizedVin = vin.trim().toUpperCase();
@@ -661,11 +624,6 @@ export default function Checkout({ params }: Props) {
       const data = await resp.json() as CouponResult & { error?: string };
       if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
       setCouponResult(data);
-      if (checkoutRcEnabled && checkoutRcSiteKey) {
-        void executeRecaptchaToken(checkoutRcSiteKey, "checkout").then((token) => {
-          if (token) recaptchaPrimeRef.current = Promise.resolve(token);
-        });
-      }
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
     } finally {
@@ -682,44 +640,15 @@ export default function Checkout({ params }: Props) {
     paypalInstanceRef.current = null;
   };
 
-  const primeCheckoutRecaptcha = () => {
-    if (!checkoutRcEnabled || !checkoutRcSiteKey || status === "creating" || status === "paying") return;
-    const now = Date.now();
-    if (recaptchaPrimeRef.current && now - recaptchaPrimeAtRef.current < 800) return;
-    recaptchaPrimeAtRef.current = now;
-    recaptchaPrimeRef.current = checkoutRcReady
-      ? executeRecaptchaToken(checkoutRcSiteKey, "checkout")
-      : getCheckoutRecaptchaToken("checkout");
-  };
-
-  const fetchCheckoutRecaptchaToken = async (): Promise<string | undefined> => {
-    const primed = recaptchaPrimeRef.current;
-    recaptchaPrimeRef.current = null;
-    const token = await resolveRecaptchaToken({
-      enabled: checkoutRcEnabled,
-      siteKey: checkoutRcSiteKey,
-      action: "checkout",
-      primed,
-      getToken: getCheckoutRecaptchaToken,
-    });
-    return token ?? undefined;
-  };
-
   const createOrder = async (nvin: string): Promise<string | null> => {
     setStatus("creating");
     setErrorMsg("");
-    const recaptchaToken = await fetchCheckoutRecaptchaToken();
-    if (checkoutRcEnabled && !recaptchaToken) {
-      setErrorMsg(t("error_recaptcha_failed"));
-      setStatus("error");
-      return null;
-    }
     try {
       const resp = await fetch(`${basePath}/api/payments/create-paypal-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined, recaptchaToken }),
+        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
@@ -1070,15 +999,11 @@ export default function Checkout({ params }: Props) {
     if (!hostedFieldsRef.current) { setErrorMsg(t("checkout_error_card_not_ready")); setStatus("error"); return; }
     setPaymentStarted(true);
     hostedFieldsCreateOrderRef.current = async () => {
-      const recaptchaToken = await fetchCheckoutRecaptchaToken();
-      if (checkoutRcEnabled && !recaptchaToken) {
-        throw new Error(t("error_recaptcha_failed"));
-      }
       const resp = await fetch(`${basePath}/api/payments/create-paypal-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined, recaptchaToken }),
+        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
@@ -1131,7 +1056,6 @@ export default function Checkout({ params }: Props) {
   };
 
   const isBusy = status === "creating" || status === "paying";
-  const rcBlockingCheckout = checkoutRcEnabled && (!checkoutRcReady || pubSettingsLoading);
   const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;
   const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
   const showVinQualityWarning = vinIsValid && !!peekForVin && !peekLoadingUi && !isTrustworthyVinDecode(peekForVin);
@@ -1855,15 +1779,11 @@ export default function Checkout({ params }: Props) {
                   {showProceedButton && (
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-2"
-                      onPointerDown={primeCheckoutRecaptcha}
-                      onTouchStart={primeCheckoutRecaptcha}
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
-                      disabled={isBusy || rcBlockingCheckout || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
+                      disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >
                       {isBusy
                         ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("processing")}…</>
-                        : rcBlockingCheckout
-                          ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("error_recaptcha_loading")}</>
                         : couponResult?.isFree
                           ? <><Zap className="h-4 w-4" />{t("get_free_report")}</>
                           : payMethod === "card"

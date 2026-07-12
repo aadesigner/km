@@ -10,6 +10,7 @@
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
 import { decodeEuropeanBrandModel } from "./european-brands";
+import { resolveBrandVinSpec, resolveBrandVinModel } from "./brand-vin-spec";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
@@ -198,6 +199,7 @@ const WMI_MAP: Record<string, string> = {
   "TRU": "Audi UK",
   // ── SWEDEN ────────────────────────────────────────────────────────────────
   "YV1": "Volvo", "YV4": "Volvo",
+  "7JR": "Volvo", "7JD": "Volvo", "XLB": "Volvo", "PNV": "Volvo",
   "YS2": "Scania",
   // ── FRANCE ────────────────────────────────────────────────────────────────
   "VF1": "Renault", "VF3": "Peugeot", "VF7": "Citroën",
@@ -228,14 +230,15 @@ const WMI_MAP: Record<string, string> = {
   "MP1": "Isuzu", "MPA": "Isuzu", "M3G": "Isuzu",
   "4S1": "Isuzu", "4S2": "Isuzu", "J87": "Isuzu",
   // ── CHINA ─────────────────────────────────────────────────────────────────
-  "LFV": "Volkswagen China", "LGX": "Buick China",
+  "LFV": "Volkswagen China",
+  "LGX": "BYD", "LRW": "Tesla", "XP7": "Tesla",
   "LSG": "General Motors China",
   "LJC": "Chery", "LVR": "Chery", "LVS": "Ford China",
-  "LVG": "Volvo China",
-  "LFP": "BYD", "LBV": "BYD", "LC0": "BYD",
+  "LVG": "Volvo China", "LYV": "Volvo China", "LVY": "Volvo China",
+  "LFP": "BYD", "LBV": "BYD", "LC0": "BYD", "LPE": "BYD",
   "LSJ": "MG", "LE4": "NIO", "LUC": "Neta",
-  "L6T": "Geely", "LGW": "Haval / Great Wall",
-  "LNB": "Beijing Hyundai", "LNY": "Beijing Hyundai",
+  "L6T": "Zeekr", "LGW": "Haval / Great Wall",
+  "LNB": "Xiaomi", "HXM": "Xiaomi", "LNY": "Beijing Hyundai",
   "LTN": "Changan", "LPA": "Changan",
   "LJ1": "JAC", "LHG": "GAC", "LMG": "GAC Trumpchi",
   "LVH": "Dongfeng Honda", "LDN": "Dongfeng Nissan",
@@ -311,6 +314,8 @@ const WMI_MAP: Record<string, string> = {
 
 function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typeof decodeGlobalBrand>): string | null {
   if (isAudiHomologationVin(vin)) return "Audi";
+  const spec = resolveBrandVinSpec(vin);
+  if (spec?.make) return spec.make;
   return resolveGlobalBrandMake(vin, wmiMake, global);
 }
 
@@ -398,9 +403,8 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Tesla ─────────────────────────────────────────────────────────────────
   "5YJ3": "Model 3",    "5YJS": "Model S",    "5YJX": "Model X",
   "7SAY": "Model Y",    "7G2A": "Model Y",
-  // ── Volvo ─────────────────────────────────────────────────────────────────
-  "YV1A": "S40/S60",    "YV1B": "V40/V60",    "YV1C": "XC60/XC90",
-  "YV4A": "XC40",       "YV4B": "XC60",       "YV4C": "XC90",
+  // ── Volvo ── model comes from the dedicated decoder in volvo.ts (VDS layout
+  //    varies EU vs US), so no coarse position-4 fallback lives here.
   // ── Ford ──────────────────────────────────────────────────────────────────
   "1FTF": "F-150",      "1FTE": "F-150",      "1FTW": "F-150",
   "1FMC": "Escape",     "1FMS": "Explorer",   "1FMH": "Edge",
@@ -591,6 +595,9 @@ const MODEL_OVERRIDES: Record<string, string> = {
 function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
   const upper = vin.toUpperCase();
 
+  const brandModel = resolveBrandVinModel(upper);
+  if (brandModel) return brandModel;
+
   const premium = decodePremiumEuropeanModel(upper);
   if (premium) return premium;
 
@@ -737,11 +744,7 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
     C: "4.3L EcoTec3 V6", E: "5.3L EcoTec3 V8", F: "6.2L EcoTec3 V8",
     H: "6.6L Duramax Diesel V8", K: "2.7T Turbo I4",
   },
-  // Tesla (5YJ*)
-  "5YJ": { E: "Electric (Long Range)", F: "Electric (Standard Range)", P: "Electric (Performance)" },
-  // Volvo Sweden (YV*)
-  YV1: { A: "2.0T I4 (Drive-E)", B: "2.0T I4 (Drive-E)", D: "2.0L Diesel", H: "Hybrid (T8 PHEV)" },
-  YV4: { A: "2.0T I4 (Drive-E)", B: "2.0T I4", D: "2.0L Diesel", H: "Hybrid (T8 PHEV)" },
+  // Tesla: motor/battery decoded in tesla.ts (position 7–8), not position 8 alone.
   // Land Rover / Range Rover (SAL*)
   SAL: {
     B: "2.0L I4 Ingenium Diesel", C: "3.0L I6 Ingenium", D: "3.0L I6 Diesel (TD6)",
@@ -918,6 +921,25 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
 // Each entry is { city, country } so they can be reported separately.
 export interface PlantInfo { city: string; country: string; }
 
+const TESLA_PLANTS: Record<string, PlantInfo> = {
+  F: { city: "Fremont, California", country: "United States" },
+  A: { city: "Austin, Texas", country: "United States" },
+  C: { city: "Shanghai", country: "China" },
+  B: { city: "Grünheide (Berlin)", country: "Germany" },
+  N: { city: "Reno, Nevada", country: "United States" },
+};
+
+// Volvo factory codes (position 11) — shared across all Volvo WMIs.
+const VOLVO_PLANTS: Record<string, PlantInfo> = {
+  "1": { city: "Torslanda (Gothenburg)", country: "Sweden"  },
+  "2": { city: "Ghent",                  country: "Belgium" },
+  A: { city: "Gothenburg",               country: "Sweden"  },
+  B: { city: "Chengdu",                  country: "China"   },
+  G: { city: "Ridgeville, South Carolina", country: "United States" },
+  P: { city: "Daqing",                   country: "China"   },
+  Z: { city: "Daqing",                   country: "China"   },
+};
+
 const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   // Toyota Japan (JT* prefix)
   JT: {
@@ -1050,20 +1072,20 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     H: { city: "Hermosillo",       country: "Mexico" },
   },
   "3FA": { G: { city: "Hermosillo", country: "Mexico" } },
-  // Tesla USA (5YJ* / 7SA*)
-  "5YJ": { F: { city: "Fremont, CA", country: "USA" } },
+  // Tesla — position 11 factory code
+  "5YJ": TESLA_PLANTS,
+  "7SA": TESLA_PLANTS,
+  "7G2": TESLA_PLANTS,
+  LRW: TESLA_PLANTS,
+  XP7: TESLA_PLANTS,
   "7SA": { F: { city: "Fremont, CA", country: "USA" } },
-  // Volvo Sweden (YV*)
-  YV1: {
-    A: { city: "Gothenburg", country: "Sweden"  },
-    B: { city: "Ghent",      country: "Belgium" },
-    D: { city: "Gothenburg", country: "Sweden"  },
-  },
-  YV4: {
-    A: { city: "Gothenburg", country: "Sweden"  },
-    B: { city: "Ghent",      country: "Belgium" },
-    C: { city: "Chengdu",    country: "China"   },
-  },
+  // Volvo — position 11 factory code (NHTSA MY2019+ decoder)
+  YV1: VOLVO_PLANTS,
+  YV4: VOLVO_PLANTS,
+  LYV: VOLVO_PLANTS,
+  LVY: VOLVO_PLANTS,
+  "7JR": VOLVO_PLANTS,
+  "7JD": VOLVO_PLANTS,
   // Land Rover / Range Rover (SAL*)
   SAL: {
     A: { city: "Solihull",          country: "UK"      },
@@ -1492,11 +1514,15 @@ export function decodeVin(vin: string): VinDecodeResult {
   const global = decodeGlobalBrand(upper);
   const wmi = upper.slice(0, 3);
   const wmiMake = lookupWmiMake(upper);
-  const make = decodeMake(upper, wmiMake, global);
-  const model = decodeModel(upper, global);
-  const engineDecoded = decodeEngineCode(upper);
+  const brandSpec = resolveBrandVinSpec(upper);
+  const make = brandSpec?.make ?? decodeMake(upper, wmiMake, global);
+  const model = brandSpec?.model ?? decodeModel(upper, global);
+  const engineDecoded = brandSpec?.engineDecoded ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);
-  const plant = decodePlantInfo(upper);
+  const plantFromBrand = brandSpec?.plantCity
+    ? { city: brandSpec.plantCity, country: brandSpec.plantCountry ?? "" }
+    : null;
+  const plant = plantFromBrand ?? decodePlantInfo(upper);
   return {
     vin: upper,
     make,
@@ -1512,9 +1538,9 @@ export function decodeVin(vin: string): VinDecodeResult {
     plantCode: upper[10] ?? null,       // position 11 (raw char)
     plantCity: plant?.city ?? null,
     plantCountry: plant?.country ?? null,
-    bodyStyleDecoded: decodeBodyStyleLocal(upper),
-    transmissionDecoded: decodeTransmission(upper, engineDecoded, model),
-    fuelType: inferFuelType(engineDecoded, wmi),
-    driveType: inferDriveType(wmi, model, engineDecoded),
+    bodyStyleDecoded: brandSpec?.bodyStyle ?? decodeBodyStyleLocal(upper),
+    transmissionDecoded: brandSpec?.transmissionDecoded ?? decodeTransmission(upper, engineDecoded, model),
+    fuelType: brandSpec?.fuelType ?? inferFuelType(engineDecoded, wmi),
+    driveType: brandSpec?.driveType ?? inferDriveType(wmi, model, engineDecoded),
   };
 }

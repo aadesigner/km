@@ -10,6 +10,7 @@ import {
   formatSeatDisplay,
   SEAT_EU_WMIS,
 } from "./seat-eu";
+import { decodeVolvoModel, isVolvoVin } from "./volvo";
 
 const SKODA_MODEL_78: Record<string, string> = {
   NJ: "Fabia",
@@ -228,5 +229,6 @@ export function decodeEuropeanBrandModel(vin: string): string | null {
   if (wmi === "VF3") return decodePeugeotModel(upper);
   if (wmi === "VF7") return decodeCitroenModel(upper);
   if ((SEAT_EU_WMIS as readonly string[]).includes(wmi)) return decodeSeatModel(upper);
+  if (isVolvoVin(upper)) return decodeVolvoModel(upper);
   return null;
 }

@@ -294,27 +294,10 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
     return;
   }
 
-  const [user, settings] = await Promise.all([
-    db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1),
-    db.select().from(systemSettingsTable).orderBy(desc(systemSettingsTable.id)).limit(1),
-  ]);
+  const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
   if (user[0]?.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
   if (await rejectVinLookupIfDisabled(req, res)) return;
-
-  const settingsRow = settings[0];
-  const rcRequired = settingsRow?.recaptchaEnabled
-    && settingsRow.recaptchaSecretKey
-    && !isRecaptchaRelaxedForRequest(req);
-  if (rcRequired) {
-    if (!recaptchaToken) { res.status(400).json({ error: "reCAPTCHA token required", code: "RECAPTCHA_REQUIRED" }); return; }
-    const valid = await verifyRecaptcha(
-      recaptchaToken,
-      settingsRow.recaptchaSecretKey,
-      settingsRow.recaptchaMinScore ?? 0.5,
-    );
-    if (!valid) { res.status(400).json({ error: "reCAPTCHA verification failed", code: "RECAPTCHA_FAILED" }); return; }
-  }
 
   const pricing = await getActivePricing();
   const basePrice = pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice;
