@@ -289,6 +289,7 @@ export default function Checkout({ params }: Props) {
     paidDeliveryRetryRef.current = false;
     paypalResumeAttemptedRef.current = false;
     checkoutRedirectedRef.current = null;
+    freeCouponPaymentIdRef.current = null;
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
   }, [normalizedVin]);
@@ -490,6 +491,7 @@ export default function Checkout({ params }: Props) {
   const completeCheckoutDelivery = (reportVin: string) => {
     setStatus("success");
     paypalFlowPhaseRef.current = "done";
+    freeCouponPaymentIdRef.current = null;
     sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
     goToVinReport(reportVin);
   };
