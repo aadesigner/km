@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
@@ -27,7 +27,15 @@ import {
   shouldShowPendingVinDoubleCheck,
 } from "@/lib/vin-decode-preview";
 import { isVehicleTooOldForLookup } from "@workspace/vin-decode";
-import { CHECKOUT_VIN_KEY, PENDING_VIN_KEY, normalizeCheckoutVin, guestVinAuthPath } from "@/lib/checkout-vin-flow";
+import {
+  CHECKOUT_VIN_KEY,
+  PENDING_VIN_KEY,
+  PAYPAL_CHECKOUT_SESSION_KEY,
+  clearCheckoutPaymentResumeState,
+  consumeCheckoutPrefillOnly,
+  normalizeCheckoutVin,
+  guestVinAuthPath,
+} from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { CheckoutPaymentLogos } from "@/components/checkout-payment-logos";
@@ -35,8 +43,6 @@ import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { useTheme } from "@/components/theme-provider";
-
-const PAYPAL_CHECKOUT_SESSION_KEY = "kmcheck_paypal_checkout";
 
 function isPaypalUserAbort(err: unknown): boolean {
   const msg =
@@ -204,6 +210,8 @@ export default function Checkout({ params }: Props) {
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
+  /** Blocks PayPal resume / delivery retry until user explicitly starts payment (post-auth landing). */
+  const postAuthPrefillLandingRef = useRef(false);
 
   const { data: pubSettings, isLoading: pubSettingsLoading, isError: pubSettingsError, isFetching: pubSettingsFetching, refetch: refetchPubSettings } = useQuery<PublicSettings>({
     queryKey: ["/api/payments/public-settings"],
@@ -275,6 +283,25 @@ export default function Checkout({ params }: Props) {
   useEffect(() => {
     checkoutActiveRef.current = true;
     return () => { checkoutActiveRef.current = false; };
+  }, []);
+
+  // After sign-up/sign-in with a pending VIN: prefill only — never auto-open payment.
+  useLayoutEffect(() => {
+    if (!consumeCheckoutPrefillOnly()) return;
+    postAuthPrefillLandingRef.current = true;
+    clearCheckoutPaymentResumeState();
+    setPaymentStarted(false);
+    setStatus("idle");
+    setErrorMsg("");
+    pendingPaypalOrderRef.current = null;
+    paypalFlowPhaseRef.current = "idle";
+    paidDeliveryRetryRef.current = false;
+    paypalResumeAttemptedRef.current = false;
+    freeCouponPaymentIdRef.current = null;
+    checkoutRedirectedRef.current = null;
+    paypalInstanceRef.current?.close();
+    paypalInstanceRef.current = null;
+    if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
   }, []);
 
   // Reset payment state whenever the VIN changes — prevents stale "no data" / error UI bleeding across VINs
@@ -833,6 +860,7 @@ export default function Checkout({ params }: Props) {
 
   // Paid or free-coupon delivery still in flight — retry lookup without charging again.
   useEffect(() => {
+    if (postAuthPrefillLandingRef.current) return;
     if (normalizedVin.length !== 17) return;
     const pendingFreePaymentId =
       peekForVin?.pendingFreeCouponPaymentId ?? freeCouponPaymentIdRef.current ?? undefined;
@@ -864,6 +892,7 @@ export default function Checkout({ params }: Props) {
 
   // Resume PayPal capture when session has a pending order but return URL lost ?token=.
   useEffect(() => {
+    if (postAuthPrefillLandingRef.current) return;
     if (!isLoaded || !isSignedIn || !vinIsValid || peekLoadingUi) return;
     if (paypalResumeAttemptedRef.current) return;
     const params = new URLSearchParams(window.location.search);
@@ -923,6 +952,7 @@ export default function Checkout({ params }: Props) {
   }, [isSignedIn, vinIsValid, normalizedVin]);
 
   const handleProceedToPayment = async () => {
+    postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
     if (!nvin) return;
     if (couponResult?.isFree) { await createOrder(nvin); return; }
@@ -1006,6 +1036,7 @@ export default function Checkout({ params }: Props) {
   };
 
   const handleCardPayment = async () => {
+    postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
     if (!nvin) return;
     if (couponResult?.isFree) { await createOrder(nvin); return; }

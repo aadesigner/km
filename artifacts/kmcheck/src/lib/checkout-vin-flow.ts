@@ -2,6 +2,9 @@ export const PENDING_VIN_KEY = "pending_vin";
 export const CHECKOUT_VIN_KEY = "checkout_vin";
 export const AUTH_RETURN_PATH_KEY = "auth_return_path";
 export const DECODER_PENDING_VIN_KEY = "decoder_pending_vin";
+export const PAYPAL_CHECKOUT_SESSION_KEY = "kmcheck_paypal_checkout";
+/** Set when redirecting to checkout after auth — checkout must prefill VIN only, not auto-start payment. */
+export const CHECKOUT_PREFILL_ONLY_KEY = "checkout_prefill_only";
 
 export const VIN_FORMAT_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
 
@@ -95,16 +98,41 @@ export function redirectGuestForVinCheckout(vin: string, language: string): stri
   return guestVinAuthPath(language);
 }
 
+export function clearCheckoutPaymentResumeState(): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+}
+
+export function markCheckoutPrefillOnly(): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.setItem(CHECKOUT_PREFILL_ONLY_KEY, "1");
+}
+
+/** True once after post-auth checkout redirect; clears the flag when read. */
+export function consumeCheckoutPrefillOnly(): boolean {
+  if (typeof sessionStorage === "undefined") return false;
+  const flagged = sessionStorage.getItem(CHECKOUT_PREFILL_ONLY_KEY) === "1";
+  if (flagged) sessionStorage.removeItem(CHECKOUT_PREFILL_ONLY_KEY);
+  return flagged;
+}
+
+function preparePostAuthCheckoutLanding(): void {
+  clearCheckoutPaymentResumeState();
+  markCheckoutPrefillOnly();
+}
+
 /** After auth, where to send the user if a checkout VIN is waiting. */
 export function getPostAuthCheckoutPath(language: string): string | null {
   const pending = sessionStorage.getItem(PENDING_VIN_KEY);
   if (pending) {
     sessionStorage.setItem(CHECKOUT_VIN_KEY, pending);
     sessionStorage.removeItem(PENDING_VIN_KEY);
+    preparePostAuthCheckoutLanding();
     return `/${language}/checkout?vin=${encodeURIComponent(pending)}`;
   }
   const stored = sessionStorage.getItem(CHECKOUT_VIN_KEY);
   if (stored) {
+    preparePostAuthCheckoutLanding();
     return `/${language}/checkout?vin=${encodeURIComponent(stored)}`;
   }
   return null;
