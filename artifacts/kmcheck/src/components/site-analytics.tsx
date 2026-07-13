@@ -24,9 +24,11 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    clarity?: (...args: unknown[]) => void;
+    clarity?: ClarityStub;
   }
 }
+
+type ClarityStub = ((...args: unknown[]) => void) & { q?: unknown[][] };
 
 function injectGtm(containerId: string) {
   if (!document.querySelector(`script[${GTM_HEAD_ATTR}]`)) {
@@ -74,11 +76,25 @@ function injectGa(measurementId: string) {
 
 function injectClarity(projectId: string) {
   if (document.querySelector(`script[${CLARITY_LOADER_ATTR}]`)) return;
+
+  // Clarity's tag script calls window.clarity() immediately — stub must exist first (official snippet).
+  if (!window.clarity) {
+    const stub: ClarityStub = (...args: unknown[]) => {
+      (stub.q = stub.q ?? []).push(args);
+    };
+    window.clarity = stub;
+  }
+
   const script = document.createElement("script");
   script.async = true;
   script.src = `https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`;
   script.setAttribute(CLARITY_LOADER_ATTR, projectId);
-  document.head.appendChild(script);
+  const first = document.getElementsByTagName("script")[0];
+  if (first?.parentNode) {
+    first.parentNode.insertBefore(script, first);
+  } else {
+    document.head.appendChild(script);
+  }
 }
 
 function trackPageView(path: string, gaId: string | null, gtmEnabled: boolean) {

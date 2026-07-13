@@ -31,7 +31,7 @@ export function removeInjectedAnalytics(): void {
   const w = window as Window & {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    clarity?: (...args: unknown[]) => void;
+    clarity?: ((...args: unknown[]) => void) & { q?: unknown[][] };
   };
   delete w.dataLayer;
   delete w.gtag;
