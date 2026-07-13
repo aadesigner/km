@@ -21,7 +21,7 @@ export function CountryFlagTooltip({ nameKey, children, className }: Props) {
           type="button"
           aria-label={label}
           className={cn(
-            "inline-flex cursor-default items-center rounded-full border-0 bg-transparent p-0 outline-none",
+            "inline-flex cursor-default items-center border-0 bg-transparent p-0 outline-none",
             "focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             className,
           )}

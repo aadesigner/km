@@ -1,4 +1,4 @@
-/** Earliest model year we offer paid history lookups for. */
+/** Earliest model year we offered paid history lookups for (gate currently disabled). */
 export const MIN_VEHICLE_LOOKUP_YEAR = 2008;
 
 export function plausibleDecodedYear(year: number | null | undefined): year is number {
@@ -7,9 +7,9 @@ export function plausibleDecodedYear(year: number | null | undefined): year is n
   return year >= 1980 && year <= max;
 }
 
-/** True when decoder returned a confident year before {@link MIN_VEHICLE_LOOKUP_YEAR}. */
-export function isVehicleTooOldForLookup(year: number | null | undefined): boolean {
-  return plausibleDecodedYear(year) && year < MIN_VEHICLE_LOOKUP_YEAR;
+/** Year gate disabled — checkout/peek no longer block pre-2008 decodes. */
+export function isVehicleTooOldForLookup(_year: number | null | undefined): boolean {
+  return false;
 }
 
 export function isVehicleEligibleForHistoryLookup(year: number | null | undefined): boolean {

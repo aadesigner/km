@@ -263,7 +263,9 @@ const WMI_MAP: Record<string, string> = {
   "SCF": "Aston Martin",
   // ── GERMANY (continued) ───────────────────────────────────────────────────
   "WMW": "MINI",
-  "W0L": "Opel/Vauxhall",
+  "W0L": "Opel",
+  "W0V": "Vauxhall",
+  "VXK": "Vauxhall",
   // ── ITALY (continued) ─────────────────────────────────────────────────────
   "ZAR": "Alfa Romeo",
   "ZDB": "Alfa Romeo",
@@ -1279,10 +1281,26 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   VS7: { A: { city: "Martorell, Barcelona", country: "Spain" } },
   // ── Opel / Vauxhall (W0L*) ────────────────────────────────────────────────
   W0L: {
+    "1": { city: "Rüsselsheim",           country: "Germany" },
+    "2": { city: "Bochum",                country: "Germany" },
+    "8": { city: "Ellesmere Port",        country: "United Kingdom" },
     A: { city: "Rüsselsheim",           country: "Germany" },
     B: { city: "Zaragoza",              country: "Spain"   },
+    E: { city: "Ellesmere Port",        country: "United Kingdom" },
+    G: { city: "Gliwice",               country: "Poland"  },
+    L: { city: "Luton",                 country: "United Kingdom" },
     S: { city: "Bochum",                country: "Germany" },
     T: { city: "Rüsselsheim",           country: "Germany" },
+    U: { city: "Luton",                 country: "United Kingdom" },
+  },
+  W0V: {
+    L: { city: "Luton",                 country: "United Kingdom" },
+    U: { city: "Luton",                 country: "United Kingdom" },
+  },
+  VXK: {
+    "8": { city: "Ellesmere Port",        country: "United Kingdom" },
+    E: { city: "Ellesmere Port",        country: "United Kingdom" },
+    L: { city: "Luton",                 country: "United Kingdom" },
   },
 };
 
@@ -1531,7 +1549,9 @@ export function decodeVin(vin: string): VinDecodeResult {
   const wmiMake = lookupWmiMake(upper);
   const brandSpec = resolveBrandVinSpec(upper);
   const make = brandSpec?.make ?? decodeMake(upper, wmiMake, global);
-  const model = brandSpec?.model ?? decodeModel(upper, global);
+  const model = (brandSpec?.model && brandSpec.model.length > 0)
+    ? brandSpec.model
+    : decodeModel(upper, global);
   const engineDecoded = brandSpec?.engineDecoded ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);
   const plantFromBrand = brandSpec?.plantCity
