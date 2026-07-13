@@ -55,6 +55,8 @@ app.use(
           "https://js.paypal.com",
           "https://www.googletagmanager.com",
           "https://static.cloudflareinsights.com",
+          "https://www.clarity.ms",
+          "https://scripts.clarity.ms",
         ],
         styleSrc: [
           "'self'",
@@ -79,6 +81,11 @@ app.use(
           "https://*.google-analytics.com",
           "https://analytics.google.com",
           "https://cloudflareinsights.com",
+          "https://www.clarity.ms",
+          "https://*.clarity.ms",
+          "https://scripts.clarity.ms",
+          "https://c.clarity.ms",
+          "https://h.clarity.ms",
         ],
         frameSrc: [
           "'self'",
