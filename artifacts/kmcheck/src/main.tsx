@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { setCredentials, setClientGuardToken } from "@workspace/api-client-react";
 import "@/fonts/inter-latin.css";
+import { fetchGeoLanguageHint } from "@/lib/geo-language-client";
 import App from "./App";
 import "./index.css";
 import { installFetchGuard } from "./lib/install-fetch-guard";
@@ -12,5 +13,11 @@ setCredentials("include");
 setClientGuardToken(clientGuardToken ?? null);
 installFetchGuard(clientGuardToken);
 installChunkLoadRecovery();
+
+// Warm geo hint while the bundle boots so `/` can redirect in one hop.
+if (typeof window !== "undefined") {
+  const path = window.location.pathname.replace(/\/$/, "") || "/";
+  if (path === "/") void fetchGeoLanguageHint();
+}
 
 createRoot(document.getElementById("root")!).render(<App />);

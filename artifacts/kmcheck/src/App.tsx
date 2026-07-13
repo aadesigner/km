@@ -26,7 +26,7 @@ import {
   markGeoLanguageEvaluated,
   getStoredLangPreference,
 } from "@/lib/lang-preference";
-import { resolveRootEntryLanguageSync } from "@/lib/geo-language-client";
+import { resolveRootEntryLanguage, resolveRootEntryLanguageSync } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
@@ -305,19 +305,40 @@ function NotFoundLang() {
   );
 }
 
+function redirectToEntryLanguage(
+  setLocation: ReturnType<typeof useLocation>[1],
+  buildTarget: (lang: Language) => string,
+) {
+  let cancelled = false;
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+
+  const go = (lang: Language) => {
+    if (cancelled) return;
+    markGeoLanguageEvaluated();
+    setLocation(`${buildTarget(lang)}${search}${hash}`, { replace: true });
+  };
+
+  const immediate = resolveRootEntryLanguageSync();
+  if (immediate != null) {
+    go(immediate);
+    return () => {
+      cancelled = true;
+    };
+  }
+
+  void resolveRootEntryLanguage().then(go);
+  return () => {
+    cancelled = true;
+  };
+}
+
 function RootLangRedirect() {
   const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    const search = typeof window !== "undefined" ? window.location.search : "";
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    const stored = getStoredLangPreference();
-    const lang = resolveRootEntryLanguageSync();
-    if (stored) markGeoLanguageEvaluated();
-    setLocation(`/${lang}${search}${hash}`, { replace: true });
-  }, [setLocation]);
+  useEffect(() => redirectToEntryLanguage(setLocation, (lang) => `/${lang}`), [setLocation]);
 
-  return null;
+  return <RouteShellFallback />;
 }
 
 function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
@@ -325,17 +346,11 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
 
   useEffect(() => {
     const rest = pathNeedingLangPrefix(pathname);
-    if (rest === null) return;
-
-    const search = typeof window !== "undefined" ? window.location.search : "";
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    const stored = getStoredLangPreference();
-    const lang = resolveRootEntryLanguageSync();
-    if (stored) markGeoLanguageEvaluated();
-    setLocation(`${buildLocalizedPath(lang, rest)}${search}${hash}`, { replace: true });
+    if (rest === null) return undefined;
+    return redirectToEntryLanguage(setLocation, (lang) => buildLocalizedPath(lang, rest));
   }, [pathname, setLocation]);
 
-  return null;
+  return <RouteShellFallback />;
 }
 
 function parseRouteLang(lang: string): Language {

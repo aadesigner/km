@@ -68,19 +68,28 @@ export async function fetchGeoLanguageHint(): Promise<GeoLanguageResponse | null
   }
 }
 
-/** First paint language for `/` and unprefixed paths — no geo API wait. */
-export function resolveRootEntryLanguageSync(): Language {
-  return getStoredLangPreference() ?? "en";
+function languageFromGeoHint(data: GeoLanguageResponse | null): Language {
+  if (!data || data.crawler || !data.enabled || !data.countryCode) return "en";
+  return data.suggestedLanguage ?? "en";
 }
 
-/** Async geo-based language (background only — GeoLanguageRedirect on `/en`). */
-export async function resolveRootEntryLanguage(): Promise<Language> {
+/** Stored preference or session-cached geo hint — null when the geo API must be fetched. */
+export function resolveRootEntryLanguageSync(): Language | null {
   const stored = getStoredLangPreference();
   if (stored) return stored;
 
+  const cached = readCachedGeoHint();
+  if (!cached || cached.crawler) return null;
+  return languageFromGeoHint(cached);
+}
+
+/** First visit to `/` — stored preference, then geo hint (cache or API), then English. */
+export async function resolveRootEntryLanguage(): Promise<Language> {
+  const immediate = resolveRootEntryLanguageSync();
+  if (immediate != null) return immediate;
+
   const data = await fetchGeoLanguageHint();
-  if (!data || data.crawler || !data.enabled || !data.countryCode) return "en";
-  return data.suggestedLanguage ?? "en";
+  return languageFromGeoHint(data);
 }
 
 /** Geo redirect target when already on a localized path (typically `/en`). */
