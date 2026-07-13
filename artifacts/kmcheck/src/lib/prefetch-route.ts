@@ -58,7 +58,7 @@ export function prefetchRouteFromHref(href: string, options?: { isSignedIn?: boo
 }
 
 export function prefetchCommonRoutes(): void {
-  ["pricing", "how-it-works", "faq"].forEach((r) => prefetchRoute(r));
+  ["pricing", "how-it-works", "faq", "sign-in", "sign-up"].forEach((r) => prefetchRoute(r));
 }
 
 /** Signed-in client area — warm chunks during idle time. */

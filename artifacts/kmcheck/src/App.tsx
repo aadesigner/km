@@ -71,7 +71,7 @@ const Purchases       = lazyWithRetry(() => import("@/pages/purchases"));
 const HowItWorks      = lazyWithRetry(() => import("@/pages/how-it-works"));
 const FAQ             = lazyWithRetry(() => import("@/pages/faq"));
 const Maintenance     = lazyWithRetry(() => import("@/pages/maintenance"));
-const AuthForm        = lazyWithRetry(() => import("@/pages/auth").then((m) => ({ default: m.AuthForm })));
+import { AuthForm } from "@/pages/auth";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -129,9 +129,7 @@ function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" 
       <RouteSEO />
       <Layout>
         <RouteErrorBoundary scope="auth" resetKey={resetKey}>
-          <Suspense fallback={<PageLoader />}>
-            <AuthForm lang={lang} mode={mode} />
-          </Suspense>
+          <AuthForm lang={lang} mode={mode} />
         </RouteErrorBoundary>
       </Layout>
     </I18nProvider>

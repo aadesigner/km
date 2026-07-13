@@ -272,6 +272,8 @@
   "error_boundary_desc": "Diçka e ndërprei këtë faqe. Rifreskoni ose kthehuni në faqen kryesore.",
   "error_boundary_refresh": "Rifresko faqen",
   "error_boundary_home": "Kthehu në faqen kryesore",
+  "error_chunk_title": "Ju lutemi rifreskoni faqen",
+  "error_chunk_desc": "Faqja u përditësua ndërsa keni pasur këtë skedë të hapur. Rifreskoni për të ngarkuar versionin e fundit dhe vazhdoni.",
   "vin_check": "Kontroll VIN",
   "country_usa_label": "SHBA",
   "country_korea_label": "Koreja e Jugut",

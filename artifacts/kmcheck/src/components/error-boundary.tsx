@@ -12,7 +12,7 @@ type Props = {
   fallback?: ReactNode;
 };
 
-type State = { hasError: boolean };
+type State = { hasError: boolean; error?: Error };
 
 function parseLangFromPath(): Language {
   const m = window.location.pathname.match(new RegExp(`/(${LANG_PATH_ALT})(?:/|$)`));
@@ -23,17 +23,20 @@ function tStatic(lang: Language, key: string): string {
   return readDict(lang)?.[key] ?? readDict("en")?.[key] ?? key;
 }
 
-function DefaultFallback({ lang }: { lang: Language }) {
+function DefaultFallback({ lang, error }: { lang: Language; error?: Error }) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const pathname = typeof window !== "undefined" ? window.location.pathname : `${base}/${lang}`;
   const isAdmin = pathname.includes("/adminx");
   const home = isAdmin ? `${base}/adminx` : `${base}/${lang}`;
   const homeLabel = isAdmin ? "Back to admin overview" : tStatic(lang, "error_boundary_home");
+  const staleChunk = error != null && isChunkLoadError(error);
+  const titleKey = staleChunk ? "error_chunk_title" : "error_boundary_title";
+  const descKey = staleChunk ? "error_chunk_desc" : "error_boundary_desc";
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 p-8 text-center">
       <div className="text-4xl" aria-hidden>⚠️</div>
-      <h1 className="text-xl font-bold">{tStatic(lang, "error_boundary_title")}</h1>
-      <p className="text-muted-foreground text-sm max-w-sm">{tStatic(lang, "error_boundary_desc")}</p>
+      <h1 className="text-xl font-bold">{tStatic(lang, titleKey)}</h1>
+      <p className="text-muted-foreground text-sm max-w-sm">{tStatic(lang, descKey)}</p>
       <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
         <button
           type="button"
@@ -59,13 +62,13 @@ export class RouteErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
 
   componentDidUpdate(prevProps: Props): void {
     if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
-      this.setState({ hasError: false });
+      this.setState({ hasError: false, error: undefined });
     }
   }
 
@@ -80,7 +83,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
-      return <DefaultFallback lang={parseLangFromPath()} />;
+      return <DefaultFallback lang={parseLangFromPath()} error={this.state.error} />;
     }
     return this.props.children;
   }

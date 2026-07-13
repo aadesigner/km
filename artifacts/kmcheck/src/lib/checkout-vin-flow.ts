@@ -147,7 +147,6 @@ export function getPostAuthCheckoutPath(language: string): string | null {
   return null;
 }
 
-/** After auth, where to send the user (return path, pending checkout, or dashboard). */
 export function getPostAuthRedirectPath(language: string): string {
   const returnPath = sessionStorage.getItem(AUTH_RETURN_PATH_KEY);
   if (returnPath) {
@@ -155,4 +154,14 @@ export function getPostAuthRedirectPath(language: string): string {
     return returnPath.startsWith("/") ? returnPath : `/${language}${returnPath}`;
   }
   return getPostAuthCheckoutPath(language) ?? `/${language}/dashboard`;
+}
+
+/** Full page load for checkout avoids stale lazy chunks right after sign-up. */
+export function applyPostAuthRedirect(path: string, setLocation: (path: string) => void): void {
+  if (path.includes("/checkout")) {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    window.location.assign(`${base}${path.startsWith("/") ? path : `/${path}`}`);
+    return;
+  }
+  setLocation(path);
 }

@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { translateAuthOAuthError, translateClientError } from "@/lib/translate-client-error";
-import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
+import { getPostAuthRedirectPath, applyPostAuthRedirect } from "@/lib/checkout-vin-flow";
+import { prefetchRoute } from "@/lib/prefetch-route";
 import { PasswordRequirements } from "@/components/password-requirements";
 import {
   readAuthCredentials,
@@ -339,8 +340,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    setLocation(getPostAuthRedirectPath(language));
+    applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);
   }, [isLoaded, isSignedIn, language, setLocation]);
+
+  useEffect(() => {
+    if (mode === "sign-up") prefetchRoute("checkout");
+  }, [mode]);
 
   useEffect(() => {
     if (!isLoaded || isSignedIn || mode !== "sign-up") return;
@@ -434,7 +439,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       } else {
         await register(creds.email, creds.password, creds.name || undefined, recaptchaToken);
       }
-      setLocation(getPostAuthRedirectPath(language));
+      applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);
     } catch (err) {
       const code = err instanceof ApiRequestError ? err.code : undefined;
       const message = err instanceof Error ? err.message : undefined;

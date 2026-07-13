@@ -290,6 +290,8 @@
   "error_boundary_desc": "Something interrupted this page. Refresh or return home to continue.",
   "error_boundary_refresh": "Refresh page",
   "error_boundary_home": "Back to home",
+  "error_chunk_title": "Please refresh this page",
+  "error_chunk_desc": "The site was updated while this tab was open. Refresh to load the latest version and continue.",
   "vin_check": "VIN Check",
   "country_usa_label": "USA",
   "country_korea_label": "South Korea",

@@ -12,7 +12,7 @@ import { SEOHead } from "@/components/seo";
 import { PasswordRequirements } from "@/components/password-requirements";
 import { isPasswordStrongEnough, getPasswordErrorMessage } from "@/lib/password-policy";
 import { translateClientError } from "@/lib/translate-client-error";
-import { getPostAuthRedirectPath } from "@/lib/checkout-vin-flow";
+import { getPostAuthRedirectPath, applyPostAuthRedirect } from "@/lib/checkout-vin-flow";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -36,7 +36,7 @@ export default function SetPasswordPage() {
       return;
     }
     if (user?.hasPassword) {
-      setLocation(getPostAuthRedirectPath(language));
+      applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);
     }
   }, [isLoaded, isSignedIn, user?.hasPassword, language, setLocation]);
 
@@ -66,7 +66,7 @@ export default function SetPasswordPage() {
       }
       await refreshUser();
       setDone(true);
-      setTimeout(() => setLocation(getPostAuthRedirectPath(language)), 2000);
+      setTimeout(() => applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation), 2000);
     } catch {
       setError(t("error_network"));
     } finally {
