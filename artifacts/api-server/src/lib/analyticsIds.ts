@@ -16,6 +16,23 @@ export function normalizeGaMeasurementId(raw: string | null | undefined): string
   return null;
 }
 
+/** Normalize and validate a Microsoft Clarity project ID (e.g. xltusyn0a9). */
+export function normalizeClarityProjectId(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  const id = raw.trim().toLowerCase();
+  if (!id) return null;
+  return /^[a-z0-9]{5,32}$/.test(id) ? id : null;
+}
+
+/** Resolve Clarity project ID from DB settings or Railway/env fallback. */
+export function resolveClarityProjectId(
+  settings: { analyticsClarityProjectId?: string | null } | null | undefined,
+): string | null {
+  const fromDb = normalizeClarityProjectId(settings?.analyticsClarityProjectId);
+  if (fromDb) return fromDb;
+  return normalizeClarityProjectId(process.env.CLARITY_PROJECT_ID);
+}
+
 export function validateAnalyticsSettingsPatch(patch: Record<string, unknown>): string | null {
   if ("analyticsGtmContainerId" in patch) {
     const raw = patch.analyticsGtmContainerId;
@@ -43,12 +60,32 @@ export function validateAnalyticsSettingsPatch(patch: Record<string, unknown>): 
     }
   }
 
+  if ("analyticsClarityProjectId" in patch) {
+    const raw = patch.analyticsClarityProjectId;
+    if (raw == null || raw === "") {
+      patch.analyticsClarityProjectId = null;
+    } else {
+      const normalized = normalizeClarityProjectId(String(raw));
+      if (!normalized) {
+        return "analyticsClarityProjectId must be a valid Clarity project ID (5–32 letters or digits)";
+      }
+      patch.analyticsClarityProjectId = normalized;
+    }
+  }
+
   if (patch.analyticsGtmEnabled === true && patch.analyticsGtmContainerId === null) {
     return "Enable GTM only when a container ID is set";
   }
 
   if (patch.analyticsGaEnabled === true && patch.analyticsGaMeasurementId === null) {
     return "Enable Google Analytics only when a measurement ID is set";
+  }
+
+  if (patch.analyticsClarityEnabled === true && patch.analyticsClarityProjectId === null) {
+    const envId = normalizeClarityProjectId(process.env.CLARITY_PROJECT_ID);
+    if (!envId) {
+      return "Enable Microsoft Clarity only when a project ID is set";
+    }
   }
 
   return null;
@@ -62,6 +99,8 @@ export function validateAnalyticsSettingsMerged(
     analyticsGtmContainerId?: string | null;
     analyticsGaEnabled?: boolean;
     analyticsGaMeasurementId?: string | null;
+    analyticsClarityEnabled?: boolean;
+    analyticsClarityProjectId?: string | null;
   } | null | undefined,
 ): string | null {
   const gtmEnabled = "analyticsGtmEnabled" in patch
@@ -77,11 +116,22 @@ export function validateAnalyticsSettingsMerged(
     ? patch.analyticsGaMeasurementId
     : existing?.analyticsGaMeasurementId;
 
+  const clarityEnabled = "analyticsClarityEnabled" in patch
+    ? patch.analyticsClarityEnabled
+    : existing?.analyticsClarityEnabled;
+  const clarityIdFromPatch = "analyticsClarityProjectId" in patch
+    ? patch.analyticsClarityProjectId
+    : existing?.analyticsClarityProjectId;
+  const clarityId = resolveClarityProjectId({ analyticsClarityProjectId: clarityIdFromPatch as string | null | undefined });
+
   if (gtmEnabled && !gtmId) {
     return "Google Tag Manager requires a container ID (GTM-XXXXXXX)";
   }
   if (gaEnabled && !gaId) {
     return "Google Analytics requires a measurement ID (G-XXXXXXXXXX)";
+  }
+  if (clarityEnabled && !clarityId) {
+    return "Microsoft Clarity requires a project ID";
   }
   return null;
 }

@@ -9,17 +9,22 @@ const GTM_BODY_ATTR = "data-kmcheck-gtm-body";
 const GA_LOADER_ATTR = "data-kmcheck-ga-loader";
 const GA_CONFIG_ATTR = "data-kmcheck-ga-config";
 
+const CLARITY_LOADER_ATTR = "data-kmcheck-clarity";
+
 type AnalyticsPublicSettings = {
   analyticsGtmEnabled?: boolean;
   analyticsGtmContainerId?: string | null;
   analyticsGaEnabled?: boolean;
   analyticsGaMeasurementId?: string | null;
+  analyticsClarityEnabled?: boolean;
+  analyticsClarityProjectId?: string | null;
 };
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    clarity?: (...args: unknown[]) => void;
   }
 }
 
@@ -67,6 +72,15 @@ function injectGa(measurementId: string) {
   }
 }
 
+function injectClarity(projectId: string) {
+  if (document.querySelector(`script[${CLARITY_LOADER_ATTR}]`)) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`;
+  script.setAttribute(CLARITY_LOADER_ATTR, projectId);
+  document.head.appendChild(script);
+}
+
 function trackPageView(path: string, gaId: string | null, gtmEnabled: boolean) {
   if (!isPublicAnalyticsPath(path)) return;
 
@@ -95,14 +109,20 @@ async function fetchAnalyticsSettings(): Promise<AnalyticsPublicSettings> {
     analyticsGtmContainerId: (d.analyticsGtmContainerId as string | null) ?? null,
     analyticsGaEnabled: !!d.analyticsGaEnabled,
     analyticsGaMeasurementId: (d.analyticsGaMeasurementId as string | null) ?? null,
+    analyticsClarityEnabled: !!d.analyticsClarityEnabled,
+    analyticsClarityProjectId: (d.analyticsClarityProjectId as string | null) ?? null,
   };
 }
 
-/** Injects GTM / GA on public + client routes only (never /adminx). */
+/** Injects GTM / GA / Clarity on public + client routes only (never /adminx). */
 export function SiteAnalytics() {
   const [location] = useLocation();
   const injectedRef = useRef(false);
-  const configRef = useRef<{ gtm: string | null; ga: string | null }>({ gtm: null, ga: null });
+  const configRef = useRef<{ gtm: string | null; ga: string | null; clarity: string | null }>({
+    gtm: null,
+    ga: null,
+    clarity: null,
+  });
   const trackable = isPublicAnalyticsPath(location);
 
   const { data: settings } = useQuery({
@@ -117,24 +137,28 @@ export function SiteAnalytics() {
   const gaId = settings?.analyticsGaEnabled && settings.analyticsGaMeasurementId
     ? settings.analyticsGaMeasurementId
     : null;
+  const clarityId = settings?.analyticsClarityEnabled && settings.analyticsClarityProjectId
+    ? settings.analyticsClarityProjectId
+    : null;
 
   useEffect(() => {
     if (!trackable) {
       removeInjectedAnalytics();
       injectedRef.current = false;
-      configRef.current = { gtm: null, ga: null };
+      configRef.current = { gtm: null, ga: null, clarity: null };
       return;
     }
-    if (!gtmId && !gaId) return;
+    if (!gtmId && !gaId && !clarityId) return;
 
     if (gtmId) injectGtm(gtmId);
     if (gaId) injectGa(gaId);
+    if (clarityId) injectClarity(clarityId);
 
-    configRef.current = { gtm: gtmId, ga: gaId };
+    configRef.current = { gtm: gtmId, ga: gaId, clarity: clarityId };
     injectedRef.current = true;
 
     trackPageView(location, gaId, !!gtmId);
-  }, [gtmId, gaId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- inject + first pageview only
+  }, [gtmId, gaId, clarityId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- inject + first pageview only
 
   useEffect(() => {
     if (!trackable || !injectedRef.current) return;

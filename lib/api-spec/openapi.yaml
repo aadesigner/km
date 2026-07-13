@@ -2249,6 +2249,16 @@ components:
         analyticsGaMeasurementId:
           type: string
           nullable: true
+        analyticsClarityEnabled:
+          type: boolean
+        analyticsClarityProjectId:
+          type: string
+          nullable: true
+        analyticsClarityEnabled:
+          type: boolean
+        analyticsClarityProjectId:
+          type: string
+          nullable: true
 
     SystemSettingsUpdate:
       type: object
@@ -2358,5 +2368,10 @@ components:
         analyticsGaEnabled:
           type: boolean
         analyticsGaMeasurementId:
+          type: string
+          nullable: true
+        analyticsClarityEnabled:
+          type: boolean
+        analyticsClarityProjectId:
           type: string
           nullable: true

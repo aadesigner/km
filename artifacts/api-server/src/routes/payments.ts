@@ -17,6 +17,7 @@ import {
 } from "../lib/oauthSettings.js";
 import { normalizeMaintenanceRestrictions } from "../lib/maintenancePolicy.js";
 import { rejectVinLookupIfDisabled } from "../lib/vinLookupGate.js";
+import { resolveClarityProjectId } from "../lib/analyticsIds.js";
 import {
   PAYPAL_ORDER_ID_RE,
   fetchPaypalOrderStatus,
@@ -103,6 +104,8 @@ type PublicSettingsResponse = {
   analyticsGtmContainerId: string | null;
   analyticsGaEnabled: boolean;
   analyticsGaMeasurementId: string | null;
+  analyticsClarityEnabled: boolean;
+  analyticsClarityProjectId: string | null;
   maintenanceMode: boolean;
   maintenanceRestrictions: string[];
   maintenanceMessage: string | null;
@@ -156,6 +159,10 @@ router.get("/payments/public-settings", async (req, res) => {
       analyticsGtmContainerId: settings?.analyticsGtmContainerId?.trim() || null,
       analyticsGaEnabled: !!(settings?.analyticsGaEnabled && settings.analyticsGaMeasurementId?.trim()),
       analyticsGaMeasurementId: settings?.analyticsGaMeasurementId?.trim() || null,
+      analyticsClarityEnabled: !!(
+        settings?.analyticsClarityEnabled && resolveClarityProjectId(settings)
+      ),
+      analyticsClarityProjectId: resolveClarityProjectId(settings),
       maintenanceMode: settings?.maintenanceMode ?? false,
       maintenanceRestrictions: normalizeMaintenanceRestrictions(settings?.maintenanceRestrictions),
       maintenanceMessage: settings?.maintenanceMessage?.trim() || null,

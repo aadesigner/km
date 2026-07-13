@@ -10,7 +10,7 @@ export function isPublicAnalyticsPath(pathname: string): boolean {
   return !ADMIN_PATH_RE.test(normalizePathname(pathname));
 }
 
-/** Remove GTM/GA tags injected by SiteAnalytics (e.g. when leaving the public shell). */
+/** Remove GTM/GA/Clarity tags injected by SiteAnalytics (e.g. when leaving the public shell). */
 export function removeInjectedAnalytics(): void {
   document
     .querySelectorAll(
@@ -18,15 +18,22 @@ export function removeInjectedAnalytics(): void {
         "script[data-kmcheck-gtm-head]",
         "script[data-kmcheck-ga-loader]",
         "script[data-kmcheck-ga-config]",
+        "script[data-kmcheck-clarity]",
         'script[src*="googletagmanager.com"]',
         'script[src*="google-analytics.com"]',
+        'script[src*="clarity.ms"]',
       ].join(", "),
     )
     .forEach((el) => el.remove());
   document.querySelectorAll("noscript[data-kmcheck-gtm-body]").forEach((el) => el.remove());
   document.querySelectorAll('iframe[src*="googletagmanager.com"]').forEach((el) => el.remove());
 
-  const w = window as Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+  const w = window as Window & {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+    clarity?: (...args: unknown[]) => void;
+  };
   delete w.dataLayer;
   delete w.gtag;
+  delete w.clarity;
 }

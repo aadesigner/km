@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { normalizeGtmContainerId, normalizeGaMeasurementId, validateAnalyticsSettingsPatch } from "./analyticsIds.js";
+import {
+  normalizeGtmContainerId,
+  normalizeGaMeasurementId,
+  normalizeClarityProjectId,
+  resolveClarityProjectId,
+  validateAnalyticsSettingsPatch,
+  validateAnalyticsSettingsMerged,
+} from "./analyticsIds.js";
 
 describe("normalizeGtmContainerId", () => {
   it("accepts valid GTM IDs", () => {
@@ -24,6 +31,34 @@ describe("normalizeGaMeasurementId", () => {
   });
 });
 
+describe("normalizeClarityProjectId", () => {
+  it("accepts valid Clarity project IDs", () => {
+    expect(normalizeClarityProjectId("xltusyn0a9")).toBe("xltusyn0a9");
+    expect(normalizeClarityProjectId(" XLTUSYN0A9 ")).toBe("xltusyn0a9");
+  });
+
+  it("rejects invalid IDs", () => {
+    expect(normalizeClarityProjectId("ab")).toBeNull();
+    expect(normalizeClarityProjectId("bad-id!")).toBeNull();
+  });
+});
+
+describe("resolveClarityProjectId", () => {
+  it("prefers DB value over env", () => {
+    const prev = process.env.CLARITY_PROJECT_ID;
+    process.env.CLARITY_PROJECT_ID = "envonly12";
+    expect(resolveClarityProjectId({ analyticsClarityProjectId: "dbvalue01" })).toBe("dbvalue01");
+    process.env.CLARITY_PROJECT_ID = prev;
+  });
+
+  it("falls back to env when DB is empty", () => {
+    const prev = process.env.CLARITY_PROJECT_ID;
+    process.env.CLARITY_PROJECT_ID = "envonly12";
+    expect(resolveClarityProjectId({ analyticsClarityProjectId: null })).toBe("envonly12");
+    process.env.CLARITY_PROJECT_ID = prev;
+  });
+});
+
 describe("validateAnalyticsSettingsPatch", () => {
   it("requires container ID when GTM is enabled", () => {
     const patch = { analyticsGtmEnabled: true, analyticsGtmContainerId: null };
@@ -34,5 +69,25 @@ describe("validateAnalyticsSettingsPatch", () => {
     const patch = { analyticsGtmContainerId: "gtm-abc123" };
     expect(validateAnalyticsSettingsPatch(patch)).toBeNull();
     expect(patch.analyticsGtmContainerId).toBe("GTM-ABC123");
+  });
+
+  it("normalizes Clarity project ID in patch", () => {
+    const patch = { analyticsClarityProjectId: " XLTUSYN0A9 " };
+    expect(validateAnalyticsSettingsPatch(patch)).toBeNull();
+    expect(patch.analyticsClarityProjectId).toBe("xltusyn0a9");
+  });
+});
+
+describe("validateAnalyticsSettingsMerged", () => {
+  it("allows Clarity enabled with env-only project ID", () => {
+    const prev = process.env.CLARITY_PROJECT_ID;
+    process.env.CLARITY_PROJECT_ID = "envonly12";
+    expect(
+      validateAnalyticsSettingsMerged(
+        { analyticsClarityEnabled: true, analyticsClarityProjectId: null },
+        null,
+      ),
+    ).toBeNull();
+    process.env.CLARITY_PROJECT_ID = prev;
   });
 });

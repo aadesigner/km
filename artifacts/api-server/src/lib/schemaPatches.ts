@@ -10,6 +10,8 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS analytics_gtm_container_id text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS analytics_ga_enabled boolean NOT NULL DEFAULT false`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS analytics_ga_measurement_id text`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS analytics_clarity_enabled boolean NOT NULL DEFAULT false`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS analytics_clarity_project_id text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS log_retention_days integer NOT NULL DEFAULT 4`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS failed_txn_retention_days integer NOT NULL DEFAULT 0`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS maintenance_restrictions jsonb NOT NULL DEFAULT '[]'::jsonb`,

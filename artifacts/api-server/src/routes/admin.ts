@@ -1367,6 +1367,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     analyticsGtmContainerId: string | null;
     analyticsGaEnabled: boolean;
     analyticsGaMeasurementId: string | null;
+    analyticsClarityEnabled: boolean;
+    analyticsClarityProjectId: string | null;
   }>;
 
   const patch: Record<string, unknown> = { ...updates, updatedAt: new Date() };
