@@ -108,6 +108,15 @@ export function markCheckoutPrefillOnly(): void {
   sessionStorage.setItem(CHECKOUT_PREFILL_ONLY_KEY, "1");
 }
 
+export function buildPrefillOnlyCheckoutPath(vin: string, language: string): string | null {
+  const normalized = normalizeCheckoutVin(vin);
+  if (!VIN_FORMAT_RE.test(normalized)) return null;
+  sessionStorage.setItem(CHECKOUT_VIN_KEY, normalized);
+  clearCheckoutPaymentResumeState();
+  markCheckoutPrefillOnly();
+  return `/${language}/checkout?vin=${encodeURIComponent(normalized)}`;
+}
+
 /** True once after post-auth checkout redirect; clears the flag when read. */
 export function consumeCheckoutPrefillOnly(): boolean {
   if (typeof sessionStorage === "undefined") return false;

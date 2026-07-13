@@ -36,6 +36,7 @@ import { fadeUp } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import {
+  buildPrefillOnlyCheckoutPath,
   clearStoredPendingVin,
   isEligiblePendingVin,
   readStoredPendingVin,
@@ -289,6 +290,11 @@ export default function Dashboard() {
   const checksThisMonth = stats?.checksThisMonth ?? 0;
   const isViewableReport = (status: string) => status === "complete" || status === "pending_manual";
   const completed = lookups.filter(l => l.status === "complete" || l.status === "pending_manual").length;
+  const handlePendingVinCheckout = () => {
+    if (!pendingVin) return;
+    const target = buildPrefillOnlyCheckoutPath(pendingVin, language);
+    if (target) setLocation(target);
+  };
 
   const pendingBanner = showPendingBanner && pendingVin ? (
     <div className="bg-muted/40 dark:bg-muted/20 border-b border-border px-4 py-3">
@@ -300,11 +306,9 @@ export default function Dashboard() {
             <strong className="font-mono tracking-wider">{pendingVin}</strong>
           </span>
         </div>
-        <Button size="sm" className="h-8 shrink-0 rounded-full gap-1.5" asChild>
-          <Link href={`/${language}/checkout?vin=${encodeURIComponent(pendingVin)}`}>
-            <Zap className="h-3.5 w-3.5" />
-            {t("complete_purchase")}
-          </Link>
+        <Button size="sm" className="h-8 shrink-0 rounded-full gap-1.5" onClick={handlePendingVinCheckout}>
+          <Zap className="h-3.5 w-3.5" />
+          {t("complete_purchase")}
         </Button>
       </div>
     </div>
