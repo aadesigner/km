@@ -61,7 +61,7 @@ function assertActiveUser(user: AuthUser | undefined): asserts user is AuthUser 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<AuthUser | null>(() => readAuthCache());
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   // Clear client data on logout or account switch — not on fresh login (null → user),

@@ -68,7 +68,12 @@ export async function fetchGeoLanguageHint(): Promise<GeoLanguageResponse | null
   }
 }
 
-/** First visit to `/` — stored preference, then geo hint, then English. */
+/** First paint language for `/` and unprefixed paths — no geo API wait. */
+export function resolveRootEntryLanguageSync(): Language {
+  return getStoredLangPreference() ?? "en";
+}
+
+/** Async geo-based language (background only — GeoLanguageRedirect on `/en`). */
 export async function resolveRootEntryLanguage(): Promise<Language> {
   const stored = getStoredLangPreference();
   if (stored) return stored;

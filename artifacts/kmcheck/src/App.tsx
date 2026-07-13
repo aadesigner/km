@@ -19,21 +19,21 @@ import { RouteErrorBoundary } from "@/components/error-boundary";
 import { MaintenanceGuard } from "@/components/maintenance-guard";
 import { GeoLanguageRedirect } from "@/components/geo-language-redirect";
 import { VinAccessGate } from "@/components/vin-access-gate";
-import { ensureDict } from "@/i18n/context";
+import { RouteShellFallback } from "@/components/route-shell-fallback";
 import {
   pathNeedingLangPrefix,
   buildLocalizedPath,
   markGeoLanguageEvaluated,
   getStoredLangPreference,
 } from "@/lib/lang-preference";
-import { resolveRootEntryLanguage } from "@/lib/geo-language-client";
+import { resolveRootEntryLanguageSync } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
+import Home from "@/pages/home";
 import AdminNotFound from "@/pages/admin/not-found";
 // Lazy-loaded
-const Home            = lazyWithRetry(() => import("@/pages/home"));
 const AdminLayout     = lazyWithRetry(() =>
   import("@/pages/admin/layout").then((m) => ({ default: m.AdminLayout })),
 );
@@ -86,11 +86,7 @@ function ScrollToTop() {
 }
 
 function PageLoader() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-    </div>
-  );
+  return <RouteShellFallback />;
 }
 
 function withLang(
@@ -199,8 +195,8 @@ function VinLookupRoute(props: { params: { lang: string; id: string } }) {
     }
   }, [isLoaded, isSignedIn, setLocation, props.params.lang]);
 
-  if (!isLoaded) return <PageLoader />;
-  if (!isSignedIn) return <PageLoader />;
+  if (!isLoaded) return null;
+  if (!isSignedIn) return null;
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -225,7 +221,7 @@ function VinRouteByAuth(props: { params: { lang: string; id: string } }) {
     stripLegacyShareParam();
   }, [vin]);
 
-  if (!isLoaded) return <PageLoader />;
+  if (!isLoaded) return null;
 
   // Guests: public locked preview. Signed-in: ownership gate (purchase required per account).
   if (!isSignedIn) {
@@ -313,27 +309,15 @@ function RootLangRedirect() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    let cancelled = false;
     const search = typeof window !== "undefined" ? window.location.search : "";
     const hash = typeof window !== "undefined" ? window.location.hash : "";
-
-    void resolveRootEntryLanguage().then(async (lang) => {
-      if (cancelled) return;
-      markGeoLanguageEvaluated();
-      try {
-        await ensureDict(lang);
-      } catch {
-        // Navigate anyway — English fallback strings apply if locale bundle failed.
-      }
-      setLocation(`/${lang}${search}${hash}`, { replace: true });
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    const stored = getStoredLangPreference();
+    const lang = resolveRootEntryLanguageSync();
+    if (stored) markGeoLanguageEvaluated();
+    setLocation(`/${lang}${search}${hash}`, { replace: true });
   }, [setLocation]);
 
-  return <PageLoader />;
+  return null;
 }
 
 function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
@@ -343,27 +327,15 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
     const rest = pathNeedingLangPrefix(pathname);
     if (rest === null) return;
 
-    let cancelled = false;
     const search = typeof window !== "undefined" ? window.location.search : "";
     const hash = typeof window !== "undefined" ? window.location.hash : "";
-
-    void resolveRootEntryLanguage().then(async (lang) => {
-      if (cancelled) return;
-      markGeoLanguageEvaluated();
-      try {
-        await ensureDict(lang);
-      } catch {
-        // Navigate anyway — English fallback strings apply if locale bundle failed.
-      }
-      setLocation(`${buildLocalizedPath(lang, rest)}${search}${hash}`, { replace: true });
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    const stored = getStoredLangPreference();
+    const lang = resolveRootEntryLanguageSync();
+    if (stored) markGeoLanguageEvaluated();
+    setLocation(`${buildLocalizedPath(lang, rest)}${search}${hash}`, { replace: true });
   }, [pathname, setLocation]);
 
-  return <PageLoader />;
+  return null;
 }
 
 function parseRouteLang(lang: string): Language {

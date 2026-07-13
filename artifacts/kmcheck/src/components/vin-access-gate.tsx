@@ -6,6 +6,7 @@ import { createVinReportFetchError } from "@/lib/api-error";
 import { VinReportErrorView, resolveVinReportErrorKind } from "@/components/vin-report-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
+import { RouteShellFallback } from "@/components/route-shell-fallback";
 
 const VinResult = lazyWithRetry(() => import("@/pages/vin-result"));
 const VinPublic = lazyWithRetry(() => import("@/pages/vin-public"));
@@ -13,11 +14,7 @@ const VinPublic = lazyWithRetry(() => import("@/pages/vin-public"));
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function PageLoader() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-    </div>
-  );
+  return <RouteShellFallback />;
 }
 
 type VinAccessGateProps = {
