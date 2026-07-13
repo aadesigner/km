@@ -118,13 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const cached = readAuthCache();
-    if (cached) {
-      setIsLoaded(true);
-      void refreshUser();
-      return;
-    }
-    void refreshUser().finally(() => setIsLoaded(true));
+    // Never block first paint on /api/auth/me — cached user is already in state; guests render immediately.
+    setIsLoaded(true);
+    void refreshUser();
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string, recaptchaToken?: string) => {
