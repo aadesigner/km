@@ -1,4 +1,4 @@
-/* Inter is loaded from index.html (non-blocking). Do not @import fonts here — doubles network cost. */
+/* Inter is self-hosted via @fontsource-variable/inter in main.tsx (font-display: swap). */
 
 /* Safari/iOS password autofill does not fire React onChange — detect via animation. */
 @keyframes native-autofill-start {
@@ -515,7 +515,7 @@
 }
 
 :root {
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Inter Variable', 'Inter', sans-serif;
   --background: 0 0% 98%;
   --foreground: 220 13% 9%;
   --border: 220 13% 90%;

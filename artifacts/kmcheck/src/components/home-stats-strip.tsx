@@ -27,12 +27,10 @@ export function HomeStatsStrip({ className, desktopAlign = "center" }: Props) {
             <li key={stat.id} className="flex items-center">
               <CountryFlagTooltip
                 nameKey={stat.nameKey}
-                className="min-w-[3.25rem] flex-col gap-1 rounded-2xl border border-border/60 bg-muted/40 px-2 py-1.5 sm:min-w-0 sm:flex-row sm:gap-0 sm:rounded-full sm:p-1.5 dark:border-white/10 dark:bg-white/5"
+                className="rounded-full border border-border/60 bg-muted/40 p-1.5 dark:border-white/10 dark:bg-white/5"
               >
                 <FlagImg code={stat.flag} variant="list" className="home-stats-flag" />
-                <span className="text-[10px] font-medium leading-none text-muted-foreground sm:sr-only">
-                  {stat.label}
-                </span>
+                <span className="sr-only">{stat.label}</span>
               </CountryFlagTooltip>
             </li>
           ))}

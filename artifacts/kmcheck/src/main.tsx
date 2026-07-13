@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { setCredentials, setClientGuardToken } from "@workspace/api-client-react";
+import "@fontsource-variable/inter/wght.css";
 import App from "./App";
 import "./index.css";
 import { installFetchGuard } from "./lib/install-fetch-guard";

@@ -31,11 +31,13 @@ import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
-import Home from "@/pages/home";
-import { AdminLayout } from "@/pages/admin/layout";
 import AdminNotFound from "@/pages/admin/not-found";
-import AdminOverview from "@/pages/admin/index";
 // Lazy-loaded
+const Home            = lazyWithRetry(() => import("@/pages/home"));
+const AdminLayout     = lazyWithRetry(() =>
+  import("@/pages/admin/layout").then((m) => ({ default: m.AdminLayout })),
+);
+const AdminOverview   = lazyWithRetry(() => import("@/pages/admin/index"));
 const Pricing       = lazyWithRetry(() => import("@/pages/pricing"));
 const Dashboard     = lazyWithRetry(() => import("@/pages/dashboard"));
 const VinResult     = lazyWithRetry(() => import("@/pages/vin-result"));
@@ -268,7 +270,9 @@ function AdminPage({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider initialLanguage={adminLang}>
       <RouteErrorBoundary scope="admin" resetKey={resetKey}>
-        <AdminLayout>{children}</AdminLayout>
+        <Suspense fallback={<PageLoader />}>
+          <AdminLayout>{children}</AdminLayout>
+        </Suspense>
       </RouteErrorBoundary>
     </I18nProvider>
   );
@@ -429,7 +433,7 @@ function AdminRouteOutlet() {
   switch (match.id) {
     case "overview":
       return (
-        <AdminRouteShell>
+        <AdminRouteShell lazy>
           <AdminOverview />
         </AdminRouteShell>
       );
@@ -549,7 +553,7 @@ function AdminRouteOutlet() {
       );
     default:
       return (
-        <AdminRouteShell>
+        <AdminRouteShell lazy>
           <AdminOverview />
         </AdminRouteShell>
       );
