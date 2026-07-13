@@ -8,6 +8,10 @@ import {
   consumeCheckoutPrefillOnly,
   getPostAuthCheckoutPath,
   markCheckoutPrefillOnly,
+  markPaypalCheckoutAwaitingApproval,
+  markPaypalCheckoutCapturePending,
+  readPaypalCheckoutSession,
+  shouldResumePaypalCapture,
 } from "./checkout-vin-flow";
 
 describe("getPostAuthCheckoutPath", () => {
@@ -54,5 +58,32 @@ describe("checkout prefill helpers", () => {
     sessionStorage.setItem(PAYPAL_CHECKOUT_SESSION_KEY, "{}");
     clearCheckoutPaymentResumeState();
     expect(sessionStorage.getItem(PAYPAL_CHECKOUT_SESSION_KEY)).toBeNull();
+  });
+
+  it("tracks PayPal session phase for resume", () => {
+    markPaypalCheckoutAwaitingApproval("abc12345", "1HGBH41JXMN109186");
+    expect(readPaypalCheckoutSession()).toEqual({
+      orderId: "ABC12345",
+      vin: "1HGBH41JXMN109186",
+      phase: "approval",
+    });
+    markPaypalCheckoutCapturePending("abc12345", "1HGBH41JXMN109186");
+    expect(readPaypalCheckoutSession()?.phase).toBe("capture");
+    expect(shouldResumePaypalCapture(readPaypalCheckoutSession()!)).toBe(true);
+  });
+
+  it("legacy PayPal sessions without phase restore approval UI, not capture", () => {
+    sessionStorage.setItem(
+      PAYPAL_CHECKOUT_SESSION_KEY,
+      JSON.stringify({ orderId: "ABC12345", vin: "1HGBH41JXMN109186" }),
+    );
+    const session = readPaypalCheckoutSession();
+    expect(session?.phase).toBeUndefined();
+    expect(shouldResumePaypalCapture(session!)).toBe(false);
+  });
+
+  it("rejects invalid PayPal session payloads", () => {
+    sessionStorage.setItem(PAYPAL_CHECKOUT_SESSION_KEY, JSON.stringify({ orderId: "x", vin: "short" }));
+    expect(readPaypalCheckoutSession()).toBeNull();
   });
 });

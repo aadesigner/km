@@ -6,6 +6,64 @@ export const PAYPAL_CHECKOUT_SESSION_KEY = "kmcheck_paypal_checkout";
 /** Set when redirecting to checkout after auth — checkout must prefill VIN only, not auto-start payment. */
 export const CHECKOUT_PREFILL_ONLY_KEY = "checkout_prefill_only";
 
+export type PaypalCheckoutSessionPhase = "approval" | "capture";
+
+export type PaypalCheckoutSession = {
+  orderId: string;
+  vin: string;
+  /** `approval` = order created, user has not finished PayPal yet; `capture` = approved, capture may be retried. */
+  phase?: PaypalCheckoutSessionPhase;
+};
+
+const PAYPAL_ORDER_ID_RE = /^[A-Z0-9]{8,20}$/;
+
+export function readPaypalCheckoutSession(): PaypalCheckoutSession | null {
+  if (typeof sessionStorage === "undefined") return null;
+  let raw: string | null;
+  try {
+    raw = sessionStorage.getItem(PAYPAL_CHECKOUT_SESSION_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { orderId?: string; vin?: string; phase?: string };
+    const orderId = parsed.orderId?.toUpperCase() ?? "";
+    const vin = normalizeCheckoutVin(parsed.vin ?? "");
+    if (!PAYPAL_ORDER_ID_RE.test(orderId) || !VIN_FORMAT_RE.test(vin)) return null;
+    const phase =
+      parsed.phase === "capture" ? "capture" : parsed.phase === "approval" ? "approval" : undefined;
+    return { orderId, vin, phase };
+  } catch {
+    return null;
+  }
+}
+
+export function writePaypalCheckoutSession(session: PaypalCheckoutSession): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.setItem(
+    PAYPAL_CHECKOUT_SESSION_KEY,
+    JSON.stringify({
+      orderId: session.orderId.toUpperCase(),
+      vin: normalizeCheckoutVin(session.vin),
+      phase: session.phase,
+    }),
+  );
+}
+
+export function markPaypalCheckoutAwaitingApproval(orderId: string, vin: string): void {
+  writePaypalCheckoutSession({ orderId, vin, phase: "approval" });
+}
+
+export function markPaypalCheckoutCapturePending(orderId: string, vin: string): void {
+  writePaypalCheckoutSession({ orderId, vin, phase: "capture" });
+}
+
+/** True when refresh should retry capture (user approved in PayPal). */
+export function shouldResumePaypalCapture(session: PaypalCheckoutSession): boolean {
+  return session.phase === "capture";
+}
+
 export const VIN_FORMAT_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
 
 export type PendingVinPeek = {

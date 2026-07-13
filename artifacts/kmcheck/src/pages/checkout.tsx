@@ -30,11 +30,14 @@ import { isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import {
   CHECKOUT_VIN_KEY,
   PENDING_VIN_KEY,
-  PAYPAL_CHECKOUT_SESSION_KEY,
   clearCheckoutPaymentResumeState,
   consumeCheckoutPrefillOnly,
+  markPaypalCheckoutAwaitingApproval,
+  markPaypalCheckoutCapturePending,
   normalizeCheckoutVin,
   guestVinAuthPath,
+  readPaypalCheckoutSession,
+  shouldResumePaypalCapture,
 } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
@@ -210,6 +213,12 @@ export default function Checkout({ params }: Props) {
   const checkoutActiveRef = useRef(true);
   const hostedFieldsRef = useRef<PaypalHostedFieldsInstance | null>(null);
   const hostedFieldsCreateOrderRef = useRef<(() => Promise<string>) | null>(null);
+  const mountPaypalButtonsRef = useRef<(nvin: string, orderId: string) => Promise<boolean>>(async () => false);
+  const submitVinLookupRef = useRef<
+    (nvin: string, paypalOrderId?: string, paymentId?: number, attempt?: number) => Promise<boolean>
+  >(async () => false);
+  const finalizePaidCheckoutRef = useRef<(orderId: string, nvin: string) => Promise<void>>(async () => {});
+  const paypalReturnHandledRef = useRef(false);
   /** Blocks PayPal resume / delivery retry until user explicitly starts payment (post-auth landing). */
   const postAuthPrefillLandingRef = useRef(false);
 
@@ -250,6 +259,7 @@ export default function Checkout({ params }: Props) {
   const peekForVin = peekMatchesVin(peek, normalizedVin) ? peek : undefined;
   const peekStale = !!peek && !peekMatchesVin(peek, normalizedVin);
   const peekLoadingUi = peekLoading || (vinIsValid && !!isSignedIn && peekStale);
+  const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
 
   const {
     displayPrice: salePrice,
@@ -306,16 +316,20 @@ export default function Checkout({ params }: Props) {
 
   // Reset payment state whenever the VIN changes — prevents stale "no data" / error UI bleeding across VINs
   useEffect(() => {
+    setPaymentStarted(false);
     setStatus("idle");
     setErrorMsg("");
     pendingPaypalOrderRef.current = null;
     paypalFlowPhaseRef.current = "idle";
     paidDeliveryRetryRef.current = false;
     paypalResumeAttemptedRef.current = false;
+    paypalReturnHandledRef.current = false;
     checkoutRedirectedRef.current = null;
     freeCouponPaymentIdRef.current = null;
+    clearCheckoutPaymentResumeState();
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
+    if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
   }, [normalizedVin]);
 
   // Surface invalid-character error as soon as the user reaches 17 chars
@@ -522,14 +536,14 @@ export default function Checkout({ params }: Props) {
     setStatus("success");
     paypalFlowPhaseRef.current = "done";
     freeCouponPaymentIdRef.current = null;
-    sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+    clearCheckoutPaymentResumeState();
     goToVinReport(reportVin, lookupId, { refreshClientArea: true });
   };
 
   const redirectToFulfillingReport = (reportVin: string, lookupId?: number) => {
     setStatus("success");
     paypalFlowPhaseRef.current = "fulfilling";
-    sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+    clearCheckoutPaymentResumeState();
     goToVinReport(reportVin, lookupId, { refreshClientArea: false });
   };
 
@@ -611,6 +625,7 @@ export default function Checkout({ params }: Props) {
 
   const handleUnlockVinForEdit = () => {
     setPaymentStarted(false);
+    clearCheckoutPaymentResumeState();
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
     if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
@@ -675,9 +690,14 @@ export default function Checkout({ params }: Props) {
     setCouponResult(null);
     setCouponCode("");
     setCouponError("");
+    setPaymentStarted(false);
+    setStatus("idle");
+    setErrorMsg("");
     pendingPaypalOrderRef.current = null;
+    clearCheckoutPaymentResumeState();
     paypalInstanceRef.current?.close();
     paypalInstanceRef.current = null;
+    if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
   };
 
   const createOrder = async (nvin: string): Promise<string | null> => {
@@ -821,11 +841,15 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  const finalizePaidCheckout = async (orderId: string, nvin: string) => {
+  submitVinLookupRef.current = submitVinLookup;
+
+  const finalizePaidCheckout = useCallback(async (orderId: string, nvin: string) => {
     if (paypalFlowPhaseRef.current === "approving" || paypalFlowPhaseRef.current === "fulfilling" || paypalFlowPhaseRef.current === "done") {
       return;
     }
+    if (!checkoutActiveRef.current) return;
     paypalFlowPhaseRef.current = "approving";
+    setPaymentStarted(true);
     setStatus("paying");
     setErrorMsg("");
     try {
@@ -835,9 +859,20 @@ export default function Checkout({ params }: Props) {
         credentials: "include",
         body: JSON.stringify({ orderId }),
       });
+      if (!checkoutActiveRef.current) return;
       const result = await resp.json() as { success?: boolean; error?: string; code?: string; vin?: string; paymentId?: number };
       if (!resp.ok || !result.success) {
+        if (result.code === "PAYMENT_NOT_COMPLETED") {
+          markPaypalCheckoutAwaitingApproval(orderId, nvin);
+          paypalFlowPhaseRef.current = "idle";
+          setStatus("idle");
+          setErrorMsg("");
+          await mountPaypalButtonsRef.current(nvin, orderId);
+          return;
+        }
         if (resp.status === 404 || result.code === "PAYMENT_NOT_FOUND") {
+          clearCheckoutPaymentResumeState();
+          setPaymentStarted(false);
           setErrorMsg(t("checkout_error_payment_create"));
         } else {
           setErrorMsg(translateClientError(t, result.code, result.error));
@@ -847,16 +882,118 @@ export default function Checkout({ params }: Props) {
         return;
       }
       paypalFlowPhaseRef.current = "fulfilling";
-      const delivered = await submitVinLookup(result.vin ?? nvin, orderId, result.paymentId);
+      const delivered = await submitVinLookupRef.current(result.vin ?? nvin, orderId, result.paymentId);
       if (!delivered) {
         paypalFlowPhaseRef.current = "idle";
       }
     } catch {
+      if (!checkoutActiveRef.current) return;
       setErrorMsg(t("checkout_error_capture"));
       setStatus("error");
       paypalFlowPhaseRef.current = "idle";
     }
-  };
+  }, [t]);
+
+  const mountPaypalButtons = useCallback(async (nvin: string, orderId: string): Promise<boolean> => {
+    if (!checkoutActiveRef.current) return false;
+    if (!pubSettings?.paypalClientId) {
+      setErrorMsg(t("checkout_payment_not_configured"));
+      setStatus("error");
+      setPaymentStarted(false);
+      return false;
+    }
+    let attempts = 0;
+    while (!window.paypal && attempts < 30) {
+      if (!checkoutActiveRef.current) return false;
+      await new Promise((r) => setTimeout(r, 200));
+      attempts++;
+    }
+    if (!window.paypal) {
+      setErrorMsg(t("checkout_error_paypal_load"));
+      setStatus("error");
+      setPaymentStarted(false);
+      return false;
+    }
+    if (!paypalContainerRef.current) {
+      return false;
+    }
+
+    setPaymentStarted(true);
+    setStatus("idle");
+    setErrorMsg("");
+    paypalFlowPhaseRef.current = "idle";
+    paypalInstanceRef.current?.close();
+    paypalInstanceRef.current = null;
+    pendingPaypalOrderRef.current = orderId;
+
+    const buttons = window.paypal.Buttons({
+      style: {
+        layout: "vertical",
+        color: resolvedTheme === "dark" ? "white" : "blue",
+        shape: "rect",
+        label: "pay",
+        height: 48,
+      },
+      createOrder: () => {
+        const id = pendingPaypalOrderRef.current;
+        if (!id) throw new Error("Order not ready");
+        return id;
+      },
+      onApprove: async (data: { orderID: string }) => {
+        markPaypalCheckoutCapturePending(data.orderID, nvin);
+        pendingPaypalOrderRef.current = null;
+        await finalizePaidCheckoutRef.current(data.orderID, nvin);
+      },
+      onError: (err: unknown) => {
+        console.error("PayPal error", err);
+        pendingPaypalOrderRef.current = null;
+        if (paypalFlowPhaseRef.current !== "idle") {
+          return;
+        }
+        if (isPaypalUserAbort(err)) {
+          setStatus("idle");
+          setPaymentStarted(false);
+          clearCheckoutPaymentResumeState();
+          paypalInstanceRef.current?.close();
+          paypalInstanceRef.current = null;
+          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+          return;
+        }
+        setErrorMsg(t("checkout_error_payment_failed"));
+        setStatus("error");
+      },
+      onCancel: () => {
+        pendingPaypalOrderRef.current = null;
+        if (paypalFlowPhaseRef.current !== "idle") {
+          return;
+        }
+        setStatus("idle");
+        setPaymentStarted(false);
+        clearCheckoutPaymentResumeState();
+        paypalInstanceRef.current?.close();
+        paypalInstanceRef.current = null;
+        if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+      },
+    });
+    paypalInstanceRef.current = buttons;
+    try {
+      paypalContainerRef.current.innerHTML = "";
+      await buttons.render(paypalContainerRef.current);
+      return true;
+    } catch (err) {
+      console.error("PayPal render error", err);
+      pendingPaypalOrderRef.current = null;
+      setPaymentStarted(false);
+      setErrorMsg(t("checkout_error_paypal_load"));
+      setStatus("error");
+      return false;
+    }
+  }, [pubSettings?.paypalClientId, resolvedTheme, t]);
+
+  useLayoutEffect(() => {
+    mountPaypalButtonsRef.current = mountPaypalButtons;
+    finalizePaidCheckoutRef.current = finalizePaidCheckout;
+  }, [mountPaypalButtons, finalizePaidCheckout]);
 
   // Paid or free-coupon delivery still in flight — retry lookup without charging again.
   useEffect(() => {
@@ -890,40 +1027,40 @@ export default function Checkout({ params }: Props) {
     status,
   ]);
 
-  // Resume PayPal capture when session has a pending order but return URL lost ?token=.
+  // Resume PayPal after refresh: re-show buttons if still awaiting approval, or retry capture if approved.
   useEffect(() => {
     if (postAuthPrefillLandingRef.current) return;
     if (!isLoaded || !isSignedIn || !vinIsValid || peekLoadingUi) return;
+    if (!pubSettings?.paypalClientId || pubSettingsLoading) return;
     if (paypalResumeAttemptedRef.current) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("token")) return;
 
-    let raw: string | null = null;
-    try {
-      raw = sessionStorage.getItem(PAYPAL_CHECKOUT_SESSION_KEY);
-    } catch {
-      return;
-    }
-    if (!raw) return;
-
-    let parsed: { orderId?: string; vin?: string };
-    try {
-      parsed = JSON.parse(raw) as { orderId?: string; vin?: string };
-    } catch {
-      return;
-    }
-
-    const orderId = parsed.orderId?.toUpperCase() ?? "";
-    const sessionVin = parsed.vin?.toUpperCase() ?? "";
-    if (!/^[A-Z0-9]{8,20}$/.test(orderId)) return;
-    if (sessionVin !== normalizedVin) return;
+    const session = readPaypalCheckoutSession();
+    if (!session) return;
+    if (session.vin !== normalizedVin) return;
     if (peekForVin?.alreadyUnlocked && peekForVin.lookupId) return;
 
+    const captureResume = shouldResumePaypalCapture(session);
+    const peekPayable =
+      !vinLookupDisabled
+      && peekForVin?.dataAvailable === true
+      && !peekForVin?.checkUnavailable
+      && !(peekForVin?.vehicleTooOld === true || isVehicleTooOldForLookup(peekForVin?.year));
+    if (!captureResume && !peekPayable) return;
+
     paypalResumeAttemptedRef.current = true;
-    pendingPaypalOrderRef.current = orderId;
-    setPaymentStarted(true);
-    void finalizePaidCheckout(orderId, normalizedVin);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot session resume
+    pendingPaypalOrderRef.current = session.orderId;
+
+    if (captureResume) {
+      setPaymentStarted(true);
+      void finalizePaidCheckout(session.orderId, normalizedVin);
+      return;
+    }
+
+    void mountPaypalButtons(normalizedVin, session.orderId).then((mounted) => {
+      if (!mounted) paypalResumeAttemptedRef.current = false;
+    });
   }, [
     isLoaded,
     isSignedIn,
@@ -932,14 +1069,27 @@ export default function Checkout({ params }: Props) {
     normalizedVin,
     peekForVin?.alreadyUnlocked,
     peekForVin?.lookupId,
+    peekForVin?.dataAvailable,
+    peekForVin?.checkUnavailable,
+    peekForVin?.vehicleTooOld,
+    peekForVin?.year,
+    pubSettings?.paypalClientId,
+    pubSettingsLoading,
+    vinLookupDisabled,
+    finalizePaidCheckout,
+    mountPaypalButtons,
   ]);
 
   // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
   useEffect(() => {
     if (!isSignedIn || !vinIsValid) return;
+    if (paypalReturnHandledRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token")?.toUpperCase() ?? "";
     if (!/^[A-Z0-9]{8,20}$/.test(token)) return;
+
+    paypalReturnHandledRef.current = true;
+    paypalResumeAttemptedRef.current = true;
 
     const clean = new URL(window.location.href);
     clean.searchParams.delete("token");
@@ -947,9 +1097,9 @@ export default function Checkout({ params }: Props) {
     window.history.replaceState({}, "", clean.pathname + clean.search);
 
     setPaymentStarted(true);
+    markPaypalCheckoutCapturePending(token, normalizedVin);
     void finalizePaidCheckout(token, normalizedVin);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot PayPal return handler
-  }, [isSignedIn, vinIsValid, normalizedVin]);
+  }, [isSignedIn, vinIsValid, normalizedVin, finalizePaidCheckout]);
 
   const handleProceedToPayment = async () => {
     postAuthPrefillLandingRef.current = false;
@@ -957,82 +1107,14 @@ export default function Checkout({ params }: Props) {
     if (!nvin) return;
     if (couponResult?.isFree) { await createOrder(nvin); return; }
     if (!pubSettings?.paypalClientId) { setErrorMsg(t("checkout_payment_not_configured")); setStatus("error"); return; }
-    let attempts = 0;
-    while (!window.paypal && attempts < 30) { await new Promise(r => setTimeout(r, 200)); attempts++; }
-    if (!window.paypal) { setErrorMsg(t("checkout_error_paypal_load")); setStatus("error"); return; }
-    setPaymentStarted(true);
-    paypalInstanceRef.current?.close();
-    paypalInstanceRef.current = null;
-    pendingPaypalOrderRef.current = null;
 
     const orderId = await createOrder(nvin);
     if (!orderId) {
       setPaymentStarted(false);
       return;
     }
-    pendingPaypalOrderRef.current = orderId;
-    sessionStorage.setItem(PAYPAL_CHECKOUT_SESSION_KEY, JSON.stringify({ orderId, vin: nvin }));
-
-    const buttons = window.paypal.Buttons({
-      style: {
-        layout: "vertical",
-        color: resolvedTheme === "dark" ? "white" : "blue",
-        shape: "rect",
-        label: "pay",
-        height: 48,
-      },
-      createOrder: () => {
-        const id = pendingPaypalOrderRef.current;
-        if (!id) throw new Error("Order not ready");
-        return id;
-      },
-      onApprove: async (data: { orderID: string }) => {
-        pendingPaypalOrderRef.current = null;
-        await finalizePaidCheckout(data.orderID, nvin);
-      },
-      onError: (err: unknown) => {
-        console.error("PayPal error", err);
-        pendingPaypalOrderRef.current = null;
-        if (paypalFlowPhaseRef.current !== "idle") {
-          return;
-        }
-        if (isPaypalUserAbort(err)) {
-          setStatus("idle");
-          setPaymentStarted(false);
-          paypalInstanceRef.current?.close();
-          paypalInstanceRef.current = null;
-          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
-          return;
-        }
-        setErrorMsg(t("checkout_error_payment_failed"));
-        setStatus("error");
-      },
-      onCancel: () => {
-        pendingPaypalOrderRef.current = null;
-        if (paypalFlowPhaseRef.current !== "idle") {
-          return;
-        }
-        setStatus("idle");
-        setPaymentStarted(false);
-        paypalInstanceRef.current?.close();
-        paypalInstanceRef.current = null;
-        if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
-      },
-    });
-    paypalInstanceRef.current = buttons;
-    setStatus("idle");
-    try {
-      if (paypalContainerRef.current) {
-        paypalContainerRef.current.innerHTML = "";
-        await buttons.render(paypalContainerRef.current);
-      }
-    } catch (err) {
-      console.error("PayPal render error", err);
-      pendingPaypalOrderRef.current = null;
-      setPaymentStarted(false);
-      setErrorMsg(t("checkout_error_paypal_load"));
-      setStatus("error");
-    }
+    markPaypalCheckoutAwaitingApproval(orderId, nvin);
+    await mountPaypalButtons(nvin, orderId);
   };
 
   const handleCardPayment = async () => {
@@ -1104,7 +1186,6 @@ export default function Checkout({ params }: Props) {
   const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
   const showVinQualityWarning = vinIsValid && !!peekForVin && !peekLoadingUi && !isTrustworthyVinDecode(peekForVin);
   const showVinPendingDoubleCheck = vinIsValid && !!peekForVin && !peekLoadingUi && shouldShowPendingVinDoubleCheck(peekForVin);
-  const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
   const vehicleTooOld =
     vinIsValid &&
     !!peekForVin &&
