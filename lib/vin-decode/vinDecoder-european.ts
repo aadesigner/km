@@ -1,5 +1,5 @@
 import { isVagWmi } from "./vag-wmi";
-import { decodeAudiEuHomologation, homologationToDisplay } from "./eu-zzz-homologation";
+import { decodeAudiEuHomologation, homologationToDisplay, isAudiHomologationVin } from "./eu-zzz-homologation";
 import { decodeFordEuModel, isFordEuWmi } from "./ford-eu";
 import { decodeJlrEuModel } from "./jlr-eu";
 
@@ -13,6 +13,7 @@ const VAG_MODEL_AT_78: Record<string, string> = {
   "1K": "Golf",
   "1Z": "Touran",
   "1T": "Touran",
+  "1J": "Jetta",
   "3C": "Passat",
   "3D": "Arteon",
   "5N": "Tiguan",
@@ -20,29 +21,39 @@ const VAG_MODEL_AT_78: Record<string, string> = {
   "5Z": "Tiguan",
   "6R": "T-Cross",
   "6J": "Taigo",
+  "6C": "Passat",
   "7P": "Touareg",
+  "7L": "Touareg",
+  "7H": "Tiguan",
   "7N": "Sharan",
+  "7E": "Caddy",
+  "7J": "Multivan",
   "9N": "Touran",
   "9Z": "Touran",
-  "AU": "Golf",
-  "AW": "Polo",
-  "AX": "Golf",
-  "AZ": "Touran",
-  "CJ": "ID.3",
-  "E1": "ID.4",
-  "E2": "ID.5",
-  "SH": "T-Roc",
-  "SY": "T-Roc",
-  "SK": "ID. Buzz",
-  "ST": "ID. Buzz Cargo",
+  // Gen 3 Touareg (CR platform) — common Bratislava (WVG) encoding
+  CR: "Touareg",
+  AU: "Golf",
+  AW: "Polo",
+  AX: "Golf",
+  AZ: "Touran",
+  CJ: "ID.3",
+  E1: "ID.4",
+  E2: "ID.5",
+  SH: "T-Roc",
+  SY: "T-Roc",
+  SF: "Multivan",
+  SG: "California",
+  SK: "ID. Buzz",
+  ST: "ID. Buzz Cargo",
   "2H": "Amarok",
   "2D": "Caddy",
   "2E": "Caddy",
-  "7E": "Caddy",
-  "DF": "Sharan",
-  "CD": "Golf Variant",
-  "BP": "Arteon",
-  "6C": "Passat",
+  "2K": "Golf",
+  "2F": "Caddy Maxi",
+  DF: "Sharan",
+  CD: "Golf Variant",
+  BP: "Arteon",
+  AA: "Up!",
 };
 
 /** Volkswagen Group — position 7 after WV*ZZZ / WVWZZZ */
@@ -137,20 +148,29 @@ export function decodeModelEuropean(vin: string): string | null {
   if (u.length < 8 || !hasZzzFiller(u)) return null;
 
   const wmi = u.slice(0, 3);
+  const pos7 = u[6];
+  const code78 = u.length >= 8 ? u.slice(6, 8) : "";
 
-  if (isAudiEuPrefix(wmi) || wmi === "WVG") {
+  // VW passenger/commercial first — Bratislava (WVG) builds Touareg/Up! alongside Audi SUVs.
+  // Prefer platform codes (7P/7L/CR/…) before Audi homologation so Touareg is not missed.
+  if (isVagPrefix(wmi)) {
+    const from78 = VAG_MODEL_AT_78[code78];
+    if (from78) return from78;
+    // 3-char type codes e.g. CR7 (Touareg III)
+    if (u.length >= 9) {
+      const code79 = u.slice(6, 9);
+      if (code79.startsWith("CR")) return "Touareg";
+      if (code79.startsWith("7P") || code79.startsWith("7L")) return "Touareg";
+    }
+  }
+
+  // Audi homologation (WAU/TRU, or WVG when Audi SUV type code)
+  if (isAudiEuPrefix(wmi) || (wmi === "WVG" && isAudiHomologationVin(u))) {
     const audi = decodeAudiEuHomologation(u);
     if (audi) return homologationToDisplay(audi);
   }
 
-  const pos7 = u[6];
-
   if (isVagPrefix(wmi)) {
-    if (u.length >= 8) {
-      const code78 = u.slice(6, 8);
-      const from78 = VAG_MODEL_AT_78[code78];
-      if (from78) return from78;
-    }
     return VAG_MODEL_AT_7[pos7] ?? null;
   }
   if (isAudiEuPrefix(wmi)) return AUDI_MODEL_AT_7[pos7] ?? null;

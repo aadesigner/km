@@ -22,9 +22,8 @@ import { translateClientError } from "@/lib/translate-client-error";
 import { translateFuelType } from "@/lib/translate-fuel-type";
 import { formatVinOriginCountry, countryLabelsFromT } from "@/lib/format-country-name";
 import { STATIC_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
-import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
+import { isTrustworthyVinDecode } from "@/lib/vin-decode-preview";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
-import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { FreeDecoderSeoSection } from "@/components/free-decoder-seo-section";
 import { FREE_DECODER_BRAND_CARDS } from "@/lib/free-decoder-brands";
 
@@ -81,7 +80,8 @@ function refreshDecodeFromLocal(result: DecodeResult): DecodeResult {
   return {
     ...result,
     model: local.model ?? result.model,
-    trim: local.trim ?? result.trim,
+    series: local.series ?? result.series,
+    trim: result.trim ?? local.trim,
     bodyStyle: local.bodyStyle ?? result.bodyStyle,
     engineDecoded: local.engineDecoded ?? result.engineDecoded,
     engineCode: local.engineCode ?? result.engineCode,
@@ -116,39 +116,6 @@ export default function FreeVinDecoder() {
     () => (result ? refreshDecodeFromLocal(result) : null),
     [result],
   );
-
-  const decoderPeekTrustworthy = !!displayResult && isTrustworthyVinDecode({
-    vin: displayResult.vin,
-    make: displayResult.make,
-    model: displayResult.model,
-    year: displayResult.year,
-  });
-
-  const { data: decoderPeek } = useQuery({
-    queryKey: ["/api/vin/peek", "decoder", displayResult?.vin],
-    enabled: !!isSignedIn && !!displayResult?.vin && decoderPeekTrustworthy,
-    queryFn: async () => {
-      const r = await fetch(`${basePath}/api/vin/peek/${encodeURIComponent(displayResult!.vin)}`, {
-        credentials: "include",
-      });
-      if (!r.ok) throw new Error("peek_error");
-      return r.json() as {
-        manualPending?: boolean;
-        dataAvailable?: boolean;
-        checkUnavailable?: boolean;
-      };
-    },
-    ...STATIC_QUERY_OPTIONS,
-    staleTime: 60_000,
-  });
-
-  const showDecoderPendingDoubleCheck = !!displayResult && !!decoderPeek && shouldShowPendingVinDoubleCheck({
-    vin: displayResult.vin,
-    make: displayResult.make,
-    model: displayResult.model,
-    year: displayResult.year,
-    ...decoderPeek,
-  });
 
   const diagnostics = useMemo((): VinDiagnostic[] => {
     if (!displayResult) return [];
@@ -299,6 +266,7 @@ export default function FreeVinDecoder() {
 
   const allFields: (Field & { group: string })[] = displayResult ? [
     { group: "identity", label: t("free_decoder_field_year"),          value: displayResult.year ? String(displayResult.year) : null, icon: Car,       color: "text-primary" },
+    { group: "identity", label: t("free_decoder_field_manufacture_year"), value: t("free_decoder_manufacture_year_not_in_vin"), icon: Car, color: "text-muted-foreground" },
     { group: "identity", label: t("free_decoder_field_make"),          value: displayResult.make,                               icon: Car,       color: "text-blue-500" },
     { group: "identity", label: t("free_decoder_field_model"),         value: displayResult.model,                              icon: Car,       color: "text-blue-500" },
     { group: "identity", label: t("free_decoder_field_series"),        value: displayResult.series ?? null,                     icon: Car,       color: "text-blue-400" },
@@ -561,9 +529,6 @@ export default function FreeVinDecoder() {
                 <div className="border-b px-5 py-3.5">
                   <VinDecodeRecheckHint className="border-0 bg-transparent p-0" />
                 </div>
-              )}
-              {showDecoderPendingDoubleCheck && (
-                <VinPendingDoubleCheckHint className="border-0 border-b rounded-none px-5 py-3.5" />
               )}
             </div>
 

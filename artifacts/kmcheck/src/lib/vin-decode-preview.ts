@@ -5,6 +5,7 @@ type VinPeekLike = {
   make?: string | null;
   model?: string | null;
   year?: number | null;
+  series?: string | null;
   trim?: string | null;
   engine?: string | null;
 };
@@ -107,9 +108,10 @@ export function formatVehiclePreview(peek: VinPeekLike): string | null {
   if (peek.model) parts.push(peek.model);
   const line = parts.join(" ");
   if (!line) return null;
-  if (peek.trim && fieldLooksValid(peek.trim, peek.vin)) {
-    return `${line} · ${peek.trim}`;
-  }
+  const grade = peek.trim && fieldLooksValid(peek.trim, peek.vin)
+    ? peek.trim
+    : (peek.series && fieldLooksValid(peek.series, peek.vin) ? peek.series : null);
+  if (grade) return `${line} · ${grade}`;
   return line;
 }
 

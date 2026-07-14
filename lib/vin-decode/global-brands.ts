@@ -145,12 +145,12 @@ const KGM_PREFIX_RULES = compilePrefixRules([
 
 // ── Cupra / DS — prefix rules only (avoid SEAT/Citroën ZZZ overlap) ───────────
 const CUPRA_PREFIX_RULES = compilePrefixRules([
-  { prefix: "VSSZZZKM", model: "Formentor" },
-  { prefix: "VSSZZZK1", model: "Born" },
-  { prefix: "VSSZZZKP", model: "Born" },
-  { prefix: "VSSZZZKN", model: "Leon" },
-  { prefix: "VS7ZZZKM", model: "Terramar" },
-  { prefix: "VS7ZZZKN", model: "Leon" },
+  { prefix: "VSSZZZKM", model: "Formentor", chassis: "KM" },
+  { prefix: "VSSZZZK1", model: "Born", chassis: "K1" },
+  { prefix: "VSSZZZKP", model: "Born", chassis: "MEB" },
+  { prefix: "VSSZZZKN", model: "Leon", chassis: "KL" },
+  { prefix: "VS7ZZZKM", model: "Terramar", chassis: "KM" },
+  { prefix: "VS7ZZZKN", model: "Leon", chassis: "KL" },
 ]);
 
 const DS_VR1_RULES = compilePrefixRules([

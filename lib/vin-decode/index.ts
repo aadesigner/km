@@ -36,11 +36,19 @@ export { decodeGlobalBrandModel, decodeGlobalBrand, resolveGlobalBrandMake } fro
 export {
   decodePremiumEuropean,
   decodePremiumEuropeanModel,
+  decodePremiumEuropeanSeries,
   decodePremiumEuropeanTrim,
   isPremiumEuropeanVin,
   type PremiumEuropeanDecode,
 } from "./european-premium";
 export { decodeVinLocalFree, type LocalFreeDecodeResult } from "./local-free-decode";
+export { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
+export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
+export {
+  inferBodyStyleFromModel,
+  inferVagTransmissionFromModel,
+  inferVagDriveFromModel,
+} from "./vag-infer";
 export {
   decodeVinDiagnostics,
   type VinDiagnostic,

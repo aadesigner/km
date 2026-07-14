@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Добро пожаловать в kmcheck",
   "check_vin": "Проверить VIN",
   "check_vin_short": "Проверить",
@@ -736,6 +736,8 @@
   "free_decoder_enriching_btn": "Обогащение…",
   "free_decoder_results_title": "Декодированные характеристики",
   "free_decoder_field_year": "Год выпуска",
+  "free_decoder_field_manufacture_year": "Год производства",
+  "free_decoder_manufacture_year_not_in_vin": "Не кодируется в VIN",
   "free_decoder_field_make": "Марка",
   "free_decoder_field_model": "Модель",
   "free_decoder_field_manufacturer": "Производитель",

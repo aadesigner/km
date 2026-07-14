@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Bienvenue sur kmcheck",
   "check_vin": "Vérifier le VIN",
   "check_vin_short": "Vérifier",
@@ -737,6 +737,8 @@
   "free_decoder_enriching_btn": "Enrichissement…",
   "free_decoder_results_title": "Caractéristiques décodées",
   "free_decoder_field_year": "Année modèle",
+  "free_decoder_field_manufacture_year": "Année de fabrication",
+  "free_decoder_manufacture_year_not_in_vin": "Non encodée dans le VIN",
   "free_decoder_field_make": "Marque",
   "free_decoder_field_model": "Modèle",
   "free_decoder_field_manufacturer": "Constructeur",

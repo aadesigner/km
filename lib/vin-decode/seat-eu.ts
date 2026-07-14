@@ -91,6 +91,10 @@ const SEAT_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "6H", model: "Arosa", platform: "6H", years: "1997–2004" },
   { code: "1S", model: "Mii", platform: "1S", years: "2011–2021" },
   { code: "AA", model: "Mii", platform: "AA", years: "2012–2021" },
+  // Cupra lines on VSS (also handled as make Cupra in global-brands)
+  { code: "KM", model: "Formentor", platform: "KM", years: "2020–" },
+  { code: "K1", model: "Born", platform: "K1", years: "2021–" },
+  { code: "KP", model: "Born", platform: "MEB", years: "2021–" },
 ];
 
 function rulesForWmi(wmi: string, codes: CodeRule[]): PrefixRule[] {

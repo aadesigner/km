@@ -1,7 +1,7 @@
 import {
   decodeVin,
   decodeCountry,
-  decodePremiumEuropeanTrim,
+  decodeLocalSeries,
   isPlausibleMake,
   isPlausibleModel,
   isYearLikeModelName,
@@ -11,6 +11,7 @@ export type VinPeekIdentity = {
   make: string | null;
   model: string | null;
   year: number | null;
+  series: string | null;
   trim: string | null;
   engine: string | null;
   country: string | null;
@@ -77,7 +78,8 @@ function fromLocalDecode(vin: string): VinPeekIdentity {
     make: isPlausibleMake(local.make, vin) ? local.make : null,
     model,
     year: local.year,
-    trim: plausibleTrim(decodePremiumEuropeanTrim(vin), vin),
+    series: plausibleTrim(decodeLocalSeries(vin, model), vin),
+    trim: null,
     engine: local.engineDecoded,
     country: local.country ?? decodeCountry(vin),
     wmi: local.wmi,
@@ -111,6 +113,7 @@ export async function decodeVinPeek(
     make: cachedMake,
     model: cachedModel,
     year: cachedYear,
+    series: base.series,
     trim: base.trim,
     engine: base.engine,
     country: base.country,

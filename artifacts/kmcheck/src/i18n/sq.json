@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Mirësevini në kmcheck",
   "check_vin": "Kontrollo VIN",
   "check_vin_short": "Kontrollo",
@@ -739,6 +739,8 @@
   "free_decoder_enriching_btn": "Duke pasuruar…",
   "free_decoder_results_title": "Specifikimet e dekoduara",
   "free_decoder_field_year": "Viti i modelit",
+  "free_decoder_field_manufacture_year": "Viti i prodhimit",
+  "free_decoder_manufacture_year_not_in_vin": "Nuk kodifikohet në VIN",
   "free_decoder_field_make": "Marka",
   "free_decoder_field_model": "Modeli",
   "free_decoder_field_manufacturer": "Prodhuesi",

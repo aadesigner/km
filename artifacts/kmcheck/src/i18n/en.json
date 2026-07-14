@@ -763,6 +763,8 @@
   "free_decoder_enriching_btn": "Enriching…",
   "free_decoder_results_title": "Decoded Specifications",
   "free_decoder_field_year": "Model Year",
+  "free_decoder_field_manufacture_year": "Manufacture Year",
+  "free_decoder_manufacture_year_not_in_vin": "Not encoded in VIN",
   "free_decoder_field_make": "Make",
   "free_decoder_field_model": "Model",
   "free_decoder_field_manufacturer": "Manufacturer",

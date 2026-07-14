@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "欢迎使用 kmcheck",
   "check_vin": "查询 VIN",
   "check_vin_short": "查询",
@@ -760,6 +760,8 @@
   "free_decoder_enriching_btn": "丰富中…",
   "free_decoder_results_title": "解码规格",
   "free_decoder_field_year": "年款",
+  "free_decoder_field_manufacture_year": "制造年份",
+  "free_decoder_manufacture_year_not_in_vin": "VIN 中未编码",
   "free_decoder_field_make": "品牌",
   "free_decoder_field_model": "型号",
   "free_decoder_field_manufacturer": "制造商",

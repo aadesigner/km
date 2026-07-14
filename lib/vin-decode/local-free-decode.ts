@@ -3,13 +3,18 @@ import { isValidVinFormat } from "./validation";
 import { isPlausibleMake, isPlausibleModel, isYearLikeModelName } from "./plausibility";
 import { decodeVin, decodeCountry } from "./vinDecoder";
 import { decodeVinDiagnostics, type VinDiagnostic } from "./vin-diagnostics";
-import { decodePremiumEuropeanTrim } from "./european-premium";
+import { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
 
 export type LocalFreeDecodeResult = {
   vin: string;
   year: number | null;
+  /** Always null — manufacture/calendar year is not encoded in the VIN. */
+  manufactureYear: null;
   make: string | null;
   model: string | null;
+  /** Platform / chassis / generation (e.g. Touareg 7P). */
+  series: string | null;
+  /** Equipment trim / grade — usually null locally; NHTSA fills when available. */
   trim: string | null;
   manufacturer: string | null;
   vehicleType: string | null;
@@ -38,17 +43,19 @@ export function decodeVinLocalFree(vin: string): LocalFreeDecodeResult | null {
   const local = decodeVin(normalized);
   const checkDigitValid = resolveCheckDigitValid(normalized);
   const diagnostics = decodeVinDiagnostics(normalized, local);
-  const premiumTrim = decodePremiumEuropeanTrim(normalized);
   const rawModel = local.model;
   const modelPlausible = isPlausibleModel(rawModel, normalized)
     && !isYearLikeModelName(rawModel);
+  const model = modelPlausible ? rawModel : null;
 
   return {
     vin: local.vin,
     year: local.year,
+    manufactureYear: null,
     make: isPlausibleMake(local.make, normalized) ? local.make : null,
-    model: modelPlausible ? rawModel : null,
-    trim: premiumTrim,
+    model,
+    series: decodeLocalSeries(normalized, model),
+    trim: decodeLocalTrim(normalized, model),
     manufacturer: isPlausibleMake(local.make, normalized) ? local.make : null,
     vehicleType: null,
     bodyStyle: local.bodyStyleDecoded,

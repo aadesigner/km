@@ -16,6 +16,12 @@ import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin } from "./asian-eu";
+import { decodeUsVdsModel } from "./us-vds";
+import {
+  inferBodyStyleFromModel,
+  inferVagDriveFromModel,
+  inferVagTransmissionFromModel,
+} from "./vag-infer";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
 // Letters I, O, Q, U, Z are never used. Digits 0 is never used.
@@ -614,6 +620,8 @@ function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
     const hit = MODEL_OVERRIDES[upper.slice(0, len)];
     if (hit) return hit;
   }
+  const usVds = decodeUsVdsModel(upper);
+  if (usVds) return usVds;
   if (global?.model) return global.model;
   if (!global) {
     const discovered = decodeGlobalBrand(upper).model;
@@ -1400,10 +1408,27 @@ export function inferDriveType(
 // Where not VIN-standardised, inferTransmission() falls back to engine hints.
 // BMW does not encode transmission in position 7 (NHTSA marks VDS unused) — excluded below.
 const TRANSMISSION_CODE_MAP: Record<string, Record<string, string>> = {
-  // VW Group position 7 (index 6) for DSG vs Manual:
+  // VW Group (US-format VDS) position 7:
   WVW: { A: "Manual (5-Speed)", D: "Automatic (DSG/DCT)", M: "Manual (6-Speed)", S: "7-Speed DSG (Dual-Clutch)" },
   WAU: { A: "Manual (6-Speed)", D: "Automatic (S tronic DCT)", M: "Manual", S: "7-Speed S tronic (DCT)" },
   WDD: { A: "Automatic (9G-TRONIC)", D: "Automatic", M: "Manual", S: "AMG SPEEDSHIFT DCT" },
+  // Toyota / Lexus:
+  JT:  { A: "Automatic", B: "Manual", C: "CVT", D: "eCVT (Hybrid)", E: "Automatic (6-Speed)", F: "Automatic (8-Speed)" },
+  JTH: { A: "Automatic", B: "Manual", C: "CVT", D: "eCVT (Hybrid)", E: "Automatic (8-Speed)" },
+  // Honda / Acura:
+  JHM: { A: "Automatic", B: "Manual", C: "CVT", D: "DCT", M: "Manual", X: "CVT" },
+  "1HG": { A: "Automatic", B: "Manual", C: "CVT", M: "Manual" },
+  // Hyundai / Kia:
+  KMH: { A: "Automatic", B: "Manual", C: "CVT", D: "DCT", E: "Automatic (8-Speed)" },
+  KNA: { A: "Automatic", B: "Manual", C: "CVT", D: "DCT" },
+  KND: { A: "Automatic", B: "Manual", C: "CVT", D: "DCT" },
+  // Nissan:
+  JN1: { A: "Automatic", B: "Manual", C: "CVT", D: "Automatic" },
+  JN8: { A: "Automatic", B: "Manual", C: "CVT" },
+  // Ford US:
+  "1FA": { A: "Automatic", B: "Manual", C: "Automatic (10-Speed)", D: "DCT", E: "Automatic (6-Speed)" },
+  "1FT": { A: "Automatic", B: "Manual", C: "Automatic (10-Speed)", E: "Automatic (6-Speed)" },
+  "1FM": { A: "Automatic", C: "Automatic (10-Speed)", E: "Automatic (6-Speed)" },
 };
 
 // Fallback: infer transmission from the decoded engine description
@@ -1438,6 +1463,14 @@ export function decodeTransmission(
   }
 
   if (hasEuZzzTypeApprovalDescriptor(upper)) {
+    const wmi = upper.slice(0, 3);
+    if (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU") || wmi.startsWith("TMB") || wmi.startsWith("VSS")) {
+      const fromModel = inferVagTransmissionFromModel(model ?? decodePremiumEuropeanModel(upper));
+      if (fromModel) return fromModel;
+    }
+    if (wmi.startsWith("WDD") || wmi.startsWith("W1K") || wmi.startsWith("WDC") || wmi.startsWith("WDB")) {
+      return "Automatic (typically 7–9G-TRONIC)";
+    }
     return inferTransmissionFromEngine(engineDecoded);
   }
 
@@ -1460,31 +1493,47 @@ export function extractEngineSpecs(engineDecoded: string | null): EngineSpecs {
 }
 
 // ── Body style (position 6, index 5) — select manufacturers ──────────────────
-// This is NOT universally standardized. Only decode for manufacturers
-// where position 6 is known to indicate body type.
+// Not universally standardized. Only decode for WMIs with known body mapping.
 const BODY_CODE_MAP: Record<string, Record<string, string>> = {
-  // BMW: position 4 (index 3) encodes series already in MODEL_MAP_4.
-  // Position 6 (index 5) for BMW encodes body variant:
+  // BMW — position 6 body variant:
   WBA: { E: "Sedan", G: "Gran Coupé", H: "Touring (Wagon)", K: "Convertible", N: "Coupé", P: "Gran Turismo" },
   WBY: { E: "Hatchback/BEV" },
-  // Audi: position 6 (index 5) body:
+  "5UX": { E: "SUV", G: "Gran Coupé", H: "Touring (Wagon)", K: "Convertible", N: "Coupé" },
+  // Audi:
   WAU: {
     A: "Convertible/Cabriolet", B: "Coupé", C: "Cabriolet", D: "Sedan",
     E: "Avant (Wagon)", F: "Allroad", G: "Sportback", H: "Hatchback",
     J: "Sedan (Limousine)", K: "Coupé", L: "Limousine",
   },
-  // VW: position 6 (index 5):
+  // VW:
   WVW: { A: "2-Door Hatchback", B: "4-Door Sedan", C: "Cabriolet", E: "4-Door Hatchback", G: "3-Door Hatchback", R: "4-Door Sedan" },
-  // Hyundai: position 6 (index 5):
+  // Hyundai / Genesis / Kia:
   KMH: { A: "2-Door", B: "Sedan", C: "SUV/Crossover", D: "Coupé", E: "Hatchback", F: "Wagon", G: "SUV", H: "Crossover" },
   KM8: { A: "SUV", B: "Crossover", C: "SUV", D: "Compact SUV" },
-  // Kia:
+  KMT: { A: "Sedan", B: "Sedan", C: "SUV", D: "Coupé", E: "Hatchback", G: "SUV" },
   KNA: { A: "Sedan", B: "Hatchback", C: "SUV", D: "Wagon" },
   KND: { A: "SUV", B: "Hatchback", C: "Minivan", D: "Crossover SUV", E: "Compact SUV" },
-  // Toyota Japan:
+  // Toyota / Lexus Japan:
   JT: { A: "Sedan", B: "2-Door", D: "Sedan", E: "SUV/4WD", F: "Wagon/Touring", G: "SUV", H: "Hatchback", J: "SUV", T: "Sedan", U: "Minivan", V: "Wagon" },
+  JTH: { A: "Sedan", B: "Coupé", E: "SUV", F: "Wagon", G: "SUV", H: "Hatchback", J: "SUV" },
+  // Honda:
+  JHM: { A: "Sedan", B: "Coupé", C: "Hatchback", D: "Wagon", E: "SUV", F: "Minivan", G: "Crossover" },
+  "1HG": { A: "Sedan", B: "Coupé", C: "Hatchback", D: "Wagon", E: "SUV" },
+  "5FN": { A: "Sedan", C: "Hatchback", E: "SUV", F: "Minivan", G: "Crossover" },
+  "5J6": { A: "SUV", B: "Crossover", C: "SUV", E: "Crossover" },
+  // Nissan / Infiniti:
+  JN1: { A: "Sedan", B: "Coupé", C: "Hatchback", D: "Wagon", E: "SUV", F: "Minivan" },
+  JN8: { A: "SUV", B: "Crossover", C: "SUV", D: "Minivan", E: "Crossover" },
   // Mercedes:
   WDD: { A: "Coupé", B: "Sedan", C: "Estate (Wagon)", F: "Sedan/Limousine", G: "Convertible", H: "Coupé", J: "Cabriolet", K: "Hatchback" },
+  // Ford US:
+  "1FA": { A: "Sedan", B: "Coupé", C: "Hatchback", D: "Wagon", E: "Convertible", F: "Hatchback" },
+  "1FM": { A: "SUV", B: "Crossover", C: "SUV", D: "Minivan", E: "SUV" },
+  "1FT": { A: "Pickup", B: "Pickup", C: "Chassis Cab", D: "Pickup" },
+  // GM:
+  "1G1": { A: "Sedan", B: "Coupé", C: "Hatchback", D: "Wagon", E: "Convertible" },
+  "1GC": { A: "Pickup", B: "Pickup", C: "Chassis Cab" },
+  "1GK": { A: "SUV", B: "SUV", C: "SUV" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1511,12 +1560,16 @@ export function decodePlantInfo(vin: string): PlantInfo | null {
   return table[upper[10]] ?? null;  // position 11 (index 10)
 }
 
-export function decodeBodyStyleLocal(vin: string): string | null {
+export function decodeBodyStyleLocal(vin: string, model?: string | null): string | null {
   const upper = vin.toUpperCase();
-  if (hasEuZzzTypeApprovalDescriptor(upper)) return null;
+  if (hasEuZzzTypeApprovalDescriptor(upper)) {
+    return inferBodyStyleFromModel(model ?? decodePremiumEuropeanModel(upper) ?? decodeModelEuropean(upper));
+  }
   const table = lookupByWmi(upper, BODY_CODE_MAP);
-  if (!table) return null;
-  return table[upper[5]] ?? null;   // position 6 (index 5)
+  if (!table) {
+    return inferBodyStyleFromModel(model ?? decodePremiumEuropeanModel(upper));
+  }
+  return table[upper[5]] ?? inferBodyStyleFromModel(model ?? decodePremiumEuropeanModel(upper));
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -1525,10 +1578,17 @@ export interface VinDecodeResult {
   vin: string;
   make: string | null;
   model: string | null;
+  /** Model year from VIN position 10 (ISO 3779). Not the manufacture/calendar year. */
   year: number | null;
   country: string | null;
   wmi: string;
+  /** Raw model-year character at position 10. */
   modelYear: string;
+  /**
+   * Calendar / manufacture year is not encoded in a standard VIN.
+   * Always null — use plant records or registration data for build date.
+   */
+  manufactureYear: null;
   engineCode: string | null;
   engineDecoded: string | null;
   engineDisplacement: string | null;
@@ -1558,24 +1618,30 @@ export function decodeVin(vin: string): VinDecodeResult {
     ? { city: brandSpec.plantCity, country: brandSpec.plantCountry ?? "" }
     : null;
   const plant = plantFromBrand ?? decodePlantInfo(upper);
+  const bodyStyleDecoded = brandSpec?.bodyStyle ?? decodeBodyStyleLocal(upper, model);
+  let driveType = brandSpec?.driveType ?? inferDriveType(wmi, model, engineDecoded);
+  if (!driveType && (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU"))) {
+    driveType = inferVagDriveFromModel(model);
+  }
   return {
     vin: upper,
     make,
     model,
-    year: decodeYear(upper[9]),         // position 10 (0-indexed: 9)
+    year: decodeYear(upper[9]),
     country: decodeCountry(upper),
     wmi,
     modelYear: upper[9] ?? "",
+    manufactureYear: null,
     engineCode: engineDecoded ? (upper[7] ?? null) : null,
     engineDecoded,
     engineDisplacement: specs.displacement,
     engineCylinders: specs.cylinders,
-    plantCode: upper[10] ?? null,       // position 11 (raw char)
+    plantCode: upper[10] ?? null,
     plantCity: plant?.city ?? null,
     plantCountry: plant?.country ?? null,
-    bodyStyleDecoded: brandSpec?.bodyStyle ?? decodeBodyStyleLocal(upper),
+    bodyStyleDecoded,
     transmissionDecoded: brandSpec?.transmissionDecoded ?? decodeTransmission(upper, engineDecoded, model),
     fuelType: brandSpec?.fuelType ?? inferFuelType(engineDecoded, wmi),
-    driveType: brandSpec?.driveType ?? inferDriveType(wmi, model, engineDecoded),
+    driveType,
   };
 }

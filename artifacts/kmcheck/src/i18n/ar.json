@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "مرحباً بك في kmcheck",
   "check_vin": "تحقق من رقم الشاسيه",
   "check_vin_short": "تحقق",
@@ -736,6 +736,8 @@
   "free_decoder_enriching_btn": "جاري الإثراء…",
   "free_decoder_results_title": "المواصفات المفككة",
   "free_decoder_field_year": "سنة الموديل",
+  "free_decoder_field_manufacture_year": "سنة التصنيع",
+  "free_decoder_manufacture_year_not_in_vin": "غير مُرمَّز في رقم الهيكل",
   "free_decoder_field_make": "الماركة",
   "free_decoder_field_model": "الموديل",
   "free_decoder_field_manufacturer": "الشركة المصنعة",

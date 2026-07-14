@@ -46,31 +46,42 @@ const SKODA_MODEL_78: Record<string, string> = {
 };
 
 const SKODA_PREFIX_RULES = compilePrefixRules([
-  { prefix: "TMBJP7NX", model: "Octavia" },
-  { prefix: "TMBJJ7NX", model: "Octavia" },
-  { prefix: "TMBJW7NP", model: "Superb" },
-  { prefix: "TMBER7NW", model: "Scala" },
-  { prefix: "TMBEP6NJ", model: "Fabia" },
-  { prefix: "TMBAG6NE", model: "Octavia" },
-  { prefix: "TMBAC6NX", model: "Octavia" },
-  { prefix: "TMBLK7NU", model: "Karoq" },
-  { prefix: "TMBLK7NZ", model: "Karoq" },
-  { prefix: "TMBLK6NZ", model: "Karoq" },
-  { prefix: "TMBDK6XK", model: "Kodiaq" },
-  { prefix: "TMBER6NM", model: "Enyaq" },
-  { prefix: "TMBER6NY", model: "Enyaq Coupé" },
-  { prefix: "TMBLK7PS", model: "Kamiq" },
-  { prefix: "TMBLK7PX", model: "Kamiq" },
-  { prefix: "TMBAG7NW", model: "Scala" },
+  { prefix: "TMBJP7NX", model: "Octavia", chassis: "NX" },
+  { prefix: "TMBJJ7NX", model: "Octavia", chassis: "NX" },
+  { prefix: "TMBJW7NP", model: "Superb", chassis: "NP" },
+  { prefix: "TMBER7NW", model: "Scala", chassis: "NW" },
+  { prefix: "TMBEP6NJ", model: "Fabia", chassis: "NJ" },
+  { prefix: "TMBAG6NE", model: "Octavia", chassis: "NE" },
+  { prefix: "TMBAC6NX", model: "Octavia", chassis: "NX" },
+  { prefix: "TMBLK7NU", model: "Karoq", chassis: "NU" },
+  { prefix: "TMBLK7NZ", model: "Karoq", chassis: "NZ" },
+  { prefix: "TMBLK6NZ", model: "Karoq", chassis: "NZ" },
+  { prefix: "TMBDK6XK", model: "Kodiaq", chassis: "NS" },
+  { prefix: "TMBER6NM", model: "Enyaq", chassis: "NM" },
+  { prefix: "TMBER6NY", model: "Enyaq Coupé", chassis: "NY" },
+  { prefix: "TMBLK7PS", model: "Kamiq", chassis: "PS" },
+  { prefix: "TMBLK7PX", model: "Kamiq", chassis: "PX" },
+  { prefix: "TMBAG7NW", model: "Scala", chassis: "NW" },
+  { prefix: "TMBJG7NS", model: "Kodiaq", chassis: "NS" },
+  { prefix: "TMBJK7NS", model: "Kodiaq", chassis: "NS" },
+  { prefix: "TMBEC6NF", model: "Citigo", chassis: "NF" },
+  { prefix: "TMBJB7NU", model: "Karoq", chassis: "NU" },
 ]);
 
 function decodeSkodaModel(vin: string): string | null {
-  if (!vin.startsWith("TMB")) return null;
+  return matchSkodaRule(vin)?.model ?? null;
+}
+
+/** Full Skoda rule hit for series/generation. */
+export function matchSkodaRule(vin: string): PrefixRule | null {
+  if (!vin.startsWith("TMB") && !vin.startsWith("TM8")) return null;
   const prefixHit = matchLongestPrefix(vin, SKODA_PREFIX_RULES);
-  if (prefixHit) return prefixHit.model;
+  if (prefixHit) return prefixHit;
   if (vin.length < 8) return null;
   const code78 = vin.slice(6, 8);
-  return SKODA_MODEL_78[code78] ?? null;
+  const model = SKODA_MODEL_78[code78];
+  if (!model) return null;
+  return { prefix: vin.slice(0, 8), model, chassis: code78 };
 }
 
 // ── Renault — longer VDS prefix rules (4-char MODEL_MAP_4 handles WMI + pos 4) ─

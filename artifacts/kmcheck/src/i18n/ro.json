@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Bun venit la kmcheck",
   "check_vin": "Verifică VIN",
   "check_vin_short": "Verifică",
@@ -737,6 +737,8 @@
   "free_decoder_enriching_btn": "Se îmbogățește…",
   "free_decoder_results_title": "Specificații decodate",
   "free_decoder_field_year": "An model",
+  "free_decoder_field_manufacture_year": "An fabricație",
+  "free_decoder_manufacture_year_not_in_vin": "Nu este codificat în VIN",
   "free_decoder_field_make": "Marcă",
   "free_decoder_field_model": "Model",
   "free_decoder_field_manufacturer": "Producător",

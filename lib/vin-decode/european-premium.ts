@@ -277,6 +277,14 @@ const PORSCHE_RULES = compilePrefixRules([
   { prefix: "WP1AZ", model: "Macan" },
 ]);
 
+/** Bratislava (WVG) also builds these VW platforms — prefer over Audi homologation. */
+const VW_PLATFORM_CODES_ON_WVG = new Set([
+  "7P", "7L", "CR", "AA", "1T", "1K", "1Z", "1J", "2H", "2D", "2E", "2F", "2K",
+  "3C", "3D", "5N", "5M", "5Z", "6R", "6J", "6C", "7H", "7N", "7E", "9N", "9Z",
+  "AU", "AW", "AX", "AZ", "CJ", "E1", "E2", "SH", "SY", "SK", "ST", "CD", "BP", "DF",
+  "SF", "SG", "7J",
+]);
+
 const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ1K", model: "Golf", chassis: "Mk7/Mk8" },
   { prefix: "WVWZZZ1Z", model: "Golf", chassis: "Mk7" },
@@ -284,7 +292,10 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ3D", model: "Arteon", chassis: "3H" },
   { prefix: "WVWZZZ5N", model: "Tiguan", chassis: "AD1/AD2" },
   { prefix: "WVWZZZ5M", model: "T-Roc" },
-  { prefix: "WVWZZZ7P", model: "Touareg", chassis: "CR" },
+  // Touareg: 7L = gen 1, 7P = gen 2, CR = gen 3 (often Bratislava WVG)
+  { prefix: "WVWZZZ7P", model: "Touareg", chassis: "7P" },
+  { prefix: "WVWZZZ7L", model: "Touareg", chassis: "7L" },
+  { prefix: "WVWZZZCR", model: "Touareg", chassis: "CR" },
   { prefix: "WVWZZZAW", model: "Polo", chassis: "6R/AW" },
   { prefix: "WVWZZZCJ", model: "ID.3" },
   { prefix: "WVWZZZE1", model: "ID.4" },
@@ -300,12 +311,15 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZAZ", model: "Touran", chassis: "5T" },
   { prefix: "WVGZZZ9N", model: "Touran", chassis: "5T" },
   { prefix: "WVGZZZ1T", model: "Touran", chassis: "1T" },
+  { prefix: "WVGZZZ7P", model: "Touareg", chassis: "7P" },
+  { prefix: "WVGZZZ7L", model: "Touareg", chassis: "7L" },
+  { prefix: "WVGZZZCR", model: "Touareg", chassis: "CR" },
+  { prefix: "WVGZZZAA", model: "Up!" },
   { prefix: "WVWZZZSH", model: "T-Roc" },
   { prefix: "WVWZZZCD", model: "Golf Variant", chassis: "Mk8" },
   { prefix: "WVWZZZBP", model: "Arteon Shooting Brake" },
   { prefix: "WVWZZZ2H", model: "Amarok" },
   { prefix: "WVWZZZ7H", model: "Tiguan", chassis: "AD1" },
-  { prefix: "WVWZZZ7L", model: "Tiguan Allspace" },
   { prefix: "WVWZZZ6R", model: "T-Cross" },
   { prefix: "WVWZZZ6J", model: "Taigo" },
   { prefix: "WVWZZZDF", model: "Sharan" },
@@ -317,6 +331,17 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZSK", model: "ID. Buzz" },
   { prefix: "WVWZZZST", model: "ID. Buzz Cargo" },
   { prefix: "WVWZZZ6C", model: "Passat", chassis: "B9" },
+  // Commercial / Multivan (Hannover WV1/WV2)
+  { prefix: "WV2ZZZSF", model: "Multivan", chassis: "T7" },
+  { prefix: "WV2ZZZSG", model: "California", chassis: "T6.1/T7" },
+  { prefix: "WV2ZZZ7H", model: "Multivan", chassis: "T6/T6.1" },
+  { prefix: "WV2ZZZ7J", model: "Multivan", chassis: "T6" },
+  { prefix: "WV1ZZZ7H", model: "Transporter", chassis: "T6" },
+  { prefix: "WV1ZZZ7J", model: "Transporter", chassis: "T6" },
+  { prefix: "WV2ZZZ2K", model: "Caddy", chassis: "C5" },
+  { prefix: "WV2ZZZ2E", model: "Caddy", chassis: "C5" },
+  { prefix: "WVGZZZ2D", model: "Caddy", chassis: "C5" },
+  { prefix: "WVGZZZ2E", model: "Caddy", chassis: "C5" },
   { prefix: "3VWZZZ", model: "Volkswagen", chassis: "US market" },
 ]);
 
@@ -420,8 +445,20 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   const raw = vin.trim().toUpperCase();
   if (raw.length !== 17) return null;
 
-  // Bratislava (WVG): Audi SUVs share plant WMI with VW — homologation decides brand/model.
+  // Bratislava (WVG): Touareg/Up! share the plant with Audi SUVs.
+  // Prefer known VW platform codes before Audi homologation.
   if (raw.startsWith("WVG") && raw.slice(3, 6) === "ZZZ") {
+    const platform78 = raw.slice(6, 8);
+    const isVwPlatform =
+      VW_PLATFORM_CODES_ON_WVG.has(platform78) ||
+      raw.slice(6, 9).startsWith("CR") ||
+      platform78 === "7P" ||
+      platform78 === "7L";
+    if (isVwPlatform) {
+      const vwHit = decodeFromRules(normalizeVagVinForPremium(raw), VW_RULES)
+        ?? decodeFromRules(raw, VW_RULES);
+      if (vwHit) return vwHit;
+    }
     const audiHit = fromHomologation(decodeAudiEuHomologation(raw));
     if (audiHit) return audiHit;
   }
@@ -483,10 +520,17 @@ export function decodePremiumEuropeanModel(vin: string): string | null {
   return decodePremiumEuropean(vin)?.displayModel ?? null;
 }
 
+/** Platform / chassis / generation (Series field). */
+export function decodePremiumEuropeanSeries(vin: string): string | null {
+  return decodePremiumEuropean(vin)?.chassis ?? null;
+}
+
+/**
+ * @deprecated Equipment trim is rarely in the VIN — use decodeLocalTrim / NHTSA.
+ * Kept as alias of chassis for older call sites; prefer decodePremiumEuropeanSeries.
+ */
 export function decodePremiumEuropeanTrim(vin: string): string | null {
-  const hit = decodePremiumEuropean(vin);
-  if (!hit?.chassis) return null;
-  return hit.chassis;
+  return decodePremiumEuropeanSeries(vin);
 }
 
 export function isPremiumEuropeanVin(vin: string): boolean {

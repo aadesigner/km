@@ -69,6 +69,11 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "5YFB", model: "Corolla" },
   { prefix: "5YFS", model: "Corolla" },
   { prefix: "5YFT", model: "Corolla" },
+  // Toyota USA Kentucky / Indiana plants
+  { prefix: "4T1B11", model: "Camry", chassis: "XV70" },
+  { prefix: "4T1K61", model: "Camry", chassis: "XV70 Hybrid" },
+  { prefix: "5TDZAR", model: "Sienna", chassis: "XL30" },
+  { prefix: "5TDBK3", model: "Highlander", chassis: "XU50" },
 ]);
 
 function isHyundaiVin(vin: string): boolean {
@@ -92,6 +97,10 @@ function isToyotaExtendedVin(vin: string): boolean {
     || vin.startsWith("YAR")
     || vin.startsWith("VF1BT")
     || vin.startsWith("5YF")
+    || vin.startsWith("4T1")
+    || vin.startsWith("5TD")
+    || vin.startsWith("2T1")
+    || vin.startsWith("2T3")
   );
 }
 
@@ -100,18 +109,23 @@ export function isHyundaiToyotaVin(vin: string): boolean {
   return isHyundaiVin(u) || isToyotaExtendedVin(u);
 }
 
-export function decodeHyundaiToyotaModel(vin: string): string | null {
+/** Full rule hit (model + optional chassis) for series/generation. */
+export function matchHyundaiToyotaRule(vin: string): PrefixRule | null {
   const u = vin.toUpperCase().trim();
   if (u.length < 9) return null;
 
   if (isHyundaiVin(u)) {
     const hyundai = matchLongestPrefix(u, HYUNDAI_RULES);
-    if (hyundai) return hyundai.model;
+    if (hyundai) return hyundai;
   }
   if (isToyotaExtendedVin(u)) {
     const toyota = matchLongestPrefix(u, TOYOTA_RULES);
-    if (toyota) return toyota.model;
+    if (toyota) return toyota;
   }
 
   return null;
+}
+
+export function decodeHyundaiToyotaModel(vin: string): string | null {
+  return matchHyundaiToyotaRule(vin)?.model ?? null;
 }
