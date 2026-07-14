@@ -3156,6 +3156,14 @@ router.get("/admin/pending-vin-checks", requireAdmin, async (req, res) => {
   res.json({ items, total, page, limit });
 });
 
+/** Lightweight count for admin sidebar badge — avoid full /admin/stats. Must stay before /:id. */
+router.get("/admin/pending-vin-checks/count", requireAdmin, async (_req, res) => {
+  const [{ open }] = await db.select({ open: count() })
+    .from(pendingVinChecksTable)
+    .where(eq(pendingVinChecksTable.status, "open"));
+  res.json({ open: open ?? 0 });
+});
+
 router.get("/admin/pending-vin-checks/export.json", requireAdmin, async (_req, res) => {
   const payload = await buildAllPendingVinExportPayload();
   const date = new Date().toISOString().split("T")[0];

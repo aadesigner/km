@@ -1,9 +1,12 @@
 import { useAuth } from "@/lib/auth-context";
 import { useLocation, Link } from "wouter";
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAdminGetStatsQueryOptions } from "@workspace/api-client-react";
-import { adminStatsQuery } from "@/lib/admin-query-options";
+import { useQuery } from "@tanstack/react-query";
+import { adminPendingCountQuery } from "@/lib/admin-query-options";
+import {
+  ADMIN_PENDING_COUNT_QUERY_KEY,
+  fetchAdminPendingCount,
+} from "@/lib/admin-pending-count";
 import { splitRouterLocation } from "@/lib/normalize-app-path";
 import { normalizeAdminPath } from "@/lib/admin-routes";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,10 +16,6 @@ import { cn } from "@/lib/utils";
 import { KmcheckLogo, KmcheckMark } from "@/components/logo";
 import { SEOHead } from "@/components/seo";
 import { useTheme } from "@/components/theme-provider";
-
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-type AdminStatsNav = { pendingVinChecksOpen?: number };
 
 const navGroups = [
   {
@@ -60,7 +59,6 @@ const mobileBottomNav = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, isLoaded } = useAuth();
-  const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
   const { pathname } = splitRouterLocation(location);
   const navPath = normalizeAdminPath(pathname);
@@ -68,13 +66,15 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { resolvedTheme, setTheme } = useTheme();
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
-  const { data: navStats } = useQuery({
-    ...getAdminGetStatsQueryOptions({ query: adminStatsQuery() }),
-    enabled: isLoaded && isSignedIn && user?.isAdmin === true,
-  });
-  const pendingOpen = (navStats as AdminStatsNav | undefined)?.pendingVinChecksOpen ?? 0;
-
   const isAdmin = user?.isAdmin === true;
+
+  const { data: pendingCount } = useQuery({
+    queryKey: ADMIN_PENDING_COUNT_QUERY_KEY,
+    queryFn: ({ signal }) => fetchAdminPendingCount(signal),
+    ...adminPendingCountQuery(),
+    enabled: isLoaded && isSignedIn && isAdmin,
+  });
+  const pendingOpen = pendingCount?.open ?? 0;
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -82,13 +82,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       setLocation("/en");
     }
   }, [isLoaded, isSignedIn, isAdmin, setLocation]);
-
-  useEffect(() => {
-    if (!isLoaded || !isAdmin) return;
-    void queryClient.prefetchQuery({
-      ...getAdminGetStatsQueryOptions({ query: adminStatsQuery() }),
-    });
-  }, [isLoaded, isAdmin, queryClient]);
 
   useEffect(() => {
     setSidebarOpen(false);

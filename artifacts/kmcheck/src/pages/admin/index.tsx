@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminGetStats } from "@workspace/api-client-react";
 import { ADMIN_QUERY_OPTIONS, adminStatsQuery } from "@/lib/admin-query-options";
@@ -12,8 +12,8 @@ import {
   Activity, UserPlus, BarChart3, Zap,
 } from "lucide-react";
 import { Link } from "wouter";
-import AdminDashboardChart from "@/pages/admin/admin-dashboard-chart";
 import { cn } from "@/lib/utils";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import {
   type ExtendedStats,
   type DashboardPeriod,
@@ -26,6 +26,9 @@ import {
   PERIOD_LABELS,
   PERIOD_COMPARE_LABEL,
 } from "@/lib/admin-dashboard-stats";
+
+/** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
+const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
 
 const BRAND = "hsl(142, 76%, 36%)";
 const BRAND_LIGHT = "hsl(142, 76%, 36%)";
@@ -708,15 +711,17 @@ export default function AdminOverview() {
             </div>
           </div>
           <div className="pl-0 pr-1 pt-3 pb-4 md:px-2 md:pb-5" style={{ minHeight: chartHeight }}>
-            <AdminDashboardChart
-              height={chartHeight}
-              data={derived?.chartData ?? []}
-              chartMetric={chartMetric}
-              chartRange={chartRange}
-              strokeColor={derived?.activeChart.color ?? BRAND}
-              gradId={derived?.activeChart.grad ?? "gradRevenue"}
-              seriesLabel={derived?.activeChart.label ?? ""}
-            />
+            <Suspense fallback={<Skeleton className="w-full rounded-lg" style={{ height: chartHeight }} />}>
+              <AdminDashboardChart
+                height={chartHeight}
+                data={derived?.chartData ?? []}
+                chartMetric={chartMetric}
+                chartRange={chartRange}
+                strokeColor={derived?.activeChart.color ?? BRAND}
+                gradId={derived?.activeChart.grad ?? "gradRevenue"}
+                seriesLabel={derived?.activeChart.label ?? ""}
+              />
+            </Suspense>
           </div>
         </Panel>
 

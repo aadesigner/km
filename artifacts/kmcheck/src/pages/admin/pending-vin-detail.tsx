@@ -17,6 +17,7 @@ import {
   type VinCatalogFormState,
 } from "@/components/admin/vin-catalog-data-form";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
+import { ADMIN_PENDING_COUNT_QUERY_KEY } from "@/lib/admin-pending-count";
 
 type PendingRequest = {
   id: number;
@@ -160,6 +161,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
         invalidateVinReportCaches(queryClient, detail.vin, req.lookupId);
       }
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
       setLocation(`/adminx/vin/${detail.vin}`);
     } catch {
       setPublishMsg({ ok: false, text: "Publish failed — network error" });
@@ -209,6 +211,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       }
       invalidateVinReportCaches(queryClient, detail.vin);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
       setLocation("/adminx/pending-vin-checks");
     } catch {
       alert("Remove failed — network error");

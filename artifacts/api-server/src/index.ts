@@ -5,6 +5,7 @@ import { assertProductionConfig, exitOnProductionConfigFailure } from "./lib/pro
 import { db, providersTable, systemSettingsTable } from "@workspace/db";
 import { count, desc, eq, like } from "drizzle-orm";
 import { scheduleCleanupJobs } from "./lib/cleanupJobs.js";
+import { scheduleDbKeepalive } from "./lib/dbKeepalive.js";
 import { invalidatePublicSettingsCache } from "./routes/payments.js";
 import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
@@ -124,6 +125,7 @@ const server = app.listen(port, "0.0.0.0", async () => {
     logger.warn({ err: e }, "Failed to seed Carstat provider"),
   );
   scheduleCleanupJobs();
+  scheduleDbKeepalive();
 });
 
 server.on("error", (err) => {

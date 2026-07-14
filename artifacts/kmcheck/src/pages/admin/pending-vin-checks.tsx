@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Search, ChevronRight, Users, Download, Upload, Loader2, CheckCircle2 } from "lucide-react";
 import { formatCountryName } from "@/lib/format-country-name";
+import { ADMIN_PENDING_COUNT_QUERY_KEY } from "@/lib/admin-pending-count";
 
 type PendingRequest = {
   id: number;
@@ -104,6 +105,7 @@ export default function AdminPendingVinChecks() {
         text: `Imported ${result.updated ?? 0} draft(s)${result.skipped ? ` · ${result.skipped} skipped` : ""}.`,
       });
       void queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      void queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
     } catch {
       setImportMsg({ ok: false, text: "Import failed — network error" });
     } finally {

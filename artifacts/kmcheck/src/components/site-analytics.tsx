@@ -130,7 +130,7 @@ async function fetchAnalyticsSettings(): Promise<AnalyticsPublicSettings> {
   };
 }
 
-/** Injects GTM / GA / Clarity on public + client routes only (never /adminx). */
+/** Injects GTM / GA / Clarity on public marketing routes only (never /adminx or /:lang/dashboard). */
 export function SiteAnalytics() {
   const [location] = useLocation();
   const injectedRef = useRef(false);

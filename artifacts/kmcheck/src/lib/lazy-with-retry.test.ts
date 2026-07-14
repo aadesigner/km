@@ -31,14 +31,12 @@ describe("shouldAttemptChunkReload", () => {
     });
   });
 
-  it("allows up to two reload attempts within the window", () => {
-    expect(shouldAttemptChunkReload()).toBe(true);
+  it("allows one soft reload attempt within the window", () => {
     expect(shouldAttemptChunkReload()).toBe(true);
     expect(shouldAttemptChunkReload()).toBe(false);
   });
 
   it("resets after a successful chunk load", () => {
-    shouldAttemptChunkReload();
     shouldAttemptChunkReload();
     clearChunkReloadState();
     expect(shouldAttemptChunkReload()).toBe(true);

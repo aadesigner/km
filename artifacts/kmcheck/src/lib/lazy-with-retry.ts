@@ -3,7 +3,8 @@ import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 export const CHUNK_RELOAD_KEY = "kmcheck-chunk-reload";
 
 const CHUNK_RETRY_DELAY_MS = 350;
-const CHUNK_RELOAD_MAX = 2;
+/** One soft full-page reload per window — avoids reload loops after deploy. */
+const CHUNK_RELOAD_MAX = 1;
 const CHUNK_RELOAD_WINDOW_MS = 120_000;
 
 type ChunkReloadState = { count: number; at: number };
@@ -122,8 +123,11 @@ export function isChunkLoadError(error: unknown): boolean {
 }
 
 /** One-shot full page reload when a lazy chunk fails outside React.lazy (e.g. dynamic import in charts). */
+let chunkRecoveryInstalled = false;
+
 export function installChunkLoadRecovery(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || chunkRecoveryInstalled) return;
+  chunkRecoveryInstalled = true;
 
   const tryReload = (error: unknown) => {
     if (!isChunkLoadError(error)) return;

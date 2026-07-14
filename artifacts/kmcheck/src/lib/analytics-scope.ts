@@ -1,13 +1,18 @@
 const ADMIN_PATH_RE = /^\/adminx(\/|$)/;
+/** Signed-in client area — skip heavy third-party scripts (GTM/Clarity). Checkout stays tracked. */
+const DASHBOARD_PATH_RE = /^\/[a-z]{2}\/dashboard(\/|$)/;
 
 function normalizePathname(pathname: string): string {
   const raw = (pathname.split("?")[0] ?? pathname).split("#")[0] ?? pathname;
   return raw.replace(/\/$/, "") || "/";
 }
 
-/** Public marketing + signed-in client routes only — never the admin panel. */
+/** Public marketing (+ checkout/auth) only — never admin panel or client dashboard shell. */
 export function isPublicAnalyticsPath(pathname: string): boolean {
-  return !ADMIN_PATH_RE.test(normalizePathname(pathname));
+  const path = normalizePathname(pathname);
+  if (ADMIN_PATH_RE.test(path)) return false;
+  if (DASHBOARD_PATH_RE.test(path)) return false;
+  return true;
 }
 
 /** Remove GTM/GA/Clarity tags injected by SiteAnalytics (e.g. when leaving the public shell). */
