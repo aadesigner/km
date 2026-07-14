@@ -950,7 +950,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               side="right"
               speed="fast"
               overlayClassName="z-[110] touch-none"
-              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-2xl shadow-black/20"
+              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-2xl shadow-black/25 dark:shadow-black/40"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               {/* Mobile header */}

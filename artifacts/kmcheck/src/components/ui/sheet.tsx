@@ -23,7 +23,7 @@ const SheetOverlay = React.forwardRef<
     className={cn(
       "fixed inset-0 z-50 bg-black/80",
       fast
-        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-150 data-[state=open]:duration-180"
+        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-200 data-[state=open]:duration-280"
         : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
@@ -48,9 +48,11 @@ const sheetVariants = cva(
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         ),
+        // Mobile nav: slide + light fade (~280ms in / ~220ms out)
         fast: cn(
-          "transition-transform ease-[cubic-bezier(0.32,0.72,0,1)]",
-          "data-[state=closed]:duration-150 data-[state=open]:duration-[200ms]",
+          "transition-[transform,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[transform,opacity]",
+          "data-[state=closed]:duration-[220ms] data-[state=open]:duration-[280ms]",
+          "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
           "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
         ),
       },
