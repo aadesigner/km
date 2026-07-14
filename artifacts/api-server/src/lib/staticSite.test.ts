@@ -12,4 +12,10 @@ describe("staticSite asset fallback", () => {
     expect(src).toContain("isStaticAssetRequest");
     expect(src).toMatch(/isStaticAssetRequest\(req\.path\)[\s\S]*404/);
   });
+
+  it("returns real 404 for unknown HTML routes instead of soft-404 home", () => {
+    expect(src).toContain("isKnownSpaPath");
+    expect(src).toContain("sendHardNotFound");
+    expect(src).toMatch(/!isKnownSpaPath\(req\.path\)/);
+  });
 });

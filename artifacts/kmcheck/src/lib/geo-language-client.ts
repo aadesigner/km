@@ -50,22 +50,32 @@ export function geoLanguageApiUrl(): string {
   return `${basePath}/api/plugins/geo-language${qs ? `?${qs}` : ""}`;
 }
 
+let geoHintInFlight: Promise<GeoLanguageResponse | null> | null = null;
+
 export async function fetchGeoLanguageHint(): Promise<GeoLanguageResponse | null> {
   const cached = readCachedGeoHint();
   if (cached) return cached;
 
-  try {
-    const r = await fetch(geoLanguageApiUrl(), {
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    });
-    if (!r.ok) return null;
-    const data = (await r.json()) as GeoLanguageResponse;
-    if (!data.crawler) writeCachedGeoHint(data);
-    return data;
-  } catch {
-    return null;
-  }
+  if (geoHintInFlight) return geoHintInFlight;
+
+  geoHintInFlight = (async () => {
+    try {
+      const r = await fetch(geoLanguageApiUrl(), {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (!r.ok) return null;
+      const data = (await r.json()) as GeoLanguageResponse;
+      if (!data.crawler) writeCachedGeoHint(data);
+      return data;
+    } catch {
+      return null;
+    } finally {
+      geoHintInFlight = null;
+    }
+  })();
+
+  return geoHintInFlight;
 }
 
 function languageFromGeoHint(data: GeoLanguageResponse | null): Language {

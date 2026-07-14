@@ -91,7 +91,8 @@ function resolveTranslation(dict: Translations | null, language: Language, key: 
 
 export function I18nProvider({ children, initialLanguage = "en" }: { children: ReactNode; initialLanguage?: Language }) {
   const [language, setLanguageState] = useState<Language>(initialLanguage);
-  const [dict, setDict] = useState<Translations | null>(() => readDict(initialLanguage) ?? readDict("en") ?? null);
+  // Never seed non-English locales with the English dict — that paints EN text before the locale loads.
+  const [dict, setDict] = useState<Translations | null>(() => readDict(initialLanguage) ?? null);
   const [ready, setReady] = useState(() => !!readDict(initialLanguage));
   const activeLangRef = useRef(initialLanguage);
 

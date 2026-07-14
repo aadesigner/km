@@ -81,7 +81,8 @@ const js = `/* auto-generated — do not edit */
 
   function isNoIndexPath(rest, pageKey) {
     if (pageKey === "not_found") return true;
-    if (VIN_INDEX_RE.test(rest)) return false;
+    // VIN URLs: safe default noindex (server/React set index only when catalog report exists).
+    if (VIN_INDEX_RE.test(rest)) return true;
     if (NOINDEX.indexOf(rest) !== -1) return true;
     for (var i = 0; i < NOINDEX_PREFIXES.length; i++) {
       var p = NOINDEX_PREFIXES[i];
@@ -174,10 +175,12 @@ const js = `/* auto-generated — do not edit */
     var m = pathname.match(/^\\/(${LANG_PATH_ALT})(\\/.*)?$/);
     var lang = m ? m[1] : "en";
     var rest = m && m[2] ? m[2].replace(/\\/$/, "") : "";
-    var vinSeo = VIN_INDEX_RE.test(rest) ? vinSeoFallback(rest, lang) : null;
+    // Server-side VIN SEO inject owns robots/index for /vin/{17}. Do not overwrite
+    // catalog pages with thin fallbacks (or vice versa) in the browser bootstrap.
+    if (VIN_INDEX_RE.test(rest)) return;
     var pageKey = resolvePageKey(rest);
     var page = SEO[pageKey] || SEO.not_found || SEO.home;
-    var seo = vinSeo || (page && page[lang]) || (page && page.en) || SEO.home.en;
+    var seo = (page && page[lang]) || (page && page.en) || SEO.home.en;
     var noIndex = isNoIndexPath(rest, pageKey);
 
     document.documentElement.lang = lang;

@@ -99,7 +99,9 @@ export function resolvePageKey(rest) {
 
 export function isNoIndexPath(rest, pageKey) {
   if (pageKey === "not_found") return true;
-  if (isIndexableVinRest(rest)) return false;
+  // VIN report URLs: default noindex in static bootstrap. Catalog pages that should
+  // rank get index/follow from server inject + React when report data exists.
+  if (isIndexableVinRest(rest)) return true;
   if (NOINDEX_EXACT.has(rest)) return true;
   if (NOINDEX_PREFIXES.some((p) => rest === p || rest.startsWith(`${p}/`))) return true;
   return rest.startsWith("/vin/");

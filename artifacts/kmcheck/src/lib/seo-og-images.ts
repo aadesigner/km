@@ -6,6 +6,8 @@ const OG_PAGE_KEYS = new Set<SeoPageKey>([
   "country_usa",
   "country_korea",
   "country_canada",
+  "country_china",
+  "country_uae",
 ]);
 
 export function resolvePageOgImage(

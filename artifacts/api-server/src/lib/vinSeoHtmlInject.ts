@@ -47,10 +47,11 @@ function removeGeneratedSeoTags(html: string): string {
 
 function buildSeoHeadBlock(seo: VinPageSeo, lang: VinSeoLang, origin: string): string {
   const canonicalUrl = `${origin.replace(/\/$/, "")}${seo.canonicalPath}`;
-  const rest = seo.canonicalPath.replace(/^\/(en|es|uk|ru|ro|pl|ar|sq)/, "");
+  const rest = seo.canonicalPath.replace(/^\/(en|es|uk|ru|ro|pl|ar|sq|de|fr|bg|zh)/, "");
+  const robots = seo.noIndex ? "noindex, follow" : "index, follow";
   const lines = [
     `<meta name="description" content="${escapeHtml(seo.description)}" />`,
-    `<meta name="robots" content="index, follow" />`,
+    `<meta name="robots" content="${robots}" />`,
     `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`,
     `<meta property="og:title" content="${escapeHtml(seo.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(seo.description)}" />`,
@@ -74,19 +75,22 @@ function buildSeoHeadBlock(seo: VinPageSeo, lang: VinSeoLang, origin: string): s
     }
   }
 
-  for (const l of SEO_LANGS) {
-    const href = `${origin.replace(/\/$/, "")}/${l}${rest}`;
-    lines.push(`<link rel="alternate" hreflang="${HREFLANG_MAP[l]}" href="${escapeHtml(href)}" />`);
-  }
-  lines.push(
-    `<link rel="alternate" hreflang="x-default" href="${escapeHtml(`${origin.replace(/\/$/, "")}/en${rest}`)}" />`,
-  );
-  for (const l of SEO_LANGS) {
-    if (l === lang) continue;
-    lines.push(`<meta property="og:locale:alternate" content="${OG_LOCALE_MAP[l]}" />`);
+  // Hreflang only when the page is meant to be indexed.
+  if (!seo.noIndex) {
+    for (const l of SEO_LANGS) {
+      const href = `${origin.replace(/\/$/, "")}/${l}${rest}`;
+      lines.push(`<link rel="alternate" hreflang="${HREFLANG_MAP[l]}" href="${escapeHtml(href)}" />`);
+    }
+    lines.push(
+      `<link rel="alternate" hreflang="x-default" href="${escapeHtml(`${origin.replace(/\/$/, "")}/en${rest}`)}" />`,
+    );
+    for (const l of SEO_LANGS) {
+      if (l === lang) continue;
+      lines.push(`<meta property="og:locale:alternate" content="${OG_LOCALE_MAP[l]}" />`);
+    }
   }
 
-  if (seo.jsonLd.length > 0) {
+  if (!seo.noIndex && seo.jsonLd.length > 0) {
     lines.push(
       `<script id="kmcheck-json-ld" type="application/ld+json">${JSON.stringify(seo.jsonLd)}</script>`,
     );
@@ -124,7 +128,14 @@ export function injectVinPageSeoIntoHtml(
 
 export function buildVinOnlyFallbackSeo(lang: VinSeoLang, vin: string, origin: string): VinPageSeo {
   const normalized = normalizeVin(vin);
-  return buildVinPageSeo(lang, { vin: normalized }, origin);
+  return {
+    ...buildVinPageSeo(lang, { vin: normalized }, origin),
+    // Empty / unknown VIN shells must stay out of the index (thin-content risk).
+    noIndex: true,
+    jsonLd: [],
+    ogImage: undefined,
+    ogImageAlt: undefined,
+  };
 }
 
 export function buildVinOnlyFallbackSeoLegacy(lang: VinSeoLang, vin: string): { title: string; description: string } {

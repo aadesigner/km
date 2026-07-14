@@ -14,10 +14,12 @@ setClientGuardToken(clientGuardToken ?? null);
 installFetchGuard(clientGuardToken);
 installChunkLoadRecovery();
 
-// Warm geo hint while the bundle boots so `/` can redirect in one hop.
+// Warm geo hint while the bundle boots so `/` and first-visit `/en` can redirect in one hop.
 if (typeof window !== "undefined") {
   const path = window.location.pathname.replace(/\/$/, "") || "/";
-  if (path === "/") void fetchGeoLanguageHint();
+  if (path === "/" || path === "/en" || path.startsWith("/en/")) {
+    void fetchGeoLanguageHint();
+  }
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

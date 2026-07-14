@@ -201,7 +201,8 @@ export type VinPageSeo = {
   title: string;
   description: string;
   canonicalPath: string;
-  noIndex: false;
+  /** When true, emit noindex (empty / missing report shells). Catalog reports stay indexable. */
+  noIndex: boolean;
   jsonLd: Record<string, unknown>[];
   ogImage?: string;
   ogImageAlt?: string;

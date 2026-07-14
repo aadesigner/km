@@ -21,10 +21,10 @@ type SceneLayout = {
 const SCENE_LAYOUT: Record<SceneId, SceneLayout> = {
   dashboard: {
     src: "windshield-vin.jpg",
-    objectPosition: "28% 72%",
-    imageScale: 1.08,
-    lookClass: "top-[9%] left-[6%] sm:left-[8%]",
-    vinClass: "bottom-[20%] left-[9%] w-[54%] max-w-[200px]",
+    objectPosition: "35% 78%",
+    imageScale: 1.12,
+    lookClass: "top-[8%] left-[6%] sm:left-[8%]",
+    vinClass: "bottom-[18%] left-[8%] w-[58%] max-w-[210px]",
   },
   door: {
     src: "door-jamb-vin.jpg",
@@ -35,10 +35,10 @@ const SCENE_LAYOUT: Record<SceneId, SceneLayout> = {
   },
   documents: {
     src: "registration-doc.jpg",
-    objectPosition: "50% 42%",
-    imageScale: 1.05,
-    lookClass: "top-[8%] left-[8%] sm:left-[10%]",
-    vinClass: "bottom-[22%] left-[12%] w-[52%] max-w-[200px]",
+    objectPosition: "50% 32%",
+    imageScale: 1.02,
+    lookClass: "top-[10%] left-[6%] sm:left-[8%]",
+    vinClass: "top-[28%] left-[8%] w-[58%] max-w-[220px]",
   },
 };
 

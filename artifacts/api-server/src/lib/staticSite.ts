@@ -7,6 +7,7 @@ import { vinHasReportData } from "./vinService.js";
 import { buildVinSeoFromCatalogData } from "./vinPageSeo.js";
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
+import { isKnownSpaPath } from "./spaKnownPaths.js";
 
 const ONE_YEAR_SEC = 31_536_000;
 const ONE_DAY_SEC = 86_400;
@@ -152,6 +153,26 @@ async function sendSpaFallback(publicDir: string, reqPath: string, req: Request,
   return true;
 }
 
+/** Real HTTP 404 shell — SPA NotFound can still hydrate; do not use English-home SEO. */
+function sendHardNotFound(publicDir: string, req: Request, res: Response): boolean {
+  const fallback = path.join(publicDir, "index.html");
+  if (!existsSync(fallback)) return false;
+
+  res.setHeader("Cache-Control", "no-cache");
+  let html = loadIndexHtml(publicDir);
+  html = html
+    .replace(/\n?\s*<meta name="robots"[^>]*>/gi, "")
+    .replace(/<title>[^<]*<\/title>/i, "<title>Page Not Found | kmcheck.com</title>");
+  if (!/<meta name="robots"/i.test(html)) {
+    html = html.replace(
+      /<\/title>/i,
+      `</title>\n    <meta name="robots" content="noindex, nofollow" />`,
+    );
+  }
+  res.status(404).type("html").send(html);
+  return true;
+}
+
 /** Serve built kmcheck frontend (production / Railway single-service deploy). */
 export function mountStaticSite(app: Express): string | null {
   if (process.env.SERVE_STATIC === "false") return null;
@@ -183,6 +204,12 @@ export function mountStaticSite(app: Express): string | null {
     if (sendSpaFile(publicDir, urlPath, res)) return;
     if (isStaticAssetRequest(req.path)) {
       res.status(404).type("text/plain").send("Not found");
+      return;
+    }
+    // Unknown routes: real 404 (not English home with status 200).
+    if (!isKnownSpaPath(req.path)) {
+      if (sendHardNotFound(publicDir, req, res)) return;
+      res.status(404).send("Not found");
       return;
     }
     if (await sendSpaFallback(publicDir, urlPath, req, res)) return;

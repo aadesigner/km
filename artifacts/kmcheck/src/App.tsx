@@ -7,7 +7,7 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
-import { useEffect, Suspense, type ReactNode } from "react";
+import { useEffect, useState, Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
@@ -17,16 +17,25 @@ import { SiteAnalytics } from "@/components/site-analytics";
 import { PresenceHeartbeat } from "@/components/presence-heartbeat";
 import { RouteErrorBoundary } from "@/components/error-boundary";
 import { MaintenanceGuard } from "@/components/maintenance-guard";
-import { GeoLanguageRedirect } from "@/components/geo-language-redirect";
 import { VinAccessGate } from "@/components/vin-access-gate";
 import { RouteShellFallback } from "@/components/route-shell-fallback";
+import { ensureDict, useTranslation } from "@/i18n/context";
 import {
   pathNeedingLangPrefix,
   buildLocalizedPath,
   markGeoLanguageEvaluated,
   getStoredLangPreference,
+  extractPathLang,
+  isGeoLanguageEvaluated,
+  isGeoRedirectExemptPath,
+  replacePathLang,
 } from "@/lib/lang-preference";
-import { resolveRootEntryLanguage, resolveRootEntryLanguageSync } from "@/lib/geo-language-client";
+import {
+  resolveRootEntryLanguage,
+  resolveRootEntryLanguageSync,
+  fetchGeoLanguageHint,
+  geoRedirectTarget,
+} from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
@@ -89,6 +98,13 @@ function PageLoader() {
   return <RouteShellFallback />;
 }
 
+/** Hold the shell until the locale dictionary is ready — avoids English text flash on /sq, /de, etc. */
+function LocaleReadyGate({ children }: { children: ReactNode }) {
+  const { ready, language } = useTranslation();
+  if (!ready && language !== "en") return <RouteShellFallback />;
+  return <>{children}</>;
+}
+
 function withLang(
   Component: React.ComponentType<{ params: { lang: string; [key: string]: string } }>,
   errorScope?: string,
@@ -107,10 +123,12 @@ function withLang(
     );
     return (
       <I18nProvider initialLanguage={props.params.lang as Language}>
-        <RouteSEO />
-        <Layout>
-          {errorScope ? <RouteErrorBoundary scope={errorScope} resetKey={resetKey}>{page}</RouteErrorBoundary> : page}
-        </Layout>
+        <LocaleReadyGate>
+          <RouteSEO />
+          <Layout>
+            {errorScope ? <RouteErrorBoundary scope={errorScope} resetKey={resetKey}>{page}</RouteErrorBoundary> : page}
+          </Layout>
+        </LocaleReadyGate>
       </I18nProvider>
     );
   };
@@ -124,14 +142,16 @@ function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" 
 
   return (
     <I18nProvider initialLanguage={lang as Language}>
-      <RouteSEO />
-      <Layout>
-        <RouteErrorBoundary scope="auth" resetKey={resetKey}>
-          <Suspense fallback={<PageLoader />}>
-            <AuthFormLazy lang={lang} mode={mode} />
-          </Suspense>
-        </RouteErrorBoundary>
-      </Layout>
+      <LocaleReadyGate>
+        <RouteSEO />
+        <Layout>
+          <RouteErrorBoundary scope="auth" resetKey={resetKey}>
+            <Suspense fallback={<PageLoader />}>
+              <AuthFormLazy lang={lang} mode={mode} />
+            </Suspense>
+          </RouteErrorBoundary>
+        </Layout>
+      </LocaleReadyGate>
     </I18nProvider>
   );
 }
@@ -141,12 +161,14 @@ function AuthSubPage({ lang, children }: { lang: Language; children: React.React
   const resetKey = location.split("?")[0] ?? location;
   return (
     <I18nProvider initialLanguage={lang}>
-      <RouteSEO />
-      <Layout>
-        <RouteErrorBoundary scope="auth" resetKey={resetKey}>
-          <Suspense fallback={<PageLoader />}>{children}</Suspense>
-        </RouteErrorBoundary>
-      </Layout>
+      <LocaleReadyGate>
+        <RouteSEO />
+        <Layout>
+          <RouteErrorBoundary scope="auth" resetKey={resetKey}>
+            <Suspense fallback={<PageLoader />}>{children}</Suspense>
+          </RouteErrorBoundary>
+        </Layout>
+      </LocaleReadyGate>
     </I18nProvider>
   );
 }
@@ -171,14 +193,16 @@ function CountryLang(props: { params: { lang: string; country: string } }) {
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   return (
     <I18nProvider initialLanguage={props.params.lang as Language}>
-      <RouteSEO />
-      <Layout>
-        <RouteErrorBoundary scope="country" resetKey={resetKey}>
-          <Suspense fallback={<PageLoader />}>
-            <CountryPage params={props.params} />
-          </Suspense>
-        </RouteErrorBoundary>
-      </Layout>
+      <LocaleReadyGate>
+        <RouteSEO />
+        <Layout>
+          <RouteErrorBoundary scope="country" resetKey={resetKey}>
+            <Suspense fallback={<PageLoader />}>
+              <CountryPage params={props.params} />
+            </Suspense>
+          </RouteErrorBoundary>
+        </Layout>
+      </LocaleReadyGate>
     </I18nProvider>
   );
 }
@@ -313,7 +337,13 @@ function redirectToEntryLanguage(
   const search = typeof window !== "undefined" ? window.location.search : "";
   const hash = typeof window !== "undefined" ? window.location.hash : "";
 
-  const go = (lang: Language) => {
+  const go = async (lang: Language) => {
+    if (cancelled) return;
+    try {
+      await ensureDict(lang);
+    } catch {
+      // Navigate anyway — LocaleReadyGate / English fallback handles missing dict.
+    }
     if (cancelled) return;
     markGeoLanguageEvaluated();
     setLocation(`${buildTarget(lang)}${search}${hash}`, { replace: true });
@@ -321,7 +351,7 @@ function redirectToEntryLanguage(
 
   const immediate = resolveRootEntryLanguageSync();
   if (immediate != null) {
-    go(immediate);
+    void go(immediate);
     return () => {
       cancelled = true;
     };
@@ -331,6 +361,64 @@ function redirectToEntryLanguage(
   return () => {
     cancelled = true;
   };
+}
+
+/**
+ * First visit to `/en/…` with no stored preference: hold skeleton while geo resolves,
+ * then one-hop to the suggested language (never paint English home first).
+ */
+function GeoFirstVisitGate({ children }: { children: ReactNode }) {
+  const [location, setLocation] = useLocation();
+  const pathname = location.split("?")[0] ?? location;
+
+  const needsGate =
+    pathname !== "/"
+    && pathname !== ""
+    && !isGeoRedirectExemptPath(pathname)
+    && extractPathLang(pathname) === "en"
+    && !getStoredLangPreference()
+    && !isGeoLanguageEvaluated();
+
+  const [settled, setSettled] = useState(!needsGate);
+
+  useEffect(() => {
+    if (!needsGate) {
+      setSettled(true);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchGeoLanguageHint();
+        if (cancelled) return;
+        const target = data ? geoRedirectTarget(data, "en") : null;
+        markGeoLanguageEvaluated();
+        if (target) {
+          try {
+            await ensureDict(target);
+          } catch {
+            // Redirect anyway.
+          }
+          if (cancelled) return;
+          const search = typeof window !== "undefined" ? window.location.search : "";
+          const hash = typeof window !== "undefined" ? window.location.hash : "";
+          setLocation(`${replacePathLang(pathname, "en", target)}${search}${hash}`, { replace: true });
+          return;
+        }
+      } catch {
+        // Fall through to English.
+      }
+      if (!cancelled) setSettled(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [needsGate, pathname, setLocation]);
+
+  if (!settled) return <RouteShellFallback />;
+  return <>{children}</>;
 }
 
 function RootLangRedirect() {
@@ -581,9 +669,9 @@ function AppRouter() {
   return (
     <>
       <ScrollToTop />
-      <GeoLanguageRedirect />
-      <MaintenanceGuard>
-      <Switch>
+      <GeoFirstVisitGate>
+        <MaintenanceGuard>
+        <Switch>
         <Route path="/" component={RootLangRedirect} />
 
         <Route path="/usa-cars" component={RedirectUsaCars} />
@@ -626,7 +714,8 @@ function AppRouter() {
 
         <Route component={NotFoundLang} />
       </Switch>
-      </MaintenanceGuard>
+        </MaintenanceGuard>
+      </GeoFirstVisitGate>
     </>
   );
 }

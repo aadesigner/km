@@ -103,6 +103,9 @@ app.use(
     },
     // PayPal checkout opens popups / lightboxes — strict same-origin COOP breaks them (blank tab + overlay).
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    // Default Helmet CORP is same-origin and blocks Facebook/WhatsApp/Telegram/Clarity
+    // from loading /seo/og/*.webp preview images when a link is shared.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,
