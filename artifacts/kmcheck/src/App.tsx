@@ -339,12 +339,8 @@ function redirectToEntryLanguage(
 
   const go = async (lang: Language) => {
     if (cancelled) return;
-    try {
-      await ensureDict(lang);
-    } catch {
-      // Navigate anyway — LocaleReadyGate / English fallback handles missing dict.
-    }
-    if (cancelled) return;
+    // Don't block navigation on locale JSON — LocaleReadyGate shows shell until ready.
+    void ensureDict(lang).catch(() => {});
     markGeoLanguageEvaluated();
     setLocation(`${buildTarget(lang)}${search}${hash}`, { replace: true });
   };
@@ -395,11 +391,7 @@ function GeoFirstVisitGate({ children }: { children: ReactNode }) {
         const target = data ? geoRedirectTarget(data, "en") : null;
         markGeoLanguageEvaluated();
         if (target) {
-          try {
-            await ensureDict(target);
-          } catch {
-            // Redirect anyway.
-          }
+          void ensureDict(target).catch(() => {});
           if (cancelled) return;
           const search = typeof window !== "undefined" ? window.location.search : "";
           const hash = typeof window !== "undefined" ? window.location.hash : "";

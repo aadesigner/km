@@ -5,6 +5,8 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const GEO_HINT_CACHE_KEY = "kmcheck_geo_hint_v1";
 const GEO_HINT_TTL_MS = 5 * 60 * 1000;
+/** Never block first paint longer than this waiting on geo. */
+const GEO_FETCH_TIMEOUT_MS = 2_000;
 
 export type GeoLanguageResponse = {
   enabled: boolean;
@@ -63,12 +65,14 @@ export async function fetchGeoLanguageHint(): Promise<GeoLanguageResponse | null
       const r = await fetch(geoLanguageApiUrl(), {
         credentials: "include",
         headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(GEO_FETCH_TIMEOUT_MS),
       });
       if (!r.ok) return null;
       const data = (await r.json()) as GeoLanguageResponse;
       if (!data.crawler) writeCachedGeoHint(data);
       return data;
     } catch {
+      // Timeout / network — fall through to English (or stored preference).
       return null;
     } finally {
       geoHintInFlight = null;
