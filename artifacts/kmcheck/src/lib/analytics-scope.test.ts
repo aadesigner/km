@@ -24,5 +24,7 @@ describe("isPublicAnalyticsPath", () => {
     expect(isPublicAnalyticsPath("/en/dashboard/account")).toBe(false);
     expect(isPublicAnalyticsPath("/sq/dashboard/help")).toBe(false);
     expect(isPublicAnalyticsPath("/de/dashboard?tab=1")).toBe(false);
+    expect(isPublicAnalyticsPath("/en/purchases")).toBe(false);
+    expect(isPublicAnalyticsPath("/sq/purchases/")).toBe(false);
   });
 });

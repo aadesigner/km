@@ -1,7 +1,7 @@
 import { Component, type ReactNode } from "react";
 import { readDict, type Language } from "@/i18n/context";
 import { LANG_PATH_ALT } from "@/lib/languages";
-import { isChunkLoadError, shouldAttemptChunkReload } from "@/lib/lazy-with-retry";
+import { CHUNK_RELOAD_KEY, isChunkLoadError, shouldAttemptChunkReload } from "@/lib/lazy-with-retry";
 
 type Props = {
   children: ReactNode;
@@ -37,11 +37,21 @@ function DefaultFallback({ lang, error }: { lang: Language; error?: Error }) {
       <div className="text-4xl" aria-hidden>⚠️</div>
       <h1 className="text-xl font-bold">{tStatic(lang, titleKey)}</h1>
       <p className="text-muted-foreground text-sm max-w-sm">{tStatic(lang, descKey)}</p>
+      {error?.message ? (
+        <p className="text-[11px] text-muted-foreground/70 max-w-md font-mono break-all leading-snug">
+          {error.message.slice(0, 180)}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
         <button
           type="button"
           className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            try {
+              sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+            } catch { /* private browsing */ }
+            window.location.reload();
+          }}
         >
           {tStatic(lang, "error_boundary_refresh")}
         </button>

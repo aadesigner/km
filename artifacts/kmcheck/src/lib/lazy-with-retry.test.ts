@@ -31,7 +31,8 @@ describe("shouldAttemptChunkReload", () => {
     });
   });
 
-  it("allows one soft reload attempt within the window", () => {
+  it("allows two soft reload attempts within the window", () => {
+    expect(shouldAttemptChunkReload()).toBe(true);
     expect(shouldAttemptChunkReload()).toBe(true);
     expect(shouldAttemptChunkReload()).toBe(false);
   });

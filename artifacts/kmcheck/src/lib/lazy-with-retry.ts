@@ -3,8 +3,8 @@ import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 export const CHUNK_RELOAD_KEY = "kmcheck-chunk-reload";
 
 const CHUNK_RETRY_DELAY_MS = 350;
-/** One soft full-page reload per window — avoids reload loops after deploy. */
-const CHUNK_RELOAD_MAX = 1;
+/** Soft full-page reloads after deploy / stale chunks — capped to avoid loops. */
+const CHUNK_RELOAD_MAX = 2;
 const CHUNK_RELOAD_WINDOW_MS = 120_000;
 
 type ChunkReloadState = { count: number; at: number };
