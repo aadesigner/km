@@ -776,6 +776,7 @@
   "free_decoder_cta_desc": "Débloquez les relevés réels de compteur, l'historique des accidents, le statut salvage et les contrôles de vol.",
   "free_decoder_unlock_btn": "Débloquer le rapport complet",
   "free_decoder_nav_link": "Décodeur VIN gratuit",
+  "footer_api_b2b": "API & B2B Revendeur",
   "free_decoder_what_decode": "Ce qui est décodé gratuitement",
   "free_decoder_what_decode_desc": "Année, marque, modèle, moteur, carrosserie, lieu d'assemblage, chiffre de contrôle et décomposition usine par marque — le tout à partir de la structure du VIN.",
   "free_decoder_what_locked": "Ce qui est verrouillé",

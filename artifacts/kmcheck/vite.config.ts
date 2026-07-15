@@ -108,9 +108,16 @@ export default defineConfig(({ command }) => ({
     host: "0.0.0.0",
     allowedHosts: true,
     proxy: {
+      // Only real backend routes (`/api`, `/api/...`). Never capture `/api-b2b` marketing.
       "/api": {
         target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
         changeOrigin: true,
+        bypass(req) {
+          const url = req.url ?? "";
+          const path = url.split("?")[0] ?? "";
+          if (path === "/api" || path.startsWith("/api/")) return undefined;
+          return url;
+        },
         configure: (proxy) => {
           proxy.on("proxyReq", (proxyReq, req) => {
             const host = req.headers.host;

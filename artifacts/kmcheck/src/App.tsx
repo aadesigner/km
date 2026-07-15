@@ -186,6 +186,66 @@ const HowItWorksLang      = withLang(HowItWorks as React.ComponentType<{ params:
 const FAQLang             = withLang(FAQ as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 const MaintenanceLang     = withLang(Maintenance as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 
+const ApiB2bHomePage = lazyWithRetry(() => import("@/pages/api-b2b/home"));
+const ApiB2bPlansPage = lazyWithRetry(() => import("@/pages/api-b2b/plans"));
+const ApiB2bContactPage = lazyWithRetry(() => import("@/pages/api-b2b/contact"));
+const ApiB2bRegionPage = lazyWithRetry(() => import("@/pages/api-b2b/region"));
+const ApiB2bLayoutLazy = lazyWithRetry(() =>
+  import("@/pages/api-b2b/layout").then((m) => ({ default: m.ApiB2bLayout })),
+);
+
+function withApiB2bLang(
+  Component: React.ComponentType<{ params: { lang: string; [key: string]: string } }>,
+) {
+  return function ApiB2bLangWrapper(props: { params: { lang: string; [key: string]: string } }) {
+    const [location] = useLocation();
+    const resetKey = location.split("?")[0] ?? location;
+    const validLangs = SUPPORTED_LANGS as readonly string[];
+    if (!validLangs.includes(props.params.lang)) {
+      return <Redirect to="/en/api-b2b" />;
+    }
+    return (
+      <I18nProvider initialLanguage={props.params.lang as Language}>
+        <LocaleReadyGate>
+          <RouteSEO />
+          <Suspense fallback={<PageLoader />}>
+            <ApiB2bLayoutLazy>
+              <RouteErrorBoundary scope="api-b2b" resetKey={resetKey}>
+                <Component {...props} />
+              </RouteErrorBoundary>
+            </ApiB2bLayoutLazy>
+          </Suspense>
+        </LocaleReadyGate>
+      </I18nProvider>
+    );
+  };
+}
+
+const ApiB2bHomeLang = withApiB2bLang(ApiB2bHomePage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
+const ApiB2bPlansLang = withApiB2bLang(ApiB2bPlansPage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
+const ApiB2bContactLang = withApiB2bLang(ApiB2bContactPage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
+
+function ApiB2bRegionLang(props: { params: { lang: string; region: string } }) {
+  const [location] = useLocation();
+  const resetKey = location.split("?")[0] ?? location;
+  const validLangs = SUPPORTED_LANGS as readonly string[];
+  if (!validLangs.includes(props.params.lang)) return <Redirect to="/en/api-b2b" />;
+  return (
+    <I18nProvider initialLanguage={props.params.lang as Language}>
+      <LocaleReadyGate>
+        <RouteSEO />
+        <Suspense fallback={<PageLoader />}>
+          <ApiB2bLayoutLazy>
+            <RouteErrorBoundary scope="api-b2b-region" resetKey={resetKey}>
+              <ApiB2bRegionPage params={props.params} />
+            </RouteErrorBoundary>
+          </ApiB2bLayoutLazy>
+        </Suspense>
+      </LocaleReadyGate>
+    </I18nProvider>
+  );
+}
+
 function CountryLang(props: { params: { lang: string; country: string } }) {
   const [location] = useLocation();
   const resetKey = location.split("?")[0] ?? location;
@@ -702,6 +762,13 @@ function AppRouter() {
         <Route path="/:lang/how-it-works" component={HowItWorksLang} />
         <Route path="/:lang/faq" component={FAQLang} />
         <Route path="/:lang/maintenance" component={MaintenanceLang} />
+
+        {/* B2B API marketing (separate shell from consumer site) */}
+        <Route path="/:lang/api-b2b/plans" component={ApiB2bPlansLang} />
+        <Route path="/:lang/api-b2b/contact" component={ApiB2bContactLang} />
+        <Route path="/:lang/api-b2b/:region" component={ApiB2bRegionLang} />
+        <Route path="/:lang/api-b2b" component={ApiB2bHomeLang} />
+
         <Route path="/:lang" component={HomeLang} />
 
         <Route component={NotFoundLang} />

@@ -32,6 +32,7 @@ interface SEOProps {
   ogImageAlt?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   favicons?: FaviconSet;
+  keywords?: string;
 }
 
 function upsertMeta(key: string, content: string, attr = "name") {
@@ -90,13 +91,19 @@ export function applySeoHead({
   ogImageAlt,
   jsonLd,
   favicons,
+  keywords,
 }: SEOProps) {
   document.title = title;
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
   upsertMeta("description", description);
-  upsertMeta("robots", noIndex ? "noindex, nofollow" : "index, follow");
+  upsertMeta("robots", noIndex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1");
+  if (keywords?.trim()) {
+    upsertMeta("keywords", keywords);
+  } else {
+    document.querySelector('meta[name="keywords"]')?.remove();
+  }
 
   upsertMeta("og:title", title, "property");
   upsertMeta("og:description", description, "property");
@@ -159,13 +166,13 @@ export function usePageSeo(pageKeyOverride?: SeoPageKey) {
   );
 }
 
-export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons }: SEOProps) {
+export function SEOHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons, keywords }: SEOProps) {
   useLayoutEffect(() => {
-    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons });
+    applySeoHead({ title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd, favicons, keywords });
     return () => {
       document.getElementById("kmcheck-json-ld")?.remove();
     };
-  }, [title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd == null ? null : JSON.stringify(jsonLd), favicons?.icon16, favicons?.icon32, favicons?.apple]);
+  }, [title, description, lang, canonicalPath, noIndex, ogImage, ogImageAlt, jsonLd == null ? null : JSON.stringify(jsonLd), favicons?.icon16, favicons?.icon32, favicons?.apple, keywords]);
 
   return null;
 }

@@ -799,6 +799,7 @@
   "free_decoder_cta_desc": "解锁真实里程记录、事故历史、报废状态与盗抢核查。",
   "free_decoder_unlock_btn": "解锁完整报告",
   "free_decoder_nav_link": "免费 VIN 解码器",
+  "footer_api_b2b": "API 与 B2B 转售",
   "free_decoder_what_decode": "免费解码内容",
   "free_decoder_what_decode_desc": "年款、品牌、型号、发动机、车身、工厂位置、校验位及品牌专属出厂分解 — 均来自 VIN 结构。",
   "free_decoder_what_locked": "锁定内容",

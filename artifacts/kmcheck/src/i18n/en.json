@@ -802,6 +802,7 @@
   "free_decoder_cta_desc": "Unlock real mileage records, accident history, salvage status, and theft checks.",
   "free_decoder_unlock_btn": "Unlock Full Report",
   "free_decoder_nav_link": "Free VIN Decoder",
+  "footer_api_b2b": "API & B2B Reseller",
   "free_decoder_what_decode": "What's decoded free",
   "free_decoder_what_decode_desc": "Year, make, model, engine, body style, plant location, check digit, and brand-specific factory breakdown — all from the VIN structure.",
   "free_decoder_what_locked": "What's locked",

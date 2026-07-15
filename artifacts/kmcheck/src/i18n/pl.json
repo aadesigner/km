@@ -776,6 +776,7 @@
   "free_decoder_cta_desc": "Odblokuj rzeczywiste zapisy przebiegu, historię wypadków, status salvage i sprawdzenia kradzieży.",
   "free_decoder_unlock_btn": "Odblokuj pełny raport",
   "free_decoder_nav_link": "Darmowy dekoder VIN",
+  "footer_api_b2b": "API & B2B Odsprzedawca",
   "free_decoder_what_decode": "Co jest dekodowane za darmo",
   "free_decoder_what_decode_desc": "Rok, marka, model, silnik, typ nadwozia, lokalizacja zakładu, cyfra kontrolna i fabryczny podział marki — wszystko ze struktury VIN.",
   "free_decoder_what_locked": "Co jest zablokowane",

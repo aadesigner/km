@@ -766,6 +766,7 @@
   "free_decoder_cta_desc": "افتح سجلات الكيلومترات الحقيقية وتاريخ الحوادث وحالة الخسارة وفحوصات السرقة.",
   "free_decoder_unlock_btn": "فتح التقرير الكامل",
   "free_decoder_nav_link": "فك تشفير VIN مجاناً",
+  "footer_api_b2b": "API وB2B لإعادة البيع",
   "free_decoder_what_decode": "ما يُفكَّر مجاناً",
   "free_decoder_what_decode_desc": "السنة والماركة والموديل والمحرك والهيكل وموقع المصنع ورقم الفحص — كلها من بنية رقم VIN.",
   "free_decoder_what_locked": "ما هو مقفل",

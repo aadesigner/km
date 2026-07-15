@@ -1273,3 +1273,15 @@
     }
   }
 }
+
+/* B2B marketing — paint below-fold sections later; respect reduced motion */
+.api-b2b-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 640px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-b2b * {
+    scroll-behavior: auto !important;
+  }
+}

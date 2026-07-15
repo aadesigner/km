@@ -769,6 +769,7 @@
   "free_decoder_cta_desc": "Zhblloko regjistrat reale të kilometrave, historinë e aksidenteve, statusin e dëmtimit total dhe kontrollet e vjedhjes.",
   "free_decoder_unlock_btn": "Zhblloko raportin e plotë",
   "free_decoder_nav_link": "Dekodues VIN Falas",
+  "footer_api_b2b": "API & B2B Rishitës",
   "free_decoder_what_decode": "Çfarë dekoduhet falas",
   "free_decoder_what_decode_desc": "Viti, marka, modeli, motori, karroceria, vendndodhja e fabrikës, shifra e kontrollit dhe analiza e fabrikës sipas markës — të gjitha nga struktura e VIN-it.",
   "free_decoder_what_locked": "Çfarë është e bllokuar",

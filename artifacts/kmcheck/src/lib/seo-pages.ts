@@ -11,6 +11,9 @@ import { resolveFavicons } from "./country-favicons";
 import { resolvePageOgImage } from "./seo-og-images";
 // @ts-expect-error ESM build script — no generated .d.ts
 import { buildCountryPageJsonLd } from "../../scripts/country-page-json-ld.mjs";
+import { getB2bCopy } from "@/pages/api-b2b/copy";
+import { findApiB2bRegion } from "@/pages/api-b2b/regions";
+import type { Language } from "@/lib/languages";
 
 export type SeoPageKey = keyof typeof seoData;
 
@@ -50,6 +53,11 @@ export function resolvePageKey(rest: string): SeoPageKey {
   const exact = PATH_TO_SEO_KEY[rest];
   if (exact) return exact;
 
+  // Indexable B2B marketing — titles come from resolveApiB2bSeo (not SEO_DATA keys).
+  if (rest === "/api-b2b" || rest.startsWith("/api-b2b/")) {
+    return "home";
+  }
+
   if (rest.startsWith("/cars/")) {
     const slug = rest.split("/").filter(Boolean)[1]?.toLowerCase();
     if (slug && VALID_COUNTRY_SLUGS.has(slug)) {
@@ -65,6 +73,35 @@ export function resolvePageKey(rest: string): SeoPageKey {
   if (rest.startsWith("/vin/")) return "vin_result";
 
   return "not_found";
+}
+
+function resolveApiB2bSeo(lang: SeoLang, rest: string): {
+  title: string;
+  description: string;
+  keywords: string;
+} | null {
+  if (rest !== "/api-b2b" && !rest.startsWith("/api-b2b/")) return null;
+  const c = getB2bCopy(lang as Language);
+  const tail = rest.replace(/^\/api-b2b/, "") || "";
+  if (!tail || tail === "/") {
+    return { title: c.seoHomeTitle, description: c.seoHomeDesc, keywords: c.seoKeywords };
+  }
+  if (tail === "/plans") {
+    return { title: c.seoPlansTitle, description: c.seoPlansDesc, keywords: c.seoKeywords };
+  }
+  if (tail === "/contact") {
+    return { title: c.seoContactTitle, description: c.seoContactDesc, keywords: c.seoKeywords };
+  }
+  const region = findApiB2bRegion(tail.replace(/^\//, ""));
+  if (region) {
+    const name = c[region.nameKey];
+    return {
+      title: c.seoRegionTitle.replace("{region}", name),
+      description: c.seoRegionDesc.replace(/\{region\}/g, name),
+      keywords: `${c.seoKeywords}, ${name}`,
+    };
+  }
+  return { title: c.seoHomeTitle, description: c.seoHomeDesc, keywords: c.seoKeywords };
 }
 
 const NOINDEX_PREFIXES = [
@@ -139,8 +176,11 @@ export function getRouteSeo(
     };
   }
 
-  const seo = getSeoEntry(resolved.lang, pageKey);
-  const ogImage = resolvePageOgImage(pageKey, resolved.lang, basePath);
+  const apiB2b = resolveApiB2bSeo(resolved.lang, resolved.rest);
+  const seo = apiB2b
+    ? { title: apiB2b.title, description: apiB2b.description }
+    : getSeoEntry(resolved.lang, pageKey);
+  const ogImage = resolvePageOgImage(apiB2b ? "home" : pageKey, resolved.lang, basePath);
   const canonicalPath = buildCanonicalPath(resolved.lang, resolved.rest);
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
   const absoluteOgImage = ogImage
@@ -148,8 +188,8 @@ export function getRouteSeo(
     : undefined;
 
   const countryJsonLd =
-    pageKey === "country_usa" || pageKey === "country_korea" || pageKey === "country_canada"
-      || pageKey === "country_china" || pageKey === "country_uae"
+    !apiB2b && (pageKey === "country_usa" || pageKey === "country_korea" || pageKey === "country_canada"
+      || pageKey === "country_china" || pageKey === "country_uae")
       ? buildCountryPageJsonLd({
           pageKey,
           title: seo.title,
@@ -160,14 +200,62 @@ export function getRouteSeo(
         })
       : undefined;
 
+  const apiB2bJsonLd = apiB2b
+    ? [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: apiB2b.title,
+          description: apiB2b.description,
+          url: canonicalUrl,
+          inLanguage: HREFLANG_MAP[resolved.lang],
+          isPartOf: { "@type": "WebSite", name: "kmcheck API", url: `${SITE_ORIGIN}/${resolved.lang}/api-b2b` },
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "kmcheck Vehicle History API",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          description: apiB2b.description,
+          offers: {
+            "@type": "Offer",
+            category: "B2B API / White-label",
+            url: `${SITE_ORIGIN}/${resolved.lang}/api-b2b/plans`,
+          },
+          provider: {
+            "@type": "Organization",
+            name: "kmcheck",
+            url: SITE_ORIGIN,
+            email: "info@kmcheck.com",
+          },
+          areaServed: ["US", "CA", "KR", "AE", "CN"],
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "kmcheck",
+          url: SITE_ORIGIN,
+          logo: `${SITE_ORIGIN}/brand/logo-dark.png`,
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "sales",
+            email: "info@kmcheck.com",
+            availableLanguage: ["en", "de", "es", "fr", "pl", "ro", "bg", "sq", "ar", "uk", "ru", "zh"],
+          },
+        },
+      ]
+    : undefined;
+
   return {
     ...seo,
     lang: resolved.lang,
     canonicalPath,
-    noIndex: resolved.noIndex || pageKey === "not_found",
+    noIndex: apiB2b ? false : (resolved.noIndex || pageKey === "not_found"),
     favicons: resolveFavicons(pageKey, basePath),
     ogImage,
     ogImageAlt: seo.title,
-    jsonLd: countryJsonLd,
+    jsonLd: apiB2bJsonLd ?? countryJsonLd,
+    keywords: apiB2b?.keywords,
   };
 }

@@ -776,6 +776,7 @@
   "free_decoder_cta_desc": "Schalten Sie echte Kilometerstandsdaten, Unfallhistorie, salvage-Status und Diebstahlprüfungen frei.",
   "free_decoder_unlock_btn": "Vollständigen Bericht freischalten",
   "free_decoder_nav_link": "Kostenloser VIN-Decoder",
+  "footer_api_b2b": "API & B2B Wiederverkäufer",
   "free_decoder_what_decode": "Was kostenlos dekodiert wird",
   "free_decoder_what_decode_desc": "Baujahr, Marke, Modell, Motor, Karosserieform, Werksstandort, Prüfziffer und markenspezifische Werksaufschlüsselung — alles aus der VIN-Struktur.",
   "free_decoder_what_locked": "Was gesperrt ist",

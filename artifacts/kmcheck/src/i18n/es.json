@@ -776,6 +776,7 @@
   "free_decoder_cta_desc": "Desbloquee registros reales de kilometraje, historial de accidentes, estado de siniestro total y comprobaciones de robo.",
   "free_decoder_unlock_btn": "Desbloquear informe completo",
   "free_decoder_nav_link": "Decodificador VIN gratuito",
+  "footer_api_b2b": "API & B2B Revendedor",
   "free_decoder_what_decode": "Qué se decodifica gratis",
   "free_decoder_what_decode_desc": "Año, marca, modelo, motor, carrocería, ubicación de la planta, dígito de control y desglose de fábrica por marca — todo a partir de la estructura del VIN.",
   "free_decoder_what_locked": "Qué está bloqueado",

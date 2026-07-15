@@ -766,6 +766,7 @@
   "free_decoder_cta_desc": "Разблокируйте реальные записи пробега, историю аварий, аварийный статус и проверку угона.",
   "free_decoder_unlock_btn": "Получить полный отчёт",
   "free_decoder_nav_link": "Бесплатный декодер VIN",
+  "footer_api_b2b": "API и B2B реселлер",
   "free_decoder_what_decode": "Что декодируется бесплатно",
   "free_decoder_what_decode_desc": "Год, марка, модель, двигатель, кузов, место производства и контрольная цифра — всё из VIN.",
   "free_decoder_what_locked": "Что заблокировано",

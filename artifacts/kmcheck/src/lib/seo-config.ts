@@ -37,6 +37,14 @@ export const INDEXABLE_PATHS = [
   "/cars/canada",
   "/cars/china",
   "/cars/uae",
+  "/api-b2b",
+  "/api-b2b/plans",
+  "/api-b2b/contact",
+  "/api-b2b/usa-cars",
+  "/api-b2b/canada-cars",
+  "/api-b2b/korea-cars",
+  "/api-b2b/dubai-cars",
+  "/api-b2b/china-cars",
 ] as const;
 
 export function buildLocalizedPath(lang: SeoLang, path: string): string {
