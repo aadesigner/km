@@ -35,16 +35,24 @@ function decodeDaciaModel(vin: string): string | null {
 }
 
 // ── Suzuki ───────────────────────────────────────────────────────────────────
+// Type codes at positions 4–5 are well-documented for HU/JP plants (cariffy / MMC).
 const SUZUKI_PREFIX_RULES = compilePrefixRules([
   { prefix: "JS2ZC", model: "Swift" },
   { prefix: "JS2YB", model: "Baleno" },
   { prefix: "JS3JB", model: "Jimny" },
   { prefix: "JS3TE", model: "Vitara" },
   { prefix: "JS3TD", model: "Vitara" },
+  { prefix: "JS3JT", model: "Grand Vitara" },
+  { prefix: "JS3FT", model: "Grand Vitara" },
   { prefix: "TSMLY", model: "Vitara" },
   { prefix: "TSMNZ", model: "S-Cross" },
   { prefix: "TSMKY", model: "SX4 S-Cross" },
+  { prefix: "TSMJY", model: "SX4 S-Cross" },
   { prefix: "TSMJB", model: "Jimny" },
+  { prefix: "TSMMH", model: "Ignis" },
+  { prefix: "TSMEX", model: "Splash" },
+  { prefix: "TSMMA", model: "Swift" },
+  { prefix: "JSAFH", model: "Ignis" },
   { prefix: "MA3E", model: "Swift" },
   { prefix: "MA3C", model: "Dzire" },
   { prefix: "MA3F", model: "Brezza" },
@@ -167,10 +175,16 @@ const DS_VF7_RULES = compilePrefixRules([
 ]);
 
 // ── Smart / Lancia / Mahindra / Lada ─────────────────────────────────────────
+// WME45x = classic MCC/Daimler era; HES* = Smart Automobile (Geely × MB) China.
+// HESXR / HESCR confirmed via 17vin model plates (HESXR1C4 → #1, HESCR1C4 → #3).
 const SMART_PREFIX_RULES = compilePrefixRules([
-  { prefix: "WME451", model: "fortwo" },
-  { prefix: "WME453", model: "forfour" },
-  { prefix: "WME454", model: "#1" },
+  { prefix: "HESXR", model: "#1", chassis: "HX11" },
+  { prefix: "HESCR", model: "#3", chassis: "HC11" },
+  { prefix: "WME450", model: "fortwo", chassis: "450" },
+  { prefix: "WME451", model: "fortwo", chassis: "451" },
+  { prefix: "WME452", model: "Roadster", chassis: "452" },
+  { prefix: "WME453", model: "forfour", chassis: "453" },
+  { prefix: "WME454", model: "#1", chassis: "HX11" },
 ]);
 
 const LANCIA_PREFIX_RULES = compilePrefixRules([
@@ -213,9 +227,23 @@ function isIsuzuWmi(wmi: string): boolean {
 export type GlobalBrandDecode = {
   model: string | null;
   makeOverride: string | null;
+  /** Platform / chassis / generation when the prefix rule encodes one. */
+  chassis: string | null;
 };
 
-const EMPTY_GLOBAL: GlobalBrandDecode = { model: null, makeOverride: null };
+const EMPTY_GLOBAL: GlobalBrandDecode = { model: null, makeOverride: null, chassis: null };
+
+function hitToGlobal(
+  hit: PrefixRule | null,
+  makeOverride: string | null,
+): GlobalBrandDecode {
+  if (!hit) return { model: null, makeOverride, chassis: null };
+  return {
+    model: hit.model,
+    makeOverride,
+    chassis: hit.chassis ?? null,
+  };
+}
 
 /**
  * Single WMI-gated pass — only runs decoders relevant to the VIN prefix.
@@ -228,27 +256,29 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
   const wmi = upper.slice(0, 3);
 
   if (isDaciaVin(upper)) {
-    return { model: decodeDaciaModel(upper), makeOverride: "Dacia" };
+    const model = decodeDaciaModel(upper);
+    const hit = matchLongestPrefix(upper, DACIA_PREFIX_RULES);
+    return {
+      model,
+      makeOverride: "Dacia",
+      chassis: hit?.chassis ?? null,
+    };
   }
 
   if (upper.startsWith("VSS") || upper.startsWith("VS7") || upper.startsWith("VSX")) {
     const hit = matchLongestPrefix(upper, CUPRA_PREFIX_RULES);
-    if (hit) return { model: hit.model, makeOverride: "Cupra" };
+    if (hit) return hitToGlobal(hit, "Cupra");
     return EMPTY_GLOBAL;
   }
 
   if (upper.startsWith("VR1")) {
     const hit = matchLongestPrefix(upper, DS_VR1_RULES);
-    return hit
-      ? { model: hit.model, makeOverride: "DS Automobiles" }
-      : EMPTY_GLOBAL;
+    return hit ? hitToGlobal(hit, "DS Automobiles") : EMPTY_GLOBAL;
   }
 
   if (upper.startsWith("VF7")) {
     const hit = matchLongestPrefix(upper, DS_VF7_RULES);
-    return hit
-      ? { model: hit.model, makeOverride: "DS Automobiles" }
-      : EMPTY_GLOBAL;
+    return hit ? hitToGlobal(hit, "DS Automobiles") : EMPTY_GLOBAL;
   }
 
   if (wmi === "LPS" || wmi.startsWith("YSM")) {
@@ -256,79 +286,66 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
     return {
       model: hit?.model ?? null,
       makeOverride: "Polestar",
+      chassis: hit?.chassis ?? null,
     };
   }
 
   if (wmi === "LYV") {
     const hit = matchLongestPrefix(upper, POLESTAR_PREFIX_RULES);
-    return hit
-      ? { model: hit.model, makeOverride: "Polestar" }
-      : EMPTY_GLOBAL;
+    return hit ? hitToGlobal(hit, "Polestar") : EMPTY_GLOBAL;
   }
 
   if (isVinFastVin(upper)) {
-    const hit = matchLongestPrefix(upper, VINFAST_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: "VinFast" };
+    return hitToGlobal(matchLongestPrefix(upper, VINFAST_PREFIX_RULES), "VinFast");
   }
 
   if (wmi === "MAT") {
-    const hit = matchLongestPrefix(upper, TATA_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: "Tata" };
+    return hitToGlobal(matchLongestPrefix(upper, TATA_PREFIX_RULES), "Tata");
   }
 
   if (isIsuzuWmi(wmi)) {
-    const hit = matchLongestPrefix(upper, ISUZU_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: "Isuzu" };
+    return hitToGlobal(matchLongestPrefix(upper, ISUZU_PREFIX_RULES), "Isuzu");
   }
 
   if (wmi === "KPT" || wmi === "KPA") {
-    const hit = matchLongestPrefix(upper, KGM_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, KGM_PREFIX_RULES), null);
   }
 
   if (wmi.startsWith("LSJ")) {
-    const hit = matchLongestPrefix(upper, MG_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, MG_PREFIX_RULES), null);
   }
 
   if (wmi === "LFP" || wmi === "LC0" || wmi === "LBV" || wmi === "LGX") {
-    const hit = matchLongestPrefix(upper, BYD_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, BYD_PREFIX_RULES), null);
   }
 
   if (wmi.startsWith("LGW")) {
-    const hit = matchLongestPrefix(upper, HAVAL_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, HAVAL_PREFIX_RULES), null);
   }
 
   if (isSuzukiWmi(wmi)) {
-    const hit = matchLongestPrefix(upper, SUZUKI_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, SUZUKI_PREFIX_RULES), null);
   }
 
   if (upper.startsWith("5LA")) {
-    const hit = matchLongestPrefix(upper, LUCID_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, LUCID_PREFIX_RULES), null);
   }
 
-  if (wmi.startsWith("WME")) {
-    const hit = matchLongestPrefix(upper, SMART_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+  // WME (EU classic) + HES (China Smart Automobile JV)
+  if (wmi.startsWith("WME") || wmi === "HES") {
+    return hitToGlobal(matchLongestPrefix(upper, SMART_PREFIX_RULES), wmi === "HES" ? "Smart" : null);
   }
 
   if (wmi.startsWith("ZLA")) {
-    const hit = matchLongestPrefix(upper, LANCIA_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, LANCIA_PREFIX_RULES), null);
   }
 
   if (wmi.startsWith("MA1")) {
-    const hit = matchLongestPrefix(upper, MAHINDRA_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, MAHINDRA_PREFIX_RULES), null);
   }
 
   if (wmi.startsWith("XTA")) {
-    const hit = matchLongestPrefix(upper, LADA_PREFIX_RULES);
-    return { model: hit?.model ?? null, makeOverride: null };
+    return hitToGlobal(matchLongestPrefix(upper, LADA_PREFIX_RULES), null);
   }
 
   return EMPTY_GLOBAL;

@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "欢迎使用 kmcheck",
   "check_vin": "查询 VIN",
   "check_vin_short": "查询",
@@ -1534,5 +1534,8 @@
   "free_decoder_seo_cta_title": "出厂数据免费。历史一键解锁。",
   "free_decoder_seo_cta_desc": "解码后解锁已验证里程、事故和 salvage 状态 — 通常数秒内完成。",
   "free_decoder_seo_cta_btn": "查看完整报告价格",
-  "free_decoder_example_try": "试用示例 VIN"
+  "free_decoder_example_try": "试用示例 VIN",
+  "free_decoder_brand_mazda_short": "MAZ",
+  "free_decoder_brand_mazda_title": "Mazda VIN 解码器",
+  "free_decoder_brand_mazda_desc": "Mazda (JM1, JM3, 3MZ, 7MM)：Mazda3、CX-5、CX-30、MX-5 — 从 VIN 读取车型与工厂。"
 }

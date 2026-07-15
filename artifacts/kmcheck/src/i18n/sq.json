@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Mirësevini në kmcheck",
   "check_vin": "Kontrollo VIN",
   "check_vin_short": "Kontrollo",
@@ -1537,5 +1537,8 @@
   "free_decoder_seo_cta_title": "Specifikimet falas. Historia një klik larg.",
   "free_decoder_seo_cta_desc": "Pas dekodimit, zhbllokoni kilometrazhin, aksidentet dhe statusin e dëmtimit total — zakonisht për sekonda.",
   "free_decoder_seo_cta_btn": "Shiko çmimet e raportit",
-  "free_decoder_example_try": "Provo VIN shembull"
+  "free_decoder_example_try": "Provo VIN shembull",
+  "free_decoder_brand_mazda_short": "MAZ",
+  "free_decoder_brand_mazda_title": "Dekodues VIN Mazda",
+  "free_decoder_brand_mazda_desc": "Mazda (JM1, JM3, 3MZ, 7MM): Mazda3, CX-5, CX-30, MX-5 — modeli dhe fabrika nga VIN."
 }

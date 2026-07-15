@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "مرحباً بك في kmcheck",
   "check_vin": "تحقق من رقم الشاسيه",
   "check_vin_short": "تحقق",
@@ -1534,5 +1534,8 @@
   "free_decoder_seo_cta_title": "بيانات المصنع مجاناً. السجل بنقرة واحدة.",
   "free_decoder_seo_cta_desc": "بعد الفك، افتح المسافة الموثقة والحوادث وحالة salvage — خلال ثوانٍ.",
   "free_decoder_seo_cta_btn": "عرض أسعار التقرير",
-  "free_decoder_example_try": "جرب VIN نموذجي"
+  "free_decoder_example_try": "جرب VIN نموذجي",
+  "free_decoder_brand_mazda_short": "MAZ",
+  "free_decoder_brand_mazda_title": "فك تشفير VIN لـ Mazda",
+  "free_decoder_brand_mazda_desc": "Mazda (JM1, JM3, 3MZ, 7MM): Mazda3 وCX-5 وCX-30 وMX-5 — الطراز والمصنع من رقم الشاسيه."
 }

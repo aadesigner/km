@@ -85,25 +85,40 @@ export function matchSkodaRule(vin: string): PrefixRule | null {
 }
 
 // ── Renault — longer VDS prefix rules (4-char MODEL_MAP_4 handles WMI + pos 4) ─
+// Longest-prefix first via compilePrefixRules. Prefer specific line codes over VF1R → Zoe.
 const RENAULT_PREFIX_RULES = compilePrefixRules([
   { prefix: "VF1RFK", model: "Captur" },
   { prefix: "VF1RJK", model: "Captur" },
   { prefix: "VF1RJH", model: "Captur" },
-  { prefix: "VF1RF", model: "Clio" },
-  { prefix: "VF1R5", model: "Clio" },
-  { prefix: "VF1RJ", model: "Clio" },
   { prefix: "VF1RJA", model: "Clio" },
-  { prefix: "VF1LB", model: "Megane" },
-  { prefix: "VF1LM", model: "Megane" },
-  { prefix: "VF1AG", model: "Arkana" },
   { prefix: "VF1RJF", model: "Duster" },
   { prefix: "VF1RFB", model: "Austral" },
   { prefix: "VF1RFA", model: "Scenic" },
   { prefix: "VF1RFD", model: "Espace" },
+  { prefix: "VF1RF", model: "Clio" },
+  { prefix: "VF1R5", model: "Clio" },
+  { prefix: "VF1RJ", model: "Clio" },
+  { prefix: "VF1LB", model: "Megane" },
+  { prefix: "VF1LM", model: "Megane" },
+  { prefix: "VF1AG", model: "Arkana" },
+  { prefix: "VF1BA", model: "Twingo" },
+  { prefix: "VF1BB", model: "Twingo" },
+  { prefix: "VF1R", model: "Zoe" },
+  // Spanish Renault plants reuse the same VDS family letters as VF1.
+  { prefix: "VF2RFK", model: "Captur" },
+  { prefix: "VF2RJA", model: "Clio" },
+  { prefix: "VF2RF", model: "Clio" },
+  { prefix: "VF2RJ", model: "Clio" },
+  { prefix: "VF2LB", model: "Megane" },
 ]);
 
 function isRenaultWmi(wmi: string): boolean {
-  return wmi.startsWith("VF1") || wmi.startsWith("VF2") || wmi.startsWith("GA1");
+  return (
+    wmi.startsWith("VF1")
+    || wmi.startsWith("VF2")
+    || wmi.startsWith("VF6")
+    || wmi.startsWith("VF8")
+  );
 }
 
 function decodeRenaultModel(vin: string): string | null {
@@ -126,8 +141,11 @@ const FIAT_PLATFORM_456: Record<string, string> = {
   "350": "Idea",
   "220": "Scudo",
   "263": "Doblo",
+  "270": "Fiorino",
   "280": "Ducato",
   "290": "Ducato",
+  "330": "500L",
+  "357": "500L",
 };
 
 const FIAT_PREFIX_RULES = compilePrefixRules([
@@ -137,11 +155,22 @@ const FIAT_PREFIX_RULES = compilePrefixRules([
   { prefix: "ZFA356", model: "500X" },
   { prefix: "ZFA334", model: "Tipo" },
   { prefix: "ZFA359", model: "Tipo" },
+  { prefix: "ZFA330", model: "500L" },
+  { prefix: "ZFA357", model: "500L" },
+  { prefix: "ZFA270", model: "Fiorino" },
+  { prefix: "ZFA263", model: "Doblo" },
   { prefix: "ZFB312", model: "500" },
+  { prefix: "ZFC312", model: "500" },
+  { prefix: "ZCG312", model: "500" },
 ]);
 
 function isFiatWmi(wmi: string): boolean {
-  return wmi.startsWith("ZFA") || wmi.startsWith("ZFB") || wmi.startsWith("ZFC");
+  return (
+    wmi.startsWith("ZFA")
+    || wmi.startsWith("ZFB")
+    || wmi.startsWith("ZFC")
+    || wmi.startsWith("ZCG")
+  );
 }
 
 function decodeFiatModel(vin: string): string | null {

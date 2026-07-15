@@ -55,3 +55,6 @@ Thumbs.db
 
 # Local backups — not for version control
 backup/
+
+# VIN sitemap shards — generated at build/deploy when DATABASE_URL is set
+artifacts/kmcheck/public/sitemap-vins-*.xml

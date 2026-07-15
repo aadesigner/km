@@ -64,6 +64,14 @@ export const FREE_DECODER_BRAND_CARDS = [
     bg: "bg-cyan-500/10",
     text: "text-cyan-600 dark:text-cyan-400",
   },
+  {
+    id: "mazda",
+    sampleVin: "JM1BPAM7XK1234567",
+    accent: "from-red-700 to-red-500",
+    ring: "ring-red-600/25",
+    bg: "bg-red-600/10",
+    text: "text-red-700 dark:text-red-400",
+  },
 ] as const;
 
 export type FreeDecoderBrandId = (typeof FREE_DECODER_BRAND_CARDS)[number]["id"];

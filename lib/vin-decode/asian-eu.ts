@@ -20,7 +20,15 @@ const HYUNDAI_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHJ381", model: "Bayon" },
   { prefix: "KMHJ281", model: "i20", chassis: "BC3" },
   { prefix: "KMHJ181", model: "i20", chassis: "GB" },
+  { prefix: "KMHJ481", model: "i10", chassis: "AC3" },
   { prefix: "KMHN551", model: "Nexo" },
+  { prefix: "KMHD281", model: "Elantra", chassis: "CN7" },
+  { prefix: "KMHD641", model: "Elantra", chassis: "AD" },
+  { prefix: "KM8J3", model: "Tucson", chassis: "NX4 US" },
+  { prefix: "KM8K3", model: "Tucson", chassis: "NX4 US" },
+  { prefix: "5NMS2", model: "Santa Fe", chassis: "TM US" },
+  { prefix: "5NPE2", model: "Sonata", chassis: "DN8" },
+  { prefix: "5NPD8", model: "Elantra", chassis: "CN7 US" },
   { prefix: "TMAH381", model: "Tucson", chassis: "NX4 EU" },
   { prefix: "TMAJ381", model: "i30", chassis: "PD EU" },
   { prefix: "TMAJ281", model: "i20", chassis: "BC3 EU" },
@@ -44,6 +52,8 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "JTMAB3", model: "Yaris", chassis: "XP210" },
   { prefix: "JTMAF3", model: "Yaris", chassis: "XP130" },
   { prefix: "JTME1R", model: "bZ4X" },
+  { prefix: "JTMW1R", model: "Corolla Cross", chassis: "XG10" },
+  { prefix: "JTMDH3", model: "Corolla Cross", chassis: "XG10" },
   { prefix: "JTMDA3", model: "Corolla", chassis: "E210" },
   { prefix: "JTMDF3", model: "Corolla", chassis: "E170" },
   { prefix: "JTJBG1", model: "Land Cruiser", chassis: "J300" },
@@ -55,6 +65,7 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "SB1Y93", model: "Yaris", chassis: "XP210 UK" },
   { prefix: "SB1F93", model: "RAV4", chassis: "XA50 UK" },
   { prefix: "SB1J93", model: "Aygo X" },
+  { prefix: "SB1ZR", model: "Yaris Cross", chassis: "XP210 UK" },
   { prefix: "JTDAGN", model: "Aygo", chassis: "AB40" },
   { prefix: "JTDAGC", model: "Aygo", chassis: "AB10" },
   { prefix: "YARKA3", model: "Yaris", chassis: "XP210 FR" },
@@ -74,6 +85,15 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "4T1K61", model: "Camry", chassis: "XV70 Hybrid" },
   { prefix: "5TDZAR", model: "Sienna", chassis: "XL30" },
   { prefix: "5TDBK3", model: "Highlander", chassis: "XU50" },
+  { prefix: "5TDDZ3", model: "Highlander", chassis: "XU70" },
+]);
+
+// Honda EU / UK Swindon (SHH) — plant closed 2021; Type R era still common in EU VINs.
+const HONDA_EU_RULES: PrefixRule[] = compilePrefixRules([
+  { prefix: "SHHFK", model: "Civic", chassis: "EP3" },
+  { prefix: "SHHFN", model: "Civic", chassis: "FN2" },
+  { prefix: "SHHFR", model: "Civic", chassis: "FK2/FK8" },
+  { prefix: "SHHCR", model: "CR-V" },
 ]);
 
 function isHyundaiVin(vin: string): boolean {
@@ -86,6 +106,8 @@ function isHyundaiVin(vin: string): boolean {
     || wmi.startsWith("NLH")
     || wmi.startsWith("LNB")
     || wmi.startsWith("LNY")
+    || wmi.startsWith("5NM")
+    || wmi.startsWith("5NP")
   );
 }
 
@@ -104,9 +126,13 @@ function isToyotaExtendedVin(vin: string): boolean {
   );
 }
 
+function isHondaEuVin(vin: string): boolean {
+  return vin.startsWith("SHH");
+}
+
 export function isHyundaiToyotaVin(vin: string): boolean {
   const u = vin.toUpperCase();
-  return isHyundaiVin(u) || isToyotaExtendedVin(u);
+  return isHyundaiVin(u) || isToyotaExtendedVin(u) || isHondaEuVin(u);
 }
 
 /** Full rule hit (model + optional chassis) for series/generation. */
@@ -114,6 +140,10 @@ export function matchHyundaiToyotaRule(vin: string): PrefixRule | null {
   const u = vin.toUpperCase().trim();
   if (u.length < 9) return null;
 
+  if (isHondaEuVin(u)) {
+    const hondaEu = matchLongestPrefix(u, HONDA_EU_RULES);
+    if (hondaEu) return hondaEu;
+  }
   if (isHyundaiVin(u)) {
     const hyundai = matchLongestPrefix(u, HYUNDAI_RULES);
     if (hyundai) return hyundai;

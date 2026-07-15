@@ -129,13 +129,25 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
   const direct = path.join(publicDir, safe);
   if (existsSync(direct) && statSync(direct).isFile()) {
     applyStaticCacheHeaders(res, direct);
-    res.sendFile(direct);
+    res.sendFile(direct, (err) => {
+      if (!err) return;
+      logger.error({ err, file: direct, path: reqPath }, "static sendFile failed");
+      if (!res.headersSent) {
+        res.status(500).type("text/plain").send("File unavailable");
+      }
+    });
     return true;
   }
   const withIndex = path.join(publicDir, safe, "index.html");
   if (existsSync(withIndex) && statSync(withIndex).isFile()) {
     res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(withIndex);
+    res.sendFile(withIndex, (err) => {
+      if (!err) return;
+      logger.error({ err, file: withIndex, path: reqPath }, "static index sendFile failed");
+      if (!res.headersSent) {
+        res.status(500).type("text/plain").send("File unavailable");
+      }
+    });
     return true;
   }
   return false;
@@ -173,6 +185,38 @@ function sendHardNotFound(publicDir: string, req: Request, res: Response): boole
   return true;
 }
 
+const SITEMAP_FILE_RE = /^\/(sitemap\.xml|sitemap-pages\.xml|sitemap-vins-\d+\.xml)$/i;
+
+/**
+ * Dedicated sitemap handlers — always return application/xml (never SPA HTML),
+ * and log sendFile failures instead of letting Express fall through oddly.
+ */
+function mountSitemapRoutes(app: Express, publicDir: string): void {
+  app.get(SITEMAP_FILE_RE, (req: Request, res: Response) => {
+    const base = path.basename(req.path);
+    if (!/^(sitemap\.xml|sitemap-pages\.xml|sitemap-vins-\d+\.xml)$/i.test(base)) {
+      res.status(404).type("text/plain").send("Not found");
+      return;
+    }
+    const filePath = path.join(publicDir, base);
+    if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+      res.status(404).type("application/xml").send(
+        `<?xml version="1.0" encoding="UTF-8"?>\n<error>sitemap not found</error>\n`,
+      );
+      return;
+    }
+    applyStaticCacheHeaders(res, filePath);
+    res.type("application/xml");
+    res.sendFile(filePath, (err) => {
+      if (!err) return;
+      logger.error({ err, file: filePath }, "sitemap sendFile failed");
+      if (!res.headersSent) {
+        res.status(500).type("text/plain").send("Sitemap temporarily unavailable");
+      }
+    });
+  });
+}
+
 /** Serve built kmcheck frontend (production / Railway single-service deploy). */
 export function mountStaticSite(app: Express): string | null {
   if (process.env.SERVE_STATIC === "false") return null;
@@ -184,6 +228,9 @@ export function mountStaticSite(app: Express): string | null {
     }
     return null;
   }
+
+  // Before express.static + SPA fallback so sitemap always returns XML.
+  mountSitemapRoutes(app, publicDir);
 
   app.use(
     express.static(publicDir, {

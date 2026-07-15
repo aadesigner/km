@@ -20,4 +20,21 @@ describe("removeVinUrlBlocks", () => {
     expect(out).not.toContain("5YFS4MCE0NP127131");
     expect(out).toContain("/en/about");
   });
+
+  it("removes a single en+hreflang VIN entry (sharded format)", () => {
+    const xml = `<?xml version="1.0"?>
+<urlset xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://kmcheck.com/en/vin/JM1BPAM7XK1234567</loc>
+    <xhtml:link rel="alternate" hreflang="sq-AL" href="https://kmcheck.com/sq/vin/JM1BPAM7XK1234567" />
+  </url>
+  <url>
+    <loc>https://kmcheck.com/en/vin/OTHERVIN000000001</loc>
+  </url>
+</urlset>`;
+
+    const out = removeVinUrlBlocks(xml, "JM1BPAM7XK1234567");
+    expect(out).not.toContain("JM1BPAM7XK1234567");
+    expect(out).toContain("OTHERVIN000000001");
+  });
 });

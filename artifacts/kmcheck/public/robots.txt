@@ -13,4 +13,5 @@ Disallow: /*/checkout
 Disallow: /*/purchases
 Disallow: /*/vin/processing
 
+# Sitemap index (points at sitemap-pages.xml + optional sitemap-vins-*.xml shards)
 Sitemap: https://kmcheck.com/sitemap.xml

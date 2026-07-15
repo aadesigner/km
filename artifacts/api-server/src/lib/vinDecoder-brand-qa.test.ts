@@ -16,8 +16,8 @@ type BrandCase = {
 const CASES: BrandCase[] = [
   // ── Volkswagen Group ──────────────────────────────────────────────────────
   { vin: "WVGZZZ5NZDW535045", label: "VW Tiguan (WVG plant)", make: "Volkswagen", modelContains: "Tiguan", year: 2013 },
-  { vin: "WVWZZZ3CZCE064077", label: "VW Passat B8", make: "Volkswagen", modelContains: "Passat" },
-  { vin: "WVWZZZ1KZAW123456", label: "VW Golf Mk7/Mk8", make: "Volkswagen", modelContains: "Golf" },
+  { vin: "WVWZZZ3CZCE064077", label: "VW Passat (Typ 3C)", make: "Volkswagen", modelContains: "Passat" },
+  { vin: "WVWZZZ1KZAW123456", label: "VW Golf (Typ 1K)", make: "Volkswagen", modelContains: "Golf" },
   { vin: "WVWZZZ5NZBW123456", label: "VW Tiguan (WVW)", make: "Volkswagen", modelContains: "Tiguan" },
   { vin: "WVWZZZCJZAW123456", label: "VW ID.3", make: "Volkswagen", modelContains: "ID.3" },
   { vin: "1VWZZZA3ZDC050213", label: "VW Jetta US", make: "Volkswagen", modelContains: "Jetta" },
@@ -53,8 +53,8 @@ const CASES: BrandCase[] = [
   { vin: "WP0ZZZ9YZLS123456", label: "Porsche Taycan", make: "Porsche", modelContains: "Taycan" },
 
   // ── BMW ───────────────────────────────────────────────────────────────────
-  { vin: "WBA3A5C55FK123456", label: "BMW 3 Series F30", make: "BMW", modelContains: "3 Series" },
-  { vin: "WBA5E1105GG123456", label: "BMW 5 Series G30", make: "BMW", modelContains: "5 Series" },
+  { vin: "WBA3A5C55FK123456", label: "BMW 3 Series (ambiguous prefix)", make: "BMW", modelContains: "3 Series" },
+  { vin: "WBA5E1105HJ123456", label: "BMW 5 Series G30", make: "BMW", modelContains: "5 Series" },
   { vin: "WBA21EM00P9R09775", label: "BMW X7 G07", make: "BMW", modelContains: "X7" },
   { vin: "WBA31BH00P9R09775", label: "BMW X3 G01", make: "BMW", modelContains: "X3" },
   { vin: "WBY7E21050V123456", label: "BMW iX", make: "BMW", modelContains: "iX" },
@@ -67,21 +67,23 @@ const CASES: BrandCase[] = [
   { vin: "5UX3V7106FJ995387", label: "BMW 4 Series US", make: "BMW", modelContains: "4 Series" },
 
   // ── Mercedes-Benz ─────────────────────────────────────────────────────────
-  { vin: "WDD2130421A123456", label: "Mercedes E-Class W213", make: "Mercedes-Benz", modelContains: "E-Class" },
-  { vin: "WDD2050371A123456", label: "Mercedes C-Class W205", make: "Mercedes-Benz", modelContains: "C-Class" },
-  { vin: "WDD1770871A123456", label: "Mercedes A-Class W177", make: "Mercedes-Benz", modelContains: "A-Class" },
-  { vin: "WDD2531491A123456", label: "Mercedes GLC X253", make: "Mercedes-Benz", modelContains: "GLC" },
-  { vin: "WDD4632761A123456", label: "Mercedes G-Class", make: "Mercedes-Benz", modelContains: "G-Class" },
-  { vin: "WDDZZZ2131AA12345", label: "Mercedes E-Class EU ZZZ", make: "Mercedes-Benz", modelContains: "E-Class" },
-  { vin: "W1K2130461A123456", label: "Mercedes E-Class W1K", make: "Mercedes-Benz", modelContains: "E-Class" },
-  { vin: "W1K1770871A123456", label: "Mercedes A-Class W1K", make: "Mercedes-Benz", modelContains: "A-Class" },
-  { vin: "WDDZZZ1671AA12345", label: "Mercedes GLS EU ZZZ", make: "Mercedes-Benz", modelContains: "GLS" },
-  { vin: "WDD2140871A123456", label: "Mercedes E-Class W214", make: "Mercedes-Benz", modelContains: "E-Class" },
-  { vin: "WDD2060871A123456", label: "Mercedes C-Class W206", make: "Mercedes-Benz", modelContains: "C-Class" },
-  { vin: "WDD2040491A123456", label: "Mercedes C-Class W204", make: "Mercedes-Benz", modelContains: "C-Class" },
-  { vin: "WDB4632361A123456", label: "Mercedes G-Class WDB", make: "Mercedes-Benz", modelContains: "G-Class" },
-  { vin: "WDDGF8HB6LA123456", label: "Mercedes C-Class W204 letter VDS", make: "Mercedes-Benz", modelContains: "C-Class" },
+  // Year is VIN position 10 — replace that char; do not insert (must stay 17 chars).
+  { vin: "WDD213042GA123456", label: "Mercedes E-Class W213", make: "Mercedes-Benz", modelContains: "E-Class", year: 2016 },
+  { vin: "WDD205037FA123456", label: "Mercedes C-Class W205", make: "Mercedes-Benz", modelContains: "C-Class", year: 2015 },
+  { vin: "WDD177087KA123456", label: "Mercedes A-Class W177", make: "Mercedes-Benz", modelContains: "A-Class", year: 2019 },
+  { vin: "WDD253149GA123456", label: "Mercedes GLC X253", make: "Mercedes-Benz", modelContains: "GLC", year: 2016 },
+  { vin: "WDD463276LA123456", label: "Mercedes G-Class", make: "Mercedes-Benz", modelContains: "G-Class" },
+  { vin: "WDDZZZ213GAA12345", label: "Mercedes E-Class EU ZZZ", make: "Mercedes-Benz", modelContains: "E-Class", year: 2016 },
+  { vin: "W1K213046GA123456", label: "Mercedes E-Class W1K", make: "Mercedes-Benz", modelContains: "E-Class", year: 2016 },
+  { vin: "W1K177087KA123456", label: "Mercedes A-Class W1K", make: "Mercedes-Benz", modelContains: "A-Class", year: 2019 },
+  { vin: "WDDZZZ167KAA12345", label: "Mercedes GLE/GLS EU ZZZ", make: "Mercedes-Benz", modelContains: "GLE", year: 2019 },
+  { vin: "WDD214087PA123456", label: "Mercedes E-Class W214", make: "Mercedes-Benz", modelContains: "E-Class", year: 2023 },
+  { vin: "WDD206087MA123456", label: "Mercedes C-Class W206", make: "Mercedes-Benz", modelContains: "C-Class", year: 2021 },
+  { vin: "WDD204049AA123456", label: "Mercedes C-Class W204", make: "Mercedes-Benz", modelContains: "C-Class", year: 2010 },
+  { vin: "WDB463236LA123456", label: "Mercedes G-Class WDB", make: "Mercedes-Benz", modelContains: "G-Class" },
+  { vin: "WDDGF8HB6LA123456", label: "Mercedes C-Class letter VDS (no false gen)", make: "Mercedes-Benz", modelContains: "C-Class" },
   { vin: "W1NYC7HJ0LX340589", label: "Mercedes G-Class W1N", make: "Mercedes-Benz", modelContains: "G-Class" },
+  { vin: "WDD243000MA123456", label: "Mercedes EQB X243", make: "Mercedes-Benz", modelContains: "EQB", year: 2021 },
 
   // ── Škoda ─────────────────────────────────────────────────────────────────
   { vin: "TMBEP6NJ3MZ012345", label: "Škoda Fabia III", make: "Škoda", modelContains: "Fabia" },
@@ -96,9 +98,14 @@ const CASES: BrandCase[] = [
   { vin: "SALZZZBN1MA123456", label: "Range Rover L460", make: "Land Rover", modelContains: "Range Rover" },
   { vin: "SALZZZLM1MA123456", label: "Defender L663", make: "Land Rover", modelContains: "Defender" },
   { vin: "SALZZZJA1MA123456", label: "Discovery Sport", make: "Land Rover", modelContains: "Discovery Sport" },
+  { vin: "SALZZZGB1MA123456", label: "Range Rover Sport L461", make: "Land Rover", modelContains: "Range Rover Sport" },
+  { vin: "SALZZZEV1MA123456", label: "Evoque L551", make: "Land Rover", modelContains: "Evoque" },
+  { vin: "SALEX7EU0L2000152", label: "Defender US SALE", make: "Land Rover", modelContains: "Defender" },
   { vin: "SAJZZZBG1MA123456", label: "Jaguar F-Pace", make: "Jaguar", modelContains: "F-Pace" },
   { vin: "SAJZZZBM1MA123456", label: "Jaguar I-Pace", make: "Jaguar", modelContains: "I-Pace" },
   { vin: "SAJZZZBN1MA123456", label: "Jaguar XF", make: "Jaguar", modelContains: "XF" },
+  { vin: "SAJZZZBK1MA123456", label: "Jaguar XE", make: "Jaguar", modelContains: "XE" },
+  { vin: "SAJZZZJA1MA123456", label: "Jaguar E-Pace", make: "Jaguar", modelContains: "E-Pace" },
 
   // ── Ford Europe ───────────────────────────────────────────────────────────
   { vin: "WF0ZZZGBJNW123456", label: "Ford Focus Mk4 EU", make: "Ford", modelContains: "Focus" },
@@ -156,6 +163,15 @@ const CASES: BrandCase[] = [
   { vin: "JS2ZC33S7C4116148", label: "Suzuki Swift", make: "Suzuki", modelContains: "Swift" },
   { vin: "JS3JB74V5P7123456", label: "Suzuki Jimny", make: "Suzuki", modelContains: "Jimny" },
   { vin: "TSMLY8V3XKA123456", label: "Suzuki Vitara HU", make: "Suzuki", modelContains: "Vitara" },
+
+  // ── Mazda ─────────────────────────────────────────────────────────────────
+  { vin: "JM1BPAM7XK1234567", label: "Mazda3 (BP)", make: "Mazda", modelContains: "Mazda3", year: 2019 },
+  { vin: "JM3KFBM7MK1234567", label: "Mazda CX-5 (KF)", make: "Mazda", modelContains: "CX-5" },
+  { vin: "JM1NDAM7MK1234567", label: "Mazda MX-5 (ND)", make: "Mazda", modelContains: "MX-5" },
+  { vin: "JM1GJAM7FK1234567", label: "Mazda6 (GJ not MX-5)", make: "Mazda", modelContains: "Mazda6" },
+  { vin: "3MZBPAM7MM1234567", label: "Mazda3 Mexico", make: "Mazda", modelContains: "Mazda3" },
+  { vin: "3MVDMAD7MM1234567", label: "Mazda CX-30 Mexico", make: "Mazda", modelContains: "CX-30" },
+  { vin: "7MMVAAD7PA1234567", label: "Mazda CX-50 US", make: "Mazda", modelContains: "CX-50" },
 
   // ── MG / BYD / Haval ──────────────────────────────────────────────────────
   { vin: "LSJWP4U21NG123456", label: "MG ZS", make: "MG", modelContains: "ZS" },
@@ -217,7 +233,7 @@ describe("brand coverage — no cross-brand contamination", () => {
   });
 
   it("Mercedes W1K decodes as Mercedes-Benz with chassis model", () => {
-    const r = decodeVin("W1K2130461A123456");
+    const r = decodeVin("W1K213046GA123456");
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model?.toLowerCase()).toContain("e-class");
   });
@@ -272,7 +288,8 @@ describe("brand coverage — no cross-brand contamination", () => {
   it("LYV VIN without Polestar prefix does not force Polestar make", () => {
     const r = decodeVin("LYVXZE1A0N0123456");
     expect(r.make).not.toBe("Polestar");
-    expect(r.model).toBeNull();
+    // Letter X + MY2022 is a valid Volvo China line decode (XC40), not a Polestar invent.
+    expect(r.make).toBe("Volvo");
   });
 
   it("VR1 without DS prefix does not guess DS 7 model", () => {

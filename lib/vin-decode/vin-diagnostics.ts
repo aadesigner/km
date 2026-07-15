@@ -5,7 +5,12 @@ import { isVagWmi } from "./vag-wmi";
 import { decodeSeatEuHomologation, formatSeatDisplay, SEAT_EU_WMIS } from "./seat-eu";
 
 function isRenaultWmiForDiag(wmi: string): boolean {
-  return wmi.startsWith("VF1") || wmi.startsWith("VF2") || wmi.startsWith("GA1");
+  return (
+    wmi.startsWith("VF1")
+    || wmi.startsWith("VF2")
+    || wmi.startsWith("VF6")
+    || wmi.startsWith("VF8")
+  );
 }
 
 export type DiagnosticCategory =
@@ -142,9 +147,10 @@ const MERCEDES_CHASSIS: Record<string, string> = {
   WDD177: "A-Class (W177)", WDD118: "CLA (C118)", WDD205: "C-Class (W205)", WDD206: "C-Class (W206)",
   WDD204: "C-Class (W204)", WDD203: "C-Class (W203)", WDD202: "C-Class (W202)",
   WDD213: "E-Class (W213)", WDD214: "E-Class (W214)", WDD222: "S-Class (W222)", WDD223: "S-Class (W223)",
-  WDD253: "GLC (X253)", WDD254: "GLC (X254)", WDD166: "GLE (W166)", WDD167: "GLS (X167)",
+  WDD253: "GLC (X253)", WDD254: "GLC (X254)", WDD166: "GLE (W166)", WDD167: "GLE / GLS (W167/X167)",
   WDD247: "GLA (H247)", WDD463: "G-Class (W463/W465)", WDD290: "EQS (V297)",
-  WDD243: "B-Class (W246)", WDD238: "E-Class Coupé/Cabrio (C238)",
+  WDD243: "EQB (X243)", WDD238: "E-Class Coupé/Cabrio (C238)",
+  WDD245: "B-Class (W245)",
   WDD192: "AMG GT (C192)", WDD197: "SL (R232)",
 };
 

@@ -1,8 +1,22 @@
 /**
- * Appends catalog VIN URLs to public/sitemap.xml when DATABASE_URL is set.
- * Run after generate-sitemap.mjs during build or deploy.
+ * Writes catalog VIN URLs into sharded sitemap files and updates the sitemap index.
+ * Run after generate-sitemap.mjs during build/deploy when DATABASE_URL is set.
+ *
+ * Design goals:
+ * - Never append VINs into the marketing urlset (keeps sitemap-pages.xml small).
+ * - One <url> entry per VIN (en loc + xhtml hreflang alternates) — not × langs.
+ * - Shard at ~25k URLs so each file stays under Google's 50k / ~50MB limits.
+ * - Atomic writes where practical so a half-written file never becomes production.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  readdirSync,
+  unlinkSync,
+  renameSync,
+} from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,11 +25,15 @@ import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
 const ORIGIN = "https://kmcheck.com";
 const LANGS = SUPPORTED_LANGS;
 const HREFLANG = HREFLANG_MAP;
+/** Google max is 50_000 URLs; leave headroom for markup size. */
+const MAX_URLS_PER_SHARD = 25_000;
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const root = join(dir, "..", "..", "..");
 const envPath = join(root, ".env");
-const sitemapPath = join(dir, "..", "public", "sitemap.xml");
+const publicDir = join(dir, "..", "public");
+const indexPath = join(publicDir, "sitemap.xml");
+const pagesPath = join(publicDir, "sitemap-pages.xml");
 
 if (existsSync(envPath)) {
   for (const line of readFileSync(envPath, "utf8").split("\n")) {
@@ -24,17 +42,108 @@ if (existsSync(envPath)) {
   }
 }
 
-const dbUrl = process.env.DATABASE_URL;
-if (!dbUrl) {
-  console.log("generate-vin-sitemap: skip (no DATABASE_URL)");
+function loadPg() {
+  // Prefer workspace db package (pnpm does not hoist pg into @workspace/kmcheck).
+  const candidates = [
+    join(root, "lib/db/package.json"),
+    join(root, "package.json"),
+  ];
+  for (const pkgJson of candidates) {
+    if (!existsSync(pkgJson)) continue;
+    try {
+      return createRequire(pkgJson)("pg");
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}
+
+function clearVinShards() {
+  if (!existsSync(publicDir)) return [];
+  const removed = [];
+  for (const name of readdirSync(publicDir)) {
+    if (/^sitemap-vins-\d+\.xml$/i.test(name)) {
+      unlinkSync(join(publicDir, name));
+      removed.push(name);
+    }
+  }
+  return removed;
+}
+
+function writeAtomic(filePath, contents) {
+  const tmp = `${filePath}.${process.pid}.tmp`;
+  writeFileSync(tmp, contents, "utf8");
+  renameSync(tmp, filePath);
+}
+
+function writeSitemapIndex(vinShardNames, lastmod) {
+  const entries = [
+    `  <sitemap>
+    <loc>${ORIGIN}/sitemap-pages.xml</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
+    ...vinShardNames.map(
+      (name) => `  <sitemap>
+    <loc>${ORIGIN}/${name}</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
+    ),
+  ];
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries.join("\n")}
+</sitemapindex>
+`;
+  writeAtomic(indexPath, xml);
+}
+
+function urlEntryForVin(vin, lastmod) {
+  const path = `/vin/${vin}`;
+  const alternates = LANGS.map(
+    (l) =>
+      `    <xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${ORIGIN}/${l}${path}" />`,
+  ).join("\n");
+  const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/en${path}" />`;
+  return `  <url>
+    <loc>${ORIGIN}/en${path}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+${alternates}
+${xDefault}
+  </url>`;
+}
+
+function wrapUrlset(urlBlocks) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${urlBlocks.join("\n")}
+</urlset>
+`;
+}
+
+const today = new Date().toISOString().slice(0, 10);
+
+if (!existsSync(pagesPath)) {
+  console.warn("generate-vin-sitemap: sitemap-pages.xml missing — run generate-sitemap.mjs first");
   process.exit(0);
 }
 
-let pg;
-try {
-  pg = (await import("pg")).default;
-} catch {
-  console.log("generate-vin-sitemap: skip (pg not installed)");
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) {
+  clearVinShards();
+  writeSitemapIndex([], today);
+  console.log("generate-vin-sitemap: skip VIN shards (no DATABASE_URL); index → pages only");
+  process.exit(0);
+}
+
+const pg = loadPg();
+if (!pg) {
+  clearVinShards();
+  writeSitemapIndex([], today);
+  console.log("generate-vin-sitemap: skip VIN shards (pg not resolvable); index → pages only");
   process.exit(0);
 }
 
@@ -46,42 +155,32 @@ const { rows } = await client.query(
 );
 await client.end();
 
+clearVinShards();
+
 if (rows.length === 0) {
-  console.log("generate-vin-sitemap: no catalog VINs");
+  writeSitemapIndex([], today);
+  console.log("generate-vin-sitemap: no catalog VINs; index → pages only");
   process.exit(0);
 }
 
-const baseXml = readFileSync(sitemapPath, "utf8");
-const insertBefore = "</urlset>";
-if (!baseXml.includes(insertBefore)) {
-  console.warn("generate-vin-sitemap: sitemap.xml missing </urlset>");
-  process.exit(0);
-}
-
-const vinUrls = rows.flatMap((row) => {
+const entries = rows.map((row) => {
   const vin = String(row.vin).toUpperCase();
-  const path = `/vin/${vin}`;
   const lastmod = row.updated_at
     ? new Date(row.updated_at).toISOString().slice(0, 10)
-    : new Date().toISOString().slice(0, 10);
-  return LANGS.map((lang) => {
-    const loc = `${ORIGIN}/${lang}${path}`;
-    const alternates = LANGS.map(
-      (l) =>
-        `    <xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${ORIGIN}/${l}${path}" />`,
-    ).join("\n");
-    const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}/en${path}" />`;
-    return `  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-${alternates}
-${xDefault}
-  </url>`;
-  });
+    : today;
+  return urlEntryForVin(vin, lastmod);
 });
 
-const merged = baseXml.replace(insertBefore, `${vinUrls.join("\n")}\n${insertBefore}`);
-writeFileSync(sitemapPath, merged, "utf8");
-console.log(`generate-vin-sitemap: added ${vinUrls.length} VIN URLs (${rows.length} VINs × ${LANGS.length} langs)`);
+const shardNames = [];
+for (let i = 0; i < entries.length; i += MAX_URLS_PER_SHARD) {
+  const chunk = entries.slice(i, i + MAX_URLS_PER_SHARD);
+  const shardNum = shardNames.length + 1;
+  const name = `sitemap-vins-${shardNum}.xml`;
+  writeAtomic(join(publicDir, name), wrapUrlset(chunk));
+  shardNames.push(name);
+}
+
+writeSitemapIndex(shardNames, today);
+console.log(
+  `generate-vin-sitemap: ${rows.length} VINs → ${shardNames.length} shard(s) [${shardNames.join(", ")}] (1 URL entry each; hreflang covers ${LANGS.length} langs)`,
+);

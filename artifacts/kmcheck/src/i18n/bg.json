@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Добре дошли в kmcheck",
   "check_vin": "Проверка на VIN",
   "check_vin_short": "Проверка",
@@ -1534,5 +1534,8 @@
   "free_decoder_seo_cta_title": "Заводски данни безплатно. История с един клик.",
   "free_decoder_seo_cta_desc": "След декодиране отключете пробег, катастрофи и salvage — за секунди.",
   "free_decoder_seo_cta_btn": "Вижте цените на отчета",
-  "free_decoder_example_try": "Опитайте примерен VIN"
+  "free_decoder_example_try": "Опитайте примерен VIN",
+  "free_decoder_brand_mazda_short": "MAZ",
+  "free_decoder_brand_mazda_title": "Mazda VIN декодер",
+  "free_decoder_brand_mazda_desc": "Mazda (JM1, JM3, 3MZ, 7MM): Mazda3, CX-5, CX-30, MX-5 — модел и завод от VIN."
 }

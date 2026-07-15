@@ -17,6 +17,7 @@ import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin } from "./asian-eu";
 import { decodeUsVdsModel } from "./us-vds";
+import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
   inferBodyStyleFromModel,
   inferVagDriveFromModel,
@@ -93,6 +94,14 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VF3", country: "France" },
   { prefix: "VF2", country: "France" },
   { prefix: "VF1", country: "France" },
+  { prefix: "YAR", country: "France" },
+  { prefix: "TSM", country: "Hungary" },
+  { prefix: "TMA", country: "Czech Republic" },
+  { prefix: "HES", country: "China" },
+  { prefix: "SHH", country: "United Kingdom" },
+  { prefix: "SAD", country: "United Kingdom" },
+  { prefix: "SAJ", country: "United Kingdom" },
+  { prefix: "SAL", country: "United Kingdom" },
   { prefix: "YV4", country: "Sweden" },
   { prefix: "YV1", country: "Sweden" },
   { prefix: "YS2", country: "Sweden" },
@@ -155,6 +164,9 @@ const WMI_MAP: Record<string, string> = {
   "4T1": "Toyota", "4T3": "Toyota", "4T4": "Toyota",
   "4US": "BMW",
   "4F2": "Mazda", "4F4": "Mazda",
+  "3MZ": "Mazda", "3MV": "Mazda", "3MD": "Mazda", "3MJ": "Mazda",
+  "7MM": "Mazda",
+  "JMZ": "Mazda",
   "5FN": "Honda", "5FR": "Honda", "5J6": "Honda", "5J8": "Honda",
   "5L1": "Lincoln",
   "5NM": "Hyundai", "5NP": "Hyundai", "5N1": "Nissan",
@@ -190,13 +202,15 @@ const WMI_MAP: Record<string, string> = {
   "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW",
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
   "WDF": "Mercedes-Benz", "W1K": "Mercedes-Benz", "W1N": "Mercedes-Benz",
-  "4JG": "Mercedes-Benz", "WME": "Smart",
+  "4JG": "Mercedes-Benz", "WME": "Smart", "HES": "Smart",
   "WP0": "Porsche", "WP1": "Porsche",
   "WVW": "Volkswagen", "WVG": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
   "W09": "Porsche",
   // ── UK ────────────────────────────────────────────────────────────────────
-  "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover",
+  "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover", "SAD": "Jaguar",
   "SB1": "Toyota",
+  "YAR": "Toyota",
+  "SHH": "Honda",
   // ── Ford Europe ───────────────────────────────────────────────────────────
   "WF0": "Ford", "WF1": "Ford", "8AF": "Ford", "SA1": "Ford",
   "SCB": "Bentley", "SCC": "Lotus",
@@ -208,12 +222,12 @@ const WMI_MAP: Record<string, string> = {
   "7JR": "Volvo", "7JD": "Volvo", "XLB": "Volvo", "PNV": "Volvo",
   "YS2": "Scania",
   // ── FRANCE ────────────────────────────────────────────────────────────────
-  "VF1": "Renault", "VF3": "Peugeot", "VF7": "Citroën",
+  "VF1": "Renault", "VF2": "Renault", "VF3": "Peugeot", "VF7": "Citroën",
   "VNK": "Toyota France",
   // ── ITALY ─────────────────────────────────────────────────────────────────
   "ZAM": "Maserati", "ZAP": "Piaggio",
   "ZCG": "Fiat",
-  "ZFA": "Fiat", "ZFB": "Fiat",
+  "ZFA": "Fiat", "ZFB": "Fiat", "ZFC": "Fiat",
   "ZFF": "Ferrari",
   "ZHW": "Lamborghini",
   "ZLA": "Lancia",
@@ -389,14 +403,19 @@ const MODEL_MAP_4: Record<string, string> = {
   "WP0C": "Cayenne",    "WP0Z": "Panamera",   "WP0G": "Taycan",
   "WP1A": "Cayenne",    "WP1Z": "Macan",
   // ── Land Rover / Range Rover ──────────────────────────────────────────────
-  "SALR": "Range Rover","SALJ": "Range Rover", "SALM": "Discovery",
+  "SALR": "Range Rover", "SALJ": "Range Rover", "SALM": "Discovery",
   "SALE": "Range Rover Evoque",
   "SALV": "Discovery Sport",
   "SALY": "Defender",   "SALA": "Defender",   "SALW": "Freelander",
   "SALP": "Range Rover Sport",
+  "SALG": "Range Rover Velar",
+  "SALK": "Range Rover",
+  "SALC": "Discovery Sport",
   // ── Jaguar ────────────────────────────────────────────────────────────────
   "SAJW": "F-Type",     "SAJV": "XF",         "SAJA": "XJ",
-  "SAJP": "F-Pace",     "SAJE": "E-Pace",
+  "SAJP": "F-Pace",     "SAJE": "E-Pace",     "SAJC": "I-Pace",
+  "SAJX": "F-Pace",
+  "SADF": "I-Pace",
   // ── Hyundai ───────────────────────────────────────────────────────────────
   "KMHS": "Santa Fe Sport", "KMHR": "Santa Fe",   "KMHD": "Elantra",
   "KMHC": "Elantra",    "KMHF": "Elantra",    "KMHG": "Genesis",
@@ -427,8 +446,8 @@ const MODEL_MAP_4: Record<string, string> = {
   "1N4A": "Altima",     "1N4B": "Maxima",     "1N6A": "Titan/Frontier",
   "5N1A": "Pathfinder", "5N1D": "Armada",     "5N1Z": "Murano",
   "JN1A": "Infiniti",
-  // ── Mazda ─────────────────────────────────────────────────────────────────
-  "JM1B": "Mazda3",     "JM3K": "CX-5",       "JM3T": "CX-9",
+  // Mazda models: see mazda.ts (carline pos. 4–5). Do not use coarse JM1B/JM3K here —
+  // JM1GJ (Mazda6) must not become MX-5 via a JM1G → Miata map.
   // ── Subaru ────────────────────────────────────────────────────────────────
   "JF1V": "WRX/STI",    "JF2S": "Forester",   "JF2T": "Outback",
   "4S3B": "Impreza",    "4S4B": "Outback",
@@ -454,9 +473,6 @@ const MODEL_MAP_4: Record<string, string> = {
   "JH4V": "RL",          "JH4Y": "NSX",
   "19UY": "RDX",         "19UA": "ILX",        "19UB": "TLX",
   "19UC": "MDX",         "19UF": "ZDX",
-  // ── More Mazda ────────────────────────────────────────────────────────────
-  "JM1G": "MX-5 Miata",  "JM1N": "Mazda6",     "JM3C": "CX-3",
-  "JM3R": "CX-30",       "JM3D": "CX-50",
   // ── More Subaru ───────────────────────────────────────────────────────────
   "JF1S": "Impreza",     "JF1B": "BRZ",        "JF2A": "Crosstrek",
   "JF2Z": "Ascent",      "JF2G": "Legacy",
@@ -469,7 +485,8 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── More Toyota USA ───────────────────────────────────────────────────────
   "2T3J": "RAV4",        "4T1C": "Camry",       "5TDZ": "Sequoia",
   // ── MINI ──────────────────────────────────────────────────────────────────
-  "WMWZ": "Cooper",      "WMWX": "Clubman",     "WMW4": "Countryman",
+  "WMWZ": "Cooper",      "WMW4": "Countryman",
+  // WMWX is shared (Cooper hatch vs Clubman) — leave to MINI_RULES; no 4-char guess.
   "WMWS": "Paceman",     "WMW5": "Cooper S",    "WMW6": "John Cooper Works",
   "WMWN": "Convertible", "WMW3": "Cabrio",
   // ── Alfa Romeo (ZAR*) ─────────────────────────────────────────────────────
@@ -497,8 +514,10 @@ const MODEL_MAP_4: Record<string, string> = {
   "7FCA": "R1T",         "7FCC": "R1S",         "7FCB": "EDV 700",
   // ── More Renault (VF1*) ───────────────────────────────────────────────────
   "VF1J": "Clio",        "VF1L": "Megane",      "VF1K": "Captur",
-  "VF1R": "Zoe (EV)",    "VF1E": "Kadjar",      "VF1S": "Arkana",
+  "VF1R": "Zoe",         "VF1E": "Kadjar",      "VF1S": "Arkana",
   "VF1B": "Clio",        "VF1M": "Megane",      "VF1H": "Captur",
+  "VF1A": "Arkana",
+  "VF2R": "Clio",        "VF2L": "Megane",
   // ── More Peugeot (VF3*) ───────────────────────────────────────────────────
   "VF3A": "208",          "VF3D": "308",         "VF3M": "3008",
   "VF3N": "5008",         "VF3E": "2008",
@@ -646,6 +665,10 @@ function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
   }
   const asian = isHyundaiToyotaVin(upper) ? decodeHyundaiToyotaModel(upper) : null;
   if (asian) return asian;
+  if (isMazdaVin(upper)) {
+    const mazda = decodeMazdaModel(upper);
+    if (mazda) return mazda;
+  }
   if (isFordEuWmi(upper.slice(0, 3))) {
     const ford = decodeFordEuModel(upper);
     if (ford) return ford;
@@ -762,15 +785,22 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
     H: "6.6L Duramax Diesel V8", K: "2.7T Turbo I4",
   },
   // Tesla: motor/battery decoded in tesla.ts (position 7–8), not position 8 alone.
-  // Land Rover / Range Rover (SAL*)
+  // Land Rover / Range Rover (SAL*) — skipped on EU ZZZ; applies to US/UK non-ZZZ
   SAL: {
-    B: "2.0L I4 Ingenium Diesel", C: "3.0L I6 Ingenium", D: "3.0L I6 Diesel (TD6)",
-    G: "3.0L I6 Mild Hybrid", L: "5.0L V8 Supercharged", M: "2.0T I4 Ingenium",
+    A: "2.0L I4 Ingenium", B: "2.0L I4 Ingenium Diesel", C: "3.0L I6 Ingenium",
+    D: "3.0L I6 Diesel (TD6)", E: "2.0T I4 PHEV", G: "3.0L I6 Mild Hybrid",
+    H: "3.0L I6 PHEV", K: "4.4L V8 Twin-Turbo", L: "5.0L V8 Supercharged",
+    M: "2.0T I4 Ingenium", N: "Electric", P: "2.0L Diesel Ingenium",
   },
-  // Jaguar (SAJ*)
+  // Jaguar (SAJ* / SAD*)
   SAJ: {
-    A: "2.0L I4 Ingenium", C: "3.0L I6", D: "5.0L V8 Supercharged",
-    G: "2.0L I4 Diesel", K: "2.0T I4 Petrol",
+    A: "2.0L I4 Ingenium", B: "2.0L I4 Diesel Ingenium", C: "3.0L I6",
+    D: "5.0L V8 Supercharged", E: "2.0T I4 PHEV", G: "2.0L I4 Diesel",
+    K: "2.0T I4 Petrol", N: "Electric (I-Pace)", P: "3.0L I6 Mild Hybrid",
+  },
+  SAD: {
+    A: "Electric (I-Pace)", E: "Electric (I-Pace)", F: "Electric (I-Pace)",
+    N: "Electric (I-Pace)",
   },
   // Nissan Japan (JN1* / JN8*)
   JN1: {
@@ -917,13 +947,46 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
   ZFA: {
     A: "1.2L I4 (169A4)", B: "1.4L I4 (312A1)", C: "0.9L I2 TwinAir (312A2)",
     D: "1.3L I4 Multijet Diesel (199A2)", E: "1.6L I4 Multijet",
-    F: "1.4L I4 Turbo Abarth (312A1.000)",
+    F: "1.4L I4 Turbo Abarth (312A1.000)", G: "1.0L I3 FireFly Mild Hybrid",
   },
   // Renault France (VF1*)
   VF1: {
     A: "1.0L I3 TCe 90 (H4D)", B: "1.3L I4 TCe (H5H)", C: "1.5L dCi Diesel (K9K)",
     D: "1.6L I4 (K4M)", E: "1.2L I4 TCe (H5F)", F: "1.8L I4 RS (F4RT)",
-    R: "Electric (Zoe Z.E. 50)", S: "2.0L I4 (F4R)",
+    R: "Electric (Zoe / Megane E-Tech)", S: "2.0L I4 (F4R)",
+    H: "1.6L I4 Hybrid E-Tech",
+  },
+  VF2: {
+    A: "1.0L I3 TCe 90 (H4D)", B: "1.3L I4 TCe (H5H)", C: "1.5L dCi Diesel (K9K)",
+    R: "Electric",
+  },
+  // Smart Europe (WME*) — ICE/ED era position-8 codes are sparse; EV China is HES
+  WME: {
+    A: "0.6L I3 (M160)", B: "0.7L I3 (M160)", C: "0.9L I3 Turbo (M281)",
+    D: "1.0L I3 (M281)", E: "Electric Drive (ED)", N: "Electric (EQ)",
+  },
+  HES: {
+    A: "Electric (Smart #1 / #3)", B: "Electric dual-motor (Brabus)",
+    C: "Electric (Smart #1 / #3)",
+  },
+  // Suzuki Japan / Hungary
+  JS2: {
+    A: "1.2L I4 (K12M)", B: "1.4L Boosterjet (K14C)", C: "1.0L Boosterjet",
+    D: "1.5L Hybrid",
+  },
+  TSM: {
+    A: "1.0L Boosterjet", B: "1.4L Boosterjet (K14C)", C: "1.2L DualJet Hybrid",
+    D: "1.5L DualJet Hybrid",
+  },
+  // Ford Europe (WF0*) — EU ZZZ often nulls engine; these apply to non-ZZZ VINs
+  WF0: {
+    A: "1.0L EcoBoost I3", B: "1.5L EcoBoost I3", C: "1.5L EcoBlue Diesel",
+    D: "2.0L EcoBlue Diesel", E: "2.0L EcoBoost I4", F: "Electric (Mach-E)",
+  },
+  // Honda UK Swindon (SHH*)
+  SHH: {
+    A: "1.6L I4 (R16A)", B: "2.0L I4 (K20)", C: "2.0T Type R (K20C)",
+    D: "1.8L I4 (R18A)",
   },
   // Peugeot France (VF3*)
   VF3: {
@@ -1111,14 +1174,28 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   SAL: {
     A: { city: "Solihull",          country: "UK"      },
     B: { city: "Castle Bromwich",   country: "UK"      },
+    F: { city: "Halewood",          country: "UK"      },
+    H: { city: "Halewood",          country: "UK"      },
+    L: { city: "Solihull",          country: "UK"      },
     M: { city: "Graz",              country: "Austria" },
+    N: { city: "Nitra",             country: "Slovakia" },
     P: { city: "Pune",              country: "India"   },
+    "2": { city: "Nitra",           country: "Slovakia" },
   },
-  // Jaguar (SAJ*)
+  // Jaguar (SAJ* / SAD*)
   SAJ: {
     A: { city: "Castle Bromwich", country: "UK"      },
     B: { city: "Solihull",        country: "UK"      },
     C: { city: "Graz",            country: "Austria" },
+    G: { city: "Graz",            country: "Austria" },
+    H: { city: "Halewood",        country: "UK"      },
+    "1": { city: "Graz",          country: "Austria" },
+    "2": { city: "Nitra",         country: "Slovakia" },
+  },
+  SAD: {
+    A: { city: "Graz",     country: "Austria" },
+    "1": { city: "Graz",   country: "Austria" },
+    "2": { city: "Nitra",  country: "Slovakia" },
   },
   // Chevrolet/GMC USA (1GC* / 1GT*)
   "1GC": {
@@ -1166,11 +1243,27 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     B: { city: "Hofu",             country: "Japan" },
     K: { city: "Hiroshima No.1",   country: "Japan" },
     M: { city: "Hofu",             country: "Japan" },
+    "0": { city: "Hiroshima",      country: "Japan" },
+    "1": { city: "Hofu",           country: "Japan" },
   },
   JM3: {
     A: { city: "Hiroshima",        country: "Japan" },
     B: { city: "Hofu",             country: "Japan" },
     R: { city: "Hiroshima No.3",   country: "Japan" },
+    "0": { city: "Hiroshima",      country: "Japan" },
+    "1": { city: "Hofu",           country: "Japan" },
+  },
+  "3MZ": {
+    M: { city: "Salamanca",        country: "Mexico" },
+  },
+  "3MV": {
+    M: { city: "Salamanca",        country: "Mexico" },
+  },
+  "3MD": {
+    M: { city: "Salamanca",        country: "Mexico" },
+  },
+  "7MM": {
+    A: { city: "Huntsville",       country: "United States" },
   },
   // ── Subaru Japan / USA (JF* / 4S*) ──────────────────────────────────────
   JF1: {
@@ -1310,6 +1403,46 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     E: { city: "Ellesmere Port",        country: "United Kingdom" },
     L: { city: "Luton",                 country: "United Kingdom" },
   },
+  // Smart EU / China
+  WME: {
+    K: { city: "Hambach", country: "France" },
+    Y: { city: "Novo Mesto", country: "Slovenia" },
+  },
+  HES: {
+    A: { city: "Xi'an", country: "China" },
+    C: { city: "Xi'an", country: "China" },
+    P: { city: "Xi'an", country: "China" },
+  },
+  // Suzuki Hungary
+  TSM: {
+    A: { city: "Esztergom", country: "Hungary" },
+    B: { city: "Esztergom", country: "Hungary" },
+    H: { city: "Esztergom", country: "Hungary" },
+    M: { city: "Esztergom", country: "Hungary" },
+  },
+  // Ford Europe (Cologne / Saarlouis / Valencia)
+  WF0: {
+    A: { city: "Genk", country: "Belgium" },
+    B: { city: "Genk", country: "Belgium" },
+    C: { city: "Cologne", country: "Germany" },
+    G: { city: "Saarlouis", country: "Germany" },
+    L: { city: "Valencia", country: "Spain" },
+    M: { city: "Valencia", country: "Spain" },
+    N: { city: "Craiova", country: "Romania" },
+    P: { city: "Cologne", country: "Germany" },
+    R: { city: "Cologne", country: "Germany" },
+    W: { city: "Valencia", country: "Spain" },
+  },
+  // Honda UK Swindon
+  SHH: {
+    A: { city: "Swindon", country: "United Kingdom" },
+    C: { city: "Swindon", country: "United Kingdom" },
+    E: { city: "Swindon", country: "United Kingdom" },
+  },
+  // Toyota France (Valenciennes)
+  YAR: {
+    A: { city: "Valenciennes", country: "France" },
+  },
 };
 
 // ── Electric-only WMIs (every vehicle from these manufacturers is battery-electric) ──
@@ -1319,6 +1452,7 @@ const ELECTRIC_ONLY_WMI = new Set([
   "5LA",                 // Lucid
   "7FC",                 // Rivian
   "LBV",                 // BYD Electric
+  "HES",                 // Smart Automobile (#1 / #3 BEV)
 ]);
 
 // ── AWD-standard WMIs (Subaru symmetrical AWD ships on almost every model) ────
@@ -1328,7 +1462,8 @@ const AWD_STANDARD_WMI = new Set(["JF1", "JF2", "4S3", "4S4"]);
 const AWD_MODEL_HINTS = [
   "4runner", "land cruiser", "fj cruiser",
   "outback", "forester", "crosstrek", "ascent",
-  "defender", "discovery", "range rover",
+  "defender", "discovery", "range rover", "velar", "evoque",
+  "f-pace", "e-pace", "i-pace",
   "wrangler", "gladiator",
   "cayenne", "macan", "touareg",
   "x-trail", "patrol",
@@ -1641,7 +1776,17 @@ export function decodeVin(vin: string): VinDecodeResult {
     plantCountry: plant?.country ?? null,
     bodyStyleDecoded,
     transmissionDecoded: brandSpec?.transmissionDecoded ?? decodeTransmission(upper, engineDecoded, model),
-    fuelType: brandSpec?.fuelType ?? inferFuelType(engineDecoded, wmi),
+    fuelType: brandSpec?.fuelType
+      ?? inferFuelType(engineDecoded, wmi)
+      ?? inferFuelFromModel(model),
     driveType,
   };
+}
+
+/** Model-name fuel fallback when WMI/engine leave fuel empty (e.g. EU ZZZ I-Pace). */
+function inferFuelFromModel(model: string | null): string | null {
+  if (!model) return null;
+  const m = model.toLowerCase();
+  if (m.includes("i-pace")) return "Electric";
+  return null;
 }

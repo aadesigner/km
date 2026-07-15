@@ -147,14 +147,15 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["WDDE", "E-Class"],
     ["WDDS", "SLK/SLC"],
     ["WDDL", "GLE-Class"],
-    ["WDDG", "G-Class"],
-    ["WDDA", "A-Class"],
+    // Letter-series passenger VINs decode as C-Class (pos.4 ≠ unique chassis gen).
+    ["WDDG", "C-Class"],
+    ["WDDA", "C-Class"],
     ["WDDB", "B-Class"],
     ["WDDF", "E-Class"],
     ["WDDN", "GLA-Class"],
     ["WDDP", "CLA-Class"],
-    ["WDDR", "GLC-Class"],
-    ["WDDW", "S-Class"],
+    ["WDDR", "C-Class"],
+    ["WDDW", "C-Class"],
     ["WDDX", "SL-Class"],
     ["WDC0", "GLC"],
     ["WDCG", "GLE-Class"],
@@ -201,11 +202,11 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["SALW", "Freelander"],
     ["SALP", "Range Rover Sport"],
     // Jaguar
-    ["SAJW", "F-Type"],
-    ["SAJV", "XF"],
-    ["SAJA", "XJ"],
+    ["SAJW", "F-Type (X152)"],
+    ["SAJV", "XF (X260)"],
+    ["SAJA", "XE (X760)"],
     ["SAJP", "F-Pace"],
-    ["SAJE", "E-Pace"],
+    ["SAJE", "E-Pace (X540)"],
     // Hyundai — CRITICAL: these were the source of the regression
     ["KMHS", "Santa Fe Sport"],   // regression fix: was "Sonata"
     ["KMHR", "Santa Fe"],
@@ -239,12 +240,10 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["5YJX", "Model X"],
     ["7SAY", "Model Y"],
     ["7G2A", "Model Y"],
-    // Volvo
-    ["YV1A", "S40/S60"],
-    ["YV1B", "V40/V60"],
-    ["YV1C", "XC60/XC90"],
-    ["YV4A", "XC40"],
-    ["YV4B", "XC60"],
+    // Volvo — dedicated decoder (padded prefixes use letter at pos.4)
+    ["YV1A", "S80"],
+    ["YV1B", "XC70"],
+    // YV1C / YV4* need year-disambiguation; bare pads omit model rather than guess.
     ["YV4C", "XC90"],
     // Ford
     ["1FTF", "F-150"],
@@ -283,15 +282,17 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["5N1B", "Rogue"],
     ["5N1R", "Xterra"],
     ["5N1E", "Murano"],
-    // Mazda
-    ["JM1B", "Mazda3"],
-    ["JM3K", "CX-5"],
-    ["JM3T", "CX-9"],
-    ["JM1G", "MX-5 Miata"],
-    ["JM1N", "Mazda6"],
-    ["JM3C", "CX-3"],
-    ["JM3R", "CX-30"],
-    ["JM3D", "CX-50"],
+    // Mazda — carline at positions 4–5 (see mazda.ts)
+    ["JM1BP", "Mazda3"],
+    ["JM3KF", "CX-5"],
+    ["JM3TC", "CX-9"],
+    ["JM1ND", "MX-5"],
+    ["JM1GJ", "Mazda6"],
+    ["JM3DK", "CX-3"],
+    ["JM3DM", "CX-30"],
+    ["7MMVA", "CX-50"],
+    ["3MVDM", "CX-30"],
+    ["3MZBP", "Mazda3"],
     // Subaru
     ["JF1V", "WRX/STI"],
     ["JF2S", "Forester"],
@@ -392,7 +393,7 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["7FCB", "EDV 700"],
     // MINI
     ["WMWZ", "Cooper"],
-    ["WMWX", "Clubman"],
+    // WMWX is ambiguous (Cooper hatch vs Clubman) — no MODEL_MAP_4 guess.
     ["WMW4", "Countryman"],
     ["WMWS", "Paceman"],
     ["WMW5", "Cooper S"],
@@ -446,7 +447,7 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["VF1J", "Clio"],
     ["VF1L", "Megane"],
     ["VF1K", "Captur"],
-    ["VF1R", "Zoe (EV)"],
+    ["VF1R", "Zoe"],
     ["VF1E", "Kadjar"],
     ["VF1S", "Arkana"],
     // Peugeot

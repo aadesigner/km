@@ -21,7 +21,9 @@ export const OG_LOCALE_MAP: Record<SeoLang, string> = Object.fromEntries(
   SUPPORTED_LANGS.map((code) => [code, LANG_META[code].ogLocale]),
 ) as Record<SeoLang, string>;
 
-/** Paths indexed in sitemap (without language prefix). Home = "". */
+/** Paths indexed in sitemap-pages.xml (without language prefix). Home = "".
+ *  Build scripts write sitemap.xml as an index → sitemap-pages.xml (+ optional VIN shards).
+ */
 export const INDEXABLE_PATHS = [
   "",
   "/pricing",

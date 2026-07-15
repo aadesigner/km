@@ -39,11 +39,15 @@ const PLATFORM_AT_4: Record<string, string> = {
   F: "Frontera",
   V: "Vivaro",
   C: "Combo",
+  J: "Mokka",
+  D: "Astra",
+  T: "Insignia",
 };
 
 const PREFIX_RULES = compilePrefixRules([
   { prefix: "W0L0ZEL", model: "Corsa F" },
   { prefix: "W0L0ZEC", model: "Corsa-e" },
+  { prefix: "W0L0ADF", model: "Astra L" },
   { prefix: "W0L0AD", model: "Astra L" },
   { prefix: "W0LJD", model: "Mokka" },
   { prefix: "W0L4", model: "Crossland" },
@@ -54,7 +58,12 @@ const PREFIX_RULES = compilePrefixRules([
   { prefix: "W0LG", model: "Insignia" },
   { prefix: "W0LM", model: "Mokka" },
   { prefix: "W0LN", model: "Grandland" },
+  { prefix: "W0LF", model: "Frontera" },
+  { prefix: "W0LV", model: "Vivaro" },
+  { prefix: "W0LC", model: "Combo" },
   { prefix: "W0V", model: "Vivaro" },
+  { prefix: "VXKP", model: "Astra" },
+  { prefix: "VXKB", model: "Corsa" },
   { prefix: "VXK", model: "Astra" },
 ]);
 

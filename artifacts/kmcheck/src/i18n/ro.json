@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Bun venit la kmcheck",
   "check_vin": "Verifică VIN",
   "check_vin_short": "Verifică",
@@ -1534,5 +1534,8 @@
   "free_decoder_seo_cta_title": "Date fabrică gratuite. Istoric la un clic.",
   "free_decoder_seo_cta_desc": "După decodare, deblocați kilometraj verificat, accidente și salvage — în câteva secunde.",
   "free_decoder_seo_cta_btn": "Vezi prețurile raportului",
-  "free_decoder_example_try": "Încearcă un VIN exemplu"
+  "free_decoder_example_try": "Încearcă un VIN exemplu",
+  "free_decoder_brand_mazda_short": "MAZ",
+  "free_decoder_brand_mazda_title": "Decodor VIN Mazda",
+  "free_decoder_brand_mazda_desc": "Mazda (JM1, JM3, 3MZ, 7MM): Mazda3, CX-5, CX-30, MX-5 — model și uzină din VIN."
 }

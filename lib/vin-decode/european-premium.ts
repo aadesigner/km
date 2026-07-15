@@ -10,7 +10,6 @@ import {
   decodeAudiEuHomologation,
   decodeBmwEuHomologation,
   decodeMercedesEuHomologation,
-  homologationToDisplay,
 } from "./eu-zzz-homologation";
 import { decodeJlrEu } from "./jlr-eu";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
@@ -18,8 +17,11 @@ import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefi
 
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
-/** BMW model-year char (position 10) — duplicated here to avoid circular import from vinDecoder. */
-function bmwVinModelYear(vin: string): number | null {
+/**
+ * Model-year from VIN position 10 (ISO 3779 cycle heuristic).
+ * Shared by premium decoders so chassis annotations can be year-gated.
+ */
+export function premiumVinModelYear(vin: string): number | null {
   const YEAR_MAP: Record<string, number> = {
     A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
     J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
@@ -36,6 +38,155 @@ function bmwVinModelYear(vin: string): number | null {
   return candidate <= currentYear + 2 ? candidate : base;
 }
 
+/** @deprecated Use premiumVinModelYear */
+function bmwVinModelYear(vin: string): number | null {
+  return premiumVinModelYear(vin);
+}
+
+/**
+ * Generation chassis → valid model-year window.
+ * If year is outside the window (or year unknown), chassis is stripped — model stays.
+ * Platform tokens that are literal in the VIN (e.g. Touareg 7P) are intentionally omitted.
+ */
+const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
+  // BMW
+  "E90/E91": { from: 2005, to: 2012 },
+  "E92 Coupé": { from: 2006, to: 2013 },
+  "E93 Convertible": { from: 2007, to: 2013 },
+  "F30 Sedan": { from: 2012, to: 2019 },
+  "F31 Touring": { from: 2012, to: 2019 },
+  "F30/F31": { from: 2012, to: 2019 },
+  "G20/G21": { from: 2019, to: 2099 },
+  "G20 (US)": { from: 2019, to: 2099 },
+  "F10/F11": { from: 2010, to: 2017 },
+  "F10 (US)": { from: 2010, to: 2017 },
+  "G30/G31": { from: 2017, to: 2023 },
+  "G30 (US)": { from: 2017, to: 2023 },
+  "G60": { from: 2024, to: 2099 },
+  "G11/G12": { from: 2015, to: 2022 },
+  "G11 LCI": { from: 2019, to: 2022 },
+  "G12": { from: 2015, to: 2022 },
+  "G70": { from: 2022, to: 2099 },
+  "F48/U11": { from: 2015, to: 2099 },
+  "F48 US": { from: 2015, to: 2022 },
+  "F48": { from: 2015, to: 2022 },
+  "U11": { from: 2022, to: 2099 },
+  "F39": { from: 2018, to: 2023 },
+  "F20/F21": { from: 2011, to: 2019 },
+  "F40": { from: 2019, to: 2099 },
+  "Active Tourer (F45)": { from: 2014, to: 2021 },
+  "G42 Coupé": { from: 2021, to: 2099 },
+  "F44 Gran Coupé": { from: 2020, to: 2099 },
+  "F06 Gran Coupé": { from: 2012, to: 2019 },
+  "F12/F13": { from: 2011, to: 2018 },
+  "F12/F13 Convertible": { from: 2011, to: 2018 },
+  "G14/G15/G16": { from: 2018, to: 2099 },
+  "G22 Coupé": { from: 2020, to: 2099 },
+  "G23 Convertible": { from: 2020, to: 2099 },
+  "G26 Gran Coupé": { from: 2021, to: 2099 },
+  "G22/G26": { from: 2020, to: 2099 },
+  "F32 Coupé": { from: 2013, to: 2020 },
+  "F33 Convertible": { from: 2014, to: 2020 },
+  "F36 Gran Coupé": { from: 2014, to: 2020 },
+  "G01": { from: 2017, to: 2099 },
+  "G01 (US)": { from: 2017, to: 2099 },
+  "G02": { from: 2018, to: 2099 },
+  "G02 (US)": { from: 2018, to: 2099 },
+  "G05": { from: 2018, to: 2099 },
+  "G05 (US)": { from: 2018, to: 2099 },
+  "G06": { from: 2019, to: 2099 },
+  "G07": { from: 2018, to: 2099 },
+  "G07 (US)": { from: 2018, to: 2099 },
+  // Mercedes
+  "W177": { from: 2018, to: 2099 },
+  "C118": { from: 2019, to: 2099 },
+  "W205": { from: 2014, to: 2021 },
+  "W206": { from: 2021, to: 2099 },
+  "W204": { from: 2007, to: 2014 },
+  "W203": { from: 2000, to: 2007 },
+  "W202": { from: 1993, to: 2000 },
+  "W213": { from: 2016, to: 2023 },
+  "W214": { from: 2023, to: 2099 },
+  "W222": { from: 2013, to: 2020 },
+  "W223": { from: 2020, to: 2099 },
+  "X253": { from: 2015, to: 2022 },
+  "X254": { from: 2022, to: 2099 },
+  "W166": { from: 2011, to: 2019 },
+  "X167": { from: 2019, to: 2099 },
+  "W167/X167": { from: 2019, to: 2099 },
+  "H247": { from: 2020, to: 2099 },
+  "W246": { from: 2011, to: 2019 },
+  "W245": { from: 2005, to: 2011 },
+  "W247": { from: 2019, to: 2099 },
+  "W164": { from: 2005, to: 2011 },
+  "X204": { from: 2008, to: 2015 },
+  "W463/W465": { from: 1990, to: 2099 },
+  "W463": { from: 1990, to: 2099 },
+  "W465": { from: 2024, to: 2099 },
+  "V297": { from: 2021, to: 2099 },
+  "V294": { from: 2022, to: 2099 },
+  "X294": { from: 2022, to: 2099 },
+  "X243": { from: 2021, to: 2099 },
+  "C238": { from: 2017, to: 2023 },
+  "C192": { from: 2023, to: 2099 },
+  "R232": { from: 2022, to: 2099 },
+  "C257": { from: 2018, to: 2099 },
+  // Porsche (generation codes that are NOT unique in VIN alone)
+  "992": { from: 2019, to: 2099 },
+  "991": { from: 2012, to: 2019 },
+  "981/718": { from: 2012, to: 2099 },
+  "9YA": { from: 2017, to: 2099 },
+  "971": { from: 2016, to: 2099 },
+  "J1": { from: 2019, to: 2099 },
+  "95B": { from: 2014, to: 2099 },
+  "E3": { from: 2017, to: 2099 },
+  // VW generation labels (when not literal Typ in VIN)
+  "Mk5": { from: 2003, to: 2009 },
+  "Mk6": { from: 2008, to: 2013 },
+  "Mk7": { from: 2012, to: 2020 },
+  "Mk7/Mk8": { from: 2012, to: 2099 },
+  "Mk8": { from: 2019, to: 2099 },
+  "B6/B7": { from: 2005, to: 2014 },
+  "B8": { from: 2014, to: 2023 },
+  "B9": { from: 2023, to: 2099 },
+  // Audi generation labels
+  "C7": { from: 2011, to: 2018 },
+  "C8": { from: 2018, to: 2099 },
+  "C9": { from: 2025, to: 2099 },
+  "B9 8W": { from: 2015, to: 2099 },
+  "B8 8K": { from: 2008, to: 2016 },
+  "C7 4G": { from: 2011, to: 2018 },
+  "C8 4K": { from: 2018, to: 2099 },
+  "C6 4F": { from: 2004, to: 2011 },
+  // MINI
+  "F56": { from: 2014, to: 2099 },
+  "F55": { from: 2014, to: 2099 },
+  "F54": { from: 2015, to: 2099 },
+  "F60": { from: 2016, to: 2099 },
+};
+
+function applyChassisYearGate(chassis: string | null, year: number | null): string | null {
+  if (!chassis) return null;
+  const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();
+  const bounds = CHASSIS_YEAR[key]
+    ?? CHASSIS_YEAR[key.split("/")[0]!]
+    ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined);
+  if (!bounds) return chassis; // literal VIN platform token (7P, CR, NX, …)
+  // Year unknown → do not claim a generation that depends on year.
+  if (year == null) return null;
+  if (year < bounds.from || year > bounds.to) return null;
+  return chassis;
+}
+
+function finalizePremium(
+  model: string,
+  chassis: string | null,
+  year: number | null,
+): PremiumEuropeanDecode {
+  const gated = applyChassisYearGate(chassis, year);
+  return { model, chassis: gated, displayModel: formatDisplay(model, gated) };
+}
+
 /**
  * BMW F32/F33/F36 use ETK type codes at VDS positions 4–5 (VIN indices 3–4).
  * e.g. 3V71 = F33 428i Convertible (N26) — not F36 despite the trailing "7".
@@ -48,23 +199,18 @@ function resolveBmwFourSeriesBody(vin: string): PremiumEuropeanDecode | null {
 
   // F30 sedans that share a 3V1… prefix (must beat the 3V → F33 rule below).
   if (vin.startsWith("WBA3V1") || vin.startsWith("5UX3V1")) {
-    return {
-      model: "3 Series",
-      chassis: `F30 Sedan${usSuffix}`,
-      displayModel: `3 Series (F30 Sedan${usSuffix})`,
-    };
+    const year = bmwVinModelYear(vin);
+    return finalizePremium("3 Series", `F30 Sedan${usSuffix}`, year);
   }
 
   const type45 = vin.slice(3, 5);
   const year = bmwVinModelYear(vin);
 
   if (type45 === "3V" || type45 === "3T" || type45 === "3U") {
-    const chassis = `F33 Convertible${usSuffix}`;
-    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+    return finalizePremium("4 Series", `F33 Convertible${usSuffix}`, year);
   }
   if (type45 === "3N" || type45 === "3R" || type45 === "3P" || type45 === "3S") {
-    const chassis = `F32 Coupé${usSuffix}`;
-    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+    return finalizePremium("4 Series", `F32 Coupé${usSuffix}`, year);
   }
 
   // F36 Gran Coupé — ETK codes 4A–4F (4C overlaps G26 from ~2021).
@@ -72,30 +218,31 @@ function resolveBmwFourSeriesBody(vin: string): PremiumEuropeanDecode | null {
     const chassis = year != null && year >= 2021
       ? `G23 Convertible${usSuffix}`
       : `F36 Gran Coupé${usSuffix}`;
-    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+    return finalizePremium("4 Series", chassis, year);
   }
   if (type45 === "4C") {
     const chassis = year != null && year >= 2021
       ? `G26 Gran Coupé${usSuffix}`
       : `F36 Gran Coupé${usSuffix}`;
-    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+    return finalizePremium("4 Series", chassis, year);
   }
   if (type45 === "4B" || type45 === "4D" || type45 === "4E" || type45 === "4F") {
-    const chassis = `F36 Gran Coupé${usSuffix}`;
-    return { model: "4 Series", chassis, displayModel: `4 Series (${chassis})` };
+    return finalizePremium("4 Series", `F36 Gran Coupé${usSuffix}`, year);
   }
 
   return null;
 }
 
 // BMW: position 4 alone is NOT the series — 4 Series F32/F33/F36 use ETK type codes at 4–5.
+// Ambiguous short prefixes (WBA3A/B/C) → model only; E90 reused on F30 VINs without year gate was a real bug.
 const BMW_RULES = compilePrefixRules([
   { prefix: "WBA3V1", model: "3 Series", chassis: "F30 Sedan" },
   { prefix: "WBA3VG", model: "3 Series", chassis: "F31 Touring" },
   { prefix: "WBA3W", model: "3 Series", chassis: "G20/G21" },
-  { prefix: "WBA3C", model: "3 Series", chassis: "E92 Coupé" },
-  { prefix: "WBA3B", model: "3 Series", chassis: "E93 Convertible" },
-  { prefix: "WBA3A", model: "3 Series", chassis: "E90/E91" },
+  // Do NOT attach E90/E92/E93 — those prefixes were reused on later gens.
+  { prefix: "WBA3C", model: "3 Series" },
+  { prefix: "WBA3B", model: "3 Series" },
+  { prefix: "WBA3A", model: "3 Series" },
   { prefix: "WBA4S", model: "4 Series", chassis: "G22 Coupé" },
   { prefix: "WBA4C", model: "4 Series", chassis: "G26 Gran Coupé" },
   { prefix: "WBA4A", model: "4 Series", chassis: "G23 Convertible" },
@@ -108,8 +255,8 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA7G", model: "7 Series", chassis: "G11 LCI" },
   { prefix: "WBA7H", model: "7 Series", chassis: "G70" },
   { prefix: "WBA7U", model: "7 Series", chassis: "G12" },
-  // X1/X2 — must beat WBA7* (WBA71 starts with WBA7)
-  { prefix: "WBA71", model: "X1", chassis: "F48/U11" },
+  // X1 — F48 vs U11 share WBA71; leave chassis null (year-ambiguous).
+  { prefix: "WBA71", model: "X1" },
   { prefix: "WBA72", model: "X2", chassis: "F39" },
   { prefix: "5YM8", model: "X1", chassis: "F48 US" },
   { prefix: "5YM1", model: "X1" },
@@ -118,7 +265,6 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA2A", model: "2 Series", chassis: "Active Tourer (F45)" },
   { prefix: "WBA2T", model: "2 Series", chassis: "G42 Coupé" },
   { prefix: "WBA2X", model: "2 Series", chassis: "F44 Gran Coupé" },
-  // 6 Series — F06/F12/F13 (US VDS and EU); missing rules caused blank model
   { prefix: "WBAJV6", model: "6 Series", chassis: "F12/F13 Convertible" },
   { prefix: "WBA6D", model: "6 Series", chassis: "F06 Gran Coupé" },
   { prefix: "WBA6C", model: "6 Series", chassis: "F12/F13" },
@@ -126,7 +272,6 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA6", model: "6 Series" },
   { prefix: "WBA8C", model: "8 Series", chassis: "G14/G15/G16" },
   { prefix: "WBA8", model: "8 Series" },
-  // Spartanburg / US G-generation SUVs — WBA21 is X7, NOT 2 Series
   { prefix: "WBA21E", model: "X7", chassis: "G07" },
   { prefix: "WBA21C", model: "X7", chassis: "G07" },
   { prefix: "WBA21B", model: "X7", chassis: "G07" },
@@ -141,7 +286,6 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA13", model: "X4", chassis: "G02" },
   { prefix: "WBA11A", model: "X6", chassis: "G06" },
   { prefix: "WBA11", model: "X6", chassis: "G06" },
-  { prefix: "WBA8C", model: "8 Series", chassis: "G14/G15/G16" },
   { prefix: "WBAX3", model: "X3", chassis: "G01" },
   { prefix: "WBAX4", model: "X4", chassis: "G02" },
   { prefix: "WBAX5", model: "X5", chassis: "G05" },
@@ -167,7 +311,7 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBS5", model: "M5" },
   { prefix: "WBY1", model: "i3" },
   { prefix: "WBY2", model: "i7" },
-  { prefix: "WBY5", model: "i4", chassis: "G26" },
+  { prefix: "WBY5", model: "i4", chassis: "G26 Gran Coupé" },
   { prefix: "WBY8", model: "i8" },
   { prefix: "WBY7", model: "iX" },
 ]);
@@ -187,7 +331,8 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD253", model: "GLC", chassis: "X253" },
   { prefix: "WDD254", model: "GLC", chassis: "X254" },
   { prefix: "WDD166", model: "GLE", chassis: "W166" },
-  { prefix: "WDD167", model: "GLS", chassis: "X167" },
+  // 167 = GLE (W167) and GLS (X167) — do not pick one.
+  { prefix: "WDD167", model: "GLE / GLS", chassis: "W167/X167" },
   { prefix: "WDD247", model: "GLA", chassis: "H247" },
   { prefix: "WDD246", model: "B-Class", chassis: "W246" },
   { prefix: "WDD164", model: "ML-Class", chassis: "W164" },
@@ -196,30 +341,30 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD290", model: "EQS", chassis: "V297" },
   { prefix: "WDD294", model: "EQE", chassis: "V294" },
   { prefix: "WDD296", model: "EQE SUV", chassis: "X294" },
-  { prefix: "WDD243", model: "B-Class", chassis: "W246" },
-  { prefix: "WDD245", model: "B-Class", chassis: "W247" },
+  { prefix: "WDD243", model: "EQB", chassis: "X243" },
+  { prefix: "WDD245", model: "B-Class", chassis: "W245" },
   { prefix: "WDD238", model: "E-Class Coupé/Cabrio", chassis: "C238" },
   { prefix: "WDD192", model: "AMG GT", chassis: "C192" },
   { prefix: "WDD197", model: "SL", chassis: "R232" },
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },
 ]);
 
-/** Mercedes passenger cars — position 4 series letter (when pos. 4–6 is not a 3-digit chassis code). */
-const MERCEDES_PASSENGER_SERIES_AT_4: Record<string, { model: string; chassis: string }> = {
-  H: { model: "C-Class", chassis: "W202" },
-  R: { model: "C-Class", chassis: "W203" },
-  G: { model: "C-Class", chassis: "W204" },
-  W: { model: "C-Class", chassis: "W205" },
-  A: { model: "C-Class", chassis: "W206" },
+/** Mercedes passenger cars — position 4 series letter. Chassis omitted (letter ≠ unique gen). */
+const MERCEDES_PASSENGER_SERIES_AT_4: Record<string, { model: string }> = {
+  H: { model: "C-Class" },
+  R: { model: "C-Class" },
+  G: { model: "C-Class" },
+  W: { model: "C-Class" },
+  A: { model: "C-Class" },
 };
 
-/** Mercedes SUVs (WDC / W1N / 4JG) — position 4 platform letter. */
-const MERCEDES_SUV_SERIES_AT_4: Record<string, { model: string; chassis: string }> = {
+/** Mercedes SUVs (WDC / W1N / 4JG) — position 4 platform letter. Model only when gen ambiguous. */
+const MERCEDES_SUV_SERIES_AT_4: Record<string, { model: string; chassis?: string }> = {
   Y: { model: "G-Class", chassis: "W463" },
   W: { model: "G-Class", chassis: "W465" },
   R: { model: "G-Class", chassis: "W463" },
   C: { model: "G-Class", chassis: "W463" },
-  "0": { model: "GLC", chassis: "X253" },
+  "0": { model: "GLC" },
 };
 
 const AUDI_US_RULES = compilePrefixRules([
@@ -260,7 +405,8 @@ const AUDI_RULES = compilePrefixRules([
 ]);
 
 const PORSCHE_RULES = compilePrefixRules([
-  { prefix: "WP0ZZZ99", model: "911", chassis: "992" },
+  // "99" is the long-running 911 family code — do NOT hardcode 992.
+  { prefix: "WP0ZZZ99", model: "911" },
   { prefix: "WP0ZZZ97", model: "911", chassis: "991" },
   { prefix: "WP0ZZZ98", model: "Boxster/Cayman", chassis: "981/718" },
   { prefix: "WP0ZZZ92", model: "Cayenne", chassis: "9YA" },
@@ -286,13 +432,14 @@ const VW_PLATFORM_CODES_ON_WVG = new Set([
 ]);
 
 const VW_RULES = compilePrefixRules([
-  { prefix: "WVWZZZ1K", model: "Golf", chassis: "Mk7/Mk8" },
-  { prefix: "WVWZZZ1Z", model: "Golf", chassis: "Mk7" },
-  { prefix: "WVWZZZ3C", model: "Passat", chassis: "B8" },
+  // Typ 1K = Golf Mk5 (not Mk7/8). Keep model only — Typ→Mk mapping was wrong.
+  { prefix: "WVWZZZ1K", model: "Golf", chassis: "Mk5" },
+  { prefix: "WVWZZZ1Z", model: "Golf" },
+  // Typ 3C = Passat B6/B7 (not B8).
+  { prefix: "WVWZZZ3C", model: "Passat", chassis: "B6/B7" },
   { prefix: "WVWZZZ3D", model: "Arteon", chassis: "3H" },
   { prefix: "WVWZZZ5N", model: "Tiguan", chassis: "AD1/AD2" },
   { prefix: "WVWZZZ5M", model: "T-Roc" },
-  // Touareg: 7L = gen 1, 7P = gen 2, CR = gen 3 (often Bratislava WVG)
   { prefix: "WVWZZZ7P", model: "Touareg", chassis: "7P" },
   { prefix: "WVWZZZ7L", model: "Touareg", chassis: "7L" },
   { prefix: "WVWZZZCR", model: "Touareg", chassis: "CR" },
@@ -301,8 +448,9 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZE1", model: "ID.4" },
   { prefix: "WVWZZZE2", model: "ID.5" },
   { prefix: "WVWZZZSY", model: "T-Roc" },
-  { prefix: "WVWZZZAU", model: "Golf", chassis: "Mk6" },
-  { prefix: "WVWZZZ1J", model: "Jetta", chassis: "Mk6/Mk7" },
+  // Typ AU = Golf Mk7 (not Mk6).
+  { prefix: "WVWZZZAU", model: "Golf", chassis: "Mk7" },
+  { prefix: "WVWZZZ1J", model: "Jetta" },
   { prefix: "WVWZZZAA", model: "Up!" },
   { prefix: "WVWZZZ2K", model: "Golf", chassis: "Mk7" },
   { prefix: "WVWZZZ1T", model: "Touran", chassis: "1T" },
@@ -331,7 +479,6 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZSK", model: "ID. Buzz" },
   { prefix: "WVWZZZST", model: "ID. Buzz Cargo" },
   { prefix: "WVWZZZ6C", model: "Passat", chassis: "B9" },
-  // Commercial / Multivan (Hannover WV1/WV2)
   { prefix: "WV2ZZZSF", model: "Multivan", chassis: "T7" },
   { prefix: "WV2ZZZSG", model: "California", chassis: "T6.1/T7" },
   { prefix: "WV2ZZZ7H", model: "Multivan", chassis: "T6/T6.1" },
@@ -342,7 +489,7 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WV2ZZZ2E", model: "Caddy", chassis: "C5" },
   { prefix: "WVGZZZ2D", model: "Caddy", chassis: "C5" },
   { prefix: "WVGZZZ2E", model: "Caddy", chassis: "C5" },
-  { prefix: "3VWZZZ", model: "Volkswagen", chassis: "US market" },
+  { prefix: "3VWZZZ", model: "Volkswagen" },
 ]);
 
 const MINI_RULES = compilePrefixRules([
@@ -386,15 +533,12 @@ function mercedesHasChassisDigits(vin: string): boolean {
 
 function decodeMercedesSeriesAt4(
   vin: string,
-  seriesMap: Record<string, { model: string; chassis: string }>,
+  seriesMap: Record<string, { model: string; chassis?: string }>,
 ): PremiumEuropeanDecode | null {
   const hit = seriesMap[vin[3]];
   if (!hit) return null;
-  return {
-    model: hit.model,
-    chassis: hit.chassis,
-    displayModel: formatDisplay(hit.model, hit.chassis),
-  };
+  const year = premiumVinModelYear(vin);
+  return finalizePremium(hit.model, hit.chassis ?? null, year);
 }
 
 function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
@@ -425,20 +569,15 @@ function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
 function decodeFromRules(vin: string, rules: readonly PremiumPrefixRule[]): PremiumEuropeanDecode | null {
   const hit = matchLongestPrefix(vin, rules) as PremiumPrefixRule | null;
   if (!hit) return null;
-  return {
-    model: hit.model,
-    chassis: hit.chassis ?? null,
-    displayModel: formatDisplay(hit.model, hit.chassis ?? null),
-  };
+  return finalizePremium(hit.model, hit.chassis ?? null, premiumVinModelYear(vin));
 }
 
-function fromHomologation(hit: ReturnType<typeof decodeAudiEuHomologation>): PremiumEuropeanDecode | null {
+function fromHomologation(
+  hit: ReturnType<typeof decodeAudiEuHomologation>,
+  vin: string,
+): PremiumEuropeanDecode | null {
   if (!hit) return null;
-  return {
-    model: hit.model,
-    chassis: hit.chassis,
-    displayModel: homologationToDisplay(hit),
-  };
+  return finalizePremium(hit.model, hit.chassis, premiumVinModelYear(vin));
 }
 
 export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null {
@@ -459,7 +598,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
         ?? decodeFromRules(raw, VW_RULES);
       if (vwHit) return vwHit;
     }
-    const audiHit = fromHomologation(decodeAudiEuHomologation(raw));
+    const audiHit = fromHomologation(decodeAudiEuHomologation(raw), raw);
     if (audiHit) return audiHit;
   }
 
@@ -468,7 +607,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
 
   if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("5UX") || wmi.startsWith("4US") || wmi.startsWith("5YM")) {
     if (raw.slice(3, 6) === "ZZZ") {
-      const euHit = fromHomologation(decodeBmwEuHomologation(raw));
+      const euHit = fromHomologation(decodeBmwEuHomologation(raw), raw);
       if (euHit) return euHit;
     }
     const f4Body = resolveBmwFourSeriesBody(upper);
@@ -477,7 +616,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   }
   if (isMercedesPassengerWmi(wmi) || isMercedesSuvWmi(wmi)) {
     if (raw.slice(3, 6) === "ZZZ") {
-      const euHit = fromHomologation(decodeMercedesEuHomologation(raw));
+      const euHit = fromHomologation(decodeMercedesEuHomologation(raw), raw);
       if (euHit) return euHit;
     }
     return decodeMercedesPremium(upper);
@@ -487,7 +626,7 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   }
   if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
     if (raw.slice(3, 6) === "ZZZ") {
-      const euHit = fromHomologation(decodeAudiEuHomologation(raw));
+      const euHit = fromHomologation(decodeAudiEuHomologation(raw), raw);
       if (euHit) return euHit;
     }
     return decodeFromRules(upper, AUDI_RULES);
@@ -501,16 +640,14 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   if (wmi.startsWith("WMW")) {
     return decodeFromRules(upper, MINI_RULES);
   }
-  if (wmi.startsWith("SAL") || wmi.startsWith("SAJ")) {
-    if (raw.slice(3, 6) === "ZZZ") {
-      const jlr = decodeJlrEu(raw);
-      if (jlr) {
-        return {
-          model: jlr.model,
-          chassis: jlr.chassis,
-          displayModel: jlr.displayModel,
-        };
-      }
+  if (wmi.startsWith("SAL") || wmi.startsWith("SAJ") || wmi.startsWith("SAD")) {
+    const jlr = decodeJlrEu(raw);
+    if (jlr) {
+      return {
+        model: jlr.model,
+        chassis: jlr.chassis,
+        displayModel: jlr.displayModel,
+      };
     }
   }
   return null;

@@ -8,8 +8,10 @@ import { decodePremiumEuropean } from "./european-premium";
 import { decodeSeatEuHomologation } from "./seat-eu";
 import { matchHyundaiToyotaRule } from "./asian-eu";
 import { matchUsVdsRule } from "./us-vds";
+import { matchMazdaRule } from "./mazda";
 import { matchCupraPlatform } from "./cupra-platform";
 import { matchSkodaRule } from "./european-brands";
+import { decodeGlobalBrand } from "./global-brands";
 
 /** Extract platform/generation from a display model e.g. "Touareg (CR)". */
 function seriesFromModelParen(model: string | null | undefined): string | null {
@@ -45,8 +47,14 @@ export function decodeLocalSeries(vin: string, model?: string | null): string | 
   const asia = matchHyundaiToyotaRule(upper);
   if (asia?.chassis) return asia.chassis;
 
+  const mazda = matchMazdaRule(upper);
+  if (mazda?.chassis) return mazda.chassis;
+
   const us = matchUsVdsRule(upper);
   if (us?.chassis) return us.chassis;
+
+  const global = decodeGlobalBrand(upper);
+  if (global.chassis) return global.chassis;
 
   return seriesFromModelParen(model);
 }
