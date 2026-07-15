@@ -259,23 +259,12 @@ export function Footer() {
             ))}
           </nav>
 
-          <nav
-            aria-label={t("footer_company")}
-            className="space-y-3.5 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 lg:col-span-2 lg:justify-self-stretch"
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">
-              {t("footer_company")}
-            </p>
+          <nav aria-label={t("footer_company")} className="space-y-3 lg:col-span-2 lg:min-w-[9.5rem] lg:justify-self-end">
+            <p className="text-[13px] font-semibold text-white/72">{t("footer_company")}</p>
             <ul className="space-y-2.5">
               {COMPANY_LINKS.map(({ path, labelKey }) => (
                 <li key={path}>
-                  <PrefetchLink
-                    href={`/${language}/${path}`}
-                    className={cn(
-                      seoLinkCls,
-                      path === "api-b2b" && "font-medium text-white/65 hover:text-white",
-                    )}
-                  >
+                  <PrefetchLink href={`/${language}/${path}`} className={seoLinkCls}>
                     {t(labelKey)}
                   </PrefetchLink>
                 </li>

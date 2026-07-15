@@ -39,16 +39,23 @@ export default function ApiB2bHome() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_75%_-10%,rgba(16,185,129,0.32),transparent_55%),radial-gradient(ellipse_45%_40%_at_5%_90%,rgba(20,184,166,0.16),transparent_50%),linear-gradient(180deg,#dff3ea_0%,#f3f7f4_58%,#f3f7f4_100%)] dark:bg-[radial-gradient(ellipse_80%_60%_at_75%_-10%,rgba(16,185,129,0.18),transparent_55%),linear-gradient(180deg,#0b1511,#090f0d)]" />
         {!reduce && (
-          <motion.div
-            className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl will-change-transform"
-            animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.06, 1] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <>
+            <motion.div
+              className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl will-change-transform"
+              animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.06, 1] }}
+              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="pointer-events-none absolute left-[8%] top-28 h-40 w-40 rounded-full bg-teal-300/15 blur-3xl"
+              animate={{ opacity: [0.2, 0.4, 0.2], y: [0, 18, 0] }}
+              transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </>
         )}
 
         <motion.div
           className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24"
-          variants={staggerContainer(0.07)}
+          variants={staggerContainer(0.045)}
           initial={reduce ? false : "hidden"}
           animate="show"
         >
@@ -70,7 +77,7 @@ export default function ApiB2bHome() {
           <motion.h1
             variants={fadeUp}
             transition={fadeUpTransition()}
-            className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-6xl dark:text-white"
+            className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-[3.35rem] md:leading-[1.08] dark:text-white"
           >
             {c.heroHeadline}
           </motion.h1>
@@ -267,7 +274,7 @@ export default function ApiB2bHome() {
           <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-300">{c.regionsSub}</p>
           <motion.div
             className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-            variants={staggerContainer(0.05)}
+            variants={staggerContainer(0.04)}
             initial={reduce ? false : "hidden"}
             whileInView="show"
             viewport={viewportOnce}
@@ -276,10 +283,16 @@ export default function ApiB2bHome() {
               <motion.div key={r.slug} variants={fadeUp}>
                 <Link
                   href={`${base}/${r.slug}`}
-                  className="group block h-full overflow-hidden rounded-[1.35rem] border border-emerald-900/10 bg-white transition duration-300 hover:-translate-y-1 hover:border-emerald-600/40 hover:shadow-xl dark:border-white/10 dark:bg-[#101816]"
+                  className="group relative block h-full overflow-hidden rounded-[1.35rem] border border-emerald-900/10 bg-white transition duration-300 hover:-translate-y-1 hover:border-emerald-600/40 hover:shadow-xl dark:border-white/10 dark:bg-[#101816]"
                 >
                   <div className="h-1.5 w-full transition-all duration-300 group-hover:h-2" style={{ background: r.accent }} />
-                  <div className="p-5">
+                  {!reduce && (
+                    <motion.div
+                      className="pointer-events-none absolute -right-8 top-0 h-24 w-24 rounded-full opacity-0 blur-2xl transition group-hover:opacity-40"
+                      style={{ background: r.accent }}
+                    />
+                  )}
+                  <div className="relative p-5">
                     <div className="flex items-center gap-3">
                       <FlagImg code={r.flag} size={22} />
                       <h3 className="font-semibold text-slate-900 dark:text-white">{c[r.nameKey]}</h3>

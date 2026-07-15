@@ -94,11 +94,11 @@ function resolveApiB2bSeo(lang: SeoLang, rest: string): {
   }
   const region = findApiB2bRegion(tail.replace(/^\//, ""));
   if (region) {
-    const name = c[region.nameKey];
+    const label = region.seoLabel;
     return {
-      title: c.seoRegionTitle.replace("{region}", name),
-      description: c.seoRegionDesc.replace(/\{region\}/g, name),
-      keywords: `${c.seoKeywords}, ${name}`,
+      title: c.seoRegionTitle.replace(/\{region\}/g, label),
+      description: c.seoRegionDesc.replace(/\{region\}/g, label),
+      keywords: `${c.seoKeywords}, ${label} car history, ${label} mileage records`,
     };
   }
   return { title: c.seoHomeTitle, description: c.seoHomeDesc, keywords: c.seoKeywords };

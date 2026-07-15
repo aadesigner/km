@@ -12,7 +12,7 @@ import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker
 import { Menu, X, Send, Mail, ChevronDown, ChevronUp, ArrowUpRight, ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
 import { useApiB2bCopy } from "./use-copy";
 
 const SCROLL_MARKETS_KEY = "api-b2b-scroll-markets";
@@ -257,7 +257,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
             <KmcheckApiMark compact={scrolled} />
           </Link>
 
-          <nav className="hidden items-center rounded-full border border-slate-900/[0.07] bg-white/70 p-1 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04] lg:flex">
+          <LayoutGroup id="b2b-nav">
+          <nav className="hidden items-center gap-0.5 rounded-full border border-slate-900/[0.08] bg-white/75 p-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05] lg:flex">
             {navPrimary.slice(0, 2).map((item) => {
               const active = item.match(pathOnly);
               return (
@@ -265,39 +266,66 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-full px-3.5 py-2 text-sm font-medium transition duration-200",
+                    "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
-                      ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
-                      : "text-slate-600 hover:bg-slate-900/[0.05] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white",
+                      ? "text-white dark:text-slate-900"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
                   )}
                 >
-                  {item.label}
+                  {active && (
+                    <motion.span
+                      layoutId="b2b-nav-pill"
+                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-[1]">{item.label}</span>
                 </Link>
               );
             })}
 
             <div ref={marketsRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setMarketsOpen((v) => !v)}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition duration-200",
-                  marketsOpen || pathOnly.includes("/usa-cars") || pathOnly.includes("/canada-cars") || pathOnly.includes("/korea-cars") || pathOnly.includes("/dubai-cars") || pathOnly.includes("/china-cars")
-                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
-                    : "text-slate-600 hover:bg-slate-900/[0.05] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white",
-                )}
-              >
-                {c.navRegions}
-                <ChevronDown className={cn("h-3.5 w-3.5 opacity-60 transition", marketsOpen && "rotate-180")} />
-              </button>
+              {(() => {
+                const marketsActive =
+                  marketsOpen
+                  || pathOnly.includes("/usa-cars")
+                  || pathOnly.includes("/canada-cars")
+                  || pathOnly.includes("/korea-cars")
+                  || pathOnly.includes("/dubai-cars")
+                  || pathOnly.includes("/china-cars");
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setMarketsOpen((v) => !v)}
+                    className={cn(
+                      "relative inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
+                      marketsActive
+                        ? "text-white dark:text-slate-900"
+                        : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
+                    )}
+                  >
+                    {marketsActive && (
+                      <motion.span
+                        layoutId="b2b-nav-pill"
+                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-[1] inline-flex items-center gap-1">
+                      {c.navRegions}
+                      <ChevronDown className={cn("h-3.5 w-3.5 opacity-60 transition duration-150", marketsOpen && "rotate-180")} />
+                    </span>
+                  </button>
+                );
+              })()}
               <AnimatePresence>
                 {marketsOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.18 }}
-                    className="absolute left-1/2 top-full z-50 mt-3 w-[17.5rem] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-900/10 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-[#101816]"
+                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute left-1/2 top-full z-50 mt-3 w-[19rem] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-900/10 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#101816]/95"
                   >
                     <button
                       type="button"
@@ -314,10 +342,17 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                           <Link
                             href={`${base}/${r.slug}`}
                             onClick={() => setMarketsOpen(false)}
-                            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-900/[0.04] dark:text-slate-200 dark:hover:bg-white/5"
+                            className="group flex items-start gap-2.5 rounded-xl px-3 py-2.5 transition hover:bg-slate-900/[0.04] dark:hover:bg-white/5"
                           >
-                            <FlagImg code={r.flag} size={18} />
-                            {c[r.nameKey]}
+                            <FlagImg code={r.flag} size={18} className="mt-0.5" />
+                            <span className="min-w-0">
+                              <span className="block text-sm font-medium text-slate-800 dark:text-slate-100">
+                                {c[r.nameKey]}
+                              </span>
+                              <span className="mt-0.5 line-clamp-1 text-[11px] text-slate-500">
+                                {c[r.blurbKey]}
+                              </span>
+                            </span>
                           </Link>
                         </li>
                       ))}
@@ -334,17 +369,25 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-full px-3.5 py-2 text-sm font-medium transition duration-200",
+                    "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
-                      ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
-                      : "text-slate-600 hover:bg-slate-900/[0.05] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white",
+                      ? "text-white dark:text-slate-900"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
                   )}
                 >
-                  {item.label}
+                  {active && (
+                    <motion.span
+                      layoutId="b2b-nav-pill"
+                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-[1]">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
+          </LayoutGroup>
 
           <div className="hidden items-center gap-2.5 md:flex">
             <LangDropdown lang={lang} onSelect={switchLang} />

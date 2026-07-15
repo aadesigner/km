@@ -27,9 +27,9 @@ export const springSnap: Transition = {
 };
 
 export const fadeUpTransition = (delay = 0): Transition => ({
-  duration: 0.45,
+  duration: 0.36,
   delay,
   ease: easeOutSoft,
 });
 
-export const viewportOnce = { once: true, margin: "-48px 0px" as const };
+export const viewportOnce = { once: true, margin: "-40px 0px" as const };

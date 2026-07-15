@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { FlagImg } from "@/components/flag-img";
 import { findApiB2bRegion, API_B2B_REGIONS } from "./regions";
 import { useApiB2bCopy } from "./use-copy";
-import { viewportOnce } from "./motion";
+import { fadeUp, staggerContainer, viewportOnce } from "./motion";
 import { ArrowRight } from "lucide-react";
 
 const FlowDemo = lazy(() => import("./demos").then((m) => ({ default: m.FlowDemo })));
@@ -17,6 +17,8 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
   if (!region) return <Redirect to={base} />;
 
   const name = c[region.nameKey];
+  const headline = c.regionHeroTitle.replace(/\{region\}/g, region.seoLabel);
+  const ctaTitle = c.regionCtaTitle.replace(/\{region\}/g, region.seoLabel);
 
   return (
     <div>
@@ -27,34 +29,53 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
             background: `radial-gradient(ellipse 70% 55% at 80% 0%, ${region.accent}33, transparent 55%), linear-gradient(180deg, #e8f5ef, #f4f7f5)`,
           }}
         />
+        {!reduce && (
+          <motion.div
+            className="pointer-events-none absolute -right-10 top-8 h-48 w-48 rounded-full blur-3xl"
+            style={{ background: `${region.accent}33` }}
+            animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.06, 1] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="flex items-center gap-3">
-            <FlagImg code={region.flag} className="h-6 w-9 rounded-[3px] shadow" />
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">{c.heroBrand}</p>
-          </div>
-          <motion.h1
-            initial={reduce ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl"
+          <motion.div
+            variants={staggerContainer(0.06)}
+            initial={reduce ? false : "hidden"}
+            animate="show"
           >
-            {name}
-          </motion.h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-600">{c.regionHeroSub}</p>
-          <p className="mt-3 max-w-2xl text-slate-600">{c[region.blurbKey]}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`${base}/contact`}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 hover:gap-2.5"
+            <motion.div variants={fadeUp} className="flex items-center gap-3">
+              <FlagImg code={region.flag} className="h-6 w-9 rounded-[3px] shadow" />
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                {name} · {c.heroBrand}
+              </p>
+            </motion.div>
+            <motion.h1
+              variants={fadeUp}
+              className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl"
             >
-              {c.ctaContact} <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`${base}/plans`}
-              className="inline-flex rounded-full border border-emerald-900/15 bg-white/80 px-6 py-3 text-sm font-semibold transition hover:border-emerald-600/40"
-            >
-              {c.ctaPlans}
-            </Link>
-          </div>
+              {headline}
+            </motion.h1>
+            <motion.p variants={fadeUp} className="mt-4 max-w-2xl text-lg text-slate-600">
+              {c.regionHeroSub}
+            </motion.p>
+            <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-slate-600">
+              {c[region.blurbKey]}
+            </motion.p>
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href={`${base}/contact`}
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 hover:gap-2.5 active:scale-[0.98]"
+              >
+                {c.ctaContact} <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href={`${base}/plans`}
+                className="inline-flex rounded-full border border-emerald-900/15 bg-white/80 px-6 py-3 text-sm font-semibold transition hover:border-emerald-600/40 active:scale-[0.98]"
+              >
+                {c.ctaPlans}
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -87,18 +108,30 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
           >
             <h3 className="font-semibold">{c.regionDataTitle}</h3>
             <ul className="mt-4 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-              {c.regionDataItems.map((item) => (
-                <li key={item} className="flex gap-2">
+              {c.regionDataItems.map((item, i) => (
+                <motion.li
+                  key={item}
+                  initial={reduce ? false : { opacity: 0, x: -6 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={viewportOnce}
+                  transition={{ delay: 0.04 * i }}
+                  className="flex gap-2"
+                >
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                   {item}
-                </li>
+                </motion.li>
               ))}
             </ul>
           </motion.div>
         </div>
 
-        <div className="mt-14 rounded-2xl bg-[#0f1a16] px-6 py-10 text-white sm:px-10">
-          <h2 className="text-2xl font-semibold">{c.regionCtaTitle}</h2>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={viewportOnce}
+          className="mt-14 rounded-2xl bg-[#0f1a16] px-6 py-10 text-white sm:px-10"
+        >
+          <h2 className="text-2xl font-semibold">{ctaTitle}</h2>
           <p className="mt-3 max-w-xl text-slate-300">{c.regionCtaBody}</p>
           <Link
             href={`${base}/contact`}
@@ -106,7 +139,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
           >
             {c.ctaStart} <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
+        </motion.div>
 
         <div className="mt-12">
           <p className="text-sm font-semibold text-slate-500">{c.navRegions}</p>
