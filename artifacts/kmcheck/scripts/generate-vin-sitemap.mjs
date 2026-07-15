@@ -147,13 +147,35 @@ if (!pg) {
   process.exit(0);
 }
 
-const client = new pg.Client({ connectionString: dbUrl });
-await client.connect();
-
-const { rows } = await client.query(
-  `SELECT vin, updated_at FROM vin_catalog ORDER BY updated_at DESC LIMIT 50000`,
-);
-await client.end();
+/** Railway build network cannot resolve postgres.railway.internal — never fail the frontend build. */
+let rows = [];
+const client = new pg.Client({
+  connectionString: dbUrl,
+  connectionTimeoutMillis: 8_000,
+  query_timeout: 30_000,
+});
+try {
+  await client.connect();
+  const result = await client.query(
+    `SELECT vin, updated_at FROM vin_catalog ORDER BY updated_at DESC LIMIT 50000`,
+  );
+  rows = result.rows;
+  await client.end();
+} catch (err) {
+  try {
+    await client.end();
+  } catch {
+    // ignore
+  }
+  const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+  const message = err instanceof Error ? err.message : String(err);
+  clearVinShards();
+  writeSitemapIndex([], today);
+  console.warn(
+    `generate-vin-sitemap: DB unavailable during build (${code || "error"}: ${message}); index → pages only`,
+  );
+  process.exit(0);
+}
 
 clearVinShards();
 

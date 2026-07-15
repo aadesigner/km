@@ -6,6 +6,7 @@ import { db, providersTable, systemSettingsTable } from "@workspace/db";
 import { count, desc, eq, like } from "drizzle-orm";
 import { scheduleCleanupJobs } from "./lib/cleanupJobs.js";
 import { scheduleDbKeepalive } from "./lib/dbKeepalive.js";
+import { refreshVinSitemapShards } from "./lib/sitemapMaintenance.js";
 import { invalidatePublicSettingsCache } from "./routes/payments.js";
 import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
@@ -126,6 +127,19 @@ const server = app.listen(port, "0.0.0.0", async () => {
   );
   scheduleCleanupJobs();
   scheduleDbKeepalive();
+  // VIN shards are written at runtime — Railway build cannot reach postgres.railway.internal.
+  void refreshVinSitemapShards()
+    .then((result) => {
+      if (!result) {
+        logger.warn("VIN sitemap refresh skipped (no public sitemap dir)");
+        return;
+      }
+      logger.info(
+        { vins: result.vinCount, shards: result.shardCount, dir: result.publicDir },
+        "VIN sitemap shards refreshed",
+      );
+    })
+    .catch((e) => logger.warn({ err: e }, "Failed to refresh VIN sitemap shards"));
 });
 
 server.on("error", (err) => {
