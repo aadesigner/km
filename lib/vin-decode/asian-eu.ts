@@ -4,42 +4,7 @@
  */
 
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
-
-const HYUNDAI_RULES: PrefixRule[] = compilePrefixRules([
-  { prefix: "KMHK381", model: "Tucson", chassis: "NX4" },
-  { prefix: "KMHK481", model: "Tucson", chassis: "TL" },
-  { prefix: "KMHL341", model: "IONIQ 5" },
-  { prefix: "KMHM341", model: "IONIQ 6" },
-  { prefix: "KMHN341", model: "IONIQ 5 N" },
-  { prefix: "KMHC751", model: "i30", chassis: "PD" },
-  { prefix: "KMHC851", model: "i30", chassis: "GD" },
-  { prefix: "KMHK251", model: "Santa Fe", chassis: "TM" },
-  { prefix: "KMHS381", model: "Santa Fe Sport" },
-  { prefix: "KMHR581", model: "Kona", chassis: "OS" },
-  { prefix: "KMHR681", model: "Kona", chassis: "SX2" },
-  { prefix: "KMHJ381", model: "Bayon" },
-  { prefix: "KMHJ281", model: "i20", chassis: "BC3" },
-  { prefix: "KMHJ181", model: "i20", chassis: "GB" },
-  { prefix: "KMHJ481", model: "i10", chassis: "AC3" },
-  { prefix: "KMHN551", model: "Nexo" },
-  { prefix: "KMHD281", model: "Elantra", chassis: "CN7" },
-  { prefix: "KMHD641", model: "Elantra", chassis: "AD" },
-  { prefix: "KM8J3", model: "Tucson", chassis: "NX4 US" },
-  { prefix: "KM8K3", model: "Tucson", chassis: "NX4 US" },
-  { prefix: "5NMS2", model: "Santa Fe", chassis: "TM US" },
-  { prefix: "5NPE2", model: "Sonata", chassis: "DN8" },
-  { prefix: "5NPD8", model: "Elantra", chassis: "CN7 US" },
-  { prefix: "TMAH381", model: "Tucson", chassis: "NX4 EU" },
-  { prefix: "TMAJ381", model: "i30", chassis: "PD EU" },
-  { prefix: "TMAJ281", model: "i20", chassis: "BC3 EU" },
-  { prefix: "TMAH581", model: "Kona", chassis: "OS EU" },
-  { prefix: "TMAJ681", model: "Kona", chassis: "SX2 EU" },
-  { prefix: "TMAJ481", model: "i10", chassis: "AC3" },
-  { prefix: "TMAB381", model: "Tucson" },
-  { prefix: "NLHBR51", model: "i20", chassis: "TR plant" },
-  { prefix: "NLHBW51", model: "Bayon" },
-  { prefix: "NLHBV51", model: "i20 N" },
-]);
+import { decodeHyundaiModel, isHyundaiVin, matchHyundaiRule } from "./hyundai";
 
 const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "JTDKB3", model: "Prius", chassis: "XW50" },
@@ -96,21 +61,6 @@ const HONDA_EU_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "SHHCR", model: "CR-V" },
 ]);
 
-function isHyundaiVin(vin: string): boolean {
-  const wmi = vin.slice(0, 3);
-  return (
-    wmi.startsWith("KMH")
-    || wmi.startsWith("KMF")
-    || wmi === "KM8"
-    || wmi.startsWith("TMA")
-    || wmi.startsWith("NLH")
-    || wmi.startsWith("LNB")
-    || wmi.startsWith("LNY")
-    || wmi.startsWith("5NM")
-    || wmi.startsWith("5NP")
-  );
-}
-
 function isToyotaExtendedVin(vin: string): boolean {
   return (
     vin.startsWith("JT")
@@ -145,7 +95,7 @@ export function matchHyundaiToyotaRule(vin: string): PrefixRule | null {
     if (hondaEu) return hondaEu;
   }
   if (isHyundaiVin(u)) {
-    const hyundai = matchLongestPrefix(u, HYUNDAI_RULES);
+    const hyundai = matchHyundaiRule(u);
     if (hyundai) return hyundai;
   }
   if (isToyotaExtendedVin(u)) {
@@ -157,5 +107,10 @@ export function matchHyundaiToyotaRule(vin: string): PrefixRule | null {
 }
 
 export function decodeHyundaiToyotaModel(vin: string): string | null {
+  const u = vin.toUpperCase().trim();
+  if (isHyundaiVin(u)) return decodeHyundaiModel(u);
   return matchHyundaiToyotaRule(vin)?.model ?? null;
 }
+
+export { isHyundaiVin, matchHyundaiRule, decodeHyundaiModel, decodeHyundaiEngine } from "./hyundai";
+

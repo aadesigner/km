@@ -15,7 +15,7 @@ import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } fro
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
-import { decodeHyundaiToyotaModel, isHyundaiToyotaVin } from "./asian-eu";
+import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine } from "./asian-eu";
 import { decodeUsVdsModel } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
@@ -416,12 +416,8 @@ const MODEL_MAP_4: Record<string, string> = {
   "SAJP": "F-Pace",     "SAJE": "E-Pace",     "SAJC": "I-Pace",
   "SAJX": "F-Pace",
   "SADF": "I-Pace",
-  // ── Hyundai ───────────────────────────────────────────────────────────────
-  "KMHS": "Santa Fe Sport", "KMHR": "Santa Fe",   "KMHD": "Elantra",
-  "KMHC": "Elantra",    "KMHF": "Elantra",    "KMHG": "Genesis",
-  "KMHH": "i30",        "KMHK": "i10",        "KMHN": "Nexo",
-  "KMHP": "Ioniq",
-  "KM8J": "Tucson",     "KM8S": "Tucson",     "KM8L": "Tucson",
+  // ── Hyundai: detailed decode in hyundai.ts — keep only safe coarse MPV prefixes here.
+  "KM8J": "Tucson",     "KM8S": "Santa Fe",     "KM8L": "Tucson",
   "KM8R": "Santa Cruz",
   // ── Kia ───────────────────────────────────────────────────────────────────
   "KNAD": "Sportage",   "KNAG": "Stinger",    "KNAH": "K900",
@@ -741,6 +737,23 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
     S: "Electric — 58 kWh (IONIQ 5 Standard Range)",
     T: "Electric — 53 kWh (IONIQ 6 Standard)",
     W: "Electric — 72.6 kWh (IONIQ 5)",
+  },
+  KM8: {
+    A: "2.0L I4 (G4NA)", B: "2.4L I4 (G4KJ)", C: "2.0L Turbo (G4KH)",
+    D: "2.5L I4 (G4KM)", E: "1.6L CRDi Diesel", F: "3.3L V6",
+    G: "2.5L Turbo I4", H: "1.6T Hybrid", K: "2.0L Turbo",
+    L: "Electric", N: "Electric (EV)", P: "2.5T I4", R: "1.6T Hybrid",
+  },
+  TMA: {
+    A: "1.0L T-GDi I3", B: "1.6L I4", C: "2.0L I4", D: "1.6 CRDi",
+    E: "1.6T I4", H: "1.6 Hybrid", K: "2.0T I4", P: "2.5L I4",
+  },
+  "5NM": {
+    A: "2.5L I4", B: "2.5T I4", C: "2.0L Turbo", D: "1.6 Hybrid",
+    E: "2.5 Hybrid", G: "3.5L V6",
+  },
+  "5NP": {
+    A: "2.0L I4", B: "2.5L I4", C: "1.6T", D: "2.0T", E: "Hybrid",
   },
   // Kia Korea (KNA* / KND*)
   KNA: {
@@ -1114,6 +1127,36 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     E: { city: "Ulsan Plant 4/5", country: "South Korea" },
     M: { city: "Montgomery, AL",  country: "USA"         },
     N: { city: "Nošovice",        country: "Czech Republic" },
+    U: { city: "Ulsan",           country: "South Korea" },
+    T: { city: "Jeonju",          country: "South Korea" },
+  },
+  // Hyundai MPV NA / Czech / Alabama
+  KM8: {
+    U: { city: "Ulsan", country: "South Korea" },
+    A: { city: "Asan", country: "South Korea" },
+    T: { city: "Jeonju", country: "South Korea" },
+  },
+  TMA: {
+    J: { city: "Nošovice", country: "Czech Republic" },
+    U: { city: "Ulsan", country: "South Korea" },
+  },
+  TMC: {
+    J: { city: "Nošovice", country: "Czech Republic" },
+  },
+  "5NM": {
+    A: { city: "Montgomery, AL", country: "USA" },
+    H: { city: "Montgomery, AL", country: "USA" },
+  },
+  "5NP": {
+    A: { city: "Montgomery, AL", country: "USA" },
+    B: { city: "Montgomery, AL", country: "USA" },
+  },
+  "5NT": {
+    A: { city: "Montgomery, AL", country: "USA" },
+  },
+  NLH: {
+    A: { city: "İzmit", country: "Turkey" },
+    L: { city: "İzmit", country: "Turkey" },
   },
   // Kia Korea (KNA* / KND*)
   KNA: {
@@ -1643,8 +1686,12 @@ const BODY_CODE_MAP: Record<string, Record<string, string>> = {
   // VW:
   WVW: { A: "2-Door Hatchback", B: "4-Door Sedan", C: "Cabriolet", E: "4-Door Hatchback", G: "3-Door Hatchback", R: "4-Door Sedan" },
   // Hyundai / Genesis / Kia:
-  KMH: { A: "2-Door", B: "Sedan", C: "SUV/Crossover", D: "Coupé", E: "Hatchback", F: "Wagon", G: "SUV", H: "Crossover" },
-  KM8: { A: "SUV", B: "Crossover", C: "SUV", D: "Compact SUV" },
+  KMH: { A: "2-Door", B: "Sedan", C: "SUV/Crossover", D: "Coupé", E: "Hatchback", F: "Wagon", G: "SUV", H: "Crossover", J: "SUV", N: "SUV" },
+  KM8: { A: "SUV", B: "Crossover", C: "SUV", D: "Compact SUV", J: "SUV", N: "SUV" },
+  TMA: { A: "Hatchback", B: "SUV", C: "SUV", D: "Hatchback", E: "Hatchback", H: "SUV", J: "SUV" },
+  "5NM": { A: "SUV", B: "SUV", C: "SUV", D: "SUV", E: "SUV", F: "SUV", H: "SUV", J: "SUV" },
+  "5NP": { A: "Sedan", B: "Sedan", D: "Sedan", E: "Sedan", H: "Sedan" },
+  NLH: { A: "Hatchback", B: "Crossover", R: "Hatchback", V: "Hatchback", W: "Crossover" },
   KMT: { A: "Sedan", B: "Sedan", C: "SUV", D: "Coupé", E: "Hatchback", G: "SUV" },
   KNA: { A: "Sedan", B: "Hatchback", C: "SUV", D: "Wagon" },
   KND: { A: "SUV", B: "Hatchback", C: "Minivan", D: "Crossover SUV", E: "Compact SUV" },
@@ -1747,7 +1794,9 @@ export function decodeVin(vin: string): VinDecodeResult {
   const model = (brandSpec?.model && brandSpec.model.length > 0)
     ? brandSpec.model
     : decodeModel(upper, global);
-  const engineDecoded = brandSpec?.engineDecoded ?? decodeEngineCode(upper);
+  const year = decodeYear(upper[9]);
+  const hyundaiEngine = isHyundaiVin(upper) ? decodeHyundaiEngine(upper, model, year) : null;
+  const engineDecoded = brandSpec?.engineDecoded ?? hyundaiEngine ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);
   const plantFromBrand = brandSpec?.plantCity
     ? { city: brandSpec.plantCity, country: brandSpec.plantCountry ?? "" }
@@ -1762,7 +1811,7 @@ export function decodeVin(vin: string): VinDecodeResult {
     vin: upper,
     make,
     model,
-    year: decodeYear(upper[9]),
+    year,
     country: decodeCountry(upper),
     wmi,
     modelYear: upper[9] ?? "",

@@ -45,6 +45,7 @@ export { decodeVinLocalFree, type LocalFreeDecodeResult } from "./local-free-dec
 export { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
 export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
 export { decodeMazdaModel, matchMazdaRule, isMazdaVin } from "./mazda";
+export { decodeHyundaiModel, matchHyundaiRule, isHyundaiVin, decodeHyundaiEngine } from "./hyundai";
 export {
   inferBodyStyleFromModel,
   inferVagTransmissionFromModel,

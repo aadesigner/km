@@ -270,8 +270,16 @@ function hondaDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic
 
 // ── Hyundai / Kia / Genesis ───────────────────────────────────────────────────
 const HYUNDAI_TRIM_5: Record<string, string> = {
-  KMHNU: "Tucson (NX4)", KMHN: "Tucson", KMHL: "Elantra (CN7)", KMHD: "Elantra (AD)",
-  KMHK: "Kona (OS)", KM8K: "Santa Fe (TM)", KM8S: "Santa Fe",
+  KMHNU: "Tucson (NX4)", KMHK38: "Tucson (NX4)", KMHK48: "Tucson (TL)",
+  KMHN38: "Tucson (NX4)", KMHS28: "Tucson (NX4)", KMHS48: "Tucson (TL)",
+  KM8J3: "Tucson (NX4 US)", KM8J2: "Tucson (NX4 US)", KM8JC: "Tucson (NX4 US)",
+  KM8JD: "Tucson", KM8JE: "Tucson", "5NMJB": "Tucson (NX4 US)", "5NMJC": "Tucson (NX4 US)",
+  TMAJB: "Tucson (NX4 EU)", TMAJC: "Tucson (NX4 EU)", TMAJD: "Tucson (NX4 EU)",
+  TMAJE: "Tucson (NX4 EU)", TMAH38: "Tucson (NX4 EU)",
+  KMHL34: "IONIQ 5", KMHM34: "IONIQ 6", KMHD28: "Elantra (CN7)", KMHD64: "Elantra (AD)",
+  KMHR58: "Kona (OS)", KMHR68: "Kona (SX2)", KMHK58: "Kona (OS)", KMHK25: "Santa Fe (TM)",
+  KM8S3: "Santa Fe", KM8R3: "Santa Cruz", KMHS38: "Santa Fe Sport",
+  NLHBW: "Bayon", NLHBR: "i20",
   KNDJ: "Sportage (NQ5)", KNDN: "Sportage", KNAG: "K5 / Optima", KNAF: "Forte / Cerato",
   KMTG: "GV70", KMTN: "GV60 EV", KMTS: "G80",
 };

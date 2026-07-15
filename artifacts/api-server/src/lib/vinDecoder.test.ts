@@ -211,17 +211,12 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["KMHS", "Santa Fe Sport"],   // regression fix: was "Sonata"
     ["KMHR", "Santa Fe"],
     ["KMHD", "Elantra"],
-    ["KMHC", "Elantra"],
-    ["KMHF", "Elantra"],
-    ["KMHG", "Genesis"],
-    ["KMHH", "i30"],
-    ["KMHK", "i10"],
-    ["KMHN", "Nexo"],
-    ["KMHP", "Ioniq"],
     ["KM8J", "Tucson"],
-    ["KM8S", "Tucson"],
-    ["KM8L", "Tucson"],
+    ["KM8S", "Santa Fe"],
     ["KM8R", "Santa Cruz"],
+    ["KMHL", "IONIQ 5"],
+    ["KMHM", "IONIQ 6"],
+    // Coarse KMHK→i10 removed (was wrong for Kona / Tucson platforms)
     // Kia
     ["KNAD", "Sportage"],
     ["KNAG", "Stinger"],
