@@ -1,5 +1,5 @@
 import type { Language } from "@/i18n/context";
-import { getStoredLangPreference } from "@/lib/lang-preference";
+import { getStoredLangPreference, isGeoLanguageEvaluated } from "@/lib/lang-preference";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -87,26 +87,43 @@ function languageFromGeoHint(data: GeoLanguageResponse | null): Language {
   return data.suggestedLanguage ?? "en";
 }
 
-/** Stored preference or session-cached geo hint — null when the geo API must be fetched. */
-export function resolveRootEntryLanguageSync(): Language | null {
+/**
+ * Sync entry language for `/` and unprefixed paths (`/cars/usa`, `/faq`).
+ * Returns null when first-time geo may still run.
+ * Prefixed URLs (`/en/…`) never call this — they keep the URL language.
+ */
+export function resolveEntryLanguageSync(): Language | null {
   const stored = getStoredLangPreference();
   if (stored) return stored;
-
-  const cached = readCachedGeoHint();
-  if (!cached || cached.crawler) return null;
-  return languageFromGeoHint(cached);
+  // Already did first-time geo on this device — do not re-geo.
+  if (isGeoLanguageEvaluated()) return "en";
+  return null;
 }
 
-/** First visit to `/` — stored preference, then geo hint (cache or API), then English. */
-export async function resolveRootEntryLanguage(): Promise<Language> {
-  const immediate = resolveRootEntryLanguageSync();
+/**
+ * First visit without a language prefix — stored preference, else one-shot geo, else English.
+ * Shared by homepage `/` and paths like `/cars/usa`.
+ */
+export async function resolveEntryLanguage(): Promise<Language> {
+  const immediate = resolveEntryLanguageSync();
   if (immediate != null) return immediate;
 
   const data = await fetchGeoLanguageHint();
   return languageFromGeoHint(data);
 }
 
-/** Geo redirect target when already on a localized path (typically `/en`). */
+/** @deprecated Use resolveEntryLanguageSync */
+export const resolveRootEntryLanguageSync = resolveEntryLanguageSync;
+
+/** @deprecated Use resolveEntryLanguage */
+export const resolveRootEntryLanguage = resolveEntryLanguage;
+
+/** @deprecated Prefixed paths keep URL lang; unprefixed use resolveEntryLanguage */
+export function resolveNonRootEntryLanguage(): Language {
+  return getStoredLangPreference() ?? "en";
+}
+
+/** @deprecated Prefixed deep-link geo swaps are disabled. */
 export function geoRedirectTarget(
   data: GeoLanguageResponse,
   currentLang: Language,

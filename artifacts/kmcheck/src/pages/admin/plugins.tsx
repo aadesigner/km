@@ -190,8 +190,9 @@ export default function AdminPlugins() {
       <div className="flex items-start gap-2 rounded-xl border border-blue-200/60 bg-blue-50/80 dark:bg-blue-950/30 dark:border-blue-800/40 px-4 py-3 text-sm text-blue-900 dark:text-blue-100">
         <Info className="h-4 w-4 shrink-0 mt-0.5" />
         <p>
-          Geo language redirect runs in the browser after page load (never as a server redirect).
-          Search engine crawlers are excluded. Direct links like <code className="text-xs bg-muted px-1 rounded">/sq/…</code> are never changed.
+          Geo language redirect runs on <code className="text-xs bg-muted px-1 rounded">/</code> and unprefixed paths like <code className="text-xs bg-muted px-1 rounded">/cars/usa</code> (never as a server redirect).
+          Prefixed deep links (e.g. <code className="text-xs bg-muted px-1 rounded">/en/cars/korea</code> from Google) are never language-swapped.
+          Search engine crawlers are excluded. After the first geo choice (or a manual language switch), preference sticks on this device for homepage and unprefixed URLs.
           {" "}Local test: open <code className="text-xs bg-muted px-1 rounded">/?geo_country=AL</code> (dev only).
           {" "}Palestine (<code className="text-xs bg-muted px-1 rounded">PS</code>) is in the Arabic rule; Israel (<code className="text-xs bg-muted px-1 rounded">IL</code>) is never redirected.
           {" "}Chinese-speaking regions (<code className="text-xs bg-muted px-1 rounded">CN</code>, <code className="text-xs bg-muted px-1 rounded">TW</code>, <code className="text-xs bg-muted px-1 rounded">HK</code>, <code className="text-xs bg-muted px-1 rounded">MO</code>, <code className="text-xs bg-muted px-1 rounded">SG</code>) default to 中文 — editable below.
@@ -208,7 +209,7 @@ export default function AdminPlugins() {
                 <Badge variant="outline" className="text-xs font-normal">Official</Badge>
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Suggest a site language based on visitor country (CDN IP header). Visitors on the English site are redirected once; manual language picks are remembered.
+                Suggest a site language from visitor country on first visit to <code className="text-xs">/</code> or unprefixed paths (<code className="text-xs">/cars/usa</code> → <code className="text-xs">/sq/cars/usa</code>). Manual language picks are remembered and stop further geo redirects.
               </CardDescription>
             </div>
             <Switch

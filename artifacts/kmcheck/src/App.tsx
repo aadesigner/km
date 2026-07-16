@@ -7,7 +7,7 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
-import { useEffect, useState, Suspense, type ReactNode } from "react";
+import { useEffect, Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { RouteSEO } from "@/components/seo";
 import NotFound from "@/pages/not-found";
@@ -25,16 +25,11 @@ import {
   buildLocalizedPath,
   markGeoLanguageEvaluated,
   getStoredLangPreference,
-  extractPathLang,
-  isGeoLanguageEvaluated,
-  isGeoRedirectExemptPath,
-  replacePathLang,
+  setStoredLangPreference,
 } from "@/lib/lang-preference";
 import {
-  resolveRootEntryLanguage,
-  resolveRootEntryLanguageSync,
-  fetchGeoLanguageHint,
-  geoRedirectTarget,
+  resolveEntryLanguage,
+  resolveEntryLanguageSync,
 } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
 import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
@@ -393,7 +388,12 @@ function NotFoundLang() {
   );
 }
 
-function redirectToEntryLanguage(
+/**
+ * Shared first-visit geo for `/` and unprefixed paths (`/cars/usa`, `/faq`).
+ * Prefixed URLs (`/en/…`) never use this — Google/deep links keep their language.
+ * Preference + geo-evaluated flag make homepage and deep unprefixed entry stick together.
+ */
+function redirectWithEntryLanguage(
   setLocation: ReturnType<typeof useLocation>[1],
   buildTarget: (lang: Language) => string,
 ) {
@@ -403,13 +403,13 @@ function redirectToEntryLanguage(
 
   const go = async (lang: Language) => {
     if (cancelled) return;
-    // Don't block navigation on locale JSON — LocaleReadyGate shows shell until ready.
     void ensureDict(lang).catch(() => {});
+    setStoredLangPreference(lang);
     markGeoLanguageEvaluated();
     setLocation(`${buildTarget(lang)}${search}${hash}`, { replace: true });
   };
 
-  const immediate = resolveRootEntryLanguageSync();
+  const immediate = resolveEntryLanguageSync();
   if (immediate != null) {
     void go(immediate);
     return () => {
@@ -417,70 +417,19 @@ function redirectToEntryLanguage(
     };
   }
 
-  void resolveRootEntryLanguage().then(go);
+  void resolveEntryLanguage().then(go);
   return () => {
     cancelled = true;
   };
 }
 
-/**
- * First visit to `/en/…` with no stored preference: hold skeleton while geo resolves,
- * then one-hop to the suggested language (never paint English home first).
- */
-function GeoFirstVisitGate({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useLocation();
-  const pathname = location.split("?")[0] ?? location;
-
-  const needsGate =
-    pathname !== "/"
-    && pathname !== ""
-    && !isGeoRedirectExemptPath(pathname)
-    && extractPathLang(pathname) === "en"
-    && !getStoredLangPreference()
-    && !isGeoLanguageEvaluated();
-
-  const [settled, setSettled] = useState(!needsGate);
-
-  useEffect(() => {
-    if (!needsGate) {
-      setSettled(true);
-      return;
-    }
-
-    let cancelled = false;
-    void (async () => {
-      try {
-        const data = await fetchGeoLanguageHint();
-        if (cancelled) return;
-        const target = data ? geoRedirectTarget(data, "en") : null;
-        markGeoLanguageEvaluated();
-        if (target) {
-          void ensureDict(target).catch(() => {});
-          if (cancelled) return;
-          const search = typeof window !== "undefined" ? window.location.search : "";
-          const hash = typeof window !== "undefined" ? window.location.hash : "";
-          setLocation(`${replacePathLang(pathname, "en", target)}${search}${hash}`, { replace: true });
-          return;
-        }
-      } catch {
-        // Fall through to English.
-      }
-      if (!cancelled) setSettled(true);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [needsGate, pathname, setLocation]);
-
-  if (!settled) return <RouteShellFallback />;
-  return <>{children}</>;
-}
-
 function RootLangRedirect() {
   const [, setLocation] = useLocation();
 
-  useEffect(() => redirectToEntryLanguage(setLocation, (lang) => `/${lang}`), [setLocation]);
+  useEffect(
+    () => redirectWithEntryLanguage(setLocation, (lang) => `/${lang}`),
+    [setLocation],
+  );
 
   return <RouteShellFallback />;
 }
@@ -491,7 +440,7 @@ function UnprefixedPathLangRedirect({ pathname }: { pathname: string }) {
   useEffect(() => {
     const rest = pathNeedingLangPrefix(pathname);
     if (rest === null) return undefined;
-    return redirectToEntryLanguage(setLocation, (lang) => buildLocalizedPath(lang, rest));
+    return redirectWithEntryLanguage(setLocation, (lang) => buildLocalizedPath(lang, rest));
   }, [pathname, setLocation]);
 
   return <RouteShellFallback />;
@@ -725,8 +674,7 @@ function AppRouter() {
   return (
     <>
       <ScrollToTop />
-      <GeoFirstVisitGate>
-        <MaintenanceGuard>
+      <MaintenanceGuard>
         <Switch>
         <Route path="/" component={RootLangRedirect} />
 
@@ -778,8 +726,7 @@ function AppRouter() {
 
         <Route component={NotFoundLang} />
       </Switch>
-        </MaintenanceGuard>
-      </GeoFirstVisitGate>
+      </MaintenanceGuard>
     </>
   );
 }
