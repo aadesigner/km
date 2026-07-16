@@ -140,6 +140,13 @@ export default function ApiB2bPlans() {
                 </motion.li>
               ))}
             </ul>
+            <Link
+              href={`${base}/contact`}
+              className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+            >
+              {c.planDevCta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           <div className="border-t border-emerald-900/10 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-black/20 sm:p-6 lg:border-l lg:border-t-0">
             <ApiDevPlanDemo c={c} />
@@ -193,6 +200,13 @@ export default function ApiB2bPlans() {
                 </motion.li>
               ))}
             </ul>
+            <Link
+              href={`${base}/contact`}
+              className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+            >
+              {c.planManagedCta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </motion.section>

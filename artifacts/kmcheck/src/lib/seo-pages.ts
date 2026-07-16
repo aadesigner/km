@@ -11,7 +11,7 @@ import { resolveFavicons } from "./country-favicons";
 import { resolvePageOgImage } from "./seo-og-images";
 // @ts-expect-error ESM build script — no generated .d.ts
 import { buildCountryPageJsonLd } from "../../scripts/country-page-json-ld.mjs";
-import { getB2bCopy } from "@/pages/api-b2b/copy";
+import { getB2bCopy, getRegionHeadlineLabel } from "@/pages/api-b2b/copy";
 import { findApiB2bRegion } from "@/pages/api-b2b/regions";
 import type { Language } from "@/lib/languages";
 
@@ -97,7 +97,7 @@ function resolveApiB2bSeo(lang: SeoLang, rest: string): {
   }
   const region = findApiB2bRegion(tail.replace(/^\//, ""));
   if (region) {
-    const label = region.seoLabel;
+    const label = getRegionHeadlineLabel(c, region.slug, lang as Language);
     return {
       title: c.seoRegionTitle.replace(/\{region\}/g, label),
       description: c.seoRegionDesc.replace(/\{region\}/g, label),

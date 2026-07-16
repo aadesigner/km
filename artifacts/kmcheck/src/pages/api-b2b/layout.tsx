@@ -12,7 +12,6 @@ import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker
 import { Menu, X, Send, Mail, ChevronDown, ChevronUp, ArrowUpRight, ArrowRight } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
 import { useApiB2bCopy } from "./use-copy";
 
 const SCROLL_MARKETS_KEY = "api-b2b-scroll-markets";
@@ -276,20 +275,13 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
         >
           <Link
             href={base}
-            className={cn(
-              "shrink-0 transition-transform duration-300 hover:scale-[1.015]",
-              scrolled ? "translate-y-0" : "translate-y-0",
-            )}
+            className="shrink-0"
             aria-label="kmcheck API"
           >
             <KmcheckApiMark compact={scrolled} />
           </Link>
 
-          <LayoutGroup id="b2b-nav">
-          <nav className={cn(
-            "hidden items-center gap-0.5 rounded-full border border-slate-900/[0.07] bg-white/60 p-1 backdrop-blur-md transition-transform duration-300 dark:border-white/[0.08] dark:bg-white/[0.04] lg:flex",
-            scrolled ? "scale-[0.98]" : "scale-100",
-          )}>
+          <nav className="hidden items-center gap-0.5 rounded-full border border-slate-900/[0.07] bg-white/60 p-1 backdrop-blur-md dark:border-white/[0.08] dark:bg-white/[0.04] lg:flex">
             {navPrimary.slice(0, 2).map((item) => {
               const active = item.match(pathOnly);
               return (
@@ -307,11 +299,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   )}
                 >
                   {active && (
-                    <motion.span
-                      layoutId="b2b-nav-pill"
-                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
-                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                    />
+                    <span className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90" />
                   )}
                   <span className="relative z-[1]">{item.label}</span>
                 </Link>
@@ -339,11 +327,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                     )}
                   >
                     {marketsActive && (
-                      <motion.span
-                        layoutId="b2b-nav-pill"
-                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
-                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                      />
+                      <span className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90" />
                     )}
                     <span className="relative z-[1] inline-flex items-center gap-1">
                       {c.navRegions}
@@ -352,15 +336,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   </button>
                 );
               })()}
-              <AnimatePresence>
-                {marketsOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                    transition={{ duration: 0.16 }}
-                    className="absolute left-1/2 top-full z-50 mt-3 w-[19rem] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-900/10 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#101816]/95"
-                  >
+              {marketsOpen && (
+                <div className="absolute left-1/2 top-full z-50 mt-3 w-[19rem] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-900/10 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#101816]/95">
                     <button
                       type="button"
                       onClick={goMarketsSection}
@@ -391,9 +368,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                         </li>
                       ))}
                     </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                </div>
+              )}
             </div>
 
             {navPrimary.slice(2).map((item) => {
@@ -413,18 +389,13 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   )}
                 >
                   {active && (
-                    <motion.span
-                      layoutId="b2b-nav-pill"
-                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
-                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                    />
+                    <span className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90" />
                   )}
                   <span className="relative z-[1]">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
-          </LayoutGroup>
 
           <div className="hidden items-center gap-2.5 md:flex">
             <LangDropdown lang={lang} onSelect={switchLang} />
@@ -451,27 +422,15 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 md:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+      {open && (
+        <div className="fixed inset-0 z-50 md:hidden">
             <button
               type="button"
               className="absolute inset-0 bg-[#050807]/55 backdrop-blur-[2px]"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
             />
-            <motion.aside
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 380, damping: 36 }}
-              className="absolute inset-y-0 right-0 flex w-[min(19rem,88vw)] flex-col bg-[#f7faf8] dark:bg-[#0a110e]"
-            >
+            <aside className="absolute inset-y-0 right-0 flex w-[min(19rem,88vw)] flex-col bg-[#f7faf8] dark:bg-[#0a110e]">
               <div className="flex items-center justify-between px-5 pt-5 pb-3">
                 <KmcheckApiMark compact />
                 <button
@@ -486,15 +445,10 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
 
               <nav className="flex-1 overflow-y-auto px-3 pb-4 pt-1">
                 <div className="space-y-0.5">
-                  {navPrimary.map((item, idx) => {
+                  {navPrimary.map((item) => {
                     const active = item.match(pathOnly);
                     return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.03 * idx }}
-                      >
+                      <div key={item.href}>
                         <Link
                           href={item.href}
                           onClick={(e) => {
@@ -511,7 +465,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                           {item.label}
                           {active && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                         </Link>
-                      </motion.div>
+                      </div>
                     );
                   })}
 
@@ -524,15 +478,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                       {c.navRegions}
                       <ChevronDown className={cn("h-4 w-4 opacity-45 transition", mobileMarketsOpen && "rotate-180")} />
                     </button>
-                    <AnimatePresence initial={false}>
-                      {mobileMarketsOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.16 }}
-                          className="overflow-hidden pt-1"
-                        >
+                    {mobileMarketsOpen && (
+                      <div className="overflow-hidden pt-1">
                           <button
                             type="button"
                             onClick={goMarketsSection}
@@ -557,9 +504,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                               {c[r.nameKey]}
                             </Link>
                           ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                      </div>
+                    )}
                   </div>
                 </div>
               </nav>
@@ -574,24 +520,11 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </div>
-            </motion.aside>
-          </motion.div>
+            </aside>
+          </div>
         )}
-      </AnimatePresence>
 
-      <main className="min-h-[60vh]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathOnly}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+      <main className="min-h-[60vh]">{children}</main>
 
       <footer className="relative mt-20 overflow-hidden border-t border-white/10 bg-[#0a1410] text-slate-200">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/35 to-transparent" />

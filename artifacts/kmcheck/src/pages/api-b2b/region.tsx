@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { FlagImg } from "@/components/flag-img";
 import { findApiB2bRegion, API_B2B_REGIONS } from "./regions";
+import { getRegionHeadlineLabel, getRegionSeoLabel } from "./copy";
 import { useApiB2bCopy } from "./use-copy";
 import { fadeUp, staggerContainer, viewportOnce } from "./motion";
 import { ArrowRight, ArrowUpRight, Check, Code2, HelpCircle, Wrench } from "lucide-react";
@@ -14,23 +15,18 @@ function fillRegion(template: string, label: string) {
 }
 
 export default function ApiB2bRegion({ params }: { params: { region: string } }) {
-  const { c, base } = useApiB2bCopy();
+  const { c, base, lang } = useApiB2bCopy();
   const region = findApiB2bRegion(params.region);
   const reduce = useReducedMotion();
 
   if (!region) return <Redirect to={base} />;
 
   const name = c[region.nameKey];
-  const label = region.slug === "usa-cars"
-    ? c.regionSeoUsa
-    : region.slug === "canada-cars"
-      ? c.regionSeoCanada
-      : region.slug === "korea-cars"
-        ? c.regionSeoKorea
-        : region.slug === "dubai-cars"
-          ? c.regionSeoDubai
-          : c.regionSeoChina;
-  const headline = fillRegion(c.regionHeroTitle, label);
+  const label = getRegionSeoLabel(c, region.slug);
+  const headline = fillRegion(
+    c.regionHeroTitle,
+    getRegionHeadlineLabel(c, region.slug, lang),
+  );
   const ctaTitle = fillRegion(c.regionCtaTitle, label);
   const whyTitle = fillRegion(c.regionWhyTitle, label);
   const whyBody = fillRegion(c.regionWhyBody, label);

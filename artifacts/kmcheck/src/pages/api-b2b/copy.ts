@@ -15,9 +15,11 @@ export type B2bCopy = {
   heroHeadline: string;
   heroSub: string;
   heroStatCars: string;
+  heroStatCarsDetail: string;
   heroStatRegions: string;
+  heroStatRegionsDetail: string;
   heroStatReports: string;
-  heroTrust: string;
+  heroStatReportsDetail: string;
   flowBadge: string;
   flowTitle: string;
   flowSub: string;
@@ -80,6 +82,8 @@ export type B2bCopy = {
   planManagedDesc: string;
   planManagedPoints: string[];
   planPopular: string;
+  planDevCta: string;
+  planManagedCta: string;
   volumePricingBadge: string;
   volumePricingTitle: string;
   volumePricingBody: string;
@@ -95,6 +99,11 @@ export type B2bCopy = {
   regionSeoKorea: string;
   regionSeoDubai: string;
   regionSeoChina: string;
+  regionAdjUsa: string;
+  regionAdjCanada: string;
+  regionAdjKorea: string;
+  regionAdjDubai: string;
+  regionAdjChina: string;
   regionUsaBlurb: string;
   regionCanadaBlurb: string;
   regionKoreaBlurb: string;
@@ -249,9 +258,11 @@ const en = {
   heroSub:
     "White-label VIN checks with accident history, mileage records and title status — about 50 million vehicles across the USA, Canada, Korea, Dubai and China. Connect by API or launch a site we maintain.",
   heroStatCars: "≈50M vehicles",
+  heroStatCarsDetail: "VIN checks, mileage rolls and title signals from one unified database",
   heroStatRegions: "5 markets",
+  heroStatRegionsDetail: "USA · Canada · Korea · Dubai · China — five markets, one API",
   heroStatReports: "Full history",
-  heroTrust: "White-label ready · Developer API · Five-market data",
+  heroStatReportsDetail: "White-label ready — sell via Developer API or a managed reseller site",
   flowBadge: "Live flow",
   flowTitle: "How it works in one glance",
   flowSub: "Your visitor never leaves your brand — we power the data behind the scenes.",
@@ -329,6 +340,8 @@ const en = {
     "Ideal if you want revenue without an eng team",
   ],
   planPopular: "Most chosen",
+  planDevCta: "I want just API",
+  planManagedCta: "Build it for me",
   volumePricingBadge: "Volume pricing",
   volumePricingTitle: "Sell more reports — unlock better rates",
   volumePricingBody:
@@ -345,13 +358,18 @@ const en = {
   regionSeoKorea: "Korea",
   regionSeoDubai: "Dubai / UAE",
   regionSeoChina: "China",
+  regionAdjUsa: "American",
+  regionAdjCanada: "Canadian",
+  regionAdjKorea: "Korean",
+  regionAdjDubai: "UAE",
+  regionAdjChina: "Chinese",
   regionUsaBlurb: "USA car history reports, salvage clues and mileage records for American VINs.",
   regionCanadaBlurb: "Canada car history — titles, provincial records, mileage and import checks.",
   regionKoreaBlurb: "Korea car history with accidents, inspections, ownership and mileage detail.",
   regionDubaiBlurb: "Dubai and UAE car history plus mileage records for Gulf VIN demand.",
   regionChinaBlurb: "China car history and mileage checks for import and local VIN look-ups.",
   regionExplore: "Explore market",
-  regionHeroTitle: "Sell car history reports from {region}",
+  regionHeroTitle: "Sell {region} cars history and reports",
   regionHeroSub: "Put VIN history, accident checks and mileage records on your website — powered by kmcheck, under your brand.",
   regionCoverageTitle: "What buyers look for in history and mileage",
   regionCoverageBody:
@@ -481,9 +499,9 @@ const en = {
   seoContactTitle: "Contact Sales | Sell Car History Reports with kmcheck",
   seoContactDesc:
     "Talk to kmcheck about selling car history reports and mileage records via API or a managed reseller site. Email info@kmcheck.com.",
-  seoRegionTitle: "Sell Car History Reports from {region} | kmcheck",
+  seoRegionTitle: "Sell {region} Cars History and Reports | kmcheck",
   seoRegionDesc:
-    "Sell {region} car history reports, VIN checks, accident history and mileage records under your brand with kmcheck API.",
+    "Sell {region} cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API.",
   seoDecoderTitle: "VIN Decoder API — Makes, Models & Specs | kmcheck B2B",
   seoDecoderDesc: "VIN decoder covering makes, models and detailed specs. Included with the kmcheck API and Reseller Website & Maintenance.",
   decoderPageHeroTitle: "VIN decoder for every make, model and spec",
@@ -530,9 +548,11 @@ const de = {
   heroSub:
     "White-Label-VIN-Prüfung mit Unfallhistorie, Kilometerständen und Titelstatus — rund 50 Mio. Fahrzeuge in den USA, Kanada, Korea, Dubai und China. Per API oder mit einer von uns betreuten Seite.",
   heroStatCars: "≈50 Mio. Fahrzeuge",
+  heroStatCarsDetail: "VIN-Checks, Kilometerstände und Title-Signale aus einer einheitlichen Datenbank",
   heroStatRegions: "5 Märkte",
+  heroStatRegionsDetail: "USA · Kanada · Korea · Dubai · China — fünf Märkte, eine API",
   heroStatReports: "Volle Historie",
-  heroTrust: "White-Label bereit · Entwickler-API · Daten aus fünf Märkten",
+  heroStatReportsDetail: "White-Label bereit — über Entwickler-API oder verwaltete Reseller-Website verkaufen",
   flowBadge: "Live-Ablauf",
   flowTitle: "So funktioniert es",
   flowSub: "Besucher bleiben auf Ihrer Marke — wir liefern die Daten im Hintergrund.",
@@ -609,6 +629,8 @@ const de = {
     "Ideal ohne eigenes Engineering-Team",
   ],
   planPopular: "Beliebteste Wahl",
+  planDevCta: "Ich möchte nur die API",
+  planManagedCta: "Baut es für mich",
   volumePricingBadge: "Mengenrabatt",
   volumePricingTitle: "Mehr Berichte verkaufen — bessere Konditionen",
   volumePricingBody:
@@ -625,13 +647,18 @@ const de = {
   regionSeoKorea: "Korea",
   regionSeoDubai: "Dubai / VAE",
   regionSeoChina: "China",
+  regionAdjUsa: "amerikanische",
+  regionAdjCanada: "kanadische",
+  regionAdjKorea: "koreanische",
+  regionAdjDubai: "VAE-",
+  regionAdjChina: "chinesische",
   regionUsaBlurb: "USA-Fahrzeughistorie, Salvage-Hinweise und Kilometerstände für US-VINs.",
   regionCanadaBlurb: "Kanada-Historie — Titel, Provinzregister, Kilometer und Importchecks.",
   regionKoreaBlurb: "Korea-Historie mit Unfällen, Prüfungen, Besitz und Kilometerdetails.",
   regionDubaiBlurb: "Dubai-/VAE-Historie und Kilometerstände für die Golf-VIN-Nachfrage.",
   regionChinaBlurb: "China-Historie und Kilometerchecks für Import und lokale VIN-Suchen.",
   regionExplore: "Markt entdecken",
-  regionHeroTitle: "Verkaufen Sie Fahrzeughistorienberichte aus {region}",
+  regionHeroTitle: "Verkaufen Sie {region} Fahrzeughistorie und Berichte",
   regionHeroSub: "VIN-Historie, Unfallchecks und Kilometerstände auf Ihrer Website — mit kmcheck API, unter Ihrer Marke.",
   regionCoverageTitle: "Historie und Kilometer, die Käufer erwarten",
   regionCoverageBody:
@@ -760,9 +787,9 @@ const de = {
     "kmcheck-Tarife vergleichen: REST-API für VIN-Historie und Kilometer oder betreute White-Label-Website.",
   seoContactTitle: "Vertrieb kontaktieren | Fahrzeughistorie mit kmcheck verkaufen",
   seoContactDesc: "Sprechen Sie mit kmcheck über den Verkauf von Fahrzeughistorie und Kilometerständen per API oder betreuter Reseller-Site. E-Mail info@kmcheck.com.",
-  seoRegionTitle: "Fahrzeughistorienberichte aus {region} verkaufen | kmcheck",
+  seoRegionTitle: "Verkaufen Sie {region} Fahrzeughistorie und Berichte | kmcheck",
   seoRegionDesc:
-    "Verkaufen Sie {region}-Fahrzeughistorie, VIN-Checks, Unfälle und Kilometerstände unter Ihrer Marke mit kmcheck API.",
+    "Verkaufen Sie {region} Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API.",
   seoDecoderTitle: "VIN-Decoder API — Marken, Modelle & Specs | kmcheck B2B",
   seoDecoderDesc: "VIN-Decoder für Marken und Modelle mit detaillierten Specs. Enthalten in der kmcheck API sowie Reseller-Website & Wartung.",
   decoderPageHeroTitle: "VIN-Decoder für jede Marke, jedes Modell und Spec",
@@ -809,9 +836,11 @@ const es = {
   heroSub:
     "Comprobaciones VIN con tu marca: accidentes, kilometraje y estado del título — unos 50 millones de vehículos en EE. UU., Canadá, Corea, Dubái y China. Por API o con un sitio que mantenemos nosotros.",
   heroStatCars: "≈50M vehículos",
+  heroStatCarsDetail: "Comprobaciones VIN, kilometraje y señales de título desde una base unificada",
   heroStatRegions: "5 mercados",
+  heroStatRegionsDetail: "EE. UU. · Canadá · Corea · Dubái · China — cinco mercados, una API",
   heroStatReports: "Historial completo",
-  heroTrust: "Listo para white-label · API para desarrolladores · Datos de cinco mercados",
+  heroStatReportsDetail: "Listo para white-label — vende con API para desarrolladores o sitio gestionado",
   flowBadge: "Flujo en vivo",
   flowTitle: "Cómo funciona de un vistazo",
   flowSub: "El visitante no sale de tu marca — nosotros alimentamos los datos en segundo plano.",
@@ -888,6 +917,8 @@ const es = {
     "Ideal si quieres ingresos sin equipo de ingeniería",
   ],
   planPopular: "Más elegido",
+  planDevCta: "Solo quiero la API",
+  planManagedCta: "Constrúyelo por mí",
   volumePricingBadge: "Precios por volumen",
   volumePricingTitle: "Vende más informes — mejores tarifas",
   volumePricingBody:
@@ -904,13 +935,18 @@ const es = {
   regionSeoKorea: "Corea",
   regionSeoDubai: "Dubái / EAU",
   regionSeoChina: "China",
+  regionAdjUsa: "estadounidenses",
+  regionAdjCanada: "canadienses",
+  regionAdjKorea: "coreanos",
+  regionAdjDubai: "de los EAU",
+  regionAdjChina: "chinos",
   regionUsaBlurb: "Historial de coches en EE. UU., salvage y kilometraje para VIN americanos.",
   regionCanadaBlurb: "Historial Canadá: títulos, registros provinciales, kilometraje e importaciones.",
   regionKoreaBlurb: "Historial Corea con accidentes, inspecciones, propiedad y kilometraje.",
   regionDubaiBlurb: "Historial y kilometraje Dubái / EAU para la demanda VIN del Golfo.",
   regionChinaBlurb: "Historial y kilometraje China para importación y búsquedas VIN locales.",
   regionExplore: "Explorar mercado",
-  regionHeroTitle: "Vende informes del historial del coche desde {region}",
+  regionHeroTitle: "Vende historial e informes de coches {region}",
   regionHeroSub: "Ofrece historial VIN, accidentes y kilometraje en tu web — con kmcheck API y tu marca.",
   regionCoverageTitle: "Historial y kilometraje que buscan los compradores",
   regionCoverageBody:
@@ -1039,9 +1075,9 @@ const es = {
     "Compara planes kmcheck: API REST de historial VIN y kilometraje, o web white-label gestionada.",
   seoContactTitle: "Contacto comercial | Vende historial de coches con kmcheck",
   seoContactDesc: "Habla con kmcheck sobre vender historial y kilometraje por API o sitio reseller. Email info@kmcheck.com.",
-  seoRegionTitle: "Vende informes del historial del coche desde {region} | kmcheck",
+  seoRegionTitle: "Vende historial e informes de coches {region} | kmcheck",
   seoRegionDesc:
-    "Vende historial de {region}, VIN, accidentes y kilometraje con tu marca gracias a kmcheck API.",
+    "Vende historial e informes de coches {region}, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck.",
   seoDecoderTitle: "API decodificador VIN — marcas, modelos y specs | kmcheck",
   seoDecoderDesc: "Decodificador VIN con specs detalladas. Incluido en la API kmcheck y en Sitio reseller y mantenimiento.",
   decoderPageHeroTitle: "Decodificador VIN para cada marca, modelo y spec",
@@ -1088,9 +1124,11 @@ const fr = {
   heroSub:
     "Contrôles VIN en marque blanche : accidents, kilométrage et statut du titre — environ 50 millions de véhicules aux USA, Canada, Corée, Dubaï et Chine. Par API ou via un site que nous maintenons.",
   heroStatCars: "≈50M véhicules",
+  heroStatCarsDetail: "Contrôles VIN, kilométrage et signaux de titre depuis une base unifiée",
   heroStatRegions: "5 marchés",
+  heroStatRegionsDetail: "USA · Canada · Corée · Dubaï · Chine — cinq marchés, une API",
   heroStatReports: "Historique complet",
-  heroTrust: "Prêt white-label · API développeur · Données sur cinq marchés",
+  heroStatReportsDetail: "Prêt white-label — vendez via API développeur ou site revendeur géré",
   flowBadge: "Flux en direct",
   flowTitle: "Comment ça marche en un coup d’œil",
   flowSub: "Le visiteur ne quitte jamais votre marque — nous alimentons les données en coulisse.",
@@ -1167,6 +1205,8 @@ const fr = {
     "Idéal sans équipe d’ingénierie",
   ],
   planPopular: "Le plus choisi",
+  planDevCta: "Je veux uniquement l'API",
+  planManagedCta: "Créez-le pour moi",
   volumePricingBadge: "Tarifs volume",
   volumePricingTitle: "Vendez plus de rapports — meilleurs tarifs",
   volumePricingBody:
@@ -1183,13 +1223,18 @@ const fr = {
   regionSeoKorea: "Corée",
   regionSeoDubai: "Dubaï / EAU",
   regionSeoChina: "Chine",
+  regionAdjUsa: "américaines",
+  regionAdjCanada: "canadiennes",
+  regionAdjKorea: "coréennes",
+  regionAdjDubai: "des EAU",
+  regionAdjChina: "chinoises",
   regionUsaBlurb: "Historique USA, indices salvage et kilométrages pour VIN américains.",
   regionCanadaBlurb: "Historique Canada — titres, registres provinciaux, km et contrôles d’import.",
   regionKoreaBlurb: "Historique Corée : accidents, inspections, propriété et kilométrage.",
   regionDubaiBlurb: "Historique et km Dubaï / EAU pour la demande VIN du Golfe.",
   regionChinaBlurb: "Historique et km Chine pour l’import et les recherches VIN locales.",
   regionExplore: "Explorer le marché",
-  regionHeroTitle: "Vendez des rapports d’historique auto depuis {region}",
+  regionHeroTitle: "Vendez l'historique et les rapports de voitures {region}",
   regionHeroSub: "Proposez historique VIN, accidents et kilométrage sur votre site — avec kmcheck API, sous votre marque.",
   regionCoverageTitle: "Historique et kilométrage attendus par les acheteurs",
   regionCoverageBody:
@@ -1318,9 +1363,9 @@ const fr = {
     "Comparez les offres kmcheck : API REST historique VIN / km, ou site white-label géré.",
   seoContactTitle: "Contact commercial | Vendre l’historique auto avec kmcheck",
   seoContactDesc: "Parlez à kmcheck de la vente d’historiques et kilométrages via API ou site revendeur. E-mail info@kmcheck.com.",
-  seoRegionTitle: "Vendre des rapports d’historique auto depuis {region} | kmcheck",
+  seoRegionTitle: "Vendez l'historique et les rapports de voitures {region} | kmcheck",
   seoRegionDesc:
-    "Vendez l’historique {region}, contrôles VIN, accidents et kilométrage sous votre marque avec kmcheck API.",
+    "Vendez l'historique et les rapports de voitures {region}, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck.",
   seoDecoderTitle: "API décodeur VIN — marques, modèles et specs | kmcheck",
   seoDecoderDesc: "Décodeur VIN avec specs détaillées. Inclus dans l’API kmcheck et Site revendeur & maintenance.",
   decoderPageHeroTitle: "Décodeur VIN pour chaque marque, modèle et spec",
@@ -1367,9 +1412,11 @@ const sq = {
   heroSub:
     "Kontroll VIN me historik aksidentesh, regjistra kilometrash dhe status titulli — rreth 50 milionë makina nga SHBA, Kanada, Koreja, Dubai dhe Kina. Lidheni me API, ose niseni një faqe që e mbajmë ne.",
   heroStatCars: "≈50M automjete",
+  heroStatCarsDetail: "Kontroll VIN, kilometra dhe sinjale titulli nga një bazë e unifikuar",
   heroStatRegions: "5 tregje",
+  heroStatRegionsDetail: "SHBA · Kanada · Kore · Dubai · Kinë — pesë tregje, një API",
   heroStatReports: "Historik i plotë",
-  heroTrust: "Gati për white-label · API për zhvillues · Të dhëna nga 5 tregje",
+  heroStatReportsDetail: "Gati për white-label — shit përmes API për zhvillues ose faqe të menaxhuar",
   flowBadge: "Rrjedhë live",
   flowTitle: "Si funksionon me një vështrim",
   flowSub: "Vizitori nuk largohet nga marka juaj — ne furnizojmë të dhënat në prapaskenë.",
@@ -1446,6 +1493,8 @@ const sq = {
     "Ideale nëse doni të ardhura pa ekip inxhinierik",
   ],
   planPopular: "Më e zgjedhura",
+  planDevCta: "Dua vetëm API",
+  planManagedCta: "Ndërtojeni për mua",
   volumePricingBadge: "Çmime me volum",
   volumePricingTitle: "Shit më shumë raporte — tarifa më të mira",
   volumePricingBody:
@@ -1462,6 +1511,11 @@ const sq = {
   regionSeoKorea: "Koreja",
   regionSeoDubai: "Dubai / Emiratet",
   regionSeoChina: "Kina",
+  regionAdjUsa: "amerikane",
+  regionAdjCanada: "kanadeze",
+  regionAdjKorea: "koreane",
+  regionAdjDubai: "emirateze",
+  regionAdjChina: "kineze",
   regionUsaBlurb: "Historik makinash SHBA, sinjale salvage dhe kilometra për VIN amerikane.",
   regionCanadaBlurb: "Historik Kanada — tituj, regjistra provinciale, kilometra dhe kontroll importi.",
   regionKoreaBlurb: "Historik Kore me aksidente, inspeksione, pronësi dhe detaje kilometrash.",
@@ -1646,9 +1700,11 @@ const pl = {
   heroSub:
     "Kontrole VIN pod Twoją marką: wypadki, przebiegi i status tytułu — ok. 50 mln pojazdów w USA, Kanadzie, Korei, Dubaju i Chinach. Przez API lub stronę, którą utrzymujemy.",
   heroStatCars: "≈50 mln pojazdów",
+  heroStatCarsDetail: "Kontrole VIN, przebiegi i sygnały tytułu z jednej ujednoliconej bazy",
   heroStatRegions: "5 rynków",
+  heroStatRegionsDetail: "USA · Kanada · Korea · Dubaj · Chiny — pięć rynków, jedno API",
   heroStatReports: "Pełna historia",
-  heroTrust: "Gotowe white-label · API dla developerów · Dane z pięciu rynków",
+  heroStatReportsDetail: "Gotowe white-label — sprzedawaj przez API lub zarządzaną stronę resellera",
   flowBadge: "Przebieg na żywo",
   flowTitle: "Jak to działa w skrócie",
   flowSub: "Odwiedzający nie opuszcza Twojej marki — my zasilamy dane w tle.",
@@ -1725,6 +1781,8 @@ const pl = {
     "Idealne, jeśli chcesz przychód bez zespołu eng",
   ],
   planPopular: "Najczęściej wybierany",
+  planDevCta: "Chcę samo API",
+  planManagedCta: "Zbudujcie to dla mnie",
   volumePricingBadge: "Ceny wolumenowe",
   volumePricingTitle: "Sprzedawaj więcej raportów — lepsze stawki",
   volumePricingBody:
@@ -1741,13 +1799,18 @@ const pl = {
   regionSeoKorea: "Korea",
   regionSeoDubai: "Dubaj / ZEA",
   regionSeoChina: "Chiny",
+  regionAdjUsa: "amerykańskich",
+  regionAdjCanada: "kanadyjskich",
+  regionAdjKorea: "koreańskich",
+  regionAdjDubai: "ze ZEA",
+  regionAdjChina: "chińskich",
   regionUsaBlurb: "Historia USA, sygnały salvage i przebiegi dla amerykańskich VIN.",
   regionCanadaBlurb: "Historia Kanada — tytuły, rejestry prowincji, przebiegi i import.",
   regionKoreaBlurb: "Historia Korea: wypadki, przeglądy, własność i przebieg.",
   regionDubaiBlurb: "Historia i przebiegi Dubaj / ZEA pod popyt VIN w Zatoce.",
   regionChinaBlurb: "Historia i przebiegi Chiny — import i lokalne wyszukiwania VIN.",
   regionExplore: "Poznaj rynek",
-  regionHeroTitle: "Sprzedawaj raporty historii pojazdów z {region}",
+  regionHeroTitle: "Sprzedawaj historię i raporty samochodów {region}",
   regionHeroSub: "Historia VIN, wypadki i przebiegi na Twojej stronie — z kmcheck API, pod Twoją marką.",
   regionCoverageTitle: "Historia i przebieg, których szukają kupujący",
   regionCoverageBody:
@@ -1876,9 +1939,9 @@ const pl = {
     "Porównaj plany kmcheck: API REST historii VIN i przebiegu albo zarządzaną stronę white-label.",
   seoContactTitle: "Kontakt handlowy | Sprzedawaj historię aut z kmcheck",
   seoContactDesc: "Porozmawiaj z kmcheck o sprzedaży historii i przebiegów przez API lub stronę reseller. E-mail info@kmcheck.com.",
-  seoRegionTitle: "Sprzedawaj raporty historii pojazdów z {region} | kmcheck",
+  seoRegionTitle: "Sprzedawaj historię i raporty samochodów {region} | kmcheck",
   seoRegionDesc:
-    "Sprzedawaj historię {region}, VIN, wypadki i przebiegi pod swoją marką z kmcheck API.",
+    "Sprzedawaj historię i raporty samochodów {region}, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API.",
   seoDecoderTitle: "API dekoder VIN — marki, modele i specs | kmcheck",
   seoDecoderDesc: "Dekoder VIN ze szczegółowymi danymi. W API kmcheck oraz na Stronie resellera i utrzymaniu.",
   decoderPageHeroTitle: "Dekoder VIN dla każdej marki, modelu i specyfikacji",
@@ -1925,9 +1988,11 @@ const ro = {
   heroSub:
     "Verificări VIN sub brandul tău: accidente, kilometraj și status titlu — circa 50 de milioane de vehicule în SUA, Canada, Coreea, Dubai și China. Prin API sau pe un site pe care îl mentinem noi.",
   heroStatCars: "≈50M vehicule",
+  heroStatCarsDetail: "Verificări VIN, kilometraj și semnale de titlu dintr-o bază unificată",
   heroStatRegions: "5 piețe",
+  heroStatRegionsDetail: "SUA · Canada · Coreea · Dubai · China — cinci piețe, un singur API",
   heroStatReports: "Istoric complet",
-  heroTrust: "Gata white-label · API pentru developeri · Date din cinci piețe",
+  heroStatReportsDetail: "Gata white-label — vinde prin API pentru developeri sau site gestionat",
   flowBadge: "Flux live",
   flowTitle: "Cum funcționează dintr-o privire",
   flowSub: "Vizitatorul nu părăsește brandul tău — noi alimentăm datele în background.",
@@ -2004,6 +2069,8 @@ const ro = {
     "Ideal dacă vrei venit fără echipă de engineering",
   ],
   planPopular: "Cel mai ales",
+  planDevCta: "Vreau doar API-ul",
+  planManagedCta: "Construiți-l pentru mine",
   volumePricingBadge: "Prețuri pe volum",
   volumePricingTitle: "Vinde mai multe rapoarte — tarife mai bune",
   volumePricingBody:
@@ -2020,13 +2087,18 @@ const ro = {
   regionSeoKorea: "Coreea",
   regionSeoDubai: "Dubai / EAU",
   regionSeoChina: "China",
+  regionAdjUsa: "americane",
+  regionAdjCanada: "canadiene",
+  regionAdjKorea: "coreene",
+  regionAdjDubai: "din EAU",
+  regionAdjChina: "chineze",
   regionUsaBlurb: "Istoric auto SUA, semnale salvage și kilometraj pentru VIN americane.",
   regionCanadaBlurb: "Istoric Canada — titluri, registre provinciale, kilometraj și import.",
   regionKoreaBlurb: "Istoric Coreea cu accidente, inspecții, proprietate și kilometraj.",
   regionDubaiBlurb: "Istoric și kilometraj Dubai / EAU pentru cererea VIN din Golf.",
   regionChinaBlurb: "Istoric și kilometraj China pentru import și căutări VIN locale.",
   regionExplore: "Explorează piața",
-  regionHeroTitle: "Vinde rapoarte de istoric auto din {region}",
+  regionHeroTitle: "Vinde istoricul și rapoartele mașinilor {region}",
   regionHeroSub: "Oferă istoric VIN, accidente și kilometraj pe site-ul tău — cu kmcheck API, sub brandul tău.",
   regionCoverageTitle: "Istoric și kilometraj pe care le caută cumpărătorii",
   regionCoverageBody:
@@ -2155,9 +2227,9 @@ const ro = {
     "Compară planurile kmcheck: API REST pentru istoric VIN și kilometraj, sau site white-label gestionat.",
   seoContactTitle: "Contact vânzări | Vinde istoric auto cu kmcheck",
   seoContactDesc: "Vorbește cu kmcheck despre vânzarea de istoric și kilometraj prin API sau site reseller. Email info@kmcheck.com.",
-  seoRegionTitle: "Vinde rapoarte de istoric auto din {region} | kmcheck",
+  seoRegionTitle: "Vinde istoricul și rapoartele mașinilor {region} | kmcheck",
   seoRegionDesc:
-    "Vinde istoric {region}, VIN, accidente și kilometraj sub brandul tău cu kmcheck API.",
+    "Vinde istoricul și rapoartele mașinilor {region}, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API.",
   seoDecoderTitle: "API decoder VIN — mărci, modele și specs | kmcheck",
   seoDecoderDesc: "Decoder VIN cu specs detaliate. Inclus în API kmcheck și Site reseller & mentenanță.",
   decoderPageHeroTitle: "Decoder VIN pentru fiecare marcă, model și spec",
@@ -2204,9 +2276,11 @@ const bg = {
   heroSub:
     "VIN проверки под вашата марка: аварии, километри и статус на титлата — около 50 млн. автомобила в САЩ, Канада, Корея, Дубай и Китай. Чрез API или сайт, който ние поддържаме.",
   heroStatCars: "≈50M автомобила",
+  heroStatCarsDetail: "VIN проверки, километри и title сигнали от една унифицирана база",
   heroStatRegions: "5 пазара",
+  heroStatRegionsDetail: "САЩ · Канада · Корея · Дубай · Китай — пет пазара, един API",
   heroStatReports: "Пълна история",
-  heroTrust: "Готово за white-label · API за разработчици · Данни от пет пазара",
+  heroStatReportsDetail: "Готово за white-label — продавайте чрез API или управляван reseller сайт",
   flowBadge: "Жив поток",
   flowTitle: "Как работи накратко",
   flowSub: "Посетителят не напуска марката ви — ние захранваме данните зад кулисите.",
@@ -2283,6 +2357,8 @@ const bg = {
     "Идеално, ако искате приходи без eng екип",
   ],
   planPopular: "Най-избран",
+  planDevCta: "Искам само API",
+  planManagedCta: "Изградете го за мен",
   volumePricingBadge: "Цени по обем",
   volumePricingTitle: "Продавайте повече доклади — по-добри ставки",
   volumePricingBody:
@@ -2299,13 +2375,18 @@ const bg = {
   regionSeoKorea: "Корея",
   regionSeoDubai: "Дубай / ОАЕ",
   regionSeoChina: "Китай",
+  regionAdjUsa: "американски",
+  regionAdjCanada: "канадски",
+  regionAdjKorea: "корейски",
+  regionAdjDubai: "от ОАЕ",
+  regionAdjChina: "китайски",
   regionUsaBlurb: "Автоистория САЩ, salvage сигнали и километри за американски VIN.",
   regionCanadaBlurb: "История Канада — титли, провинциални регистри, километри и импорт.",
   regionKoreaBlurb: "История Корея с аварии, инспекции, собственост и километри.",
   regionDubaiBlurb: "История и километри Дубай / ОАЕ за VIN търсенето в Залива.",
   regionChinaBlurb: "История и километри Китай за импорт и локални VIN търсения.",
   regionExplore: "Разгледай пазара",
-  regionHeroTitle: "Продавайте доклади за автоистория от {region}",
+  regionHeroTitle: "Продавайте история и отчети за {region} автомобили",
   regionHeroSub: "VIN история, аварии и километри на вашия сайт — с kmcheck API, под вашата марка.",
   regionCoverageTitle: "История и километри, които купувачите очакват",
   regionCoverageBody:
@@ -2434,9 +2515,9 @@ const bg = {
     "Сравнете плановете kmcheck: REST API за VIN история и километри или управляван white-label сайт.",
   seoContactTitle: "Контакт продажби | Продавайте автоистория с kmcheck",
   seoContactDesc: "Говорете с kmcheck за продажба на автоистория и километри чрез API или reseller сайт. Имейл info@kmcheck.com.",
-  seoRegionTitle: "Продавайте доклади за автоистория от {region} | kmcheck",
+  seoRegionTitle: "Продавайте история и отчети за {region} автомобили | kmcheck",
   seoRegionDesc:
-    "Продавайте история за {region}, VIN, аварии и километри под вашата марка с kmcheck API.",
+    "Продавайте история и отчети за {region} автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API.",
   seoDecoderTitle: "VIN декодер API — марки, модели и specs | kmcheck",
   seoDecoderDesc: "VIN декодер с подробни specs. Включен в kmcheck API и Reseller сайт и поддръжка.",
   decoderPageHeroTitle: "VIN декодер за всяка марка, модел и spec",
@@ -2483,9 +2564,11 @@ const ar = {
   heroSub:
     "فحوصات VIN بعلامتك: حوادث، مسافة مقطوعة وحالة الملكية — نحو 50 مليون مركبة في أمريكا وكندا وكوريا ودبي والصين. عبر الواجهة البرمجية أو موقع نديره نحن.",
   heroStatCars: "≈50 مليون مركبة",
+  heroStatCarsDetail: "فحوصات VIN وسجلات المسافة وإشارات الملكية من قاعدة موحدة",
   heroStatRegions: "5 أسواق",
+  heroStatRegionsDetail: "أمريكا · كندا · كوريا · دبي · الصين — خمسة أسواق، واجهة واحدة",
   heroStatReports: "تاريخ كامل",
-  heroTrust: "جاهز للعلامة البيضاء · واجهة للمطوّرين · بيانات من خمسة أسواق",
+  heroStatReportsDetail: "جاهز للعلامة البيضاء — بِع عبر واجهة المطوّرين أو موقع مُدار",
   flowBadge: "تدفق مباشر",
   flowTitle: "كيف يعمل بنظرة واحدة",
   flowSub: "زائرك لا يغادر علامتك — نحن نوفر البيانات خلف الكواليس.",
@@ -2562,6 +2645,8 @@ const ar = {
     "مثالي إذا أردت إيرادات دون فريق هندسة",
   ],
   planPopular: "الأكثر اختيارًا",
+  planDevCta: "أريد API فقط",
+  planManagedCta: "ابنُه لي",
   volumePricingBadge: "تسعير حسب الحجم",
   volumePricingTitle: "بِع المزيد من التقارير — احصل على أسعار أفضل",
   volumePricingBody:
@@ -2578,13 +2663,18 @@ const ar = {
   regionSeoKorea: "كوريا",
   regionSeoDubai: "دبي / الإمارات",
   regionSeoChina: "الصين",
+  regionAdjUsa: "الأمريكية",
+  regionAdjCanada: "الكندية",
+  regionAdjKorea: "الكورية",
+  regionAdjDubai: "الإماراتية",
+  regionAdjChina: "الصينية",
   regionUsaBlurb: "تاريخ سيارات أمريكا وإشارات salvage وسجلات المسافة لـ VIN الأمريكية.",
   regionCanadaBlurb: "تاريخ كندا — ملكية، سجلات المقاطعات، المسافة والاستيراد.",
   regionKoreaBlurb: "تاريخ كوريا: حوادث، فحوصات، ملكية وتفاصيل المسافة.",
   regionDubaiBlurb: "تاريخ ومسافة دبي / الإمارات لطلب VIN في الخليج.",
   regionChinaBlurb: "تاريخ ومسافة الصين للاستيراد وبحث VIN المحلي.",
   regionExplore: "استكشف السوق",
-  regionHeroTitle: "بِع تقارير تاريخ السيارات من {region}",
+  regionHeroTitle: "بِع تاريخ وتقارير السيارات {region}",
   regionHeroSub: "قدّم تاريخ VIN والحوادث والمسافة على موقعك — بواجهة kmcheck وتحت علامتك.",
   regionCoverageTitle: "تاريخ ومسافة يبحث عنهما المشترون",
   regionCoverageBody:
@@ -2713,9 +2803,9 @@ const ar = {
     "قارن خطط kmcheck: واجهة REST لتاريخ VIN والمسافة، أو موقع white-label مُدار.",
   seoContactTitle: "تواصل مع المبيعات | بِع تاريخ السيارات مع kmcheck",
   seoContactDesc: "تحدث مع kmcheck عن بيع تاريخ السيارات والمسافة عبر الواجهة أو موقع إعادة البيع. البريد info@kmcheck.com.",
-  seoRegionTitle: "بِع تقارير تاريخ السيارات من {region} | kmcheck",
+  seoRegionTitle: "بِع تاريخ وتقارير السيارات {region} | kmcheck",
   seoRegionDesc:
-    "بِع تاريخ {region} وفحص VIN والحوادث والمسافة بعلامتك عبر واجهة kmcheck.",
+    "بِع تاريخ وتقارير السيارات {region}، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API.",
   seoDecoderTitle: "واجهة فك شفرة VIN — الماركات والموديلات والمواصفات | kmcheck",
   seoDecoderDesc: "فك VIN بمواصفات مفصّلة. مشمول في واجهة kmcheck وفي موقع إعادة البيع والصيانة.",
   decoderPageHeroTitle: "فك شفرة VIN لكل ماركة وموديل ومواصفة",
@@ -2762,9 +2852,11 @@ const uk = {
   heroSub:
     "VIN-перевірки під вашим брендом: аварії, пробіг і статус титулу — близько 50 млн авто в США, Канаді, Кореї, Дубаї та Китаї. Через API або сайт, який підтримуємо ми.",
   heroStatCars: "≈50 млн авто",
+  heroStatCarsDetail: "Перевірки VIN, пробіг і title-сигнали з єдиної бази",
   heroStatRegions: "5 ринків",
+  heroStatRegionsDetail: "США · Канада · Корея · Дубай · Китай — п'ять ринків, один API",
   heroStatReports: "Повна історія",
-  heroTrust: "Готово до white-label · API для розробників · Дані з п’яти ринків",
+  heroStatReportsDetail: "Готово до white-label — продавайте через API або керований сайт",
   flowBadge: "Живий потік",
   flowTitle: "Як це працює з одного погляду",
   flowSub: "Відвідувач не залишає ваш бренд — ми живимо дані за лаштунками.",
@@ -2841,6 +2933,8 @@ const uk = {
     "Ідеально, якщо потрібен дохід без eng-команди",
   ],
   planPopular: "Найчастіший вибір",
+  planDevCta: "Хочу лише API",
+  planManagedCta: "Збудуйте для мене",
   volumePricingBadge: "Ціни від обсягу",
   volumePricingTitle: "Продавайте більше звітів — кращі тарифи",
   volumePricingBody:
@@ -2857,13 +2951,18 @@ const uk = {
   regionSeoKorea: "Кореї",
   regionSeoDubai: "Дубаю / ОАЕ",
   regionSeoChina: "Китаю",
+  regionAdjUsa: "американських",
+  regionAdjCanada: "канадських",
+  regionAdjKorea: "корейських",
+  regionAdjDubai: "ОАЕ",
+  regionAdjChina: "китайських",
   regionUsaBlurb: "Історія США, salvage-сигнали та пробіг для американських VIN.",
   regionCanadaBlurb: "Історія Канада — титули, провінційні реєстри, пробіг і імпорт.",
   regionKoreaBlurb: "Історія Корея: аварії, огляди, власність і деталі пробігу.",
   regionDubaiBlurb: "Історія та пробіг Дубай / ОАЕ під попит VIN у Затоці.",
   regionChinaBlurb: "Історія та пробіг Китай для імпорту та локальних VIN-пошуків.",
   regionExplore: "Дослідити ринок",
-  regionHeroTitle: "Продавайте звіти з історії авто з {region}",
+  regionHeroTitle: "Продавайте історію та звіти {region} автомобілів",
   regionHeroSub: "VIN-історія, аварії та пробіг на вашому сайті — з kmcheck API, під вашим брендом.",
   regionCoverageTitle: "Історія та пробіг, які шукають покупці",
   regionCoverageBody:
@@ -2992,9 +3091,9 @@ const uk = {
     "Порівняйте плани kmcheck: REST API історії VIN і пробігу або керований white-label сайт.",
   seoContactTitle: "Контакт продажів | Продавайте історію авто з kmcheck",
   seoContactDesc: "Поговоріть з kmcheck про продаж історії та пробігу через API або сайт реселера. Email info@kmcheck.com.",
-  seoRegionTitle: "Продавайте звіти з історії авто з {region} | kmcheck",
+  seoRegionTitle: "Продавайте історію та звіти {region} автомобілів | kmcheck",
   seoRegionDesc:
-    "Продавайте історію {region}, VIN, аварії та пробіг під вашим брендом з kmcheck API.",
+    "Продавайте історію та звіти {region} автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API.",
   seoDecoderTitle: "API VIN-декодер — марки, моделі й specs | kmcheck",
   seoDecoderDesc: "VIN-декодер з детальними specs. Входить до API kmcheck та Сайту реселера і підтримки.",
   decoderPageHeroTitle: "VIN-декодер для кожної марки, моделі й специфікації",
@@ -3041,9 +3140,11 @@ const ru = {
   heroSub:
     "VIN-проверки под вашим брендом: аварии, пробег и статус титула — около 50 млн авто в США, Канаде, Корее, Дубае и Китае. Через API или сайт, который ведём мы.",
   heroStatCars: "≈50 млн авто",
+  heroStatCarsDetail: "Проверки VIN, пробег и title-сигналы из единой базы",
   heroStatRegions: "5 рынков",
+  heroStatRegionsDetail: "США · Канада · Корея · Дубай · Китай — пять рынков, один API",
   heroStatReports: "Полная история",
-  heroTrust: "Готово к white-label · API для разработчиков · Данные с пяти рынков",
+  heroStatReportsDetail: "Готово к white-label — продавайте через API или управляемый сайт",
   flowBadge: "Живой поток",
   flowTitle: "Как это работает одним взглядом",
   flowSub: "Посетитель не уходит с вашего бренда — мы питаем данные за кулисами.",
@@ -3120,6 +3221,8 @@ const ru = {
     "Идеально, если нужен доход без eng-команды",
   ],
   planPopular: "Самый частый выбор",
+  planDevCta: "Хочу только API",
+  planManagedCta: "Сделайте за меня",
   volumePricingBadge: "Цены от объёма",
   volumePricingTitle: "Продавайте больше отчётов — лучше тарифы",
   volumePricingBody:
@@ -3136,13 +3239,18 @@ const ru = {
   regionSeoKorea: "Кореи",
   regionSeoDubai: "Дубая / ОАЭ",
   regionSeoChina: "Китая",
+  regionAdjUsa: "американских",
+  regionAdjCanada: "канадских",
+  regionAdjKorea: "корейских",
+  regionAdjDubai: "ОАЭ",
+  regionAdjChina: "китайских",
   regionUsaBlurb: "История США, salvage-сигналы и пробег для американских VIN.",
   regionCanadaBlurb: "История Канада — титулы, провинциальные реестры, пробег и импорт.",
   regionKoreaBlurb: "История Корея: аварии, осмотры, владение и детали пробега.",
   regionDubaiBlurb: "История и пробег Дубай / ОАЭ под спрос VIN в Заливе.",
   regionChinaBlurb: "История и пробег Китай для импорта и локальных VIN-поисков.",
   regionExplore: "Изучить рынок",
-  regionHeroTitle: "Продавайте отчёты истории авто из {region}",
+  regionHeroTitle: "Продавайте историю и отчёты {region} автомобилей",
   regionHeroSub: "VIN-история, аварии и пробег на вашем сайте — с kmcheck API, под вашим брендом.",
   regionCoverageTitle: "История и пробег, которые ищут покупатели",
   regionCoverageBody:
@@ -3271,9 +3379,9 @@ const ru = {
     "Сравните тарифы kmcheck: REST API истории VIN и пробега или управляемый white-label сайт.",
   seoContactTitle: "Контакт продаж | Продавайте историю авто с kmcheck",
   seoContactDesc: "Обсудите с kmcheck продажу истории и пробега через API или сайт реселлера. Email info@kmcheck.com.",
-  seoRegionTitle: "Продавайте отчёты истории авто из {region} | kmcheck",
+  seoRegionTitle: "Продавайте историю и отчёты {region} автомобилей | kmcheck",
   seoRegionDesc:
-    "Продавайте историю {region}, VIN, аварии и пробег под вашим брендом с kmcheck API.",
+    "Продавайте историю и отчёты {region} автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API.",
   seoDecoderTitle: "API VIN-декодер — марки, модели и specs | kmcheck",
   seoDecoderDesc: "VIN-декодер с детальными specs. Входит в API kmcheck и Сайт реселлера и поддержку.",
   decoderPageHeroTitle: "VIN-декодер для каждой марки, модели и спецификации",
@@ -3320,9 +3428,11 @@ const zh = {
   heroSub:
     "自有品牌的 VIN 查验：事故史、里程与产权状态 — 覆盖美国、加拿大、韩国、迪拜与中国约五千万辆车。可接 API，或使用我们维护的站点。",
   heroStatCars: "约 5000 万辆车",
+  heroStatCarsDetail: "VIN 查验、里程与产权信号，统一数据库",
   heroStatRegions: "5 个市场",
+  heroStatRegionsDetail: "美国 · 加拿大 · 韩国 · 迪拜 · 中国 — 五大市场，一套 API",
   heroStatReports: "完整历史",
-  heroTrust: "可白标 · 开发者 API · 五大市场数据",
+  heroStatReportsDetail: "可白标上线 — 开发者 API 或我们维护的经销站",
   flowBadge: "实时流程",
   flowTitle: "运作方式一览",
   flowSub: "访客不离开您的品牌——我们在幕后提供数据。",
@@ -3397,6 +3507,8 @@ const zh = {
     "适合没有工程团队却想变现的团队",
   ],
   planPopular: "最受欢迎",
+  planDevCta: "我只要 API",
+  planManagedCta: "帮我建站",
   volumePricingBadge: "量级定价",
   volumePricingTitle: "卖得越多，单价越优",
   volumePricingBody:
@@ -3413,13 +3525,18 @@ const zh = {
   regionSeoKorea: "韩国",
   regionSeoDubai: "迪拜 / 阿联酋",
   regionSeoChina: "中国",
+  regionAdjUsa: "美国",
+  regionAdjCanada: "加拿大",
+  regionAdjKorea: "韩国",
+  regionAdjDubai: "阿联酋",
+  regionAdjChina: "中国",
   regionUsaBlurb: "美国车史、salvage 线索与美国 VIN 的里程记录。",
   regionCanadaBlurb: "加拿大车史 — 产权、省级登记、里程与进口核查。",
   regionKoreaBlurb: "韩国车史：事故、年检、过户与里程细节。",
   regionDubaiBlurb: "迪拜 / 阿联酋车史与里程，服务海湾地区 VIN 需求。",
   regionChinaBlurb: "中国车史与里程，适用于进口与本地 VIN 查询。",
   regionExplore: "了解市场",
-  regionHeroTitle: "销售来自{region}的车辆历史报告",
+  regionHeroTitle: "销售{region}车辆历史与报告",
   regionHeroSub: "在您的网站提供 VIN 历史、事故核查与里程 — 由 kmcheck API 驱动，展示您的品牌。",
   regionCoverageTitle: "买家关注的车史与里程内容",
   regionCoverageBody:
@@ -3548,9 +3665,9 @@ const zh = {
     "对比 kmcheck 方案：VIN 历史与里程 REST API，或托管白标车史网站。",
   seoContactTitle: "联系销售 | 使用 kmcheck 销售车史报告",
   seoContactDesc: "咨询通过 API 或经销站点销售车史与里程。邮箱 info@kmcheck.com。",
-  seoRegionTitle: "销售来自{region}的车辆历史报告 | kmcheck",
+  seoRegionTitle: "销售{region}车辆历史与报告 | kmcheck",
   seoRegionDesc:
-    "以您的品牌销售{region}车史、VIN 查验、事故与里程 — kmcheck API。",
+    "以您的品牌通过 kmcheck API 销售{region}车辆历史与报告、VIN 查验、事故与里程记录。",
   seoDecoderTitle: "VIN 解码 API — 全品牌车型与规格 | kmcheck B2B",
   seoDecoderDesc: "各品牌车型 VIN 解码与详细规格。包含于 kmcheck API 以及经销网站与维护。",
   decoderPageHeroTitle: "覆盖全品牌、车型与规格的 VIN 解码",
@@ -3598,4 +3715,43 @@ export const B2B_COPY: Record<Language, B2bCopy> = {
 
 export function getB2bCopy(lang: Language): B2bCopy {
   return B2B_COPY[lang] ?? en;
+}
+
+export function getRegionSeoLabel(c: B2bCopy, slug: string): string {
+  switch (slug) {
+    case "usa-cars":
+      return c.regionSeoUsa;
+    case "canada-cars":
+      return c.regionSeoCanada;
+    case "korea-cars":
+      return c.regionSeoKorea;
+    case "dubai-cars":
+      return c.regionSeoDubai;
+    case "china-cars":
+      return c.regionSeoChina;
+    default:
+      return "";
+  }
+}
+
+export function getRegionAdjLabel(c: B2bCopy, slug: string): string {
+  switch (slug) {
+    case "usa-cars":
+      return c.regionAdjUsa;
+    case "canada-cars":
+      return c.regionAdjCanada;
+    case "korea-cars":
+      return c.regionAdjKorea;
+    case "dubai-cars":
+      return c.regionAdjDubai;
+    case "china-cars":
+      return c.regionAdjChina;
+    default:
+      return "";
+  }
+}
+
+/** Country name for sq; localized adjective elsewhere (e.g. "Korean" in hero/SEO). */
+export function getRegionHeadlineLabel(c: B2bCopy, slug: string, lang: Language): string {
+  return lang === "sq" ? getRegionSeoLabel(c, slug) : getRegionAdjLabel(c, slug);
 }
