@@ -7,6 +7,7 @@ import { ChevronUp } from "lucide-react";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
 import { FlagImg, prefetchFlags } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -183,7 +184,7 @@ export function Footer() {
                     : "border-white/12 bg-white/[0.04] text-white/75 hover:border-white/22 hover:bg-white/[0.06]",
                 )}
               >
-                <FlagImg code={current.img} size={16} priority />
+                <FlagImg code={current.img} size={16} priority alt={formatImageFlagAlt(current.label, t)} />
                 <span className="flex-1 truncate text-left font-medium">{current.label}</span>
                 <ChevronUp
                   className={cn(
@@ -241,7 +242,7 @@ export function Footer() {
                   href={`/${language}/cars/${slug}`}
                   className="group inline-flex max-w-full items-center gap-2.5"
                 >
-                  <FlagImg code={code} size={18} className="shrink-0 rounded-[2px] shadow-sm" />
+                  <FlagImg code={code} size={18} className="shrink-0 rounded-[2px] shadow-sm" alt={formatImageFlagAlt(t(headingKey), t)} />
                   <span className="truncate text-sm font-semibold text-white/80 transition-colors group-hover:text-white">
                     {t(headingKey)}
                   </span>

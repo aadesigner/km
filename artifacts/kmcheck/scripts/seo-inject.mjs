@@ -80,6 +80,11 @@ export function resolvePageKey(rest) {
   const exact = PATH_TO_SEO_KEY[rest];
   if (exact) return exact;
 
+  // Match React seo-pages: B2B marketing paths are indexable (not soft-404 / noindex).
+  if (rest === "/api-b2b" || rest.startsWith("/api-b2b/")) {
+    return "home";
+  }
+
   if (rest.startsWith("/cars/")) {
     const slug = rest.split("/").filter(Boolean)[1]?.toLowerCase();
     if (slug && VALID_COUNTRY_SLUGS.has(slug)) {

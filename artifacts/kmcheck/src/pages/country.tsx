@@ -26,6 +26,7 @@ import { getVinValidationErrorKey } from "@/lib/vin-validation";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { isTrustworthyVinDecode, shouldShowPendingVinDoubleCheck } from "@/lib/vin-decode-preview";
 import { FlagImg } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
@@ -349,6 +350,7 @@ export default function CountryPage({ params }: Props) {
                 size={40}
                 priority
                 className="rounded-md shadow-md ring-1 ring-black/10"
+                alt={formatImageFlagAlt(countryName, t)}
               />
             </div>
 
@@ -365,6 +367,7 @@ export default function CountryPage({ params }: Props) {
                   <FlagImg
                     code={meta.flagImg}
                     size={44}
+                    alt={formatImageFlagAlt(countryName, t)}
                     priority
                     className="rounded-md shadow-md ring-1 ring-black/10 shrink-0"
                   />
@@ -459,7 +462,7 @@ export default function CountryPage({ params }: Props) {
             className="text-center mb-12 space-y-3"
           >
             <div className="inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">
-              <FlagImg code={meta.flagImg} size={16} className="rounded-sm" />
+              <FlagImg code={meta.flagImg} size={16} className="rounded-sm" alt={formatImageFlagAlt(countryName, t)} />
               {countryName} {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">{t("faq")}</h2>
@@ -522,7 +525,7 @@ export default function CountryPage({ params }: Props) {
         >
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-semibold text-white/70">
-              <FlagImg code={meta.flagImg} size={24} className="rounded-sm shadow-sm" />
+              <FlagImg code={meta.flagImg} size={24} className="rounded-sm shadow-sm" alt={formatImageFlagAlt(countryName, t)} />
               {countryName} · {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
@@ -587,7 +590,7 @@ export default function CountryPage({ params }: Props) {
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_50%_60%_at_80%_20%,rgba(255,255,255,0.08),transparent)]" />
                   <div className="relative z-10 space-y-4">
                     <div className="flex items-center gap-3">
-                      <FlagImg code={c.flagImg} size={60} className="rounded-md shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      <FlagImg code={c.flagImg} size={60} className="rounded-md shadow-md group-hover:scale-110 transition-transform duration-300" alt={formatImageFlagAlt(t(`country_${key}_name`), t)} />
                       <div>
                         <h4 className="text-xl font-black text-white">{t(`country_${key}_name`)}</h4>
                         <p className="text-white/50 text-xs">{c.totalVehicles} {t("country_registered_vehicles")}</p>

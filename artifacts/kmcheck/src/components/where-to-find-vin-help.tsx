@@ -20,6 +20,7 @@ const LOCATIONS = [
     tabKey: "vin_find_tab_dashboard",
     titleKey: "vin_find_loc_dashboard_title",
     descKey: "vin_find_loc_dashboard_desc",
+    altKey: "vin_find_alt_dashboard",
   },
   {
     id: "door" as const,
@@ -27,6 +28,7 @@ const LOCATIONS = [
     tabKey: "vin_find_tab_door",
     titleKey: "vin_find_loc_door_title",
     descKey: "vin_find_loc_door_desc",
+    altKey: "vin_find_alt_door",
   },
   {
     id: "documents" as const,
@@ -34,6 +36,7 @@ const LOCATIONS = [
     tabKey: "vin_find_tab_documents",
     titleKey: "vin_find_loc_documents_title",
     descKey: "vin_find_loc_documents_desc",
+    altKey: "vin_find_alt_documents",
   },
   {
     id: "insurance" as const,
@@ -41,6 +44,7 @@ const LOCATIONS = [
     tabKey: "vin_find_tab_insurance",
     titleKey: "vin_find_loc_insurance_title",
     descKey: "vin_find_loc_insurance_desc",
+    altKey: "vin_find_loc_insurance_title",
   },
 ];
 
@@ -175,6 +179,7 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
                   <Scene
                     vinLabel={vinLabel}
                     lookHereLabel={t("vin_find_scene_look_here")}
+                    imageAlt={t(loc.altKey)}
                     rtl={language === "ar"}
                     className="absolute inset-0"
                   />

@@ -37,6 +37,7 @@ export function FlagImg({
   variant = "default",
   className,
   priority = false,
+  alt,
 }: {
   code: string;
   /** Width in px (height follows 4:3). */
@@ -44,16 +45,20 @@ export function FlagImg({
   variant?: FlagVariant;
   className?: string;
   priority?: boolean;
+  /** Localized alt text (required on indexable pages for SEO). */
+  alt?: string;
 }) {
   const width = size ?? FLAG_WIDTH[variant];
   const height = Math.round((width * 3) / 4);
+  const resolvedAlt = alt?.trim() ?? "";
 
   return (
     <img
       src={flagUrl(code)}
       width={width}
       height={height}
-      alt=""
+      alt={resolvedAlt}
+      aria-hidden={resolvedAlt ? undefined : true}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       fetchPriority={priority ? "high" : "low"}

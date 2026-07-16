@@ -83,20 +83,22 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
                       <span className={`block text-sm font-medium ${on ? "text-white" : "text-slate-400"}`}>
                         {s.title}
                       </span>
-                      <AnimatePresence mode="wait" initial={false}>
-                        {on && (
-                          <motion.span
-                            key={s.detail}
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="mt-1 block text-xs leading-relaxed text-slate-500"
-                          >
-                            {s.detail}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
+                      <span className="mt-1 block min-h-[2.6rem] text-xs leading-relaxed text-slate-500">
+                        <AnimatePresence mode="wait" initial={false}>
+                          {on && (
+                            <motion.span
+                              key={s.detail}
+                              initial={{ opacity: 0, y: 4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.18 }}
+                              className="block"
+                            >
+                              {s.detail}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </span>
                     </span>
                   </button>
                 </li>
@@ -143,7 +145,7 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
                 {c.flowMockBrowserUrl}
               </div>
             </div>
-            <div className="relative min-h-[200px] p-5 sm:p-6">
+            <div className="relative min-h-[220px] p-5 sm:p-6">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}

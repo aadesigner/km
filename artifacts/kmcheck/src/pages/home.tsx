@@ -19,6 +19,7 @@ import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { prefetchFlags } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 
 // Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
@@ -248,7 +249,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="space-y-6 md:space-y-7 text-center pt-4 pb-4 md:pt-5 md:pb-6"
+            className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {language === "zh" ? (
@@ -374,7 +375,7 @@ export default function Home() {
                         <div className="flex items-center gap-3 mb-2">
                           <img
                             src={`https://flagcdn.com/${c.flagCode}.svg`}
-                            alt=""
+                            alt={formatImageFlagAlt(c.name, t)}
                             width={43}
                             height={32}
                             loading="lazy"

@@ -240,7 +240,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
     <div className="api-b2b min-h-screen bg-[#f3f7f4] text-slate-900 dark:bg-[#090f0d] dark:text-slate-100">
       <header
         className={cn(
-          "sticky top-0 z-40 border-b backdrop-blur-xl transition-[height,background-color,box-shadow,border-color] duration-300",
+          "sticky top-0 z-40 border-b backdrop-blur-xl transition-[background-color,box-shadow,border-color] duration-300",
           scrolled
             ? "border-slate-900/10 bg-[#f3f7f4]/95 shadow-[0_10px_40px_-18px_rgba(15,23,42,0.22)] dark:border-white/[0.08] dark:bg-[#070c0a]/95 dark:shadow-black/60"
             : "border-transparent bg-[#f3f7f4]/70 dark:bg-[#070c0a]/75",
@@ -248,20 +248,25 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
       >
         <div
           className={cn(
-            "mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 transition-[height] duration-300 sm:px-6",
-            scrolled ? "h-[3.75rem]" : "h-[4.5rem]",
+            "mx-auto flex h-[4.5rem] max-w-[74rem] items-center justify-between gap-3 px-4 sm:px-6",
           )}
         >
           <Link
             href={base}
-            className="shrink-0 transition-transform duration-300 hover:scale-[1.015]"
+            className={cn(
+              "shrink-0 transition-transform duration-300 hover:scale-[1.015]",
+              scrolled ? "translate-y-0" : "translate-y-0",
+            )}
             aria-label="kmcheck API"
           >
             <KmcheckApiMark compact={scrolled} />
           </Link>
 
           <LayoutGroup id="b2b-nav">
-          <nav className="hidden items-center gap-0.5 rounded-full border border-slate-900/[0.07] bg-white/60 p-1 backdrop-blur-md dark:border-white/[0.08] dark:bg-white/[0.04] lg:flex">
+          <nav className={cn(
+            "hidden items-center gap-0.5 rounded-full border border-slate-900/[0.07] bg-white/60 p-1 backdrop-blur-md transition-transform duration-300 dark:border-white/[0.08] dark:bg-white/[0.04] lg:flex",
+            scrolled ? "scale-[0.98]" : "scale-100",
+          )}>
             {navPrimary.slice(0, 2).map((item) => {
               const active = item.match(pathOnly);
               return (
@@ -490,10 +495,11 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                     <AnimatePresence initial={false}>
                       {mobileMarketsOpen && (
                         <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.16 }}
+                          className="overflow-hidden pt-1"
                         >
                           <button
                             type="button"
@@ -560,7 +566,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
         <div className="pointer-events-none absolute -left-24 top-0 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 bottom-0 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6">
+        <div className="relative mx-auto max-w-[74rem] px-4 py-14 sm:px-6">
           <div className="grid gap-12 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
             <div>
               <KmcheckApiMark forDarkBg />

@@ -63,6 +63,8 @@ const js = `/* auto-generated — do not edit */
 
   function resolvePageKey(rest) {
     if (PATH_MAP[rest]) return PATH_MAP[rest];
+    // Match React seo-pages: B2B URLs are indexable (titles applied by RouteSEO).
+    if (rest === "/api-b2b" || rest.indexOf("/api-b2b/") === 0) return "home";
     if (rest.indexOf("/cars/") === 0) {
       var parts = rest.split("/").filter(Boolean);
       var slug = parts[1] ? parts[1].toLowerCase() : "";

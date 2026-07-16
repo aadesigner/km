@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { FlagImg } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { CountryFlagTooltip } from "@/components/country-flag-tooltip";
 import { useHomeStats } from "@/lib/home-stats";
 import { useTranslation } from "@/i18n/context";
@@ -29,7 +30,7 @@ export function HomeStatsStrip({ className, desktopAlign = "center" }: Props) {
                 nameKey={stat.nameKey}
                 className="rounded-full border border-border/60 bg-muted/40 p-1.5 dark:border-white/10 dark:bg-white/5"
               >
-                <FlagImg code={stat.flag} variant="list" className="home-stats-flag" />
+                <FlagImg code={stat.flag} variant="list" className="home-stats-flag" alt={formatImageFlagAlt(stat.label, t)} />
                 <span className="sr-only">{stat.label}</span>
               </CountryFlagTooltip>
             </li>

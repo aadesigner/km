@@ -55,7 +55,7 @@ export default function ApiB2bHome() {
         )}
 
         <motion.div
-          className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20"
+          className="relative mx-auto max-w-[74rem] px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20"
           variants={staggerContainer(0.045)}
           initial={reduce ? false : "hidden"}
           animate="show"
@@ -80,14 +80,14 @@ export default function ApiB2bHome() {
               <motion.h1
                 variants={fadeUp}
                 transition={fadeUpTransition()}
-                className="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] md:leading-[1.1] dark:text-white"
+                className="mt-3 max-w-2xl text-4xl font-semibold tracking-[-0.04em] text-slate-900 sm:text-5xl md:text-[3.4rem] md:leading-[1.02] dark:text-white"
               >
                 {c.heroHeadline}
               </motion.h1>
               <motion.p
                 variants={fadeUp}
                 transition={fadeUpTransition()}
-                className="mt-4 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300"
+                className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300"
               >
                 {c.heroSub}
               </motion.p>
@@ -130,16 +130,17 @@ export default function ApiB2bHome() {
         </motion.div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-20 sm:px-6">
         <Suspense fallback={<DemoFallback className="h-[28rem]" />}>
           <FlowDemo c={c} />
         </Suspense>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-12 sm:px-6">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight">{c.dataTitle}</h2>
-          <p className="mt-3 text-slate-600 dark:text-slate-300">{c.dataSub}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{c.flowBadge}</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-[2.15rem]">{c.dataTitle}</h2>
+          <p className="mt-3 max-w-xl text-slate-600 dark:text-slate-300">{c.dataSub}</p>
         </div>
         <motion.div
           className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
@@ -168,22 +169,23 @@ export default function ApiB2bHome() {
         </motion.div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-14 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-14 sm:px-6">
         <Suspense fallback={<DemoFallback className="h-80" />}>
           <ProfitStory c={c} />
         </Suspense>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-8 sm:px-6">
         <Suspense fallback={<DemoFallback className="h-72" />}>
           <LiveApiConsole c={c} contactHref={`${base}/contact`} decoderHref={decoderHref} />
         </Suspense>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-16 sm:px-6">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight">{c.offeringsTitle}</h2>
-          <p className="mt-3 text-slate-600 dark:text-slate-300">{c.offeringsSub}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{c.navPlans}</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-[2.15rem]">{c.offeringsTitle}</h2>
+          <p className="mt-3 max-w-xl text-slate-600 dark:text-slate-300">{c.offeringsSub}</p>
         </div>
         <div className="mt-8">
           <VolumePricingBanner c={c} />
@@ -249,8 +251,9 @@ export default function ApiB2bHome() {
       </section>
 
       <section className="api-b2b-section border-y border-emerald-900/10 bg-white/70 py-14 dark:border-white/10 dark:bg-transparent">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{c.useCasesTitle}</h2>
+        <div className="mx-auto max-w-[74rem] px-4 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{c.brandApi}</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-[2.15rem]">{c.useCasesTitle}</h2>
           <motion.div
             className="mt-8 grid gap-4 md:grid-cols-3"
             variants={staggerContainer(0.07)}
@@ -272,8 +275,9 @@ export default function ApiB2bHome() {
       </section>
 
       <section id="markets" className="api-b2b-section scroll-mt-24 py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-semibold tracking-tight">{c.regionsTitle}</h2>
+        <div className="mx-auto max-w-[74rem] px-4 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">{c.navRegions}</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-[2.15rem]">{c.regionsTitle}</h2>
           <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-300">{c.regionsSub}</p>
           <motion.div
             className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"

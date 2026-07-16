@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { Check } from "lucide-react";
 import { FlagImg, prefetchFlags, type FlagVariant } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LANG_PICKER_OPTIONS, type Language } from "@/lib/languages";
+import { useTranslation } from "@/i18n/context";
 import { cn } from "@/lib/utils";
 
 export function usePrefetchPickerFlags(open: boolean): void {
@@ -25,6 +27,7 @@ export function LangPickerList({
   layout?: "default" | "mobile";
   flagVariant?: FlagVariant;
 }) {
+  const { t } = useTranslation();
   const isFooter = tone === "footer";
   const isMobile = layout === "mobile";
 
@@ -63,6 +66,7 @@ export function LangPickerList({
               code={l.flag}
               variant={flagVariant}
               priority={active}
+              alt={formatImageFlagAlt(l.label, t)}
             />
             <span className={cn(
               "truncate flex-1",

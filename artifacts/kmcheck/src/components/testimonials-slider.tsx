@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
+import { flagAltFromCode } from "@/lib/flag-alt";
 import { cn } from "@/lib/utils";
 import type { Testimonial } from "@/data/testimonials";
 
@@ -147,7 +148,7 @@ export function TestimonialsSlider({
                       <span className="font-semibold text-sm truncate">{tm.name}</span>
                       <img
                         src={`https://flagcdn.com/${tm.flagCode}.svg`}
-                        alt=""
+                        alt={flagAltFromCode(tm.flagCode, t)}
                         className="h-3.5 w-auto rounded-sm shrink-0"
                       />
                     </div>

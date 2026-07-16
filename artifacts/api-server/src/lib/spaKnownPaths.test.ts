@@ -14,6 +14,17 @@ describe("isKnownSpaPath", () => {
     expect(isKnownSpaPath("/pricing")).toBe(true);
   });
 
+  it("allows known api-b2b marketing routes", () => {
+    expect(isKnownSpaPath("/en/api-b2b")).toBe(true);
+    expect(isKnownSpaPath("/de/api-b2b/plans")).toBe(true);
+    expect(isKnownSpaPath("/en/api-b2b/contact")).toBe(true);
+    expect(isKnownSpaPath("/en/api-b2b/vin-decoder")).toBe(true);
+    expect(isKnownSpaPath("/en/api-b2b/usa-cars")).toBe(true);
+    expect(isKnownSpaPath("/en/api-b2b/dubai-cars")).toBe(true);
+    expect(isKnownSpaPath("/api-b2b")).toBe(true);
+    expect(isKnownSpaPath("/api-b2b/plans")).toBe(true);
+  });
+
   it("allows VIN and lookup id routes", () => {
     expect(isKnownSpaPath("/en/vin/1HGBH41JXMN109186")).toBe(true);
     expect(isKnownSpaPath("/en/vin/processing")).toBe(true);
@@ -25,5 +36,7 @@ describe("isKnownSpaPath", () => {
     expect(isKnownSpaPath("/totally-random")).toBe(false);
     expect(isKnownSpaPath("/en/vin/too-short")).toBe(false);
     expect(isKnownSpaPath("/en/cars/mars")).toBe(false);
+    expect(isKnownSpaPath("/en/api-b2b/not-a-region")).toBe(false);
+    expect(isKnownSpaPath("/en/api-b2b/plans/extra")).toBe(false);
   });
 });

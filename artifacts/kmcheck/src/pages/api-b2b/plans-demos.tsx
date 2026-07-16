@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import type { B2bCopy } from "./copy";
-import { Check, ImagePlus, Loader2, ShieldCheck, Upload } from "lucide-react";
+import { Check, Car, FileBarChart2, Gauge, Loader2, Lock, AlertTriangle, Users2, ShieldCheck } from "lucide-react";
 
 type CarPayload = {
   make: string;
@@ -135,42 +135,68 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
       </div>
 
       <div className="grid gap-0 lg:grid-cols-2">
-        <pre className="overflow-x-auto border-b border-white/10 p-4 font-mono text-[11px] leading-relaxed text-slate-300 sm:text-xs lg:border-b-0 lg:border-r">
-          <code>
-            <span className="text-violet-300">const</span>{" "}
-            <span className="text-sky-300">res</span> ={" "}
-            <span className="text-violet-300">await</span> fetch(
-            {"\n"}
-            {"  "}
-            <span className="text-emerald-300">
-              &quot;https://api.kmcheck.com/v1/reports&quot;
-            </span>
-            ,
-            {"\n"}
-            {"  "}
-            {"{"}
-            {"\n"}
-            {"    "}headers: {"{"} Authorization:{" "}
-            <span className="text-amber-200">&quot;Bearer ••••••&quot;</span> {"}"},
-            {"\n"}
-            {"    "}
-            <span className="text-sky-300">query</span>: {"{"} vin:{" "}
-            <span className="text-emerald-300">&quot;KM8J3CA46NU…&quot;</span> {"}"},
-            {"\n"}
-            {"  "}
-            {"}"}
-            {"\n"}
-            );
-            {"\n\n"}
-            <span className="text-violet-300">const</span>{" "}
-            <span className="text-sky-300">report</span> ={" "}
-            <span className="text-violet-300">await</span> res.json();
-          </code>
-        </pre>
+        <div className="border-b border-white/10 p-4 lg:border-b-0 lg:border-r">
+          <div className="rounded-xl border border-white/10 bg-[#0f1728] p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{c.planDevTitle}</p>
+                <p className="mt-1 text-sm font-semibold text-white">POST /v1/reports</p>
+              </div>
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+                POST /v1/reports
+              </span>
+            </div>
+            <pre className="overflow-x-auto font-mono text-[11px] leading-relaxed text-slate-300 sm:text-xs">
+              <code>
+                <span className="text-violet-300">const</span>{" "}
+                <span className="text-sky-300">res</span> ={" "}
+                <span className="text-violet-300">await</span> fetch(
+                {"\n"}
+                {"  "}
+                <span className="text-emerald-300">
+                  &quot;https://api.kmcheck.com/v1/reports&quot;
+                </span>
+                ,
+                {"\n"}
+                {"  "}
+                {"{"}
+                {"\n"}
+                {"    "}headers: {"{"} Authorization:{" "}
+                <span className="text-amber-200">&quot;Bearer ••••••&quot;</span> {"}"},
+                {"\n"}
+                {"    "}
+                <span className="text-sky-300">query</span>: {"{"} vin:{" "}
+                <span className="text-emerald-300">&quot;KM8J3CA46NU…&quot;</span> {"}"},
+                {"\n"}
+                {"  "}
+                {"}"}
+                {"\n"}
+                );
+                {"\n\n"}
+                <span className="text-violet-300">const</span>{" "}
+                <span className="text-sky-300">report</span> ={" "}
+                <span className="text-violet-300">await</span> res.json();
+              </code>
+            </pre>
+          </div>
 
-        <div className="relative min-h-[220px] p-4">
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {[
+              [c.navRegions, c.heroStatRegions],
+              [c.plansDevBadge, "JSON / REST"],
+              [c.plansCompareRowCheckout, c.plansCompareDevCheckout],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+                <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative min-h-[320px] p-4">
           <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
-            <span>Response</span>
+            <span>{c.flowMockPaidTitle}</span>
             <motion.span
               key={phase}
               initial={{ opacity: 0 }}
@@ -226,19 +252,43 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 grid grid-cols-2 gap-2"
+              className="mt-4 space-y-3"
             >
-              {[
-                [c.mockLabelMake, car.make],
-                [c.mockLabelModel, car.model],
-                [c.mockLabelYear, String(car.year)],
-                [c.mockLabelPlant, car.plant],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-2">
-                  <p className="font-sans text-[10px] text-slate-400">{label}</p>
-                  <p className="font-sans text-sm font-semibold text-white">{value}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  [c.mockLabelMake, car.make],
+                  [c.mockLabelModel, car.model],
+                  [c.mockLabelYear, String(car.year)],
+                  [c.mockLabelPlant, car.plant],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-2">
+                    <p className="font-sans text-[10px] text-slate-400">{label}</p>
+                    <p className="font-sans text-sm font-semibold text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <FileBarChart2 className="h-4 w-4 text-emerald-300" />
+                    <p className="text-sm font-semibold text-white">{c.flowMockPaidTitle}</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+                    webhook-ready
+                  </span>
                 </div>
-              ))}
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {[
+                    c.flowYourSite,
+                    c.flowStep4,
+                    c.plansCompareRowCheckout,
+                  ].map((item) => (
+                    <div key={item} className="rounded-lg bg-[#0b1220] px-2.5 py-2 text-center text-[11px] font-medium text-slate-300 ring-1 ring-white/6">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </div>
@@ -247,178 +297,277 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
   );
 }
 
-/** Managed plan: white-label site with “Your brand” logo placeholder. */
+const DEMO_VIN = "KM8J3CA46NU123456";
+
+function managedReportMetrics(c: B2bCopy) {
+  return [
+    { icon: Gauge, label: c.managedDemoLblMileage, value: c.managedDemoValMileage, bar: 62, tone: "neutral" as const },
+    { icon: AlertTriangle, label: c.managedDemoLblAccidents, value: c.managedDemoValAccidents, bar: 0, tone: "good" as const },
+    { icon: Users2, label: c.managedDemoLblOwners, value: c.managedDemoValOwners, bar: 40, tone: "neutral" as const },
+    { icon: ShieldCheck, label: c.managedDemoLblTheft, value: c.managedDemoValTheft, bar: 0, tone: "good" as const },
+  ];
+}
+
+/** Managed plan: lightweight client-website VIN → kmcheck → report flow. */
 export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
   const reduce = useReducedMotion();
-  const phase = useCyclePhase(reduce, 4, 2400);
-  // 0 brand empty → 1 logo uploaded → 2 VIN search → 3 report on YOUR site
+  const phase = useCyclePhase(reduce, 4, 3200);
+  const [typedVin, setTypedVin] = useState("");
+  const [btnPressed, setBtnPressed] = useState(false);
+
+  useEffect(() => {
+    if (reduce) {
+      setTypedVin(DEMO_VIN);
+      return;
+    }
+    if (phase === 0) {
+      setTypedVin("");
+      setBtnPressed(false);
+      return;
+    }
+    if (phase === 1) {
+      setTypedVin("");
+      setBtnPressed(false);
+      let i = 0;
+      const id = window.setInterval(() => {
+        i += 2;
+        setTypedVin(DEMO_VIN.slice(0, i));
+        if (i >= DEMO_VIN.length) clearInterval(id);
+      }, 42);
+      const clickTimer = window.setTimeout(() => setBtnPressed(true), 1100);
+      return () => {
+        clearInterval(id);
+        clearTimeout(clickTimer);
+      };
+    }
+    setTypedVin(DEMO_VIN);
+    setBtnPressed(phase === 2);
+    return;
+  }, [phase, reduce]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-emerald-900/15 bg-gradient-to-b from-white to-slate-50 shadow-xl shadow-emerald-900/10 dark:border-white/10 dark:from-[#101816] dark:to-[#0c1411]">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-lg shadow-slate-900/5 dark:border-white/10 dark:bg-[#0f1714] dark:shadow-black/30">
       {/* Browser chrome */}
-      <div className="flex items-center gap-2 border-b border-slate-200/80 bg-slate-100/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]">
-        <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-        <div className="ml-2 flex-1 truncate rounded-md bg-white px-2.5 py-1 font-mono text-[10px] text-slate-500 shadow-sm dark:bg-black/30 dark:text-slate-400">
-          your-brand.com/vin-check
+      <div className="flex items-center gap-2 border-b border-slate-200/80 bg-gradient-to-b from-slate-100 to-slate-50 px-3 py-2.5 dark:border-white/10 dark:from-white/[0.06] dark:to-white/[0.02]">
+        <span className="h-2.5 w-2.5 rounded-full bg-rose-400/90" />
+        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
+        <div className="ml-2 flex flex-1 items-center gap-2 truncate rounded-lg border border-slate-200/80 bg-white px-2.5 py-1.5 shadow-sm dark:border-white/10 dark:bg-black/30">
+          <Lock className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span className="truncate font-mono text-[10px] text-slate-500 dark:text-slate-400">{c.managedDemoDomain}</span>
         </div>
       </div>
 
-      <div className="p-4 sm:p-5">
-        {/* Site header with Your brand */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <AnimatePresence mode="wait">
-              {phase === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400 dark:border-white/20 dark:bg-white/5"
-                >
-                  <ImagePlus className="h-4 w-4" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="logo"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 text-[10px] font-bold tracking-wide text-white shadow-md"
-                >
-                  <span>YB</span>
-                  {!reduce && (
-                    <motion.span
-                      className="absolute inset-0 bg-white/20"
-                      initial={{ x: "-100%" }}
-                      animate={{ x: "120%" }}
-                      transition={{ duration: 0.7, delay: 0.1 }}
-                    />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                {phase === 0 ? "Your brand" : "Your Brand Motors"}
-              </p>
-              <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                {phase === 0 ? "logo placeholder" : "white-label site"}
-              </p>
-            </div>
-          </div>
-          {phase === 0 ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-2.5 py-1 text-[10px] font-semibold text-slate-500 dark:border-white/20">
-              <Upload className="h-3 w-3" /> Drop logo
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-              <ShieldCheck className="h-3 w-3" /> Live
-            </span>
-          )}
+      {/* Site navbar */}
+      <div className="flex items-center justify-between border-b border-slate-200/70 bg-white px-4 py-3 dark:border-white/10 dark:bg-[#0f1714] sm:px-5">
+        <div className="flex items-center gap-2.5">
+          <motion.div
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-950 text-[9px] font-bold tracking-[0.14em] text-white shadow-sm dark:from-emerald-500 dark:to-emerald-600 dark:text-emerald-950"
+            animate={reduce ? undefined : { scale: [1, 1.02, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            YB
+          </motion.div>
+          <span className="text-sm font-semibold text-slate-900 dark:text-white">{c.managedDemoBrand}</span>
+        </div>
+        <div className="hidden items-center gap-5 text-xs text-slate-500 sm:flex dark:text-slate-400">
+          <span className="font-medium text-slate-900 dark:text-white">{c.managedDemoNavHome}</span>
+          <span>{c.managedDemoNavHistory}</span>
+          <span>{c.navContact}</span>
+        </div>
+      </div>
+
+      {/* Page content */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-slate-50/80 to-white px-4 py-6 dark:from-[#0c1411] dark:to-[#0f1714] sm:px-6 sm:py-8">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-400/10 blur-2xl" />
+
+        <h4 className="relative text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+          {c.managedDemoHero}
+        </h4>
+        <p className="relative mt-2 text-sm text-slate-500 dark:text-slate-400">{c.flowMockVinLabel}</p>
+
+        <div className="relative mt-5 flex flex-col gap-2 sm:flex-row">
+          <motion.div
+            animate={
+              reduce
+                ? undefined
+                : phase === 1
+                  ? { borderColor: ["rgba(16,185,129,0.2)", "rgba(16,185,129,0.55)", "rgba(16,185,129,0.2)"] }
+                  : phase >= 2
+                    ? { borderColor: "rgba(16,185,129,0.35)" }
+                    : undefined
+            }
+            transition={{ duration: 1.4, repeat: phase === 1 ? Infinity : 0 }}
+            className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm tracking-wider text-slate-800 shadow-sm dark:border-white/10 dark:bg-black/25 dark:text-emerald-100"
+          >
+            {typedVin || <span className="text-slate-300 dark:text-slate-600">•••••••••••••••••</span>}
+            {phase === 1 && !reduce && (
+              <motion.span
+                className="ml-0.5 inline-block h-4 w-0.5 bg-emerald-500"
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.55, repeat: Infinity }}
+              />
+            )}
+          </motion.div>
+          <motion.div
+            animate={
+              reduce
+                ? undefined
+                : btnPressed
+                  ? { scale: [1, 0.96, 1] }
+                  : phase >= 1
+                    ? { boxShadow: ["0 0 0 rgba(16,185,129,0)", "0 4px 14px rgba(16,185,129,0.35)", "0 0 0 rgba(16,185,129,0)"] }
+                    : undefined
+            }
+            transition={{ duration: btnPressed ? 0.22 : 1.6, repeat: btnPressed ? 0 : Infinity }}
+            className={`inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors ${
+              phase >= 1
+                ? "bg-emerald-600 text-white"
+                : "bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400"
+            }`}
+          >
+            {c.flowMockGo}
+          </motion.div>
         </div>
 
-        <div className="mt-5 min-h-[148px]">
-          <AnimatePresence mode="wait">
-            {phase <= 1 && (
-              <motion.div
-                key="upload"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-4 text-center dark:border-white/15 dark:bg-white/[0.03]"
-              >
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {phase === 0 ? "Add your company logo & domain" : "Branding applied — site is yours"}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {phase === 0
-                    ? "Upload mark · set colors · keep reports on your domain"
-                    : "Logo live on your-brand.com — checkout stays yours"}
-                </p>
-                <div className="mx-auto mt-3 h-1.5 w-40 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-                  <motion.div
-                    className="h-full rounded-full bg-emerald-500"
-                    animate={{ width: phase === 0 ? "35%" : "100%" }}
-                    transition={{ duration: 0.6 }}
-                  />
-                </div>
-              </motion.div>
-            )}
+        {/* Phase dots — visual only */}
+        <div className="relative mt-4 flex items-center gap-1.5">
+          {[0, 1, 2].map((dot) => {
+            const active = (phase <= 1 && dot === 0) || (phase === 2 && dot === 1) || (phase >= 3 && dot === 2);
+            const done = (phase >= 2 && dot === 0) || (phase >= 3 && dot <= 1);
+            return (
+              <motion.span
+                key={dot}
+                animate={{ width: active ? 20 : 6, opacity: done || active ? 1 : 0.35 }}
+                className={`h-1.5 rounded-full ${done || active ? "bg-emerald-500" : "bg-slate-300 dark:bg-white/20"}`}
+                transition={{ duration: 0.35 }}
+              />
+            );
+          })}
+        </div>
 
-            {phase === 2 && (
-              <motion.div
-                key="search"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-black/20"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  {c.flowMockVinLabel}
-                </p>
-                <div className="mt-2 flex gap-2">
-                  <div className="flex-1 rounded-lg border border-emerald-500/30 bg-slate-50 px-3 py-2.5 font-mono text-sm tracking-wider text-slate-800 dark:bg-black/30 dark:text-emerald-100">
-                    KM8J3CA46NU•••••
+        <AnimatePresence mode="wait">
+          {phase === 2 && (
+            <motion.div
+              key="connect"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="relative mt-4"
+            >
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="truncate rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-black/30 dark:text-slate-200">
+                    {c.managedDemoDomain}
+                  </span>
+                  <div className="relative flex h-px flex-1 items-center">
+                    <div className="h-px w-full bg-emerald-300/70" />
+                    {!reduce && (
+                      <motion.span
+                        className="absolute h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40"
+                        animate={{ left: ["0%", "100%"], opacity: [0, 1, 0] }}
+                        transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    )}
                   </div>
-                  <div className="rounded-lg bg-slate-900 px-3 py-2.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
-                    {c.flowMockGo}
-                  </div>
-                </div>
-                {!reduce && (
-                  <motion.div
-                    className="mt-3 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"
-                  >
-                    <motion.div
-                      className="h-full bg-emerald-500"
-                      initial={{ width: "0%" }}
-                      animate={{ width: "100%" }}
-                      transition={{ duration: 1.6, ease: "easeInOut" }}
-                    />
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-
-            {phase >= 3 && (
-              <motion.div
-                key="report"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl border border-emerald-500/25 bg-white p-4 shadow-sm dark:border-emerald-400/20 dark:bg-black/25"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Hyundai Tucson · 2022
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-500">{c.flowMockPaidTitle}</p>
-                  </div>
-                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                    Your Brand
+                  <span className="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-semibold text-white dark:bg-emerald-600 dark:text-emerald-950">
+                    kmcheck
                   </span>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {["0 accidents", "48k mi", "Clean title"].map((t, i) => (
-                    <motion.div
-                      key={t}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.08 * i }}
-                      className="rounded-lg bg-emerald-50 px-2 py-2 text-center text-[10px] font-semibold text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200"
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </motion.div>
+          )}
+
+          {phase >= 3 && (
+            <motion.div
+              key="report"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="relative mt-4 overflow-hidden rounded-xl border border-emerald-200/80 bg-white shadow-md shadow-emerald-900/5 dark:border-emerald-500/20 dark:bg-[#101816] dark:shadow-black/20"
+            >
+              {!reduce && (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/8 to-transparent"
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ duration: 0.9, ease: "easeOut" }}
+                />
+              )}
+
+              <div className="flex items-start gap-3 p-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                  <Car className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{c.managedDemoSampleCar}</p>
+                      <p className="mt-0.5 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                        {DEMO_VIN.slice(0, 11)}•••••
+                      </p>
+                    </div>
+                    <motion.span
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.15, type: "spring", stiffness: 420, damping: 22 }}
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white"
                     >
-                      {t}
+                      <Check className="h-3 w-3" />
+                    </motion.span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 p-4 dark:border-white/10">
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  {managedReportMetrics(c).map(({ icon: Icon, label, value, bar, tone }, i) => (
+                    <motion.div
+                      key={label}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: reduce ? 0 : 0.1 + i * 0.07, duration: 0.3 }}
+                      className="overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/80 dark:border-white/10 dark:bg-white/[0.03]"
+                    >
+                      <div className="flex items-center gap-2 px-3 pt-3">
+                        <div
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                            tone === "good"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                              : "bg-slate-200/80 text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                          }`}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                        </div>
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          {label}
+                        </p>
+                      </div>
+                      <p className="px-3 pb-1 pt-2 text-lg font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
+                        {value}
+                      </p>
+                      <div className="px-3 pb-3">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${bar}%` }}
+                            transition={{ delay: reduce ? 0 : 0.2 + i * 0.08, duration: 0.5, ease: "easeOut" }}
+                            className={`h-full rounded-full ${
+                              tone === "good" ? "bg-emerald-500" : "bg-slate-400 dark:bg-slate-500"
+                            }`}
+                          />
+                        </div>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
-                <p className="mt-3 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                  {c.flowMockPaidBody}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

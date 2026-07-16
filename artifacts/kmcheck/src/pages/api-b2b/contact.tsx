@@ -19,7 +19,7 @@ export default function ApiB2bContact() {
         }}
       />
 
-      <div className="relative mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+      <div className="relative mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20">
         <motion.div
           variants={staggerContainer(0.07)}
           initial={reduce ? false : "hidden"}

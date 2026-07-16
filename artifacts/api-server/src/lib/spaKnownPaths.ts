@@ -33,12 +33,29 @@ const KNOWN_LANG_RESTS = new Set([
 
 const VALID_COUNTRY = new Set(["usa", "korea", "canada", "china", "uae"]);
 
+/** Exact B2B marketing routes (keep aligned with kmcheck INDEXABLE_PATHS / App.tsx). */
+const KNOWN_API_B2B_RESTS = new Set([
+  "api-b2b",
+  "api-b2b/plans",
+  "api-b2b/contact",
+  "api-b2b/vin-decoder",
+  "api-b2b/usa-cars",
+  "api-b2b/canada-cars",
+  "api-b2b/korea-cars",
+  "api-b2b/dubai-cars",
+  "api-b2b/china-cars",
+]);
+
 const LEGACY_COUNTRY_RE = /^\/(usa|korea|canada)-cars\/?$/i;
 const VIN_17_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
 const LOOKUP_ID_RE = /^\d{1,12}$/;
 
 function stripQuery(pathname: string): string {
   return (pathname.split("?")[0] ?? pathname).replace(/\/+$/, "") || "/";
+}
+
+function isKnownApiB2bRest(rest: string): boolean {
+  return KNOWN_API_B2B_RESTS.has(rest);
 }
 
 /**
@@ -61,6 +78,7 @@ export function isKnownSpaPath(pathname: string): boolean {
   if (withLang) {
     const rest = withLang[2]!.toLowerCase();
     if (KNOWN_LANG_RESTS.has(rest)) return true;
+    if (isKnownApiB2bRest(rest)) return true;
 
     const car = rest.match(/^cars\/([a-z]+)$/);
     if (car && VALID_COUNTRY.has(car[1]!)) return true;
@@ -82,6 +100,7 @@ export function isKnownSpaPath(pathname: string): boolean {
   // Unprefixed paths that the client redirects to /:lang/...
   const unprefixed = p.replace(/^\//, "").toLowerCase();
   if (KNOWN_LANG_RESTS.has(unprefixed)) return true;
+  if (isKnownApiB2bRest(unprefixed)) return true;
   const unprefixedCar = unprefixed.match(/^cars\/([a-z]+)$/);
   if (unprefixedCar && VALID_COUNTRY.has(unprefixedCar[1]!)) return true;
   const unprefixedVin = unprefixed.match(/^vin\/([^/]+)$/);

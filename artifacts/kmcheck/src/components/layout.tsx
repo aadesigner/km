@@ -22,6 +22,7 @@ import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
 import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
 import { FlagImg } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { NavAssetWarmup } from "@/components/nav-asset-warmup";
 import { prefetchNavMenuAssets } from "@/lib/nav-assets";
@@ -128,7 +129,7 @@ function CountryNavMenuGroups({
                     active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
                   )}
                 >
-                  <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" />
+                  <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" alt={formatImageFlagAlt(t(labelKey), t)} />
                   <span className="flex-1">{t(labelKey)}</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 </PrefetchLink>
@@ -166,7 +167,7 @@ function CountryNavMenuGroups({
                         : "hover:bg-muted/60 dark:hover:bg-white/[0.05]",
                     )}
                   >
-                    <FlagImg code={img} size={22} className="shrink-0 rounded-[3px] shadow-sm" />
+                    <FlagImg code={img} size={22} className="shrink-0 rounded-[3px] shadow-sm" alt={formatImageFlagAlt(t(nameKey), t)} />
                     <span className="min-w-0 flex-1">
                       <span
                         className={cn(
@@ -322,6 +323,7 @@ function MobileLangPicker({
   scrolled: boolean;
   mobileMenuOpen?: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -453,7 +455,7 @@ function MobileLangPicker({
               : "text-foreground hover:bg-primary/[0.06]",
         )}
       >
-        <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority />
+        <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority alt={formatImageFlagAlt(current?.label ?? language, t)} />
         <ChevronDown
           className={cn(
             "h-3 w-3 transition-transform duration-100",
@@ -746,6 +748,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   variant="nav"
                   size={18}
                   priority
+                  alt={formatImageFlagAlt(LANGS.find(l => l.code === language)?.label ?? language, t)}
                 />
                 <ChevronDown
                   className={cn(

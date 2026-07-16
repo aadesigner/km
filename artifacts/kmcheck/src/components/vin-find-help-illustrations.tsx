@@ -50,6 +50,7 @@ const INSURANCE_SCENE_LAYOUT = {
 type SceneProps = {
   vinLabel: string;
   lookHereLabel: string;
+  imageAlt?: string;
   className?: string;
   rtl?: boolean;
 };
@@ -122,6 +123,7 @@ function PhotoVinScene({
   sceneId,
   vinLabel,
   lookHereLabel,
+  imageAlt,
   className,
   rtl,
 }: SceneProps & { sceneId: SceneId }) {
@@ -137,7 +139,7 @@ function PhotoVinScene({
     <div className={cn("relative w-full h-full min-h-[210px] sm:min-h-[250px] overflow-hidden", className)}>
       <img
         src={vinHelpPhoto(layout.src)}
-        alt=""
+        alt={imageAlt}
         className="absolute inset-0 h-full w-full object-cover"
         style={{
           objectPosition: layout.objectPosition,

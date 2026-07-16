@@ -21,7 +21,15 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
   if (!region) return <Redirect to={base} />;
 
   const name = c[region.nameKey];
-  const label = region.seoLabel;
+  const label = region.slug === "usa-cars"
+    ? c.regionSeoUsa
+    : region.slug === "canada-cars"
+      ? c.regionSeoCanada
+      : region.slug === "korea-cars"
+        ? c.regionSeoKorea
+        : region.slug === "dubai-cars"
+          ? c.regionSeoDubai
+          : c.regionSeoChina;
   const headline = fillRegion(c.regionHeroTitle, label);
   const ctaTitle = fillRegion(c.regionCtaTitle, label);
   const whyTitle = fillRegion(c.regionWhyTitle, label);
@@ -41,7 +49,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         />
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 to-transparent dark:from-emerald-500/[0.06] dark:to-transparent" />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+        <div className="relative mx-auto max-w-[74rem] px-4 py-14 sm:px-6 sm:py-16">
           <motion.div
             variants={staggerContainer(0.06)}
             initial={reduce ? false : "hidden"}
@@ -90,7 +98,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-14 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-14 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 12 }}
@@ -135,7 +143,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 pb-6 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 pb-6 sm:px-6">
         <div className="max-w-2xl">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
             {sellTitle}
@@ -182,7 +190,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-12 sm:px-6">
         <Suspense
           fallback={
             <div className="h-[22rem] animate-pulse rounded-[1.75rem] border border-slate-900/10 bg-slate-900/[0.04] dark:border-white/10" />
@@ -192,7 +200,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </Suspense>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 py-10 sm:px-6">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{c.regionProofTitle}</h2>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {c.regionProofItems.map((item) => (
@@ -206,7 +214,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 pb-10 sm:px-6">
         <div className="grid gap-4 md:grid-cols-2">
           {[
             { q: faq1q, a: faq1a },
@@ -228,7 +236,7 @@ export default function ApiB2bRegion({ params }: { params: { region: string } })
         </div>
       </section>
 
-      <section className="api-b2b-section mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <section className="api-b2b-section mx-auto max-w-[74rem] px-4 pb-16 sm:px-6">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
