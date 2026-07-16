@@ -161,40 +161,54 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
                 {"  "}
                 {"{"}
                 {"\n"}
-                {"    "}headers: {"{"} Authorization:{" "}
-                <span className="text-amber-200">&quot;Bearer ••••••&quot;</span> {"}"},
+                {"    "}method: <span className="text-emerald-300">&quot;POST&quot;</span>,
+                {"\n"}
+                {"    "}headers: {"{"}
+                {"\n"}
+                {"      "}Authorization:{" "}
+                <span className="text-amber-200">&quot;Bearer ••••••&quot;</span>,
+                {"\n"}
+                {"      "}
+                <span className="text-emerald-300">&quot;Content-Type&quot;</span>:{" "}
+                <span className="text-emerald-300">&quot;application/json&quot;</span>,
                 {"\n"}
                 {"    "}
-                <span className="text-sky-300">query</span>: {"{"} vin:{" "}
-                <span className="text-emerald-300">&quot;KM8J3CA46NU…&quot;</span> {"}"},
+                {"}"},
+                {"\n"}
+                {"    "}body: JSON.stringify({"{"}
+                {"\n"}
+                {"      "}vin: <span className="text-emerald-300">&quot;KM8J3CA46NU…&quot;</span>,
+                {"\n"}
+                {"      "}markets: [<span className="text-emerald-300">&quot;usa&quot;</span>,{" "}
+                <span className="text-emerald-300">&quot;korea&quot;</span>],
+                {"\n"}
+                {"    "}
+                {"}"}),
                 {"\n"}
                 {"  "}
                 {"}"}
                 {"\n"}
                 );
                 {"\n\n"}
+                <span className="text-violet-300">if</span> (!res.ok) {"{"}
+                {"\n"}
+                {"  "}
+                <span className="text-violet-300">throw new</span> Error(
+                <span className="text-emerald-300">&quot;report_failed&quot;</span>);
+                {"\n"}
+                {"}"}
+                {"\n\n"}
                 <span className="text-violet-300">const</span>{" "}
                 <span className="text-sky-300">report</span> ={" "}
                 <span className="text-violet-300">await</span> res.json();
+                {"\n"}
+                <span className="text-slate-500">{"//"} report.make · report.odometer · report.title</span>
               </code>
             </pre>
           </div>
-
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            {[
-              [c.navRegions, c.heroStatRegions],
-              [c.plansDevBadge, "JSON / REST"],
-              [c.plansCompareRowCheckout, c.plansCompareDevCheckout],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                <p className="text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-                <p className="mt-1 text-sm font-semibold text-white">{value}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="relative min-h-[320px] p-4">
+        <div className="relative min-h-[28rem] p-4 sm:min-h-[30rem]">
           <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500">
             <span>{c.flowMockPaidTitle}</span>
             <motion.span
@@ -231,10 +245,11 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
               </motion.div>
             ) : (
               <motion.pre
-                key={car.make + car.model + phase}
+                key={car.make + car.model + "json"}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="font-mono text-[11px] leading-relaxed text-emerald-100/90 sm:text-xs"
+                exit={{ opacity: 0 }}
+                className="min-h-[11.5rem] font-mono text-[11px] leading-relaxed text-emerald-100/90 sm:text-xs"
               >
                 {visibleJson}
                 {phase === 2 && typed < jsonPreview.length && !reduce && (
@@ -248,49 +263,49 @@ export function ApiDevPlanDemo({ c }: { c: B2bCopy }) {
             )}
           </AnimatePresence>
 
-          {phase >= 3 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 space-y-3"
-            >
-              <div className="grid grid-cols-2 gap-2">
+          {/* Always in layout at final height — fade in when ready (no page push). */}
+          <div
+            className={`mt-4 space-y-3 transition-opacity duration-300 ${
+              phase >= 3 ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+            aria-hidden={phase < 3}
+          >
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                [c.mockLabelMake, car.make],
+                [c.mockLabelModel, car.model],
+                [c.mockLabelYear, String(car.year)],
+                [c.mockLabelPlant, car.plant],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-2">
+                  <p className="font-sans text-[10px] text-slate-400">{label}</p>
+                  <p className="font-sans text-sm font-semibold text-white">{value}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <FileBarChart2 className="h-4 w-4 text-emerald-300" />
+                  <p className="text-sm font-semibold text-white">{c.flowMockPaidTitle}</p>
+                </div>
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+                  webhook-ready
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {[
-                  [c.mockLabelMake, car.make],
-                  [c.mockLabelModel, car.model],
-                  [c.mockLabelYear, String(car.year)],
-                  [c.mockLabelPlant, car.plant],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-2">
-                    <p className="font-sans text-[10px] text-slate-400">{label}</p>
-                    <p className="font-sans text-sm font-semibold text-white">{value}</p>
+                  c.flowYourSite,
+                  c.flowStep4,
+                  c.plansCompareRowCheckout,
+                ].map((item) => (
+                  <div key={item} className="rounded-lg bg-[#0b1220] px-2.5 py-2 text-center text-[11px] font-medium text-slate-300 ring-1 ring-white/6">
+                    {item}
                   </div>
                 ))}
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <FileBarChart2 className="h-4 w-4 text-emerald-300" />
-                    <p className="text-sm font-semibold text-white">{c.flowMockPaidTitle}</p>
-                  </div>
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
-                    webhook-ready
-                  </span>
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {[
-                    c.flowYourSite,
-                    c.flowStep4,
-                    c.plansCompareRowCheckout,
-                  ].map((item) => (
-                    <div key={item} className="rounded-lg bg-[#0b1220] px-2.5 py-2 text-center text-[11px] font-medium text-slate-300 ring-1 ring-white/6">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -446,50 +461,51 @@ export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
           })}
         </div>
 
-        <AnimatePresence mode="wait">
-          {phase === 2 && (
-            <motion.div
-              key="connect"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3 }}
-              className="relative mt-4"
-            >
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="truncate rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-black/30 dark:text-slate-200">
-                    {c.managedDemoDomain}
-                  </span>
-                  <div className="relative flex h-px flex-1 items-center">
-                    <div className="h-px w-full bg-emerald-300/70" />
-                    {!reduce && (
-                      <motion.span
-                        className="absolute h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40"
-                        animate={{ left: ["0%", "100%"], opacity: [0, 1, 0] }}
-                        transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-                      />
-                    )}
+        {/* Stage: report height reserved from first paint; connect overlays inside it. */}
+        <div className="relative mt-4">
+          <AnimatePresence mode="wait">
+            {phase === 2 && (
+              <motion.div
+                key="connect"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-x-0 top-0 z-[1]"
+              >
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <span className="truncate rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-black/30 dark:text-slate-200">
+                      {c.managedDemoDomain}
+                    </span>
+                    <div className="relative flex h-px flex-1 items-center">
+                      <div className="h-px w-full bg-emerald-300/70" />
+                      {!reduce && (
+                        <motion.span
+                          className="absolute h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40"
+                          animate={{ left: ["0%", "100%"], opacity: [0, 1, 0] }}
+                          transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                      )}
+                    </div>
+                    <span className="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-semibold text-white dark:bg-emerald-600 dark:text-emerald-950">
+                      kmcheck
+                    </span>
                   </div>
-                  <span className="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-semibold text-white dark:bg-emerald-600 dark:text-emerald-950">
-                    kmcheck
-                  </span>
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {phase >= 3 && (
-            <motion.div
-              key="report"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="relative mt-4 overflow-hidden rounded-xl border border-emerald-200/80 bg-white shadow-md shadow-emerald-900/5 dark:border-emerald-500/20 dark:bg-[#101816] dark:shadow-black/20"
-            >
-              {!reduce && (
+          <div
+            className={`relative transition-opacity duration-300 ${
+              phase >= 3 ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+            aria-hidden={phase < 3}
+          >
+            <div className="relative overflow-hidden rounded-xl border border-emerald-200/80 bg-white shadow-md shadow-emerald-900/5 dark:border-emerald-500/20 dark:bg-[#101816] dark:shadow-black/20">
+              {phase >= 3 && !reduce && (
                 <motion.div
                   className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/8 to-transparent"
                   initial={{ x: "-100%" }}
@@ -510,14 +526,9 @@ export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
                         {DEMO_VIN.slice(0, 11)}•••••
                       </p>
                     </div>
-                    <motion.span
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.15, type: "spring", stiffness: 420, damping: 22 }}
-                      className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white"
-                    >
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
                       <Check className="h-3 w-3" />
-                    </motion.span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -525,11 +536,8 @@ export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
               <div className="border-t border-slate-100 p-4 dark:border-white/10">
                 <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                   {managedReportMetrics(c).map(({ icon: Icon, label, value, bar, tone }, i) => (
-                    <motion.div
+                    <div
                       key={label}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: reduce ? 0 : 0.1 + i * 0.07, duration: 0.3 }}
                       className="overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/80 dark:border-white/10 dark:bg-white/[0.03]"
                     >
                       <div className="flex items-center gap-2 px-3 pt-3">
@@ -552,8 +560,8 @@ export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
                       <div className="px-3 pb-3">
                         <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
                           <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${bar}%` }}
+                            initial={false}
+                            animate={{ width: phase >= 3 ? `${bar}%` : 0 }}
                             transition={{ delay: reduce ? 0 : 0.2 + i * 0.08, duration: 0.5, ease: "easeOut" }}
                             className={`h-full rounded-full ${
                               tone === "good" ? "bg-emerald-500" : "bg-slate-400 dark:bg-slate-500"
@@ -561,13 +569,13 @@ export function ManagedSitePlanDemo({ c }: { c: B2bCopy }) {
                           />
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

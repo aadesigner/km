@@ -4,23 +4,38 @@ import { ArrowRight, ArrowUpRight, Check, Code2, ScanLine, Wrench } from "lucide
 import { motion, useReducedMotion } from "framer-motion";
 import { fadeUp, staggerContainer, viewportOnce } from "./motion";
 
+const GLOBAL_BRANDS = [
+  "BMW",
+  "Mercedes",
+  "Audi",
+  "Hyundai",
+  "Kia",
+  "Toyota",
+  "Honda",
+  "Volkswagen",
+  "Ford",
+  "Chevrolet",
+  "Nissan",
+  "Lexus",
+] as const;
+
+const CHINA_BRANDS = [
+  "BYD",
+  "Geely",
+  "NIO",
+  "MG",
+  "Chery",
+  "GWM",
+  "Zeekr",
+  "Li Auto",
+  "XPeng",
+  "Hongqi",
+] as const;
+
 export default function ApiB2bVinDecoder() {
   const { c, base, decoderHref } = useApiB2bCopy();
   const reduce = useReducedMotion();
-  const brands = [
-    "BMW VIN decoder",
-    "Mercedes VIN decoder",
-    "Audi VIN decoder",
-    "Hyundai VIN decoder",
-    "Kia VIN decoder",
-    "Toyota VIN decoder",
-    "Honda VIN decoder",
-    "Volkswagen VIN decoder",
-    "Ford VIN decoder",
-    "Chevrolet VIN decoder",
-    "Nissan VIN decoder",
-    "Lexus VIN decoder",
-  ];
+  const brandLabel = (brand: string) => `${brand} ${c.decoderBrandSuffix}`;
 
   return (
     <div className="relative overflow-hidden">
@@ -58,19 +73,6 @@ export default function ApiB2bVinDecoder() {
           >
             {c.decoderPageHeroSub}
           </motion.p>
-          <motion.div
-            variants={fadeUp}
-            className="mt-6 flex flex-wrap gap-2.5"
-          >
-            {brands.map((brand) => (
-              <span
-                key={brand}
-                className="rounded-full border border-emerald-700/15 bg-white/70 px-3 py-1.5 text-[12px] font-medium text-slate-700 shadow-sm shadow-emerald-900/5 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200"
-              >
-                {brand}
-              </span>
-            ))}
-          </motion.div>
           <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
             <Link
               href={`${base}/contact`}
@@ -96,8 +98,72 @@ export default function ApiB2bVinDecoder() {
           viewport={viewportOnce}
           className="mt-14 max-w-4xl text-base leading-relaxed text-slate-600 dark:text-slate-300"
         >
-          {c.decoderPageLead} BMW decoder, Mercedes decoder, Audi decoder, Hyundai decoder and other brand-specific VIN decoder searches all benefit from structured make, model, year, plant and trim data that can be embedded into your own SEO pages, lead forms or white-label lookup flow.
+          {c.decoderPageLead}
         </motion.p>
+
+        <motion.section
+          variants={staggerContainer(0.05)}
+          initial={reduce ? false : "hidden"}
+          whileInView="show"
+          viewport={viewportOnce}
+          className="mt-16"
+          aria-labelledby="decoder-brands-heading"
+        >
+          <motion.div variants={fadeUp} className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-400">
+              {c.navDecoder}
+            </p>
+            <h2
+              id="decoder-brands-heading"
+              className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-white"
+            >
+              {c.decoderBrandsTitle}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base">
+              {c.decoderBrandsSub}
+            </p>
+          </motion.div>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <motion.div
+              variants={fadeUp}
+              className="rounded-[1.5rem] border border-slate-900/[0.07] bg-white/70 p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]"
+            >
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
+                {c.decoderBrandsGlobalLabel}
+              </h3>
+              <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {GLOBAL_BRANDS.map((brand) => (
+                  <li key={brand}>
+                    <span className="flex items-center gap-2.5 rounded-xl border border-slate-900/[0.06] bg-slate-50/80 px-3 py-2.5 text-sm font-medium text-slate-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-100">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                      {brandLabel(brand)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            <motion.div
+              variants={fadeUp}
+              className="rounded-[1.5rem] border border-emerald-900/10 bg-gradient-to-br from-emerald-50/90 to-white/50 p-5 sm:p-6 dark:border-emerald-400/15 dark:from-emerald-500/10 dark:to-white/[0.03]"
+            >
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
+                {c.decoderBrandsChinaLabel}
+              </h3>
+              <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {CHINA_BRANDS.map((brand) => (
+                  <li key={brand}>
+                    <span className="flex items-center gap-2.5 rounded-xl border border-emerald-800/10 bg-white/80 px-3 py-2.5 text-sm font-medium text-slate-800 shadow-sm shadow-emerald-900/5 dark:border-white/10 dark:bg-black/20 dark:text-slate-100">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" aria-hidden />
+                      {brandLabel(brand)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </motion.section>
 
         <motion.section
           variants={staggerContainer(0.05)}

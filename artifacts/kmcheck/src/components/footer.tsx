@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { useTranslation, ensureDict } from "@/i18n/context";
@@ -12,6 +12,16 @@ import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
+
+type FooterLangPos = { bottom: number; left: number };
+
+function measureFooterLangPos(btn: HTMLButtonElement): FooterLangPos {
+  const rect = btn.getBoundingClientRect();
+  return {
+    bottom: window.innerHeight - rect.top + 10,
+    left: Math.max(12, Math.min(rect.left, window.innerWidth - 18 * 16 - 12)),
+  };
+}
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -97,7 +107,7 @@ export function Footer() {
   const [location, setLocation] = useLocation();
   const [langOpen, setLangOpen] = useState(false);
   const langBtnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ bottom: 0, left: 0 });
+  const [pos, setPos] = useState<FooterLangPos | null>(null);
 
   const current = LANGS.find((l) => l.code === language) ?? LANGS[0];
 
@@ -107,14 +117,14 @@ export function Footer() {
     prefetchFlags(FOOTER_FLAG_CODES);
   }, []);
 
-  useEffect(() => {
-    if (!langOpen || !langBtnRef.current) return;
+  useLayoutEffect(() => {
+    if (!langOpen || !langBtnRef.current) {
+      if (!langOpen) setPos(null);
+      return;
+    }
     const place = () => {
-      const rect = langBtnRef.current!.getBoundingClientRect();
-      setPos({
-        bottom: window.innerHeight - rect.top + 10,
-        left: Math.max(12, Math.min(rect.left, window.innerWidth - 18 * 16 - 12)),
-      });
+      if (!langBtnRef.current) return;
+      setPos(measureFooterLangPos(langBtnRef.current));
     };
     place();
     window.addEventListener("resize", place);
@@ -176,7 +186,15 @@ export function Footer() {
                 aria-haspopup="listbox"
                 aria-expanded={langOpen}
                 aria-label={current.label}
-                onClick={() => setLangOpen((v) => !v)}
+                onClick={() => {
+                  if (langOpen) {
+                    setLangOpen(false);
+                    setPos(null);
+                    return;
+                  }
+                  if (langBtnRef.current) setPos(measureFooterLangPos(langBtnRef.current));
+                  setLangOpen(true);
+                }}
                 className={cn(
                   "inline-flex min-w-[12rem] items-center gap-2.5 rounded-xl border px-3 py-2 text-xs transition-all",
                   langOpen
@@ -197,13 +215,16 @@ export function Footer() {
               {typeof document !== "undefined"
                 ? createPortal(
                   <AnimatePresence>
-                    {langOpen && (
+                    {langOpen && pos && (
                       <motion.div
                         className="fixed inset-0 z-[90]"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onMouseDown={() => setLangOpen(false)}
+                        onMouseDown={() => {
+                          setLangOpen(false);
+                          setPos(null);
+                        }}
                       >
                         <motion.div
                           role="listbox"

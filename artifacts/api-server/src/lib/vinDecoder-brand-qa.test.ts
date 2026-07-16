@@ -82,8 +82,10 @@ const CASES: BrandCase[] = [
   { vin: "WDD204049AA123456", label: "Mercedes C-Class W204", make: "Mercedes-Benz", modelContains: "C-Class", year: 2010 },
   { vin: "WDB463236LA123456", label: "Mercedes G-Class WDB", make: "Mercedes-Benz", modelContains: "G-Class" },
   { vin: "WDDGF8HB6LA123456", label: "Mercedes C-Class letter VDS (no false gen)", make: "Mercedes-Benz", modelContains: "C-Class" },
+  { vin: "WDDHF5KB6FA123456", label: "Mercedes E-Class letter H W212 (not C-Class)", make: "Mercedes-Benz", modelContains: "E-Class" },
+  { vin: "WDDZF4JB0LA123456", label: "Mercedes E-Class letter Z W213", make: "Mercedes-Benz", modelContains: "E-Class" },
   { vin: "W1NYC7HJ0LX340589", label: "Mercedes G-Class W1N", make: "Mercedes-Benz", modelContains: "G-Class" },
-  { vin: "WDD243000MA123456", label: "Mercedes EQB X243", make: "Mercedes-Benz", modelContains: "EQB", year: 2021 },
+  { vin: "WDD243000MA123456", label: "Mercedes EQA/EQB 243", make: "Mercedes-Benz", modelContains: "EQ", year: 2021 },
 
   // ── Škoda ─────────────────────────────────────────────────────────────────
   { vin: "TMBEP6NJ3MZ012345", label: "Škoda Fabia III", make: "Škoda", modelContains: "Fabia" },

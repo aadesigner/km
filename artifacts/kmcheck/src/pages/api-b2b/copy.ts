@@ -225,6 +225,11 @@ export type B2bCopy = {
   decoderPageManagedBody: string;
   decoderPageTryTitle: string;
   decoderPageTryBody: string;
+  decoderBrandsTitle: string;
+  decoderBrandsSub: string;
+  decoderBrandsGlobalLabel: string;
+  decoderBrandsChinaLabel: string;
+  decoderBrandSuffix: string;
   seoKeywords: string;
 };
 
@@ -422,7 +427,7 @@ const en = {
   plansRolloutPhase2Body: "Add more VIN traffic sources, improve funnel UX and negotiate better report pricing with volume.",
   plansRolloutPhase3Title: "Phase 3",
   plansRolloutPhase3Body: "Expand into additional regions, branded decoder pages and higher-value history products.",
-  plansFaqEyebrow: "Kommerzielle FAQ",
+  plansFaqEyebrow: "Commercial FAQ",
   plansFaqTitle: "Questions teams ask before launch",
   plansFaq1q: "Do I need a developer?",
   plansFaq1a: "Only for the API plan. Choose “We build & manage” if you want a turnkey site — no developer required.",
@@ -499,6 +504,12 @@ const en = {
   decoderPageManagedBody: "We build and maintain your branded site with decoder + report flows included — you focus on traffic and margin.",
   decoderPageTryTitle: "Try the public decoder",
   decoderPageTryBody: "See the same identity engine customers encounter — then roll it into your API or reseller site.",
+  decoderBrandsTitle: "Brand VIN decoders we cover",
+  decoderBrandsSub:
+    "Structured make, model, year, plant and trim for popular global marques and Chinese EV / export brands — ready for SEO pages, lead forms or a white-label lookup flow.",
+  decoderBrandsGlobalLabel: "Global marques",
+  decoderBrandsChinaLabel: "Chinese & EV brands",
+  decoderBrandSuffix: "VIN decoder",
   seoKeywords:
     "sell car history reports, car mileage records, VIN history API, vehicle history reseller, odometer check API, white-label Carfax alternative, sell VIN reports, kmcheck API"
 } satisfies B2bCopy;
@@ -696,7 +707,7 @@ const de = {
   plansRolloutPhase2Body: "Erweitern Sie VIN-Traffic-Quellen, verbessern Sie den Funnel und verhandeln Sie bessere Konditionen mit mehr Volumen.",
   plansRolloutPhase3Title: "Phase 3",
   plansRolloutPhase3Body: "Erweitern Sie auf weitere Regionen, gebrandete Decoder-Seiten und höherwertige History-Produkte.",
-  plansFaqEyebrow: "Комерційний FAQ",
+  plansFaqEyebrow: "Kommerzielle FAQ",
   plansFaqTitle: "Fragen, die Teams vor dem Start stellen",
   plansFaq1q: "Brauche ich einen Entwickler?",
   plansFaq1a: "Nur beim API-Tarif. Wählen Sie „Wir bauen & betreiben“ für eine schlüsselfertige Site — kein Entwickler nötig.",
@@ -772,6 +783,12 @@ const de = {
   decoderPageManagedBody: "Wir bauen und warten Ihre Marken-Site inkl. Decoder- und Report-Flows — Sie fokussieren Traffic und Marge.",
   decoderPageTryTitle: "Öffentlichen Decoder testen",
   decoderPageTryBody: "Sehen Sie die Identity-Engine — dann in API oder Reseller-Site einbinden.",
+  decoderBrandsTitle: "Marken-VIN-Decoder",
+  decoderBrandsSub:
+    "Strukturierte Marke, Modell, Jahr, Werk und Trim für globale Marken und chinesische EV-/Exportmarken — bereit für SEO-Seiten, Lead-Formulare oder White-Label-Lookup.",
+  decoderBrandsGlobalLabel: "Globale Marken",
+  decoderBrandsChinaLabel: "Chinesische und EV-Marken",
+  decoderBrandSuffix: "VIN-Decoder",
   seoKeywords:
     "Fahrzeughistorie verkaufen, Kilometerstände, VIN Historie API, Fahrzeughistorie Reseller, White-Label Carfax Alternative, kmcheck API"
 } satisfies B2bCopy;
@@ -1045,6 +1062,12 @@ const es = {
   decoderPageManagedBody: "Construimos y mantenemos tu web de marca con decoder e informes — tú te centras en tráfico y margen.",
   decoderPageTryTitle: "Probar el decodificador público",
   decoderPageTryBody: "Ve el motor de identidad — luego intégralo en API o sitio reseller.",
+  decoderBrandsTitle: "Decodificadores VIN por marca",
+  decoderBrandsSub:
+    "Marca, modelo, año, planta y acabado estructurados para marcas globales y marcas chinas EV/exportación — listos para SEO, formularios o lookup white-label.",
+  decoderBrandsGlobalLabel: "Marcas globales",
+  decoderBrandsChinaLabel: "Marcas chinas y EV",
+  decoderBrandSuffix: "Decodificador VIN",
   seoKeywords:
     "vender historial de coches, kilometraje coche, API historial VIN, revendedor historial, alternativa Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -1318,6 +1341,12 @@ const fr = {
   decoderPageManagedBody: "Nous construisons et maintenons votre site de marque avec décodeur et rapports — vous gérez trafic et marge.",
   decoderPageTryTitle: "Essayer le décodeur public",
   decoderPageTryBody: "Voyez le moteur d’identité — puis intégrez-le à l’API ou au site revendeur.",
+  decoderBrandsTitle: "Décodeurs VIN par marque",
+  decoderBrandsSub:
+    "Marque, modèle, année, usine et finition structurés pour les marques mondiales et les marques chinoises EV / export — prêts pour pages SEO, formulaires ou lookup white-label.",
+  decoderBrandsGlobalLabel: "Marques mondiales",
+  decoderBrandsChinaLabel: "Marques chinoises et EV",
+  decoderBrandSuffix: "Décodeur VIN",
   seoKeywords:
     "vendre historique auto, relevés kilométriques, API historique VIN, revendeur historique, alternative Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -1591,6 +1620,12 @@ const sq = {
   decoderPageManagedBody: "Ndërtojmë dhe mirëmbajmë faqen tuaj me dekodues e raporte — ju fokusoheni te trafiku dhe marzhi.",
   decoderPageTryTitle: "Provo dekoduesin publik",
   decoderPageTryBody: "Shihni motorin e identitetit — pastaj vendoseni në API ose faqe rishitësi.",
+  decoderBrandsTitle: "Dekodues VIN sipas markës",
+  decoderBrandsSub:
+    "Markë, model, vit, fabrikë dhe trim të strukturuar për marka globale dhe marka kineze EV/eksport — gati për SEO, forma lead ose lookup white-label.",
+  decoderBrandsGlobalLabel: "Marka globale",
+  decoderBrandsChinaLabel: "Marka kineze dhe EV",
+  decoderBrandSuffix: "Dekodues VIN",
   seoKeywords:
     "shit historik makinash, raporte VIN, kilometra makinash, API historiku, rishitës historiku automjetesh, alternativë Carfax, kmcheck API"
 } satisfies B2bCopy;
@@ -1864,6 +1899,12 @@ const pl = {
   decoderPageManagedBody: "Budujemy i utrzymujemy Twoją markową witrynę z dekoderem i raportami — Ty dbasz o ruch i marżę.",
   decoderPageTryTitle: "Wypróbuj publiczny dekoder",
   decoderPageTryBody: "Zobacz silnik tożsamości — potem wdróż w API lub stronie resellera.",
+  decoderBrandsTitle: "Dekodery VIN marek",
+  decoderBrandsSub:
+    "Ustrukturyzowana marka, model, rok, fabryka i trim dla marek globalnych oraz chińskich EV/eksport — gotowe pod SEO, formularze lead lub white-label lookup.",
+  decoderBrandsGlobalLabel: "Marki globalne",
+  decoderBrandsChinaLabel: "Marki chińskie i EV",
+  decoderBrandSuffix: "dekoder VIN",
   seoKeywords:
     "sprzedawaj historię aut, przebieg samochodu, API historii VIN, reseller historii pojazdów, alternatywa Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -2137,6 +2178,12 @@ const ro = {
   decoderPageManagedBody: "Construim și mentinem site-ul tău de brand cu decoder și rapoarte — tu te ocupi de trafic și marjă.",
   decoderPageTryTitle: "Încearcă decoderul public",
   decoderPageTryBody: "Vezi motorul de identitate — apoi integrează-l în API sau site reseller.",
+  decoderBrandsTitle: "Decodoare VIN pe marcă",
+  decoderBrandsSub:
+    "Marcă, model, an, uzină și trim structurate pentru mărci globale și mărci chineze EV/export — gata pentru SEO, formulare lead sau lookup white-label.",
+  decoderBrandsGlobalLabel: "Mărci globale",
+  decoderBrandsChinaLabel: "Mărci chineze și EV",
+  decoderBrandSuffix: "Decodor VIN",
   seoKeywords:
     "vinde istoric auto, kilometraj mașină, API istoric VIN, reseller istoric, alternativă Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -2410,6 +2457,12 @@ const bg = {
   decoderPageManagedBody: "Изграждаме и поддържаме вашия бранд сайт с декодер и доклади — вие се фокусирате върху трафик и марж.",
   decoderPageTryTitle: "Опитайте публичния декодер",
   decoderPageTryBody: "Вижте identity engine — после го внедрете в API или reseller сайт.",
+  decoderBrandsTitle: "VIN декодери по марка",
+  decoderBrandsSub:
+    "Структурирани марка, модел, година, завод и trim за глобални и китайски EV/експорт марки — готови за SEO страници, lead форми или white-label lookup.",
+  decoderBrandsGlobalLabel: "Глобални марки",
+  decoderBrandsChinaLabel: "Китайски и EV марки",
+  decoderBrandSuffix: "VIN декодер",
   seoKeywords:
     "продавай автоистория, километри кола, VIN история API, reseller автоистория, white-label Carfax алтернатива, kmcheck"
 } satisfies B2bCopy;
@@ -2683,6 +2736,12 @@ const ar = {
   decoderPageManagedBody: "نبني ونحافظ على موقعك بعلامتك مع فك الشفرة والتقارير — أنت تركّز على الزيارات والهامش.",
   decoderPageTryTitle: "جرّب فك الشفرة العام",
   decoderPageTryBody: "اطّلع على محرك الهوية — ثم ادمجه في الواجهة أو موقع إعادة البيع.",
+  decoderBrandsTitle: "فك تشفير VIN حسب العلامة",
+  decoderBrandsSub:
+    "بيانات منظمة للعلامة والطراز والسنة والمصنع والتجهيز للعلامات العالمية والصينية (EV/تصدير) — جاهزة لصفحات SEO أو نماذج العملاء أو البحث بعلامتك.",
+  decoderBrandsGlobalLabel: "علامات عالمية",
+  decoderBrandsChinaLabel: "علامات صينية وكهربائية",
+  decoderBrandSuffix: "فك تشفير VIN",
   seoKeywords:
     "بيع تاريخ السيارات, سجلات المسافة, واجهة تاريخ VIN, إعادة بيع تاريخ المركبات, بديل Carfax بعلامة بيضاء, kmcheck"
 } satisfies B2bCopy;
@@ -2880,7 +2939,7 @@ const uk = {
   plansRolloutPhase2Body: "Додайте більше джерел VIN-трафіку, покращуйте funnel і домовляйтеся про кращі ставки зі зростанням обсягу.",
   plansRolloutPhase3Title: "Фаза 3",
   plansRolloutPhase3Body: "Розширюйтеся на інші регіони, брендовані decoder-сторінки та дорожчі history-продукти.",
-  plansFaqEyebrow: "Коммерческий FAQ",
+  plansFaqEyebrow: "Комерційний FAQ",
   plansFaqTitle: "Питання, які команди ставлять перед запуском",
   plansFaq1q: "Чи потрібен розробник?",
   plansFaq1a: "Лише для тарифу API. Оберіть «Ми будуємо і керуємо» для turnkey-сайту — без розробника.",
@@ -2956,6 +3015,12 @@ const uk = {
   decoderPageManagedBody: "Будуємо й підтримуємо ваш брендовий сайт з декодером і звітами — ви зосереджуєтесь на трафіку та маржі.",
   decoderPageTryTitle: "Спробувати публічний декодер",
   decoderPageTryBody: "Побачте identity engine — потім впровадьте в API або сайт реселера.",
+  decoderBrandsTitle: "VIN-декодери за марками",
+  decoderBrandsSub:
+    "Структуровані марка, модель, рік, завод і trim для глобальних та китайських EV/експортних брендів — готові для SEO-сторінок, lead-форм або white-label lookup.",
+  decoderBrandsGlobalLabel: "Глобальні марки",
+  decoderBrandsChinaLabel: "Китайські та EV бренди",
+  decoderBrandSuffix: "VIN-декодер",
   seoKeywords:
     "продавати історію авто, пробіг автомобіля, API історії VIN, реселер історії авто, альтернатива Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -3153,7 +3218,7 @@ const ru = {
   plansRolloutPhase2Body: "Добавляйте больше источников VIN-трафика, улучшайте funnel и договаривайтесь о лучших тарифах с ростом объема.",
   plansRolloutPhase3Title: "Этап 3",
   plansRolloutPhase3Body: "Расширяйтесь на другие регионы, брендовые decoder-страницы и более ценные history-продукты.",
-  plansFaqEyebrow: "Commercial FAQ",
+  plansFaqEyebrow: "Коммерческий FAQ",
   plansFaqTitle: "Вопросы, которые команды задают перед запуском",
   plansFaq1q: "Нужен ли разработчик?",
   plansFaq1a: "Только для тарифа API. Выберите «Мы строим и управляем» для turnkey-сайта — без разработчика.",
@@ -3229,6 +3294,12 @@ const ru = {
   decoderPageManagedBody: "Строим и поддерживаем ваш брендовый сайт с декодером и отчётами — вы фокусируетесь на трафике и марже.",
   decoderPageTryTitle: "Попробовать публичный декодер",
   decoderPageTryBody: "Увидьте identity engine — затем внедрите в API или сайт реселлера.",
+  decoderBrandsTitle: "VIN-декодеры по маркам",
+  decoderBrandsSub:
+    "Структурированные марка, модель, год, завод и trim для глобальных и китайских EV/экспортных брендов — готовы для SEO-страниц, lead-форм или white-label lookup.",
+  decoderBrandsGlobalLabel: "Глобальные марки",
+  decoderBrandsChinaLabel: "Китайские и EV бренды",
+  decoderBrandSuffix: "VIN-декодер",
   seoKeywords:
     "продавать историю авто, пробег автомобиля, API истории VIN, реселлер истории авто, альтернатива Carfax white-label, kmcheck"
 } satisfies B2bCopy;
@@ -3500,6 +3571,12 @@ const zh = {
   decoderPageManagedBody: "我们构建并维护您的品牌站，含解码与报告流程 — 您专注流量与利润。",
   decoderPageTryTitle: "试用公开解码器",
   decoderPageTryBody: "先体验身份引擎 — 再接入 API 或经销站点。",
+  decoderBrandsTitle: "覆盖的品牌 VIN 解码",
+  decoderBrandsSub:
+    "为全球主流品牌以及中国新能源/出口品牌提供结构化的品牌、车型、年份、工厂与配置数据 — 可用于 SEO 页面、线索表单或白标查询流程。",
+  decoderBrandsGlobalLabel: "全球品牌",
+  decoderBrandsChinaLabel: "中国与新能源品牌",
+  decoderBrandSuffix: "VIN 解码器",
   seoKeywords:
     "销售车辆历史报告, 车辆里程记录, VIN历史API, 车史经销, 白标Carfax替代, kmcheck API"
 } satisfies B2bCopy;

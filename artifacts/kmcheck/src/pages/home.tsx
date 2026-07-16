@@ -126,19 +126,29 @@ function CyclingWord() {
     const id = setInterval(() => setIdx((i) => (i + 1) % keys.length), 4200);
     return () => clearInterval(id);
   }, [keys.length]);
+  // Invisible copies reserve the tallest phrase height so cycling never pushes content.
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.span
-        key={`${language}-${idx}`}
-        className="inline"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        {t(keys[idx])}
-      </motion.span>
-    </AnimatePresence>
+    <span className="relative inline-grid w-full justify-items-center">
+      {keys.map((key) => (
+        <span key={`reserve-${language}-${key}`} className="invisible col-start-1 row-start-1" aria-hidden>
+          {t(key)}
+        </span>
+      ))}
+      <span className="col-start-1 row-start-1">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={`${language}-${idx}`}
+            className="inline-block"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {t(keys[idx])}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </span>
   );
 }
 

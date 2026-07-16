@@ -10,12 +10,28 @@ import { setStoredLangPreference } from "@/lib/lang-preference";
 import { ensureDict } from "@/i18n/context";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { Menu, X, Send, Mail, ChevronDown, ChevronUp, ArrowUpRight, ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
 import { useApiB2bCopy } from "./use-copy";
 
 const SCROLL_MARKETS_KEY = "api-b2b-scroll-markets";
+
+type LangMenuPos = { top: number; bottom: number; left: number; width: number };
+
+function measureLangMenuPos(btn: HTMLButtonElement): LangMenuPos {
+  const rect = btn.getBoundingClientRect();
+  const narrow = window.innerWidth < 768;
+  const width = Math.min(narrow ? 15.5 * 16 : 17.5 * 16, window.innerWidth - 24);
+  const centerX = rect.left + rect.width / 2;
+  const left = Math.max(12, Math.min(centerX - width / 2, window.innerWidth - width - 12));
+  return {
+    top: rect.bottom + 8,
+    bottom: window.innerHeight - rect.top + 10,
+    left,
+    width,
+  };
+}
 
 export function KmcheckApiMark({
   className,
@@ -67,25 +83,31 @@ function LangDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ top: 0, bottom: 0, left: 0, width: 260 });
+  /** null until measured — avoids first paint at left:0 / top:0 */
+  const [pos, setPos] = useState<LangMenuPos | null>(null);
   usePrefetchPickerFlags(open);
   const meta = LANG_META[lang];
   const isFooter = tone === "footer";
 
-  useEffect(() => {
+  const closeMenu = () => {
+    setOpen(false);
+    setPos(null);
+  };
+
+  const toggleMenu = () => {
+    if (open) {
+      closeMenu();
+      return;
+    }
+    if (btnRef.current) setPos(measureLangMenuPos(btnRef.current));
+    setOpen(true);
+  };
+
+  useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
     const place = () => {
-      const rect = btnRef.current!.getBoundingClientRect();
-      const narrow = window.innerWidth < 768;
-      const width = Math.min(narrow ? 15.5 * 16 : 17.5 * 16, window.innerWidth - 24);
-      const centerX = rect.left + rect.width / 2;
-      const left = Math.max(12, Math.min(centerX - width / 2, window.innerWidth - width - 12));
-      setPos({
-        top: rect.bottom + 8,
-        bottom: window.innerHeight - rect.top + 10,
-        left,
-        width,
-      });
+      if (!btnRef.current) return;
+      setPos(measureLangMenuPos(btnRef.current));
     };
     place();
     window.addEventListener("scroll", place, true);
@@ -101,7 +123,7 @@ function LangDropdown({
       <button
         ref={btnRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleMenu}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition",
           isFooter
@@ -120,8 +142,9 @@ function LangDropdown({
         )}
       </button>
       {open
+        && pos
         && createPortal(
-          <div className="fixed inset-0 z-[80]" onMouseDown={() => setOpen(false)}>
+          <div className="fixed inset-0 z-[80]" onMouseDown={closeMenu}>
             <div
               className={cn(
                 "absolute overflow-hidden rounded-xl border shadow-2xl",
@@ -142,7 +165,7 @@ function LangDropdown({
                   tone={isFooter ? "footer" : "nav"}
                   onSelect={(code) => {
                     onSelect(code);
-                    setOpen(false);
+                    closeMenu();
                   }}
                 />
               </div>
@@ -273,6 +296,9 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    if (active) e.preventDefault();
+                  }}
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
@@ -376,6 +402,9 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    if (active) e.preventDefault();
+                  }}
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
@@ -468,7 +497,10 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                       >
                         <Link
                           href={item.href}
-                          onClick={() => setOpen(false)}
+                          onClick={(e) => {
+                            if (active) e.preventDefault();
+                            setOpen(false);
+                          }}
                           className={cn(
                             "flex items-center justify-between rounded-xl px-3.5 py-3 text-[15px] font-medium transition-colors",
                             active

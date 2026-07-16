@@ -250,7 +250,8 @@ export function HeroReportApiDemo({ c }: { c: B2bCopy }) {
                       {c.dataItem2Title}
                     </span>
                   </div>
-                  <div className="px-3 py-2.5">
+                  {/* Fixed min-height so Clean vs Caution cars don't push the hero. */}
+                  <div className="min-h-[3.75rem] px-3 py-2.5">
                     {car.accidents === 0 ? (
                       <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
                         <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />

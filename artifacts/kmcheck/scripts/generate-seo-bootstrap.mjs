@@ -180,6 +180,9 @@ const js = `/* auto-generated — do not edit */
     // Server-side VIN SEO inject owns robots/index for /vin/{17}. Do not overwrite
     // catalog pages with thin fallbacks (or vice versa) in the browser bootstrap.
     if (VIN_INDEX_RE.test(rest)) return;
+    // B2B marketing titles come from React RouteSEO (copy.ts). Bootstrap must not
+    // overwrite them — especially on same-route nav clicks where React won't re-run.
+    if (rest === "/api-b2b" || rest.indexOf("/api-b2b/") === 0) return;
     var pageKey = resolvePageKey(rest);
     var page = SEO[pageKey] || SEO.not_found || SEO.home;
     var seo = (page && page[lang]) || (page && page.en) || SEO.home.en;

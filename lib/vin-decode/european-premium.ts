@@ -115,6 +115,8 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "X167": { from: 2019, to: 2099 },
   "W167/X167": { from: 2019, to: 2099 },
   "H247": { from: 2020, to: 2099 },
+  "H247/X247": { from: 2019, to: 2099 },
+  "X247": { from: 2019, to: 2099 },
   "W246": { from: 2011, to: 2019 },
   "W245": { from: 2005, to: 2011 },
   "W247": { from: 2019, to: 2099 },
@@ -126,7 +128,11 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "V297": { from: 2021, to: 2099 },
   "V294": { from: 2022, to: 2099 },
   "X294": { from: 2022, to: 2099 },
+  "X296": { from: 2022, to: 2099 },
   "X243": { from: 2021, to: 2099 },
+  "H243/X243": { from: 2021, to: 2099 },
+  "C236": { from: 2023, to: 2099 },
+  "N293": { from: 2019, to: 2023 },
   "C238": { from: 2017, to: 2023 },
   "C192": { from: 2023, to: 2099 },
   "R232": { from: 2022, to: 2099 },
@@ -333,15 +339,19 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD166", model: "GLE", chassis: "W166" },
   // 167 = GLE (W167) and GLS (X167) — do not pick one.
   { prefix: "WDD167", model: "GLE / GLS", chassis: "W167/X167" },
-  { prefix: "WDD247", model: "GLA", chassis: "H247" },
+  // 247 = GLA (H247) and GLB (X247) — do not pick one.
+  { prefix: "WDD247", model: "GLA / GLB", chassis: "H247/X247" },
   { prefix: "WDD246", model: "B-Class", chassis: "W246" },
   { prefix: "WDD164", model: "ML-Class", chassis: "W164" },
   { prefix: "WDD251", model: "GLK", chassis: "X204" },
   { prefix: "WDD463", model: "G-Class", chassis: "W463/W465" },
   { prefix: "WDD290", model: "EQS", chassis: "V297" },
   { prefix: "WDD294", model: "EQE", chassis: "V294" },
-  { prefix: "WDD296", model: "EQE SUV", chassis: "X294" },
-  { prefix: "WDD243", model: "EQB", chassis: "X243" },
+  { prefix: "WDD296", model: "EQS SUV", chassis: "X296" },
+  // 243 = EQA (H243) and EQB (X243) — do not pick one.
+  { prefix: "WDD243", model: "EQA / EQB", chassis: "H243/X243" },
+  { prefix: "WDD293", model: "EQC", chassis: "N293" },
+  { prefix: "WDD236", model: "CLE", chassis: "C236" },
   { prefix: "WDD245", model: "B-Class", chassis: "W245" },
   { prefix: "WDD238", model: "E-Class Coupé/Cabrio", chassis: "C238" },
   { prefix: "WDD192", model: "AMG GT", chassis: "C192" },
@@ -349,14 +359,75 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },
 ]);
 
-/** Mercedes passenger cars — position 4 series letter. Chassis omitted (letter ≠ unique gen). */
-const MERCEDES_PASSENGER_SERIES_AT_4: Record<string, { model: string }> = {
-  H: { model: "C-Class" },
-  R: { model: "C-Class" },
-  G: { model: "C-Class" },
-  W: { model: "C-Class" },
-  A: { model: "C-Class" },
-};
+/**
+ * Mercedes passenger cars — position 4 series letter (North American / letter VDS).
+ * Letters were reused across generations (Wikibooks Mercedes VIN Codes); year-band the class.
+ * Chassis omitted here — letter alone is not a unique generation.
+ */
+function mercedesPassengerSeriesAt4(
+  letter: string,
+  year: number | null,
+): { model: string } | null {
+  switch (letter) {
+    case "H":
+      // ≤2000: W202 C-Class; ≥2009: W212 E-Class. Never map modern H → C-Class.
+      return year != null && year <= 2000 ? { model: "C-Class" } : { model: "E-Class" };
+    case "Z":
+      // W213/S213/X213 E-Class
+      return { model: "E-Class" };
+    case "1":
+      // C238/A238 E-Class coupe/cabriolet
+      return { model: "E-Class Coupé/Cabrio" };
+    case "K":
+      // C207/A207 E-Class coupe/cabriolet (~2009–2017)
+      if (year == null || (year >= 2009 && year <= 2017)) return { model: "E-Class Coupé/Cabrio" };
+      return null;
+    case "L":
+      // ≥2023: W214 E-Class; ~2011–2020: C218 CLS
+      if (year != null && year >= 2023) return { model: "E-Class" };
+      if (year != null && year >= 2011 && year <= 2020) return { model: "CLS" };
+      return null;
+    case "G":
+      // ≤2006: W140 S-Class; ~2007+: W204 C-Class
+      return year != null && year <= 2006 ? { model: "S-Class" } : { model: "C-Class" };
+    case "W":
+      // Pre-W205 letter W was R171 SLK; from ~2014: W205 C-Class
+      if (year != null && year < 2014) return { model: "SLK/SLC" };
+      return { model: "C-Class" };
+    case "A":
+      // ≥2021: W206 C-Class (earlier eras reused A for unrelated lines)
+      if (year == null || year >= 2021) return { model: "C-Class" };
+      return null;
+    case "R":
+      // ≤2007: W203 C-Class; later reused for SLS / AMG GT — do not force C-Class
+      if (year != null && year <= 2007) return { model: "C-Class" };
+      return null;
+    case "U":
+      // ≤2009: W211 E-Class; ≥2013: W222 S-Class
+      if (year != null && year <= 2009) return { model: "E-Class" };
+      if (year != null && year >= 2013 && year <= 2020) return { model: "S-Class" };
+      return null;
+    case "J":
+      // ≤2003: W210 E-Class; ≥2012: R231 SL
+      if (year != null && year <= 2003) return { model: "E-Class" };
+      if (year != null && year >= 2012) return { model: "SL-Class" };
+      return null;
+    case "M":
+      // ≥2023: C236/A236 CLE; earlier reused for B-Class (Canada)
+      if (year != null && year >= 2023) return { model: "CLE" };
+      return null;
+    case "E":
+      // ≥2022: V295 EQE; earlier reused for CL
+      if (year != null && year >= 2022) return { model: "EQE" };
+      return null;
+    case "C":
+      // ≥2021: V297 EQS
+      if (year != null && year >= 2021) return { model: "EQS" };
+      return null;
+    default:
+      return null;
+  }
+}
 
 /** Mercedes SUVs (WDC / W1N / 4JG) — position 4 platform letter. Model only when gen ambiguous. */
 const MERCEDES_SUV_SERIES_AT_4: Record<string, { model: string; chassis?: string }> = {
@@ -378,7 +449,7 @@ const AUDI_US_RULES = compilePrefixRules([
 
 const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZ8V", model: "A3" },
-  { prefix: "WAUZZZ8X", model: "A3 Sportback" },
+  { prefix: "WAUZZZ8X", model: "A1" },
   { prefix: "WAUZZZ8K", model: "A4" },
   { prefix: "WAUZZZ8H", model: "A4 / A5" },
   // C7 (Typ 4G) — positions 7–9 are EU type-approval; A6 and A7 share the 4G platform.
@@ -400,7 +471,8 @@ const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZGS", model: "Q3" },
   { prefix: "WAUZZZGU", model: "e-tron GT" },
   { prefix: "WAUZZZGB", model: "Q4 e-tron" },
-  { prefix: "WAUZZZFR", model: "R8" },
+  { prefix: "WAUZZZFG", model: "R8", chassis: "42" },
+  { prefix: "WAUZZZFX", model: "R8", chassis: "4S" },
   { prefix: "WAUZZZTR", model: "TT" },
 ]);
 
@@ -559,8 +631,9 @@ function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
   }
 
   if (isMercedesPassengerWmi(wmi)) {
-    const passHit = decodeMercedesSeriesAt4(ruleVin, MERCEDES_PASSENGER_SERIES_AT_4);
-    if (passHit) return passHit;
+    const year = premiumVinModelYear(ruleVin);
+    const series = mercedesPassengerSeriesAt4(ruleVin[3]!, year);
+    if (series) return finalizePremium(series.model, null, year);
   }
 
   return null;

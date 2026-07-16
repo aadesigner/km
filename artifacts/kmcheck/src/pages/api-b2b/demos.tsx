@@ -13,7 +13,7 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
 
   useEffect(() => {
     if (reduce) return;
-    const id = window.setInterval(() => setActive((i) => (i + 1) % 4), 3200);
+    const id = window.setInterval(() => setActive((i) => (i + 1) % 4), 3400);
     return () => window.clearInterval(id);
   }, [reduce]);
 
@@ -37,67 +37,78 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
   }, [reduce]);
 
   const steps = [
-    { title: c.flowStep1, detail: c.flowStep1Detail, icon: Globe2 },
-    { title: c.flowStep2, detail: c.flowStep2Detail, icon: Search },
-    { title: c.flowStep3, detail: c.flowStep3Detail, icon: Database },
-    { title: c.flowStep4, detail: c.flowStep4Detail, icon: FileCheck2 },
+    { title: c.flowStep1, detail: c.flowStep1Detail, icon: Globe2, label: c.flowVisitor },
+    { title: c.flowStep2, detail: c.flowStep2Detail, icon: Search, label: c.flowYourSite },
+    { title: c.flowStep3, detail: c.flowStep3Detail, icon: Database, label: c.flowKmApi },
+    { title: c.flowStep4, detail: c.flowStep4Detail, icon: FileCheck2, label: c.flowReport },
   ];
 
-  const stageLabels = [c.flowVisitor, c.flowYourSite, c.flowKmApi, c.flowReport];
-
   return (
-    <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-[#0b1210] text-white dark:border-white/[0.08]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_100%_0%,rgba(16,185,129,0.12),transparent_55%)]" />
+    <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-900/[0.08] bg-[#0a100e] text-white dark:border-white/[0.08]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_85%_-10%,rgba(16,185,129,0.16),transparent_50%)]" />
 
-      <div className="relative grid gap-10 p-6 sm:p-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14 lg:p-10">
-        <div>
+      <div className="relative px-5 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-2xl text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/90">
             {c.flowBadge}
           </p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{c.flowTitle}</h2>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400">{c.flowSub}</p>
+          <h2 className="mt-2.5 text-2xl font-semibold tracking-[-0.03em] sm:text-[1.85rem]">
+            {c.flowTitle}
+          </h2>
+          <p className="mx-auto mt-2.5 max-w-lg text-sm leading-relaxed text-slate-400">
+            {c.flowSub}
+          </p>
+        </div>
 
-          <ol className="mt-8 space-y-1">
+        {/* Horizontal step rail */}
+        <div className="relative mx-auto mt-8 max-w-3xl">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-[1.15rem] hidden h-px overflow-hidden bg-white/10 sm:block"
+          >
+            <motion.div
+              className="h-full origin-left bg-emerald-400/70"
+              animate={{ scaleX: active / 3 }}
+              transition={{ type: "spring", stiffness: 180, damping: 28 }}
+            />
+          </div>
+          <ol className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-2">
             {steps.map((s, i) => {
               const Icon = s.icon;
               const on = active === i;
+              const done = i < active;
               return (
                 <li key={s.title}>
                   <button
                     type="button"
                     onClick={() => setActive(i)}
-                    className={`flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors ${
-                      on ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"
-                    }`}
+                    className="group flex w-full flex-col items-center gap-2 rounded-2xl px-2 py-2 text-center transition hover:bg-white/[0.03]"
                   >
                     <span
-                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${
+                      className={`relative z-[1] flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition ${
                         on
-                          ? "bg-emerald-500 text-emerald-950"
-                          : "bg-white/[0.06] text-slate-400"
+                          ? "bg-emerald-500 text-emerald-950 shadow-[0_0_0_4px_rgba(16,185,129,0.18)]"
+                          : done
+                            ? "bg-emerald-500/25 text-emerald-300"
+                            : "bg-white/[0.06] text-slate-400 group-hover:bg-white/[0.1]"
                       }`}
                     >
-                      {on ? <Icon className="h-3.5 w-3.5" /> : String(i + 1).padStart(2, "0")}
+                      {done && !on ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className={`block text-sm font-medium ${on ? "text-white" : "text-slate-400"}`}>
-                        {s.title}
+                    <span className="min-w-0">
+                      <span
+                        className={`block text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                          on ? "text-emerald-400/90" : "text-slate-500"
+                        }`}
+                      >
+                        {s.label}
                       </span>
-                      <span className="mt-1 block min-h-[2.6rem] text-xs leading-relaxed text-slate-500">
-                        <AnimatePresence mode="wait" initial={false}>
-                          {on && (
-                            <motion.span
-                              key={s.detail}
-                              initial={{ opacity: 0, y: 4 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -4 }}
-                              transition={{ duration: 0.18 }}
-                              className="block"
-                            >
-                              {s.detail}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
+                      <span
+                        className={`mt-0.5 block text-[12px] font-medium leading-snug sm:text-[13px] ${
+                          on ? "text-white" : "text-slate-400"
+                        }`}
+                      >
+                        {s.title}
                       </span>
                     </span>
                   </button>
@@ -105,120 +116,117 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
               );
             })}
           </ol>
+
+          <div className="relative mx-auto mt-4 min-h-[2.75rem] max-w-xl text-center">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={steps[active]!.detail}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.18 }}
+                className="text-sm leading-relaxed text-slate-400"
+              >
+                {steps[active]!.detail}
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </div>
 
-        <div className="flex flex-col justify-center">
-          <div className="mb-4 flex items-center gap-1 overflow-x-auto pb-1">
-            {stageLabels.map((label, i) => {
-              const on = active === i;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
-                    on
-                      ? "bg-white text-slate-900"
-                      : "text-slate-500 hover:text-slate-300"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+        {/* Preview stage — fixed height, no layout push */}
+        <div className="mx-auto mt-7 max-w-xl overflow-hidden rounded-2xl border border-white/[0.08] bg-[#070c0a]/90 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
+          <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-3.5 py-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+            <div className="ml-2 flex-1 truncate rounded-md bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] text-slate-500">
+              {c.flowMockBrowserUrl}
+            </div>
+            <span className="hidden text-[10px] font-medium text-slate-500 sm:inline">
+              {String(active + 1).padStart(2, "0")} / 04
+            </span>
           </div>
 
-          <div className="mb-4 h-px w-full overflow-hidden bg-white/10">
-            <motion.div
-              className="h-full bg-emerald-400/80"
-              animate={{ width: `${((active + 1) / 4) * 100}%` }}
-              transition={{ type: "spring", stiffness: 160, damping: 26 }}
-            />
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#07110e]">
-            <div className="flex items-center gap-1.5 border-b border-white/[0.07] px-3.5 py-2.5">
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <div className="ml-2 flex-1 truncate font-mono text-[10px] text-slate-500">
-                {c.flowMockBrowserUrl}
-              </div>
-            </div>
-            <div className="relative min-h-[220px] p-5 sm:p-6">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: reduce ? 0.12 : 0.28 }}
-                  className="space-y-3"
-                >
-                  {active === 0 && (
-                    <>
-                      <p className="text-sm font-medium text-white">{c.flowMockVisitTitle}</p>
-                      <p className="max-w-sm text-xs leading-relaxed text-slate-400">{c.flowMockVisitBody}</p>
-                      <div className="mt-3 h-8 w-36 rounded-lg bg-emerald-500/25" />
-                    </>
-                  )}
-                  {active === 1 && (
-                    <>
-                      <p className="text-xs text-slate-500">{c.flowMockVinLabel}</p>
-                      <div className="flex gap-2">
-                        <div className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3.5 py-2.5 font-mono text-sm tracking-widest text-emerald-200/90">
-                          KM8J3CA46NU•••••
-                        </div>
-                        <div className="rounded-xl bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900">
-                          {c.flowMockGo}
-                        </div>
+          <div className="relative min-h-[13.5rem] p-5 sm:min-h-[14rem] sm:p-6">
+            {[0, 1, 2, 3].map((stage) => (
+              <motion.div
+                key={stage}
+                initial={false}
+                animate={{
+                  opacity: active === stage ? 1 : 0,
+                  y: active === stage ? 0 : 6,
+                }}
+                transition={{ duration: reduce ? 0.12 : 0.26 }}
+                className={`absolute inset-5 space-y-3 sm:inset-6 ${
+                  active === stage ? "pointer-events-auto" : "pointer-events-none"
+                }`}
+                aria-hidden={active !== stage}
+              >
+                {stage === 0 && (
+                  <>
+                    <p className="text-sm font-medium text-white">{c.flowMockVisitTitle}</p>
+                    <p className="max-w-sm text-xs leading-relaxed text-slate-400">{c.flowMockVisitBody}</p>
+                    <div className="mt-4 h-9 w-32 rounded-lg bg-emerald-500/20 ring-1 ring-emerald-400/20" />
+                  </>
+                )}
+                {stage === 1 && (
+                  <>
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                      {c.flowMockVinLabel}
+                    </p>
+                    <div className="flex gap-2">
+                      <div className="flex-1 rounded-xl border border-white/10 bg-black/35 px-3.5 py-2.5 font-mono text-sm tracking-widest text-emerald-200/90">
+                        KM8J3CA46NU•••••
                       </div>
-                    </>
-                  )}
-                  {active === 2 && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-                          <Database className="h-5 w-5 text-emerald-300/90" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">{c.flowKmApi}</p>
-                          <p className="font-mono text-xs text-slate-400">
-                            {cars.toLocaleString()} {c.flowDbLabel}
-                          </p>
-                        </div>
+                      <div className="rounded-xl bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900">
+                        {c.flowMockGo}
                       </div>
-                      <div className="grid grid-cols-3 gap-2 pt-1">
-                        {[0, 1, 2].map((n) => (
-                          <div
-                            key={n}
-                            className="h-10 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06]"
-                          />
-                        ))}
+                    </div>
+                  </>
+                )}
+                {stage === 2 && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-emerald-400/20">
+                        <Database className="h-5 w-5 text-emerald-300/90" />
                       </div>
-                    </>
-                  )}
-                  {active === 3 && (
-                    <>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-emerald-950">
-                            <Check className="h-3 w-3" />
-                          </span>
-                          <p className="text-sm font-medium text-white">{c.flowMockPaidTitle}</p>
-                        </div>
-                        <p className="text-xs leading-relaxed text-slate-400">{c.flowMockPaidBody}</p>
+                      <div>
+                        <p className="text-sm font-medium text-white">{c.flowKmApi}</p>
+                        <p className="font-mono text-xs text-slate-400">
+                          {cars.toLocaleString()} {c.flowDbLabel}
+                        </p>
                       </div>
-                      <div className="flex gap-2">
-                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
-                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
-                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      {[0, 1, 2].map((n) => (
+                        <div
+                          key={n}
+                          className="h-9 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06]"
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                {stage === 3 && (
+                  <>
+                    <div className="rounded-xl border border-emerald-400/15 bg-emerald-500/[0.06] p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-emerald-950">
+                          <Check className="h-3 w-3" />
+                        </span>
+                        <p className="text-sm font-medium text-white">{c.flowMockPaidTitle}</p>
                       </div>
-                    </>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                      <p className="text-xs leading-relaxed text-slate-400">{c.flowMockPaidBody}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-12 flex-1 rounded-lg bg-white/[0.04]" />
+                      <div className="h-12 flex-1 rounded-lg bg-white/[0.04]" />
+                      <div className="h-12 flex-1 rounded-lg bg-white/[0.04]" />
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>

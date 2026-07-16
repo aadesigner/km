@@ -44,13 +44,21 @@ describe("premium chassis year coherence", () => {
     expect(prem?.displayModel).toContain("W213");
   });
 
-  it("Mercedes WDD243 is EQB, not B-Class W246", () => {
+  it("Mercedes WDD243 is EQA/EQB, not B-Class W246", () => {
     const vin = "WDD243000MA123456";
     expect(vin).toHaveLength(17);
     const prem = decodePremiumEuropean(vin);
-    expect(prem?.model).toBe("EQB");
+    expect(prem?.model).toMatch(/EQA|EQB/);
     expect(prem?.displayModel).not.toMatch(/B-Class|W246/i);
-    expect(decodeVin(vin).model).toMatch(/EQB/i);
+    expect(decodeVin(vin).model).toMatch(/EQA|EQB/i);
+  });
+
+  it("Mercedes WDD296 is EQS SUV, not EQE SUV", () => {
+    const vin = "WDD296087NA123456";
+    const prem = decodePremiumEuropean(vin);
+    expect(prem?.model).toBe("EQS SUV");
+    expect(prem?.chassis).toBe("X296");
+    expect(decodeVin(vin).model).toMatch(/EQS SUV/i);
   });
 
   it("Mercedes letter-series C-Class does not invent W204 on a 2020 VIN", () => {
@@ -59,6 +67,21 @@ describe("premium chassis year coherence", () => {
     expect(prem?.model).toBe("C-Class");
     expect(prem?.chassis).toBeNull();
     expect(prem?.displayModel).not.toMatch(/W204/i);
+  });
+
+  it("Mercedes letter-series H (W212) is E-Class, not C-Class", () => {
+    const vin = "WDDHF5KB6FA123456"; // F = 2015
+    const prem = decodePremiumEuropean(vin);
+    expect(prem?.model).toBe("E-Class");
+    expect(prem?.displayModel).not.toMatch(/C-Class/i);
+    expect(decodeVin(vin).model).toMatch(/E-Class/i);
+  });
+
+  it("Mercedes letter-series Z (W213) is E-Class", () => {
+    const vin = "WDDZF4JB0LA123456"; // L = 2020
+    const prem = decodePremiumEuropean(vin);
+    expect(prem?.model).toBe("E-Class");
+    expect(decodeVin(vin).model).toMatch(/E-Class/i);
   });
 
   it("Porsche WP0ZZZ99 is 911 without hardcoded 992", () => {
