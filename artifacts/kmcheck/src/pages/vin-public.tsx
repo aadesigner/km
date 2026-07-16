@@ -66,6 +66,7 @@ import { countAccidentSignals } from "@/lib/accident-signals";
 import { formatAccidentCount } from "@/lib/format-accident-count";
 import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
+import { resolveReportPhotoSets } from "@/lib/report-photos";
 import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-market-value-chart";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
 import { shouldFormatAccidentLossAsKrw } from "@/lib/korean-currency";
@@ -489,11 +490,9 @@ export default function VinPublic({ params }: Props) {
 
   useLayoutEffect(() => {
     if (!data) return;
-    const all = (data.photos ?? (data.thumbnailUrl ? [data.thumbnailUrl] : [])).filter(
-      (p): p is string => typeof p === "string" && p.length > 0,
-    );
+    const { photos: all } = resolveReportPhotoSets(data);
     const urls = data.isUnlocked ? all : all.slice(0, 1);
-    if (urls.length) void prefetchVinImages(urls);
+    if (urls.length) void prefetchVinImages(urls, { centerIndex: 0, radius: 1 });
   }, [data]);
 
   const toggleAccident = (i: number) => {
@@ -580,8 +579,9 @@ export default function VinPublic({ params }: Props) {
     })),
   );
   const accidentCount = accidents.length;
-  const photos = (data.photos ?? (data.thumbnailUrl ? [data.thumbnailUrl] : [])).filter(Boolean);
+  const { photos, photosHd } = resolveReportPhotoSets(data);
   const heroPhotos = data.isUnlocked ? photos : photos.slice(0, 1);
+  const lightboxPhotos = data.isUnlocked ? photosHd : photosHd.slice(0, 1);
   const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data.mileageHistory, data.year));
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data.ownerHistory, data.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data.auctionHistory, data.year));
@@ -704,10 +704,10 @@ export default function VinPublic({ params }: Props) {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightboxIndex !== null && photos.length > 0 && (
+        {lightboxIndex !== null && lightboxPhotos.length > 0 && (
           <PhotoLightbox
-            photos={photos}
-            index={lightboxIndex}
+            photos={lightboxPhotos}
+            index={Math.min(lightboxIndex, lightboxPhotos.length - 1)}
             onClose={closeLightbox}
             onNav={navLightbox}
           />

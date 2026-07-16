@@ -83,7 +83,7 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
 
   useEffect(() => {
     if (photos.length === 0) return;
-    void warmVinImageNeighbors(photos, index, 2);
+    void warmVinImageNeighbors(photos, index, 1);
     const src = photos[index] ?? "";
     setActiveFailed(false);
     setActiveReady(isVinImageSessionLoaded(src));

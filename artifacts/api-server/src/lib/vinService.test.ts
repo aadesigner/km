@@ -21,6 +21,7 @@ import {
   resolveLotEventDate,
   resolveVehicleCountry,
   pickBestLotPhotoUrls,
+  pickDisplayLotPhotoUrls,
   pickRicherVinReportData,
   pickVinReportDataForServe,
   mergeVinPhotoLists,
@@ -724,6 +725,30 @@ describe("pickBestLotPhotoUrls", () => {
       normal: ["https://cdn/a-n.jpg", "https://cdn/b-n.jpg"],
       thumbnail: ["https://cdn/a-t.jpg", "https://cdn/b-t.jpg"],
     })).toEqual(["https://cdn/a-n.jpg", "https://cdn/b-n.jpg"]);
+  });
+
+  it("pickDisplayLotPhotoUrls prefers normal over big when counts tie", () => {
+    const normal = ["https://cdn/a-n.jpg", "https://cdn/b-n.jpg"];
+    const big = ["https://cdn/a-b.jpg", "https://cdn/b-b.jpg"];
+    expect(pickDisplayLotPhotoUrls({ normal, big })).toEqual(normal);
+    expect(pickBestLotPhotoUrls({ normal, big })).toEqual(big);
+  });
+
+  it("stores mid-size photos for display and HD for lightbox when both tiers exist", () => {
+    const normal = Array.from({ length: 10 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const big = Array.from({ length: 10 }, (_, i) => `https://cdn/b-${i}.jpg`);
+    const normalized = normalizeCarstatResponse({
+      year: 2020,
+      vin: "WBA3V7106FJ995387",
+      manufacturer: { name: "BMW" },
+      model: { name: "3 Series" },
+      lots: [{
+        domain: { name: "copart_com" },
+        images: { normal, big },
+      }],
+    });
+    expect(normalized.photos).toEqual(normal);
+    expect(normalized.photosHd).toEqual(big);
   });
 
   it("normalizes Carstat response without mixing resolution tiers", () => {

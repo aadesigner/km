@@ -1,4 +1,4 @@
-import { prefetchVinImages } from "@/lib/vin-image-cache";
+import { warmVinImages } from "@/lib/vin-image-cache";
 
 export async function copyReportLink(url: string): Promise<boolean> {
   return copyTextToClipboard(url);
@@ -10,7 +10,8 @@ export async function openVinReportPdf(): Promise<void> {
   const imgs = getPrintSummaryImages();
   const urls = imgs.map((img) => img.src).filter(Boolean);
   if (urls.length > 0) {
-    await prefetchVinImages(urls);
+    // Print needs every visible summary image — not just hero neighbors.
+    await warmVinImages(urls);
   }
   await waitForPrintImages(imgs);
   window.print();

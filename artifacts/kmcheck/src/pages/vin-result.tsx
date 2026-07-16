@@ -4,6 +4,7 @@ import { parseVinRouteParam } from "@/lib/vin-route";
 import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
+import { resolveReportPhotoSets } from "@/lib/report-photos";
 import { useGetVinLookup } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -460,9 +461,9 @@ export default function VinResult({ params }: Props) {
 
   useLayoutEffect(() => {
     if (!lookupRaw?.data) return;
-    const d = lookupRaw.data as { photos?: string[] };
-    const urls = (d.photos ?? []).filter((p): p is string => typeof p === "string" && p.length > 0);
-    if (urls.length) void prefetchVinImages(urls);
+    const d = lookupRaw.data as { photos?: string[]; photosHd?: string[] };
+    const { photos } = resolveReportPhotoSets(d);
+    if (photos.length) void prefetchVinImages(photos, { centerIndex: 0, radius: 1 });
   }, [lookupRaw]);
 
   // Sync dashboard / purchases lists once delivery finishes (checkout may redirect while still fulfilling).
@@ -591,7 +592,7 @@ export default function VinResult({ params }: Props) {
       severity: resolveAccidentSeverityForDisplay(acc, accidentSeverityCtx),
     })),
   );
-  const photos = (data?.photos ?? []).filter(Boolean);
+  const { photos, photosHd } = resolveReportPhotoSets(data);
   const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data?.mileageHistory, data?.year));
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data?.ownerHistory, data?.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data?.auctionHistory, data?.year));
@@ -718,10 +719,10 @@ export default function VinResult({ params }: Props) {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightboxIndex !== null && photos.length > 0 && (
+        {lightboxIndex !== null && photosHd.length > 0 && (
           <PhotoLightbox
-            photos={photos}
-            index={lightboxIndex}
+            photos={photosHd}
+            index={Math.min(lightboxIndex, photosHd.length - 1)}
             onClose={closeLightbox}
             onNav={navLightbox}
           />

@@ -1,7 +1,6 @@
 const CACHE_NAME = "kmcheck-vin-images-v1";
-const PREFETCH_CONCURRENCY = 6;
-/** Max images warmed per prefetchVinImages() call. */
-const MAX_URLS_PER_BATCH = 32;
+/** Max concurrent browser warmers for a neighbor window. */
+const PREFETCH_CONCURRENCY = 3;
 /** Cap in-memory session tracking to avoid unbounded growth. */
 const MAX_SESSION_TRACKED = 120;
 
@@ -60,8 +59,8 @@ export function warmVinImage(url: string): Promise<void> {
   });
 }
 
-/** Warm a small set of gallery neighbors (hero slider / lightbox). */
-export async function warmVinImageNeighbors(urls: string[], centerIndex: number, radius = 2): Promise<void> {
+/** Warm a small set of gallery neighbors (hero slider / lightbox). Default radius = 1. */
+export async function warmVinImageNeighbors(urls: string[], centerIndex: number, radius = 1): Promise<void> {
   if (urls.length === 0) return;
   const n = urls.length;
   const indices = new Set<number>();
@@ -86,17 +85,46 @@ export async function warmVinImages(urls: string[]): Promise<void> {
   }
 }
 
-/** Warm browser cache for VIN gallery URLs (same-origin proxied images). */
-export async function prefetchVinImages(urls: string[]): Promise<void> {
-  const unique = [...new Set(urls.filter((u) => typeof u === "string" && u.length > 0))].slice(0, MAX_URLS_PER_BATCH);
+export type PrefetchVinImagesOptions = {
+  /** Index to center the warm window on (default 0). */
+  centerIndex?: number;
+  /** Neighbors on each side of center (default 1 → max 3 images). */
+  radius?: number;
+};
+
+/**
+ * Warm only the current slide ± neighbors (not the full gallery).
+ * Under concurrent unlocks, full-gallery prefetch stampedes `/api/vin/image`.
+ */
+export async function prefetchVinImages(
+  urls: string[],
+  opts?: PrefetchVinImagesOptions,
+): Promise<void> {
+  const unique = [...new Set(urls.filter((u) => typeof u === "string" && u.length > 0))];
   if (unique.length === 0) return;
 
-  hintPreloadImage(unique[0]!);
-  void warmVinImage(unique[0]!);
+  const centerIndex = Math.min(
+    Math.max(0, opts?.centerIndex ?? 0),
+    unique.length - 1,
+  );
+  const radius = Math.max(0, opts?.radius ?? 1);
+  const n = unique.length;
+  const indices = new Set<number>();
+  for (let offset = 0; offset <= radius; offset++) {
+    indices.add(((centerIndex + offset) % n + n) % n);
+    if (offset > 0) indices.add(((centerIndex - offset) % n + n) % n);
+  }
+  const windowUrls = [...indices]
+    .sort((a, b) => a - b)
+    .map((i) => unique[i]!)
+    .filter(Boolean);
 
-  const proxied = unique.filter(isProxiedVinImage);
+  const hero = windowUrls[0] ?? unique[centerIndex]!;
+  hintPreloadImage(hero);
+
+  const proxied = windowUrls.filter(isProxiedVinImage);
   if (proxied.length === 0) {
-    await warmVinImages(unique.slice(1));
+    await warmVinImages(windowUrls);
     return;
   }
 
@@ -115,7 +143,7 @@ export async function prefetchVinImages(urls: string[]): Promise<void> {
         await warmVinImage(url);
         return;
       }
-      const response = await fetch(url, { credentials: "include" });
+      const response = await fetch(url, { credentials: "omit", mode: "same-origin" });
       if (!response.ok) return;
       if (cache) {
         try {
@@ -130,15 +158,11 @@ export async function prefetchVinImages(urls: string[]): Promise<void> {
     }
   };
 
-  const priority = proxied.slice(0, 3);
-  const rest = proxied.slice(3);
-  await Promise.all(priority.map(warmOne));
-
-  for (let i = 0; i < rest.length; i += PREFETCH_CONCURRENCY) {
-    await Promise.all(rest.slice(i, i + PREFETCH_CONCURRENCY).map(warmOne));
+  for (let i = 0; i < proxied.length; i += PREFETCH_CONCURRENCY) {
+    await Promise.all(proxied.slice(i, i + PREFETCH_CONCURRENCY).map(warmOne));
   }
 
-  const nonProxied = unique.filter((u) => !isProxiedVinImage(u));
+  const nonProxied = windowUrls.filter((u) => !isProxiedVinImage(u));
   if (nonProxied.length) await warmVinImages(nonProxied);
 }
 

@@ -111,6 +111,11 @@ export function transformVinPhotoData(
       .filter((p): p is string => typeof p === "string" && p.length > 0)
       .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
   }
+  if (Array.isArray(record.photosHd)) {
+    result.photosHd = (record.photosHd as unknown[])
+      .filter((p): p is string => typeof p === "string" && p.length > 0)
+      .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
+  }
   if (typeof record.thumbnailUrl === "string" && record.thumbnailUrl) {
     result.thumbnailUrl = resolveVinPhotoUrlForClient(record.thumbnailUrl, { mediaVersion });
   }

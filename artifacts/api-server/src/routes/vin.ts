@@ -20,7 +20,7 @@ import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics,
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
 import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
-import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
+import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt, withVinImageUpstreamSlot } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
 import { getFreeDecoderSettings } from "../lib/freeDecoderSettingsCache.js";
@@ -211,6 +211,9 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   if (Array.isArray(transformed.photos)) {
     transformed.photos = (transformed.photos as string[]).slice(0, MAX_VIN_PHOTOS);
   }
+  if (Array.isArray(transformed.photosHd)) {
+    transformed.photosHd = (transformed.photosHd as string[]).slice(0, MAX_VIN_PHOTOS);
+  }
   return transformed;
 }
 
@@ -325,25 +328,27 @@ router.get("/vin/image", async (req, res) => {
     }
 
     const image = await getOrFetchVinImage(url, async () => {
-      const upstream = await fetch(url, {
-        headers: { Accept: "image/*,*/*" },
-        signal: AbortSignal.timeout(15_000),
-      });
-      if (!upstream.ok) {
-        throw new Error(`upstream ${upstream.status}`);
-      }
-      const ct = upstream.headers.get("content-type") ?? "image/jpeg";
-      const lenHeader = upstream.headers.get("content-length");
-      if (lenHeader) {
-        const len = Number(lenHeader);
-        if (Number.isFinite(len) && len > MAX_VIN_IMAGE_BYTES) {
-          throw new Error("upstream image too large");
+      return withVinImageUpstreamSlot(async () => {
+        const upstream = await fetch(url, {
+          headers: { Accept: "image/*,*/*" },
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!upstream.ok) {
+          throw new Error(`upstream ${upstream.status}`);
         }
-      }
-      const body = Buffer.from(await upstream.arrayBuffer());
-      if (!body.length) throw new Error("empty image body");
-      if (body.length > MAX_VIN_IMAGE_BYTES) throw new Error("upstream image too large");
-      return { contentType: ct, body };
+        const ct = upstream.headers.get("content-type") ?? "image/jpeg";
+        const lenHeader = upstream.headers.get("content-length");
+        if (lenHeader) {
+          const len = Number(lenHeader);
+          if (Number.isFinite(len) && len > MAX_VIN_IMAGE_BYTES) {
+            throw new Error("upstream image too large");
+          }
+        }
+        const body = Buffer.from(await upstream.arrayBuffer());
+        if (!body.length) throw new Error("empty image body");
+        if (body.length > MAX_VIN_IMAGE_BYTES) throw new Error("upstream image too large");
+        return { contentType: ct, body };
+      });
     });
     const diskHit = await getVinImageDiskHit(url);
     if (diskHit) {

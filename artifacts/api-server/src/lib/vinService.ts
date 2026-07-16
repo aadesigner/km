@@ -87,7 +87,10 @@ export interface NormalizedVinData {
   cylinders?: number | null;
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
+  /** Mid-size gallery for hero / thumbs (prefer normal over big when available). */
   photos?: string[];
+  /** Full-resolution gallery for lightbox; falls back to photos when absent. */
+  photosHd?: string[];
   accidents?: Array<{
     date?: string | null;
     severity?: string | null;
@@ -351,6 +354,9 @@ export function mergeVinReportBodies(
   const photos = mergeVinPhotoLists(
     ...valid.map((b) => b.photos as string[] | undefined),
   );
+  const photosHd = mergeVinPhotoLists(
+    ...valid.map((b) => b.photosHd as string[] | undefined),
+  );
 
   const frozenRate =
     valid.map((b) => readFrozenKrwPerUsd(b)).find((r) => r != null)
@@ -367,6 +373,9 @@ export function mergeVinReportBodies(
     registryHistory: concatUniqueArrays(...valid.map((b) => b.registryHistory)),
     auctionHistory: concatUniqueArrays(...valid.map((b) => b.auctionHistory)),
     ...(photos.length > 0 ? { photos } : {}),
+    ...(photosHd.length > 0 && photosHd.join("\0") !== photos.join("\0")
+      ? { photosHd }
+      : {}),
     ...(frozenRate != null ? { krwPerUsd: frozenRate } : {}),
   };
 }
@@ -388,6 +397,10 @@ export function pickRicherVinReportData(
     lookupData.photos as string[] | undefined,
     catalogData.photos as string[] | undefined,
   );
+  const mergedPhotosHd = mergeVinPhotoLists(
+    lookupData.photosHd as string[] | undefined,
+    catalogData.photosHd as string[] | undefined,
+  );
 
   const frozenRate =
     readFrozenKrwPerUsd(picked)
@@ -397,6 +410,9 @@ export function pickRicherVinReportData(
   const result: Record<string, unknown> = {
     ...picked,
     ...(mergedPhotos.length > 0 ? { photos: mergedPhotos } : {}),
+    ...(mergedPhotosHd.length > 0 && mergedPhotosHd.join("\0") !== mergedPhotos.join("\0")
+      ? { photosHd: mergedPhotosHd }
+      : {}),
     ...(frozenRate != null && readFrozenKrwPerUsd(picked) == null ? { krwPerUsd: frozenRate } : {}),
   };
 
@@ -1521,7 +1537,8 @@ const LOT_IMAGE_TIERS = [
   "big", "large", "full", "original", "high", "normal", "exterior", "interior", "downloaded", "gallery", "thumbnail", "small",
 ] as const;
 
-const TIER_QUALITY_RANK: Record<string, number> = {
+/** Prefer largest available tier when counts tie (lightbox / zoom). */
+const HD_TIER_QUALITY_RANK: Record<string, number> = {
   big: 60,
   large: 58,
   full: 56,
@@ -1534,6 +1551,22 @@ const TIER_QUALITY_RANK: Record<string, number> = {
   gallery: 35,
   thumbnail: 10,
   small: 5,
+};
+
+/** Prefer mid-size tiers for hero/thumbs when counts tie (faster under concurrent load). */
+const DISPLAY_TIER_QUALITY_RANK: Record<string, number> = {
+  normal: 70,
+  gallery: 65,
+  exterior: 64,
+  interior: 63,
+  high: 55,
+  downloaded: 45,
+  big: 30,
+  large: 28,
+  full: 26,
+  original: 24,
+  thumbnail: 15,
+  small: 10,
 };
 
 /** Extract URL strings from Carstat image tier arrays (plain strings or { url } objects). */
@@ -1573,11 +1606,10 @@ function lotImagesRecord(lot: Record<string, unknown>): Record<string, unknown> 
   return {};
 }
 
-/**
- * Highest-resolution photo URL list for a single lot (one tier only).
- * Prefer the tier with the most URLs; on ties prefer big/normal over partial downloaded cache.
- */
-export function pickBestLotPhotoUrls(imgs: Record<string, unknown>): string[] {
+function pickLotPhotoUrlsByRank(
+  imgs: Record<string, unknown>,
+  qualityRank: Record<string, number>,
+): string[] {
   let best: string[] = [];
   let bestRank = -1;
 
@@ -1585,7 +1617,7 @@ export function pickBestLotPhotoUrls(imgs: Record<string, unknown>): string[] {
     const urls = extractLotImageUrls(imgs[key]);
     if (urls.length === 0) continue;
 
-    const rank = TIER_QUALITY_RANK[key] ?? 0;
+    const rank = qualityRank[key] ?? 0;
     const shouldReplace =
       urls.length > best.length
       || (urls.length === best.length && rank > bestRank);
@@ -1599,20 +1631,44 @@ export function pickBestLotPhotoUrls(imgs: Record<string, unknown>): string[] {
   return best;
 }
 
-// Collect unique photo URLs across lots — one resolution tier per lot (no thumbnail duplicates).
-function collectPhotosFromLot(lot: Record<string, unknown>, existing: string[]): string[] {
-  let result = collectPhotos(lotImagesRecord(lot), existing);
-  if (Array.isArray(lot.photos)) {
-    for (const p of extractLotImageUrls(lot.photos)) {
-      if (!result.includes(p)) result.push(p);
-    }
-  }
-  return result;
+/**
+ * Highest-resolution photo URL list for a single lot (one tier only).
+ * Prefer the tier with the most URLs; on ties prefer big/normal over partial downloaded cache.
+ */
+export function pickBestLotPhotoUrls(imgs: Record<string, unknown>): string[] {
+  return pickLotPhotoUrlsByRank(imgs, HD_TIER_QUALITY_RANK);
 }
 
-function collectPhotos(imgs: Record<string, unknown>, existing: string[]): string[] {
+/** Mid-size gallery for hero/thumbs — prefers normal/gallery over big/original when counts tie. */
+export function pickDisplayLotPhotoUrls(imgs: Record<string, unknown>): string[] {
+  return pickLotPhotoUrlsByRank(imgs, DISPLAY_TIER_QUALITY_RANK);
+}
+
+// Collect unique photo URLs across lots — display (mid) + HD for lightbox.
+function collectPhotosFromLot(
+  lot: Record<string, unknown>,
+  existingDisplay: string[],
+  existingHd: string[],
+): { display: string[]; hd: string[] } {
+  const imgs = lotImagesRecord(lot);
+  let display = collectPhotoList(imgs, existingDisplay, pickDisplayLotPhotoUrls);
+  let hd = collectPhotoList(imgs, existingHd, pickBestLotPhotoUrls);
+  if (Array.isArray(lot.photos)) {
+    for (const p of extractLotImageUrls(lot.photos)) {
+      if (!display.includes(p)) display.push(p);
+      if (!hd.includes(p)) hd.push(p);
+    }
+  }
+  return { display, hd };
+}
+
+function collectPhotoList(
+  imgs: Record<string, unknown>,
+  existing: string[],
+  picker: (imgs: Record<string, unknown>) => string[],
+): string[] {
   const result = [...existing];
-  for (const p of pickBestLotPhotoUrls(imgs)) {
+  for (const p of picker(imgs)) {
     if (!result.includes(p)) result.push(p);
   }
   return result;
@@ -2721,6 +2777,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
 
   // --- Process ALL lots for richer history data ---
   let allPhotos: string[] = [];
+  let allPhotosHd: string[] = [];
   const mileageHistory: NormalizedVinData["mileageHistory"] = [];
   const ownerHistory: NormalizedVinData["ownerHistory"] = [];
   const auctionHistory: NormalizedVinData["auctionHistory"] = [];
@@ -2731,7 +2788,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
 
   for (const l of lots) {
     // Always merge photos from every lot — marketplace dedup is for history rows only.
-    allPhotos = collectPhotosFromLot(l, allPhotos);
+    const merged = collectPhotosFromLot(l, allPhotos, allPhotosHd);
+    allPhotos = merged.display;
+    allPhotosHd = merged.hd;
 
     if (isMarketplaceListingLot(l)) {
       const domain = lotDomainName(l);
@@ -2820,10 +2879,20 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   }
 
   if (allPhotos.length < MAX_VIN_PHOTOS && Array.isArray(raw.photos)) {
-    allPhotos = collectPhotos({ gallery: raw.photos }, allPhotos).slice(0, MAX_VIN_PHOTOS);
+    allPhotos = collectPhotoList({ gallery: raw.photos }, allPhotos, pickDisplayLotPhotoUrls)
+      .slice(0, MAX_VIN_PHOTOS);
+    allPhotosHd = collectPhotoList({ gallery: raw.photos }, allPhotosHd, pickBestLotPhotoUrls)
+      .slice(0, MAX_VIN_PHOTOS);
   }
 
   const photos = allPhotos.slice(0, MAX_VIN_PHOTOS);
+  const photosHdCandidate = allPhotosHd.slice(0, MAX_VIN_PHOTOS);
+  /** Only emit photosHd when it differs from display (saves payload when tiers match). */
+  const photosHd =
+    photosHdCandidate.length > 0
+    && photosHdCandidate.join("\0") !== photos.join("\0")
+      ? photosHdCandidate
+      : undefined;
 
   const country = resolveVehicleCountry(lots);
 
@@ -2918,6 +2987,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     isStolen,
     titleStatus,
     photos,
+    ...(photosHd ? { photosHd } : {}),
     accidents: sortHistoryNewestFirst(repairedAccidents),
     insuranceClaims: repairedClaims.length > 0 ? repairedClaims : undefined,
     registryHistory: repairedRegistry,

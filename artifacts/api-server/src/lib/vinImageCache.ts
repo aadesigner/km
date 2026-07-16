@@ -81,6 +81,31 @@ function pathsForUrl(url: string): { bodyPath: string; metaPath: string } {
 
 const MAX_DISK_BYTES = Number(process.env.VIN_IMAGE_CACHE_MAX_BYTES ?? 400 * 1024 * 1024);
 
+/** Global cap on concurrent upstream CDN fetches (protects Node under unlock spikes). */
+const MAX_UPSTREAM_CONCURRENCY = Math.max(
+  1,
+  Number(process.env.VIN_IMAGE_UPSTREAM_CONCURRENCY ?? (isProduction ? 12 : 8)) || 12,
+);
+
+let upstreamActive = 0;
+const upstreamWaiters: Array<() => void> = [];
+
+export async function withVinImageUpstreamSlot<T>(fn: () => Promise<T>): Promise<T> {
+  if (upstreamActive >= MAX_UPSTREAM_CONCURRENCY) {
+    await new Promise<void>((resolve) => {
+      upstreamWaiters.push(resolve);
+    });
+  }
+  upstreamActive += 1;
+  try {
+    return await fn();
+  } finally {
+    upstreamActive -= 1;
+    const next = upstreamWaiters.shift();
+    if (next) next();
+  }
+}
+
 type DiskCacheEntry = {
   bodyPath: string;
   metaPath: string;
@@ -145,6 +170,11 @@ export function extractVinPhotoUrls(data: unknown): string[] {
   }
   if (Array.isArray(record.photos)) {
     for (const photo of record.photos) {
+      if (typeof photo === "string" && photo) urls.add(photo);
+    }
+  }
+  if (Array.isArray(record.photosHd)) {
+    for (const photo of record.photosHd) {
       if (typeof photo === "string" && photo) urls.add(photo);
     }
   }
@@ -250,6 +280,7 @@ export async function getOrFetchVinImage(
 
   const promise = fetcher()
     .then(async (image) => {
+      rememberInMemory(url, image);
       await writeVinImageCache(url, image.contentType, image.body);
       return image;
     })
