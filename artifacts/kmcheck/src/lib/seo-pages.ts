@@ -92,6 +92,9 @@ function resolveApiB2bSeo(lang: SeoLang, rest: string): {
   if (tail === "/contact") {
     return { title: c.seoContactTitle, description: c.seoContactDesc, keywords: c.seoKeywords };
   }
+  if (tail === "/vin-decoder") {
+    return { title: c.seoDecoderTitle, description: c.seoDecoderDesc, keywords: c.seoKeywords };
+  }
   const region = findApiB2bRegion(tail.replace(/^\//, ""));
   if (region) {
     const label = region.seoLabel;

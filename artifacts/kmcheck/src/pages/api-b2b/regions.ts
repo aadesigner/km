@@ -51,5 +51,6 @@ export const API_B2B_PATHS = [
   "",
   "/plans",
   "/contact",
+  "/vin-decoder",
   ...API_B2B_REGIONS.map((r) => `/${r.slug}`),
 ] as const;

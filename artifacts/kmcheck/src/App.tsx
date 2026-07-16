@@ -189,6 +189,7 @@ const MaintenanceLang     = withLang(Maintenance as React.ComponentType<{ params
 const ApiB2bHomePage = lazyWithRetry(() => import("@/pages/api-b2b/home"));
 const ApiB2bPlansPage = lazyWithRetry(() => import("@/pages/api-b2b/plans"));
 const ApiB2bContactPage = lazyWithRetry(() => import("@/pages/api-b2b/contact"));
+const ApiB2bVinDecoderPage = lazyWithRetry(() => import("@/pages/api-b2b/vin-decoder"));
 const ApiB2bRegionPage = lazyWithRetry(() => import("@/pages/api-b2b/region"));
 const ApiB2bLayoutLazy = lazyWithRetry(() =>
   import("@/pages/api-b2b/layout").then((m) => ({ default: m.ApiB2bLayout })),
@@ -224,6 +225,9 @@ function withApiB2bLang(
 const ApiB2bHomeLang = withApiB2bLang(ApiB2bHomePage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 const ApiB2bPlansLang = withApiB2bLang(ApiB2bPlansPage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 const ApiB2bContactLang = withApiB2bLang(ApiB2bContactPage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
+const ApiB2bVinDecoderLang = withApiB2bLang(
+  ApiB2bVinDecoderPage as React.ComponentType<{ params: { lang: string; [key: string]: string } }>,
+);
 
 function ApiB2bRegionLang(props: { params: { lang: string; region: string } }) {
   const [location] = useLocation();
@@ -766,6 +770,7 @@ function AppRouter() {
         {/* B2B API marketing (separate shell from consumer site) */}
         <Route path="/:lang/api-b2b/plans" component={ApiB2bPlansLang} />
         <Route path="/:lang/api-b2b/contact" component={ApiB2bContactLang} />
+        <Route path="/:lang/api-b2b/vin-decoder" component={ApiB2bVinDecoderLang} />
         <Route path="/:lang/api-b2b/:region" component={ApiB2bRegionLang} />
         <Route path="/:lang/api-b2b" component={ApiB2bHomeLang} />
 

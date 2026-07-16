@@ -6,7 +6,7 @@
  * Keep PATHS in sync with src/lib/seo-config.ts INDEXABLE_PATHS.
  * VIN catalog URLs are written by generate-vin-sitemap.mjs into separate shards.
  */
-import { writeFileSync, readdirSync, unlinkSync, existsSync } from "node:fs";
+import { writeFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
@@ -29,6 +29,7 @@ const PATHS = [
   "/api-b2b",
   "/api-b2b/plans",
   "/api-b2b/contact",
+  "/api-b2b/vin-decoder",
   "/api-b2b/usa-cars",
   "/api-b2b/canada-cars",
   "/api-b2b/korea-cars",
@@ -48,14 +49,23 @@ function loc(lang, path) {
   return path ? `${ORIGIN}/${lang}${path}` : `${ORIGIN}/${lang}`;
 }
 
-/** Remove stale VIN shards so a pages-only rebuild cannot leave orphans. */
-function clearVinShards() {
-  if (!existsSync(publicDir)) return;
-  for (const name of readdirSync(publicDir)) {
-    if (/^sitemap-vins-\d+\.xml$/i.test(name)) {
-      unlinkSync(join(publicDir, name));
-    }
-  }
+/** Keep any existing VIN shards in the index (vin generator owns rewriting them). */
+function listVinShards() {
+  if (!existsSync(publicDir)) return [];
+  return readdirSync(publicDir)
+    .filter((name) => /^sitemap-vins-\d+\.xml$/i.test(name))
+    .sort((a, b) => {
+      const na = Number(a.match(/(\d+)/)?.[1] || 0);
+      const nb = Number(b.match(/(\d+)/)?.[1] || 0);
+      return na - nb;
+    });
+}
+
+function pathPriority(path) {
+  if (path === "") return "1.0";
+  if (path.startsWith("/api-b2b")) return "0.4";
+  if (path.startsWith("/cars")) return "0.85";
+  return "0.8";
 }
 
 const urls = PATHS.flatMap((path) =>
@@ -65,7 +75,7 @@ const urls = PATHS.flatMap((path) =>
         `    <xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${loc(l, path)}" />`,
     ).join("\n");
     const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc("en", path)}" />`;
-    const priority = path === "" ? "1.0" : path.startsWith("/cars") ? "0.85" : "0.8";
+    const priority = pathPriority(path);
     const changefreq = path === "" ? "weekly" : "monthly";
     return `  <url>
     <loc>${loc(lang, path)}</loc>
@@ -85,8 +95,17 @@ ${urls.join("\n")}
 </urlset>
 `;
 
-clearVinShards();
 writeFileSync(pagesOut, pagesXml, "utf8");
+
+const vinShards = listVinShards();
+const vinIndexEntries = vinShards
+  .map(
+    (name) => `  <sitemap>
+    <loc>${ORIGIN}/${name}</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
+  )
+  .join("\n");
 
 const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -94,10 +113,11 @@ const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
     <loc>${ORIGIN}/sitemap-pages.xml</loc>
     <lastmod>${lastmod}</lastmod>
   </sitemap>
-</sitemapindex>
+${vinIndexEntries ? `${vinIndexEntries}\n` : ""}</sitemapindex>
 `;
 
 writeFileSync(indexOut, indexXml, "utf8");
 console.log(
-  `Wrote ${urls.length} page URLs → public/sitemap-pages.xml; sitemap index → public/sitemap.xml`,
+  `Wrote ${urls.length} page URLs → public/sitemap-pages.xml; sitemap index → public/sitemap.xml` +
+    (vinShards.length ? ` (kept ${vinShards.length} VIN shard${vinShards.length === 1 ? "" : "s"})` : ""),
 );

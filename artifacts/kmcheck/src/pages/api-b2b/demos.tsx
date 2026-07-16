@@ -3,17 +3,17 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import type { B2bCopy } from "./copy";
 import {
-  Database, Globe2, Search, FileCheck2, Zap, Terminal, ArrowRight, Check,
+  Database, Globe2, Search, FileCheck2, Terminal, ArrowRight, Check,
 } from "lucide-react";
 
 export function FlowDemo({ c }: { c: B2bCopy }) {
   const reduce = useReducedMotion();
   const [active, setActive] = useState(0);
-  const [cars, setCars] = useState(48_200_000);
+  const [cars, setCars] = useState(49_400_000);
 
   useEffect(() => {
     if (reduce) return;
-    const id = window.setInterval(() => setActive((i) => (i + 1) % 4), 2800);
+    const id = window.setInterval(() => setActive((i) => (i + 1) % 4), 3200);
     return () => window.clearInterval(id);
   }, [reduce]);
 
@@ -24,10 +24,10 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
     }
     let raf = 0;
     const start = performance.now();
-    const from = 48_200_000;
+    const from = 49_400_000;
     const to = 50_000_000;
     const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / 2400);
+      const p = Math.min(1, (t - start) / 2000);
       const eased = 1 - (1 - p) ** 3;
       setCars(Math.round(from + (to - from) * eased));
       if (p < 1) raf = requestAnimationFrame(tick);
@@ -46,95 +46,52 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
   const stageLabels = [c.flowVisitor, c.flowYourSite, c.flowKmApi, c.flowReport];
 
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-emerald-400/20 bg-[#050d0a] text-white shadow-[0_40px_100px_-48px_rgba(16,185,129,0.65)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.28),transparent_52%),radial-gradient(ellipse_at_bottom_left,rgba(45,212,191,0.14),transparent_48%)]" />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.14]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(16,185,129,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.4) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          maskImage: "radial-gradient(ellipse at 70% 40%, black 20%, transparent 72%)",
-        }}
-      />
-      {!reduce && (
-        <motion.div
-          className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl"
-          animate={{ opacity: [0.25, 0.45, 0.25], x: [0, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-      )}
+    <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-[#0b1210] text-white dark:border-white/[0.08]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_100%_0%,rgba(16,185,129,0.12),transparent_55%)]" />
 
-      <div className="relative grid gap-10 p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:p-11">
+      <div className="relative grid gap-10 p-6 sm:p-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14 lg:p-10">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.15)]">
-            <Zap className="h-3.5 w-3.5" />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/90">
             {c.flowBadge}
-          </div>
-          <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">{c.flowTitle}</h2>
-          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-slate-300/90">{c.flowSub}</p>
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{c.flowTitle}</h2>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400">{c.flowSub}</p>
 
-          {/* Mobile progress pills */}
-          <div className="mt-6 flex gap-1.5 md:hidden">
-            {steps.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Step ${i + 1}`}
-                onClick={() => setActive(i)}
-                className={`h-1.5 flex-1 rounded-full transition ${
-                  active === i ? "bg-emerald-400" : "bg-white/15"
-                }`}
-              />
-            ))}
-          </div>
-
-          <ol className="relative mt-8 space-y-2.5">
-            <div className="pointer-events-none absolute bottom-4 left-[1.35rem] top-4 w-px bg-gradient-to-b from-emerald-400/50 via-emerald-400/20 to-transparent md:left-[1.55rem]" />
+          <ol className="mt-8 space-y-1">
             {steps.map((s, i) => {
               const Icon = s.icon;
               const on = active === i;
-              const done = active > i;
               return (
-                <li key={s.title} className="relative">
+                <li key={s.title}>
                   <button
                     type="button"
                     onClick={() => setActive(i)}
-                    className={`group flex w-full items-start gap-3.5 rounded-2xl border px-3.5 py-3.5 text-left transition duration-200 ${
-                      on
-                        ? "border-emerald-400/45 bg-emerald-400/[0.12] shadow-[0_0_0_1px_rgba(52,211,153,0.12),0_12px_40px_-20px_rgba(16,185,129,0.55)]"
-                        : "border-transparent bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.055]"
+                    className={`flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors ${
+                      on ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"
                     }`}
                   >
                     <span
-                      className={`relative z-[1] mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${
                         on
-                          ? "bg-emerald-400 text-emerald-950 shadow-lg shadow-emerald-400/30"
-                          : done
-                            ? "bg-emerald-400/20 text-emerald-300"
-                            : "bg-white/10 text-slate-300"
+                          ? "bg-emerald-500 text-emerald-950"
+                          : "bg-white/[0.06] text-slate-400"
                       }`}
                     >
-                      {done && !on ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                      {on ? <Icon className="h-3.5 w-3.5" /> : String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="min-w-0 flex-1 pt-0.5">
-                      <span className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold tracking-wider uppercase ${on ? "text-emerald-300" : "text-slate-500"}`}>
-                          0{i + 1}
-                        </span>
-                        <span className={`block text-[15px] font-semibold ${on ? "text-white" : "text-slate-300"}`}>
-                          {s.title}
-                        </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block text-sm font-medium ${on ? "text-white" : "text-slate-400"}`}>
+                        {s.title}
                       </span>
                       <AnimatePresence mode="wait" initial={false}>
                         {on && (
                           <motion.span
                             key={s.detail}
-                            initial={{ opacity: 0, height: 0, y: -4 }}
-                            animate={{ opacity: 1, height: "auto", y: 0 }}
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="mt-1.5 block text-xs leading-relaxed text-emerald-100/80"
+                            transition={{ duration: 0.2 }}
+                            className="mt-1 block text-xs leading-relaxed text-slate-500"
                           >
                             {s.detail}
                           </motion.span>
@@ -148,152 +105,117 @@ export function FlowDemo({ c }: { c: B2bCopy }) {
           </ol>
         </div>
 
-        <div className="relative flex min-h-[360px] flex-col justify-center">
-          <div className="absolute inset-0 rounded-[1.75rem] border border-white/[0.07] bg-gradient-to-b from-white/[0.06] to-black/30 shadow-inner" />
+        <div className="flex flex-col justify-center">
+          <div className="mb-4 flex items-center gap-1 overflow-x-auto pb-1">
+            {stageLabels.map((label, i) => {
+              const on = active === i;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                    on
+                      ? "bg-white text-slate-900"
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
 
-          <div className="relative grid gap-5 px-3 py-5 sm:px-5">
-            <div className="hidden grid-cols-4 gap-2.5 md:grid">
-              {stageLabels.map((label, i) => {
-                const on = active === i;
-                return (
-                  <motion.button
-                    key={label}
-                    type="button"
-                    onClick={() => setActive(i)}
-                    animate={{
-                      y: on ? -6 : 0,
-                      borderColor: on ? "rgba(52,211,153,0.55)" : "rgba(255,255,255,0.08)",
-                      backgroundColor: on ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.035)",
-                    }}
-                    transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                    className="relative rounded-2xl border px-2 py-4 text-center backdrop-blur-sm"
-                  >
-                    <div className="mx-auto mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-emerald-200">
-                      {i + 1}
-                    </div>
-                    <div className="text-[11px] font-semibold leading-snug text-slate-100">{label}</div>
-                    {i === 2 && (
-                      <div className="mt-2 font-mono text-[10px] text-emerald-300">
-                        {cars.toLocaleString()}+
-                      </div>
-                    )}
-                    {on && !reduce && (
-                      <motion.span
-                        className="pointer-events-none absolute inset-0 rounded-2xl border border-emerald-300/50"
-                        initial={{ opacity: 0.85, scale: 1 }}
-                        animate={{ opacity: 0, scale: 1.1 }}
-                        transition={{ duration: 1.35, repeat: Infinity }}
-                      />
-                    )}
-                  </motion.button>
-                );
-              })}
+          <div className="mb-4 h-px w-full overflow-hidden bg-white/10">
+            <motion.div
+              className="h-full bg-emerald-400/80"
+              animate={{ width: `${((active + 1) / 4) * 100}%` }}
+              transition={{ type: "spring", stiffness: 160, damping: 26 }}
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#07110e]">
+            <div className="flex items-center gap-1.5 border-b border-white/[0.07] px-3.5 py-2.5">
+              <span className="h-2 w-2 rounded-full bg-white/20" />
+              <span className="h-2 w-2 rounded-full bg-white/20" />
+              <span className="h-2 w-2 rounded-full bg-white/20" />
+              <div className="ml-2 flex-1 truncate font-mono text-[10px] text-slate-500">
+                {c.flowMockBrowserUrl}
+              </div>
             </div>
-
-            <div className="relative mx-1 hidden h-2.5 md:block">
-              <div className="absolute inset-y-[4px] left-0 right-0 rounded-full bg-white/10" />
-              <motion.div
-                className="absolute inset-y-[4px] left-0 rounded-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-400"
-                animate={{ width: `${((active + 1) / 4) * 100}%` }}
-                transition={{ type: "spring", stiffness: 140, damping: 22 }}
-              />
-              {!reduce && (
+            <div className="relative min-h-[200px] p-5 sm:p-6">
+              <AnimatePresence mode="wait">
                 <motion.div
-                  className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-white shadow-[0_0_22px_#6ee7b7]"
-                  animate={{ left: `calc(${((active + 0.5) / 4) * 100}% - 7px)` }}
-                  transition={{ type: "spring", stiffness: 110, damping: 18 }}
-                />
-              )}
-            </div>
-
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#071410] shadow-2xl">
-              <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/[0.04] px-3.5 py-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                <div className="ml-3 flex-1 truncate rounded-lg bg-black/35 px-2.5 py-1.5 font-mono text-[10px] text-slate-400">
-                  {c.flowMockBrowserUrl}
-                </div>
-                <span className="hidden rounded-md bg-emerald-400/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300 sm:inline">
-                  live
-                </span>
-              </div>
-              <div className="relative min-h-[188px] p-5">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={active}
-                    initial={{ opacity: 0, y: 12, filter: reduce ? "none" : "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "none" }}
-                    exit={{ opacity: 0, y: -8, filter: reduce ? "none" : "blur(4px)" }}
-                    transition={{ duration: reduce ? 0.15 : 0.35 }}
-                    className="space-y-3"
-                  >
-                    {active === 0 && (
-                      <>
-                        <p className="text-sm font-medium text-white">{c.flowMockVisitTitle}</p>
-                        <p className="text-xs leading-relaxed text-slate-400">{c.flowMockVisitBody}</p>
-                        <div className="mt-2 h-9 w-44 rounded-xl bg-gradient-to-r from-emerald-500/40 to-teal-400/25" />
-                      </>
-                    )}
-                    {active === 1 && (
-                      <>
-                        <p className="text-xs text-slate-400">{c.flowMockVinLabel}</p>
-                        <div className="flex gap-2">
-                          <div className="flex-1 rounded-xl border border-emerald-400/35 bg-black/40 px-3.5 py-2.5 font-mono text-sm tracking-widest text-emerald-200">
-                            KM8J3CA46NU•••••
-                          </div>
-                          <div className="rounded-xl bg-emerald-400 px-3.5 py-2.5 text-xs font-bold text-emerald-950">
-                            {c.flowMockGo}
-                          </div>
+                  key={active}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: reduce ? 0.12 : 0.28 }}
+                  className="space-y-3"
+                >
+                  {active === 0 && (
+                    <>
+                      <p className="text-sm font-medium text-white">{c.flowMockVisitTitle}</p>
+                      <p className="max-w-sm text-xs leading-relaxed text-slate-400">{c.flowMockVisitBody}</p>
+                      <div className="mt-3 h-8 w-36 rounded-lg bg-emerald-500/25" />
+                    </>
+                  )}
+                  {active === 1 && (
+                    <>
+                      <p className="text-xs text-slate-500">{c.flowMockVinLabel}</p>
+                      <div className="flex gap-2">
+                        <div className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3.5 py-2.5 font-mono text-sm tracking-widest text-emerald-200/90">
+                          KM8J3CA46NU•••••
                         </div>
-                      </>
-                    )}
-                    {active === 2 && (
-                      <>
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/15">
-                            <Database className="h-6 w-6 text-emerald-300" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-white">{c.flowKmApi}</p>
-                            <p className="font-mono text-xs text-emerald-300">
-                              {cars.toLocaleString()} {c.flowDbLabel}
-                            </p>
-                          </div>
+                        <div className="rounded-xl bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900">
+                          {c.flowMockGo}
                         </div>
-                        <div className="grid grid-cols-3 gap-2 pt-1">
-                          {[0, 1, 2].map((n) => (
-                            <motion.div
-                              key={n}
-                              className="h-11 rounded-xl bg-emerald-400/10 ring-1 ring-emerald-400/10"
-                              animate={reduce ? undefined : { opacity: [0.35, 1, 0.35] }}
-                              transition={{ duration: 1.2, delay: n * 0.2, repeat: Infinity }}
-                            />
-                          ))}
+                      </div>
+                    </>
+                  )}
+                  {active === 2 && (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
+                          <Database className="h-5 w-5 text-emerald-300/90" />
                         </div>
-                      </>
-                    )}
-                    {active === 3 && (
-                      <>
-                        <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4">
-                          <div className="mb-2 flex items-center gap-2">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400 text-emerald-950">
-                              <Check className="h-3 w-3" />
-                            </span>
-                            <p className="text-sm font-semibold text-emerald-200">{c.flowMockPaidTitle}</p>
-                          </div>
-                          <p className="text-xs leading-relaxed text-slate-300">{c.flowMockPaidBody}</p>
+                        <div>
+                          <p className="text-sm font-medium text-white">{c.flowKmApi}</p>
+                          <p className="font-mono text-xs text-slate-400">
+                            {cars.toLocaleString()} {c.flowDbLabel}
+                          </p>
                         </div>
-                        <div className="flex gap-2">
-                          <div className="h-[4.25rem] flex-1 rounded-xl bg-white/[0.06] ring-1 ring-white/5" />
-                          <div className="h-[4.25rem] flex-1 rounded-xl bg-white/[0.06] ring-1 ring-white/5" />
-                          <div className="h-[4.25rem] flex-1 rounded-xl bg-white/[0.06] ring-1 ring-white/5" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 pt-1">
+                        {[0, 1, 2].map((n) => (
+                          <div
+                            key={n}
+                            className="h-10 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06]"
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {active === 3 && (
+                    <>
+                      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-emerald-950">
+                            <Check className="h-3 w-3" />
+                          </span>
+                          <p className="text-sm font-medium text-white">{c.flowMockPaidTitle}</p>
                         </div>
-                      </>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                        <p className="text-xs leading-relaxed text-slate-400">{c.flowMockPaidBody}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
+                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
+                        <div className="h-14 flex-1 rounded-lg bg-white/[0.04]" />
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>

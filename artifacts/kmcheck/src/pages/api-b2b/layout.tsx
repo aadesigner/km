@@ -60,16 +60,14 @@ function LangDropdown({
   lang,
   onSelect,
   tone = "nav",
-  align = "right",
 }: {
   lang: Language;
   onSelect: (l: Language) => void;
   tone?: "nav" | "footer";
-  align?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ top: 0, bottom: 0, left: 0, right: 0 });
+  const [pos, setPos] = useState({ top: 0, bottom: 0, left: 0, width: 260 });
   usePrefetchPickerFlags(open);
   const meta = LANG_META[lang];
   const isFooter = tone === "footer";
@@ -78,11 +76,15 @@ function LangDropdown({
     if (!open || !btnRef.current) return;
     const place = () => {
       const rect = btnRef.current!.getBoundingClientRect();
+      const narrow = window.innerWidth < 768;
+      const width = Math.min(narrow ? 15.5 * 16 : 17.5 * 16, window.innerWidth - 24);
+      const centerX = rect.left + rect.width / 2;
+      const left = Math.max(12, Math.min(centerX - width / 2, window.innerWidth - width - 12));
       setPos({
         top: rect.bottom + 8,
         bottom: window.innerHeight - rect.top + 10,
-        left: rect.left,
-        right: window.innerWidth - rect.right,
+        left,
+        width,
       });
     };
     place();
@@ -101,16 +103,16 @@ function LangDropdown({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition",
+          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition",
           isFooter
-            ? "border-white/15 bg-white/5 text-white hover:bg-white/10"
-            : "border-slate-900/10 bg-white/90 text-slate-700 shadow-sm hover:border-slate-900/20 dark:border-white/15 dark:bg-white/5 dark:text-slate-200",
+            ? "text-slate-300 hover:bg-white/[0.06] hover:text-white"
+            : "border border-slate-900/10 bg-white/70 text-slate-700 hover:border-slate-900/18 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200 dark:hover:bg-white/[0.1]",
         )}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <FlagImg code={meta.flag} size={18} />
-        <span className="max-w-[7rem] truncate">{meta.label}</span>
+        <FlagImg code={meta.flag} size={16} />
+        <span className="max-w-[5.5rem] truncate sm:max-w-[7rem]">{meta.label}</span>
         {isFooter ? (
           <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-60" />
         ) : (
@@ -122,23 +124,19 @@ function LangDropdown({
           <div className="fixed inset-0 z-[80]" onMouseDown={() => setOpen(false)}>
             <div
               className={cn(
-                "absolute w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border shadow-2xl",
+                "absolute overflow-hidden rounded-xl border shadow-2xl",
                 isFooter
                   ? "border-white/10 bg-[#14201b] shadow-[0_-16px_48px_-12px_rgba(0,0,0,0.55)]"
-                  : "border-slate-900/10 bg-white dark:border-white/10 dark:bg-[#121a17]",
+                  : "border-slate-900/10 bg-white dark:border-white/10 dark:bg-[#0f1714]",
               )}
               style={
                 isFooter
-                  ? align === "left"
-                    ? { bottom: pos.bottom, left: Math.max(12, pos.left) }
-                    : { bottom: pos.bottom, right: Math.max(12, pos.right) }
-                  : align === "left"
-                    ? { top: pos.top, left: Math.max(12, pos.left) }
-                    : { top: pos.top, right: Math.max(12, pos.right) }
+                  ? { bottom: pos.bottom, left: pos.left, width: pos.width }
+                  : { top: pos.top, left: pos.left, width: pos.width }
               }
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="max-h-[min(22rem,50vh)] overflow-y-auto p-2">
+              <div className="max-h-[min(20rem,48vh)] overflow-y-auto p-1.5">
                 <LangPickerList
                   language={lang}
                   tone={isFooter ? "footer" : "nav"}
@@ -213,6 +211,11 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
   const navPrimary = [
     { href: base, label: c.navHome, match: (p: string) => p === base || p === `${base}/` },
     { href: `${base}/plans`, label: c.navPlans, match: (p: string) => p.includes("/plans") },
+    {
+      href: `${base}/vin-decoder`,
+      label: c.navDecoder,
+      match: (p: string) => p.includes("/vin-decoder"),
+    },
     { href: `${base}/contact`, label: c.navContact, match: (p: string) => p.includes("/contact") },
   ];
 
@@ -239,8 +242,8 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
         className={cn(
           "sticky top-0 z-40 border-b backdrop-blur-xl transition-[height,background-color,box-shadow,border-color] duration-300",
           scrolled
-            ? "border-slate-900/10 bg-[#f3f7f4]/95 shadow-[0_10px_40px_-18px_rgba(15,23,42,0.22)] dark:border-white/10 dark:bg-[#090f0d]/95 dark:shadow-black/50"
-            : "border-slate-900/[0.06] bg-[#f3f7f4]/80 dark:border-white/10 dark:bg-[#090f0d]/80",
+            ? "border-slate-900/10 bg-[#f3f7f4]/95 shadow-[0_10px_40px_-18px_rgba(15,23,42,0.22)] dark:border-white/[0.08] dark:bg-[#070c0a]/95 dark:shadow-black/60"
+            : "border-transparent bg-[#f3f7f4]/70 dark:bg-[#070c0a]/75",
         )}
       >
         <div
@@ -258,7 +261,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
           </Link>
 
           <LayoutGroup id="b2b-nav">
-          <nav className="hidden items-center gap-0.5 rounded-full border border-slate-900/[0.08] bg-white/75 p-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05] lg:flex">
+          <nav className="hidden items-center gap-0.5 rounded-full border border-slate-900/[0.07] bg-white/60 p-1 backdrop-blur-md dark:border-white/[0.08] dark:bg-white/[0.04] lg:flex">
             {navPrimary.slice(0, 2).map((item) => {
               const active = item.match(pathOnly);
               return (
@@ -268,14 +271,14 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
-                      ? "text-white dark:text-slate-900"
+                      ? "text-white"
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
                   )}
                 >
                   {active && (
                     <motion.span
                       layoutId="b2b-nav-pill"
-                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
                     />
                   )}
@@ -300,14 +303,14 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                     className={cn(
                       "relative inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                       marketsActive
-                        ? "text-white dark:text-slate-900"
+                        ? "text-white"
                         : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
                     )}
                   >
                     {marketsActive && (
                       <motion.span
                         layoutId="b2b-nav-pill"
-                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
                         transition={{ type: "spring", stiffness: 420, damping: 32 }}
                       />
                     )}
@@ -349,7 +352,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                               <span className="block text-sm font-medium text-slate-800 dark:text-slate-100">
                                 {c[r.nameKey]}
                               </span>
-                              <span className="mt-0.5 line-clamp-1 text-[11px] text-slate-500">
+                              <span className="mt-0.5 line-clamp-1 text-[11px] text-slate-500 dark:text-slate-400">
                                 {c[r.blurbKey]}
                               </span>
                             </span>
@@ -371,14 +374,14 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-150",
                     active
-                      ? "text-white dark:text-slate-900"
+                      ? "text-white"
                       : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
                   )}
                 >
                   {active && (
                     <motion.span
                       layoutId="b2b-nav-pill"
-                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                      className="absolute inset-0 rounded-full bg-slate-900 dark:bg-emerald-500/90"
                       transition={{ type: "spring", stiffness: 420, damping: 32 }}
                     />
                   )}
@@ -400,11 +403,11 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-1.5 md:hidden">
             <LangDropdown lang={lang} onSelect={switchLang} />
             <button
               type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-900/10 bg-white/90 text-slate-800 shadow-sm dark:border-white/15 dark:bg-white/5 dark:text-white"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-800 transition hover:bg-slate-900/[0.06] dark:text-white dark:hover:bg-white/10"
               onClick={() => setOpen(true)}
               aria-label="Menu"
             >
@@ -424,7 +427,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
           >
             <button
               type="button"
-              className="absolute inset-0 bg-[#0a1012]/60 backdrop-blur-[3px]"
+              className="absolute inset-0 bg-[#050807]/55 backdrop-blur-[2px]"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
             />
@@ -432,57 +435,57 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 34 }}
-              className="absolute inset-y-0 right-0 flex w-[min(22.5rem,94vw)] flex-col border-l border-slate-900/10 bg-[#f7faf8] shadow-2xl dark:border-white/10 dark:bg-[#0e1613]"
+              transition={{ type: "spring", stiffness: 380, damping: 36 }}
+              className="absolute inset-y-0 right-0 flex w-[min(19rem,88vw)] flex-col bg-[#f7faf8] dark:bg-[#0a110e]"
             >
-              <div className="flex items-center justify-between border-b border-slate-900/10 px-4 py-4 dark:border-white/10">
-                <KmcheckApiMark />
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <KmcheckApiMark compact />
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-900/10 dark:border-white/15"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/[0.06] dark:text-slate-300 dark:hover:bg-white/10"
                   aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <nav className="flex-1 overflow-y-auto px-3 py-4">
-                <div className="space-y-1.5">
+              <nav className="flex-1 overflow-y-auto px-3 pb-4 pt-1">
+                <div className="space-y-0.5">
                   {navPrimary.map((item, idx) => {
                     const active = item.match(pathOnly);
                     return (
                       <motion.div
                         key={item.href}
-                        initial={{ opacity: 0, x: 12 }}
+                        initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.04 * idx }}
+                        transition={{ delay: 0.03 * idx }}
                       >
                         <Link
                           href={item.href}
                           onClick={() => setOpen(false)}
                           className={cn(
-                            "flex items-center justify-between rounded-2xl px-4 py-3.5 text-[15px] font-medium transition",
+                            "flex items-center justify-between rounded-xl px-3.5 py-3 text-[15px] font-medium transition-colors",
                             active
-                              ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 dark:bg-emerald-500 dark:text-emerald-950"
-                              : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-900/[0.06] hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10",
+                              ? "bg-slate-900/5 text-slate-900 dark:bg-emerald-500/15 dark:text-emerald-300"
+                              : "text-slate-600 hover:bg-slate-900/[0.04] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:text-white",
                           )}
                         >
                           {item.label}
-                          <ArrowUpRight className={cn("h-4 w-4", active ? "opacity-80" : "opacity-35")} />
+                          {active && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                         </Link>
                       </motion.div>
                     );
                   })}
 
-                  <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/[0.06] dark:bg-white/5 dark:ring-white/10">
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => setMobileMarketsOpen((v) => !v)}
-                      className="flex w-full items-center justify-between px-4 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-200"
+                      className="flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-[15px] font-medium text-slate-600 transition-colors hover:bg-slate-900/[0.04] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:text-white"
                     >
                       {c.navRegions}
-                      <ChevronDown className={cn("h-4 w-4 opacity-50 transition", mobileMarketsOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-4 w-4 opacity-45 transition", mobileMarketsOpen && "rotate-180")} />
                     </button>
                     <AnimatePresence initial={false}>
                       {mobileMarketsOpen && (
@@ -490,24 +493,29 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden border-t border-slate-900/8 dark:border-white/10"
+                          className="overflow-hidden"
                         >
                           <button
                             type="button"
                             onClick={goMarketsSection}
-                            className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-emerald-800 dark:text-emerald-300"
+                            className="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 pl-5 text-sm font-medium text-emerald-700 dark:text-emerald-400"
                           >
                             {c.regionsTitle}
-                            <ArrowRight className="h-3.5 w-3.5" />
+                            <ArrowRight className="h-3.5 w-3.5 opacity-60" />
                           </button>
                           {API_B2B_REGIONS.map((r) => (
                             <Link
                               key={r.slug}
                               href={`${base}/${r.slug}`}
                               onClick={() => setOpen(false)}
-                              className="flex items-center gap-2.5 px-4 py-3 text-sm text-slate-700 hover:bg-slate-900/[0.03] dark:text-slate-200 dark:hover:bg-white/5"
+                              className={cn(
+                                "flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 pl-5 text-sm transition-colors",
+                                pathOnly.includes(`/${r.slug}`)
+                                  ? "text-slate-900 dark:text-white"
+                                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200",
+                              )}
                             >
-                              <FlagImg code={r.flag} size={18} />
+                              <FlagImg code={r.flag} size={16} />
                               {c[r.nameKey]}
                             </Link>
                           ))}
@@ -518,11 +526,11 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                 </div>
               </nav>
 
-              <div className="border-t border-slate-900/10 p-4 dark:border-white/10">
+              <div className="px-4 pb-5 pt-2">
                 <Link
                   href={`${base}/contact`}
                   onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/25"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
                 >
                   {c.ctaStart}
                   <ArrowUpRight className="h-4 w-4" />
@@ -556,12 +564,12 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
           <div className="grid gap-12 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
             <div>
               <KmcheckApiMark forDarkBg />
-              <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">{c.footerTagline}</p>
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">{c.footerTagline}</p>
+              <div className="mt-6">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {c.footerLanguage}
                 </p>
-                <LangDropdown lang={lang} onSelect={switchLang} tone="footer" align="left" />
+                <LangDropdown lang={lang} onSelect={switchLang} tone="footer" />
               </div>
             </div>
 
@@ -595,6 +603,9 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   <Link href={`${base}/plans`} className="transition hover:text-white">{c.planManagedTitle}</Link>
                 </li>
                 <li>
+                  <Link href={`${base}/vin-decoder`} className="transition hover:text-white">{c.navDecoder}</Link>
+                </li>
+                <li>
                   <Link href={`${base}/contact`} className="transition hover:text-white">{c.navContact}</Link>
                 </li>
               </ul>
@@ -602,13 +613,13 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400/90">{c.navContact}</p>
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 flex flex-col gap-2.5">
                 <a
                   href={`mailto:${c.contactEmail}`}
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-slate-300 transition hover:border-emerald-400/30 hover:bg-white/[0.06] hover:text-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold text-white transition hover:border-emerald-400/40 hover:bg-white/[0.06]"
                 >
-                  <Mail className="h-4 w-4 shrink-0 text-emerald-400" />
-                  <span className="min-w-0 truncate">{c.contactEmail}</span>
+                  <Mail className="h-4 w-4 text-emerald-400" />
+                  {c.contactEmailLabel}
                 </a>
                 <a
                   href={`https://t.me/${c.contactTelegram}`}
@@ -620,6 +631,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                   {c.contactTelegramLabel}
                 </a>
               </div>
+              <p className="mt-3 truncate text-center text-[11px] text-slate-500">{c.contactEmail}</p>
             </div>
           </div>
         </div>

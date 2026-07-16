@@ -6,6 +6,7 @@ import { VolumePricingBanner } from "./volume-pricing";
 import { API_B2B_REGIONS } from "./regions";
 import { useApiB2bCopy } from "./use-copy";
 import { fadeUp, fadeUpTransition, staggerContainer, viewportOnce } from "./motion";
+import { HeroReportApiDemo } from "./hero-report-api";
 import {
   ArrowRight, Code2, Building2, ShieldCheck,
   Gauge, CarFront, History, FileSearch,
@@ -54,76 +55,78 @@ export default function ApiB2bHome() {
         )}
 
         <motion.div
-          className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24"
+          className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20"
           variants={staggerContainer(0.045)}
           initial={reduce ? false : "hidden"}
           animate="show"
         >
-          <motion.div
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-700/15 bg-white/70 px-3 py-1 text-xs font-semibold text-emerald-800 backdrop-blur dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-          >
-            <ShieldCheck className="h-3.5 w-3.5" />
-            {c.heroTrust}
-          </motion.div>
-          <motion.p
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="mt-5 text-sm font-semibold tracking-[0.14em] text-emerald-800 uppercase dark:text-emerald-400"
-          >
-            {c.heroBrand}
-          </motion.p>
-          <motion.h1
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-[3.35rem] md:leading-[1.08] dark:text-white"
-          >
-            {c.heroHeadline}
-          </motion.h1>
-          <motion.p
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300"
-          >
-            {c.heroSub}
-          </motion.p>
-          <motion.div
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="mt-8 flex flex-wrap items-center gap-3"
-          >
-            <Link
-              href={`${base}/contact`}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 hover:gap-2.5 active:scale-[0.98]"
-            >
-              {c.ctaContact} <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`${base}/plans`}
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-900/15 bg-white/80 px-6 py-3 text-sm font-semibold text-slate-800 backdrop-blur transition hover:border-emerald-600/40 active:scale-[0.98] dark:border-white/15 dark:bg-white/5 dark:text-white"
-            >
-              {c.ctaPlans}
-            </Link>
-          </motion.div>
-
-          <motion.div
-            variants={fadeUp}
-            transition={fadeUpTransition()}
-            className="mt-12 grid grid-cols-1 gap-4 border-t border-emerald-900/10 pt-8 sm:grid-cols-3 dark:border-white/10"
-          >
-            {[c.heroStatCars, c.heroStatRegions, c.heroStatReports].map((stat, i) => (
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12">
+            <div>
               <motion.div
-                key={stat}
-                whileHover={reduce ? undefined : { y: -3 }}
-                transition={{ type: "spring", stiffness: 400, damping: 24 }}
-                className="rounded-2xl border border-emerald-900/8 bg-white/55 px-4 py-4 backdrop-blur dark:border-white/10 dark:bg-white/5"
-                style={{ transitionDelay: `${i * 40}ms` }}
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="inline-flex items-center gap-2 rounded-full border border-emerald-700/15 bg-white/70 px-3 py-1 text-xs font-semibold text-emerald-800 backdrop-blur dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300"
               >
-                <p className="text-xl font-semibold text-emerald-800 dark:text-emerald-300 sm:text-2xl">{stat}</p>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {c.heroTrust}
               </motion.div>
-            ))}
-          </motion.div>
+              <motion.p
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="mt-5 text-sm font-semibold tracking-[0.14em] text-emerald-800 uppercase dark:text-emerald-400"
+              >
+                {c.heroBrand}
+              </motion.p>
+              <motion.h1
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] md:leading-[1.1] dark:text-white"
+              >
+                {c.heroHeadline}
+              </motion.h1>
+              <motion.p
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="mt-4 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300"
+              >
+                {c.heroSub}
+              </motion.p>
+              <motion.div
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="mt-7 flex flex-wrap items-center gap-3"
+              >
+                <Link
+                  href={`${base}/contact`}
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 hover:gap-2.5 active:scale-[0.98]"
+                >
+                  {c.ctaContact} <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href={`${base}/plans`}
+                  className="inline-flex items-center gap-2 rounded-full border border-emerald-900/15 bg-white/80 px-6 py-3 text-sm font-semibold text-slate-800 backdrop-blur transition hover:border-emerald-600/40 active:scale-[0.98] dark:border-white/15 dark:bg-white/5 dark:text-white"
+                >
+                  {c.ctaPlans}
+                </Link>
+              </motion.div>
+
+              <motion.div
+                variants={fadeUp}
+                transition={fadeUpTransition()}
+                className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-emerald-900/10 pt-5 text-sm dark:border-white/10"
+              >
+                {[c.heroStatCars, c.heroStatRegions, c.heroStatReports].map((stat) => (
+                  <span key={stat} className="font-semibold text-emerald-800 dark:text-emerald-300">
+                    {stat}
+                  </span>
+                ))}
+              </motion.div>
+            </div>
+
+            <motion.div variants={fadeUp} transition={fadeUpTransition(0.08)}>
+              <HeroReportApiDemo c={c} />
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
