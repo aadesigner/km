@@ -142,24 +142,27 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["5UX3", "X3 M"],
     ["5YM1", "X1"],
     ["5YM3", "X3 M"],
-    // Mercedes-Benz
+    // Mercedes-Benz — coarse 4-char pads use year letter A (=2010) at pos.10.
+    // Year-sensitive letter VDS is covered in mercedes-vds / premium QA tests.
     ["WDDC", "C-Class"],
     ["WDDE", "E-Class"],
     ["WDDS", "SLK/SLC"],
-    ["WDDL", "GLE-Class"],
-    // Letter-series passenger VINs decode as C-Class (pos.4 ≠ unique chassis gen).
+    // Letter-series passenger VINs (premium resolver; not unique chassis gen).
     ["WDDG", "C-Class"],
-    ["WDDA", "C-Class"],
+    ["WDDA", "A-Class"],
     ["WDDB", "B-Class"],
     ["WDDF", "E-Class"],
     ["WDDN", "GLA-Class"],
     ["WDDP", "CLA-Class"],
-    ["WDDR", "C-Class"],
-    ["WDDW", "C-Class"],
+    ["WDDR", "GLC-Class"],
+    ["WDDW", "SLK/SLC"],
     ["WDDX", "SL-Class"],
     ["WDC0", "GLC"],
-    ["WDCG", "GLE-Class"],
-    ["WDCJ", "GLC-Class"],
+    ["WDCG", "GLK (X204)"],
+    ["WDCJ", "GLC Coupe"],
+    ["WDCA", "ML-Class"],
+    ["WDCB", "ML-Class (W164)"],
+    ["WDCT", "GLA"],
     // Audi
     ["WAUC", "A4/A5"],
     ["WAUE", "A6/A7"],

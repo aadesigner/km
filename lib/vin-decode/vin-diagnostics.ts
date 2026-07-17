@@ -147,11 +147,12 @@ const MERCEDES_CHASSIS: Record<string, string> = {
   WDD177: "A-Class (W177)", WDD118: "CLA (C118)", WDD205: "C-Class (W205)", WDD206: "C-Class (W206)",
   WDD204: "C-Class (W204)", WDD203: "C-Class (W203)", WDD202: "C-Class (W202)",
   WDD213: "E-Class (W213)", WDD214: "E-Class (W214)", WDD222: "S-Class (W222)", WDD223: "S-Class (W223)",
-  WDD253: "GLC (X253)", WDD254: "GLC (X254)", WDD166: "GLE (W166)", WDD167: "GLE / GLS (W167/X167)",
+  WDD253: "GLC (X253)", WDD254: "GLC (X254)", WDD166: "ML / GLE (W166)", WDD167: "GLE / GLS (W167/X167)",
   WDD247: "GLA / GLB (H247/X247)", WDD463: "G-Class (W463/W465)", WDD290: "EQS (V297)",
   WDD243: "EQA / EQB (H243/X243)", WDD238: "E-Class Coupé/Cabrio (C238)",
   WDD296: "EQS SUV (X296)", WDD236: "CLE (C236)", WDD293: "EQC (N293)",
-  WDD245: "B-Class (W245)",
+  WDD245: "B-Class (W245)", WDD163: "ML-Class (W163)", WDD164: "ML-Class (W164)",
+  WDD251: "GLK (X204)",
   WDD192: "AMG GT (C192)", WDD197: "SL (R232)",
 };
 

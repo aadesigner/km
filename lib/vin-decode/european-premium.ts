@@ -110,17 +110,26 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "W222": { from: 2013, to: 2020 },
   "W223": { from: 2020, to: 2099 },
   "X253": { from: 2015, to: 2022 },
+  "C253": { from: 2016, to: 2023 },
   "X254": { from: 2022, to: 2099 },
+  "C254": { from: 2023, to: 2099 },
+  "W163": { from: 1997, to: 2005 },
   "W166": { from: 2011, to: 2019 },
+  "X166": { from: 2006, to: 2019 },
+  "C292": { from: 2015, to: 2019 },
+  "W167": { from: 2019, to: 2099 },
   "X167": { from: 2019, to: 2099 },
   "W167/X167": { from: 2019, to: 2099 },
+  "X156": { from: 2014, to: 2020 },
   "H247": { from: 2020, to: 2099 },
   "H247/X247": { from: 2019, to: 2099 },
   "X247": { from: 2019, to: 2099 },
   "W246": { from: 2011, to: 2019 },
   "W245": { from: 2005, to: 2011 },
   "W247": { from: 2019, to: 2099 },
+  "W251": { from: 2005, to: 2013 },
   "W164": { from: 2005, to: 2011 },
+  "X164": { from: 2006, to: 2012 },
   "X204": { from: 2008, to: 2015 },
   "W463/W465": { from: 1990, to: 2099 },
   "W463": { from: 1990, to: 2099 },
@@ -336,12 +345,14 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD223", model: "S-Class", chassis: "W223" },
   { prefix: "WDD253", model: "GLC", chassis: "X253" },
   { prefix: "WDD254", model: "GLC", chassis: "X254" },
+  // W166: sold as ML through MY2015, renamed GLE from MY2016 (refined by year below).
   { prefix: "WDD166", model: "GLE", chassis: "W166" },
-  // 167 = GLE (W167) and GLS (X167) — do not pick one.
+  // 167 = GLE (W167) and GLS (X167) — do not pick one from chassis digits alone.
   { prefix: "WDD167", model: "GLE / GLS", chassis: "W167/X167" },
-  // 247 = GLA (H247) and GLB (X247) — do not pick one.
+  // 247 = GLA (H247) and GLB (X247) — do not pick one from chassis digits alone.
   { prefix: "WDD247", model: "GLA / GLB", chassis: "H247/X247" },
   { prefix: "WDD246", model: "B-Class", chassis: "W246" },
+  { prefix: "WDD163", model: "ML-Class", chassis: "W163" },
   { prefix: "WDD164", model: "ML-Class", chassis: "W164" },
   { prefix: "WDD251", model: "GLK", chassis: "X204" },
   { prefix: "WDD463", model: "G-Class", chassis: "W463/W465" },
@@ -429,14 +440,85 @@ function mercedesPassengerSeriesAt4(
   }
 }
 
-/** Mercedes SUVs (WDC / W1N / 4JG) — position 4 platform letter. Model only when gen ambiguous. */
-const MERCEDES_SUV_SERIES_AT_4: Record<string, { model: string; chassis?: string }> = {
-  Y: { model: "G-Class", chassis: "W463" },
-  W: { model: "G-Class", chassis: "W465" },
-  R: { model: "G-Class", chassis: "W463" },
-  C: { model: "G-Class", chassis: "W463" },
-  "0": { model: "GLC" },
-};
+/**
+ * Mercedes SUVs (WDC / W1N / 4JG) — North American letter VDS.
+ * Position 4 = series/platform; position 5 = body style (disambiguates GLE vs GLS, GLA vs GLB, etc.).
+ * Source: Wikibooks Mercedes-Benz VIN Codes (SUV series + body tables).
+ */
+function mercedesSuvFromLetterVds(
+  series: string,
+  body: string,
+  year: number | null,
+): { model: string; chassis?: string } | null {
+  switch (series) {
+    case "A":
+      return { model: "ML-Class", chassis: "W163" };
+    case "B":
+      // B+F ≈ X164 GL; otherwise W164 M-Class
+      if (body === "F") return { model: "GL-Class", chassis: "X164" };
+      return { model: "ML-Class", chassis: "W164" };
+    case "C":
+      // Series C = R-Class (W251). G-Class uses Y/W (and older body R/C).
+      if (body === "C" || body === "R" || body === "H") {
+        return { model: "G-Class", chassis: year != null && year >= 2024 ? "W465" : "W463" };
+      }
+      return { model: "R-Class", chassis: "W251" };
+    case "D":
+      // D+M (2022+) = EQS SUV; D+F = X166 GL/GLS; D+D/E = GLE Coupe; D+A = W166 ML/GLE
+      if (body === "M" && (year == null || year >= 2022)) {
+        return { model: "EQS SUV", chassis: "X296" };
+      }
+      if (body === "F") {
+        if (year != null && year >= 2017) return { model: "GLS", chassis: "X166" };
+        return { model: "GL-Class", chassis: "X166" };
+      }
+      if (body === "D" || body === "E") return { model: "GLE Coupe", chassis: "C292" };
+      if (year != null && year < 2016) return { model: "ML-Class", chassis: "W166" };
+      return { model: "GLE", chassis: "W166" };
+    case "E":
+      return { model: "GLE Coupe", chassis: "C292" };
+    case "F":
+      // F+F = X167 GLS; F+B/A = W167/C167 GLE
+      if (body === "F") return { model: "GLS", chassis: "X167" };
+      if (body === "B" || body === "A") return { model: "GLE", chassis: "W167" };
+      return { model: "GLE / GLS", chassis: "W167/X167" };
+    case "G":
+      // Series G = GLK (X204) or EQE SUV (X294). Mid years are ambiguous.
+      if (year != null && year >= 2022) return { model: "EQE SUV", chassis: "X294" };
+      if (year != null && year <= 2015) return { model: "GLK", chassis: "X204" };
+      if (year == null) return { model: "GLK / EQE SUV" };
+      return null;
+    case "0":
+      if (body === "J") return { model: "GLC Coupe", chassis: "C253" };
+      return { model: "GLC", chassis: "X253" };
+    case "K":
+      if (body === "J") return { model: "GLC Coupe", chassis: "C254" };
+      return { model: "GLC", chassis: "X254" };
+    case "J":
+      // Letter J as series ≈ GLC Coupe (C253); also covered via 0+J / K+J.
+      return { model: "GLC Coupe", chassis: year != null && year >= 2023 ? "C254" : "C253" };
+    case "T":
+      return { model: "GLA", chassis: "X156" };
+    case "Y":
+      return { model: "G-Class", chassis: "W463" };
+    case "W":
+      return { model: "G-Class", chassis: "W465" };
+    case "R":
+      return { model: "G-Class", chassis: "W463" };
+    case "4":
+      // 4+M = GLB; 4+N/G = GLA (H247)
+      if (body === "M") return { model: "GLB", chassis: "X247" };
+      if (body === "N" || body === "G") return { model: "GLA", chassis: "H247" };
+      return { model: "GLA / GLB", chassis: "H247/X247" };
+    case "9":
+      return { model: "EQB", chassis: "X243" };
+    case "N":
+      // Body N is GLA (H247); rare as series — treat as GLA when present on SUV WMI.
+      return { model: "GLA", chassis: "H247" };
+    default:
+      return null;
+  }
+}
 
 const AUDI_US_RULES = compilePrefixRules([
   { prefix: "WA1L", model: "Q5" },
@@ -584,10 +666,14 @@ function formatDisplay(model: string, chassis: string | null): string {
   return `${model} (${chassis})`;
 }
 
-/** W1K / WDB / WDC / WDF share VDS chassis codes with WDD — alias for rule matching only. */
+/** W1K / WDB / WDC / WDF / W1N / 4JG share VDS chassis codes with WDD — alias for rule matching only. */
 function mercedesRuleVin(vin: string): string {
-  if (vin.startsWith("W1K")) return `WDD${vin.slice(3)}`;
-  if (vin.startsWith("WDB") || vin.startsWith("WDC") || vin.startsWith("WDF")) return `WDD${vin.slice(3)}`;
+  if (vin.startsWith("W1K") || vin.startsWith("W1N") || vin.startsWith("4JG")) {
+    return `WDD${vin.slice(3)}`;
+  }
+  if (vin.startsWith("WDB") || vin.startsWith("WDC") || vin.startsWith("WDF")) {
+    return `WDD${vin.slice(3)}`;
+  }
   return vin;
 }
 
@@ -603,35 +689,48 @@ function mercedesHasChassisDigits(vin: string): boolean {
   return /^\d{3}$/.test(mercedesRuleVin(vin).slice(3, 6));
 }
 
-function decodeMercedesSeriesAt4(
-  vin: string,
-  seriesMap: Record<string, { model: string; chassis?: string }>,
-): PremiumEuropeanDecode | null {
-  const hit = seriesMap[vin[3]];
-  if (!hit) return null;
-  const year = premiumVinModelYear(vin);
-  return finalizePremium(hit.model, hit.chassis ?? null, year);
+/** W166 mid-cycle rename: sold as ML through MY2015, GLE from MY2016. */
+function finalizeW166(year: number | null): PremiumEuropeanDecode {
+  if (year != null && year < 2016) return finalizePremium("ML-Class", "W166", year);
+  if (year != null && year >= 2016) return finalizePremium("GLE", "W166", year);
+  return finalizePremium("ML / GLE", "W166", year);
+}
+
+function isMercedes166Hit(hit: PremiumEuropeanDecode, ruleVin: string): boolean {
+  return hit.chassis === "W166" || ruleVin.slice(3, 6) === "166";
 }
 
 function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
   const wmi = upper.slice(0, 3);
   const ruleVin = mercedesRuleVin(upper);
+  const year = premiumVinModelYear(upper);
 
   if (mercedesHasChassisDigits(upper)) {
     const chassisHit = decodeFromRules(ruleVin, MERCEDES_RULES);
-    if (chassisHit) return chassisHit;
+    if (chassisHit) {
+      if (isMercedes166Hit(chassisHit, ruleVin)) return finalizeW166(year);
+      return chassisHit;
+    }
   }
 
   const longHit = decodeFromRules(ruleVin, MERCEDES_RULES);
-  if (longHit) return longHit;
+  if (longHit) {
+    if (isMercedes166Hit(longHit, ruleVin)) return finalizeW166(year);
+    return longHit;
+  }
 
   if (isMercedesSuvWmi(wmi)) {
-    const suvHit = decodeMercedesSeriesAt4(upper, MERCEDES_SUV_SERIES_AT_4);
-    if (suvHit) return suvHit;
+    const suv = mercedesSuvFromLetterVds(upper[3]!, upper[4]!, year);
+    if (suv) {
+      if (suv.chassis === "W166" || (suv.model === "GLE" && suv.chassis === "W166")) {
+        return finalizeW166(year);
+      }
+      if (suv.model === "ML-Class" && suv.chassis === "W166") return finalizeW166(year);
+      return finalizePremium(suv.model, suv.chassis ?? null, year);
+    }
   }
 
   if (isMercedesPassengerWmi(wmi)) {
-    const year = premiumVinModelYear(ruleVin);
     const series = mercedesPassengerSeriesAt4(ruleVin[3]!, year);
     if (series) return finalizePremium(series.model, null, year);
   }
@@ -690,7 +789,13 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   if (isMercedesPassengerWmi(wmi) || isMercedesSuvWmi(wmi)) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeMercedesEuHomologation(raw), raw);
-      if (euHit) return euHit;
+      if (euHit) {
+        // Homologation embeds chassis digits at pos. 7–9 (e.g. WDDZZZ166…).
+        if (euHit.chassis === "W166" || raw.slice(6, 9) === "166") {
+          return finalizeW166(premiumVinModelYear(raw));
+        }
+        return euHit;
+      }
     }
     return decodeMercedesPremium(upper);
   }

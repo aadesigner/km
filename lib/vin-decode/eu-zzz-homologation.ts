@@ -182,12 +182,16 @@ const MERCEDES_EU_CODES: CodeRule[] = [
   { code: "223", model: "S-Class", chassis: "W223" },
   { code: "253", model: "GLC", chassis: "X253" },
   { code: "254", model: "GLC", chassis: "X254" },
+  // W166: ML through MY2015 / GLE from MY2016 — refined in european-premium.
   { code: "166", model: "GLE", chassis: "W166" },
   { code: "167", model: "GLE / GLS", chassis: "W167/X167" },
   { code: "247", model: "GLA / GLB", chassis: "H247/X247" },
   { code: "246", model: "B-Class", chassis: "W246" },
   { code: "245", model: "B-Class", chassis: "W245" },
   { code: "243", model: "EQA / EQB", chassis: "H243/X243" },
+  { code: "163", model: "ML-Class", chassis: "W163" },
+  { code: "164", model: "ML-Class", chassis: "W164" },
+  { code: "251", model: "GLK", chassis: "X204" },
   { code: "463", model: "G-Class", chassis: "W463" },
   { code: "290", model: "EQS", chassis: "V297" },
   { code: "294", model: "EQE", chassis: "V294" },
@@ -200,7 +204,7 @@ const MERCEDES_EU_CODES: CodeRule[] = [
   { code: "197", model: "SL", chassis: "R232" },
 ];
 
-const MERCEDES_WMIS = ["WDD", "WDB", "WDC", "W1K"] as const;
+const MERCEDES_WMIS = ["WDD", "WDB", "WDC", "W1K", "W1N", "4JG"] as const;
 const MERCEDES_EU_RULES = compilePrefixRules(
   MERCEDES_WMIS.flatMap((wmi) => rulesForWmi(wmi, MERCEDES_EU_CODES)),
 );
