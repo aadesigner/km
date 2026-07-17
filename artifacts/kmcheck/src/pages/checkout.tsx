@@ -1398,15 +1398,16 @@ export default function Checkout({ params }: Props) {
             {/* VIN input row */}
             <div className="px-5 sm:px-6 py-5 border-b bg-gradient-to-r from-muted/50 via-muted/30 to-transparent">
               <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2.5">{t("checkout_vin_label")}</label>
-              <div className="relative group">
+              <div className="relative group" dir="ltr">
                 <Input
+                  dir="ltr"
                   placeholder={t("vin_placeholder")}
                   value={vin}
                   onChange={(e) => handleVinInputChange(e.target.value)}
                   maxLength={17}
                   readOnly={vinLocked}
                   className={cn(
-                    "font-mono tracking-widest h-12 text-sm sm:text-base shadow-none transition-shadow",
+                    "vin-input-ltr font-mono tracking-widest h-12 text-sm sm:text-base text-left placeholder:text-left shadow-none transition-shadow",
                     vinLocked ? "pr-[7.5rem] bg-muted/50 cursor-default" : "pr-20",
                     !vinLocked && vinIsValid && "border-green-500/40 focus-visible:ring-green-500/25",
                   )}

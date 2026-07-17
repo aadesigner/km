@@ -391,11 +391,12 @@ export default function FreeVinDecoder() {
           </p>
 
           <form onSubmit={handleDecode} className="max-w-xl mx-auto space-y-3 pt-2">
-            <div className="relative p-[2px] rounded-2xl sm:shadow-xl sm:shadow-black/8">
+            <div className="relative p-[2px] rounded-2xl sm:shadow-xl sm:shadow-black/8" dir="ltr">
             <div className="relative flex items-center rounded-2xl overflow-hidden border-2 border-border focus-within:border-primary transition-colors bg-background">
               <Search className="absolute left-5 h-5 w-5 text-muted-foreground shrink-0" />
               <Input
-                className="h-14 pl-12 pr-36 text-base border-0 focus-visible:ring-0 rounded-2xl shadow-none bg-transparent font-mono tracking-widest"
+                dir="ltr"
+                className="vin-input-ltr h-14 pl-12 pr-36 text-base text-left border-0 focus-visible:ring-0 rounded-2xl shadow-none bg-transparent font-mono tracking-widest placeholder:text-left"
                 placeholder={t("vin_placeholder")}
                 value={vin}
                 onChange={(e) => { setVin(e.target.value.toUpperCase()); setError(""); }}

@@ -58,7 +58,8 @@ export function HeroVinForm({
     <form onSubmit={handleFormSubmit} className={cn("max-w-lg sm:max-w-xl w-full mx-auto space-y-3 text-left", className)}>
       <VinLookupDisabledBanner compact />
 
-      <div className={cn(disabled && "opacity-60 pointer-events-none")}>
+      {/* VIN is always LTR — keep field layout left-aligned in Arabic/RTL pages. */}
+      <div className={cn(disabled && "opacity-60 pointer-events-none")} dir="ltr">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3 px-1">
             <span
@@ -111,12 +112,13 @@ export function HeroVinForm({
               />
               <Input
                 ref={inputRef}
+                dir="ltr"
                 className={cn(
-                  "h-[3.25rem] sm:h-14 md:h-16 w-full min-w-0",
+                  "vin-input-ltr h-[3.25rem] sm:h-14 md:h-16 w-full min-w-0 text-left",
                   "pl-11 sm:pl-14 pr-[7.5rem] sm:pr-[10.5rem]",
                   "text-[16px] sm:text-lg",
                   "border-0 focus-visible:ring-0 focus-visible:outline-none rounded-none shadow-none bg-transparent",
-                  "font-mono tracking-[0.14em] sm:tracking-widest placeholder:tracking-normal",
+                  "font-mono tracking-[0.14em] sm:tracking-widest placeholder:tracking-normal placeholder:text-left",
                   isOnDark
                     ? "text-white placeholder:text-white/55"
                     : "text-foreground dark:text-white placeholder:text-muted-foreground/75 dark:placeholder:text-white/30",

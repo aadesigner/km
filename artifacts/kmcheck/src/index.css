@@ -610,6 +610,21 @@
   animation: shimmer 4s ease-in-out infinite;
 }
 
+/* VIN inputs stay LTR even on Arabic pages — including Arabic-script placeholders. */
+.vin-input-ltr,
+.vin-input-ltr input {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate;
+}
+
+.vin-input-ltr::placeholder,
+.vin-input-ltr input::placeholder {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: plaintext;
+}
+
 /* Animated moving brand-green border on the hero VIN field (hover / focus) */
 @property --hero-vin-angle {
   syntax: "<angle>";
