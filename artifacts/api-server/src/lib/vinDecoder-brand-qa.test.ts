@@ -19,15 +19,15 @@ const CASES: BrandCase[] = [
   { vin: "WVWZZZ3CZCE064077", label: "VW Passat (Typ 3C)", make: "Volkswagen", modelContains: "Passat" },
   { vin: "WVWZZZ1KZAW123456", label: "VW Golf (Typ 1K)", make: "Volkswagen", modelContains: "Golf" },
   { vin: "WVWZZZ5NZBW123456", label: "VW Tiguan (WVW)", make: "Volkswagen", modelContains: "Tiguan" },
-  { vin: "WVWZZZCJZAW123456", label: "VW ID.3", make: "Volkswagen", modelContains: "ID.3" },
-  { vin: "1VWZZZA3ZDC050213", label: "VW Jetta US", make: "Volkswagen", modelContains: "Jetta" },
+  { vin: "WVWZZZE1ZSW123456", label: "VW ID.3", make: "Volkswagen", modelContains: "ID.3" },
+  { vin: "1VWZZZA3ZDC050213", label: "VW Passat NMS", make: "Volkswagen", modelContains: "Passat" },
   { vin: "3VWS17AU0FM123456", label: "VW Tiguan US", make: "Volkswagen", modelContains: "Tiguan" },
   { vin: "WVWZZZ1TZBW123456", label: "VW Touran 1T", make: "Volkswagen", modelContains: "Touran" },
   { vin: "WVWZZZ9NZBW123456", label: "VW Touran 5T", make: "Volkswagen", modelContains: "Touran" },
   { vin: "WVWZZZAZ1NW123456", label: "VW Touran 5T (AZ)", make: "Volkswagen", modelContains: "Touran" },
   { vin: "WVWZZZ5MNW1234567", label: "VW T-Roc", make: "Volkswagen", modelContains: "T-Roc" },
   { vin: "WVWZZZ2HNW1234567", label: "VW Amarok", make: "Volkswagen", modelContains: "Amarok" },
-  { vin: "WVWZZZSKNW1234567", label: "VW ID. Buzz", make: "Volkswagen", modelContains: "ID. Buzz" },
+  { vin: "WVGZZZEBSNW123456", label: "VW ID. Buzz", make: "Volkswagen", modelContains: "ID. Buzz" },
 
   // ── Audi ──────────────────────────────────────────────────────────────────
   { vin: "WAUZZZ8K1BN123456", label: "Audi A4 EU", make: "Audi", modelContains: "A4" },

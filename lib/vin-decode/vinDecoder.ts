@@ -23,6 +23,13 @@ import {
   inferVagDriveFromModel,
   inferVagTransmissionFromModel,
 } from "./vag-infer";
+import {
+  isAudiVin,
+  isPorscheVin,
+  isSkodaVin,
+  isVolkswagenVin,
+  resolveChinaJointVentureMake,
+} from "./vag-modern";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
 // Letters I, O, Q, U, Z are never used. Digits 0 is never used.
@@ -96,6 +103,12 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VF1", country: "France" },
   { prefix: "YAR", country: "France" },
   { prefix: "TSM", country: "Hungary" },
+  { prefix: "TRU", country: "Hungary" },
+  { prefix: "TNL", country: "Czech Republic" },
+  { prefix: "TMS", country: "Czech Republic" },
+  { prefix: "TMP", country: "Czech Republic" },
+  { prefix: "TM8", country: "Czech Republic" },
+  { prefix: "TMB", country: "Czech Republic" },
   { prefix: "TMA", country: "Czech Republic" },
   { prefix: "HES", country: "China" },
   { prefix: "SHH", country: "United Kingdom" },
@@ -149,7 +162,7 @@ const WMI_MAP: Record<string, string> = {
   "1ME": "Mercury",
   "1N4": "Nissan", "1N6": "Nissan", "1NX": "Toyota",
   "1P3": "Plymouth",
-  "1VW": "Volkswagen",
+  "1VW": "Volkswagen", "1V2": "Volkswagen",
   "1YV": "Mazda",
   "1ZV": "Mustang",
   "2C3": "Chrysler", "2C4": "Chrysler", "2C8": "Chrysler",
@@ -159,7 +172,7 @@ const WMI_MAP: Record<string, string> = {
   "2T1": "Toyota", "2T2": "Lexus", "2T3": "Toyota",
   "3FA": "Ford", "3FE": "Ford",
   "3N1": "Nissan", "3N6": "Nissan",
-  "3VW": "Volkswagen",
+  "3VW": "Volkswagen", "3VV": "Volkswagen",
   "4S3": "Subaru", "4S4": "Subaru", "4S6": "Subaru",
   "4T1": "Toyota", "4T3": "Toyota", "4T4": "Toyota",
   "4US": "BMW",
@@ -198,13 +211,14 @@ const WMI_MAP: Record<string, string> = {
   "KPT": "SsangYong",
   "KPA": "SsangYong",
   // ── GERMANY ───────────────────────────────────────────────────────────────
-  "WAU": "Audi", "WAP": "Porsche", "WA1": "Audi",
+  "WAU": "Audi", "WUA": "Audi", "WAP": "Porsche", "WA1": "Audi",
   "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW",
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
   "WDF": "Mercedes-Benz", "W1K": "Mercedes-Benz", "W1N": "Mercedes-Benz",
   "4JG": "Mercedes-Benz", "WME": "Smart", "HES": "Smart",
   "WP0": "Porsche", "WP1": "Porsche",
   "WVW": "Volkswagen", "WVG": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
+  "WV3": "Volkswagen",
   "W09": "Porsche",
   // ── UK ────────────────────────────────────────────────────────────────────
   "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover", "SAD": "Jaguar",
@@ -216,7 +230,7 @@ const WMI_MAP: Record<string, string> = {
   "SCB": "Bentley", "SCC": "Lotus",
   "SDB": "Aston Martin",
   "SFD": "Alexander Dennis",
-  "TRU": "Audi UK",
+  "TRU": "Audi",
   // ── SWEDEN ────────────────────────────────────────────────────────────────
   "YV1": "Volvo", "YV4": "Volvo",
   "7JR": "Volvo", "7JD": "Volvo", "XLB": "Volvo", "PNV": "Volvo",
@@ -250,7 +264,6 @@ const WMI_MAP: Record<string, string> = {
   "MP1": "Isuzu", "MPA": "Isuzu", "M3G": "Isuzu",
   "4S1": "Isuzu", "4S2": "Isuzu", "J87": "Isuzu",
   // ── CHINA ─────────────────────────────────────────────────────────────────
-  "LFV": "Volkswagen China",
   "LGX": "BYD", "LRW": "Tesla", "XP7": "Tesla",
   "LSG": "General Motors China",
   "LJC": "Chery", "LVR": "Chery", "LVS": "Ford China",
@@ -263,7 +276,7 @@ const WMI_MAP: Record<string, string> = {
   "LJ1": "JAC", "LHG": "GAC", "LMG": "GAC Trumpchi",
   "LVH": "Dongfeng Honda", "LDN": "Dongfeng Nissan",
   "LDC": "Dongfeng Peugeot-Citroën", "LBE": "Mercedes-Benz China",
-  "LZW": "Wuling / Baojun", "LSV": "SAIC Volkswagen",
+  "LZW": "Wuling / Baojun",
   "LSA": "Maxus", "LJD": "Dongfeng Kia",
   "LTE": "JMC", "LLV": "Lifan", "LTV": "Foton",
   "LFM": "FAW Toyota", "LWV": "GAC Mitsubishi",
@@ -310,8 +323,8 @@ const WMI_MAP: Record<string, string> = {
   "1D3": "Dodge",
   "1GY": "Cadillac",
   // ── CZECH REPUBLIC (Škoda) ────────────────────────────────────────────────
-  "TMB": "Škoda",
-  "TM8": "Škoda",
+  "TMB": "Škoda", "TM8": "Škoda", "TMP": "Škoda", "TMS": "Škoda",
+  "TNL": "Škoda", "XW8": "Škoda", "XWW": "Škoda", "Y6U": "Škoda",
   // ── SPAIN (SEAT, continued) ───────────────────────────────────────────────
   "VS6": "SEAT",
   "VS7": "SEAT",
@@ -338,6 +351,8 @@ function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typ
   if (isAudiHomologationVin(vin)) return "Audi";
   const spec = resolveBrandVinSpec(vin);
   if (spec?.make) return spec.make;
+  const chinaJv = resolveChinaJointVentureMake(vin);
+  if (chinaJv) return chinaJv;
   return resolveGlobalBrandMake(vin, wmiMake, global);
 }
 
@@ -399,12 +414,13 @@ const MODEL_MAP_4: Record<string, string> = {
   "WA1L": "Q5",         "WA1B": "Q7",         "WA1A": "Q3",
   "WA1C": "Q5",         "WA1F": "Q5 Sportback", "WA1M": "Q8",
   // ── Volkswagen ────────────────────────────────────────────────────────────
-  "WVWZ": "Golf",       "WVWA": "Jetta",      "WVWB": "Polo",
+  // Do not map WVWZ/1VWZ — position 4 is ZZZ filler on EU VINs, not a model line.
+  "WVWA": "Jetta",      "WVWB": "Polo",
   "WVWH": "Passat",     "1VWB": "Passat",
   "3VWF": "Jetta",      "3VWC": "Jetta",      "3VWS": "Tiguan",
   "3VW4": "Golf",       "3VW1": "Golf",
   // North American VW assembly plant prefixes (1VW*)
-  "1VWZ": "Jetta",      "1VWF": "Golf",       "1VWA": "Eos",
+  "1VWF": "Golf",       "1VWA": "Eos",
   // ── Porsche ───────────────────────────────────────────────────────────────
   "WP0A": "911",        "WP0B": "Boxster/Cayman",
   "WP0C": "Cayenne",    "WP0Z": "Panamera",   "WP0G": "Taycan",
@@ -1678,9 +1694,14 @@ export function decodeTransmission(
     return null;
   }
 
+  if (isVolkswagenVin(upper) || isAudiVin(upper) || isSkodaVin(upper) || isPorscheVin(upper)) {
+    const fromModel = inferVagTransmissionFromModel(model ?? decodePremiumEuropeanModel(upper));
+    if (fromModel === "Single-Speed Automatic") return fromModel;
+  }
+
   if (hasEuZzzTypeApprovalDescriptor(upper)) {
     const wmi = upper.slice(0, 3);
-    if (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU") || wmi.startsWith("TMB") || wmi.startsWith("VSS")) {
+    if (isVolkswagenVin(upper) || isAudiVin(upper) || isSkodaVin(upper) || wmi.startsWith("VSS")) {
       const fromModel = inferVagTransmissionFromModel(model ?? decodePremiumEuropeanModel(upper));
       if (fromModel) return fromModel;
     }
@@ -1842,7 +1863,7 @@ export function decodeVin(vin: string): VinDecodeResult {
   const plant = plantFromBrand ?? decodePlantInfo(upper);
   const bodyStyleDecoded = brandSpec?.bodyStyle ?? decodeBodyStyleLocal(upper, model);
   let driveType = brandSpec?.driveType ?? inferDriveType(wmi, model, engineDecoded);
-  if (!driveType && (isVagWmi(wmi) || wmi.startsWith("WAU") || wmi.startsWith("TRU"))) {
+  if (!driveType && (isVolkswagenVin(upper) || isAudiVin(upper) || isSkodaVin(upper) || isPorscheVin(upper))) {
     driveType = inferVagDriveFromModel(model);
   }
   return {
@@ -1864,8 +1885,8 @@ export function decodeVin(vin: string): VinDecodeResult {
     bodyStyleDecoded,
     transmissionDecoded: brandSpec?.transmissionDecoded ?? decodeTransmission(upper, engineDecoded, model),
     fuelType: brandSpec?.fuelType
-      ?? inferFuelType(engineDecoded, wmi)
-      ?? inferFuelFromModel(model),
+      ?? inferFuelFromModel(model)
+      ?? inferFuelType(engineDecoded, wmi),
     driveType,
   };
 }
@@ -1874,6 +1895,18 @@ export function decodeVin(vin: string): VinDecodeResult {
 function inferFuelFromModel(model: string | null): string | null {
   if (!model) return null;
   const m = model.toLowerCase();
-  if (m.includes("i-pace")) return "Electric";
+  if (
+    m.includes("i-pace")
+    || /\bid\.?\s*[34567]\b/.test(m)
+    || m.includes("id. buzz")
+    || m.includes("enyaq")
+    || m.includes("elroq")
+    || m.includes("citigoe")
+    || m.includes("e-tron")
+    || m.includes("taycan")
+    || m.includes("macan electric")
+  ) {
+    return "Electric";
+  }
   return null;
 }

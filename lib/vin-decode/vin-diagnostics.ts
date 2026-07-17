@@ -3,6 +3,7 @@ import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecode
 import { decodePremiumEuropean } from "./european-premium";
 import { isVagWmi } from "./vag-wmi";
 import { decodeSeatEuHomologation, formatSeatDisplay, SEAT_EU_WMIS } from "./seat-eu";
+import { isAudiVin, isPorscheVin, isSkodaVin, isVolkswagenVin } from "./vag-modern";
 
 function isRenaultWmiForDiag(wmi: string): boolean {
   return (
@@ -49,9 +50,12 @@ function wmiFamily(wmi: string): string | null {
     "5UX": "BMW USA", "4US": "BMW USA",
     WDD: "Mercedes-Benz", WDB: "Mercedes-Benz", WDC: "Mercedes-Benz", WDF: "Mercedes-Benz",
     W1K: "Mercedes-Benz", W1N: "Mercedes-Benz", "4JG": "Mercedes-Benz",
-    WAU: "Audi", TRU: "Audi",
+    WAU: "Audi", WA1: "Audi", WUA: "Audi Sport", TRU: "Audi",
     WVW: "Volkswagen", WVG: "Volkswagen", WV1: "VW Commercial", WV2: "VW Commercial",
+    WV3: "VW Commercial", "1VW": "Volkswagen USA", "1V2": "Volkswagen USA",
+    "3VW": "Volkswagen Mexico", "3VV": "Volkswagen Mexico",
     WP0: "Porsche", WP1: "Porsche",
+    TMB: "Škoda", TM8: "Škoda", TMP: "Škoda", TMS: "Škoda",
     JHM: "Honda Japan", "1HG": "Honda USA", "5FN": "Honda USA", "5J6": "Honda USA",
     JT: "Toyota Japan", "4T1": "Toyota USA", "5TD": "Toyota USA", "5TF": "Toyota USA", "2T2": "Lexus",
     KMH: "Hyundai", KNA: "Kia", KND: "Kia", KMT: "Genesis",
@@ -198,10 +202,12 @@ function vagDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic[]
     push(out, "identity", "model_line", premium.displayModel);
     if (premium.chassis) push(out, "identity", "chassis_platform", premium.chassis);
   } else if (vin.slice(3, 6) === "ZZZ") {
+    push(out, "identity", "model_line", base.model);
     const euModel = decodeModelEuropean(vin);
     if (euModel) push(out, "identity", "model_code", euModel, "EU VIN model/type approval code (pos. 7–9)");
     push(out, "identity", "vds_format", "European VAG format (ZZZ filler in positions 4–6)");
   } else {
+    push(out, "identity", "model_line", base.model);
     push(out, "identity", "vds_descriptor", vin.slice(3, 8));
   }
 
@@ -212,6 +218,9 @@ function vagDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagnostic[]
   }
   if (isVagWmi(wmi)) {
     if (vin[7] === "M") push(out, "options", "electrification", "eTSI mild hybrid / BlueMotion");
+  }
+  if (base.fuelType === "Electric") {
+    push(out, "options", "electrification", "Battery Electric Vehicle (BEV)");
   }
   if (base.bodyStyleDecoded) push(out, "body", "body_style", base.bodyStyleDecoded);
 }
@@ -410,15 +419,15 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     mercedesDiagnostics(vin, base, out);
     return;
   }
-  if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+  if (isAudiVin(vin)) {
     vagDiagnostics(vin, base, out);
     return;
   }
-  if (wmi.startsWith("WP0") || wmi.startsWith("WP1") || make.includes("porsche")) {
+  if (isPorscheVin(vin) || make.includes("porsche")) {
     porscheDiagnostics(vin, base, out);
     return;
   }
-  if (isVagWmi(wmi) || make.includes("volkswagen")) {
+  if (isVolkswagenVin(vin) || make.includes("volkswagen")) {
     vagDiagnostics(vin, base, out);
     return;
   }
@@ -450,11 +459,9 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     subaruDiagnostics(vin, out);
     return;
   }
-  if (wmi.startsWith("TMB") || make.includes("škoda") || make.includes("skoda")) {
-    push(out, "identity", "model_line", base.model);
-    if (vin.length >= 8) {
-      push(out, "identity", "skoda_type_code", vin.slice(6, 8), "Škoda model/type code (pos. 7–8)");
-    }
+  if (isSkodaVin(vin) || make.includes("škoda") || make.includes("skoda")) {
+    vagDiagnostics(vin, base, out);
+    push(out, "identity", "skoda_type_code", vin.slice(6, 8), "Škoda model/type code (pos. 7–8)");
     return;
   }
   if (isRenaultWmiForDiag(wmi) || make.includes("renault")) {

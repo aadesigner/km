@@ -28,12 +28,14 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "8R", model: "Q5", chassis: "8R" },
   { code: "F1", model: "Q8", chassis: "4M" },
   { code: "GE", model: "Q8 e-tron / e-tron" },
-  { code: "GF", model: "Q6 e-tron" },
+  { code: "GF", model: "Q6 e-tron / SQ6 e-tron", chassis: "PPE" },
+  { code: "GH", model: "A6 e-tron / S6 e-tron", chassis: "PPE" },
+  { code: "GU", model: "Q5 / SQ5", chassis: "GU" },
   { code: "FS", model: "Q3", chassis: "8U" },
   { code: "F3", model: "Q3", chassis: "F3" },
   { code: "FJ", model: "Q3", chassis: "FJ" },
-  { code: "FZ", model: "Q4 e-tron" },
-  { code: "GB", model: "Q4 e-tron" },
+  { code: "FZ", model: "Q4 e-tron", chassis: "MEB" },
+  { code: "GB", model: "Q4 e-tron", chassis: "MEB" },
   // Legacy 2-char SUV codes (pos 7–8)
   { code: "GY", model: "Q7", chassis: "4M" },
   { code: "GA", model: "Q5", chassis: "8R" },
@@ -55,9 +57,7 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "FF", model: "A3", chassis: "8V" },
   { code: "FM", model: "A3", chassis: "8P" },
   { code: "8X", model: "A1" },
-  { code: "FW", model: "e-tron GT" },
-  // GU is e-tron GT (not Q5) — matches WAUZZZGU premium prefix.
-  { code: "GU", model: "e-tron GT" },
+  { code: "FW", model: "e-tron GT", chassis: "J1" },
   { code: "FG", model: "R8", chassis: "42" },
   { code: "FX", model: "R8", chassis: "4S" },
   { code: "FK", model: "TT", chassis: "8J" },
@@ -81,7 +81,7 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "8U", model: "Q3" },
 ];
 
-const AUDI_WMIS = ["WAU", "TRU", "WVG"] as const;
+const AUDI_WMIS = ["WAU", "WA1", "WUA", "TRU", "WVG"] as const;
 
 const AUDI_EU_RULES = compilePrefixRules(
   AUDI_WMIS.flatMap((wmi) => rulesForWmi(wmi, AUDI_HOMOLOGATION_CODES)),
@@ -98,7 +98,7 @@ export function decodeAudiEuHomologation(vin: string): EuHomologationHit | null 
   const u = vin.toUpperCase();
   if (u.length < 9 || u.slice(3, 6) !== "ZZZ") return null;
   const wmi = u.slice(0, 3);
-  if (!wmi.startsWith("WAU") && !wmi.startsWith("TRU") && wmi !== "WVG") return null;
+  if (!(AUDI_WMIS as readonly string[]).includes(wmi)) return null;
   const hit = matchLongestPrefix(u, AUDI_EU_RULES);
   if (!hit) return null;
   const paren = hit.model.match(/^(.+?) \((.+)\)$/);

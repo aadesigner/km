@@ -8,7 +8,7 @@ export function inferBodyStyleFromModel(model: string | null | undefined): strin
   if (!model) return null;
   const m = model.toLowerCase();
 
-  if (/\b(touareg|atlas|tiguan|tayron|t-roc|t-cross|taigo|thar\w*|q[2345678]|macan|cayenne|karoq|kod\w+|ateca|formentor|terracota|encore|arizona|suv)\b/.test(m)) {
+  if (/\b(touareg|atlas|tiguan|tayron|t-roc|t-cross|taigo|thar\w*|id\.?\s*[456]|q[2345678]|sq[5678]|macan|cayenne|karoq|kod\w+|enyaq|elroq|ateca|formentor|terracota|encore|arizona|suv)\b/.test(m)) {
     return "SUV / Crossover";
   }
   if (/\b(caddy|touran|sharan|multivan|caravelle|transporter|id\.?\s*buzz|alhambra|roomster)\b/.test(m)) {
@@ -27,10 +27,10 @@ export function inferBodyStyleFromModel(model: string | null | undefined): strin
   if (/\b(coup[eé]|cc\b|arteon(?!\s*shooting)|scirocco|tt\b)\b/.test(m)) {
     return "Coupé";
   }
-  if (/\b(golf|polo|up!|ibiza|fabia|leon|octavia|id\.?\s*[345]|a1|a3)\b/.test(m) && !/\b(sedan|limousine|variant)\b/.test(m)) {
+  if (/\b(golf|polo|up!|ibiza|fabia|leon|octavia|id\.?\s*3|a1|a3)\b/.test(m) && !/\b(sedan|limousine|variant)\b/.test(m)) {
     return "Hatchback";
   }
-  if (/\b(passat|jetta|superb|a4|a6|a8|panamera|phaeton|vento)\b/.test(m)) {
+  if (/\b(passat|jetta|superb|id\.?\s*7|a4|a6|a8|panamera|phaeton|vento)\b/.test(m)) {
     return "Sedan";
   }
   return null;
@@ -41,7 +41,7 @@ export function inferVagTransmissionFromModel(model: string | null | undefined):
   if (!model) return null;
   const m = model.toLowerCase();
 
-  if (/\b(id\.?\s*[345]|id\.?\s*buzz|e-tron|q4\s*e-tron|e-tron\s*gt)\b/.test(m)) {
+  if (/\b(id\.?\s*[34567]|id\.?\s*buzz|enyaq|elroq|citigoe|born|e-tron|macan\s*electric|taycan)\b/.test(m)) {
     return "Single-Speed Automatic";
   }
   if (/\b(touareg|atlas|cayenne|macan|q[78]|phaeton|arteon|passat|superb|a[68]|panamera)\b/.test(m)) {
@@ -63,7 +63,8 @@ export function inferVagDriveFromModel(model: string | null | undefined): string
   if (/\b(touareg|atlas\s*cross\s*sport|cayenne|macan|q[78]|alltrack|4motion|quattro)\b/.test(m)) {
     return "All-Wheel Drive";
   }
-  if (/\b(id\.?\s*[345]|up!|polo(?!\s*gti)|taigo)\b/.test(m)) {
+  // MEB/PPE electric models can be rear- or all-wheel drive; do not infer FWD.
+  if (/\b(up!|polo(?!\s*gti)|taigo)\b/.test(m)) {
     return "Front-Wheel Drive";
   }
   return null;

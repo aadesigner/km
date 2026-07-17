@@ -175,8 +175,7 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["WA1A", "Q3"],
     ["WA1C", "Q5"],
     ["WA1F", "Q5 Sportback"],
-    // Volkswagen
-    ["WVWZ", "Golf"],
+    // Volkswagen — avoid WVWZ/1VWZ (ZZZ filler at position 4)
     ["WVWA", "Jetta"],
     ["WVWB", "Polo"],
     ["WVWH", "Passat"],
@@ -566,7 +565,7 @@ describe("country decoding from first VIN character", () => {
     ["VF1", "France"],
     ["ZFF", "Italy"],
     ["YV1", "Sweden"],
-    ["TMB", "Switzerland"],
+    ["TMB", "Czech Republic"],
     ["VS6", "Spain"],
     ["VF3", "France"],
     ["VSS", "Spain"],
@@ -757,17 +756,17 @@ describe("regressions", () => {
     expect(r.model).toBe("Santa Fe");
   });
 
-  it("[REG-002] 1VWZZZA3ZDC050213 must decode as Volkswagen Jetta without throwing", () => {
+  it("[REG-002] 1VWZZZA3ZDC050213 must decode as Volkswagen Passat NMS without throwing", () => {
     const r = decodeVin("1VWZZZA3ZDC050213");
     expect(r.make).toBe("Volkswagen");
-    expect(r.model).toBe("Jetta");
+    expect(r.model).toContain("Passat");
     expect(r.vin).toBe("1VWZZZA3ZDC050213");
   });
 
-  it("[REG-002] any 1VWZ-prefixed VIN must resolve to Volkswagen Jetta", () => {
+  it("[REG-002] generic 1VWZ prefix does not force Jetta", () => {
     const r = decodeVin(pad("1VWZ"));
     expect(r.make).toBe("Volkswagen");
-    expect(r.model).toBe("Jetta");
+    expect(r.model).not.toBe("Jetta");
   });
 
   it("[REG-002] 1VWF prefix resolves to Volkswagen Golf", () => {

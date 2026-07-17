@@ -120,7 +120,7 @@ const AUDI: Case[] = [
   { vin: "WAUZZZGEAN1234567", label: "Audi Q8 e-tron GE", make: "Audi", modelContains: "Q8" },
   { vin: "WAUZZZGFAN1234567", label: "Audi Q6 e-tron GF", make: "Audi", modelContains: "Q6" },
   { vin: "WAUZZZGBAN1234567", label: "Audi Q4 e-tron GB", make: "Audi", modelContains: "Q4" },
-  { vin: "WAUZZZGUAN1234567", label: "Audi e-tron GT GU", make: "Audi", modelContains: "e-tron GT", modelExcludes: ["Q5"] },
+  { vin: "WAUZZZGUAN1234567", label: "Audi Q5/SQ5 GU", make: "Audi", modelContains: "Q5", modelExcludes: ["e-tron GT"] },
   { vin: "WAUZZZFWAN1234567", label: "Audi e-tron GT FW", make: "Audi", modelContains: "e-tron GT" },
   { vin: "WAUZZZFGAN1234567", label: "Audi R8 FG", make: "Audi", modelContains: "R8" },
   { vin: "WAUZZZFXAN1234567", label: "Audi R8 FX", make: "Audi", modelContains: "R8" },
@@ -211,10 +211,10 @@ describe("premium three-brand negatives", () => {
     expect(r.model).not.toMatch(/EQE/i);
   });
 
-  it("Audi GU is e-tron GT not Q5", () => {
+  it("Audi GU is current Q5/SQ5, not e-tron GT", () => {
     const r = decodeVin("WAUZZZGUAN1234567");
-    expect(r.model?.toLowerCase()).toContain("e-tron gt");
-    expect(r.model?.toLowerCase()).not.toContain("q5");
+    expect(r.model?.toLowerCase()).toContain("q5");
+    expect(r.model?.toLowerCase()).not.toContain("e-tron gt");
   });
 
   it("BMW X1 never decodes as 7 Series", () => {

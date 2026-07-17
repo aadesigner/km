@@ -14,6 +14,14 @@ import {
 import { decodeJlrEu } from "./jlr-eu";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
+import {
+  decodeAudiModern,
+  decodePorscheModern,
+  decodeVolkswagenModern,
+  isAudiVin,
+  isPorscheVin,
+  isVolkswagenVin,
+} from "./vag-modern";
 
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
@@ -551,7 +559,10 @@ const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZGA", model: "Q5" },
   { prefix: "WAUZZZGE", model: "Q8 / e-tron" },
   { prefix: "WAUZZZGS", model: "Q3" },
-  { prefix: "WAUZZZGU", model: "e-tron GT" },
+  { prefix: "WAUZZZGU", model: "Q5 / SQ5", chassis: "GU" },
+  { prefix: "WAUZZZGH", model: "A6 e-tron / S6 e-tron", chassis: "PPE" },
+  { prefix: "WAUZZZGF", model: "Q6 e-tron / SQ6 e-tron", chassis: "PPE" },
+  { prefix: "WAUZZZFW", model: "e-tron GT", chassis: "J1" },
   { prefix: "WAUZZZGB", model: "Q4 e-tron" },
   { prefix: "WAUZZZFG", model: "R8", chassis: "42" },
   { prefix: "WAUZZZFX", model: "R8", chassis: "4S" },
@@ -561,7 +572,7 @@ const AUDI_RULES = compilePrefixRules([
 const PORSCHE_RULES = compilePrefixRules([
   // "99" is the long-running 911 family code — do NOT hardcode 992.
   { prefix: "WP0ZZZ99", model: "911" },
-  { prefix: "WP0ZZZ97", model: "911", chassis: "991" },
+  { prefix: "WP0ZZZ97", model: "Panamera", chassis: "970/971" },
   { prefix: "WP0ZZZ98", model: "Boxster/Cayman", chassis: "981/718" },
   { prefix: "WP0ZZZ92", model: "Cayenne", chassis: "9YA" },
   { prefix: "WP0ZZZ95", model: "Panamera", chassis: "971" },
@@ -598,9 +609,14 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ7L", model: "Touareg", chassis: "7L" },
   { prefix: "WVWZZZCR", model: "Touareg", chassis: "CR" },
   { prefix: "WVWZZZAW", model: "Polo", chassis: "6R/AW" },
-  { prefix: "WVWZZZCJ", model: "ID.3" },
-  { prefix: "WVWZZZE1", model: "ID.4" },
-  { prefix: "WVWZZZE2", model: "ID.5" },
+  { prefix: "WVWZZZE1", model: "ID.3", chassis: "E1 (MEB)" },
+  { prefix: "WVWZZZE2", model: "ID.4", chassis: "E2 (MEB)" },
+  { prefix: "WVWZZZE3", model: "ID.5", chassis: "E3 (MEB)" },
+  { prefix: "WVWZZZE4", model: "ID.7", chassis: "E4 (MEB)" },
+  { prefix: "WVGZZZEB", model: "ID. Buzz", chassis: "EB (MEB)" },
+  { prefix: "WVWZZZCJ", model: "Passat Variant", chassis: "B9/CJ" },
+  { prefix: "WVWZZZCT", model: "Tiguan", chassis: "CT1" },
+  { prefix: "WVWZZZR4", model: "Tayron", chassis: "R4" },
   { prefix: "WVWZZZSY", model: "T-Roc" },
   // Typ AU = Golf Mk7 (not Mk6).
   { prefix: "WVWZZZAU", model: "Golf", chassis: "Mk7" },
@@ -630,9 +646,8 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ2E", model: "Caddy", chassis: "C5" },
   { prefix: "WVWZZZ7E", model: "Caddy", chassis: "C4" },
   { prefix: "WVWZZZ2F", model: "Caddy Maxi" },
-  { prefix: "WVWZZZSK", model: "ID. Buzz" },
-  { prefix: "WVWZZZST", model: "ID. Buzz Cargo" },
-  { prefix: "WVWZZZ6C", model: "Passat", chassis: "B9" },
+  { prefix: "WVWZZZSK", model: "Caddy", chassis: "SK" },
+  { prefix: "WVWZZZ6C", model: "Polo", chassis: "6C" },
   { prefix: "WV2ZZZSF", model: "Multivan", chassis: "T7" },
   { prefix: "WV2ZZZSG", model: "California", chassis: "T6.1/T7" },
   { prefix: "WV2ZZZ7H", model: "Multivan", chassis: "T6/T6.1" },
@@ -759,6 +774,10 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   // Bratislava (WVG): Touareg/Up! share the plant with Audi SUVs.
   // Prefer known VW platform codes before Audi homologation.
   if (raw.startsWith("WVG") && raw.slice(3, 6) === "ZZZ") {
+    const modernVw = decodeVolkswagenModern(raw);
+    if (modernVw) {
+      return finalizePremium(modernVw.model, modernVw.chassis, premiumVinModelYear(raw));
+    }
     const platform78 = raw.slice(6, 8);
     const isVwPlatform =
       VW_PLATFORM_CODES_ON_WVG.has(platform78) ||
@@ -799,18 +818,30 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
     }
     return decodeMercedesPremium(upper);
   }
-  if (wmi.startsWith("WA1")) {
-    return decodeFromRules(upper, AUDI_US_RULES);
-  }
-  if (wmi.startsWith("WAU") || wmi.startsWith("TRU")) {
+  if (isAudiVin(raw)) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeAudiEuHomologation(raw), raw);
       if (euHit) return euHit;
     }
+    const modernAudi = decodeAudiModern(raw);
+    if (modernAudi) {
+      return finalizePremium(modernAudi.model, modernAudi.chassis, premiumVinModelYear(raw));
+    }
+    if (wmi.startsWith("WA1")) return decodeFromRules(upper, AUDI_US_RULES);
     return decodeFromRules(upper, AUDI_RULES);
   }
-  if (wmi.startsWith("WP0") || wmi.startsWith("WP1")) {
+  if (isPorscheVin(raw)) {
+    const modernPorsche = decodePorscheModern(raw);
+    if (modernPorsche) {
+      return finalizePremium(modernPorsche.model, modernPorsche.chassis, premiumVinModelYear(raw));
+    }
     return decodeFromRules(upper, PORSCHE_RULES);
+  }
+  if (isVolkswagenVin(raw)) {
+    const modernVw = decodeVolkswagenModern(raw);
+    if (modernVw) {
+      return finalizePremium(modernVw.model, modernVw.chassis, premiumVinModelYear(raw));
+    }
   }
   if (isVagWmi(wmi) || upper.startsWith("3VW")) {
     return decodeFromRules(upper, VW_RULES);

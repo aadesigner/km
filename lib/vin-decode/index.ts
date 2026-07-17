@@ -52,6 +52,19 @@ export {
   inferVagDriveFromModel,
 } from "./vag-infer";
 export {
+  decodeVolkswagenModern,
+  decodeAudiModern,
+  decodeSkodaModern,
+  decodePorscheModern,
+  isVolkswagenVin,
+  isAudiVin,
+  isSkodaVin,
+  isPorscheVin,
+  resolveChinaJointVentureMake,
+  vagModelYear,
+  type VagModernHit,
+} from "./vag-modern";
+export {
   decodeVinDiagnostics,
   type VinDiagnostic,
   type DiagnosticCategory,

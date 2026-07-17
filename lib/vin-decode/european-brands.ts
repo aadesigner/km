@@ -12,6 +12,7 @@ import {
 } from "./seat-eu";
 import { decodeVolvoModel, isVolvoVin } from "./volvo";
 import { decodeOpelVauxhallModel, isOpelVauxhallVin } from "./opel-vauxhall";
+import { decodeSkodaModern, isSkodaVin } from "./vag-modern";
 
 const SKODA_MODEL_78: Record<string, string> = {
   NJ: "Fabia",
@@ -74,7 +75,15 @@ function decodeSkodaModel(vin: string): string | null {
 
 /** Full Skoda rule hit for series/generation. */
 export function matchSkodaRule(vin: string): PrefixRule | null {
-  if (!vin.startsWith("TMB") && !vin.startsWith("TM8")) return null;
+  if (!isSkodaVin(vin)) return null;
+  const modern = decodeSkodaModern(vin);
+  if (modern) {
+    return {
+      prefix: vin.slice(0, 8),
+      model: modern.model,
+      ...(modern.chassis ? { chassis: modern.chassis } : {}),
+    };
+  }
   const prefixHit = matchLongestPrefix(vin, SKODA_PREFIX_RULES);
   if (prefixHit) return prefixHit;
   if (vin.length < 8) return null;
@@ -264,7 +273,7 @@ export function decodeEuropeanBrandModel(vin: string): string | null {
   if (upper.length !== 17) return null;
 
   const wmi = upper.slice(0, 3);
-  if (wmi === "TMB" || wmi === "TM8") return decodeSkodaModel(upper);
+  if (isSkodaVin(upper)) return decodeSkodaModel(upper);
   if (isRenaultWmi(wmi)) return decodeRenaultModel(upper);
   if (isFiatWmi(wmi)) return decodeFiatModel(upper);
   if (wmi === "VF3") return decodePeugeotModel(upper);
