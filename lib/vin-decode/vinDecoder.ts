@@ -16,7 +16,7 @@ import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine } from "./asian-eu";
-import { decodeUsVdsModel } from "./us-vds";
+import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
   inferBodyStyleFromModel,
@@ -157,6 +157,9 @@ const WMI_MAP: Record<string, string> = {
   "1G4": "Buick", "1G6": "Cadillac", "1GC": "Chevrolet",
   "1GD": "GMC", "1GE": "Chevrolet", "1GK": "GMC", "1GT": "GMC",
   "1HG": "Honda", "1HJ": "Honda",
+  "19X": "Honda",
+  "2HG": "Honda", "2HH": "Honda", "2HK": "Honda", "2HM": "Hyundai",
+  "3CZ": "Honda", "3HM": "Honda",
   "1J4": "Jeep", "1J8": "Jeep",
   "1L1": "Lincoln", "1LN": "Lincoln",
   "1ME": "Mercury",
@@ -170,7 +173,7 @@ const WMI_MAP: Record<string, string> = {
   "2FA": "Ford", "2FT": "Ford",
   "2G1": "Chevrolet", "2G4": "Pontiac",
   "2T1": "Toyota", "2T2": "Lexus", "2T3": "Toyota",
-  "3FA": "Ford", "3FE": "Ford",
+  "3FA": "Ford", "3FE": "Ford", "3FM": "Ford", "3FT": "Ford",
   "3N1": "Nissan", "3N6": "Nissan",
   "3VW": "Volkswagen", "3VV": "Volkswagen",
   "4S3": "Subaru", "4S4": "Subaru", "4S6": "Subaru",
@@ -188,9 +191,9 @@ const WMI_MAP: Record<string, string> = {
   "5YM": "BMW",
   "5YJ": "Tesla", "5YF": "Toyota",
   // ── CANADA ────────────────────────────────────────────────────────────────
-  "2HH": "Honda", "2HK": "Honda", "2HM": "Hyundai",
+  // 2HG / 2HH / 2HK / 2HM already listed under USA-block Honda/Hyundai WMIs
   // ── MEXICO ────────────────────────────────────────────────────────────────
-  "3HM": "Honda",
+  // 3CZ / 3HM already listed under USA-block Honda WMIs
   // ── JAPAN ─────────────────────────────────────────────────────────────────
   "JA3": "Mitsubishi", "JA4": "Mitsubishi", "JAB": "Mitsubishi",
   "JF1": "Subaru", "JF2": "Subaru",
@@ -198,6 +201,8 @@ const WMI_MAP: Record<string, string> = {
   "JM1": "Mazda", "JM3": "Mazda", "JMB": "Mitsubishi",
   "JN1": "Infiniti", "JN3": "Nissan", "JN8": "Nissan",
   "JT": "Toyota",  // 2-char prefix catch-all for Toyota Japan
+  "JTD": "Toyota", "JTM": "Toyota", "JTN": "Toyota", "JT1": "Toyota",
+  // JTE / JTK / JTJ refined later (Toyota trucks / Lexus)
   "JS1": "Suzuki", "JS2": "Suzuki", "JS3": "Suzuki", "JS4": "Suzuki",
   "JSA": "Suzuki", "JST": "Suzuki",
   "2S2": "Suzuki", "2S3": "Suzuki",
@@ -224,6 +229,7 @@ const WMI_MAP: Record<string, string> = {
   "SAJ": "Jaguar", "SAL": "Land Rover", "SAR": "Rover", "SAD": "Jaguar",
   "SB1": "Toyota",
   "YAR": "Toyota",
+  "WZ1": "Toyota", // Magna Steyr — GR Supra A90 EU
   "SHH": "Honda",
   // ── Ford Europe ───────────────────────────────────────────────────────────
   "WF0": "Ford", "WF1": "Ford", "8AF": "Ford", "SA1": "Ford",
@@ -282,6 +288,7 @@ const WMI_MAP: Record<string, string> = {
   "LFM": "FAW Toyota", "LWV": "GAC Mitsubishi",
   // ── INDIA ─────────────────────────────────────────────────────────────────
   "MA1": "Mahindra", "MA3": "Suzuki India",
+  "MAL": "Hyundai",
   "MB8": "Honda India",
   "MEE": "Toyota India",
   "MHF": "Toyota India",
@@ -353,6 +360,8 @@ function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typ
   if (spec?.make) return spec.make;
   const chinaJv = resolveChinaJointVentureMake(vin);
   if (chinaJv) return chinaJv;
+  const usMake = resolveUsVdsMake(vin);
+  if (usMake) return usMake;
   return resolveGlobalBrandMake(vin, wmiMake, global);
 }
 

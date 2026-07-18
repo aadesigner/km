@@ -152,6 +152,10 @@ const BMW: Case[] = [
   { vin: "WBA7C1105FK123456", label: "BMW 7 Series G11", make: "BMW", modelContains: "7 Series" },
   { vin: "WBA7L1105NK123456", label: "BMW 7 Series G70", make: "BMW", modelContains: "7 Series" },
   { vin: "WBA8C1105JK123456", label: "BMW 8 Series", make: "BMW", modelContains: "8 Series" },
+  // EU ETK letter type codes (pos.4–7) — same pattern as catalog German VINs
+  { vin: "WBADZ2C01LCD26813", label: "BMW 8 Series G14 ETK DZ", make: "BMW", modelContains: "8 Series", year: 2020, modelExcludes: ["5 Series"] },
+  { vin: "WBAGV8106RCR24769", label: "BMW 8 Series G16 ETK GV", make: "BMW", modelContains: "8 Series", year: 2024 },
+  { vin: "WBAJC310XHG857079", label: "BMW 5 Series G30 ETK JC", make: "BMW", modelContains: "5 Series", year: 2017, modelExcludes: ["8 Series", "X5"] },
   // SUVs — sibling negatives
   { vin: "WBA71BX03P9R09775", label: "BMW X1", make: "BMW", modelContains: "X1", modelExcludes: ["7 Series"] },
   { vin: "WBA72BX03K9R09775", label: "BMW X2", make: "BMW", modelContains: "X2", modelExcludes: ["7 Series"] },

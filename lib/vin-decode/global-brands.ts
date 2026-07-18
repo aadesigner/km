@@ -45,6 +45,7 @@ const SUZUKI_PREFIX_RULES = compilePrefixRules([
   { prefix: "JS3JT", model: "Grand Vitara" },
   { prefix: "JS3FT", model: "Grand Vitara" },
   { prefix: "TSMLY", model: "Vitara" },
+  { prefix: "TSMYD", model: "Vitara" },
   { prefix: "TSMNZ", model: "S-Cross" },
   { prefix: "TSMKY", model: "SX4 S-Cross" },
   { prefix: "TSMJY", model: "SX4 S-Cross" },
@@ -52,10 +53,13 @@ const SUZUKI_PREFIX_RULES = compilePrefixRules([
   { prefix: "TSMMH", model: "Ignis" },
   { prefix: "TSMEX", model: "Splash" },
   { prefix: "TSMMA", model: "Swift" },
+  { prefix: "TSMRB", model: "Across" },
+  { prefix: "TSMYA", model: "Swace" },
   { prefix: "JSAFH", model: "Ignis" },
   { prefix: "MA3E", model: "Swift" },
   { prefix: "MA3C", model: "Dzire" },
   { prefix: "MA3F", model: "Brezza" },
+  { prefix: "MA3J", model: "Fronx" },
   { prefix: "2S3TC", model: "Vitara" },
 ]);
 

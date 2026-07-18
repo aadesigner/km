@@ -55,6 +55,7 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "1HGCV1", model: "Accord", chassis: "10th gen" },
   { prefix: "1HGCV2", model: "Accord", chassis: "10th gen" },
   { prefix: "1HGCY", model: "Accord", chassis: "11th gen" },
+  { prefix: "1HGCV3", model: "Accord", chassis: "11th gen Hybrid" },
   { prefix: "2HGFC2", model: "Civic", chassis: "10th gen" },
   { prefix: "2HGFE2", model: "Civic", chassis: "11th gen" },
   { prefix: "2HGFC1", model: "Civic", chassis: "10th gen" },
@@ -62,29 +63,41 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "19XFL2", model: "Civic", chassis: "11th gen" },
   { prefix: "5J6RM4", model: "CR-V", chassis: "5th gen" },
   { prefix: "5J6RW2", model: "CR-V", chassis: "6th gen" },
+  { prefix: "5J6RT", model: "CR-V", chassis: "5th gen Hybrid" },
+  { prefix: "2HKRS4", model: "CR-V", chassis: "5th gen CA" },
+  { prefix: "3CZRU5", model: "HR-V", chassis: "3rd gen" },
+  { prefix: "3CZRU6", model: "HR-V" },
   { prefix: "5FNRL6", model: "Odyssey" },
   { prefix: "5J8YD", model: "Pilot" },
   { prefix: "5FNYF8", model: "Pilot" },
   { prefix: "5FNYF6", model: "Passport" },
+  { prefix: "5FNYF5", model: "Ridgeline" },
   { prefix: "19UUB", model: "Acura TLX" },
   { prefix: "5J8TB", model: "Acura MDX" },
   { prefix: "JHMFD", model: "Fit", chassis: "3rd gen" },
   { prefix: "JHMGE", model: "Fit", chassis: "2nd gen" },
+  { prefix: "JHMZF", model: "Insight" },
   // Toyota / Lexus USA / Canada
   { prefix: "4T1B11", model: "Camry", chassis: "XV70" },
   { prefix: "4T1K61", model: "Camry", chassis: "XV70 Hybrid" },
+  { prefix: "4T1G11", model: "Camry", chassis: "XV70" },
   { prefix: "4T1C11", model: "Camry", chassis: "XV40" },
+  { prefix: "4T1BF1", model: "Camry", chassis: "XV50" },
   { prefix: "2T1BUR", model: "Corolla", chassis: "E170" },
   { prefix: "2T3BF1", model: "RAV4", chassis: "XA40" },
   { prefix: "2T3P1R", model: "RAV4", chassis: "XA50" },
   { prefix: "5TDZA3", model: "Sienna", chassis: "XL30" },
   { prefix: "5TDYZ3", model: "Sienna", chassis: "XL40" },
   { prefix: "5TFDY5", model: "Tundra", chassis: "XK50" },
+  { prefix: "5TFJA5", model: "Tundra", chassis: "XK70" },
   { prefix: "5TFAX5", model: "Tacoma", chassis: "N300" },
+  { prefix: "5TFLA5", model: "Tacoma", chassis: "N300" },
   { prefix: "5TDBK3", model: "Highlander", chassis: "XU50" },
   { prefix: "5TDDZ3", model: "Highlander", chassis: "XU70" },
+  { prefix: "5TDBR3", model: "Sequoia", chassis: "XK60" },
   { prefix: "2T2BZM", model: "Lexus RX" },
   { prefix: "2T2AUD", model: "Lexus NX" },
+  { prefix: "JTJBAR", model: "Lexus NX", chassis: "AZ20" },
 ]);
 
 export function matchUsVdsRule(vin: string): PrefixRule | null {
@@ -95,4 +108,23 @@ export function matchUsVdsRule(vin: string): PrefixRule | null {
 
 export function decodeUsVdsModel(vin: string): string | null {
   return matchUsVdsRule(vin)?.model ?? null;
+}
+
+/** Stellantis 1C4 WMI is shared; badge Jeep when VDS maps to a Jeep line. */
+const JEEP_VDS_MODELS = new Set([
+  "Wrangler",
+  "Grand Cherokee",
+  "Compass",
+  "Cherokee",
+  "Renegade",
+  "Gladiator",
+  "Wagoneer",
+  "Grand Wagoneer",
+]);
+
+export function resolveUsVdsMake(vin: string): string | null {
+  const hit = matchUsVdsRule(vin);
+  if (!hit) return null;
+  if (JEEP_VDS_MODELS.has(hit.model)) return "Jeep";
+  return null;
 }

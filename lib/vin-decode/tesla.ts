@@ -41,6 +41,7 @@ const BATTERY_AT_7: Record<string, string> = {
   H: "LFP (High Capacity)",
   S: "Standard Range",
   R: "Long Range",
+  P: "Li-ion (Performance Pack)",
 };
 
 /** Motor / drive unit at position 8 — varies by model line. */

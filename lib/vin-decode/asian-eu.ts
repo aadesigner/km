@@ -10,6 +10,7 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "JTDKB3", model: "Prius", chassis: "XW50" },
   { prefix: "JTDKN3", model: "Prius", chassis: "XW30" },
   { prefix: "JTDKB2", model: "Prius", chassis: "XW20" },
+  { prefix: "JTDKAR", model: "Prius", chassis: "XW60" },
   { prefix: "JTMB1R", model: "RAV4", chassis: "XA50" },
   { prefix: "JTMBF3", model: "RAV4", chassis: "XA40" },
   { prefix: "JTMC1R", model: "Highlander", chassis: "XU70" },
@@ -21,8 +22,14 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "JTMDH3", model: "Corolla Cross", chassis: "XG10" },
   { prefix: "JTMDA3", model: "Corolla", chassis: "E210" },
   { prefix: "JTMDF3", model: "Corolla", chassis: "E170" },
+  { prefix: "JTNB11", model: "Mirai", chassis: "JPD20" },
+  { prefix: "JTNBMR", model: "bZ4X" },
+  { prefix: "JTEBU5", model: "4Runner", chassis: "N280" },
+  { prefix: "JTEBX9", model: "Land Cruiser Prado", chassis: "J150" },
   { prefix: "JTJBG1", model: "Land Cruiser", chassis: "J300" },
   { prefix: "JTJBT9", model: "Land Cruiser", chassis: "J200" },
+  { prefix: "WZ1ZZZ", model: "GR Supra", chassis: "A90 EU" },
+  { prefix: "JT1ABA", model: "GR Supra", chassis: "A90" },
   { prefix: "SB1KB3", model: "Corolla", chassis: "E210 UK" },
   { prefix: "SB1K93", model: "Corolla Touring Sports" },
   { prefix: "SB1B93", model: "C-HR", chassis: "AX10" },
@@ -45,12 +52,22 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "5YFB", model: "Corolla" },
   { prefix: "5YFS", model: "Corolla" },
   { prefix: "5YFT", model: "Corolla" },
-  // Toyota USA Kentucky / Indiana plants
+  // Toyota USA Kentucky / Indiana / Texas plants
   { prefix: "4T1B11", model: "Camry", chassis: "XV70" },
   { prefix: "4T1K61", model: "Camry", chassis: "XV70 Hybrid" },
+  { prefix: "4T1G11", model: "Camry", chassis: "XV70" },
+  { prefix: "4T1DAA", model: "Camry", chassis: "XV50" },
+  { prefix: "4T1BF1", model: "Camry", chassis: "XV50" },
   { prefix: "5TDZAR", model: "Sienna", chassis: "XL30" },
+  { prefix: "5TDYZ3", model: "Sienna", chassis: "XL40" },
   { prefix: "5TDBK3", model: "Highlander", chassis: "XU50" },
   { prefix: "5TDDZ3", model: "Highlander", chassis: "XU70" },
+  { prefix: "5TDBR3", model: "Sequoia", chassis: "XK60" },
+  { prefix: "5TFLA5", model: "Tacoma", chassis: "N300" },
+  { prefix: "5TFAX5", model: "Tacoma", chassis: "N300" },
+  { prefix: "5TFJA5", model: "Tundra", chassis: "XK70" },
+  { prefix: "5TFDY5", model: "Tundra", chassis: "XK50" },
+  { prefix: "JTDACAA", model: "Crown", chassis: "S220" },
 ]);
 
 // Honda EU / UK Swindon (SHH) — plant closed 2021; Type R era still common in EU VINs.
@@ -58,7 +75,9 @@ const HONDA_EU_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "SHHFK", model: "Civic", chassis: "EP3" },
   { prefix: "SHHFN", model: "Civic", chassis: "FN2" },
   { prefix: "SHHFR", model: "Civic", chassis: "FK2/FK8" },
+  { prefix: "SHHFE", model: "Civic", chassis: "FK" },
   { prefix: "SHHCR", model: "CR-V" },
+  { prefix: "SHHRE", model: "CR-V", chassis: "RW" },
 ]);
 
 function isToyotaExtendedVin(vin: string): boolean {
@@ -68,9 +87,11 @@ function isToyotaExtendedVin(vin: string): boolean {
     || vin.startsWith("JTD")
     || vin.startsWith("YAR")
     || vin.startsWith("VF1BT")
+    || vin.startsWith("WZ1")
     || vin.startsWith("5YF")
     || vin.startsWith("4T1")
     || vin.startsWith("5TD")
+    || vin.startsWith("5TF")
     || vin.startsWith("2T1")
     || vin.startsWith("2T3")
   );

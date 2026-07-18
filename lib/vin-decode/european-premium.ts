@@ -293,8 +293,20 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA6C", model: "6 Series", chassis: "F12/F13" },
   { prefix: "WBA6F", model: "6 Series", chassis: "F12/F13" },
   { prefix: "WBA6", model: "6 Series" },
+  // EU letter type codes (ETK model nos at pos.4–7) — not WBA8* numeric series.
+  // DZ21/DZ2C = 840i Convertible G14; GV81 = M850i Gran Coupé G16; GW41 = 840d Gran Coupé G16.
+  { prefix: "WBADZ", model: "8 Series", chassis: "G14 Convertible" },
+  { prefix: "WBAGV", model: "8 Series", chassis: "G16 Gran Coupé" },
+  { prefix: "WBAGW", model: "8 Series", chassis: "G16 Gran Coupé" },
+  { prefix: "WBAFY", model: "8 Series", chassis: "G14 Convertible" },
+  { prefix: "WBAAE", model: "8 Series", chassis: "G15 Coupé" },
+  { prefix: "WBABC", model: "8 Series", chassis: "G15 Coupé" },
   { prefix: "WBA8C", model: "8 Series", chassis: "G14/G15/G16" },
   { prefix: "WBA8", model: "8 Series" },
+  // JC31 = 520d G30 (ETK); keep prefix at JC so JC3x/JC5x stay 5 Series.
+  { prefix: "WBAJC", model: "5 Series", chassis: "G30/G31" },
+  { prefix: "WBAJE", model: "5 Series", chassis: "G30/G31" },
+  { prefix: "WBAJS", model: "5 Series", chassis: "G30/G31" },
   { prefix: "WBA21E", model: "X7", chassis: "G07" },
   { prefix: "WBA21C", model: "X7", chassis: "G07" },
   { prefix: "WBA21B", model: "X7", chassis: "G07" },

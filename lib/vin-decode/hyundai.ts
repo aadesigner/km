@@ -118,12 +118,23 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHE2", model: "Sonata" },
   // Palisade / Venue / Nexo
   { prefix: "KM8Y3", model: "Palisade" },
+  { prefix: "5NMYA", model: "Palisade" },
   { prefix: "KMHR281", model: "Venue" },
   { prefix: "KMHJ551", model: "Nexo" },
   { prefix: "KMHN551", model: "Nexo" },
   // Staria / commercial light
   { prefix: "KMFWB", model: "Staria" },
   { prefix: "KMFWA", model: "Staria" },
+  { prefix: "KMFWC", model: "Staria" },
+  // Creta / Casper / Inster (regional)
+  { prefix: "MALA51", model: "Creta", chassis: "SU2 IN" },
+  { prefix: "MALB51", model: "Creta", chassis: "SU2 IN" },
+  { prefix: "KMHK381A", model: "Tucson", chassis: "NX4" },
+  { prefix: "KMHH381", model: "Kona", chassis: "OS" },
+  { prefix: "TMAJ581", model: "Kona", chassis: "SX2 EU" },
+  { prefix: "KMHC551", model: "i30 N", chassis: "PD" },
+  { prefix: "5NMS4", model: "Santa Fe", chassis: "MX5 US" },
+  { prefix: "KMHS4", model: "Santa Fe", chassis: "MX5" },
 ]);
 
 const EV_ENGINE_CHARS = new Set(["L", "N", "S", "T", "W", "Z"]);
