@@ -1271,7 +1271,7 @@ export default function Checkout({ params }: Props) {
             className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 dark:bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-4 shadow-sm"
           >
             <Lock className="h-3.5 w-3.5" />
-            {t("trust_secure_payment")}
+            {t("checkout_badge")}
           </motion.div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">{t("checkout_title")}</h1>
           <p className="text-muted-foreground text-sm sm:text-base mt-2 flex items-center justify-center gap-1.5">

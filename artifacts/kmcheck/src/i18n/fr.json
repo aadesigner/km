@@ -443,6 +443,7 @@
   "vin_segment_check": "Contrôle",
   "vin_segment_serial": "Série",
   "sample_report_preview_label": "Votre prochain rapport pourrait ressembler à ceci",
+  "checkout_badge": "Commande",
   "checkout_title": "Finaliser votre commande",
   "checkout_subtitle": "Terminez le paiement et débloquez le rapport complet de votre voiture",
   "checkout_standard_price": "Prix standard",

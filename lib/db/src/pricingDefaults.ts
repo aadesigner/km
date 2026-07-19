@@ -1,7 +1,7 @@
 /** Default VIN report pricing when no row exists in `pricing` table. */
 export const DEFAULT_PRICING = {
   basePrice: 29.99,
-  discountPrice: 14.99,
+  discountPrice: 15.99,
   currency: "EUR" as const,
   discountEnabled: true,
 };
@@ -14,13 +14,15 @@ export function roundCurrencyAmount(amount: number): number {
   return Math.trunc(amount * 100 + 1e-8) / 100;
 }
 
-/** Snap legacy / float drift to canonical catalog prices (€14.99 / €29.99). */
+/** Snap legacy / float drift to canonical catalog prices (€15.99 sale / €29.99 list). */
 export function normalizeCatalogPrice(amount: number, kind: "list" | "sale"): number {
   const canonical = kind === "list" ? CATALOG_LIST_PRICE : CATALOG_SALE_PRICE;
   const truncated = roundCurrencyAmount(amount);
   if (Math.abs(truncated - canonical) < 0.011) return canonical;
-  const legacyOneDecimal = kind === "list" ? 29.9 : 14.9;
-  if (Math.abs(truncated - legacyOneDecimal) < 0.011) return canonical;
+  const legacyAmounts = kind === "list" ? [29.9, 30] : [15.9, 14.99, 14.9, 15, 9.9];
+  for (const legacy of legacyAmounts) {
+    if (Math.abs(truncated - legacy) < 0.011) return canonical;
+  }
   return truncated;
 }
 

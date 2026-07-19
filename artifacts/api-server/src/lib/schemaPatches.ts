@@ -76,13 +76,15 @@ const TABLE_PATCHES = [
 ];
 
 const PRICING_DATA_PATCHES = [
-  `UPDATE pricing SET discount_price = 14.9 WHERE discount_price = 9.9`,
-  `UPDATE pricing SET discount_price = 14.9 WHERE ABS(discount_price - 14.99) < 0.001`,
-  `UPDATE pricing SET discount_price = 14.9 WHERE ABS(discount_price - 15) < 0.001`,
+  // Migrate catalog sale price €14.99 → €15.99 (list/UI base stays €29.99). Does not touch payments rows.
+  `UPDATE pricing SET discount_price = 15.99 WHERE ABS(discount_price - 14.99) < 0.001`,
+  `UPDATE pricing SET discount_price = 15.99 WHERE ABS(discount_price - 14.9) < 0.001`,
+  `UPDATE pricing SET discount_price = 15.99 WHERE ABS(discount_price - 15) < 0.001`,
+  `UPDATE pricing SET discount_price = 15.99 WHERE ABS(discount_price - 15.9) < 0.001`,
+  `UPDATE pricing SET discount_price = 15.99 WHERE ABS(discount_price - 9.9) < 0.001`,
   `UPDATE pricing SET base_price = 29.9 WHERE ABS(base_price - 29.90) < 0.001`,
   `UPDATE pricing SET base_price = 29.9 WHERE ABS(base_price - 29.99) < 0.001`,
   `UPDATE pricing SET base_price = 29.9 WHERE ABS(base_price - 30) < 0.001`,
-  `UPDATE pricing SET discount_price = 14.99 WHERE ABS(discount_price - 14.9) < 0.001`,
   `UPDATE pricing SET base_price = 29.99 WHERE ABS(base_price - 29.9) < 0.001`,
 ];
 

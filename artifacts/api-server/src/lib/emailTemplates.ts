@@ -163,7 +163,7 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
         ...common,
         vin: "WBA3A5G59DNP26082",
         checkoutUrl: `${base}/en/checkout?vin=WBA3A5G59DNP26082`,
-        price: "€14.99",
+        price: "€15.99",
       };
     case "vinready":
       return {
@@ -190,7 +190,7 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
         mileage: "48,200",
         accidents: "1",
         owners: "2",
-        amount: "€14.99",
+        amount: "€15.99",
         paymentRef: "5XG29384BK",
       };
     default:

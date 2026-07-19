@@ -8,14 +8,17 @@ import {
 
 describe("pricingDefaults", () => {
   it("truncates to two decimals without rounding up to the next euro", () => {
-    expect(roundCurrencyAmount(14.99)).toBe(14.99);
-    expect(roundCurrencyAmount(14.999)).toBe(14.99);
-    expect(normalizeCatalogPrice(14.99, "sale")).toBe(14.99);
-    expect(normalizeCatalogPrice(15, "sale")).toBe(14.99);
+    expect(roundCurrencyAmount(15.99)).toBe(15.99);
+    expect(roundCurrencyAmount(15.999)).toBe(15.99);
+    expect(normalizeCatalogPrice(15.99, "sale")).toBe(15.99);
+    expect(normalizeCatalogPrice(12.5, "sale")).toBe(12.5);
   });
 
-  it("migrates legacy one-decimal catalog prices to two decimals", () => {
-    expect(normalizeCatalogPrice(14.9, "sale")).toBe(14.99);
+  it("migrates legacy sale prices to the current catalog sale amount", () => {
+    expect(normalizeCatalogPrice(14.99, "sale")).toBe(15.99);
+    expect(normalizeCatalogPrice(14.9, "sale")).toBe(15.99);
+    expect(normalizeCatalogPrice(15, "sale")).toBe(15.99);
+    expect(normalizeCatalogPrice(15.9, "sale")).toBe(15.99);
     expect(normalizeCatalogPrice(29.9, "list")).toBe(29.99);
   });
 
