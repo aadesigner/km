@@ -581,8 +581,9 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Bentley (SCB*) ────────────────────────────────────────────────────────
   "SCBB": "Continental GT","SCBC": "Bentayga",   "SCBD": "Flying Spur",
   "SCBE": "Continental GTC",
-  // ── Hyundai IONIQ EV series ───────────────────────────────────────────────
-  "KMHL": "IONIQ 5",     "KMHM": "IONIQ 6",     "KMHQ": "IONIQ 5 N",
+  // ── Hyundai IONIQ EV — specific platforms only (KMHL alone is also Sonata DN8 KR) ──
+  // Coarse "KMHL"→IONIQ 5 removed: Korean Sonata MY2020+ uses line L (KMHL*).
+  "KMHM": "IONIQ 6",     "KMHQ": "IONIQ 5 N",
   // ── Kia EV series ─────────────────────────────────────────────────────────
   "KNDC": "EV6",         "KNBC": "EV9",         "KNDE": "Niro EV",
   "KNDF": "Sportage Hybrid",
@@ -683,6 +684,9 @@ const MODEL_OVERRIDES: Record<string, string> = {
   "5YFB4":   "Corolla",
   "5YFP4":   "Corolla",
   "5YFBU":   "Corolla",
+  // Hyundai IONIQ — must stay longer than 4 chars (KMHL is shared with Sonata KR)
+  "KMHL341": "IONIQ 5",
+  "KMHLW4":  "IONIQ 5",
 };
 
 function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {

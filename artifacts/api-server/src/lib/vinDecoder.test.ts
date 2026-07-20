@@ -216,8 +216,8 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["KM8J", "Tucson"],
     ["KM8S", "Santa Fe"],
     ["KM8R", "Santa Cruz"],
-    ["KMHL", "IONIQ 5"],
     ["KMHM", "IONIQ 6"],
+    // KMHL alone is ambiguous (Sonata DN8 KR MY2020+ vs IONIQ) — use KMHL341 below
     // Coarse KMHK→i10 removed (was wrong for Kona / Tucson platforms)
     // Kia
     ["KNAD", "Sportage"],
@@ -744,6 +744,19 @@ describe("regressions", () => {
     expect(r.make).toBe("Hyundai");
     expect(r.model).toBe("Santa Fe Sport");
     expect(r.model).not.toBe("Sonata");
+  });
+
+  it("[REG-002] Korean Sonata MY2020 KMHL* must not decode as IONIQ 5", () => {
+    const r = decodeVin("KMHL24JJ0LA009507");
+    expect(r.make).toBe("Hyundai");
+    expect(r.model).toBe("Sonata");
+    expect(r.year).toBe(2020);
+    expect(r.model).not.toMatch(/IONIQ/i);
+  });
+
+  it("[REG-002] IONIQ 5 platform KMHL341 still decodes as IONIQ 5", () => {
+    const r = decodeVin("KMHL341BGNU123456");
+    expect(r.model).toBe("IONIQ 5");
   });
 
   it("[REG-001] any KMHS-prefixed VIN must resolve to Santa Fe Sport", () => {

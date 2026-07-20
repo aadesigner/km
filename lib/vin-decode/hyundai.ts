@@ -97,25 +97,29 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHB381", model: "i20", chassis: "BC3" },
   { prefix: "KMHB281", model: "i20", chassis: "GB" },
   { prefix: "KMHA381", model: "i10", chassis: "AC3" },
-  // Elantra / Avante
+  // IONIQ 5 / 6 — specific NE platforms only (do NOT map bare KMHL*; that is also Sonata DN8 KR)
   { prefix: "KMHL341", model: "IONIQ 5" },
   { prefix: "KMHLW4", model: "IONIQ 5" },
   { prefix: "KMHM341", model: "IONIQ 6" },
   { prefix: "KMHN341", model: "IONIQ 5 N" },
   { prefix: "KMHC281", model: "IONIQ" },
   { prefix: "KMHC381", model: "IONIQ" },
-  // Elantra — after IONIQ prefixes so KMHL341 is not stolen
+  // Elantra CN7 — longer than KMHL24 Sonata rule below
   { prefix: "KMHL241", model: "Elantra", chassis: "CN7" },
   { prefix: "KMHD281", model: "Elantra", chassis: "CN7" },
   { prefix: "KMHD641", model: "Elantra", chassis: "AD" },
   { prefix: "5NPD8", model: "Elantra", chassis: "CN7 US" },
   { prefix: "5NPDH", model: "Elantra", chassis: "CN7 US" },
   { prefix: "5NPET", model: "Elantra" },
-  // Sonata
+  // Sonata — US Alabama + Korea (E through MY2019 KR; L = DN8 KR from MY2020 per Wikibooks)
   { prefix: "5NPE2", model: "Sonata", chassis: "DN8" },
   { prefix: "5NPE3", model: "Sonata", chassis: "DN8" },
   { prefix: "KMHE3", model: "Sonata" },
   { prefix: "KMHE2", model: "Sonata" },
+  { prefix: "KMHE1", model: "Sonata" },
+  { prefix: "KMHL14", model: "Sonata", chassis: "DN8" },
+  { prefix: "KMHL24", model: "Sonata", chassis: "DN8" },
+
   // Palisade / Venue / Nexo
   { prefix: "KM8Y3", model: "Palisade" },
   { prefix: "5NMYA", model: "Palisade" },
@@ -227,8 +231,21 @@ function decodeHyundaiLineYear(vin: string, year: number | null): PrefixRule | n
     if (line === "D" && year >= 2001 && year <= 2020) {
       return { prefix, model: "Elantra" };
     }
-    if (line === "L" && year >= 2021) {
-      return { prefix, model: "Elantra", chassis: "CN7" };
+    // Wikibooks pos.4 L: Sonata 2020+ (Korean), Elantra 2021+, i40.
+    // IONIQ 5 uses dedicated platforms (KMHL341 / KMHLW4) matched above — not bare KMHL.
+    if (line === "L" && year >= 2020) {
+      const series = vin.slice(4, 7); // positions 5–7
+      if (year >= 2021 && series === "241") {
+        return { prefix, model: "Elantra", chassis: "CN7" };
+      }
+      if (year >= 2021 && (series.startsWith("341") || vin.startsWith("KMHLW4"))) {
+        return { prefix, model: "IONIQ 5" };
+      }
+      if (year >= 2022 && engine && EV_ENGINE_CHARS.has(engine) && (series.startsWith("34") || vin[4] === "W")) {
+        return { prefix, model: "IONIQ 5" };
+      }
+      // Default L-line Korea from MY2020: Sonata DN8 (was incorrectly falling through to IONIQ 5)
+      return { prefix, model: "Sonata", chassis: "DN8" };
     }
     if (line === "E" && year >= 2006 && year <= 2019) {
       return { prefix, model: "Sonata" };

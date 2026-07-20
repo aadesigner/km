@@ -56,6 +56,24 @@ describe("Hyundai other models + year", () => {
     expect(decodeVin("5NPE24AF5FH123456").model).toBe("Sonata");
   });
 
+  it("Korean Sonata MY2020+ (line L / KMHL) is not IONIQ 5", () => {
+    // Wikibooks: L = Sonata 2020- (Korean). Year L = 2020.
+    const sonata2020 = decodeVin("KMHL24JJ0LA009507");
+    expect(sonata2020.make).toBe("Hyundai");
+    expect(sonata2020.model).toBe("Sonata");
+    expect(sonata2020.year).toBe(2020);
+    expect(sonata2020.model).not.toMatch(/IONIQ/i);
+
+    const sonata2019 = decodeVin("KMHE141ABKA123456");
+    expect(sonata2019.model).toBe("Sonata");
+    expect(sonata2019.year).toBe(2019);
+  });
+
+  it("IONIQ 5 still wins on KMHL341 / KMHLW4 platforms", () => {
+    expect(decodeVin("KMHL341BGNU123456").model).toBe("IONIQ 5");
+    expect(decodeVin("KMHLW41ABNU123456").model).toBe("IONIQ 5");
+  });
+
   it("exposes year + plant for Tucson", () => {
     const r = decodeVin("KM8J3CA46NU123456");
     expect(r.year).toBe(2022);

@@ -154,6 +154,7 @@ const VOLKSWAGEN: Case[] = [
   { vin: zzz("WVW", "CR", "N"), label: "VW Touareg CR", make: "Volkswagen", modelContains: "Touareg", year: 2022 },
   { vin: zzz("WVG", "CR", "N"), label: "VW Touareg Bratislava", make: "Volkswagen", modelContains: "Touareg", year: 2022, modelExcludes: ["Q7"] },
   { vin: zzz("WVW", "1T", "K"), label: "VW Touran", make: "Volkswagen", modelContains: "Touran", year: 2019 },
+  { vin: "WVWZZZ9NZ8D029780", label: "VW Polo 9N (not Touran)", make: "Volkswagen", modelContains: "Polo", year: 2008, modelExcludes: ["Touran"] },
   { vin: zzz("WVW", "2H", "N"), label: "VW Amarok", make: "Volkswagen", modelContains: "Amarok", year: 2022 },
   { vin: zzz("WVW", "SK", "N"), label: "VW Caddy", make: "Volkswagen", modelContains: "Caddy", year: 2022 },
   { vin: zzz("WV2", "SF", "N"), label: "VW Multivan T7", make: "Volkswagen", modelContains: "Multivan", year: 2022 },

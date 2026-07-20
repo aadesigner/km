@@ -103,6 +103,8 @@ const VW_EU_TYPE_78: Record<string, StaticHit> = {
   "2E": { model: "Crafter", chassis: "2E" },
   "2H": { model: "Amarok", chassis: "2H" },
   "1T": { model: "Touran", chassis: "1T" },
+  "5T": { model: "Touran", chassis: "5T" },
+  "9N": { model: "Polo", chassis: "9N" },
   "7N": { model: "Sharan", chassis: "7N" },
   "7H": { model: "Transporter / Multivan", chassis: "T5/T6" },
   "7J": { model: "Transporter / Multivan", chassis: "T6" },

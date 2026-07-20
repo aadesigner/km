@@ -287,7 +287,9 @@ const HYUNDAI_TRIM_5: Record<string, string> = {
   KM8JD: "Tucson", KM8JE: "Tucson", "5NMJB": "Tucson (NX4 US)", "5NMJC": "Tucson (NX4 US)",
   TMAJB: "Tucson (NX4 EU)", TMAJC: "Tucson (NX4 EU)", TMAJD: "Tucson (NX4 EU)",
   TMAJE: "Tucson (NX4 EU)", TMAH38: "Tucson (NX4 EU)",
-  KMHL34: "IONIQ 5", KMHM34: "IONIQ 6", KMHD28: "Elantra (CN7)", KMHD64: "Elantra (AD)",
+  KMHL1: "Sonata (DN8)", KMHL2: "Sonata (DN8) / Elantra", KMHM3: "IONIQ 6",
+  KMHD2: "Elantra (CN7)", KMHD6: "Elantra (AD)", KMHE1: "Sonata", KMHE2: "Sonata", KMHE3: "Sonata",
+  // Note: IONIQ 5 is KMHL341 / KMHLW4 — too long for this 4–5 char trim table
   KMHR58: "Kona (OS)", KMHR68: "Kona (SX2)", KMHK58: "Kona (OS)", KMHK25: "Santa Fe (TM)",
   KM8S3: "Santa Fe", KM8R3: "Santa Cruz", KMHS38: "Santa Fe Sport",
   NLHBW: "Bayon", NLHBR: "i20",
