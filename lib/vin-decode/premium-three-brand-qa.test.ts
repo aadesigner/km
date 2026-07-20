@@ -12,7 +12,7 @@ type Case = {
   modelContains: string;
   /** Substrings that must NOT appear in model (sibling contamination). */
   modelExcludes?: string[];
-  year?: number;
+  year?: number | null;
 };
 
 function assertCase(c: Case): void {
@@ -23,7 +23,7 @@ function assertCase(c: Case): void {
   for (const bad of c.modelExcludes ?? []) {
     expect(r.model?.toLowerCase(), `${c.label}: exclude ${bad}`).not.toContain(bad.toLowerCase());
   }
-  if (c.year != null) expect(r.year, `${c.label}: year`).toBe(c.year);
+  if (c.year !== undefined) expect(r.year, `${c.label}: year`).toBe(c.year);
   expect(isPlausibleMake(r.make, c.vin), `${c.label}: plausible make`).toBe(true);
   expect(isPlausibleModel(r.model, c.vin), `${c.label}: plausible model`).toBe(true);
 
@@ -39,8 +39,9 @@ const MERCEDES: Case[] = [
   { vin: "WDD118087KA123456", label: "MB CLA C118", make: "Mercedes-Benz", modelContains: "CLA", year: 2019 },
   { vin: "WDD246087JA123456", label: "MB B-Class W246", make: "Mercedes-Benz", modelContains: "B-Class", year: 2018 },
   { vin: "WDD2450879A123456", label: "MB B-Class W245", make: "Mercedes-Benz", modelContains: "B-Class", year: 2009 },
-  { vin: "WDD2020491A123456", label: "MB C-Class W202", make: "Mercedes-Benz", modelContains: "C-Class", year: 2001 },
-  { vin: "WDD2030491A123456", label: "MB C-Class W203", make: "Mercedes-Benz", modelContains: "C-Class", year: 2001 },
+  { vin: "WDD2020491A123456", label: "MB C-Class W202 Baumuster", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
+  { vin: "WDD2030491A123456", label: "MB C-Class W203 Baumuster", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
+  { vin: "WDB2030081A880979", label: "MB C 220 CDI real W203", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
   { vin: "WDD204049AA123456", label: "MB C-Class W204", make: "Mercedes-Benz", modelContains: "C-Class", year: 2010 },
   { vin: "WDD205037FA123456", label: "MB C-Class W205", make: "Mercedes-Benz", modelContains: "C-Class", year: 2015 },
   { vin: "WDD206087MA123456", label: "MB C-Class W206", make: "Mercedes-Benz", modelContains: "C-Class", year: 2021 },
@@ -156,6 +157,8 @@ const BMW: Case[] = [
   { vin: "WBADZ2C01LCD26813", label: "BMW 8 Series G14 ETK DZ", make: "BMW", modelContains: "8 Series", year: 2020, modelExcludes: ["5 Series"] },
   { vin: "WBAGV8106RCR24769", label: "BMW 8 Series G16 ETK GV", make: "BMW", modelContains: "8 Series", year: 2024 },
   { vin: "WBAJC310XHG857079", label: "BMW 5 Series G30 ETK JC", make: "BMW", modelContains: "5 Series", year: 2017, modelExcludes: ["8 Series", "X5"] },
+  { vin: "WBAXA7109CDX06588", label: "BMW 535d F10 ETK XA71", make: "BMW", modelContains: "5 Series", year: 2012, modelExcludes: ["X1", "X7", "X5"] },
+  { vin: "WBAXA5C56FD691453", label: "BMW 535d F10 ETK XA5", make: "BMW", modelContains: "5 Series", year: 2015, modelExcludes: ["X5"] },
   // SUVs — sibling negatives
   { vin: "WBA71BX03P9R09775", label: "BMW X1", make: "BMW", modelContains: "X1", modelExcludes: ["7 Series"] },
   { vin: "WBA72BX03K9R09775", label: "BMW X2", make: "BMW", modelContains: "X2", modelExcludes: ["7 Series"] },

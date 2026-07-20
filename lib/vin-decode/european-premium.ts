@@ -12,6 +12,7 @@ import {
   decodeMercedesEuHomologation,
 } from "./eu-zzz-homologation";
 import { decodeJlrEu } from "./jlr-eu";
+import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
 import {
@@ -23,13 +24,19 @@ import {
   isVolkswagenVin,
 } from "./vag-modern";
 
+export { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
 /**
  * Model-year from VIN position 10 (ISO 3779 cycle heuristic).
  * Shared by premium decoders so chassis annotations can be year-gated.
+ *
+ * Classic European Mercedes Baumuster FINs do not encode year at pos.10
+ * (that digit is LHD/RHD) — returns null for those VINs.
  */
 export function premiumVinModelYear(vin: string): number | null {
+  if (isMercedesEuroBaumusterVin(vin)) return null;
   const YEAR_MAP: Record<string, number> = {
     A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
     J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
@@ -188,6 +195,11 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "F60": { from: 2016, to: 2099 },
 };
 
+/** Chassis codes uniquely encoded as digits in the VIN (Mercedes Baumuster / series). */
+function isLiteralMercedesChassis(key: string): boolean {
+  return /^[WCXARNVH]\d{3}\b/.test(key);
+}
+
 function applyChassisYearGate(chassis: string | null, year: number | null): string | null {
   if (!chassis) return null;
   const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();
@@ -195,8 +207,9 @@ function applyChassisYearGate(chassis: string | null, year: number | null): stri
     ?? CHASSIS_YEAR[key.split("/")[0]!]
     ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined);
   if (!bounds) return chassis; // literal VIN platform token (7P, CR, NX, …)
-  // Year unknown → do not claim a generation that depends on year.
-  if (year == null) return null;
+  // Year unknown: keep chassis only when it is uniquely encoded in the VIN
+  // (e.g. Mercedes W203). Strip ambiguous year-gated platforms (BMW letter reuse).
+  if (year == null) return isLiteralMercedesChassis(key) ? chassis : null;
   if (year < bounds.from || year > bounds.to) return null;
   return chassis;
 }
@@ -294,6 +307,11 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "WBA6F", model: "6 Series", chassis: "F12/F13" },
   { prefix: "WBA6", model: "6 Series" },
   // EU letter type codes (ETK model nos at pos.4–7) — not WBA8* numeric series.
+  // XA71/XA72 = 535d F10 N57Z; XA5* = F10 530d/535d family (must beat WBAX3… SUV rules).
+  { prefix: "WBAXA71", model: "5 Series", chassis: "F10/F11" },
+  { prefix: "WBAXA72", model: "5 Series", chassis: "F10/F11" },
+  { prefix: "WBAXA5", model: "5 Series", chassis: "F10/F11" },
+  { prefix: "WBAXA", model: "5 Series", chassis: "F10/F11" },
   // DZ21/DZ2C = 840i Convertible G14; GV81 = M850i Gran Coupé G16; GW41 = 840d Gran Coupé G16.
   { prefix: "WBADZ", model: "8 Series", chassis: "G14 Convertible" },
   { prefix: "WBAGV", model: "8 Series", chassis: "G16 Gran Coupé" },

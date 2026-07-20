@@ -33,12 +33,14 @@ export {
 export { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor, isEuZzzTypeApprovalVin } from "./vinDecoder-european";
 export { decodeEuropeanBrandModel } from "./european-brands";
 export { decodeGlobalBrandModel, decodeGlobalBrand, resolveGlobalBrandMake } from "./global-brands";
+export { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 export {
   decodePremiumEuropean,
   decodePremiumEuropeanModel,
   decodePremiumEuropeanSeries,
   decodePremiumEuropeanTrim,
   isPremiumEuropeanVin,
+  premiumVinModelYear,
   type PremiumEuropeanDecode,
 } from "./european-premium";
 export { decodeVinLocalFree, type LocalFreeDecodeResult } from "./local-free-decode";

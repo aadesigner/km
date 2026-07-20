@@ -572,7 +572,7 @@
   "checkout_manual_pending_desc": "If the system is still checking information from our partners, we'll email you when it's ready.",
   "pending_report_title": "Our system is checking all available databases. You'll receive an email when it's done.",
   "pending_report_top_notice": "We're searching for all available information. We'll email you when it's ready.",
-  "pending_report_top_notice_sub": "Usually ready within 3–4 hours. If no information is found, we'll refund you.",
+  "pending_report_top_notice_sub": "Usually ready within a day. If no information is found, we'll refund you.",
   "pending_report_desc": "If the system does not find any data, we will refund you the amount.",
   "pending_report_badge": "In progress",
   "pending_coffee_popup_title": "Time for a coffee break",

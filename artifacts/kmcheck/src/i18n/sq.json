@@ -525,7 +525,7 @@
   "checkout_manual_pending_desc": "Nëse sistemi vazhdon kontrollin e informacioneve nga partnerët tanë, do t'ju dërgojmë email kur të jetë gati.",
   "pending_report_title": "Sistemi ynë po kontrollon të gjitha bazat e të dhënave të disponueshme. Do të merrni një email kur të përfundojë.",
   "pending_report_top_notice": "Po kërkojmë të gjitha informacionet e disponueshme. Do t'ju dërgojmë email kur të jetë gati.",
-  "pending_report_top_notice_sub": "Zakonisht gati brenda 3–4 orëve. Nëse nuk gjendet asnjë informacion, do t'ju rimbursojmë.",
+  "pending_report_top_notice_sub": "Zakonisht gati brenda një dite. Nëse nuk gjendet asnjë informacion, do t'ju rimbursojmë.",
   "pending_report_desc": "Nëse sistemi nuk gjen asnjë të dhënë, do t'ju rimbursojmë shumën.",
   "pending_report_badge": "Në proces",
   "pending_coffee_popup_title": "Koha për një kafe",

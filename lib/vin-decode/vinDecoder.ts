@@ -9,6 +9,7 @@
 
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
+import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 import { decodeEuropeanBrandModel } from "./european-brands";
 import { resolveBrandVinSpec, resolveBrandVinModel } from "./brand-vin-spec";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
@@ -61,6 +62,12 @@ function decodeYear(code: string): number | null {
   // Use heuristic: if candidate > current year + 2, fall back to base
   const currentYear = new Date().getFullYear();
   return candidate <= currentYear + 2 ? candidate : base;
+}
+
+function decodeVinModelYear(vin: string): number | null {
+  // Classic European Mercedes Baumuster: pos.10 is LHD/RHD, not ISO model year.
+  if (isMercedesEuroBaumusterVin(vin)) return null;
+  return decodeYear(vin[9] ?? "");
 }
 
 // ── Country / region from VIN position 1 ────────────────────────────────────
@@ -1832,11 +1839,11 @@ export interface VinDecodeResult {
   vin: string;
   make: string | null;
   model: string | null;
-  /** Model year from VIN position 10 (ISO 3779). Not the manufacture/calendar year. */
+  /** Model year from VIN position 10 (ISO 3779). Null when not encoded (e.g. Euro Mercedes Baumuster). */
   year: number | null;
   country: string | null;
   wmi: string;
-  /** Raw model-year character at position 10. */
+  /** Raw character at position 10 (model-year code, or Mercedes steering 1/2 on Baumuster FINs). */
   modelYear: string;
   /**
    * Calendar / manufacture year is not encoded in a standard VIN.
@@ -1866,7 +1873,7 @@ export function decodeVin(vin: string): VinDecodeResult {
   const model = (brandSpec?.model && brandSpec.model.length > 0)
     ? brandSpec.model
     : decodeModel(upper, global);
-  const year = decodeYear(upper[9]);
+  const year = decodeVinModelYear(upper);
   const hyundaiEngine = isHyundaiVin(upper) ? decodeHyundaiEngine(upper, model, year) : null;
   const engineDecoded = brandSpec?.engineDecoded ?? hyundaiEngine ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);

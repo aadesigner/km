@@ -25,23 +25,35 @@ describe("premium chassis year coherence", () => {
     expect(prem?.displayModel).not.toMatch(/E90|E91|E92|E93/i);
   });
 
-  it("Mercedes WDD213 + year 2001 must not claim W213", () => {
-    const vin = "WDD2130421A123456"; // year 1 = 2001
-    expect(premiumVinModelYear(vin)).toBe(2001);
+  it("Mercedes Baumuster FIN does not treat steering digit as year 2001", () => {
+    // Classic Euro layout: 213042 = Baumuster, 1 = LHD — year is NOT in the VIN.
+    const vin = "WDD2130421A123456";
+    expect(premiumVinModelYear(vin)).toBeNull();
     const prem = decodePremiumEuropean(vin);
     expect(prem?.model).toBe("E-Class");
-    expect(prem?.chassis).toBeNull();
-    expect(prem?.displayModel).not.toMatch(/W213/i);
-    expect(decodeVin(vin).model).toBe("E-Class");
+    // Chassis digits are authoritative even without ISO year.
+    expect(prem?.chassis).toBe("W213");
+    expect(decodeVin(vin).year).toBeNull();
+    expect(decodeVin(vin).model).toMatch(/E-Class/i);
   });
 
-  it("Mercedes WDD213 + year 2016 may claim W213", () => {
+  it("Mercedes WDD213 + ISO year letter 2016 may claim W213", () => {
     const vin = "WDD213042GA123456"; // pos.10 = G → 2016
     expect(vin).toHaveLength(17);
     expect(premiumVinModelYear(vin)).toBe(2016);
     const prem = decodePremiumEuropean(vin);
     expect(prem?.chassis).toBe("W213");
     expect(prem?.displayModel).toContain("W213");
+  });
+
+  it("real W203 Baumuster VIN has no invented year", () => {
+    const vin = "WDB2030081A880979";
+    expect(premiumVinModelYear(vin)).toBeNull();
+    expect(decodeVin(vin).year).toBeNull();
+    expect(decodeVin(vin).make).toBe("Mercedes-Benz");
+    expect(decodeVin(vin).model).toMatch(/C-Class/i);
+    const prem = decodePremiumEuropean(vin);
+    expect(prem?.chassis).toBe("W203");
   });
 
   it("Mercedes WDD243 is EQA/EQB, not B-Class W246", () => {

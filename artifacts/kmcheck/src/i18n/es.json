@@ -522,7 +522,7 @@
   "checkout_manual_pending_desc": "Si el sistema sigue buscando información de nuestros socios, le enviaremos un correo cuando esté listo.",
   "pending_report_title": "Estamos buscando en todas las bases de datos disponibles. Recibirá un correo cuando termine.",
   "pending_report_top_notice": "Estamos buscando toda la información disponible. Le enviaremos un correo cuando esté listo.",
-  "pending_report_top_notice_sub": "Normalmente listo en 3–4 horas. Si no se encuentra información, le reembolsaremos.",
+  "pending_report_top_notice_sub": "Normalmente listo en un día. Si no se encuentra información, le reembolsaremos.",
   "pending_report_desc": "Si el sistema no encuentra datos, le reembolsaremos el importe.",
   "pending_report_badge": "En curso",
   "pending_coffee_popup_title": "Hora de un descanso",

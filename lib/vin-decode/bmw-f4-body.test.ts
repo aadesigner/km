@@ -23,3 +23,26 @@ describe("BMW F32/F33/F36 ETK type codes", () => {
     expect(decodeVin(vin).model).toContain("F33 Convertible");
   });
 });
+
+describe("BMW F10 ETK XA* type codes", () => {
+  it("XA71 → 5 Series F10 (535d), not X7/X1", () => {
+    const vin = "WBAXA7109CDX06588";
+    const r = decodeVin(vin);
+    expect(r.make).toBe("BMW");
+    expect(r.year).toBe(2012);
+    expect(r.model).toMatch(/5 Series/i);
+    expect(r.model).not.toMatch(/X7|X1|X5/i);
+    expect(decodePremiumEuropean(vin)?.chassis).toBe("F10/F11");
+  });
+
+  it("XA5* → 5 Series F10, not X5", () => {
+    const vin = "WBAXA5C56FD691453";
+    expect(decodeVin(vin).model).toMatch(/5 Series/i);
+    expect(decodeVin(vin).model).not.toMatch(/X5/i);
+    expect(decodeVin(vin).year).toBe(2015);
+  });
+
+  it("WBAX3 digit SUV still X3 (not swallowed by WBAXA)", () => {
+    expect(decodeVin("WBAX31000L0123456").model).toMatch(/X3/i);
+  });
+});

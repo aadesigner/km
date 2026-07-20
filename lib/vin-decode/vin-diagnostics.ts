@@ -88,9 +88,10 @@ const BMW_MODEL_5: Record<string, string> = {
   "5UX3W": "3 Series (US G20)",
   // 5 Series
   WBA5E: "5 Series (G30/G31)", WBA5J: "5 Series (F10/F11)",
+  WBAXA: "5 Series (F10/F11 ETK XA)", WBAJC: "5 Series (G30/G31 ETK JC)",
   WBA7G: "7 Series (G11 LCI)", WBA7C: "7 Series (G11/G12)", WBA7L: "7 Series (G70)",
   "5UX5J": "5 Series (US F10)", "5UX5E": "5 Series (US G30)",
-  // X models
+  // X models (digit after X — not WBAXA* F10 ETK)
   WBAX3: "X3 (G01)", WBAX4: "X4 (G02)", WBAX5: "X5 (G05)", WBAX6: "X6 (G06)", WBAX7: "X7 (G07)",
   "5UXWX": "X3 (US)", "5UXKR": "X5 (US)", "5UXKS": "X6 (US)",
   // 1 / 2 / 4 (G-gen)
