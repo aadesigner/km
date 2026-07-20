@@ -33,6 +33,7 @@ import {
   finalizeAdminCatalogSave,
   detectAdminCatalogMileageTouched,
 } from "./pendingVinCatalogPrep.js";
+import { yieldEventLoop } from "./batchAsync.js";
 
 export { prepareManualPublishCatalogData, finalizeAdminCatalogSave, detectAdminCatalogMileageTouched, reconcileLockedOdometerData } from "./pendingVinCatalogPrep.js";
 
@@ -308,10 +309,14 @@ export async function savePendingVinCheckDraft(opts: {
       ? (pending.draftData as Record<string, unknown>)
       : {};
 
+  // Same draft result as before — yield between heavy sync steps so payments/register stay responsive.
   const merged = applyCatalogAdminPatch(existingDraft, opts.draftData);
+  await yieldEventLoop();
   const mileageTouched = detectAdminCatalogMileageTouched(existingDraft, opts.draftData);
   const prepared = finalizeAdminCatalogSave(merged, mileageTouched);
+  await yieldEventLoop();
   const payload = sanitizeCatalogPayload(prepared);
+  await yieldEventLoop();
   const stamped = await stampLookupReportData({ ...payload, fulfillmentPending: true });
 
   const now = new Date();

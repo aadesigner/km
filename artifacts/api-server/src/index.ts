@@ -19,10 +19,9 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason) => {
+  // Log only — do not exit. A failed background job (email, fulfillment side-effect)
+  // must not take down the whole site. Hard failures still exit via uncaughtException.
   logger.error({ reason }, "Unhandled promise rejection");
-  if (process.env.NODE_ENV === "production") {
-    setTimeout(() => process.exit(1), 250);
-  }
 });
 
 const rawPort = process.env["PORT"] ?? "8080";

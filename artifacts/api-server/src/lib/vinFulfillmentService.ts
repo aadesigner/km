@@ -29,8 +29,14 @@ import {
   getCurrentKrwPerUsd,
   readFrozenKrwPerUsd,
 } from "./krwRate.js";
+import { createConcurrencyLimiter } from "./batchAsync.js";
 
 export const VIN_FULFILLING_STATUS = "fulfilling" as const;
+
+/** Cap parallel provider jobs on this process — payment still queues as fulfilling immediately. */
+const fulfillmentLimiter = createConcurrencyLimiter(
+  Math.max(1, Number(process.env.VIN_FULFILLMENT_CONCURRENCY ?? 2) || 2),
+);
 
 export type ProviderFulfillmentPayment = {
   amount: number;
@@ -382,6 +388,11 @@ export async function startProviderFulfillment(
     paymentRef: input.resolvedPayment?.ref ?? null,
   });
 
-  void runProviderFulfillmentJob(lookup.id, input);
+  // Same job as before; limiter only reduces concurrent CPU/provider pressure under spikes.
+  void fulfillmentLimiter
+    .run(() => runProviderFulfillmentJob(lookup.id, input))
+    .catch((err) => {
+      logger.error({ err, lookupId: lookup.id, vin: input.normalizedVin }, "Provider fulfillment queue error");
+    });
   return { id: lookup.id, vin: lookup.vin, status: lookup.status };
 }

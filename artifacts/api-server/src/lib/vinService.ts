@@ -21,6 +21,7 @@ import { mediaVersionFromUpdatedAt, extractVinPhotoUrls, invalidateVinImageCache
 import { removeVinFromSitemaps } from "./sitemapMaintenance.js";
 import { assertValidProviderBaseUrl } from "./providerUrl.js";
 import { withGlobalVinProviderLock } from "./vinProviderMutex.js";
+import { mapInBatches } from "./batchAsync.js";
 import {
   providerCalendarLabelToIso,
   repairEncarMisParsedIsoDate,
@@ -480,7 +481,8 @@ export async function syncStampedCatalogToAllLookups(
     .from(vinLookupsTable)
     .where(eq(vinLookupsTable.vin, normalizedVin));
 
-  await Promise.all(lookups.map((lookup) => {
+  // Same per-row updates as before — batched so a popular VIN cannot open dozens of writes at once.
+  await mapInBatches(lookups, 25, async (lookup) => {
     const lookupData = (lookup.data ?? {}) as Record<string, unknown>;
     const lookupPayload = applyFrozenKrwPerUsd(stamped, {
       existingRate: readFrozenKrwPerUsd(lookupData),
@@ -501,8 +503,8 @@ export async function syncStampedCatalogToAllLookups(
       patch.providerName = "admin";
       patch.fromCache = true;
     }
-    return db.update(vinLookupsTable).set(patch).where(eq(vinLookupsTable.id, lookup.id));
-  }));
+    await db.update(vinLookupsTable).set(patch).where(eq(vinLookupsTable.id, lookup.id));
+  });
 }
 
 /** Revoke every client lookup + completed payment for a VIN (catalog removal). */
