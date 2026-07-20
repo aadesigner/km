@@ -25,8 +25,7 @@ describe("vin-page-seo", () => {
       country: "KR",
     });
     expect(title).toContain("2015 BMW 3 Series");
-    expect(title).toContain(vin);
-    expect(title).toContain("Check VIN");
+    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
 
     const desc = buildVinPageDescription("en", {
       vin,
@@ -50,8 +49,7 @@ describe("vin-page-seo", () => {
       make: "BMW",
       model: "3 Series",
     });
-    expect(title).toContain("sprawdź VIN");
-    expect(title).toContain(vin);
+    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
 
     const desc = buildVinPageDescription("pl", { vin, year: 2015, make: "BMW", model: "3 Series" });
     expect(desc).toContain(vin);
@@ -77,8 +75,7 @@ describe("vin-page-seo", () => {
       make: "BMW",
       model: "3 Series",
     });
-    expect(title).toContain("verificare VIN");
-    expect(title).toContain(vin);
+    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
 
     const desc = buildVinPageDescription("ro", { vin, year: 2015, make: "BMW", model: "3 Series" });
     expect(desc).toContain(vin);

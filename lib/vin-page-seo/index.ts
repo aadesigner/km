@@ -72,17 +72,17 @@ type TitleFn = (vehicle: string, vin: string) => string;
 type DescFn = (vehicle: string, vin: string, specs: string) => string;
 
 const TITLES: Record<VinSeoLang, TitleFn> = {
-  en: (vehicle, vin) => `${vehicle} — Check VIN ${vin} | kmcheck`,
-  de: (vehicle, vin) => `${vehicle} — VIN ${vin} prüfen | kmcheck`,
-  es: (vehicle, vin) => `${vehicle} — Comprobar VIN ${vin} | kmcheck`,
-  fr: (vehicle, vin) => `${vehicle} — Vérifier VIN ${vin} | kmcheck`,
-  ar: (vehicle, vin) => `${vehicle} — تحقق من VIN ${vin} | kmcheck`,
-  uk: (vehicle, vin) => `${vehicle} — перевірка VIN ${vin} | kmcheck`,
-  ru: (vehicle, vin) => `${vehicle} — проверка VIN ${vin} | kmcheck`,
-  ro: (vehicle, vin) => `${vehicle} — verificare VIN ${vin} | kmcheck`,
-  pl: (vehicle, vin) => `${vehicle} — sprawdź VIN ${vin} | kmcheck`,
-  bg: (vehicle, vin) => `${vehicle} — проверка VIN ${vin} | kmcheck`,
-  sq: (vehicle, vin) => `${vehicle} — kontrollo VIN ${vin} | kmcheck`,
+  en: (vehicle, vin) => `${vehicle} — (${vin})`,
+  de: (vehicle, vin) => `${vehicle} — (${vin})`,
+  es: (vehicle, vin) => `${vehicle} — (${vin})`,
+  fr: (vehicle, vin) => `${vehicle} — (${vin})`,
+  ar: (vehicle, vin) => `${vehicle} — (${vin})`,
+  uk: (vehicle, vin) => `${vehicle} — (${vin})`,
+  ru: (vehicle, vin) => `${vehicle} — (${vin})`,
+  ro: (vehicle, vin) => `${vehicle} — (${vin})`,
+  pl: (vehicle, vin) => `${vehicle} — (${vin})`,
+  bg: (vehicle, vin) => `${vehicle} — (${vin})`,
+  sq: (vehicle, vin) => `${vehicle} — (${vin})`,
 };
 
 const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
