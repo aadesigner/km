@@ -114,7 +114,7 @@ export function HeroVinForm({
                 ref={inputRef}
                 dir="ltr"
                 className={cn(
-                  "vin-input-ltr h-[3.25rem] sm:h-14 md:h-16 w-full min-w-0 text-left",
+                  "vin-input-ltr h-14 sm:h-14 md:h-16 w-full min-w-0 text-left",
                   "pl-11 sm:pl-14 pr-[7.5rem] sm:pr-[10.5rem]",
                   "text-[16px] sm:text-lg",
                   "border-0 focus-visible:ring-0 focus-visible:outline-none rounded-none shadow-none bg-transparent",
@@ -138,7 +138,7 @@ export function HeroVinForm({
                 disabled={submitDisabled}
                 className={cn(
                   "hero-vin-submit absolute right-1.5 sm:right-2.5 z-10",
-                  "h-9 sm:h-10 md:h-11 rounded-lg sm:rounded-xl",
+                  "h-10 sm:h-10 md:h-11 rounded-lg sm:rounded-xl",
                   "px-3.5 sm:px-7 text-sm sm:text-[15px] font-semibold",
                   "shadow-md shadow-primary/25 md:shadow-lg hover:shadow-primary/40 transition-shadow",
                 )}
