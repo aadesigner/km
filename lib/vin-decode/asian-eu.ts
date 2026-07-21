@@ -46,11 +46,28 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   // Toyota France Valenciennes (VNK) — plant builds the Yaris family only
   { prefix: "VNKKAB", model: "Yaris Cross", chassis: "XP210" },
   { prefix: "VNKKZ", model: "Yaris Cross", chassis: "XP210" },
+  { prefix: "VNKKC", model: "Yaris" },
+  { prefix: "VNKKG", model: "Yaris" },
+  { prefix: "VNKKH", model: "Yaris" },
+  { prefix: "VNKKJ", model: "Yaris" },
+  { prefix: "VNKJG", model: "Yaris" },
   // Toyota Turkey Sakarya (NMT) — C-HR + Corolla lines
   { prefix: "NMTKHM", model: "C-HR", chassis: "AX10" },
   { prefix: "NMTKKC", model: "C-HR", chassis: "AX20" },
   { prefix: "NMTBB", model: "Corolla", chassis: "E210" },
   { prefix: "NMTBR", model: "Corolla Touring Sports", chassis: "E210" },
+  // Toyota Thailand / South Africa / Indonesia — verified regional VDS families
+  { prefix: "MR0BA3", model: "Hilux" },
+  { prefix: "MR0FR", model: "Hilux" },
+  { prefix: "AHTFR", model: "Hilux" },
+  { prefix: "AHTFZ", model: "Hilux" },
+  { prefix: "MHFKW", model: "Innova" },
+  { prefix: "MHFFXW", model: "Innova" },
+  { prefix: "MHFFXR", model: "Innova" },
+  { prefix: "MHFZR", model: "Fortuner" },
+  // Mexico plants
+  { prefix: "3TM", model: "Tacoma" },
+  { prefix: "3MY", model: "Yaris" },
   // Toyota USA Mississippi (5YF* — Corolla sedan/hatch)
   { prefix: "5YFS4", model: "Corolla", chassis: "E210 2.0L" },
   { prefix: "5YFT4", model: "Corolla", chassis: "E210" },
@@ -94,26 +111,30 @@ const HONDA_EU_RULES: PrefixRule[] = compilePrefixRules([
  */
 const TOYOTA_PLANT_FAMILY: Record<string, string> = {
   VNK: "Yaris / Yaris Cross", // Toyota Valenciennes (France)
-  NMT: "C-HR / Corolla",      // Toyota Sakarya (Turkey)
+  YAR: "Yaris", // Legacy Valenciennes Yaris WMI
+  WZ1: "GR Supra", // Magna Steyr Austria — single Toyota product
+  NMT: "Corolla / Auris / C-HR", // Toyota Sakarya (Turkey; varies by era)
+  SB1: "Corolla / Auris / Avensis", // Toyota Burnaston (UK; varies by era)
+  MR0: "Hilux / Fortuner / Yaris / Camry", // Toyota Thailand
+  MR1: "Toyota Thailand passenger vehicle",
+  MR2: "Toyota Thailand passenger vehicle",
+  MHF: "Innova / Fortuner / Avanza / Rush", // Toyota Indonesia
+  MBJ: "Innova / Fortuner / Etios / Corolla / Camry", // Toyota India
+  "8AJ": "Hilux / Fortuner", // Toyota Argentina
+  "9BR": "Corolla / Etios / Yaris", // Toyota Brazil
+  AHT: "Hilux / Fortuner / Corolla", // Toyota South Africa
+  "6T1": "Camry / Aurion", // Toyota Australia (historical production)
 };
 
 function isToyotaExtendedVin(vin: string): boolean {
-  return (
-    vin.startsWith("JT")
-    || vin.startsWith("SB1")
-    || vin.startsWith("JTD")
-    || vin.startsWith("YAR")
+  const wmi = vin.slice(0, 3);
+  return vin.startsWith("JT")
     || vin.startsWith("VF1BT")
-    || vin.startsWith("WZ1")
-    || vin.startsWith("5YF")
-    || vin.startsWith("4T1")
-    || vin.startsWith("5TD")
-    || vin.startsWith("5TF")
-    || vin.startsWith("2T1")
-    || vin.startsWith("2T3")
-    || vin.startsWith("VNK")
-    || vin.startsWith("NMT")
-  );
+    || [
+      "SB1", "YAR", "WZ1", "5YF", "4T1", "4T3", "4T4", "5TD", "5TF",
+      "2T1", "2T3", "3TM", "3MY", "VNK", "NMT", "MR0", "MR1", "MR2",
+      "MHF", "MBJ", "8AJ", "9BR", "AHT", "6T1", "LFM", "LVG",
+    ].includes(wmi);
 }
 
 function isHondaEuVin(vin: string): boolean {

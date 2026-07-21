@@ -217,6 +217,7 @@ describe("focus brands — no false positives", () => {
 
   it("Toyota Proace on VF1BT stays Toyota line, not Renault Clio", () => {
     const r = decodeVin(pad("VF1BT9"));
+    expect(r.make).toBe("Toyota");
     expect(r.model).toMatch(/Proace/);
   });
 });

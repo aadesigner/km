@@ -64,7 +64,7 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHS381", model: "Santa Fe Sport" },
   { prefix: "KMHSW", model: "Santa Fe Sport" },
   { prefix: "KMHS", model: "Santa Fe Sport" },
-  { prefix: "KMHR", model: "Santa Fe" },
+  // Do not map bare KMHR → Santa Fe (pos.4 R is Venue / Palisade / Kona era).
   { prefix: "KM8S3", model: "Santa Fe", chassis: "TM US" },
   { prefix: "KM8S2", model: "Santa Fe" },
   { prefix: "5NMS2", model: "Santa Fe", chassis: "TM US" },
@@ -133,6 +133,13 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   // Creta / Casper / Inster (regional)
   { prefix: "MALA51", model: "Creta", chassis: "SU2 IN" },
   { prefix: "MALB51", model: "Creta", chassis: "SU2 IN" },
+  { prefix: "MALAN51", model: "i20" },
+  { prefix: "MALBB51", model: "i20" },
+  { prefix: "MALA851", model: "Grand i10" },
+  // Beijing Hyundai — line letters are shared with the global Hyundai grammar.
+  { prefix: "LBEJ", model: "Tucson" },
+  { prefix: "LBED", model: "Elantra" },
+  { prefix: "LBEE", model: "Sonata" },
   { prefix: "KMHK381A", model: "Tucson", chassis: "NX4" },
   { prefix: "KMHH381", model: "Kona", chassis: "OS" },
   { prefix: "TMAJ581", model: "Kona", chassis: "SX2 EU" },
@@ -142,6 +149,25 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
 ]);
 
 const EV_ENGINE_CHARS = new Set(["L", "N", "S", "T", "W", "Z"]);
+
+const HYUNDAI_REGIONAL_FAMILY: Record<string, string> = {
+  MAL: "i10 / i20 / Verna / Venue / Creta / Alcazar",
+  LBE: "Elantra / Sonata / Tucson",
+  TMA: "i30 / Tucson / Kona",
+  TMC: "i30 / Tucson / Kona",
+  "2HM": "Sonata",
+  "9BH": "HB20 / Creta",
+  "95P": "Tucson / ix35 / HR",
+  MF3: "IONIQ 5 / Creta / Stargazer",
+  Z94: "Solaris / Creta",
+  PFD: "IONIQ 5 / IONIQ 6",
+  "7YA": "IONIQ 5 / IONIQ 9",
+  "5XY": "Santa Fe",
+  AC5: "Hyundai South Africa",
+  MB2: "Hyundai India MPV",
+  NLJ: "Hyundai commercial van",
+  "8LG": "Hyundai Ecuador model",
+};
 
 export function isHyundaiVin(vin: string): boolean {
   const wmi = vin.slice(0, 3).toUpperCase();
@@ -156,12 +182,19 @@ export function isHyundaiVin(vin: string): boolean {
     || wmi.startsWith("5NM")
     || wmi.startsWith("5NP")
     || wmi.startsWith("5NT")
+    || wmi === "5XY"
+    || wmi === "7YA"
     || wmi.startsWith("2HM")
     || wmi.startsWith("9BH")
+    || wmi === "95P"
     || wmi.startsWith("MAL")
+    || wmi === "MB2"
     || wmi.startsWith("MF3")
     || wmi.startsWith("LBE")
-    || wmi.startsWith("LNY")
+    || wmi === "PFD"
+    || wmi === "Z94"
+    || wmi === "8LG"
+    || wmi === "AC5"
   );
 }
 
@@ -274,7 +307,11 @@ export function matchHyundaiRule(vin: string): PrefixRule | null {
   const platform = matchLongestPrefix(u, HYUNDAI_PLATFORM_RULES);
   if (platform) return platform;
 
-  return decodeHyundaiLineYear(u, hyundaiModelYear(u));
+  const line = decodeHyundaiLineYear(u, hyundaiModelYear(u));
+  if (line) return line;
+
+  const family = HYUNDAI_REGIONAL_FAMILY[u.slice(0, 3)];
+  return family ? { prefix: u.slice(0, 3), model: family } : null;
 }
 
 export function decodeHyundaiModel(vin: string): string | null {

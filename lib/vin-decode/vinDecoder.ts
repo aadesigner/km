@@ -106,6 +106,7 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VSK", country: "Spain" },
   { prefix: "VR1", country: "France" },
   { prefix: "VNK", country: "France" },
+  { prefix: "WZ1", country: "Austria" },
   { prefix: "VF8", country: "France" },
   { prefix: "VF7", country: "France" },
   { prefix: "VF6", country: "France" },
@@ -123,6 +124,15 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "TM8", country: "Czech Republic" },
   { prefix: "TMB", country: "Czech Republic" },
   { prefix: "TMA", country: "Czech Republic" },
+  { prefix: "TMC", country: "Czech Republic" },
+  { prefix: "MHF", country: "Indonesia" },
+  { prefix: "MF3", country: "Indonesia" },
+  { prefix: "MR0", country: "Thailand" },
+  { prefix: "MR1", country: "Thailand" },
+  { prefix: "MR2", country: "Thailand" },
+  { prefix: "PFD", country: "Singapore" },
+  { prefix: "Z94", country: "Russia" },
+  { prefix: "8LG", country: "Ecuador" },
   { prefix: "HES", country: "China" },
   { prefix: "SHH", country: "United Kingdom" },
   { prefix: "SAD", country: "United Kingdom" },
@@ -187,6 +197,7 @@ const WMI_MAP: Record<string, string> = {
   "2G1": "Chevrolet", "2G4": "Pontiac",
   "2T1": "Toyota", "2T2": "Lexus", "2T3": "Toyota",
   "3FA": "Ford", "3FE": "Ford", "3FM": "Ford", "3FT": "Ford",
+  "3TM": "Toyota", "3MY": "Toyota",
   "3N1": "Nissan", "3N6": "Nissan",
   "3VW": "Volkswagen", "3VV": "Volkswagen",
   "4S3": "Subaru", "4S4": "Subaru", "4S6": "Subaru",
@@ -198,7 +209,8 @@ const WMI_MAP: Record<string, string> = {
   "JMZ": "Mazda",
   "5FN": "Honda", "5FR": "Honda", "5J6": "Honda", "5J8": "Honda",
   "5L1": "Lincoln",
-  "5NM": "Hyundai", "5NP": "Hyundai", "5N1": "Nissan",
+  "5NM": "Hyundai", "5NP": "Hyundai", "5NT": "Hyundai", "5N1": "Nissan",
+  "5XY": "Hyundai", "7YA": "Hyundai",
   "5TD": "Toyota", "5TE": "Toyota", "5TF": "Toyota",
   "5UX": "BMW",
   "5YM": "BMW",
@@ -222,7 +234,7 @@ const WMI_MAP: Record<string, string> = {
   "TSM": "Suzuki",
   // ── SOUTH KOREA ───────────────────────────────────────────────────────────
   "KMH": "Hyundai", "KMF": "Hyundai", "KM8": "Hyundai",
-  "TMA": "Hyundai", "NLH": "Hyundai",
+  "TMA": "Hyundai", "TMC": "Hyundai", "NLH": "Hyundai", "NLJ": "Hyundai",
   "KNA": "Kia", "KND": "Kia", "KNJ": "Kia",
   "KNC": "Kia", "KNP": "Kia",
   "KNM": "Renault Samsung",
@@ -286,31 +298,32 @@ const WMI_MAP: Record<string, string> = {
   "LGX": "BYD", "LRW": "Tesla", "XP7": "Tesla",
   "LSG": "General Motors China",
   "LJC": "Chery", "LVR": "Chery", "LVS": "Ford China",
-  "LVG": "Volvo China", "LYV": "Volvo China", "LVY": "Volvo China",
+  "LVG": "Toyota", "LYV": "Volvo China", "LVY": "Volvo China",
   "LFP": "BYD", "LBV": "BYD", "LC0": "BYD", "LPE": "BYD",
   "LSJ": "MG", "LE4": "NIO", "LUC": "Neta",
   "L6T": "Zeekr", "LGW": "Haval / Great Wall",
-  "LNB": "Xiaomi", "HXM": "Xiaomi", "LNY": "Beijing Hyundai",
+  "LNB": "Xiaomi", "HXM": "Xiaomi", "LNY": "Yuejin",
   "LTN": "Changan", "LPA": "Changan",
   "LJ1": "JAC", "LHG": "GAC", "LMG": "GAC Trumpchi",
   "LVH": "Dongfeng Honda", "LDN": "Dongfeng Nissan",
-  "LDC": "Dongfeng Peugeot-Citroën", "LBE": "Mercedes-Benz China",
+  "LDC": "Dongfeng Peugeot-Citroën", "LBE": "Hyundai",
   "LZW": "Wuling / Baojun",
   "LSA": "Maxus", "LJD": "Dongfeng Kia",
   "LTE": "JMC", "LLV": "Lifan", "LTV": "Foton",
-  "LFM": "FAW Toyota", "LWV": "GAC Mitsubishi",
+  "LFM": "Toyota", "LWV": "GAC Mitsubishi",
   // ── INDIA ─────────────────────────────────────────────────────────────────
   "MA1": "Mahindra", "MA3": "Suzuki India",
-  "MAL": "Hyundai",
+  "MAL": "Hyundai", "MB2": "Hyundai", "MF3": "Hyundai",
   "MB8": "Honda India",
-  "MEE": "Toyota India",
-  "MHF": "Toyota India",
+  "MBJ": "Toyota", "MHF": "Toyota",
+  "MR0": "Toyota", "MR1": "Toyota", "MR2": "Toyota",
   // ── AUSTRALIA ─────────────────────────────────────────────────────────────
   "6FP": "Ford Australia", "6G1": "Chevrolet Australia",
-  "6MM": "Mitsubishi Australia",
+  "6MM": "Mitsubishi Australia", "6T1": "Toyota",
   // ── BRAZIL ────────────────────────────────────────────────────────────────
   "9BF": "Ford Brazil", "9BW": "Volkswagen Brazil",
-  "9BG": "GM Brazil", "93H": "Honda Brazil",
+  "9BG": "GM Brazil", "93H": "Honda Brazil", "9BR": "Toyota",
+  "8AJ": "Toyota", "AHT": "Toyota",
   // ── UK (continued) ────────────────────────────────────────────────────────
   "SCA": "Rolls-Royce",
   "SCF": "Aston Martin",
@@ -353,7 +366,8 @@ const WMI_MAP: Record<string, string> = {
   "VF6": "Renault",
   "VF8": "Renault",
   // ── BRAZIL (continued) ────────────────────────────────────────────────────
-  "9BH": "Hyundai Brazil",
+  "9BH": "Hyundai", "95P": "Hyundai", "8LG": "Hyundai",
+  "PFD": "Hyundai", "Z94": "Hyundai", "AC5": "Hyundai",
   "8AP": "Volkswagen Argentina",
   // ── GM KOREA / MEXICO (KL*) ───────────────────────────────────────────────
   "KL7": "Chevrolet",    "KL4": "Chevrolet",    "KL8": "Chevrolet",
@@ -369,6 +383,8 @@ const WMI_MAP: Record<string, string> = {
 
 function decodeMake(vin: string, wmiMake: string | null, global?: ReturnType<typeof decodeGlobalBrand>): string | null {
   if (isAudiHomologationVin(vin)) return "Audi";
+  // Toyota Proace / Proace City are badge-engineered on Renault VF1 plants.
+  if (vin.startsWith("VF1BT8") || vin.startsWith("VF1BT9")) return "Toyota";
   const spec = resolveBrandVinSpec(vin);
   if (spec?.make) return spec.make;
   const chinaJv = resolveChinaJointVentureMake(vin);

@@ -44,7 +44,7 @@ describe("Toyota QA — Turkey NMT (Sakarya)", () => {
   });
 
   it("unknown NMT VDS → C-HR / Corolla family (no invent)", () => {
-    expect(decodeHyundaiToyotaModel("NMTZZZXX0JR123456")).toMatch(/C-HR \/ Corolla/);
+    expect(decodeHyundaiToyotaModel("NMTZZZXX0JR123456")).toMatch(/Corolla \/ Auris \/ C-HR/);
   });
 });
 
