@@ -89,7 +89,7 @@ export function HeroVinForm({
 
           <div
             className={cn(
-              "hero-vin-field relative overflow-hidden rounded-2xl border",
+              "hero-vin-field relative overflow-hidden rounded-[14px] border",
               isOnDark && "hero-vin-field--on-dark",
               isOnDark
                 ? "border-white/35 bg-white/20 backdrop-blur-xl shadow-lg shadow-black/20 dark:bg-white/15 dark:backdrop-blur-2xl dark:border-white/30 max-sm:backdrop-blur-none max-sm:dark:backdrop-blur-none"
