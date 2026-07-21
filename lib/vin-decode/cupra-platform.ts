@@ -7,9 +7,8 @@ const CUPRA_PLATFORM: Record<string, string> = {
   VSSZZZKM: "KM", // Formentor
   VSSZZZK1: "K1", // Born
   VSSZZZKP: "MEB", // Born
-  VSSZZZKN: "KL", // León
-  VS7ZZZKM: "KM", // Terramar / Formentor plant
-  VS7ZZZKN: "KL",
+  // KN is SEAT Tarraco — never map to Cupra León (KL).
+  VS7ZZZKM: "KM", // Terramar
 };
 
 export function matchCupraPlatform(vin: string): string | null {

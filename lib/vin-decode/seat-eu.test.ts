@@ -8,13 +8,13 @@ describe("SEAT EU homologation", () => {
     const hit = decodeSeatEuHomologation("VSSZZZ5FZFR123456");
     expect(hit?.model).toBe("León");
     expect(hit?.platform).toBe("5F");
-    expect(hit?.years).toBe("2013–2020");
-    expect(decodeSeatEuModel("VSSZZZ5FZFR123456")).toBe("León (5F, 2013–2020)");
+    expect(hit?.years).toBe("2012–2020");
+    expect(decodeSeatEuModel("VSSZZZ5FZFR123456")).toBe("León (5F, 2012–2020)");
   });
 
-  it("decodes Altea XL from 5P homologation", () => {
+  it("decodes Altea / Toledo from 5P homologation", () => {
     const hit = decodeSeatEuHomologation("VSSZZZ5PZCR025966");
-    expect(hit?.model).toBe("Altea");
+    expect(hit?.model).toBe("Altea / Toledo");
     expect(hit?.platform).toBe("5P");
   });
 
@@ -40,7 +40,11 @@ describe("SEAT EU homologation", () => {
 
   it("does not invent model from unknown 2-char / pos-7 alone", () => {
     expect(decodeSeatEuModel("VSSZZZ2FZFR123456")).toBeNull();
-    expect(decodeSeatEuModel("VSSZZZ7NZFR123456")).toBeNull();
+  });
+
+  it("decodes Alhambra Mk2 from 7N homologation", () => {
+    expect(decodeSeatEuModel("VSSZZZ7NZLR123456")).toContain("Alhambra");
+    expect(decodeSeatEuModel("VSSZZZ7NZLR123456")).toContain("7N");
   });
 
   it("decodes León Mk2 from 1P homologation", () => {

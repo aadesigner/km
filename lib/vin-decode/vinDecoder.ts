@@ -568,9 +568,11 @@ const MODEL_MAP_4: Record<string, string> = {
   "TMBA": "Octavia",      "TMBJ": "Fabia",       "TMBE": "Superb",
   "TMBG": "Kodiaq",       "TMBK": "Kamiq",       "TMBZ": "Karoq",
   "TMBL": "Karoq",        "TMBD": "Kodiaq",      "TMBR": "Scala",
-  // ── SEAT (VS6* / VS7*) ────────────────────────────────────────────────────
-  "VS6A": "Ibiza",        "VS6K": "León",        "VS7A": "Arona",
-  "VS7B": "Ateca",        "VS7T": "Tarraco",
+  // ── SEAT (VS6* / VS7*) — keep in sync with seat-eu SEAT_VS6_VS7_AT_4 ───────
+  "VS6A": "Ibiza",        "VS6B": "Ibiza",       "VS6K": "León",
+  "VS6L": "León ST",      "VS6M": "Mii",
+  "VS7A": "Arona",        "VS7B": "Ateca",       "VS7C": "León",
+  "VS7K": "León",         "VS7T": "Tarraco",
   // ── Ferrari (ZFF*) ────────────────────────────────────────────────────────
   "ZFFA": "488 GTB",      "ZFFB": "F8 Tributo",  "ZFFC": "Roma",
   "ZFFD": "SF90 Stradale","ZFFE": "Portofino",   "ZFFG": "296 GTB",

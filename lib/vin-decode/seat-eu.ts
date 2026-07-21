@@ -1,6 +1,7 @@
 /**
  * SEAT / CUPRA (VSS, VS6, VS7, VSX) — EU type-approval codes after ZZZ filler.
- * Positions 7–8 (sometimes 7–9) encode the VAG platform / model line.
+ * Positions 7–8 encode the VAG platform / model line.
+ * Model year stays ISO position 10 (no Ford-XX-style exception).
  * @see https://www.carmotospecs.com/vin/seat/
  */
 
@@ -38,36 +39,38 @@ const SEAT_VS6_VS7_AT_4: Record<string, SeatHomologationHit> = {
 /** @deprecated Unused — single-char invent removed. Kept empty for import compatibility. */
 export const SEAT_ZZZ_AT_7: Record<string, string> = {};
 
+/**
+ * Homologation type codes (positions 7–8 after ZZZ).
+ * Years are display-only generation windows (open-ended when production continued).
+ * Cupra-only lines (Formentor KM, Born K1/KP) live in global-brands.ts — not here.
+ */
 const SEAT_HOMOLOGATION_CODES: CodeRule[] = [
-  // Ibiza generations
+  // Ibiza / Cordoba
   { code: "6K", model: "Ibiza / Cordoba", platform: "6K", years: "1993–2009" },
-  { code: "6L", model: "Ibiza", platform: "6L", years: "2002–2017" },
+  { code: "6L", model: "Ibiza / Cordoba", platform: "6L", years: "2002–2009" },
   { code: "6J", model: "Ibiza", platform: "6J", years: "2008–2017" },
-  { code: "6F", model: "Ibiza", platform: "6F", years: "2017–2021" },
+  { code: "6F", model: "Ibiza", platform: "6F", years: "2017–" },
   { code: "KJ", model: "Ibiza", platform: "KJ", years: "2021–" },
-  // León generations
-  { code: "1M", model: "León", platform: "1M", years: "1999–2006" },
-  { code: "1P", model: "León", platform: "1P", years: "2006–2013" },
-  { code: "5F", model: "León", platform: "5F", years: "2013–2020" },
+  // León / Toledo (shared platforms)
+  { code: "1M", model: "León / Toledo", platform: "1M", years: "1999–2006" },
+  { code: "1P", model: "León", platform: "1P", years: "2005–2013" },
+  { code: "5F", model: "León", platform: "5F", years: "2012–2020" },
   { code: "KL", model: "León", platform: "KL", years: "2020–" },
   // SUVs / crossovers
   { code: "K7", model: "Arona", platform: "K7", years: "2017–" },
   { code: "KH", model: "Ateca", platform: "KH", years: "2016–" },
   { code: "KN", model: "Tarraco", platform: "KN", years: "2018–" },
   // MPV / family
-  { code: "5P", model: "Altea", platform: "5P", years: "2004–2015" },
-  { code: "7M", model: "Alhambra", platform: "7M", years: "1996–2020" },
+  { code: "5P", model: "Altea / Toledo", platform: "5P", years: "2004–2015" },
+  { code: "7M", model: "Alhambra", platform: "7M", years: "1996–2010" },
+  { code: "7N", model: "Alhambra", platform: "7N", years: "2010–2020" },
   // Sedans / city / niche
   { code: "1L", model: "Toledo", platform: "1L", years: "1991–1999" },
-  { code: "NH", model: "Toledo", platform: "NH", years: "2013–2019" },
-  { code: "3R", model: "Exeo", platform: "3R", years: "2009–2013" },
+  { code: "NH", model: "Toledo", platform: "NH", years: "2012–2019" },
+  { code: "3R", model: "Exeo", platform: "3R", years: "2008–2014" },
   { code: "6H", model: "Arosa", platform: "6H", years: "1997–2004" },
   { code: "1S", model: "Mii", platform: "1S", years: "2011–2021" },
   { code: "AA", model: "Mii", platform: "AA", years: "2012–2021" },
-  // Cupra lines on VSS (also handled as make Cupra in global-brands)
-  { code: "KM", model: "Formentor", platform: "KM", years: "2020–" },
-  { code: "K1", model: "Born", platform: "K1", years: "2021–" },
-  { code: "KP", model: "Born", platform: "MEB", years: "2021–" },
 ];
 
 function rulesForWmi(wmi: string, codes: CodeRule[]): PrefixRule[] {

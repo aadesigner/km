@@ -308,7 +308,7 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
         initial="hidden"
         animate="show"
         custom={1}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
+        className="grid grid-cols-3 gap-2 sm:gap-4"
       >
         {[
           { label: t("payments"), value: summaryLoading ? "—" : String(total), cls: "text-primary" },
@@ -319,9 +319,11 @@ export default function Purchases({ params }: { params: { lang: string; [key: st
             cls: "text-foreground",
           },
         ].map(({ label, value, cls }) => (
-          <div key={label} className="rounded-xl border bg-background p-4 sm:p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{label}</p>
-            <p className={cn("text-2xl sm:text-[1.75rem] font-black mt-1.5 tabular-nums", cls)}>{value}</p>
+          <div key={label} className="min-w-0 rounded-xl border bg-background p-3 sm:p-5 shadow-sm">
+            <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium leading-tight break-words">
+              {label}
+            </p>
+            <p className={cn("text-base sm:text-[1.75rem] font-black mt-1.5 tabular-nums truncate", cls)}>{value}</p>
           </div>
         ))}
       </motion.div>

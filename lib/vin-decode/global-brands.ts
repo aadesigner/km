@@ -160,9 +160,8 @@ const CUPRA_PREFIX_RULES = compilePrefixRules([
   { prefix: "VSSZZZKM", model: "Formentor", chassis: "KM" },
   { prefix: "VSSZZZK1", model: "Born", chassis: "K1" },
   { prefix: "VSSZZZKP", model: "Born", chassis: "MEB" },
-  { prefix: "VSSZZZKN", model: "Leon", chassis: "KL" },
+  // KN = SEAT Tarraco (not Cupra León). Cupra León shares KL with SEAT — leave as SEAT.
   { prefix: "VS7ZZZKM", model: "Terramar", chassis: "KM" },
-  { prefix: "VS7ZZZKN", model: "Leon", chassis: "KL" },
 ]);
 
 const DS_VR1_RULES = compilePrefixRules([
