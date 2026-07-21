@@ -10,6 +10,7 @@
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
 import { decodePremiumEuropeanModel } from "./european-premium";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+import { bmwEtkOmitsIsoYear, isBmwEuroEtkVin } from "./bmw-etk";
 import { decodeEuropeanBrandModel } from "./european-brands";
 import { resolveBrandVinSpec, resolveBrandVinModel } from "./brand-vin-spec";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
@@ -68,6 +69,8 @@ function decodeYear(code: string): number | null {
 function decodeVinModelYear(vin: string): number | null {
   // Classic European Mercedes Baumuster: pos.10 is LHD/RHD, not ISO model year.
   if (isMercedesEuroBaumusterVin(vin)) return null;
+  // Classic BMW ETK FINs often put "0" at pos.10 — not a year digit.
+  if (bmwEtkOmitsIsoYear(vin)) return null;
   return decodeYear(vin[9] ?? "");
 }
 
@@ -225,7 +228,7 @@ const WMI_MAP: Record<string, string> = {
   "KPA": "SsangYong",
   // ── GERMANY ───────────────────────────────────────────────────────────────
   "WAU": "Audi", "WUA": "Audi", "WAP": "Porsche", "WA1": "Audi",
-  "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW",
+  "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW", "WBX": "BMW",
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
   "WDF": "Mercedes-Benz", "W1K": "Mercedes-Benz", "W1N": "Mercedes-Benz",
   "4JG": "Mercedes-Benz", "WME": "Smart", "HES": "Smart",
@@ -1118,15 +1121,32 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     B: { city: "Suzuka",   country: "Japan" },
     S: { city: "Saitama",  country: "Japan" },
   },
-  // BMW Germany (WBA*)
+  // BMW Germany (WBA*) — plant letters per BMW VIN guides.
+  // B = Dingolfing (not Munich); A = Munich; C/E = Regensburg.
   WBA: {
-    A: { city: "Munich",        country: "Germany" },
-    B: { city: "Munich",        country: "Germany" },
-    C: { city: "Regensburg",    country: "Germany" },
-    D: { city: "Dingolfing",    country: "Germany" },
-    E: { city: "Regensburg",    country: "Germany" },
-    G: { city: "Graz",          country: "Austria"  },
-    S: { city: "Spartanburg, SC", country: "USA"    },
+    A: { city: "Munich",          country: "Germany" },
+    B: { city: "Dingolfing",      country: "Germany" },
+    C: { city: "Regensburg",      country: "Germany" },
+    D: { city: "Dingolfing",      country: "Germany" },
+    E: { city: "Regensburg",      country: "Germany" },
+    F: { city: "Munich",          country: "Germany" },
+    G: { city: "Graz",            country: "Austria" },
+    K: { city: "Spartanburg, SC", country: "USA" },
+    L: { city: "Spartanburg, SC", country: "USA" },
+    S: { city: "Spartanburg, SC", country: "USA" },
+  },
+  WBX: {
+    A: { city: "Graz",       country: "Austria" },
+    G: { city: "Graz",       country: "Austria" },
+  },
+  WBS: {
+    A: { city: "Munich",     country: "Germany" },
+    B: { city: "Dingolfing", country: "Germany" },
+  },
+  WBY: {
+    A: { city: "Leipzig",    country: "Germany" },
+    C: { city: "Leipzig",    country: "Germany" },
+    E: { city: "Leipzig",    country: "Germany" },
   },
   "5UX": {
     K: { city: "Spartanburg, SC", country: "USA" },
@@ -1787,6 +1807,8 @@ export function decodeEngineCode(vin: string): string | null {
   const upper = vin.toUpperCase();
   // EU homologation VINs (ZZZ filler) — never map position 8 to engine; it is part of the type code.
   if (hasEuZzzTypeApprovalDescriptor(upper)) return null;
+  // Classic BMW ETK FINs — pos.8 is not a reliable engine letter.
+  if (isBmwEuroEtkVin(upper)) return null;
   const table = lookupByWmi(upper, ENGINE_CODE_MAP);
   if (!table) return null;
   return table[upper[7]] ?? null;   // position 8 (index 7)

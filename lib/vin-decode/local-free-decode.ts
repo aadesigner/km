@@ -6,14 +6,15 @@ import { decodeVinDiagnostics, type VinDiagnostic } from "./vin-diagnostics";
 import { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
 import { formatProductionYearRange } from "./european-premium";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+import { bmwEtkOmitsIsoYear } from "./bmw-etk";
 
 export type LocalFreeDecodeResult = {
   vin: string;
   year: number | null;
   /**
-   * Generation production window (e.g. "2016–2023 (W213)") when the exact model
-   * year is NOT encoded in the VIN — European Mercedes FINs use position 10 for
-   * steering, not year. Null when an exact `year` is available or unknown.
+   * Generation production window (e.g. "2016–2023 (W213)", "2003–2010 (E60)")
+   * when the exact model year is NOT encoded in the VIN (Euro Mercedes Baumuster
+   * or classic BMW ETK FINs). Null when an exact `year` is available or unknown.
    */
   modelYearRange: string | null;
   /** Always null — manufacture/calendar year is not encoded in the VIN. */
@@ -56,9 +57,10 @@ export function decodeVinLocalFree(vin: string): LocalFreeDecodeResult | null {
     && !isYearLikeModelName(rawModel);
   const model = modelPlausible ? rawModel : null;
   const series = decodeLocalSeries(normalized, model);
-  // Only European Mercedes FINs omit ISO year; skip range work for everyone else.
+  // Euro Mercedes Baumuster / classic BMW ETK omit ISO year at pos.10.
   const yearRange =
-    local.year == null && isMercedesEuroBaumusterVin(normalized)
+    local.year == null
+    && (isMercedesEuroBaumusterVin(normalized) || bmwEtkOmitsIsoYear(normalized))
       ? formatProductionYearRange(series)
       : null;
   const modelYearRange = yearRange && series ? `${yearRange} (${series})` : yearRange;

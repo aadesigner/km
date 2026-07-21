@@ -38,12 +38,14 @@ describe("SEAT EU homologation", () => {
     expect(decodeSeatEuModel("VSSZZZK7ZPR123456")).toContain("Arona");
   });
 
-  it("falls back to single-char León for legacy VINs", () => {
-    expect(decodeSeatEuModel("VSSZZZ2FZFR123456")).toBe("León");
+  it("does not invent model from unknown 2-char / pos-7 alone", () => {
+    expect(decodeSeatEuModel("VSSZZZ2FZFR123456")).toBeNull();
+    expect(decodeSeatEuModel("VSSZZZ7NZFR123456")).toBeNull();
   });
 
-  it("falls back to single-char Ateca", () => {
-    expect(decodeSeatEuModel("VSSZZZ7NZFR123456")).toBe("Ateca");
+  it("decodes León Mk2 from 1P homologation", () => {
+    expect(decodeSeatEuModel("VSSZZZ1PZFR123456")).toContain("León");
+    expect(decodeSeatEuModel("VSSZZZ1PZFR123456")).toContain("1P");
   });
 
   it("decodes VS6/VS7 four-char WMI prefixes", () => {
@@ -75,9 +77,15 @@ describe("decodeVin SEAT integration", () => {
     expect(r.model).toBe("Formentor");
   });
 
-  it("still decodes legacy León EU ZZZ", () => {
-    const r = decodeVin("VSSZZZ2FZFR123456");
+  it("still decodes León Mk2 EU ZZZ via 1P", () => {
+    const r = decodeVin("VSSZZZ1PZFR123456");
     expect(r.make).toBe("SEAT");
     expect(r.model).toContain("León");
+  });
+
+  it("unknown SEAT type stays null (no pos-7 invent)", () => {
+    const r = decodeVin("VSSZZZ2FZFR123456");
+    expect(r.make).toBe("SEAT");
+    expect(r.model).toBeNull();
   });
 });

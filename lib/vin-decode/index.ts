@@ -34,6 +34,7 @@ export { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor, isEuZzzTypeApprova
 export { decodeEuropeanBrandModel } from "./european-brands";
 export { decodeGlobalBrandModel, decodeGlobalBrand, resolveGlobalBrandMake } from "./global-brands";
 export { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+export { isBmwEuroEtkVin, bmwEtkOmitsIsoYear, decodeBmwEtk } from "./bmw-etk";
 export {
   decodePremiumEuropean,
   decodePremiumEuropeanModel,

@@ -72,6 +72,29 @@ export function resolveChinaJointVentureMake(vin: string): string | null {
 
 type StaticHit = Omit<VagModernHit, "chassis"> & { chassis?: string };
 
+/** Year-reused EU type codes — year required; no match → null (never invent). */
+type YearGatedEuType = StaticHit & {
+  code: string;
+  yearFrom?: number;
+  yearTo?: number;
+};
+
+const VW_EU_YEAR_GATED: YearGatedEuType[] = [
+  // Typ 16: early Jetta 1/2, then A5 Beetle from ~2012 (Club VeeDub / VW type lists)
+  { code: "16", model: "Jetta", chassis: "Typ 16", yearFrom: 1979, yearTo: 1992 },
+  { code: "16", model: "Beetle", chassis: "A5", yearFrom: 2012, yearTo: 2019 },
+];
+
+function matchVwYearGated(code: string, year: number | null): VagModernHit | null {
+  const candidates = VW_EU_YEAR_GATED.filter((r) => r.code === code);
+  if (candidates.length === 0) return null;
+  if (year == null) return null;
+  const hit = candidates.find(
+    (r) => (r.yearFrom == null || year >= r.yearFrom) && (r.yearTo == null || year <= r.yearTo),
+  );
+  return hit ? materialize(hit) : null;
+}
+
 const VW_EU_TYPE_78: Record<string, StaticHit> = {
   // MEB electric family
   E1: { model: "ID.3", chassis: "E1 (MEB)", electric: true },
@@ -79,6 +102,7 @@ const VW_EU_TYPE_78: Record<string, StaticHit> = {
   E3: { model: "ID.5", chassis: "E3 (MEB)", electric: true },
   E4: { model: "ID.7", chassis: "E4 (MEB)", electric: true },
   EB: { model: "ID. Buzz", chassis: "EB (MEB)", electric: true },
+  ST: { model: "ID. Buzz Cargo", chassis: "ST (MEB)", electric: true },
 
   // Current and recent passenger/SUV lines
   CD: { model: "Golf", chassis: "Mk8" },
@@ -86,29 +110,50 @@ const VW_EU_TYPE_78: Record<string, StaticHit> = {
   AW: { model: "Polo", chassis: "AW" },
   "6R": { model: "Polo", chassis: "6R" },
   "6C": { model: "Polo", chassis: "6C" },
+  "6N": { model: "Polo", chassis: "6N" },
+  "9N": { model: "Polo", chassis: "9N" },
   CJ: { model: "Passat Variant", chassis: "B9/CJ" },
   "3C": { model: "Passat / CC", chassis: "B6-B8/3C" },
   "3H": { model: "Arteon", chassis: "3H" },
+  "3D": { model: "Arteon", chassis: "3D" },
+  BP: { model: "Arteon", chassis: "BP" },
   CT: { model: "Tiguan", chassis: "CT1" },
   "5N": { model: "Tiguan / Tiguan Allspace", chassis: "5N" },
   R4: { model: "Tayron", chassis: "R4" },
   A1: { model: "T-Roc", chassis: "A1" },
+  SH: { model: "T-Roc", chassis: "A1/SH" },
   C1: { model: "T-Cross", chassis: "C1" },
+  "6J": { model: "Taigo", chassis: "6J" },
+  AA: { model: "Up!", chassis: "AA" },
   "7L": { model: "Touareg", chassis: "7L" },
   "7P": { model: "Touareg", chassis: "7P" },
   CR: { model: "Touareg", chassis: "CR" },
   SK: { model: "Caddy", chassis: "SK" },
   "2K": { model: "Caddy / Caddy Maxi", chassis: "2K" },
+  "2D": { model: "Caddy", chassis: "2D" },
+  "2F": { model: "Caddy Maxi", chassis: "2F" },
+  "7E": { model: "Caddy", chassis: "7E" },
   SY: { model: "Crafter", chassis: "SY" },
   "2E": { model: "Crafter", chassis: "2E" },
   "2H": { model: "Amarok", chassis: "2H" },
   "1T": { model: "Touran", chassis: "1T" },
   "5T": { model: "Touran", chassis: "5T" },
-  "9N": { model: "Polo", chassis: "9N" },
   "7N": { model: "Sharan", chassis: "7N" },
+  DF: { model: "Sharan", chassis: "DF" },
   "7H": { model: "Transporter / Multivan", chassis: "T5/T6" },
   "7J": { model: "Transporter / Multivan", chassis: "T6" },
   SF: { model: "Multivan", chassis: "T7" },
+  SG: { model: "California", chassis: "T6.1/T7" },
+
+  // Classic / Golf-family codes (2-char only — never invent from bare "1")
+  "1G": { model: "Golf / Jetta", chassis: "1G" },
+  "1H": { model: "Golf / Vento", chassis: "1H" },
+  "1J": { model: "Golf / Jetta", chassis: "1J" },
+  "1K": { model: "Golf", chassis: "Mk5" },
+  "5K": { model: "Golf / Jetta", chassis: "5K" },
+  "5M": { model: "Golf Plus", chassis: "5M" },
+  "1Y": { model: "New Beetle Cabriolet", chassis: "1Y" },
+  "9C": { model: "New Beetle", chassis: "9C" },
 };
 
 const VW_NON_EU_TYPE_78: Record<string, StaticHit> = {
@@ -127,7 +172,7 @@ function materialize(hit: StaticHit | undefined): VagModernHit | null {
   return { model: hit.model, chassis: hit.chassis ?? null, ...(hit.electric ? { electric: true } : {}) };
 }
 
-export function decodeVolkswagenModern(vin: string): VagModernHit | null {
+export function decodeVolkswagenModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {
   const u = vin.trim().toUpperCase();
   if (u.length !== 17 || !isVolkswagenVin(u)) return null;
   // China-only ID.6 uses joint-venture-specific VDS prefixes rather than the
@@ -143,7 +188,14 @@ export function decodeVolkswagenModern(vin: string): VagModernHit | null {
   const isEuZzz =
     u.slice(3, 6) === "ZZZ"
     && (wmi === "WVW" || wmi === "WVG" || wmi === "WV1" || wmi === "WV2" || wmi === "WV3");
-  return materialize((isEuZzz ? VW_EU_TYPE_78 : VW_NON_EU_TYPE_78)[type78]);
+  if (isEuZzz) {
+    const gated = matchVwYearGated(type78, year);
+    if (gated) return gated;
+    // Reused codes with no year window match stay null (do not fall through to invent).
+    if (VW_EU_YEAR_GATED.some((r) => r.code === type78)) return null;
+    return materialize(VW_EU_TYPE_78[type78]);
+  }
+  return materialize(VW_NON_EU_TYPE_78[type78]);
 }
 
 const AUDI_TYPE_78: Record<string, StaticHit> = {

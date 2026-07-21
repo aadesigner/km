@@ -1,13 +1,14 @@
 import { decodeVin, decodeCountry, type VinDecodeResult } from "@workspace/vin-decode";
 import { isPlausibleMake, isPlausibleModel } from "@workspace/vin-decode";
-import { decodeVinDiagnostics, type VinDiagnostic, decodePremiumEuropeanModel, decodeLocalSeries, decodeLocalTrim, formatProductionYearRange, isMercedesEuroBaumusterVin } from "@workspace/vin-decode";
+import { decodeVinDiagnostics, type VinDiagnostic, decodePremiumEuropeanModel, decodeLocalSeries, decodeLocalTrim, formatProductionYearRange, isMercedesEuroBaumusterVin, bmwEtkOmitsIsoYear } from "@workspace/vin-decode";
 
 /**
- * Generation production window (e.g. "2016–2023 (W213)") — only for European
- * Mercedes FINs where pos.10 is steering, not year. Pure local map lookup; no I/O.
+ * Generation production window — only for European FINs that omit ISO year
+ * (Mercedes Baumuster / classic BMW ETK). Pure local map lookup; no I/O.
  */
 function buildModelYearRange(vin: string, year: number | null, series: string | null): string | null {
-  if (year != null || !isMercedesEuroBaumusterVin(vin)) return null;
+  if (year != null) return null;
+  if (!isMercedesEuroBaumusterVin(vin) && !bmwEtkOmitsIsoYear(vin)) return null;
   const range = formatProductionYearRange(series);
   return range && series ? `${range} (${series})` : range;
 }

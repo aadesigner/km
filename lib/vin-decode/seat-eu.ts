@@ -35,35 +35,8 @@ const SEAT_VS6_VS7_AT_4: Record<string, SeatHomologationHit> = {
   VS7T: { model: "Tarraco", platform: null, years: null },
 };
 
-/** Single-char fallback at position 7 (after ZZZ) when no 2-char homologation matches. */
-export const SEAT_ZZZ_AT_7: Record<string, string> = {
-  "1": "Ibiza",
-  "2": "León",
-  "3": "Toledo",
-  "5": "Altea",
-  "6": "Alhambra",
-  "7": "Ateca",
-  A: "Ibiza",
-  B: "León",
-  C: "León",
-  D: "Toledo",
-  E: "Arona",
-  F: "Ateca",
-  G: "Tarraco",
-  H: "León",
-  K: "Ibiza",
-  L: "León",
-  M: "Mii",
-  N: "Arona",
-  P: "Ateca",
-  S: "Ibiza",
-  T: "Tarraco",
-  U: "Arona",
-  V: "Ibiza",
-  W: "León",
-  X: "Ateca",
-  Y: "Tarraco",
-};
+/** @deprecated Unused — single-char invent removed. Kept empty for import compatibility. */
+export const SEAT_ZZZ_AT_7: Record<string, string> = {};
 
 const SEAT_HOMOLOGATION_CODES: CodeRule[] = [
   // Ibiza generations
@@ -141,9 +114,7 @@ export function decodeSeatEuHomologation(vin: string): SeatHomologationHit | nul
   if (u.slice(3, 6) === "ZZZ") {
     const hit = matchLongestPrefix(u, SEAT_EU_RULES);
     if (hit) return hitFromRule(hit);
-
-    const single = SEAT_ZZZ_AT_7[u[6]];
-    if (single) return { model: single, platform: null, years: null };
+    // No single-char invent — unknown 2-char type stays null.
     return null;
   }
 

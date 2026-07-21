@@ -13,6 +13,7 @@ import {
 } from "./eu-zzz-homologation";
 import { decodeJlrEu } from "./jlr-eu";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+import { decodeBmwEtk, bmwEtkOmitsIsoYear } from "./bmw-etk";
 import { isVagWmi, normalizeVagVinForPremium } from "./vag-wmi";
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
 import {
@@ -25,6 +26,7 @@ import {
 } from "./vag-modern";
 
 export { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
+export { isBmwEuroEtkVin, bmwEtkOmitsIsoYear } from "./bmw-etk";
 
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
@@ -34,9 +36,11 @@ type PremiumPrefixRule = PrefixRule & { chassis?: string };
  *
  * Classic European Mercedes Baumuster FINs do not encode year at pos.10
  * (that digit is LHD/RHD) — returns null for those VINs.
+ * Classic BMW ETK FINs often put "0" at pos.10 — also null.
  */
 export function premiumVinModelYear(vin: string): number | null {
   if (isMercedesEuroBaumusterVin(vin)) return null;
+  if (bmwEtkOmitsIsoYear(vin)) return null;
   const YEAR_MAP: Record<string, number> = {
     A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
     J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
@@ -112,6 +116,36 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "G06": { from: 2019, to: 2099 },
   "G07": { from: 2018, to: 2099 },
   "G07 (US)": { from: 2018, to: 2099 },
+  // Classic BMW ETK generations (year often omitted on EU FINs)
+  "E30": { from: 1982, to: 1994 },
+  "E36": { from: 1990, to: 2000 },
+  "E38": { from: 1994, to: 2001 },
+  "E39": { from: 1995, to: 2004 },
+  "E46": { from: 1998, to: 2006 },
+  "E53": { from: 1999, to: 2006 },
+  "E60": { from: 2003, to: 2010 },
+  "E61": { from: 2004, to: 2010 },
+  "E65": { from: 2001, to: 2008 },
+  "E66": { from: 2001, to: 2008 },
+  "E70": { from: 2006, to: 2013 },
+  "E83": { from: 2003, to: 2010 },
+  // MINI
+  "R55": { from: 2007, to: 2014 },
+  "R56": { from: 2006, to: 2013 },
+  "R60": { from: 2010, to: 2016 },
+  "R61": { from: 2012, to: 2016 },
+  "F54": { from: 2015, to: 2099 },
+  "F55": { from: 2014, to: 2099 },
+  "F56": { from: 2014, to: 2099 },
+  "F60": { from: 2016, to: 2099 },
+  "Electric": { from: 2019, to: 2099 },
+  // Rolls-Royce
+  "Ghost": { from: 2009, to: 2099 },
+  "Phantom VIII": { from: 2017, to: 2099 },
+  "Cullinan": { from: 2018, to: 2099 },
+  "Wraith": { from: 2013, to: 2023 },
+  "Dawn": { from: 2015, to: 2023 },
+  "Spectre": { from: 2023, to: 2099 },
   // Mercedes
   "W177": { from: 2018, to: 2099 },
   "C118": { from: 2019, to: 2099 },
@@ -188,22 +222,22 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "C7 4G": { from: 2011, to: 2018 },
   "C8 4K": { from: 2018, to: 2099 },
   "C6 4F": { from: 2004, to: 2011 },
-  // MINI
-  "F56": { from: 2014, to: 2099 },
-  "F55": { from: 2014, to: 2099 },
-  "F54": { from: 2015, to: 2099 },
-  "F60": { from: 2016, to: 2099 },
 };
 
-/** Chassis codes uniquely encoded as digits in the VIN (Mercedes Baumuster / series). */
-function isLiteralMercedesChassis(key: string): boolean {
-  return /^[WCXARNVH]\d{3}\b/.test(key);
+/** Chassis codes uniquely encoded in the VIN (Mercedes Baumuster / BMW E/F/G gens). */
+function isLiteralPlatformChassis(key: string): boolean {
+  // Mercedes W213, X253, C238, …
+  if (/^[WCXARNVH]\d{3}\b/.test(key)) return true;
+  // BMW E60, F10, G20, R56, U11, …
+  if (/^[EFRGU]\d{2}\b/.test(key)) return true;
+  // Rolls model names / MINI Electric token kept when year unknown
+  if (/^(Ghost|Phantom|Cullinan|Wraith|Dawn|Spectre|Electric)\b/i.test(key)) return true;
+  return false;
 }
 
 /**
  * Production-year window for a chassis/generation code (e.g. "W213" → 2016–2023).
- * Used to show an honest year *range* on VINs whose exact model year is not encoded
- * (European Mercedes FINs, where position 10 is steering, not year).
+ * Used when the exact model year is not encoded (Euro Mercedes / classic BMW ETK).
  */
 export function chassisProductionWindow(
   chassis: string | null,
@@ -238,8 +272,8 @@ function applyChassisYearGate(chassis: string | null, year: number | null): stri
     ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined);
   if (!bounds) return chassis; // literal VIN platform token (7P, CR, NX, …)
   // Year unknown: keep chassis only when it is uniquely encoded in the VIN
-  // (e.g. Mercedes W203). Strip ambiguous year-gated platforms (BMW letter reuse).
-  if (year == null) return isLiteralMercedesChassis(key) ? chassis : null;
+  // (e.g. Mercedes W203, BMW E60 ETK). Strip ambiguous year-gated platforms.
+  if (year == null) return isLiteralPlatformChassis(key) ? chassis : null;
   if (year < bounds.from || year > bounds.to) return null;
   return chassis;
 }
@@ -664,7 +698,7 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZ3C", model: "Passat", chassis: "B6/B7" },
   { prefix: "WVWZZZ3D", model: "Arteon", chassis: "3H" },
   { prefix: "WVWZZZ5N", model: "Tiguan", chassis: "AD1/AD2" },
-  { prefix: "WVWZZZ5M", model: "T-Roc" },
+  { prefix: "WVWZZZ5M", model: "Golf Plus", chassis: "5M" },
   { prefix: "WVWZZZ7P", model: "Touareg", chassis: "7P" },
   { prefix: "WVWZZZ7L", model: "Touareg", chassis: "7L" },
   { prefix: "WVWZZZCR", model: "Touareg", chassis: "CR" },
@@ -677,12 +711,15 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVWZZZCJ", model: "Passat Variant", chassis: "B9/CJ" },
   { prefix: "WVWZZZCT", model: "Tiguan", chassis: "CT1" },
   { prefix: "WVWZZZR4", model: "Tayron", chassis: "R4" },
-  { prefix: "WVWZZZSY", model: "T-Roc" },
+  { prefix: "WVWZZZSY", model: "Crafter", chassis: "SY" },
   // Typ AU = Golf Mk7 (not Mk6).
   { prefix: "WVWZZZAU", model: "Golf", chassis: "Mk7" },
   { prefix: "WVWZZZ1J", model: "Jetta" },
+  { prefix: "WVWZZZ1G", model: "Golf / Jetta", chassis: "1G" },
+  { prefix: "WVWZZZ1H", model: "Golf / Vento", chassis: "1H" },
+  { prefix: "WVWZZZ5K", model: "Golf / Jetta", chassis: "5K" },
   { prefix: "WVWZZZAA", model: "Up!" },
-  { prefix: "WVWZZZ2K", model: "Golf", chassis: "Mk7" },
+  { prefix: "WVWZZZ2K", model: "Caddy / Caddy Maxi", chassis: "2K" },
   { prefix: "WVWZZZ1T", model: "Touran", chassis: "1T" },
   { prefix: "WVWZZZ5T", model: "Touran", chassis: "5T" },
   { prefix: "WVWZZZ9N", model: "Polo", chassis: "9N" },
@@ -693,16 +730,16 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WVGZZZCR", model: "Touareg", chassis: "CR" },
   { prefix: "WVGZZZAA", model: "Up!" },
   { prefix: "WVWZZZSH", model: "T-Roc" },
-  { prefix: "WVWZZZCD", model: "Golf Variant", chassis: "Mk8" },
-  { prefix: "WVWZZZBP", model: "Arteon Shooting Brake" },
+  { prefix: "WVWZZZCD", model: "Golf", chassis: "Mk8" },
+  { prefix: "WVWZZZBP", model: "Arteon" },
   { prefix: "WVWZZZ2H", model: "Amarok" },
-  { prefix: "WVWZZZ7H", model: "Tiguan", chassis: "AD1" },
-  { prefix: "WVWZZZ6R", model: "T-Cross" },
+  { prefix: "WVWZZZ7H", model: "Transporter / Multivan", chassis: "T5/T6" },
+  { prefix: "WVWZZZ6R", model: "Polo", chassis: "6R" },
   { prefix: "WVWZZZ6J", model: "Taigo" },
   { prefix: "WVWZZZDF", model: "Sharan" },
   { prefix: "WVWZZZ7N", model: "Sharan" },
   { prefix: "WVWZZZ2D", model: "Caddy", chassis: "C5" },
-  { prefix: "WVWZZZ2E", model: "Caddy", chassis: "C5" },
+  { prefix: "WVWZZZ2E", model: "Crafter", chassis: "2E" },
   { prefix: "WVWZZZ7E", model: "Caddy", chassis: "C4" },
   { prefix: "WVWZZZ2F", model: "Caddy Maxi" },
   { prefix: "WVWZZZSK", model: "Caddy", chassis: "SK" },
@@ -714,18 +751,40 @@ const VW_RULES = compilePrefixRules([
   { prefix: "WV1ZZZ7H", model: "Transporter", chassis: "T6" },
   { prefix: "WV1ZZZ7J", model: "Transporter", chassis: "T6" },
   { prefix: "WV2ZZZ2K", model: "Caddy", chassis: "C5" },
-  { prefix: "WV2ZZZ2E", model: "Caddy", chassis: "C5" },
+  { prefix: "WV2ZZZ2E", model: "Crafter", chassis: "2E" },
   { prefix: "WVGZZZ2D", model: "Caddy", chassis: "C5" },
-  { prefix: "WVGZZZ2E", model: "Caddy", chassis: "C5" },
+  { prefix: "WVGZZZ2E", model: "Crafter", chassis: "2E" },
   { prefix: "3VWZZZ", model: "Volkswagen" },
 ]);
 
 const MINI_RULES = compilePrefixRules([
+  // Modern F-gen (longest first via compile)
   { prefix: "WMWXP7", model: "MINI Cooper", chassis: "F56" },
   { prefix: "WMWXP9", model: "MINI Cooper", chassis: "F55" },
   { prefix: "WMWXS7", model: "MINI Clubman", chassis: "F54" },
   { prefix: "WMWXS1", model: "MINI Countryman", chassis: "F60" },
   { prefix: "WMWZP7", model: "MINI Cooper SE", chassis: "Electric" },
+  { prefix: "WMWZB9", model: "MINI Cooper SE", chassis: "Electric" },
+  // R-gen (2001–2016 era) — year-ambiguous WMWX alone is intentionally omitted
+  { prefix: "WMWRC3", model: "MINI Cooper", chassis: "R56" },
+  { prefix: "WMWRF3", model: "MINI Cooper", chassis: "R56" },
+  { prefix: "WMWRH3", model: "MINI Cooper", chassis: "R55" },
+  { prefix: "WMWRJ3", model: "MINI Clubman", chassis: "R55" },
+  { prefix: "WMWZC3", model: "MINI Cooper", chassis: "R56" },
+  { prefix: "WMWZB3", model: "MINI Cooper", chassis: "R56" },
+  { prefix: "WMWMF3", model: "MINI Countryman", chassis: "R60" },
+  { prefix: "WMWZB5", model: "MINI Paceman", chassis: "R61" },
+  { prefix: "WMWZK5", model: "MINI Paceman", chassis: "R61" },
+]);
+
+/** Rolls-Royce — SCA* model lines with chassis when stable. */
+const ROLLS_RULES = compilePrefixRules([
+  { prefix: "SCAF", model: "Spectre", chassis: "Spectre" },
+  { prefix: "SCAC", model: "Cullinan", chassis: "Cullinan" },
+  { prefix: "SCAD", model: "Wraith", chassis: "Wraith" },
+  { prefix: "SCAB", model: "Phantom", chassis: "Phantom VIII" },
+  { prefix: "SCAA", model: "Ghost", chassis: "Ghost" },
+  { prefix: "SCAE", model: "Dawn", chassis: "Dawn" },
 ]);
 
 export type PremiumEuropeanDecode = {
@@ -855,14 +914,22 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   const upper = normalizeVagVinForPremium(raw);
   const wmi = upper.slice(0, 3);
 
-  if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("5UX") || wmi.startsWith("4US") || wmi.startsWith("5YM")) {
+  if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("WBX") || wmi.startsWith("5UX") || wmi.startsWith("4US") || wmi.startsWith("5YM")) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeBmwEuHomologation(raw), raw);
       if (euHit) return euHit;
     }
     const f4Body = resolveBmwFourSeriesBody(upper);
     if (f4Body) return f4Body;
-    return decodeFromRules(upper, BMW_RULES);
+    // Modern digit/letter series prefixes first (WBA3V1, WBAXA71, …).
+    const modern = decodeFromRules(upper, BMW_RULES);
+    if (modern) return modern;
+    // Classic European ETK type codes (NC71 → E60, …).
+    const etk = decodeBmwEtk(raw);
+    if (etk) {
+      return finalizePremium(etk.model, etk.chassis, premiumVinModelYear(raw));
+    }
+    return null;
   }
   if (isMercedesPassengerWmi(wmi) || isMercedesSuvWmi(wmi)) {
     if (raw.slice(3, 6) === "ZZZ") {
@@ -907,6 +974,9 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   }
   if (wmi.startsWith("WMW")) {
     return decodeFromRules(upper, MINI_RULES);
+  }
+  if (wmi.startsWith("SCA")) {
+    return decodeFromRules(upper, ROLLS_RULES);
   }
   if (wmi.startsWith("SAL") || wmi.startsWith("SAJ") || wmi.startsWith("SAD")) {
     const jlr = decodeJlrEu(raw);

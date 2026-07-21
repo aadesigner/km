@@ -8,15 +8,20 @@ import { decodeJlrEuModel } from "./jlr-eu";
  * EU-format VINs use ZZZ filler at positions 4–6; model platform at position 7 (index 6).
  */
 
-/** Volkswagen Group — position 7–8 (preferred) and position 7 fallback */
+/** Volkswagen Group — position 7–8 only (aligned with vag-modern; no pos-7 invent). */
 const VAG_MODEL_AT_78: Record<string, string> = {
   "1K": "Golf",
   "1T": "Touran",
   "1J": "Jetta",
+  "1G": "Golf / Jetta",
+  "1H": "Golf / Vento",
+  "1Y": "New Beetle Cabriolet",
   "3C": "Passat",
   "3D": "Arteon",
+  "3H": "Arteon",
   "5N": "Tiguan",
   "5M": "Golf Plus",
+  "5K": "Golf / Jetta",
   "5T": "Touran",
   "5Z": "Fox",
   "6R": "Polo",
@@ -25,7 +30,7 @@ const VAG_MODEL_AT_78: Record<string, string> = {
   "6C": "Polo",
   "7P": "Touareg",
   "7L": "Touareg",
-  "7H": "Tiguan",
+  "7H": "Transporter / Multivan",
   "7N": "Sharan",
   "7E": "Caddy",
   "7J": "Multivan",
@@ -36,86 +41,35 @@ const VAG_MODEL_AT_78: Record<string, string> = {
   CR: "Touareg",
   AU: "Golf",
   AW: "Polo",
-  AX: "Golf",
-  CJ: "ID.3",
-  E1: "ID.4",
-  E2: "ID.5",
+  A1: "T-Roc",
+  C1: "T-Cross",
+  CJ: "Passat Variant",
+  E1: "ID.3",
+  E2: "ID.4",
+  E3: "ID.5",
+  E4: "ID.7",
+  EB: "ID. Buzz",
   SH: "T-Roc",
-  SY: "T-Roc",
+  SY: "Crafter",
   SF: "Multivan",
   SG: "California",
-  SK: "ID. Buzz",
+  SK: "Caddy",
   ST: "ID. Buzz Cargo",
   "2H": "Amarok",
   "2D": "Caddy",
-  "2E": "Caddy",
-  "2K": "Golf",
+  "2E": "Crafter",
+  "2K": "Caddy / Caddy Maxi",
   "2F": "Caddy Maxi",
   DF: "Sharan",
-  CD: "Golf Variant",
+  CD: "Golf",
   BP: "Arteon",
   AA: "Up!",
+  CT: "Tiguan",
+  R4: "Tayron",
 };
 
-/** Volkswagen Group — position 7 after WV*ZZZ / WVWZZZ */
-const VAG_MODEL_AT_7: Record<string, string> = {
-  "1": "Golf",
-  "2": "Passat",
-  "3": "Arteon / Passat",
-  "5": "Jetta",
-  "6": "Eos",
-  "7": "Tiguan",
-  "8": "Touareg / Atlas",
-  "9": "Polo",
-  A: "New Beetle",
-  B: "Golf Plus / Sportsvan",
-  D: "Passat CC",
-  E: "Scirocco",
-  G: "Golf Variant",
-  H: "Golf Cabriolet",
-  J: "Jetta",
-  K: "Beetle Convertible",
-  L: "Up! / Lupo",
-  M: "Polo",
-  N: "Transporter / Multivan",
-  P: "Polo Sedan / Vento",
-  R: "Phaeton",
-  T: "Touran",
-  U: "Caddy",
-  V: "Golf / Rabbit",
-  W: "Golf Sportsvan",
-  X: "Passat Variant",
-  Y: "Crafter",
-};
-
-/** Audi — position 7 after WAUZZZ / TRUZZZ */
-const AUDI_MODEL_AT_7: Record<string, string> = {
-  "8": "A4 / A5",
-  "9": "TT",
-  A: "A6",
-  B: "A4 Cabriolet",
-  C: "A6 Avant",
-  D: "A8",
-  E: "A4 allroad",
-  F: "A6 allroad",
-  G: "Q7",
-  H: "A4 / A5 (B9)",
-  J: "A8 (D5)",
-  K: "Q5",
-  L: "Q7",
-  M: "Q8",
-  N: "e-tron",
-  P: "RS / RS Q8",
-  R: "R8",
-  S: "Q3",
-  T: "Q5 Sportback",
-  U: "e-tron GT",
-  V: "A3",
-  W: "A3 Sportback",
-  X: "A1",
-  Y: "Q2",
-  Z: "Q4 e-tron",
-};
+// Single-char VAG_MODEL_AT_7 / AUDI_MODEL_AT_7 removed — inventing Golf from "1"
+// (Typ 16 Beetle/Jetta) was a real production bug.
 
 function isVagPrefix(prefix: string): boolean {
   return isVagWmi(prefix) || prefix.startsWith("3VW");
@@ -143,13 +97,12 @@ export function isEuZzzTypeApprovalVin(vin: string): boolean {
   return hasEuZzzTypeApprovalDescriptor(vin);
 }
 
-/** Decode model from EU VAG/Audi ZZZ-format VINs. */
+/** Decode model from EU VAG/Audi ZZZ-format VINs (2-char type only — never invent from pos.7). */
 export function decodeModelEuropean(vin: string): string | null {
   const u = vin.toUpperCase();
   if (u.length < 8 || !hasZzzFiller(u)) return null;
 
   const wmi = u.slice(0, 3);
-  const pos7 = u[6];
   const code78 = u.length >= 8 ? u.slice(6, 8) : "";
 
   // VW passenger/commercial first — Bratislava (WVG) builds Touareg/Up! alongside Audi SUVs.
@@ -163,18 +116,17 @@ export function decodeModelEuropean(vin: string): string | null {
       if (code79.startsWith("CR")) return "Touareg";
       if (code79.startsWith("7P") || code79.startsWith("7L")) return "Touareg";
     }
+    // Unknown 2-char type → null (never invent from position 7 alone).
+    return null;
   }
 
   // Audi homologation (WAU/TRU, or WVG when Audi SUV type code)
   if (isAudiEuPrefix(wmi) || (wmi === "WVG" && isAudiHomologationVin(u))) {
     const audi = decodeAudiEuHomologation(u);
     if (audi) return homologationToDisplay(audi);
+    // No single-char invent for Audi either.
+    return null;
   }
-
-  if (isVagPrefix(wmi)) {
-    return VAG_MODEL_AT_7[pos7] ?? null;
-  }
-  if (isAudiEuPrefix(wmi)) return AUDI_MODEL_AT_7[pos7] ?? null;
 
   if (wmi.startsWith("SAL") || wmi.startsWith("SAJ")) {
     return decodeJlrEuModel(u);
