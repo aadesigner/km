@@ -52,6 +52,11 @@ export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
 export { decodeMazdaModel, matchMazdaRule, isMazdaVin } from "./mazda";
 export { decodeHyundaiModel, matchHyundaiRule, isHyundaiVin, decodeHyundaiEngine } from "./hyundai";
 export {
+  decodeHyundaiToyotaModel,
+  isHyundaiToyotaVin,
+  matchHyundaiToyotaRule,
+} from "./asian-eu";
+export {
   inferBodyStyleFromModel,
   inferVagTransmissionFromModel,
   inferVagDriveFromModel,

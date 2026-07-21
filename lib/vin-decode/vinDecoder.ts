@@ -256,7 +256,7 @@ const WMI_MAP: Record<string, string> = {
   "YS2": "Scania",
   // ── FRANCE ────────────────────────────────────────────────────────────────
   "VF1": "Renault", "VF2": "Renault", "VF3": "Peugeot", "VF7": "Citroën",
-  "VNK": "Toyota France",
+  "VNK": "Toyota", "NMT": "Toyota",
   // ── ITALY ─────────────────────────────────────────────────────────────────
   "ZAM": "Maserati", "ZAP": "Piaggio",
   "ZCG": "Fiat",
@@ -1560,7 +1560,17 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     C: { city: "Swindon", country: "United Kingdom" },
     E: { city: "Swindon", country: "United Kingdom" },
   },
-  // Toyota France (Valenciennes)
+  // Toyota France (Valenciennes / Onnaing)
+  VNK: {
+    A: { city: "Onnaing", country: "France" },
+    V: { city: "Onnaing", country: "France" },
+  },
+  // Toyota Turkey (Sakarya / Arifiye)
+  NMT: {
+    R: { city: "Arifiye", country: "Turkey" },
+    "0": { city: "Arifiye", country: "Turkey" },
+  },
+  // Toyota France (legacy YAR WMI)
   YAR: {
     A: { city: "Valenciennes", country: "France" },
   },

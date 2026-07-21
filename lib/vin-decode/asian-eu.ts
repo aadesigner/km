@@ -43,6 +43,14 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "YARKA3", model: "Yaris", chassis: "XP210 FR" },
   { prefix: "VF1BT9", model: "Toyota Proace" },
   { prefix: "VF1BT8", model: "Toyota Proace City" },
+  // Toyota France Valenciennes (VNK) — plant builds the Yaris family only
+  { prefix: "VNKKAB", model: "Yaris Cross", chassis: "XP210" },
+  { prefix: "VNKKZ", model: "Yaris Cross", chassis: "XP210" },
+  // Toyota Turkey Sakarya (NMT) — C-HR + Corolla lines
+  { prefix: "NMTKHM", model: "C-HR", chassis: "AX10" },
+  { prefix: "NMTKKC", model: "C-HR", chassis: "AX20" },
+  { prefix: "NMTBB", model: "Corolla", chassis: "E210" },
+  { prefix: "NMTBR", model: "Corolla Touring Sports", chassis: "E210" },
   // Toyota USA Mississippi (5YF* — Corolla sedan/hatch)
   { prefix: "5YFS4", model: "Corolla", chassis: "E210 2.0L" },
   { prefix: "5YFT4", model: "Corolla", chassis: "E210" },
@@ -80,6 +88,15 @@ const HONDA_EU_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "SHHRE", model: "CR-V", chassis: "RW" },
 ]);
 
+/**
+ * Single-family Toyota plants: when no specific VDS rule matches, fall back to the
+ * models that plant actually builds (family label, never a guess between marques).
+ */
+const TOYOTA_PLANT_FAMILY: Record<string, string> = {
+  VNK: "Yaris / Yaris Cross", // Toyota Valenciennes (France)
+  NMT: "C-HR / Corolla",      // Toyota Sakarya (Turkey)
+};
+
 function isToyotaExtendedVin(vin: string): boolean {
   return (
     vin.startsWith("JT")
@@ -94,6 +111,8 @@ function isToyotaExtendedVin(vin: string): boolean {
     || vin.startsWith("5TF")
     || vin.startsWith("2T1")
     || vin.startsWith("2T3")
+    || vin.startsWith("VNK")
+    || vin.startsWith("NMT")
   );
 }
 
@@ -122,6 +141,9 @@ export function matchHyundaiToyotaRule(vin: string): PrefixRule | null {
   if (isToyotaExtendedVin(u)) {
     const toyota = matchLongestPrefix(u, TOYOTA_RULES);
     if (toyota) return toyota;
+    // Single-family plant fallback (VNK Yaris, NMT C-HR/Corolla) — no VDS guess.
+    const family = TOYOTA_PLANT_FAMILY[u.slice(0, 3)];
+    if (family) return { prefix: u.slice(0, 3), model: family };
   }
 
   return null;
