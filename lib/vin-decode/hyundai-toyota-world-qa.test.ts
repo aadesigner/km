@@ -123,4 +123,27 @@ describe("Hyundai worldwide QA", () => {
     expect(decodeVin("KMHR281BGNU123456").model).toBe("Venue");
     expect(decodeVin("KMHR681BGNU123456").model).toBe("Kona");
   });
+
+  it("D-line hatch/wagon is i30, sedan stays Elantra", () => {
+    // KMHD251 (body '5' = 5-door hatch, i30 diesel) must be i30 GD, not Elantra.
+    expect(decodeVin("KMHD251UBEU098635")).toMatchObject({
+      make: "Hyundai",
+      model: "i30",
+      year: 2014,
+    });
+    // Sedans (body '4') on the D-line remain Elantra.
+    expect(decodeVin("KMHD641FBEU123456").model).toBe("Elantra");
+    expect(decodeVin("KMHDN41BBFU111111").model).toBe("Elantra");
+  });
+
+  it("L-line 2011–2019 is i40 (not Sonata / IONIQ)", () => {
+    expect(decodeVin("KMHLC81UADU063188")).toMatchObject({
+      make: "Hyundai",
+      model: "i40",
+      year: 2013,
+    });
+    expect(decodeVin("KMHLC41UACU005431").model).toBe("i40");
+    // MY2020+ L-line Sonata DN8 must not regress to i40.
+    expect(decodeVin("KMHL24JJ0LA009507").model).toBe("Sonata");
+  });
 });

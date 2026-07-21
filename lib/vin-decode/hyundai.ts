@@ -104,6 +104,12 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHN341", model: "IONIQ 5 N" },
   { prefix: "KMHC281", model: "IONIQ" },
   { prefix: "KMHC381", model: "IONIQ" },
+  // i40 VF (EU D-segment, 2011–2019) — L-line before Sonata DN8 reused it from MY2020.
+  // Body digit: 4 = saloon, 8 = Tourer/wagon. C/B series prefixes are well-attested.
+  { prefix: "KMHLC81", model: "i40", chassis: "VF" },
+  { prefix: "KMHLC41", model: "i40", chassis: "VF" },
+  { prefix: "KMHLB81", model: "i40", chassis: "VF" },
+  { prefix: "KMHLB41", model: "i40", chassis: "VF" },
   // Elantra CN7 — longer than KMHL24 Sonata rule below
   { prefix: "KMHL241", model: "Elantra", chassis: "CN7" },
   { prefix: "KMHD281", model: "Elantra", chassis: "CN7" },
@@ -262,10 +268,21 @@ function decodeHyundaiLineYear(vin: string, year: number | null): PrefixRule | n
       return { prefix, model: "IONIQ 6" };
     }
     if (line === "D" && year >= 2001 && year <= 2020) {
+      // D-line is shared: Elantra (sedan, body '4') vs i30 FD/GD (5-door hatch
+      // body '5', wagon/tourer body '8'). Elantra GT is the i30 GD rebadge, so a
+      // D-line hatch/wagon in the i30 production window is an i30, not an Elantra.
+      const body = vin[5]; // position 6 — body type
+      if ((body === "5" || body === "8") && year >= 2007 && year <= 2017) {
+        return { prefix, model: "i30", chassis: year >= 2012 ? "GD" : "FD" };
+      }
       return { prefix, model: "Elantra" };
     }
-    // Wikibooks pos.4 L: Sonata 2020+ (Korean), Elantra 2021+, i40.
+    // Wikibooks pos.4 L: i40 (2011–2019), Sonata 2020+ (Korean), Elantra 2021+, IONIQ 5 platforms.
     // IONIQ 5 uses dedicated platforms (KMHL341 / KMHLW4) matched above — not bare KMHL.
+    if (line === "L" && year >= 2011 && year <= 2019) {
+      // i40 VF occupied Korea L-line before Sonata DN8 reused it from MY2020.
+      return { prefix, model: "i40", chassis: "VF" };
+    }
     if (line === "L" && year >= 2020) {
       const series = vin.slice(4, 7); // positions 5–7
       if (year >= 2021 && series === "241") {
