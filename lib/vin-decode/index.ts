@@ -41,6 +41,8 @@ export {
   decodePremiumEuropeanTrim,
   isPremiumEuropeanVin,
   premiumVinModelYear,
+  chassisProductionWindow,
+  formatProductionYearRange,
   type PremiumEuropeanDecode,
 } from "./european-premium";
 export { decodeVinLocalFree, type LocalFreeDecodeResult } from "./local-free-decode";

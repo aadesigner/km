@@ -1,7 +1,7 @@
 export type PrefixRule = { prefix: string; model: string; body?: string; drive?: string; chassis?: string };
 
 /** Pre-sort once at module load — avoids per-decode sorting cost. */
-export function compilePrefixRules(rules: PrefixRule[]): PrefixRule[] {
+export function compilePrefixRules<T extends PrefixRule>(rules: T[]): T[] {
   return [...rules].sort((a, b) => b.prefix.length - a.prefix.length);
 }
 

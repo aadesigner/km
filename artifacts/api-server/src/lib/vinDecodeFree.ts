@@ -1,10 +1,25 @@
 import { decodeVin, decodeCountry, type VinDecodeResult } from "@workspace/vin-decode";
 import { isPlausibleMake, isPlausibleModel } from "@workspace/vin-decode";
-import { decodeVinDiagnostics, type VinDiagnostic, decodePremiumEuropeanModel, decodeLocalSeries, decodeLocalTrim } from "@workspace/vin-decode";
+import { decodeVinDiagnostics, type VinDiagnostic, decodePremiumEuropeanModel, decodeLocalSeries, decodeLocalTrim, formatProductionYearRange, isMercedesEuroBaumusterVin } from "@workspace/vin-decode";
+
+/**
+ * Generation production window (e.g. "2016–2023 (W213)") — only for European
+ * Mercedes FINs where pos.10 is steering, not year. Pure local map lookup; no I/O.
+ */
+function buildModelYearRange(vin: string, year: number | null, series: string | null): string | null {
+  if (year != null || !isMercedesEuroBaumusterVin(vin)) return null;
+  const range = formatProductionYearRange(series);
+  return range && series ? `${range} (${series})` : range;
+}
 
 export type FreeDecodeResponse = {
   vin: string;
   year: number | null;
+  /**
+   * Generation production window (e.g. "2016–2023 (W213)") when the exact model
+   * year is not encoded in the VIN (European Mercedes FINs). Null when `year` is set.
+   */
+  modelYearRange: string | null;
   /** Always null — manufacture/calendar year is not in the VIN. */
   manufactureYear: null;
   make: string | null;
@@ -444,13 +459,15 @@ export function mergeFreeDecode(
 
   if (!hasNhtsaMake) {
     const model = isPlausibleModel(local.model, vin) ? local.model : null;
+    const series = pickSeries(null, vin, model);
     return {
       vin: local.vin,
       year: local.year,
+      modelYearRange: buildModelYearRange(vin, local.year, series),
       manufactureYear: null,
       make: isPlausibleMake(local.make, vin) ? local.make : null,
       model,
-      series: pickSeries(null, vin, model),
+      series,
       trim: decodeLocalTrim(vin, model),
       manufacturer: local.make,
       vehicleType: null,
@@ -492,14 +509,17 @@ export function mergeFreeDecode(
   const usedNhtsaCore = !!nhtsa!.make && (nhtsa!.model === model || !usedLocalModel);
   const localTrim = decodeLocalTrim(vin, model);
   const extended = nhtsaExtendedFields(nhtsa!);
+  const year = pickYear(nhtsa!.year, local.year, nhtsa!.errorCode);
+  const series = pickSeries(nhtsa!.series, vin, model);
 
   return {
     vin: local.vin,
-    year: pickYear(nhtsa!.year, local.year, nhtsa!.errorCode),
+    year,
+    modelYearRange: buildModelYearRange(vin, year, series),
     manufactureYear: null,
     make: pickMake(nhtsa!.make, local.make, vin),
     model,
-    series: pickSeries(nhtsa!.series, vin, model),
+    series,
     trim: nhtsa!.trim ?? localTrim,
     manufacturer: nhtsa!.manufacturer ?? local.make,
     vehicleType: nhtsa!.vehicleType,

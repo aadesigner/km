@@ -32,6 +32,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 interface DecodeResult {
   vin: string;
   year: number | null;
+  modelYearRange?: string | null;
   make: string | null;
   model: string | null;
   series?: string | null;
@@ -81,6 +82,7 @@ function refreshDecodeFromLocal(result: DecodeResult): DecodeResult {
     ...result,
     model: local.model ?? result.model,
     series: local.series ?? result.series,
+    modelYearRange: result.year == null ? (local.modelYearRange ?? result.modelYearRange) : null,
     trim: result.trim ?? local.trim,
     bodyStyle: local.bodyStyle ?? result.bodyStyle,
     engineDecoded: local.engineDecoded ?? result.engineDecoded,
@@ -265,7 +267,7 @@ export default function FreeVinDecoder() {
     value ? formatVinOriginCountry(value, language, countryLabels) : null;
 
   const allFields: (Field & { group: string })[] = displayResult ? [
-    { group: "identity", label: t("free_decoder_field_year"),          value: displayResult.year ? String(displayResult.year) : null, icon: Car,       color: "text-primary" },
+    { group: "identity", label: t("free_decoder_field_year"),          value: displayResult.year ? String(displayResult.year) : (displayResult.modelYearRange ?? null), icon: Car,       color: "text-primary" },
     { group: "identity", label: t("free_decoder_field_manufacture_year"), value: t("free_decoder_manufacture_year_not_in_vin"), icon: Car, color: "text-muted-foreground" },
     { group: "identity", label: t("free_decoder_field_make"),          value: displayResult.make,                               icon: Car,       color: "text-blue-500" },
     { group: "identity", label: t("free_decoder_field_model"),         value: displayResult.model,                              icon: Car,       color: "text-blue-500" },

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   decodePremiumEuropean,
   decodeVin,
+  decodeVinLocalFree,
   isMercedesEuroBaumusterVin,
   premiumVinModelYear,
 } from "./index";
@@ -62,6 +63,56 @@ describe("Mercedes Euro Baumuster year encoding", () => {
   it("ML→GLE rename still year-gated on ISO VINs", () => {
     expect(decodeVin("WDD166087FA123456").model).toMatch(/ML/i);
     expect(decodeVin("WDD166087GA123456").model).toMatch(/GLE/i);
+  });
+});
+
+describe("Mercedes generation year range (exact year not in VIN)", () => {
+  it("Baumuster FIN gets the generation production window, not a fake year", () => {
+    const r = decodeVinLocalFree("WDD2130041A403793");
+    expect(r).not.toBeNull();
+    expect(r!.year).toBeNull();
+    expect(r!.model).toMatch(/E-Class/i);
+    expect(r!.series).toBe("W213");
+    expect(r!.modelYearRange).toBe("2016\u20132023 (W213)");
+  });
+
+  it.each([
+    ["WDB2030081A880979", "2000\u20132007 (W203)"], // W203 C-Class
+    ["WDD2220871A123456", "2013\u20132020 (W222)"], // W222 S-Class
+  ])("range for %s → %s", (vin, range) => {
+    expect(decodeVinLocalFree(vin)!.modelYearRange).toBe(range);
+  });
+
+  it("open-ended generations render as 'from–present'", () => {
+    const r = decodeVinLocalFree("WDD2140871A123456"); // W214, 2023–
+    expect(r!.year).toBeNull();
+    expect(r!.modelYearRange).toMatch(/^2023\u2013present \(W214\)$/);
+  });
+
+  it("does not add a range when the exact ISO year is known", () => {
+    const r = decodeVinLocalFree("WDD213042GA123456"); // 2016
+    expect(r!.year).toBe(2016);
+    expect(r!.modelYearRange).toBeNull();
+  });
+});
+
+describe("Mercedes assembly plant (position 11)", () => {
+  it("WDD/W1K passenger 'A' is Sindelfingen, not Kecskemét", () => {
+    const r = decodeVin("WDD2130041A403793");
+    expect(r.plantCity).toBe("Sindelfingen");
+    expect(r.plantCountry).toBe("Germany");
+    expect(decodeVin("W1K2130461A123456").plantCity).toBe("Sindelfingen");
+  });
+
+  it("WDD passenger 'N' is Kecskemét, 'J' is Rastatt", () => {
+    // position 10 = year code (K), position 11 = plant letter.
+    expect(decodeVin("WDD177087KN123456").plantCity).toBe("Kecskemét");
+    expect(decodeVin("WDD177087KJ123456").plantCity).toBe("Rastatt");
+  });
+
+  it("WDC/W1N SUV 'A' is Tuscaloosa (Vance), not Sindelfingen", () => {
+    expect(decodeVin("WDCDA5HB6HA123456").plantCity).toMatch(/Vance/i);
+    expect(decodeVin("W1N1671231A123456").plantCity).toMatch(/Vance/i);
   });
 });
 

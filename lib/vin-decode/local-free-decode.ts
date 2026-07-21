@@ -4,10 +4,18 @@ import { isPlausibleMake, isPlausibleModel, isYearLikeModelName } from "./plausi
 import { decodeVin, decodeCountry } from "./vinDecoder";
 import { decodeVinDiagnostics, type VinDiagnostic } from "./vin-diagnostics";
 import { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
+import { formatProductionYearRange } from "./european-premium";
+import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 
 export type LocalFreeDecodeResult = {
   vin: string;
   year: number | null;
+  /**
+   * Generation production window (e.g. "2016–2023 (W213)") when the exact model
+   * year is NOT encoded in the VIN — European Mercedes FINs use position 10 for
+   * steering, not year. Null when an exact `year` is available or unknown.
+   */
+  modelYearRange: string | null;
   /** Always null — manufacture/calendar year is not encoded in the VIN. */
   manufactureYear: null;
   make: string | null;
@@ -47,14 +55,22 @@ export function decodeVinLocalFree(vin: string): LocalFreeDecodeResult | null {
   const modelPlausible = isPlausibleModel(rawModel, normalized)
     && !isYearLikeModelName(rawModel);
   const model = modelPlausible ? rawModel : null;
+  const series = decodeLocalSeries(normalized, model);
+  // Only European Mercedes FINs omit ISO year; skip range work for everyone else.
+  const yearRange =
+    local.year == null && isMercedesEuroBaumusterVin(normalized)
+      ? formatProductionYearRange(series)
+      : null;
+  const modelYearRange = yearRange && series ? `${yearRange} (${series})` : yearRange;
 
   return {
     vin: local.vin,
     year: local.year,
+    modelYearRange,
     manufactureYear: null,
     make: isPlausibleMake(local.make, normalized) ? local.make : null,
     model,
-    series: decodeLocalSeries(normalized, model),
+    series,
     trim: decodeLocalTrim(normalized, model),
     manufacturer: isPlausibleMake(local.make, normalized) ? local.make : null,
     vehicleType: null,

@@ -200,6 +200,36 @@ function isLiteralMercedesChassis(key: string): boolean {
   return /^[WCXARNVH]\d{3}\b/.test(key);
 }
 
+/**
+ * Production-year window for a chassis/generation code (e.g. "W213" → 2016–2023).
+ * Used to show an honest year *range* on VINs whose exact model year is not encoded
+ * (European Mercedes FINs, where position 10 is steering, not year).
+ */
+export function chassisProductionWindow(
+  chassis: string | null,
+): { from: number; to: number } | null {
+  if (!chassis) return null;
+  const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();
+  return (
+    CHASSIS_YEAR[key]
+    ?? CHASSIS_YEAR[key.split("/")[0]!]
+    ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined)
+    ?? null
+  );
+}
+
+/**
+ * Formats a chassis production window as a human range, e.g. "2016–2023" or
+ * "2020–present". Returns null when the generation window is unknown.
+ */
+export function formatProductionYearRange(chassis: string | null): string | null {
+  const w = chassisProductionWindow(chassis);
+  if (!w) return null;
+  const currentYear = new Date().getFullYear();
+  const to = w.to >= currentYear + 1 ? "present" : String(w.to);
+  return `${w.from}\u2013${to}`;
+}
+
 function applyChassisYearGate(chassis: string | null, year: number | null): string | null {
   if (!chassis) return null;
   const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();

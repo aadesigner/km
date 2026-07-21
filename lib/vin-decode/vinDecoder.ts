@@ -1848,12 +1848,12 @@ export function decodeVin(vin: string): VinDecodeResult {
   const wmiMake = lookupWmiMake(upper);
   const brandSpec = resolveBrandVinSpec(upper);
   const make = brandSpec?.make ?? decodeMake(upper, wmiMake, global);
+  // Single JLR pass: model + year-gate (avoid a second decodeJlr via decodeModel→premium).
+  const jlr = isJlrVin(upper) ? decodeJlr(upper) : null;
   const model = (brandSpec?.model && brandSpec.model.length > 0)
     ? brandSpec.model
-    : decodeModel(upper, global);
-  // JLR year-gated prefixes resolve the ISO 30-year cycle via production window.
-  const jlrYear = isJlrVin(upper) ? decodeJlr(upper)?.year ?? null : null;
-  const year = jlrYear ?? decodeVinModelYear(upper);
+    : (jlr?.displayModel ?? decodeModel(upper, global));
+  const year = jlr?.year ?? decodeVinModelYear(upper);
   const hyundaiEngine = isHyundaiVin(upper) ? decodeHyundaiEngine(upper, model, year) : null;
   const engineDecoded = brandSpec?.engineDecoded ?? hyundaiEngine ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);
