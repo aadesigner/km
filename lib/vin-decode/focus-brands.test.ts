@@ -169,23 +169,40 @@ describe("focus brands — Jaguar / Range Rover (Land Rover)", () => {
     expect(r.make).toBe("Land Rover");
     expect(r.model).toContain("Defender");
     expect(decodeLocalSeries(vin)).toBe("L663");
-    expect(r.plantCity).toBe("Nitra");
     expect(r.year).toBe(2020);
+    // Plant left null — generic SAL plant table removed for accuracy.
+    expect(r.plantCity).toBeNull();
   });
 
-  it("US Velar / Jaguar F-Pace prefixes", () => {
-    expect(decodeVin(pad("SALGS2")).model).toContain("Velar");
+  it("US Velar SALY / Jaguar F-Pace prefixes", () => {
+    const velar = "SALYA2000N0000000".slice(0, 17);
+    expect(decodeVin(velar).model).toContain("Velar");
     const fp = decodeVin(pad("SAJXA4"));
     expect(fp.make).toBe("Jaguar");
     expect(fp.model).toContain("F-Pace");
   });
 
   it("classic UK SALLDH Defender", () => {
-    expect(decodeVin(pad("SALLDH")).model).toContain("Defender");
+    const vin = "SALLDH0009A000000".slice(0, 17);
+    expect(decodeVin(vin).model).toContain("Defender");
+  });
+
+  it("SALGA2JF is Range Rover L405 not Velar; SALWA2BK is Sport not Freelander", () => {
+    const rr = decodeVin("SALGA2JFSFA226427");
+    expect(rr.model).toMatch(/Range Rover/i);
+    expect(rr.model).not.toMatch(/Velar/i);
+    expect(rr.engineDecoded).toBeNull();
+    expect(rr.fuelType).toBeNull();
+
+    const sport = decodeVin("SALWA2BKGJA402093");
+    expect(sport.model).toMatch(/Range Rover Sport/i);
+    expect(sport.model).not.toMatch(/Freelander/i);
+    expect(sport.engineDecoded).toBeNull();
+    expect(sport.fuelType).toBeNull();
   });
 
   it("does not invent JLR model on bare WMI", () => {
-    const r = decodeVin("SALZZZQQ1MA123456");
+    const r = decodeVin("SALZZZXX1MA123456");
     expect(r.make).toBe("Land Rover");
     expect(r.model).toBeNull();
   });

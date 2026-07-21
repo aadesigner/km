@@ -31,6 +31,7 @@ import {
   isVolkswagenVin,
   resolveChinaJointVentureMake,
 } from "./vag-modern";
+import { decodeJlr, isJlrVin } from "./jlr-eu";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
 // Letters I, O, Q, U, Z are never used. Digits 0 is never used.
@@ -441,17 +442,10 @@ const MODEL_MAP_4: Record<string, string> = {
   "WP0A": "911",        "WP0B": "Boxster/Cayman",
   "WP0C": "Cayenne",    "WP0Z": "Panamera",   "WP0G": "Taycan",
   "WP1A": "Cayenne",    "WP1Z": "Macan",
-  // ── Land Rover / Range Rover ──────────────────────────────────────────────
-  "SALR": "Range Rover", "SALJ": "Range Rover", "SALM": "Discovery",
-  "SALE": "Range Rover Evoque",
-  "SALV": "Discovery Sport",
-  "SALY": "Defender",   "SALA": "Defender",   "SALW": "Freelander",
-  "SALP": "Range Rover Sport",
-  "SALG": "Range Rover Velar",
-  "SALK": "Range Rover",
-  "SALC": "Discovery Sport",
-  // ── Jaguar ────────────────────────────────────────────────────────────────
-  "SAJW": "F-Type",     "SAJV": "XF",         "SAJA": "XJ",
+  // Land Rover / Range Rover: never use coarse 4-char fallbacks here.
+  // Model identity is year-gated in jlr-eu.ts (longest prefix + production window).
+  // ── Jaguar (coarse letter series; longer SAJ* rules in jlr-eu win first) ──
+  "SAJW": "F-Type",     "SAJV": "XF",         "SAJA": "XE",
   "SAJP": "F-Pace",     "SAJE": "E-Pace",     "SAJC": "I-Pace",
   "SAJX": "F-Pace",
   "SADF": "I-Pace",
@@ -872,18 +866,10 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
     H: "6.6L Duramax Diesel V8", K: "2.7T Turbo I4",
   },
   // Tesla: motor/battery decoded in tesla.ts (position 7–8), not position 8 alone.
-  // Land Rover / Range Rover (SAL*) — skipped on EU ZZZ; applies to US/UK non-ZZZ
-  SAL: {
-    A: "2.0L I4 Ingenium", B: "2.0L I4 Ingenium Diesel", C: "3.0L I6 Ingenium",
-    D: "3.0L I6 Diesel (TD6)", E: "2.0T I4 PHEV", G: "3.0L I6 Mild Hybrid",
-    H: "3.0L I6 PHEV", K: "4.4L V8 Twin-Turbo", L: "5.0L V8 Supercharged",
-    M: "2.0T I4 Ingenium", N: "Electric", P: "2.0L Diesel Ingenium",
-  },
-  // Jaguar (SAJ* / SAD*)
+  // Land Rover (SAL*): no generic pos.8 engine table — era/market mappings conflict.
+  // Jaguar (SAJ*): keep Electric only for proven I-Pace codes; no Ingenium guesses.
   SAJ: {
-    A: "2.0L I4 Ingenium", B: "2.0L I4 Diesel Ingenium", C: "3.0L I6",
-    D: "5.0L V8 Supercharged", E: "2.0T I4 PHEV", G: "2.0L I4 Diesel",
-    K: "2.0T I4 Petrol", N: "Electric (I-Pace)", P: "3.0L I6 Mild Hybrid",
+    N: "Electric (I-Pace)",
   },
   SAD: {
     A: "Electric (I-Pace)", E: "Electric (I-Pace)", F: "Electric (I-Pace)",
@@ -1146,15 +1132,20 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
     K: { city: "Spartanburg, SC", country: "USA" },
     L: { city: "Spartanburg, SC", country: "USA" },
   },
-  // Mercedes-Benz (WDD*)
+  // Mercedes-Benz passenger cars (WDD*, and W1K via alias below).
+  // Position 11 plant letters per Mercedes/DaimlerAG mapping. Note: on WDC/W1N
+  // (SUV) VINs "A" is Tuscaloosa, USA — handled by the separate WDC table.
   WDD: {
-    A: { city: "Kecskemét",      country: "Hungary" },
-    B: { city: "Rastatt",        country: "Germany" },
-    C: { city: "Sindelfingen",   country: "Germany" },
-    D: { city: "Düsseldorf",     country: "Germany" },
-    F: { city: "Bremen",         country: "Germany" },
-    H: { city: "Hamburg",        country: "Germany" },
-    J: { city: "Pune",           country: "India"   },
+    A: { city: "Sindelfingen",   country: "Germany"      },
+    B: { city: "Sindelfingen",   country: "Germany"      },
+    C: { city: "Sindelfingen",   country: "Germany"      },
+    F: { city: "Bremen",         country: "Germany"      },
+    G: { city: "Bremen",         country: "Germany"      },
+    H: { city: "Bremen",         country: "Germany"      },
+    J: { city: "Rastatt",        country: "Germany"      },
+    N: { city: "Kecskemét",      country: "Hungary"      },
+    R: { city: "East London",    country: "South Africa" },
+    S: { city: "East London",    country: "South Africa" },
   },
   WDC: {
     A: { city: "Vance, AL", country: "USA"     },
@@ -1287,25 +1278,11 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   LVY: VOLVO_PLANTS,
   "7JR": VOLVO_PLANTS,
   "7JD": VOLVO_PLANTS,
-  // Land Rover / Range Rover (SAL*)
-  SAL: {
-    A: { city: "Solihull",          country: "UK"      },
-    B: { city: "Castle Bromwich",   country: "UK"      },
-    F: { city: "Halewood",          country: "UK"      },
-    H: { city: "Halewood",          country: "UK"      },
-    L: { city: "Solihull",          country: "UK"      },
-    M: { city: "Graz",              country: "Austria" },
-    N: { city: "Nitra",             country: "Slovakia" },
-    P: { city: "Pune",              country: "India"   },
-    "2": { city: "Nitra",           country: "Slovakia" },
-  },
-  // Jaguar (SAJ* / SAD*)
+  // Land Rover (SAL*): plant codes vary by era — leave null unless a dedicated table is added.
+  // Jaguar (SAJ* / SAD*): keep Graz/Nitra only where I-Pace / modern builds are stable.
   SAJ: {
-    A: { city: "Castle Bromwich", country: "UK"      },
-    B: { city: "Solihull",        country: "UK"      },
     C: { city: "Graz",            country: "Austria" },
     G: { city: "Graz",            country: "Austria" },
-    H: { city: "Halewood",        country: "UK"      },
     "1": { city: "Graz",          country: "Austria" },
     "2": { city: "Nitra",         country: "Slovakia" },
   },
@@ -1579,7 +1556,7 @@ const AWD_STANDARD_WMI = new Set(["JF1", "JF2", "4S3", "4S4"]);
 const AWD_MODEL_HINTS = [
   "4runner", "land cruiser", "fj cruiser",
   "outback", "forester", "crosstrek", "ascent",
-  "defender", "discovery", "range rover", "velar", "evoque",
+  // Land Rover / Range Rover omitted — some Freelander / Evoque / Discovery Sport are 2WD.
   "f-pace", "e-pace", "i-pace",
   "wrangler", "gladiator",
   "cayenne", "macan", "touareg",
@@ -1800,7 +1777,8 @@ const BODY_CODE_MAP: Record<string, Record<string, string>> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function lookupByWmi<T>(vin: string, map: Record<string, Record<string, T>>): Record<string, T> | null {
   const w3 = vin.slice(0, 3);
-  const aliases: Record<string, string> = { W1K: "WDD", WA1: "WAU" };
+  // W1K = current passenger (was WDD); W1N = current SUV (was WDC).
+  const aliases: Record<string, string> = { W1K: "WDD", W1N: "WDC", WA1: "WAU" };
   const wmiKey = isVagWmi(w3) && map.WVW ? "WVW" : (aliases[w3] ?? w3);
   return map[wmiKey] ?? map[vin.slice(0, 2)] ?? null;
 }
@@ -1873,7 +1851,9 @@ export function decodeVin(vin: string): VinDecodeResult {
   const model = (brandSpec?.model && brandSpec.model.length > 0)
     ? brandSpec.model
     : decodeModel(upper, global);
-  const year = decodeVinModelYear(upper);
+  // JLR year-gated prefixes resolve the ISO 30-year cycle via production window.
+  const jlrYear = isJlrVin(upper) ? decodeJlr(upper)?.year ?? null : null;
+  const year = jlrYear ?? decodeVinModelYear(upper);
   const hyundaiEngine = isHyundaiVin(upper) ? decodeHyundaiEngine(upper, model, year) : null;
   const engineDecoded = brandSpec?.engineDecoded ?? hyundaiEngine ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);

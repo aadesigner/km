@@ -159,11 +159,27 @@ const LAND_ROVER: Case[] = [
     modelExcludes: ["Evoque"],
   },
   {
-    vin: pad("SALGS2", "N"),
-    label: "Land Rover Velar US SALGS",
+    vin: pad("SALY", "N"),
+    label: "Land Rover Velar US SALY",
     make: "Land Rover",
     modelContains: "Velar",
     year: 2022,
+  },
+  {
+    vin: "SALGA2JFSFA226427",
+    label: "Land Rover Range Rover L405 SALGA2JF",
+    make: "Land Rover",
+    modelContains: "Range Rover",
+    year: 2015,
+    modelExcludes: ["Velar", "Sport"],
+  },
+  {
+    vin: "SALWA2BKGJA402093",
+    label: "Land Rover Range Rover Sport L494 SALWA2BK",
+    make: "Land Rover",
+    modelContains: "Range Rover Sport",
+    year: 2018,
+    modelExcludes: ["Freelander"],
   },
   {
     vin: pad("SALLDH", "9"),
@@ -246,7 +262,7 @@ describe("multi-brand QA — no invent on bare WMI", () => {
   });
 
   it("Land Rover unknown homologation stays make-only", () => {
-    const r = decodeVin("SALZZZQQ1MA123456");
+    const r = decodeVin("SALZZZXX1MA123456");
     expect(r.make).toBe("Land Rover");
     expect(r.model).toBeNull();
     expect(r.year).toBe(2021);

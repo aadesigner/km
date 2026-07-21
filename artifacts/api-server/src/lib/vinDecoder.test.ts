@@ -193,22 +193,14 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["WP0G", "Taycan"],
     ["WP1A", "Cayenne"],
     ["WP1Z", "Macan"],
-    // Land Rover / Range Rover
-    ["SALR", "Range Rover"],
-    ["SALJ", "Range Rover"],
-    ["SALM", "Discovery"],
-    ["SALE", "Range Rover Evoque"],
-    ["SALV", "Discovery Sport"],
-    ["SALY", "Defender"],
-    ["SALA", "Defender"],
-    ["SALW", "Freelander"],
-    ["SALP", "Range Rover Sport"],
+    // Land Rover — year-gated in jlr-eu (not MODEL_MAP_4). Covered by land-rover-qa.test.ts.
     // Jaguar
     ["SAJW", "F-Type (X152)"],
     ["SAJV", "XF (X260)"],
     ["SAJA", "XE (X760)"],
-    ["SAJP", "F-Pace"],
+    ["SAJP", "F-Pace (X761)"],
     ["SAJE", "E-Pace (X540)"],
+    ["SAJC", "I-Pace (X590)"],
     // Hyundai — CRITICAL: these were the source of the regression
     ["KMHS", "Santa Fe Sport"],   // regression fix: was "Sonata"
     ["KMHR", "Santa Fe"],
