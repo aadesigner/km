@@ -223,11 +223,87 @@ const AUDI_TYPE_78: Record<string, StaticHit> = {
   FV: { model: "TT", chassis: "8S" },
 };
 
+/**
+ * Shared Audi platform codes at positions 7–8 (NHTSA US VIN Breakdown + EU Typ).
+ * Used for North-American non-ZZZ VINs and as a fallback alignment with EU homologation.
+ */
+const AUDI_PLATFORM_78: Record<string, StaticHit> = {
+  // A3 family
+  "8P": { model: "A3", chassis: "8P" },
+  "8V": { model: "A3", chassis: "8V" },
+  "8L": { model: "A3", chassis: "8L" },
+  FF: { model: "A3", chassis: "8V" },
+  FM: { model: "A3", chassis: "8P" },
+  // A4 family
+  "8E": { model: "A4 / S4 / RS4", chassis: "8E" },
+  "8K": { model: "A4 / S4 / RS4", chassis: "8K" },
+  "8H": { model: "A4 / S4 Cabrio", chassis: "8H" },
+  FL: { model: "A4", chassis: "8K" },
+  F4: { model: "A4 / S4 / RS4", chassis: "B9/8W" },
+  // A5 family
+  "8T": { model: "A5 / S5", chassis: "8T" },
+  "8F": { model: "A5 / S5 Cabrio", chassis: "8F" },
+  F5: { model: "A5 / S5 / RS5", chassis: "F5" },
+  FR: { model: "A5", chassis: "8T" },
+  FH: { model: "A5 Cabrio", chassis: "8F" },
+  // A6 / A7
+  "4F": { model: "A6 / S6", chassis: "4F" },
+  "4G": { model: "A6 / A7", chassis: "C7" },
+  "4B": { model: "A6 / S6 / RS6", chassis: "4B" },
+  "4H": { model: "A7 Sportback", chassis: "4H" },
+  F2: { model: "A6 / A7", chassis: "C8/4K" },
+  FN: { model: "A6", chassis: "C9/FN" },
+  FB: { model: "A6", chassis: "C6 4F" },
+  FC: { model: "A6 / A7", chassis: "C7 4G" },
+  // A8
+  "4E": { model: "A8 / S8", chassis: "4E" },
+  "4A": { model: "A8", chassis: "4A" },
+  FA: { model: "A8", chassis: "4E" },
+  FD: { model: "A8", chassis: "4H" },
+  F8: { model: "A8 / S8", chassis: "4N/F8" },
+  // Q3 / Q5 / Q7 / Q8
+  "8U": { model: "Q3", chassis: "8U" },
+  F3: { model: "Q3", chassis: "F3" },
+  FJ: { model: "Q3", chassis: "FJ" },
+  FS: { model: "Q3", chassis: "8U/FS" },
+  GS: { model: "Q3" },
+  "8R": { model: "Q5", chassis: "8R" },
+  FY: { model: "Q5 / SQ5", chassis: "FY" },
+  FP: { model: "Q5 / SQ5", chassis: "8R/FP" },
+  GU: { model: "Q5 / SQ5", chassis: "GU" },
+  GA: { model: "Q5", chassis: "8R" },
+  "4L": { model: "Q7", chassis: "4L" },
+  "4M": { model: "Q7 / Q8", chassis: "4M" },
+  F7: { model: "Q7 / SQ7", chassis: "4M/F7" },
+  FE: { model: "Q7", chassis: "4L" },
+  GY: { model: "Q7", chassis: "4M" },
+  F1: { model: "Q8 / SQ8 / RS Q8", chassis: "4M/F1" },
+  // TT / R8 / e-tron
+  "8J": { model: "TT", chassis: "8J" },
+  "8S": { model: "TT", chassis: "8S" },
+  FK: { model: "TT", chassis: "8J" },
+  FV: { model: "TT", chassis: "8S" },
+  "42": { model: "R8", chassis: "42" },
+  "4S": { model: "R8", chassis: "4S" },
+  FG: { model: "R8", chassis: "42" },
+  FX: { model: "R8", chassis: "4S" },
+  GE: { model: "e-tron / Q8 e-tron", chassis: "GE", electric: true },
+  FZ: { model: "Q4 e-tron", chassis: "MEB", electric: true },
+  GB: { model: "Q4 e-tron", chassis: "MEB", electric: true },
+  FW: { model: "e-tron GT", chassis: "J1", electric: true },
+  GH: { model: "A6 e-tron / S6 e-tron", chassis: "PPE", electric: true },
+  GF: { model: "Q6 e-tron / SQ6 e-tron", chassis: "PPE", electric: true },
+  // A1
+  "8X": { model: "A1", chassis: "8X" },
+};
+
 export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {
   const u = vin.trim().toUpperCase();
   if (u.length !== 17 || !isAudiVin(u)) return null;
   const type78 = u.slice(6, 8);
   const isEuZzz = u.slice(3, 6) === "ZZZ";
+
+  // Year-gated e-tron rename (GE platform)
   if (type78 === "GE") {
     return {
       model: year != null && year >= 2024 ? "Q8 e-tron / SQ8 e-tron" : "e-tron / e-tron S",
@@ -235,14 +311,22 @@ export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagMode
       electric: true,
     };
   }
-  // WA1 non-ZZZ VDS codes overlap older EU type codes (for example FV/FP).
-  // Only use model types verified for current North-American Audi VINs here;
-  // the established position-4 SUV rules handle older WA1 vehicles.
-  if (!isEuZzz && u.startsWith("WA1")) {
-    const currentWa1Codes = new Set(["GF", "GH", "GU", "FZ", "FW"]);
-    if (!currentWa1Codes.has(type78)) return null;
+
+  // North-American / non-ZZZ passenger (WAU/WUA/TRU): positions 7–8 = platform.
+  // WA1 SUVs encode the line at position 4 (WA1A=Q3, WA1M=Q8, …) — do not steal
+  // those with overlapping passenger platform codes (FV/FP). Only verified
+  // modern WA1 type codes resolve here; otherwise premium falls to AUDI_US_RULES.
+  if (!isEuZzz) {
+    if (u.startsWith("WA1")) {
+      const currentWa1Codes = new Set(["GF", "GH", "GU", "FZ", "FW", "GE"]);
+      if (!currentWa1Codes.has(type78)) return null;
+      return materialize(AUDI_TYPE_78[type78] ?? AUDI_PLATFORM_78[type78]);
+    }
+    return materialize(AUDI_PLATFORM_78[type78] ?? AUDI_TYPE_78[type78]);
   }
-  return materialize(AUDI_TYPE_78[type78]);
+
+  // EU ZZZ: prefer modern type table, then shared platform map.
+  return materialize(AUDI_TYPE_78[type78] ?? AUDI_PLATFORM_78[type78]);
 }
 
 const SKODA_TYPE_78: Record<string, StaticHit> = {

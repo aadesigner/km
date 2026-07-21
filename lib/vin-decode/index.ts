@@ -117,3 +117,9 @@ export {
   resolveBrandVinMake,
   type BrandVinSpec,
 } from "./brand-vin-spec";
+export {
+  decodeFordEuModel,
+  isFordEuWmi,
+  isFordEuXxLayout,
+  decodeFordEuXxYear,
+} from "./ford-eu";

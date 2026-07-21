@@ -446,7 +446,12 @@ function routeBrandDiagnostics(vin: string, base: VinDecodeResult, out: VinDiagn
     koreanDiagnostics(vin, base, out);
     return;
   }
-  if (wmi.startsWith("1F") || wmi.startsWith("3F") || wmi.startsWith("1G") || wmi.startsWith("3G") || make.includes("ford") || make.includes("chevrolet") || make.includes("gmc") || make.includes("cadillac")) {
+  if (wmi.startsWith("1F") || wmi.startsWith("3F") || wmi.startsWith("1G") || wmi.startsWith("3G") || wmi.startsWith("2F") || wmi.startsWith("2G")) {
+    detroitDiagnostics(vin, base, out);
+    return;
+  }
+  // EU Ford (WF0/WF1/…) must not inherit Detroit US heuristics via make name alone.
+  if (make.includes("chevrolet") || make.includes("gmc") || make.includes("cadillac")) {
     detroitDiagnostics(vin, base, out);
     return;
   }

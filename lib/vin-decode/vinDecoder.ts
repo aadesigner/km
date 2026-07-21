@@ -16,7 +16,7 @@ import { resolveBrandVinSpec, resolveBrandVinModel } from "./brand-vin-spec";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
-import { isFordEuWmi, decodeFordEuModel } from "./ford-eu";
+import { isFordEuWmi, decodeFordEuModel, isFordEuXxLayout, decodeFordEuXxYear } from "./ford-eu";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine } from "./asian-eu";
 import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
@@ -71,6 +71,8 @@ function decodeVinModelYear(vin: string): number | null {
   if (isMercedesEuroBaumusterVin(vin)) return null;
   // Classic BMW ETK FINs often put "0" at pos.10 — not a year digit.
   if (bmwEtkOmitsIsoYear(vin)) return null;
+  // Ford Europe XX layout: production year is at position 11, not ISO pos.10.
+  if (isFordEuXxLayout(vin)) return decodeFordEuXxYear(vin);
   return decodeYear(vin[9] ?? "");
 }
 
@@ -243,7 +245,7 @@ const WMI_MAP: Record<string, string> = {
   "WZ1": "Toyota", // Magna Steyr — GR Supra A90 EU
   "SHH": "Honda",
   // ── Ford Europe ───────────────────────────────────────────────────────────
-  "WF0": "Ford", "WF1": "Ford", "8AF": "Ford", "SA1": "Ford",
+  "WF0": "Ford", "WF1": "Ford", "8AF": "Ford", "SA1": "Ford", "SFA": "Ford",
   "SCB": "Bentley", "SCC": "Lotus",
   "SDB": "Aston Martin",
   "SFD": "Alexander Dennis",
@@ -417,10 +419,13 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Mercedes-Benz ─────────────────────────────────────────────────────────
   // Prefer european-premium letter/chassis rules; keep only unambiguous 4-char hints.
   // Do NOT map WDDL→GLE — letter L is CLS (C218) or E-Class (W214) on passenger WDD.
-  "WDDC": "C-Class",    "WDDE": "E-Class",    "WDDS": "SLK/SLC",
+  // pos-4 letters are ambiguous; precise pos-4–5 rules live in european-premium
+  // (SJ/5J=CLA, PK=SLK/SLC, JK=SL, LJ=CLS). These 4-char keys are last-resort only.
+  // WDDS(J)=CLA and WDDP(K)=SLK were previously swapped (CLA decoded as SLK).
+  "WDDC": "C-Class",    "WDDE": "E-Class",    "WDDS": "CLA-Class",
   "WDDA": "A-Class",
   "WDDB": "B-Class",    "WDDF": "E-Class",    "WDDN": "GLA-Class",
-  "WDDP": "CLA-Class",  "WDDR": "GLC-Class",  "WDDW": "S-Class",
+  "WDDP": "SLK/SLC",    "WDDR": "GLC-Class",  "WDDW": "C-Class",
   "WDDX": "SL-Class",   "WDC0": "GLC-Class",  "WDCG": "GLK",
   "WDCJ": "GLC-Class",  "WDCA": "ML-Class",   "WDCB": "ML-Class",
   "WDCD": "GLE",        "WDCF": "GLE",        "WDCK": "GLC-Class",
@@ -1809,6 +1814,8 @@ export function decodeEngineCode(vin: string): string | null {
   if (hasEuZzzTypeApprovalDescriptor(upper)) return null;
   // Classic BMW ETK FINs — pos.8 is not a reliable engine letter.
   if (isBmwEuroEtkVin(upper)) return null;
+  // Ford Europe XX layout — pos.8 is middle of the type block (e.g. GCC), not an engine code.
+  if (isFordEuXxLayout(upper)) return null;
   const table = lookupByWmi(upper, ENGINE_CODE_MAP);
   if (!table) return null;
   return table[upper[7]] ?? null;   // position 8 (index 7)
@@ -1816,6 +1823,8 @@ export function decodeEngineCode(vin: string): string | null {
 
 export function decodePlantInfo(vin: string): PlantInfo | null {
   const upper = vin.toUpperCase();
+  // Ford Europe XX layout — pos.11 is production year, not plant.
+  if (isFordEuXxLayout(upper)) return null;
   const table = lookupByWmi(upper, PLANT_CODE_MAP);
   if (!table) return null;
   return table[upper[10]] ?? null;  // position 11 (index 10)
@@ -1888,6 +1897,8 @@ export function decodeVin(vin: string): VinDecodeResult {
   if (!driveType && (isVolkswagenVin(upper) || isAudiVin(upper) || isSkodaVin(upper) || isPorscheVin(upper))) {
     driveType = inferVagDriveFromModel(model);
   }
+  // Ford XX: pos.11 is year letter — do not expose it as a plant code.
+  const plantCode = isFordEuXxLayout(upper) ? null : (upper[10] ?? null);
   return {
     vin: upper,
     make,
@@ -1901,7 +1912,7 @@ export function decodeVin(vin: string): VinDecodeResult {
     engineDecoded,
     engineDisplacement: specs.displacement,
     engineCylinders: specs.cylinders,
-    plantCode: upper[10] ?? null,
+    plantCode,
     plantCity: plant?.city ?? null,
     plantCountry: plant?.country ?? null,
     bodyStyleDecoded,

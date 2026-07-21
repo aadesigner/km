@@ -436,6 +436,13 @@ const BMW_RULES = compilePrefixRules([
 const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD177", model: "A-Class", chassis: "W177" },
   { prefix: "WDD118", model: "CLA", chassis: "C118" },
+  // Letter-VDS coupe/roadster/4-door-coupe lines (pos 4–5). These share pos-4
+  // letters with unrelated models, so they MUST be matched at 2 chars, not 1.
+  // Verified against NHTSA vPIC: SJ/5J = CLA, PK = SLK/SLC, JK = SL, LJ = CLS.
+  { prefix: "WDDSJ", model: "CLA", chassis: "C117" },
+  { prefix: "WDD5J", model: "CLA", chassis: "C118" },
+  { prefix: "WDDPK", model: "SLK / SLC", chassis: "R172" },
+  { prefix: "WDDJK", model: "SL", chassis: "R231" },
   { prefix: "WDD205", model: "C-Class", chassis: "W205" },
   { prefix: "WDD206", model: "C-Class", chassis: "W206" },
   { prefix: "WDD204", model: "C-Class", chassis: "W204" },

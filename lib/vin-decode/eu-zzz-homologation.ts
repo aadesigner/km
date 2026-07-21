@@ -76,9 +76,22 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "4H", model: "A7 Sportback" },
   { code: "4A", model: "A8" },
   { code: "8V", model: "A3" },
+  { code: "8P", model: "A3", chassis: "8P" },
+  { code: "8L", model: "A3", chassis: "8L" },
   { code: "8K", model: "A4" },
+  { code: "8E", model: "A4 / S4 / RS4", chassis: "8E" },
+  { code: "8H", model: "A4 / S4 Cabrio", chassis: "8H" },
   { code: "8T", model: "A5" },
+  { code: "8F", model: "A5 / S5 Cabrio", chassis: "8F" },
   { code: "8U", model: "Q3" },
+  { code: "8J", model: "TT", chassis: "8J" },
+  { code: "8S", model: "TT", chassis: "8S" },
+  { code: "8X", model: "A1" },
+  { code: "4B", model: "A6 / S6 / RS6", chassis: "4B" },
+  { code: "4E", model: "A8 / S8", chassis: "4E" },
+  { code: "4L", model: "Q7", chassis: "4L" },
+  { code: "42", model: "R8", chassis: "42" },
+  { code: "4S", model: "R8", chassis: "4S" },
 ];
 
 const AUDI_WMIS = ["WAU", "WA1", "WUA", "TRU", "WVG"] as const;
