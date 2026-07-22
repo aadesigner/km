@@ -273,4 +273,30 @@ describe("multi-brand QA — no invent on bare WMI", () => {
     expect(r.make).toBe("MINI");
     expect(r.model).toBeNull();
   });
+
+  it("McLaren SBM stays make-only without inventing model", () => {
+    const r = decodeVin(pad("SBMZ", "R"));
+    expect(r.make).toBe("McLaren");
+    expect(r.model).toBeNull();
+    expect(r.year).toBe(2024);
+  });
+
+  it("Alpine VFA stays make-only without inventing model", () => {
+    const r = decodeVin(pad("VFAZ", "R"));
+    expect(r.make).toBe("Alpine");
+    expect(r.model).toBeNull();
+  });
+
+  it("VinFast US 5VF resolves make", () => {
+    const r = decodeVin(pad("5VFZ", "R"));
+    expect(r.make).toBe("VinFast");
+    expect(r.model).toBeNull();
+  });
+
+  it("Genesis KMU SUV WMI resolves make + known lines", () => {
+    expect(decodeVin(pad("KMUH", "P")).make).toBe("Genesis");
+    expect(decodeVin(pad("KMUH", "P")).model).toBe("GV80");
+    expect(decodeVin(pad("KMUM", "N")).model).toBe("GV70");
+    expect(decodeVin(pad("KMUK", "P")).model).toBe("GV60");
+  });
 });

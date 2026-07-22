@@ -115,7 +115,9 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VF3", country: "France" },
   { prefix: "VF2", country: "France" },
   { prefix: "VF1", country: "France" },
+  { prefix: "VFA", country: "France" },
   { prefix: "YAR", country: "France" },
+  { prefix: "SBM", country: "United Kingdom" },
   { prefix: "TSM", country: "Hungary" },
   { prefix: "TRU", country: "Hungary" },
   { prefix: "TNL", country: "Czech Republic" },
@@ -290,6 +292,7 @@ const WMI_MAP: Record<string, string> = {
   // ── Polestar / VinFast / Tata / Isuzu ─────────────────────────────────────
   "LPS": "Polestar",
   "RLL": "VinFast", "RLN": "VinFast",
+  "5VF": "VinFast", // US (North Carolina) plant
   "MAT": "Tata",
   "JAA": "Isuzu", "JAC": "Isuzu", "JAL": "Isuzu",
   "MP1": "Isuzu", "MPA": "Isuzu", "M3G": "Isuzu",
@@ -327,8 +330,11 @@ const WMI_MAP: Record<string, string> = {
   // ── UK (continued) ────────────────────────────────────────────────────────
   "SCA": "Rolls-Royce",
   "SCF": "Aston Martin",
+  "SBM": "McLaren",
+  // SA9 is a shared UK small-volume WMI (Morgan, Noble, McLaren F1, …) — do not map to one make.
   // ── GERMANY (continued) ───────────────────────────────────────────────────
   "WMW": "MINI",
+  "W1A": "Smart", // Mercedes-Benz AG Smart since late 2019 (successor to WME)
   "W0L": "Opel",
   "W0V": "Vauxhall",
   "VXK": "Vauxhall",
@@ -346,7 +352,8 @@ const WMI_MAP: Record<string, string> = {
   "JNA": "Infiniti",
   "JNK": "Infiniti",
   // ── SOUTH KOREA (Genesis) ─────────────────────────────────────────────────
-  "KMT": "Genesis",
+  "KMT": "Genesis", // passenger cars
+  "KMU": "Genesis", // MPV / SUV
   // ── USA (more brands) ─────────────────────────────────────────────────────
   "19U": "Acura",
   "7FC": "Rivian",
@@ -362,9 +369,11 @@ const WMI_MAP: Record<string, string> = {
   "VS6": "SEAT",
   "VS7": "SEAT",
   "VSX": "SEAT",
-  // ── FRANCE (Renault, continued) ───────────────────────────────────────────
+  // ── FRANCE (Renault / Alpine, continued) ───────────────────────────────────
   "VF6": "Renault",
   "VF8": "Renault",
+  "VFA": "Alpine",
+  // VYS = Ampere (Renault 5/4 E-Tech + Alpine A290) — shared; no single-make map.
   // ── BRAZIL (continued) ────────────────────────────────────────────────────
   "9BH": "Hyundai", "95P": "Hyundai", "8LG": "Hyundai",
   "PFD": "Hyundai", "Z94": "Hyundai", "AC5": "Hyundai",
@@ -545,9 +554,11 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Alfa Romeo (ZAR*) ─────────────────────────────────────────────────────
   "ZARB": "Giulia",      "ZARE": "Stelvio",     "ZARG": "Giulietta",
   "ZARJ": "Tonale",      "ZARR": "Brera",       "ZARS": "Spider",
-  // ── Genesis (KMT*) ────────────────────────────────────────────────────────
+  // ── Genesis (KMT* cars / KMU* SUVs — pos.4 letters differ by WMI) ──────────
   "KMTG": "GV80",        "KMTH": "GV70",        "KMTJ": "G90",
   "KMTF": "G70",         "KMTK": "GV60",        "KMTE": "G80",
+  // KMU MPV line letters (verified via NHTSA-style descriptors): H=GV80, M=GV70, K=GV60
+  "KMUH": "GV80",        "KMUM": "GV70",        "KMUK": "GV60",
   // ── Chrysler / Dodge / Jeep / RAM ─────────────────────────────────────────
   "1C3C": "Chrysler 300","2C3C": "Chrysler 300",
   "1C4P": "Jeep Wrangler","1C4R": "Jeep Grand Cherokee",
@@ -863,8 +874,14 @@ const ENGINE_CODE_MAP: Record<string, Record<string, string>> = {
     R: "Electric — 99.8 kWh (EV9)",
     S: "Electric — 58 kWh (EV6 Standard Range)",
   },
-  // Genesis Korea (KMT*)
+  // Genesis Korea (KMT* / KMU*)
   KMT: {
+    A: "2.5T I4 (G4KJ TCI)", B: "3.5T V6 (Lambda II TCI)",
+    C: "3.5L V6 (G6DP)", E: "2.0T I4 (T-GDi)",
+    G: "2.2L CRDi Diesel", N: "Electric (GV60 / GV70e)",
+    P: "2.5T I4 AWD", R: "3.5T V6 AWD",
+  },
+  KMU: {
     A: "2.5T I4 (G4KJ TCI)", B: "3.5T V6 (Lambda II TCI)",
     C: "3.5L V6 (G6DP)", E: "2.0T I4 (T-GDi)",
     G: "2.2L CRDi Diesel", N: "Electric (GV60 / GV70e)",
@@ -1802,6 +1819,7 @@ const BODY_CODE_MAP: Record<string, Record<string, string>> = {
   "5NP": { A: "Sedan", B: "Sedan", D: "Sedan", E: "Sedan", H: "Sedan" },
   NLH: { A: "Hatchback", B: "Crossover", R: "Hatchback", V: "Hatchback", W: "Crossover" },
   KMT: { A: "Sedan", B: "Sedan", C: "SUV", D: "Coupé", E: "Hatchback", G: "SUV" },
+  KMU: { A: "SUV", B: "SUV", C: "SUV", D: "SUV", E: "SUV", G: "SUV", H: "SUV" },
   KNA: { A: "Sedan", B: "Hatchback", C: "SUV", D: "Wagon" },
   KND: { A: "SUV", B: "Hatchback", C: "Minivan", D: "Crossover SUV", E: "Compact SUV" },
   // Toyota / Lexus Japan:

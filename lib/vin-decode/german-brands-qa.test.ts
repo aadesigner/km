@@ -227,6 +227,7 @@ const SMART: Case[] = [
   { vin: pad("WME451", "K"), label: "Smart fortwo 451", make: "Smart", modelContains: "fortwo", year: 2019 },
   { vin: pad("WME453", "K"), label: "Smart forfour", make: "Smart", modelContains: "forfour", year: 2019 },
   { vin: pad("WME450", "9"), label: "Smart fortwo 450", make: "Smart", modelContains: "fortwo", year: 2009 },
+  { vin: pad("W1A453", "L"), label: "Smart forfour W1A", make: "Smart", modelContains: "forfour", year: 2020 },
   { vin: "HESXR1C49PS069265", label: "Smart #1 EV", make: "Smart", modelContains: "#1", year: 2023, countryGermany: false },
   { vin: "HESCR1C43PS131354", label: "Smart #3 EV", make: "Smart", modelContains: "#3", year: 2023, countryGermany: false },
 ];

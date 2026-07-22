@@ -40,6 +40,14 @@ describe("focus brands — Smart", () => {
     expect(r.fuelType).toBe("Electric");
     expect(decodeLocalSeries(vin)).toBe("HC11");
   });
+
+  it("W1A453 → Smart forfour (MB AG WMI)", () => {
+    const vin = pad("W1A4530000L123456");
+    const r = decodeVin(vin);
+    expect(r.make).toBe("Smart");
+    expect(r.model).toBe("forfour");
+    expect(decodeLocalSeries(vin)).toBe("453");
+  });
 });
 
 describe("focus brands — Opel", () => {

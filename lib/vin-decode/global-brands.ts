@@ -118,6 +118,7 @@ const VINFAST_PREFIX_RULES = compilePrefixRules([
   { prefix: "RLLVD", model: "VF9" },
   { prefix: "RLNVF", model: "VF e34" },
   { prefix: "RLNV8", model: "VF8" },
+  // 5VF* = US plant — keep make-only until VDS line letters are verified
 ]);
 
 const LUCID_PREFIX_RULES = compilePrefixRules([
@@ -188,6 +189,12 @@ const SMART_PREFIX_RULES = compilePrefixRules([
   { prefix: "WME452", model: "Roadster", chassis: "452" },
   { prefix: "WME453", model: "forfour", chassis: "453" },
   { prefix: "WME454", model: "#1", chassis: "HX11" },
+  // W1A = Mercedes-Benz AG Smart (from late 2019); series codes mirror WME*
+  { prefix: "W1A450", model: "fortwo", chassis: "450" },
+  { prefix: "W1A451", model: "fortwo", chassis: "451" },
+  { prefix: "W1A452", model: "Roadster", chassis: "452" },
+  { prefix: "W1A453", model: "forfour", chassis: "453" },
+  { prefix: "W1A454", model: "#1", chassis: "HX11" },
 ]);
 
 const LANCIA_PREFIX_RULES = compilePrefixRules([
@@ -209,7 +216,7 @@ const LADA_PREFIX_RULES = compilePrefixRules([
 
 function isVinFastVin(vin: string): boolean {
   const wmi = vin.slice(0, 3);
-  return wmi === "RLL" || wmi === "RLN";
+  return wmi === "RLL" || wmi === "RLN" || wmi === "5VF";
 }
 
 function isIsuzuWmi(wmi: string): boolean {
@@ -334,9 +341,12 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
     return hitToGlobal(matchLongestPrefix(upper, LUCID_PREFIX_RULES), null);
   }
 
-  // WME (EU classic) + HES (China Smart Automobile JV)
-  if (wmi.startsWith("WME") || wmi === "HES") {
-    return hitToGlobal(matchLongestPrefix(upper, SMART_PREFIX_RULES), wmi === "HES" ? "Smart" : null);
+  // WME (EU classic) + W1A (MB AG from 2019) + HES (China Smart Automobile JV)
+  if (wmi === "WME" || wmi === "W1A" || wmi === "HES") {
+    return hitToGlobal(
+      matchLongestPrefix(upper, SMART_PREFIX_RULES),
+      wmi === "HES" || wmi === "W1A" ? "Smart" : null,
+    );
   }
 
   if (wmi.startsWith("ZLA")) {
