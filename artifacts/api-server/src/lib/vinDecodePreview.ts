@@ -141,12 +141,9 @@ function fieldLooksValid(value: string | null | undefined, vin: string): boolean
   return true;
 }
 
-/** Same rules as checkout free-decoder trust check. */
+/** Same rules as checkout free-decoder trust check — make alone is enough. */
 export function isTrustworthyVinIdentity(identity: VinPeekIdentity, vin: string): boolean {
-  const makeOk = fieldLooksValid(identity.make, vin);
-  const modelOk = fieldLooksValid(identity.model, vin);
-  if (!makeOk) return false;
-  return modelOk || plausibleYear(identity.year) != null;
+  return fieldLooksValid(identity.make, vin);
 }
 
 export { isPlausibleMake, isPlausibleModel };

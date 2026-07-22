@@ -61,12 +61,9 @@ export function peekMatchesVin(peek: VinPeekLike | null | undefined, vin: string
   return peek.vin.trim().toUpperCase() === normalized;
 }
 
-/** True when decoder returned a plausible make + model/year (not garbage / VIN fragments). */
+/** True when decoder returned a plausible make (model/year optional extras). */
 export function isTrustworthyVinDecode(peek: VinPeekLike): boolean {
-  const makeOk = fieldLooksValid(peek.make, peek.vin);
-  const modelOk = fieldLooksValid(peek.model, peek.vin);
-  if (!makeOk) return false;
-  return modelOk || plausibleYear(peek.year ?? null);
+  return fieldLooksValid(peek.make, peek.vin);
 }
 
 export type VinPeekAvailability = {
@@ -85,7 +82,10 @@ export function shouldShowPendingVinDoubleCheck(
   return isTrustworthyVinDecode(peek);
 }
 
-/** Checkout preview: make + year, or make + model when year char is missing (e.g. BMW EV). */
+/**
+ * Checkout preview title: always surface make when known.
+ * Prefer make + year; fall back to make + model; allow make-only (e.g. Baumuster, unknown model).
+ */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
   const parts: string[] = [];
@@ -96,8 +96,7 @@ export function formatVehicleTitle(peek: VinPeekLike): string | null {
     const modelLine = modelLineForTitle(peek.model, peek.vin);
     if (modelLine) parts.push(modelLine);
   }
-  if (parts.length < 2) return parts[0] ?? null;
-  return parts.join(" ");
+  return parts.join(" ") || null;
 }
 
 export function formatVehiclePreview(peek: VinPeekLike): string | null {

@@ -21,6 +21,20 @@ describe("formatVehicleTitle", () => {
     expect(formatVehicleTitle(peek)).toBe("BMW 2023");
   });
 
+  it("shows make + year even when model is unknown", () => {
+    const vin = "WAUZZZXX1FN034894";
+    const peek = { vin, make: "Audi", model: null, year: 2015 };
+    expect(isTrustworthyVinDecode(peek)).toBe(true);
+    expect(formatVehicleTitle(peek)).toBe("Audi 2015");
+  });
+
+  it("shows make alone when model and year are unknown (Baumuster)", () => {
+    const vin = "WDB9999991A123456";
+    const peek = { vin, make: "Mercedes-Benz", model: null, year: null };
+    expect(isTrustworthyVinDecode(peek)).toBe(true);
+    expect(formatVehicleTitle(peek)).toBe("Mercedes-Benz");
+  });
+
   it("shows make + model when year char is 0 (BMW iX)", () => {
     const vin = "WBY7E21050V123456";
     const r = decodeVin(vin);
@@ -35,5 +49,11 @@ describe("formatVehicleTitle", () => {
     const r = decodeVin(vin);
     const peek = { vin, make: r.make, model: r.model, year: r.year };
     expect(formatVehicleTitle(peek)).toBe("BMW 8 Series");
+  });
+
+  it("rejects garbage make", () => {
+    const peek = { vin: "WAUZZZ4H1FN034894", make: "BCDFGHJK", model: null, year: 2015 };
+    expect(isTrustworthyVinDecode(peek)).toBe(false);
+    expect(formatVehicleTitle(peek)).toBeNull();
   });
 });

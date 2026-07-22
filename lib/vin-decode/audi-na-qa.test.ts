@@ -5,6 +5,7 @@
  * - Non-ZZZ WAU/WA1/WUA: platform at positions 7–8 (NHTSA sheets).
  * - WAUHJ28P78A092448 → A3 (8P), 2008 — never null model.
  * - EU WAUZZZ* homologation / modern tables stay green.
+ * - Typ 4H = A8 D4 (never A7). GY = A3 8Y (never Q7). GA = Q2 (never Q5).
  * - Year stays ISO position 10 for Audi.
  */
 import { describe, expect, it } from "vitest";
@@ -31,13 +32,24 @@ describe("Audi NA QA — NHTSA platform families", () => {
   it.each([
     ["8P", /A3/i],
     ["8V", /A3/i],
+    ["8Y", /A3/i],
+    ["GY", /A3/i],
     ["8E", /A4/i],
     ["8K", /A4/i],
+    ["8W", /A4/i],
     ["8T", /A5/i],
     ["4F", /A6/i],
+    ["4K", /A6/i],
+    ["4A", /A6/i],
+    ["4D", /A8/i],
     ["4E", /A8/i],
+    ["4H", /A8/i],
+    ["FD", /A8/i],
     ["4L", /Q7/i],
+    ["F7", /Q7/i],
+    ["GA", /Q2/i],
     ["8J", /TT/i],
+    ["8N", /TT/i],
     ["42", /R8/i],
     ["8U", /Q3/i],
     ["8R", /Q5/i],
@@ -58,9 +70,24 @@ describe("Audi EU QA — ZZZ / modern still green", () => {
     expect(r.model).toMatch(/A3/i);
   });
 
+  it("WAUZZZ4H1FN034894 is A8 D4 2015, never A7", () => {
+    const r = decodeVin("WAUZZZ4H1FN034894");
+    expect(r.make).toBe("Audi");
+    expect(r.model).toMatch(/A8/i);
+    expect(r.model).not.toMatch(/A7/i);
+    expect(r.year).toBe(2015);
+  });
+
   it("modern GF Q6 e-tron still resolves", () => {
     const vin = "WAUZZZGFZRS123456";
     expect(decodeAudiModern(vin)?.model).toMatch(/Q6 e-tron/i);
     expect(decodeVin(vin).model).toMatch(/Q6 e-tron/i);
+  });
+
+  it("Typ collisions stay disambiguated", () => {
+    expect(decodeVin("WAUZZZGY1NU123456").model).toMatch(/A3/i);
+    expect(decodeVin("WAUZZZGA1BN123456").model).toMatch(/Q2/i);
+    expect(decodeVin("WAUZZZ4ADN1234567").model).toMatch(/A6/i);
+    expect(decodeVin("WAUZZZ4ADN1234567").model).not.toMatch(/A8/i);
   });
 });

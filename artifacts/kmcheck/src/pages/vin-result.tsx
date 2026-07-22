@@ -640,8 +640,8 @@ export default function VinResult({ params }: Props) {
   const odoCol = odometer ? mileageColor(odometer) : null;
   const mileageStatus = odometer ? mileageStatusMessage(odometer, mileageHistory, t) : null;
 
-  const vehicleTitle = data?.year && data?.make && data?.model
-    ? `${data.year} ${data.make} ${data.model}`
+  const vehicleTitle = data?.make
+    ? [data.year ? String(data.year) : null, data.make, data.model ?? null].filter(Boolean).join(" ")
     : `${t("report_for")} ${lookup.vin}`;
 
   const pendingHeroTitle = (() => {

@@ -218,6 +218,9 @@ const AUDI_TYPE_78: Record<string, StaticHit> = {
   F2: { model: "A6 / A7", chassis: "C8/4K" },
   F8: { model: "A8 / S8", chassis: "4N/F8" },
   FF: { model: "A3", chassis: "8V/FF" },
+  // GY = A3 Typ 8Y (Wikibooks) — never Q7.
+  GY: { model: "A3 / S3 / RS3", chassis: "8Y" },
+  GA: { model: "Q2", chassis: "GA" },
   FG: { model: "R8", chassis: "42" },
   FX: { model: "R8", chassis: "4S" },
   FV: { model: "TT", chassis: "8S" },
@@ -246,22 +249,31 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   F5: { model: "A5 / S5 / RS5", chassis: "F5" },
   FR: { model: "A5", chassis: "8T" },
   FH: { model: "A5 Cabrio", chassis: "8F" },
-  // A6 / A7
+  // A3 — include Typ 8Y and its NA letter code GY (was wrongly Q7).
+  "8Y": { model: "A3 / S3 / RS3", chassis: "8Y" },
+  GY: { model: "A3 / S3 / RS3", chassis: "8Y" },
+  // A4 / A5
+  "8W": { model: "A4 / S4 / RS4", chassis: "B9/8W" },
+  // A6 / A7 — 4H is A8 D4 (never A7); C8 typ is 4K / letter F2.
   "4F": { model: "A6 / S6", chassis: "4F" },
   "4G": { model: "A6 / A7", chassis: "C7" },
   "4B": { model: "A6 / S6 / RS6", chassis: "4B" },
-  "4H": { model: "A7 Sportback", chassis: "4H" },
+  "4K": { model: "A6 / A7", chassis: "C8/4K" },
+  // C4 100 / early A6 (NOT A8 — A8 uses 4D/4E/4H/4N).
+  "4A": { model: "A6", chassis: "4A" },
   F2: { model: "A6 / A7", chassis: "C8/4K" },
   FN: { model: "A6", chassis: "C9/FN" },
   FB: { model: "A6", chassis: "C6 4F" },
   FC: { model: "A6 / A7", chassis: "C7 4G" },
-  // A8
+  // A8 — Typ 4H is D4 (2010–2017). FD is the NA letter alias for 4H.
+  "4D": { model: "A8 / S8", chassis: "4D" },
   "4E": { model: "A8 / S8", chassis: "4E" },
-  "4A": { model: "A8", chassis: "4A" },
+  "4H": { model: "A8 / S8", chassis: "4H" },
   FA: { model: "A8", chassis: "4E" },
-  FD: { model: "A8", chassis: "4H" },
+  FD: { model: "A8 / S8", chassis: "4H" },
   F8: { model: "A8 / S8", chassis: "4N/F8" },
-  // Q3 / Q5 / Q7 / Q8
+  // Q2 / Q3 / Q5 / Q7 / Q8 — Typ GA is Q2 (was wrongly Q5).
+  GA: { model: "Q2", chassis: "GA" },
   "8U": { model: "Q3", chassis: "8U" },
   F3: { model: "Q3", chassis: "F3" },
   FJ: { model: "Q3", chassis: "FJ" },
@@ -271,14 +283,13 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   FY: { model: "Q5 / SQ5", chassis: "FY" },
   FP: { model: "Q5 / SQ5", chassis: "8R/FP" },
   GU: { model: "Q5 / SQ5", chassis: "GU" },
-  GA: { model: "Q5", chassis: "8R" },
   "4L": { model: "Q7", chassis: "4L" },
   "4M": { model: "Q7 / Q8", chassis: "4M" },
   F7: { model: "Q7 / SQ7", chassis: "4M/F7" },
   FE: { model: "Q7", chassis: "4L" },
-  GY: { model: "Q7", chassis: "4M" },
   F1: { model: "Q8 / SQ8 / RS Q8", chassis: "4M/F1" },
   // TT / R8 / e-tron
+  "8N": { model: "TT", chassis: "8N" },
   "8J": { model: "TT", chassis: "8J" },
   "8S": { model: "TT", chassis: "8S" },
   FK: { model: "TT", chassis: "8J" },
@@ -293,8 +304,9 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   FW: { model: "e-tron GT", chassis: "J1", electric: true },
   GH: { model: "A6 e-tron / S6 e-tron", chassis: "PPE", electric: true },
   GF: { model: "Q6 e-tron / SQ6 e-tron", chassis: "PPE", electric: true },
-  // A1
+  // A1 / A2
   "8X": { model: "A1", chassis: "8X" },
+  "8Z": { model: "A2", chassis: "8Z" },
 };
 
 export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {

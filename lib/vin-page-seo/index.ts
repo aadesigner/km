@@ -48,13 +48,14 @@ export function parseVinPagePath(pathname: string): { lang: VinSeoLang; vin: str
 
 export function buildVehicleTitle(v: VinSeoVehicle): string {
   const vin = normalizeVin(v.vin);
-  if (v.year && v.make && v.model) return `${v.year} ${v.make} ${v.model}`;
-  if (v.make && v.model) return `${v.make} ${v.model}`;
+  if (v.make) {
+    return [v.year ? String(v.year) : null, v.make, v.model ?? null].filter(Boolean).join(" ");
+  }
   return `VIN ${vin}`;
 }
 
 export function vehicleHasIdentity(v: VinSeoVehicle): boolean {
-  return !!((v.year && v.make && v.model) || (v.make && v.model));
+  return !!v.make;
 }
 
 function specSnippet(v: VinSeoVehicle): string {
