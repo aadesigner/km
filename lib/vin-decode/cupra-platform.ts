@@ -7,6 +7,7 @@ const CUPRA_PLATFORM: Record<string, string> = {
   VSSZZZKM: "KM", // Formentor
   VSSZZZK1: "K1", // Born
   VSSZZZKP: "MEB", // Born
+  VSSZZZKC: "KC", // Born (Cupra-exclusive)
   // KN is SEAT Tarraco — never map to Cupra León (KL).
   VS7ZZZKM: "KM", // Terramar
 };

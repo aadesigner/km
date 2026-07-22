@@ -52,6 +52,9 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "5NMJE", model: "Tucson", chassis: "NX4 US" },
   { prefix: "5NMJF", model: "Tucson", chassis: "NX4 US" },
   { prefix: "5NMJH", model: "Tucson", chassis: "NX4 US" },
+  // Genesis US (HMMA Alabama) — NHTSA ErrorCode 0: 5NMMCET… = Genesis GV70
+  // Do NOT remap bare 5NM (shared with Hyundai Tucson/Santa Fe).
+  { prefix: "5NMM", model: "GV70", chassis: "JK1 US" },
   { prefix: "TMAH381", model: "Tucson", chassis: "NX4 EU" },
   { prefix: "TMAJB81", model: "Tucson", chassis: "NX4 EU" },
   { prefix: "TMAJC81", model: "Tucson", chassis: "NX4 EU" },

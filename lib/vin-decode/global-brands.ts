@@ -111,6 +111,13 @@ const POLESTAR_PREFIX_RULES = compilePrefixRules([
   { prefix: "LPSVY", model: "Polestar 4" },
   { prefix: "LYVSE", model: "Polestar 2" },
   { prefix: "YSMRH", model: "Polestar 1" },
+  // NA/EU Polestar 3 — NHTSA: motor EJ/EA/EE + vehicle Y + trim B (YSR Sweden / 7SY USA)
+  { prefix: "YSREJ3YB", model: "Polestar 3" },
+  { prefix: "YSREA3YB", model: "Polestar 3" },
+  { prefix: "YSREE3YB", model: "Polestar 3" },
+  { prefix: "7SYEJ3YB", model: "Polestar 3" },
+  { prefix: "7SYEA3YB", model: "Polestar 3" },
+  { prefix: "7SYEE3YB", model: "Polestar 3" },
 ]);
 
 const VINFAST_PREFIX_RULES = compilePrefixRules([
@@ -118,13 +125,18 @@ const VINFAST_PREFIX_RULES = compilePrefixRules([
   { prefix: "RLLVD", model: "VF9" },
   { prefix: "RLNVF", model: "VF e34" },
   { prefix: "RLNV8", model: "VF8" },
-  // 5VF* = US plant — keep make-only until VDS line letters are verified
+  // 5VF* US WMI: NHTSA still maps the code to AEVC and NC volume production is not online —
+  // keep make-only (no invented VF8/VF9 descriptors).
 ]);
 
 const LUCID_PREFIX_RULES = compilePrefixRules([
+  // Legacy 5LA* Air descriptors (pre-NHTSA 50E/7UU reassignment in some datasets)
   { prefix: "5LABP", model: "Air" },
   { prefix: "5LAA1", model: "Air" },
   { prefix: "5LAC1", model: "Air" },
+  // NHTSA: 50E = Lucid passenger (Air); 7UUG* = Gravity (pos.4 G) — verified ErrorCode 0 samples
+  { prefix: "50E", model: "Air" },
+  { prefix: "7UUG", model: "Gravity" },
 ]);
 
 // ── Isuzu / Tata / KGM ───────────────────────────────────────────────────────
@@ -161,6 +173,8 @@ const CUPRA_PREFIX_RULES = compilePrefixRules([
   { prefix: "VSSZZZKM", model: "Formentor", chassis: "KM" },
   { prefix: "VSSZZZK1", model: "Born", chassis: "K1" },
   { prefix: "VSSZZZKP", model: "Born", chassis: "MEB" },
+  // KC = Cupra Born (MEB) — Cupra-exclusive homologation; not used by SEAT.
+  { prefix: "VSSZZZKC", model: "Born", chassis: "KC" },
   // KN = SEAT Tarraco (not Cupra León). Cupra León shares KL with SEAT — leave as SEAT.
   { prefix: "VS7ZZZKM", model: "Terramar", chassis: "KM" },
 ]);
@@ -291,7 +305,7 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
     return hit ? hitToGlobal(hit, "DS Automobiles") : EMPTY_GLOBAL;
   }
 
-  if (wmi === "LPS" || wmi.startsWith("YSM")) {
+  if (wmi === "LPS" || wmi === "YSM" || wmi === "YSR" || wmi === "7SY") {
     const hit = matchLongestPrefix(upper, POLESTAR_PREFIX_RULES);
     return {
       model: hit?.model ?? null,
@@ -337,8 +351,8 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
     return hitToGlobal(matchLongestPrefix(upper, SUZUKI_PREFIX_RULES), null);
   }
 
-  if (upper.startsWith("5LA")) {
-    return hitToGlobal(matchLongestPrefix(upper, LUCID_PREFIX_RULES), null);
+  if (wmi === "5LA" || wmi === "50E" || wmi === "7UU") {
+    return hitToGlobal(matchLongestPrefix(upper, LUCID_PREFIX_RULES), "Lucid");
   }
 
   // WME (EU classic) + W1A (MB AG from 2019) + HES (China Smart Automobile JV)

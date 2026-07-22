@@ -117,7 +117,6 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VF1", country: "France" },
   { prefix: "VFA", country: "France" },
   { prefix: "YAR", country: "France" },
-  { prefix: "SBM", country: "United Kingdom" },
   { prefix: "TSM", country: "Hungary" },
   { prefix: "TRU", country: "Hungary" },
   { prefix: "TNL", country: "Czech Republic" },
@@ -140,6 +139,10 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "SAD", country: "United Kingdom" },
   { prefix: "SAJ", country: "United Kingdom" },
   { prefix: "SAL", country: "United Kingdom" },
+  { prefix: "SBM", country: "United Kingdom" },
+  { prefix: "YS3", country: "Sweden" },
+  { prefix: "YSM", country: "Sweden" },
+  { prefix: "YSR", country: "Sweden" },
   { prefix: "YV4", country: "Sweden" },
   { prefix: "YV1", country: "Sweden" },
   { prefix: "YS2", country: "Sweden" },
@@ -289,10 +292,15 @@ const WMI_MAP: Record<string, string> = {
   "UU1": "Dacia", "UU6": "Dacia",
   // ── DS Automobiles ────────────────────────────────────────────────────────
   "VR1": "DS Automobiles",
+  // ── Saab (Sweden) ─────────────────────────────────────────────────────────
+  "YS3": "Saab",
   // ── Polestar / VinFast / Tata / Isuzu ─────────────────────────────────────
   "LPS": "Polestar",
+  "YSM": "Polestar", // Sweden passenger
+  "YSR": "Polestar", // Sweden MPV (Polestar 3)
+  "7SY": "Polestar", // USA MPV (Polestar 3, Charleston)
   "RLL": "VinFast", "RLN": "VinFast",
-  "5VF": "VinFast", // US (North Carolina) plant
+  "5VF": "VinFast", // US WMI reserved; NC plant not producing volume yet — make only
   "MAT": "Tata",
   "JAA": "Isuzu", "JAC": "Isuzu", "JAL": "Isuzu",
   "MP1": "Isuzu", "MPA": "Isuzu", "M3G": "Isuzu",
@@ -357,7 +365,9 @@ const WMI_MAP: Record<string, string> = {
   // ── USA (more brands) ─────────────────────────────────────────────────────
   "19U": "Acura",
   "7FC": "Rivian",
-  "5LA": "Lucid",
+  "5LA": "Lucid", // legacy Air descriptors still seen in the wild
+  "50E": "Lucid", // NHTSA passenger-car WMI (Air)
+  "7UU": "Lucid", // NHTSA MPV WMI (Gravity)
   "7G2": "Tesla",
   "1B3": "Dodge",
   "1D3": "Dodge",
@@ -559,6 +569,8 @@ const MODEL_MAP_4: Record<string, string> = {
   "KMTF": "G70",         "KMTK": "GV60",        "KMTE": "G80",
   // KMU MPV line letters (verified via NHTSA-style descriptors): H=GV80, M=GV70, K=GV60
   "KMUH": "GV80",        "KMUM": "GV70",        "KMUK": "GV60",
+  // ── Saab (YS3*) — NHTSA: YS3D*/YS3F* → 9-3, YS3E* → 9-5 ─────────────────
+  "YS3D": "9-3",         "YS3F": "9-3",         "YS3E": "9-5",
   // ── Chrysler / Dodge / Jeep / RAM ─────────────────────────────────────────
   "1C3C": "Chrysler 300","2C3C": "Chrysler 300",
   "1C4P": "Jeep Wrangler","1C4R": "Jeep Grand Cherokee",
@@ -1613,10 +1625,11 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
 const ELECTRIC_ONLY_WMI = new Set([
   "5YJ", "7SA", "7G2",  // Tesla USA / Fremont / Berlin / Shanghai
   "LE4",                 // NIO
-  "5LA",                 // Lucid
+  "5LA", "50E", "7UU",  // Lucid (legacy 5LA + NHTSA 50E Air / 7UU Gravity)
   "7FC",                 // Rivian
   "LBV",                 // BYD Electric
   "HES",                 // Smart Automobile (#1 / #3 BEV)
+  "YSR", "7SY",          // Polestar 3 MPV WMIs (BEV)
 ]);
 
 // ── AWD-standard WMIs (Subaru symmetrical AWD ships on almost every model) ────

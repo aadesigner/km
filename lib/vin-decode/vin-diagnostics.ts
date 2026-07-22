@@ -60,6 +60,8 @@ function wmiFamily(wmi: string): string | null {
     JT: "Toyota Japan", "4T1": "Toyota USA", "5TD": "Toyota USA", "5TF": "Toyota USA", "2T2": "Lexus",
     KMH: "Hyundai", KNA: "Kia", KND: "Kia", KMT: "Genesis", KMU: "Genesis",
     "5VF": "VinFast", SBM: "McLaren", VFA: "Alpine", W1A: "Smart",
+    YS3: "Saab", YSR: "Polestar", "7SY": "Polestar", YSM: "Polestar",
+    "50E": "Lucid", "7UU": "Lucid", "5LA": "Lucid",
     "1FT": "Ford Truck", "1FA": "Ford", "3FA": "Ford",
     "1GC": "Chevrolet", "1G1": "Chevrolet",
     "5YJ": "Tesla", "7SA": "Tesla",

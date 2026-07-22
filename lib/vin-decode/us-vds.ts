@@ -123,7 +123,12 @@ const JEEP_VDS_MODELS = new Set([
 ]);
 
 export function resolveUsVdsMake(vin: string): string | null {
-  const hit = matchUsVdsRule(vin);
+  const upper = vin.toUpperCase().trim();
+  // HMMA Alabama Genesis SUV line — verified NHTSA (5NMMCET… → Genesis GV70).
+  // Sibling 5NMJ*/5NMS* stay Hyundai Tucson/Santa Fe via WMI_MAP.
+  if (upper.startsWith("5NMM")) return "Genesis";
+
+  const hit = matchUsVdsRule(upper);
   if (!hit) return null;
   if (JEEP_VDS_MODELS.has(hit.model)) return "Jeep";
   return null;

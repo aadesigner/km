@@ -50,6 +50,13 @@ describe("SEAT Europe QA — model regressions", () => {
     expect(decodeLocalSeries("VSSZZZKM7MR123456")).toBe("KM");
   });
 
+  it("VSSZZZKC… → Cupra Born (KC exclusive)", () => {
+    const r = decodeVin("VSSZZZKC7PR123456");
+    expect(r.make).toBe("Cupra");
+    expect(r.model).toBe("Born");
+    expect(decodeLocalSeries("VSSZZZKC7PR123456")).toBe("KC");
+  });
+
   it("VSSZZZ7NZ… → Alhambra Mk2", () => {
     const r = decodeVin("VSSZZZ7NZLR123456");
     expect(r.make).toBe("SEAT");
