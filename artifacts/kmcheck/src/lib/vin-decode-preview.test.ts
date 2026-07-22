@@ -21,34 +21,22 @@ describe("formatVehicleTitle", () => {
     expect(formatVehicleTitle(peek)).toBe("BMW 2023");
   });
 
-  it("shows make + year even when model is unknown", () => {
-    const vin = "WAUZZZXX1FN034894";
-    const peek = { vin, make: "Audi", model: null, year: 2015 };
-    expect(isTrustworthyVinDecode(peek)).toBe(true);
+  it("shows make + year even when model is known", () => {
+    const peek = { vin: "WAUZZZ4H1FN034894", make: "Audi", model: "A8", year: 2015 };
     expect(formatVehicleTitle(peek)).toBe("Audi 2015");
   });
 
-  it("shows make alone when model and year are unknown (Baumuster)", () => {
-    const vin = "WDB9999991A123456";
-    const peek = { vin, make: "Mercedes-Benz", model: null, year: null };
-    expect(isTrustworthyVinDecode(peek)).toBe(true);
-    expect(formatVehicleTitle(peek)).toBe("Mercedes-Benz");
-  });
-
-  it("shows make + model when year char is 0 (BMW iX)", () => {
+  it("shows make alone when year is missing — never model", () => {
     const vin = "WBY7E21050V123456";
     const r = decodeVin(vin);
     const peek = { vin, make: r.make, model: r.model, year: r.year };
     expect(r.year).toBeNull();
-    expect(isTrustworthyVinDecode(peek)).toBe(true);
-    expect(formatVehicleTitle(peek)).toBe("BMW iX");
+    expect(formatVehicleTitle(peek)).toBe("BMW");
   });
 
-  it("shows make + model when year missing on 8 Series", () => {
-    const vin = "WBA8E11050G123456";
-    const r = decodeVin(vin);
-    const peek = { vin, make: r.make, model: r.model, year: r.year };
-    expect(formatVehicleTitle(peek)).toBe("BMW 8 Series");
+  it("shows make alone for Baumuster without year", () => {
+    const peek = { vin: "WDB2110222B056667", make: "Mercedes-Benz", model: "E-Class", year: null };
+    expect(formatVehicleTitle(peek)).toBe("Mercedes-Benz");
   });
 
   it("rejects garbage make", () => {

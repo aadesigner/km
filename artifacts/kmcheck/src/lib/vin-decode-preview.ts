@@ -1,5 +1,3 @@
-import { isYearLikeModelName } from "@workspace/vin-decode";
-
 type VinPeekLike = {
   vin: string;
   make?: string | null;
@@ -45,15 +43,6 @@ function plausibleYear(year: number | null | undefined): boolean {
   return year >= 1980 && year <= new Date().getFullYear() + 2;
 }
 
-/** Strip chassis suffixes — "3 Series (G20/G21)" → "3 Series". */
-function modelLineForTitle(model: string | null | undefined, vin: string): string | null {
-  if (!model || !fieldLooksValid(model, vin)) return null;
-  const base = model.replace(/\s*\([^)]*\)/g, "").trim();
-  if (!base || isYearLikeModelName(base)) return null;
-  if (base.toLowerCase() === vin.slice(0, 3).toLowerCase()) return null;
-  return base;
-}
-
 /** Peek response belongs to the VIN currently in the input (guards stale React Query data). */
 export function peekMatchesVin(peek: VinPeekLike | null | undefined, vin: string): boolean {
   const normalized = vin.trim().toUpperCase();
@@ -83,19 +72,14 @@ export function shouldShowPendingVinDoubleCheck(
 }
 
 /**
- * Checkout preview title: always surface make when known.
- * Prefer make + year; fall back to make + model; allow make-only (e.g. Baumuster, unknown model).
+ * Checkout preview title ONLY: make, or make + year when year is available.
+ * Never include model in checkout preview.
  */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
   const parts: string[] = [];
   if (peek.make) parts.push(peek.make);
-  if (plausibleYear(peek.year ?? null)) {
-    parts.push(String(peek.year));
-  } else {
-    const modelLine = modelLineForTitle(peek.model, peek.vin);
-    if (modelLine) parts.push(modelLine);
-  }
+  if (plausibleYear(peek.year ?? null)) parts.push(String(peek.year));
   return parts.join(" ") || null;
 }
 

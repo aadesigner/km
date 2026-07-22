@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { decodeVinLocalFree, isNorthAmericanMarketVin, type VinDiagnostic } from "@workspace/vin-decode";
+import { decodeVinLocalFree, isNorthAmericanMarketVin } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useRecaptcha, resolveRecaptchaToken, executeRecaptchaToken } from "@/hooks/use-recaptcha";
@@ -14,12 +14,11 @@ import { Input } from "@/components/ui/input";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import {
   Search, CheckCircle2, Lock, Zap, ShieldCheck,
-  AlertTriangle, Car, Globe, Factory, Gauge, Fuel,
-  Settings2, ChevronRight, Info, ArrowRight, Layers, Cpu, Shield, Wrench,
+  AlertTriangle, Car, Globe, Factory, Gauge,
+  ChevronRight, Info, ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError } from "@/lib/translate-client-error";
-import { translateFuelType } from "@/lib/translate-fuel-type";
 import { formatVinOriginCountry, countryLabelsFromT } from "@/lib/format-country-name";
 import { STATIC_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { isTrustworthyVinDecode } from "@/lib/vin-decode-preview";
@@ -62,18 +61,9 @@ interface DecodeResult {
   wmi: string;
   checkDigitValid: boolean;
   source: "nhtsa" | "local" | "hybrid";
-  diagnostics?: VinDiagnostic[];
 }
 
 type Field = { label: string; value: string | null | undefined; icon: React.ElementType; color: string };
-
-function translateValue(raw: string | null | undefined, map: Record<string, string>, t: (k: string) => string): string | null {
-  if (!raw) return null;
-  const key = map[raw.toLowerCase().trim()];
-  if (!key) return raw;
-  const translated = t(key);
-  return translated !== key ? translated : raw;
-}
 
 function refreshDecodeFromLocal(result: DecodeResult): DecodeResult {
   const local = decodeVinLocalFree(result.vin);
@@ -83,14 +73,9 @@ function refreshDecodeFromLocal(result: DecodeResult): DecodeResult {
     model: local.model ?? result.model,
     series: local.series ?? result.series,
     modelYearRange: result.year == null ? (local.modelYearRange ?? result.modelYearRange) : null,
-    trim: result.trim ?? local.trim,
     bodyStyle: local.bodyStyle ?? result.bodyStyle,
-    engineDecoded: local.engineDecoded ?? result.engineDecoded,
-    engineCode: local.engineCode ?? result.engineCode,
-    fuelType: local.fuelType ?? result.fuelType,
-    driveType: local.driveType ?? result.driveType,
-    transmissionStyle: local.transmissionStyle ?? result.transmissionStyle,
-    diagnostics: local.diagnostics.length ? local.diagnostics : result.diagnostics,
+    plantCountry: local.plantCountry ?? result.plantCountry,
+    plantCity: local.plantCity ?? result.plantCity,
   };
 }
 
@@ -118,14 +103,6 @@ export default function FreeVinDecoder() {
     () => (result ? refreshDecodeFromLocal(result) : null),
     [result],
   );
-
-  const diagnostics = useMemo((): VinDiagnostic[] => {
-    if (!displayResult) return [];
-    const local = decodeVinLocalFree(displayResult.vin);
-    if (local?.diagnostics?.length) return local.diagnostics;
-    if (displayResult.diagnostics?.length) return displayResult.diagnostics;
-    return [];
-  }, [displayResult]);
 
   const { data: publicSettings, isLoading: settingsLoading } = useQuery<{
     freeVinDecoderRequireSignIn?: boolean;
@@ -267,63 +244,19 @@ export default function FreeVinDecoder() {
     value ? formatVinOriginCountry(value, language, countryLabels) : null;
 
   const allFields: (Field & { group: string })[] = displayResult ? [
-    { group: "identity", label: t("free_decoder_field_year"),          value: displayResult.year ? String(displayResult.year) : (displayResult.modelYearRange ?? null), icon: Car,       color: "text-primary" },
-    { group: "identity", label: t("free_decoder_field_manufacture_year"), value: t("free_decoder_manufacture_year_not_in_vin"), icon: Car, color: "text-muted-foreground" },
-    { group: "identity", label: t("free_decoder_field_make"),          value: displayResult.make,                               icon: Car,       color: "text-blue-500" },
-    { group: "identity", label: t("free_decoder_field_model"),         value: displayResult.model,                              icon: Car,       color: "text-blue-500" },
-    { group: "identity", label: t("free_decoder_field_series"),        value: displayResult.series ?? null,                     icon: Car,       color: "text-blue-400" },
-    { group: "identity", label: t("free_decoder_field_trim"),          value: displayResult.trim,                               icon: Car,       color: "text-blue-400" },
-    { group: "identity", label: t("free_decoder_field_manufacturer"),  value: displayResult.manufacturer,                       icon: Factory,   color: "text-violet-500" },
-    { group: "identity", label: t("free_decoder_field_body"),          value: displayResult.bodyStyle,                          icon: Car,       color: "text-orange-500" },
-    { group: "identity", label: t("free_decoder_field_doors"),         value: displayResult.doors ?? null,                      icon: Car,       color: "text-orange-400" },
-    { group: "identity", label: t("free_decoder_field_vehicle_type"),  value: displayResult.vehicleType,                        icon: Car,       color: "text-indigo-500" },
-    { group: "powertrain", label: t("free_decoder_field_engine"),        value: displayResult.engineDecoded ?? (displayResult.engineCode ? `${t("free_decoder_field_engine_code")}: ${displayResult.engineCode}` : null), icon: Settings2, color: "text-red-500" },
-    { group: "powertrain", label: t("free_decoder_field_cylinders"),     value: displayResult.engineCylinders,                    icon: Settings2, color: "text-red-400" },
-    { group: "powertrain", label: t("free_decoder_field_displacement"),  value: displayResult.engineDisplacementL ? `${displayResult.engineDisplacementL} L` : null, icon: Gauge, color: "text-red-500" },
-    { group: "powertrain", label: t("free_decoder_field_engine_hp"),     value: displayResult.engineHp,                           icon: Gauge,     color: "text-red-500" },
-    { group: "powertrain", label: t("free_decoder_field_turbo"),         value: displayResult.turbo ?? null,                      icon: Settings2, color: "text-red-400" },
-    { group: "powertrain", label: t("free_decoder_field_electrification"), value: displayResult.electrificationLevel ?? null,   icon: Zap,       color: "text-yellow-600" },
-    { group: "powertrain", label: t("free_decoder_field_fuel"),          value: translateFuelType(t, displayResult.fuelType), icon: Fuel,   color: "text-yellow-500" },
-    { group: "powertrain", label: t("free_decoder_field_drive"),         value: displayResult.driveType,                          icon: Settings2, color: "text-teal-500" },
-    { group: "powertrain", label: t("free_decoder_field_transmission"),  value: displayResult.transmissionStyle,                  icon: Settings2, color: "text-teal-500" },
-    { group: "origin", label: t("free_decoder_field_origin"),        value: fmtOriginCountry(displayResult.countryOfOrigin), icon: Globe,     color: "text-green-500" },
-    { group: "origin", label: t("free_decoder_field_plant_country"), value: fmtOriginCountry(displayResult.plantCountry),    icon: Globe,     color: "text-green-600" },
-    { group: "origin", label: t("free_decoder_field_plant_city"),    value: displayResult.plantCity ?? (displayResult.plantCode ? `${t("free_decoder_field_plant_code")}: ${displayResult.plantCode}` : null), icon: Factory, color: "text-green-500" },
-    { group: "safety", label: t("free_decoder_field_abs"),           value: displayResult.abs ?? null,                        icon: Shield,    color: "text-violet-500" },
-    { group: "safety", label: t("free_decoder_field_esc"),           value: displayResult.esc ?? null,                        icon: Shield,    color: "text-violet-500" },
-    { group: "safety", label: t("free_decoder_field_airbags"),       value: displayResult.airbagLocations ?? null,            icon: Shield,    color: "text-violet-400" },
-    { group: "safety", label: t("free_decoder_field_gvwr"),          value: displayResult.gvwr ?? null,                       icon: Info,      color: "text-muted-foreground" },
-    { group: "tech",   label: t("free_decoder_field_wmi"),           value: displayResult.wmi,                                icon: Info,      color: "text-muted-foreground" },
+    { group: "identity", label: t("free_decoder_field_make"),         value: displayResult.make,  icon: Car,     color: "text-blue-500" },
+    { group: "identity", label: t("free_decoder_field_model"),        value: displayResult.model, icon: Car,     color: "text-blue-500" },
+    { group: "identity", label: t("free_decoder_field_year"),         value: displayResult.year ? String(displayResult.year) : (displayResult.modelYearRange ?? null), icon: Car, color: "text-primary" },
+    { group: "identity", label: t("free_decoder_field_vehicle_type"), value: displayResult.vehicleType, icon: Car, color: "text-indigo-500" },
+    { group: "identity", label: t("free_decoder_field_body"),         value: displayResult.bodyStyle,   icon: Car, color: "text-orange-500" },
+    { group: "plant",    label: t("free_decoder_field_plant_country"), value: fmtOriginCountry(displayResult.plantCountry), icon: Globe,   color: "text-green-600" },
+    { group: "plant",    label: t("free_decoder_field_plant_city"),    value: displayResult.plantCity ?? null, icon: Factory, color: "text-green-500" },
   ].filter(f => f.value !== null) : [];
 
   const groups: { key: string; label: string; icon: React.ElementType; color: string; bg: string }[] = [
-    { key: "identity",   label: t("free_decoder_group_identity"),   icon: Car,      color: "text-blue-500",   bg: "bg-blue-500/10" },
-    { key: "powertrain", label: t("free_decoder_group_powertrain"), icon: Settings2, color: "text-red-500",    bg: "bg-red-500/10" },
-    { key: "origin",     label: t("free_decoder_group_origin"),     icon: Globe,    color: "text-green-500",  bg: "bg-green-500/10" },
-    { key: "safety",     label: t("free_decoder_group_safety"),     icon: Shield,   color: "text-violet-500", bg: "bg-violet-500/10" },
-    { key: "tech",       label: t("free_decoder_group_technical"),  icon: Info,     color: "text-muted-foreground", bg: "bg-muted/60" },
+    { key: "identity", label: t("free_decoder_group_identity"), icon: Car,     color: "text-blue-500",  bg: "bg-blue-500/10" },
+    { key: "plant",    label: t("free_decoder_group_origin"),   icon: Factory, color: "text-green-500", bg: "bg-green-500/10" },
   ];
-
-  const diagCategoryMeta: Record<VinDiagnostic["category"], { label: string; icon: React.ElementType; color: string; bg: string }> = {
-    structure:  { label: t("free_decoder_diag_cat_structure"),  icon: Layers,    color: "text-slate-500",   bg: "bg-slate-500/10" },
-    identity:   { label: t("free_decoder_diag_cat_identity"),   icon: Car,       color: "text-blue-500",    bg: "bg-blue-500/10" },
-    powertrain: { label: t("free_decoder_diag_cat_powertrain"), icon: Gauge,     color: "text-red-500",     bg: "bg-red-500/10" },
-    body:       { label: t("free_decoder_diag_cat_body"),       icon: Car,       color: "text-orange-500",  bg: "bg-orange-500/10" },
-    drivetrain: { label: t("free_decoder_diag_cat_drivetrain"), icon: Settings2, color: "text-teal-500",    bg: "bg-teal-500/10" },
-    safety:     { label: t("free_decoder_diag_cat_safety"),     icon: Shield,    color: "text-violet-500",  bg: "bg-violet-500/10" },
-    plant:      { label: t("free_decoder_diag_cat_plant"),      icon: Factory,   color: "text-green-600",   bg: "bg-green-500/10" },
-    options:    { label: t("free_decoder_diag_cat_options"),    icon: Cpu,       color: "text-indigo-500",  bg: "bg-indigo-500/10" },
-  };
-
-  const diagCategoryOrder: VinDiagnostic["category"][] = [
-    "identity", "options", "powertrain", "body", "drivetrain", "safety", "plant", "structure",
-  ];
-
-  const diagLabel = (key: string) => {
-    const i18nKey = `free_decoder_diag_${key}`;
-    const translated = t(i18nKey);
-    return translated !== i18nKey ? translated : key.replace(/_/g, " ");
-  };
 
   const teaserCards = [
     {
@@ -535,7 +468,7 @@ export default function FreeVinDecoder() {
               )}
             </div>
 
-            {/* Grouped spec fields */}
+            {/* Grouped spec fields — make / model / year / plant / type+body only */}
             {allFields.length > 0 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-bold">{t("free_decoder_results_title")}</h2>
@@ -570,63 +503,6 @@ export default function FreeVinDecoder() {
                               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">{label}</p>
                             </div>
                             <p className="font-semibold text-sm text-foreground leading-snug">{value}</p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Brand-specific VIN diagnostics */}
-            {diagnostics.length > 0 && (
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                      <Wrench className="h-4 w-4 text-indigo-500" />
-                    </div>
-                    <h2 className="text-xl font-bold">{t("free_decoder_diagnostics_title")}</h2>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-                    {t("free_decoder_diagnostics_note")}
-                  </p>
-                </div>
-                {diagCategoryOrder.map(cat => {
-                  const items = diagnostics.filter(d => d.category === cat);
-                  if (items.length === 0) return null;
-                  const meta = diagCategoryMeta[cat];
-                  return (
-                    <motion.div
-                      key={cat}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35 }}
-                      className="space-y-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={`h-7 w-7 rounded-lg ${meta.bg} flex items-center justify-center`}>
-                          <meta.icon className={`h-3.5 w-3.5 ${meta.color}`} />
-                        </div>
-                        <span className="text-sm font-semibold text-muted-foreground">{meta.label}</span>
-                        <div className="flex-1 h-px bg-border" />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        {items.map((item, idx) => (
-                          <motion.div
-                            key={`${item.labelKey}-${idx}`}
-                            initial={{ opacity: 0, scale: 0.96 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="rounded-xl border bg-card p-3.5 space-y-1 hover:border-border/80 transition-colors"
-                          >
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                              {diagLabel(item.labelKey)}
-                            </p>
-                            <p className="font-semibold text-sm text-foreground leading-snug">{item.value}</p>
-                            {item.detail && (
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">{item.detail}</p>
-                            )}
                           </motion.div>
                         ))}
                       </div>
