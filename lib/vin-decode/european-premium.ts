@@ -657,22 +657,27 @@ const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZ8K", model: "A4" },
   { prefix: "WAUZZZ8H", model: "A4 / A5" },
   { prefix: "WAUZZZ8N", model: "TT", chassis: "8N" },
-  // C7 (Typ 4G) — positions 7–9 are EU type-approval; A6 and A7 share the 4G platform.
+  // C7/C8 typcodes — never "A6 / A7". C8 A6 is 4A*; C8 A7 is 4K*.
   { prefix: "WAUZZZ4G8", model: "A7 Sportback", chassis: "C7" },
   { prefix: "WAUZZZ4GA", model: "A7 Sportback", chassis: "C7" },
   { prefix: "WAUZZZ4GF", model: "A7 Sportback", chassis: "C7" },
-  { prefix: "WAUZZZ4G5", model: "A7 Sportback", chassis: "C7" },
+  { prefix: "WAUZZZ4G5", model: "A6 Avant", chassis: "C7" },
   { prefix: "WAUZZZ4GD", model: "A6 Avant", chassis: "C7" },
   { prefix: "WAUZZZ4G2", model: "A6", chassis: "C7" },
   { prefix: "WAUZZZ4GC", model: "A6", chassis: "C7" },
-  { prefix: "WAUZZZ4G6", model: "A6 / A7", chassis: "C7" },
-  { prefix: "WAUZZZ4G", model: "A6 / A7", chassis: "C7" },
+  { prefix: "WAUZZZ4GH", model: "A6 allroad", chassis: "C7" },
+  { prefix: "WAUZZZ4GJ", model: "A6 allroad", chassis: "C7" },
   { prefix: "WAUZZZ4F", model: "A6 Avant" },
-  { prefix: "WAUZZZ4K", model: "A6 / A7", chassis: "C8" },
-  // Typ 4H = A8 D4 (was wrongly A7). Typ 4A = C4 A6/100 (was wrongly A8).
+  { prefix: "WAUZZZ4KA", model: "A7 Sportback", chassis: "C8" },
+  { prefix: "WAUZZZ4K8", model: "A7 Sportback", chassis: "C8" },
+  { prefix: "WAUZZZ4K", model: "A7 Sportback", chassis: "C8" },
+  // Typ 4H = A8 D4 (was wrongly A7). Typ 4A = A6 (C4 and C8).
   { prefix: "WAUZZZ4H", model: "A8 / S8", chassis: "4H" },
   { prefix: "WAUZZZ4D", model: "A8 / S8", chassis: "4D" },
   { prefix: "WAUZZZ4E", model: "A8 / S8", chassis: "4E" },
+  { prefix: "WAUZZZ4A5", model: "A6 Avant", chassis: "4A" },
+  { prefix: "WAUZZZ4A2", model: "A6", chassis: "4A" },
+  { prefix: "WAUZZZ4AH", model: "A6 allroad", chassis: "4A" },
   { prefix: "WAUZZZ4A", model: "A6", chassis: "4A" },
   // GY = A3 Typ 8Y; GA = Q2 (not Q5/Q7).
   { prefix: "WAUZZZGY", model: "A3 / S3 / RS3", chassis: "8Y" },

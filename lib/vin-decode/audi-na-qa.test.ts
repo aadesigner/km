@@ -39,7 +39,7 @@ describe("Audi NA QA — NHTSA platform families", () => {
     ["8W", /A4/i],
     ["8T", /A5/i],
     ["4F", /A6/i],
-    ["4K", /A6/i],
+    ["4K", /A7/i],
     ["4A", /A6/i],
     ["4D", /A8/i],
     ["4E", /A8/i],

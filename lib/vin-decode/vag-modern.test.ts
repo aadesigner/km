@@ -113,13 +113,19 @@ describe("modern Audi type decoding", () => {
     expect(decodeAudiModern(typedVin("WAU", "GE", "R"))?.model).toContain("Q8 e-tron");
   });
 
-  it("recognizes current Q5 and Audi Sport WMI", () => {
+  it("recognizes current Q5 and splits NA F2 A6 vs A7", () => {
     const q5 = typedVin("WA1", "GU", "S", "AAA");
     expect(decodeVin(q5).model).toContain("Q5");
 
+    expect(decodeVin("WAUD2AF20KN123456").model).toMatch(/^A6\b/);
+    expect(decodeVin("WAUD2AF20KN123456").model).not.toMatch(/A7/);
+    expect(decodeVin("WAUV2AF20KN123456").model).toMatch(/A7/);
+    expect(decodeVin("WAUV2AF20KN123456").model).not.toMatch(/A6/);
+    // Ambiguous EU letter platform / unknown pos.4 — make only, never "A6 / A7".
     const sport = typedVin("WUA", "F2", "S", "AAA");
     expect(decodeVin(sport).make).toBe("Audi");
-    expect(decodeVin(sport).model).toContain("A6 / A7");
+    expect(decodeVin(sport).model ?? "").not.toContain("A6 / A7");
+    expect(decodeVin("WAUZZZF2AAN123456").model ?? "").not.toContain("A6 / A7");
   });
 });
 

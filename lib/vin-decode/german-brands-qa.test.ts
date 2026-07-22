@@ -104,7 +104,7 @@ const AUDI: Case[] = [
   { vin: zzz("WAU", "F5", "N"), label: "Audi A5", make: "Audi", modelContains: "A5", year: 2022, modelExcludes: ["A4"] },
   { vin: zzz("WAU", "FN", "P"), label: "Audi A6 C9", make: "Audi", modelContains: "A6", year: 2023 },
   { vin: "WAUZZZ4G2DN123456", label: "Audi A6 C7", make: "Audi", modelContains: "A6", year: 2013, modelExcludes: ["A7"] },
-  { vin: "WAUZZZ4G5DN123456", label: "Audi A7 C7", make: "Audi", modelContains: "A7", year: 2013, modelExcludes: ["A6"] },
+  { vin: "WAUZZZ4G5DN123456", label: "Audi A6 Avant C7", make: "Audi", modelContains: "A6", year: 2013, modelExcludes: ["A7"] },
   { vin: zzz("WAU", "F8", "L"), label: "Audi A8", make: "Audi", modelContains: "A8", year: 2020 },
   { vin: zzz("WAU", "F3", "N"), label: "Audi Q3", make: "Audi", modelContains: "Q3", year: 2022 },
   { vin: zzz("WAU", "FY", "N"), label: "Audi Q5 FY", make: "Audi", modelContains: "Q5", year: 2022, modelExcludes: ["e-tron"] },

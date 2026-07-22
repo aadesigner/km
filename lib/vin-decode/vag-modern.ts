@@ -215,7 +215,7 @@ const AUDI_TYPE_78: Record<string, StaticHit> = {
   F3: { model: "Q3", chassis: "F3" },
   F4: { model: "A4 / S4 / RS4", chassis: "B9/8W" },
   F5: { model: "A5 / S5 / RS5", chassis: "F5" },
-  F2: { model: "A6 / A7", chassis: "C8/4K" },
+  // F2 is shared A6(C8/4A)+A7(C8/4K) — NA split via pos.4; EU ZZZ stays null.
   F8: { model: "A8 / S8", chassis: "4N/F8" },
   FF: { model: "A3", chassis: "8V/FF" },
   // GY = A3 Typ 8Y (Wikibooks) — never Q7.
@@ -230,6 +230,29 @@ const AUDI_TYPE_78: Record<string, StaticHit> = {
  * Shared Audi platform codes at positions 7–8 (NHTSA US VIN Breakdown + EU Typ).
  * Used for North-American non-ZZZ VINs and as a fallback alignment with EU homologation.
  */
+/** NHTSA-verified pos.4 splits for letter platforms that encode both A6 and A7. */
+const AUDI_FC_POS4_A6 = new Set(["A", "B", "C", "D", "F", "G", "H", "J"]);
+const AUDI_FC_POS4_A7 = new Set(["S", "W", "Y", "2", "3"]);
+const AUDI_F2_POS4_A6 = new Set(["D", "E", "K", "L", "M"]);
+const AUDI_F2_POS4_A7 = new Set(["P", "R", "S", "T", "U", "V"]);
+const AUDI_F2_POS4_ALLROAD = new Set(["7", "9"]);
+
+function resolveAudiA6A7ByPos4(vin: string, type78: string): VagModernHit | null {
+  const pos4 = vin[3] ?? "";
+  if (type78 === "FC") {
+    if (AUDI_FC_POS4_A6.has(pos4)) return { model: "A6", chassis: "C7 4G" };
+    if (AUDI_FC_POS4_A7.has(pos4)) return { model: "A7 Sportback", chassis: "C7 4G" };
+    return null;
+  }
+  if (type78 === "F2") {
+    if (AUDI_F2_POS4_ALLROAD.has(pos4)) return { model: "A6 allroad", chassis: "C8/4A" };
+    if (AUDI_F2_POS4_A6.has(pos4)) return { model: "A6", chassis: "C8/4A" };
+    if (AUDI_F2_POS4_A7.has(pos4)) return { model: "A7 Sportback", chassis: "C8/4K" };
+    return null;
+  }
+  return null;
+}
+
 const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   // A3 family
   "8P": { model: "A3", chassis: "8P" },
@@ -254,17 +277,15 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   GY: { model: "A3 / S3 / RS3", chassis: "8Y" },
   // A4 / A5
   "8W": { model: "A4 / S4 / RS4", chassis: "B9/8W" },
-  // A6 / A7 — 4H is A8 D4 (never A7); C8 typ is 4K / letter F2.
+  // A6 / A7 — 4H is A8 D4 (never A7). C8 A6 = Typ 4A; C8 A7 = Typ 4K.
+  // Bare 4G / F2 / FC are shared — never emit "A6 / A7".
   "4F": { model: "A6 / S6", chassis: "4F" },
-  "4G": { model: "A6 / A7", chassis: "C7" },
   "4B": { model: "A6 / S6 / RS6", chassis: "4B" },
-  "4K": { model: "A6 / A7", chassis: "C8/4K" },
-  // C4 100 / early A6 (NOT A8 — A8 uses 4D/4E/4H/4N).
+  "4K": { model: "A7 Sportback", chassis: "C8/4K" },
+  // C4 100 / early A6 and C8 A6 (NOT A8 — A8 uses 4D/4E/4H/4N).
   "4A": { model: "A6", chassis: "4A" },
-  F2: { model: "A6 / A7", chassis: "C8/4K" },
   FN: { model: "A6", chassis: "C9/FN" },
   FB: { model: "A6", chassis: "C6 4F" },
-  FC: { model: "A6 / A7", chassis: "C7 4G" },
   // A8 — Typ 4H is D4 (2010–2017). FD is the NA letter alias for 4H.
   "4D": { model: "A8 / S8", chassis: "4D" },
   "4E": { model: "A8 / S8", chassis: "4E" },
@@ -329,6 +350,9 @@ export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagMode
   // those with overlapping passenger platform codes (FV/FP). Only verified
   // modern WA1 type codes resolve here; otherwise premium falls to AUDI_US_RULES.
   if (!isEuZzz) {
+    if (type78 === "F2" || type78 === "FC") {
+      return resolveAudiA6A7ByPos4(u, type78);
+    }
     if (u.startsWith("WA1")) {
       const currentWa1Codes = new Set(["GF", "GH", "GU", "FZ", "FW", "GE"]);
       if (!currentWa1Codes.has(type78)) return null;
@@ -338,6 +362,7 @@ export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagMode
   }
 
   // EU ZZZ: prefer modern type table, then shared platform map.
+  // F2/FC are intentionally absent — letter alone cannot separate A6 from A7.
   return materialize(AUDI_TYPE_78[type78] ?? AUDI_PLATFORM_78[type78]);
 }
 

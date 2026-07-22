@@ -41,9 +41,7 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "GY", model: "A3 / S3 / RS3", chassis: "8Y" },
   { code: "GA", model: "Q2", chassis: "GA" },
   { code: "GS", model: "Q3" },
-  // Sedans / sport
-  { code: "FC", model: "A6 / A7", chassis: "C7 4G" },
-  { code: "F2", model: "A6 / A7", chassis: "C8 4K" },
+  // Sedans / sport — FC/F2 alone are shared A6+A7 (NA splits via pos.4 in vag-modern).
   { code: "FN", model: "A6", chassis: "C9" },
   { code: "FB", model: "A6", chassis: "C6 4F" },
   { code: "F4", model: "A4", chassis: "B9 8W" },
@@ -64,22 +62,29 @@ const AUDI_HOMOLOGATION_CODES: CodeRule[] = [
   { code: "FX", model: "R8", chassis: "4S" },
   { code: "FK", model: "TT", chassis: "8J" },
   { code: "FV", model: "TT", chassis: "8S" },
-  // C7 platform — granular 4G* (must beat broad 4G)
-  { code: "4G5", model: "A7 Sportback", chassis: "C7" },
+  // C7 — ETKA typcodes: 4G2/4GC sedan, 4G5/4GD Avant, 4G8/4GA/4GF A7.
+  // Never emit "A6 / A7"; unknown 4G* stays null.
   { code: "4G8", model: "A7 Sportback", chassis: "C7" },
   { code: "4GA", model: "A7 Sportback", chassis: "C7" },
   { code: "4GF", model: "A7 Sportback", chassis: "C7" },
   { code: "4G2", model: "A6", chassis: "C7" },
   { code: "4GC", model: "A6", chassis: "C7" },
+  { code: "4G5", model: "A6 Avant", chassis: "C7" },
   { code: "4GD", model: "A6 Avant", chassis: "C7" },
-  { code: "4G6", model: "A6 / A7", chassis: "C7" },
-  { code: "4G", model: "A6 / A7", chassis: "C7" },
+  { code: "4GH", model: "A6 allroad", chassis: "C7" },
+  { code: "4GJ", model: "A6 allroad", chassis: "C7" },
   { code: "4F", model: "A6 Avant" },
-  // A8 Typ codes — 4H is D4 (never A7). 4A is C4 A6/100 (never A8).
+  // A8 Typ codes — 4H is D4 (never A7).
+  // C8 A6 reuses Typ 4A (4A2/4A5/4AH); C8 A7 is Typ 4K (4KA/4K8) — never A6.
   { code: "4H", model: "A8 / S8", chassis: "4H" },
   { code: "4D", model: "A8 / S8", chassis: "4D" },
+  { code: "4A5", model: "A6 Avant", chassis: "4A" },
+  { code: "4A2", model: "A6", chassis: "4A" },
+  { code: "4AH", model: "A6 allroad", chassis: "4A" },
   { code: "4A", model: "A6", chassis: "4A" },
-  { code: "4K", model: "A6 / A7", chassis: "C8" },
+  { code: "4KA", model: "A7 Sportback", chassis: "C8" },
+  { code: "4K8", model: "A7 Sportback", chassis: "C8" },
+  { code: "4K", model: "A7 Sportback", chassis: "C8" },
   { code: "8Y", model: "A3 / S3 / RS3", chassis: "8Y" },
   { code: "8V", model: "A3" },
   { code: "8P", model: "A3", chassis: "8P" },
