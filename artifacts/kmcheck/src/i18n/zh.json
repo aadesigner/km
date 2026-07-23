@@ -111,7 +111,7 @@
   "disabled": "已禁用",
   "save": "保存",
   "cancel": "取消",
-  "base_price": "基础价格",
+  "base_price": "最终价格",
   "discounted_price": "折扣价",
   "discount_enabled": "已启用折扣",
   "currency": "货币",

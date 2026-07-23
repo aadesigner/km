@@ -111,7 +111,7 @@
   "disabled": "Отключён",
   "save": "Сохранить",
   "cancel": "Отмена",
-  "base_price": "Базовая цена",
+  "base_price": "Итоговая цена",
   "discounted_price": "Скидочная цена",
   "discount_enabled": "Скидка включена",
   "currency": "Валюта",
