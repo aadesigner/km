@@ -481,7 +481,7 @@ export function VinPrintSummary({
 
         {reportUrl && (
           <div className="print-report-link mt-2.5 rounded-lg border-2 px-3 py-2.5 text-center">
-            <p className="text-[7pt] font-bold uppercase tracking-wide text-muted-foreground">
+            <p className="text-[7.5pt] font-semibold text-muted-foreground leading-snug max-w-[42ch] mx-auto">
               {t("print_summary_full_report")}
             </p>
             {qrDataUrl ? (

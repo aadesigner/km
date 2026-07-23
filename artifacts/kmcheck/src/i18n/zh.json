@@ -1219,7 +1219,7 @@
   "print_summary_registry": "登记时间线",
   "print_summary_latest_mileage": "最近记录里程",
   "print_summary_owners": "前任车主",
-  "print_summary_full_report": "查看完整报告：",
+  "print_summary_full_report": "在线核验本报告真实性 — 请扫描二维码",
   "vin_result_save_pdf": "保存为 PDF",
   "vin_result_download_pdf": "下载 PDF",
   "vin_result_share_pdf": "分享报告",
