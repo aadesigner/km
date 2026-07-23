@@ -13,8 +13,33 @@ export async function openVinReportPdf(): Promise<void> {
     // Print needs every visible summary image — not just hero neighbors.
     await warmVinImages(urls);
   }
+  // QR is generated async; give it a brief chance before print if still loading.
+  await waitForPrintQr();
   await waitForPrintImages(imgs);
   window.print();
+}
+
+function waitForPrintQr(timeoutMs = 1500): Promise<void> {
+  if (typeof document === "undefined") return Promise.resolve();
+  const existing = document.querySelector<HTMLImageElement>(".vin-report-print-summary .print-report-qr");
+  if (existing?.complete && existing.naturalWidth > 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const tick = () => {
+      const img = document.querySelector<HTMLImageElement>(".vin-report-print-summary .print-report-qr");
+      if (img?.complete && img.naturalWidth > 0) {
+        resolve();
+        return;
+      }
+      if (Date.now() - started >= timeoutMs) {
+        resolve();
+        return;
+      }
+      window.setTimeout(tick, 50);
+    };
+    tick();
+  });
 }
 
 function getPrintSummaryImages(): HTMLImageElement[] {

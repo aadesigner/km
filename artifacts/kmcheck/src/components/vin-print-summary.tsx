@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "@/i18n/context";
 import { KmcheckPrintLogo } from "@/components/logo";
 import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
@@ -5,6 +6,7 @@ import { formatAccidentCount } from "@/lib/format-accident-count";
 import { translateTitleStatus } from "@/lib/translate-title-status";
 import type { PrintAuctionRow, PrintMileageRow, PrintOwnerRow, PrintRegistryRow } from "@/lib/build-print-summary";
 import { PRINT_GALLERY_PHOTO_LIMIT } from "@/lib/build-print-summary";
+import { reportLinkQrDataUrl } from "@/lib/report-qr";
 import { cn } from "@/lib/utils";
 import { LANG_META } from "@/lib/languages";
 
@@ -268,6 +270,23 @@ export function VinPrintSummary({
     day: "numeric",
   });
 
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!reportUrl) {
+      setQrDataUrl(null);
+      return;
+    }
+    let cancelled = false;
+    void reportLinkQrDataUrl(reportUrl).then((url) => {
+      if (!cancelled) setQrDataUrl(url);
+    }).catch(() => {
+      if (!cancelled) setQrDataUrl(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reportUrl]);
+
   const findingItems = [
     odometer != null ? (
       <FindingBadge
@@ -462,8 +481,22 @@ export function VinPrintSummary({
 
         {reportUrl && (
           <div className="print-report-link mt-2.5 rounded-lg border-2 px-3 py-2.5 text-center">
-            <p className="text-[7pt] font-bold uppercase tracking-wide text-muted-foreground">{t("print_summary_full_report")}</p>
-            <p className="font-mono text-[8pt] font-semibold text-foreground break-all mt-1 leading-snug">{reportUrl}</p>
+            <p className="text-[7pt] font-bold uppercase tracking-wide text-muted-foreground">
+              {t("print_summary_full_report")}
+            </p>
+            {qrDataUrl ? (
+              <img
+                src={qrDataUrl}
+                alt=""
+                width={112}
+                height={112}
+                className="print-report-qr mx-auto mt-1.5 h-28 w-28"
+              />
+            ) : (
+              <p className="font-mono text-[8pt] font-semibold text-foreground break-all mt-1 leading-snug">
+                {reportUrl}
+              </p>
+            )}
           </div>
         )}
 

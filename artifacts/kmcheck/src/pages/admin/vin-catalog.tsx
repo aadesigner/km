@@ -18,6 +18,7 @@ import {
   vinCatalogPayloadFromForm,
   type VinCatalogFormState,
 } from "@/components/admin/vin-catalog-data-form";
+import { mileageColor } from "@/lib/mileage-color";
 
 interface BulkDeleteDialogProps {
   onConfirm: (opts: { all?: boolean; provider?: string; confirmPhrase?: string }) => void;
@@ -610,6 +611,8 @@ export default function AdminVinCatalog() {
                     const vehicle = [year, make, model].filter(Boolean).join(" ") || "—";
                     const isChecked = selected.has(item.id);
                     const vinPath = `/adminx/vin/${item.vin}`;
+                    const odoCol = d.odometer != null ? mileageColor(d.odometer) : null;
+                    const odoMax = 300_000; // same fill scale as VIN reports
 
                     return (
                       <tr
@@ -632,13 +635,15 @@ export default function AdminVinCatalog() {
                           )}
                         </td>
                         <td className="p-4">
-                          {d.odometer != null ? (
+                          {d.odometer != null && odoCol ? (
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-xs tabular-nums font-medium">{d.odometer.toLocaleString()} km</span>
+                              <span className={`text-xs tabular-nums font-medium ${odoCol.text}`}>
+                                {d.odometer.toLocaleString()} km
+                              </span>
                               <div className="w-16 h-1 bg-muted rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full ${(d.odometer / 200000) < 0.33 ? "bg-green-500" : (d.odometer / 200000) < 0.66 ? "bg-amber-500" : "bg-red-500"}`}
-                                  style={{ width: `${Math.min(100, (d.odometer / 200000) * 100)}%` }}
+                                  className={`h-full rounded-full ${odoCol.bar}`}
+                                  style={{ width: `${Math.min(100, (d.odometer / odoMax) * 100)}%` }}
                                 />
                               </div>
                             </div>

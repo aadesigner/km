@@ -149,6 +149,13 @@
     break-inside: avoid;
   }
 
+  .vin-report-print-summary .print-report-qr {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .vin-report-print-summary .print-cover-footer {
     page-break-inside: avoid;
     break-inside: avoid;

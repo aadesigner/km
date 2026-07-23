@@ -711,7 +711,10 @@ export default function VinResult({ params }: Props) {
           : null,
       ].filter(Boolean).join(" · ")
     : null;
-  const printReportUrl = typeof window !== "undefined" ? window.location.href : undefined;
+  const printReportUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}${basePath}/${language}/vin/${encodeURIComponent(vinUpper)}`
+      : undefined;
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10 print:py-0 print:px-0 space-y-4 sm:space-y-6 print:space-y-2 vin-report-print">
