@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useRef, useState, useEffect, useMemo, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { decodeVinLocalFree } from "@workspace/vin-decode";
 import { useTranslation } from "@/i18n/context";
@@ -31,17 +31,18 @@ import { HeroVinForm } from "@/components/hero-vin-form";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
-const CompareTable = lazy(() =>
+const CompareTable = lazyWithRetry(() =>
   import("@/components/compare-table").then((m) => ({ default: m.CompareTable })),
 );
-const WhatWeCheckSection = lazy(() =>
+const WhatWeCheckSection = lazyWithRetry(() =>
   import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
 );
-const VinDemoCard = lazy(() =>
+const VinDemoCard = lazyWithRetry(() =>
   import("@/components/vin-demo-card").then((m) => ({ default: m.VinDemoCard })),
 );
-const CountryRisksIncludedSection = lazy(() =>
+const CountryRisksIncludedSection = lazyWithRetry(() =>
   import("@/components/country-risks-included").then((m) => ({ default: m.CountryRisksIncludedSection })),
 );
 

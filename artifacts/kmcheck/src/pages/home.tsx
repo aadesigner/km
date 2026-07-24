@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { useLocation, Link } from "wouter";
@@ -21,20 +21,21 @@ import { HeroVinForm } from "@/components/hero-vin-form";
 import { prefetchFlags } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
 // Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
 // only shown at lg+. Skip mounting on smaller screens to avoid wasted SVG work.
-const CompareTable = lazy(() =>
+const CompareTable = lazyWithRetry(() =>
   import("@/components/compare-table").then((m) => ({ default: m.CompareTable })),
 );
-const WhatWeCheckSection = lazy(() =>
+const WhatWeCheckSection = lazyWithRetry(() =>
   import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
 );
-const VinCheckIncludesSection = lazy(() =>
+const VinCheckIncludesSection = lazyWithRetry(() =>
   import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
 );
-const HomepageTestimonials = lazy(() => import("@/components/homepage-testimonials"));
-const CoverageMapVisual = lazy(() =>
+const HomepageTestimonials = lazyWithRetry(() => import("@/components/homepage-testimonials"));
+const CoverageMapVisual = lazyWithRetry(() =>
   import("@/components/coverage-map-visual").then((m) => ({ default: m.CoverageMapVisual })),
 );
 

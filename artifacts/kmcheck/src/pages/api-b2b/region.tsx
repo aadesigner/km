@@ -1,5 +1,5 @@
 import { Link, Redirect } from "wouter";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { FlagImg } from "@/components/flag-img";
 import { findApiB2bRegion, API_B2B_REGIONS } from "./regions";
@@ -7,8 +7,9 @@ import { getRegionHeadlineLabel, getRegionSeoLabel } from "./copy";
 import { useApiB2bCopy } from "./use-copy";
 import { fadeUp, staggerContainer, viewportOnce } from "./motion";
 import { ArrowRight, ArrowUpRight, Check, Code2, HelpCircle, Wrench } from "lucide-react";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
-const FlowDemo = lazy(() => import("./demos").then((m) => ({ default: m.FlowDemo })));
+const FlowDemo = lazyWithRetry(() => import("./demos").then((m) => ({ default: m.FlowDemo })));
 
 function fillRegion(template: string, label: string) {
   return template.replace(/\{region\}/g, label);

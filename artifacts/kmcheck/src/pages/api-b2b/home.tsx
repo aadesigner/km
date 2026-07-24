@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { FlagImg } from "@/components/flag-img";
 import { VolumePricingBanner } from "./volume-pricing";
 import { API_B2B_REGIONS } from "./regions";
@@ -9,10 +9,11 @@ import {
   ArrowRight, Code2, Building2, ShieldCheck,
   Gauge, CarFront, History, FileSearch, Globe,
 } from "lucide-react";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
-const FlowDemo = lazy(() => import("./demos").then((m) => ({ default: m.FlowDemo })));
-const ProfitStory = lazy(() => import("./demos").then((m) => ({ default: m.ProfitStory })));
-const LiveApiConsole = lazy(() => import("./demos").then((m) => ({ default: m.LiveApiConsole })));
+const FlowDemo = lazyWithRetry(() => import("./demos").then((m) => ({ default: m.FlowDemo })));
+const ProfitStory = lazyWithRetry(() => import("./demos").then((m) => ({ default: m.ProfitStory })));
+const LiveApiConsole = lazyWithRetry(() => import("./demos").then((m) => ({ default: m.LiveApiConsole })));
 
 function DemoFallback({ className = "h-72" }: { className?: string }) {
   return (

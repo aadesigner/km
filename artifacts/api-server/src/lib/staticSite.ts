@@ -46,6 +46,7 @@ function setCacheHeaders(res: Response, maxAgeSec: number, immutable = false): v
 function cachePolicyForFile(filePath: string): { maxAgeSec: number; immutable: boolean } | null {
   const base = path.basename(filePath).toLowerCase();
   if (filePath.endsWith(".html")) {
+    // Must never be cached: HTML points at hashed /assets/* chunks that change every deploy.
     return { maxAgeSec: 0, immutable: false };
   }
 
@@ -70,7 +71,8 @@ function applyStaticCacheHeaders(res: Response, filePath: string): void {
   const policy = cachePolicyForFile(filePath);
   if (!policy) return;
   if (policy.maxAgeSec <= 0) {
-    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
     return;
   }
   setCacheHeaders(res, policy.maxAgeSec, policy.immutable);
@@ -88,10 +90,15 @@ function requestOrigin(req: Request): string {
 }
 
 let cachedIndexHtml: string | null = null;
+let cachedIndexMtimeMs = 0;
 
+/** Re-read index.html when the file changes (deploy without process restart). */
 function loadIndexHtml(publicDir: string): string {
-  if (!cachedIndexHtml) {
-    cachedIndexHtml = readFileSync(path.join(publicDir, "index.html"), "utf8");
+  const indexPath = path.join(publicDir, "index.html");
+  const mtimeMs = existsSync(indexPath) ? statSync(indexPath).mtimeMs : 0;
+  if (!cachedIndexHtml || mtimeMs !== cachedIndexMtimeMs) {
+    cachedIndexHtml = readFileSync(indexPath, "utf8");
+    cachedIndexMtimeMs = mtimeMs;
   }
   return cachedIndexHtml;
 }
@@ -140,7 +147,8 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
   }
   const withIndex = path.join(publicDir, safe, "index.html");
   if (existsSync(withIndex) && statSync(withIndex).isFile()) {
-    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
     res.sendFile(withIndex, (err) => {
       if (!err) return;
       logger.error({ err, file: withIndex, path: reqPath }, "static index sendFile failed");
@@ -157,7 +165,8 @@ async function sendSpaFallback(publicDir: string, reqPath: string, req: Request,
   const fallback = path.join(publicDir, "index.html");
   if (!existsSync(fallback)) return false;
 
-  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
   const origin = requestOrigin(req);
   let html = loadIndexHtml(publicDir);
   html = await injectVinCatalogSeo(html, req.path, origin);
@@ -170,7 +179,8 @@ function sendHardNotFound(publicDir: string, req: Request, res: Response): boole
   const fallback = path.join(publicDir, "index.html");
   if (!existsSync(fallback)) return false;
 
-  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
   let html = loadIndexHtml(publicDir);
   html = html
     .replace(/\n?\s*<meta name="robots"[^>]*>/gi, "")
