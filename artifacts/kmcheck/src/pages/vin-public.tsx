@@ -576,9 +576,20 @@ export default function VinPublic({ params }: Props) {
     })),
   );
   const accidentCount = accidents.length;
-  const { photos, photosHd } = resolveReportPhotoSets(data);
-  const heroPhotos = data.isUnlocked ? photos : photos.slice(0, 1);
-  const lightboxPhotos = data.isUnlocked ? photosHd : photosHd.slice(0, 1);
+  const photosKey = Array.isArray(data.photos) ? data.photos.join("\0") : "";
+  const photosHdKey = Array.isArray(data.photosHd) ? data.photosHd.join("\0") : "";
+  const { photos, photosHd } = useMemo(
+    () => resolveReportPhotoSets(data),
+    [photosKey, photosHdKey, data.thumbnailUrl],
+  );
+  const heroPhotos = useMemo(
+    () => (data.isUnlocked ? photos : photos.slice(0, 1)),
+    [data.isUnlocked, photos],
+  );
+  const lightboxPhotos = useMemo(
+    () => (data.isUnlocked ? photosHd : photosHd.slice(0, 1)),
+    [data.isUnlocked, photosHd],
+  );
   const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data.mileageHistory, data.year));
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data.ownerHistory, data.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data.auctionHistory, data.year));

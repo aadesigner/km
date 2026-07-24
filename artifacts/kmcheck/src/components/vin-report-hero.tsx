@@ -185,13 +185,17 @@ function HeroPhotoFrame({
   onFailed?: () => void;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const onLoadedRef = useRef(onLoaded);
+  const onFailedRef = useRef(onFailed);
+  onLoadedRef.current = onLoaded;
+  onFailedRef.current = onFailed;
   const [ready, setReady] = useState(() => isVinImageSessionLoaded(src));
 
   const notifyLoaded = useCallback(() => {
     setReady(true);
     markVinImageSessionLoaded(src);
-    onLoaded?.();
-  }, [src, onLoaded]);
+    onLoadedRef.current?.();
+  }, [src]);
 
   useEffect(() => {
     setReady(isVinImageSessionLoaded(src));
@@ -200,6 +204,16 @@ function HeroPhotoFrame({
       notifyLoaded();
     }
   }, [src, notifyLoaded]);
+
+  /** Stop infinite opacity-0/spinner if the image proxy hangs without onError. */
+  useEffect(() => {
+    if (!isActive || ready) return;
+    const timer = window.setTimeout(() => {
+      setReady(false);
+      onFailedRef.current?.();
+    }, 18_000);
+    return () => window.clearTimeout(timer);
+  }, [src, isActive, ready]);
 
   return (
     <img
@@ -219,7 +233,7 @@ function HeroPhotoFrame({
       onLoad={notifyLoaded}
       onError={() => {
         setReady(false);
-        onFailed?.();
+        onFailedRef.current?.();
       }}
     />
   );
@@ -264,6 +278,7 @@ function HeroPhotoGallery({
     const next = (photoIdx + 1) % n;
     return [...new Set([prev, photoIdx, next])];
   }, [photoIdx, photos.length]);
+  const photosKey = photos.join("\0");
   const [loadedByUrl, setLoadedByUrl] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
     photos.forEach((url) => {
@@ -285,13 +300,14 @@ function HeroPhotoGallery({
       }
       return changed ? next : prev;
     });
+    // Only clear failures when the photo list identity (URLs) actually changes.
     setFailedByUrl({});
-  }, [photos]);
+  }, [photosKey]); // eslint-disable-line react-hooks/exhaustive-deps -- photosKey tracks URL identity
 
   useEffect(() => {
     if (locked || photos.length === 0) return;
     void warmVinImageNeighbors(photos, photoIdx, 1);
-  }, [locked, photos, photoIdx]);
+  }, [locked, photosKey, photoIdx]); // eslint-disable-line react-hooks/exhaustive-deps -- photosKey tracks URL identity
 
   const markLoadedUrl = useCallback((url: string) => {
     setLoadedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));

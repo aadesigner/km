@@ -267,7 +267,7 @@ function ReportCard({
         {isSalvage && (
           <Badge
             variant="outline"
-            className="text-[10px] py-0 h-[1.125rem] mt-1 font-semibold border-orange-600/45 text-orange-800 bg-orange-50 dark:border-orange-500/40 dark:text-orange-400 dark:bg-orange-950/35"
+            className="text-[10px] py-0 h-[1.125rem] mt-1 font-semibold border-red-600/45 text-red-800 bg-red-50 dark:border-red-500/40 dark:text-red-400 dark:bg-red-950/35"
           >
             {t("badge_salvage")}
           </Badge>

@@ -41,22 +41,32 @@ function hintPreloadImage(url: string): void {
 }
 
 /** Decode a URL through the browser image pipeline (uses HTTP cache when warm). */
+const warmInFlight = new Map<string, Promise<void>>();
+
 export function warmVinImage(url: string): Promise<void> {
   if (!url || typeof window === "undefined") return Promise.resolve();
   if (isVinImageSessionLoaded(url)) return Promise.resolve();
+  const existing = warmInFlight.get(url);
+  if (existing) return existing;
 
-  return new Promise((resolve) => {
+  const promise = new Promise<void>((resolve) => {
     const img = new Image();
     img.decoding = "async";
     const finish = () => {
       markVinImageSessionLoaded(url);
+      warmInFlight.delete(url);
       resolve();
     };
     img.onload = finish;
-    img.onerror = () => resolve();
+    img.onerror = () => {
+      warmInFlight.delete(url);
+      resolve();
+    };
     img.src = url;
     if (img.complete && img.naturalWidth > 0) finish();
   });
+  warmInFlight.set(url, promise);
+  return promise;
 }
 
 /** Warm a small set of gallery neighbors (hero slider / lightbox). Default radius = 1. */
