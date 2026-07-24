@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { useTranslation } from "@/i18n/context";
 import { parseVinRouteParam } from "@/lib/vin-route";
 import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
@@ -592,12 +592,9 @@ export default function VinResult({ params }: Props) {
       severity: resolveAccidentSeverityForDisplay(acc, accidentSeverityCtx),
     })),
   );
-  const photosKey = Array.isArray(data?.photos) ? data.photos.join("\0") : "";
-  const photosHdKey = Array.isArray(data?.photosHd) ? data.photosHd.join("\0") : "";
-  const { photos, photosHd } = useMemo(
-    () => resolveReportPhotoSets(data),
-    [photosKey, photosHdKey, data?.thumbnailUrl],
-  );
+  // Do not useMemo here — this runs after early returns; conditional hooks crash the page
+  // when loading → pending_manual/complete (e.g. right after PayPal redirect).
+  const { photos, photosHd } = resolveReportPhotoSets(data);
   const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data?.mileageHistory, data?.year));
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data?.ownerHistory, data?.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data?.auctionHistory, data?.year));
