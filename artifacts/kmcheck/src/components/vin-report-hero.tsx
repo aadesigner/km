@@ -125,7 +125,7 @@ function HeroPhotoPlaceholder({
         className={cn(
           "relative w-full overflow-hidden rounded-xl",
           "bg-gradient-to-br from-muted/55 to-muted/30",
-          "aspect-[4/3] max-h-[240px] sm:max-h-none sm:min-h-[260px] sm:h-full",
+          "aspect-[4/3] max-h-[250px] sm:max-h-none sm:min-h-[260px] sm:h-full",
           className,
         )}
       >
@@ -154,7 +154,7 @@ function HeroPhotoPlaceholder({
     <div
       className={cn(
         "w-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-muted/50 px-4",
-        "aspect-[4/3] max-h-[240px] sm:max-h-none sm:min-h-[260px] sm:h-full",
+        "aspect-[4/3] max-h-[250px] sm:max-h-none sm:min-h-[260px] sm:h-full",
         className,
       )}
     >
@@ -211,7 +211,7 @@ function HeroPhotoFrame({
       fetchPriority={priority ? "high" : "auto"}
       className={cn(
         "absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-150",
-        "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+        "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
         isActive && ready ? "opacity-100" : "opacity-0",
         !isActive && "pointer-events-none",
         className,
@@ -330,7 +330,7 @@ function HeroPhotoGallery({
       <div
         className={cn(
           "relative w-full rounded-xl overflow-hidden bg-muted/40 print-vin-hero-photo",
-          "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+          "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
           className,
         )}
       >
@@ -373,7 +373,7 @@ function HeroPhotoGallery({
     <div
       className={cn(
         "relative w-full rounded-xl overflow-hidden bg-muted/40 print-vin-hero-photo group/gallery",
-        "aspect-[4/3] max-h-[200px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+        "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
         photoClickable && "cursor-zoom-in",
         className,
       )}
