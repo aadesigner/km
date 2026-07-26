@@ -1318,7 +1318,7 @@
   "hiw_subtitle": "Get a full vehicle history report for your car. Enter your VIN to check mileage, accidents, theft, salvage status, and ownership records — delivered in seconds from trusted data sources.",
   "hiw_step1_label": "Step 1",
   "hiw_step1_title": "Enter a VIN",
-  "hiw_step1_desc": "Type or paste any 17-character VIN. Found on the dashboard, door frame, or vehicle title.",
+  "hiw_step1_desc": "Type or paste any 17-character VIN. Found on the dashboard, door frame, or vehicle title. Can also be found in car's documents.",
   "hiw_step2_label": "Step 2",
   "hiw_step2_title": "We Search the Databases",
   "hiw_step2_desc": "We instantly query auction records, insurance databases, odometer registries, and theft reports across multiple countries.",

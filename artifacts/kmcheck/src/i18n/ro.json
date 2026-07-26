@@ -1247,7 +1247,7 @@
   "hiw_subtitle": "Obține un raport complet al istoricului mașinii. Introdu VIN-ul pentru a verifica kilometrajul, accidentele, furturile, dauna totală și istoricul proprietarilor — rezultate în câteva secunde din surse de date de încredere.",
   "hiw_step1_label": "Pasul 1",
   "hiw_step1_title": "Introduceți un VIN",
-  "hiw_step1_desc": "Tastați sau lipiți orice VIN de 17 caractere. Se găsește pe bord, pe cadrul ușii sau pe titlul de proprietate.",
+  "hiw_step1_desc": "Tastați sau lipiți orice VIN de 17 caractere. Se găsește pe bord, pe cadrul ușii sau pe titlul de proprietate. Și în documentele mașinii.",
   "hiw_step2_label": "Pasul 2",
   "hiw_step2_title": "Căutăm în bazele de date",
   "hiw_step2_desc": "Interogăm instantaneu înregistrări de licitații, baze de date de asigurări, registre de odometru și rapoarte de furt din mai multe țări.",

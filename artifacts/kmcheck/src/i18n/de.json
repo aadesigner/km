@@ -1264,7 +1264,7 @@
   "hiw_subtitle": "Holen Sie sich einen vollständigen Fahrzeughistorienbericht für Ihr Auto. Geben Sie Ihre VIN ein, um Kilometerstand, Unfälle, Diebstahl, Totalschaden und Eigentümerhistorie zu prüfen — Ergebnisse in Sekunden aus vertrauenswürdigen Datenquellen.",
   "hiw_step1_label": "Schritt 1",
   "hiw_step1_title": "VIN eingeben",
-  "hiw_step1_desc": "Geben Sie eine beliebige 17-stellige VIN ein oder fügen Sie sie ein. Zu finden am Armaturenbrett, Türrahmen oder Fahrzeugbrief.",
+  "hiw_step1_desc": "Geben Sie eine beliebige 17-stellige VIN ein oder fügen Sie sie ein. Zu finden am Armaturenbrett, Türrahmen oder Fahrzeugbrief. Auch in den Fahrzeugunterlagen.",
   "hiw_step2_label": "Schritt 2",
   "hiw_step2_title": "Wir durchsuchen die Datenbanken",
   "hiw_step2_desc": "Wir fragen sofort Auktionsdaten, Versicherungsdatenbanken, Tachometerregister und Diebstahlberichte in mehreren Ländern ab.",

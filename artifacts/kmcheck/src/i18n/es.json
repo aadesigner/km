@@ -1247,7 +1247,7 @@
   "hiw_subtitle": "Obtén un informe completo del historial de tu coche. Introduce el VIN para comprobar kilometraje, accidentes, robos, salvamento y propietarios — resultados en segundos desde fuentes de datos fiables.",
   "hiw_step1_label": "Paso 1",
   "hiw_step1_title": "Introduzca un VIN",
-  "hiw_step1_desc": "Escriba o pegue cualquier VIN de 17 caracteres. Se encuentra en el salpicadero, el marco de la puerta o el título del vehículo.",
+  "hiw_step1_desc": "Escriba o pegue cualquier VIN de 17 caracteres. Se encuentra en el salpicadero, el marco de la puerta o el título del vehículo. También en los documentos del coche.",
   "hiw_step2_label": "Paso 2",
   "hiw_step2_title": "Buscamos en las bases de datos",
   "hiw_step2_desc": "Cruzamos al instante registros de subastas, seguros, odómetro y robo en varios países.",

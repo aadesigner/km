@@ -1247,7 +1247,7 @@
   "hiw_subtitle": "Uzyskaj pełny raport historii swojego auta. Wpisz VIN, aby sprawdzić przebieg, wypadki, kradzieże, szkodę całkowitą i historię właścicieli — wyniki w kilka sekund z zaufanych źródeł danych.",
   "hiw_step1_label": "Krok 1",
   "hiw_step1_title": "Wpisz VIN",
-  "hiw_step1_desc": "Wpisz lub wklej dowolny 17-znakowy VIN. Znajdziesz go na desce rozdzielczej, w framudze drzwi lub na dowodzie rejestracyjnym.",
+  "hiw_step1_desc": "Wpisz lub wklej dowolny 17-znakowy VIN. Znajdziesz go na desce rozdzielczej, w framudze drzwi lub na dowodzie rejestracyjnym. Również w dokumentach auta.",
   "hiw_step2_label": "Krok 2",
   "hiw_step2_title": "Przeszukujemy bazy danych",
   "hiw_step2_desc": "Natychmiast odpytujemy rekordy aukcyjne, bazy ubezpieczeniowe, rejestry przebiegu i raporty kradzieży w wielu krajach.",

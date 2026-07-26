@@ -1264,7 +1264,7 @@
   "hiw_subtitle": "Obtenez un rapport complet sur l'historique de votre voiture. Saisissez le VIN pour vérifier le kilométrage, les accidents, les vols, l'épave et les propriétaires — résultats en quelques secondes depuis des sources fiables.",
   "hiw_step1_label": "Étape 1",
   "hiw_step1_title": "Saisissez un VIN",
-  "hiw_step1_desc": "Tapez ou collez n'importe quel VIN de 17 caractères. Il se trouve sur le tableau de bord, le montant de la porte ou la carte grise.",
+  "hiw_step1_desc": "Tapez ou collez n'importe quel VIN de 17 caractères. Il se trouve sur le tableau de bord, le montant de la porte ou la carte grise. Aussi dans les documents du véhicule.",
   "hiw_step2_label": "Étape 2",
   "hiw_step2_title": "Nous consultons les bases de données",
   "hiw_step2_desc": "Nous interrogeons instantanément les registres d'enchères, les bases d'assurance, les registres de compteur et les rapports de vol dans plusieurs pays.",
