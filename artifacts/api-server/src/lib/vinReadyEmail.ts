@@ -97,7 +97,9 @@ export async function fireVinReadyEmailForUser(
         name: user.name ?? user.email.split("@")[0],
         email: user.email,
         vin,
-        reportUrl: `${siteUrl}/en/vin/${encodeURIComponent(vin)}`,
+        // Unprefixed /vin/{VIN} so the SPA can redirect to the visitor's language
+        // (stored preference / geo). Hardcoding /en/ would lock English.
+        reportUrl: `${siteUrl}/vin/${encodeURIComponent(vin)}`,
         make: (d.make as string | null) ?? null,
         model: (d.model as string | null) ?? null,
         year: toNumber(d.year),
