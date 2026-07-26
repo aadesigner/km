@@ -1881,11 +1881,11 @@ function mapKoreanInsuranceClaim(
 type VinAccident = NonNullable<NormalizedVinData["accidents"]>[number];
 type VinInsuranceClaim = NonNullable<NormalizedVinData["insuranceClaims"]>[number];
 
-function inferKoreanLossSeverity(amount: number | null | undefined): string {
+function inferKoreanLossSeverity(amount: number | null | undefined): string | null {
   return inferAccidentSeverityFromLossAmount(amount, { amountCurrency: "KRW" });
 }
 
-function inferUsdLossSeverity(amount: number | null | undefined): string {
+function inferUsdLossSeverity(amount: number | null | undefined): string | null {
   return inferAccidentSeverityFromLossAmount(amount, { amountCurrency: "USD" });
 }
 
@@ -1989,7 +1989,7 @@ function mapStandardInsuranceAccident(
   const odometerAtLoss = Number(record.odometerAtLoss ?? record.odometer_at_loss ?? record.odometer ?? record.mileage) || null;
   const lossAmount = Number(record.lossAmount ?? record.loss_amount ?? record.amount ?? record.damage_amount ?? record.insuranceBenefit) || null;
 
-  let severity: string;
+  let severity: string | null;
   if (totalLoss > 0) {
     severity = "total_loss";
   } else if (lossAmount != null && lossAmount > 0) {
@@ -1997,7 +1997,8 @@ function mapStandardInsuranceAccident(
   } else if (rawSeverity) {
     severity = rawSeverity;
   } else {
-    severity = "minor";
+    // No loss amount and no provider severity — do not invent "minor".
+    severity = null;
   }
 
   let airbagDeployed: boolean | null = null;

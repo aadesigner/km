@@ -23,17 +23,16 @@ const CASES: BrandCase[] = [
   { vin: "1VWZZZA3ZDC050213", label: "VW Passat NMS", make: "Volkswagen", modelContains: "Passat" },
   { vin: "3VWS17AU0FM123456", label: "VW Tiguan US", make: "Volkswagen", modelContains: "Tiguan" },
   { vin: "WVWZZZ1TZBW123456", label: "VW Touran 1T", make: "Volkswagen", modelContains: "Touran" },
-  { vin: "WVWZZZ9NZBW123456", label: "VW Touran 5T", make: "Volkswagen", modelContains: "Touran" },
-  { vin: "WVWZZZAZ1NW123456", label: "VW Touran 5T (AZ)", make: "Volkswagen", modelContains: "Touran" },
-  { vin: "WVWZZZ5MNW1234567", label: "VW T-Roc", make: "Volkswagen", modelContains: "T-Roc" },
+  { vin: "WVWZZZ9NZBW123456", label: "VW Polo 9N", make: "Volkswagen", modelContains: "Polo" },
+  { vin: "WVWZZZ5MNW1234567", label: "VW Golf Plus 5M", make: "Volkswagen", modelContains: "Golf Plus" },
   { vin: "WVWZZZ2HNW1234567", label: "VW Amarok", make: "Volkswagen", modelContains: "Amarok" },
   { vin: "WVGZZZEBSNW123456", label: "VW ID. Buzz", make: "Volkswagen", modelContains: "ID. Buzz" },
 
   // ── Audi ──────────────────────────────────────────────────────────────────
   { vin: "WAUZZZ8K1BN123456", label: "Audi A4 EU", make: "Audi", modelContains: "A4" },
-  { vin: "WAUZZZ4G5DN123456", label: "Audi A7 Sportback C7 EU", make: "Audi", modelContains: "A7" },
-  { vin: "WAUZZZGY1NU123456", label: "Audi Q7 EU (GY)", make: "Audi", modelContains: "Q7" },
-  { vin: "WAUZZZGA1BN123456", label: "Audi Q5 EU (GA)", make: "Audi", modelContains: "Q5" },
+  { vin: "WAUZZZ4G5DN123456", label: "Audi A6 Avant C7 EU (4G5)", make: "Audi", modelContains: "A6" },
+  { vin: "WAUZZZGY1NU123456", label: "Audi A3 EU (GY / 8Y)", make: "Audi", modelContains: "A3" },
+  { vin: "WAUZZZGA1BN123456", label: "Audi Q2 EU (GA)", make: "Audi", modelContains: "Q2" },
   { vin: "WAUZZZF7BN1234567", label: "Audi Q7 EU (F7)", make: "Audi", modelContains: "Q7" },
   { vin: "WAUZZZFYBN1234567", label: "Audi Q5 EU (FY)", make: "Audi", modelContains: "Q5" },
   { vin: "WAUZZZF1ZAN123456", label: "Audi Q8 EU (F1)", make: "Audi", modelContains: "Q8" },
@@ -134,8 +133,7 @@ const CASES: BrandCase[] = [
   { vin: "VF7ZZZABGR1234567", label: "Citroën C3 EU ZZZ", make: "Citroën", modelContains: "C3" },
 
   // ── SEAT ──────────────────────────────────────────────────────────────────
-  { vin: "VSSZZZ2FZFR123456", label: "SEAT León EU", make: "SEAT", modelContains: "León" },
-  { vin: "VSSZZZ7NZFR123456", label: "SEAT Ateca EU", make: "SEAT", modelContains: "Ateca" },
+  { vin: "VSSZZZ7NZFR123456", label: "SEAT Alhambra EU (7N)", make: "SEAT", modelContains: "Alhambra" },
   { vin: "VSSZZZ5FZFR123456", label: "SEAT León Mk3", make: "SEAT", modelContains: "5F" },
   { vin: "VSSZZZKHZFR123456", label: "SEAT Ateca KH", make: "SEAT", modelContains: "KH" },
   { vin: "VSSZZZ5PZCR025966", label: "SEAT Altea XL", make: "SEAT", modelContains: "Altea" },
@@ -282,7 +280,7 @@ describe("brand coverage — no cross-brand contamination", () => {
   });
 
   it("SEAT León still decodes as SEAT not Cupra", () => {
-    const r = decodeVin("VSSZZZ2FZFR123456");
+    const r = decodeVin("VSSZZZ5FZFR123456");
     expect(r.make).toBe("SEAT");
     expect(r.model?.toLowerCase()).toContain("león");
   });

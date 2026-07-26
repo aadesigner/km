@@ -95,7 +95,7 @@ export function accidentsForScoring(input: AccidentSignalInput): AccidentSignal[
 
   const count = input.accidentCount ?? 0;
   if (count > 0) {
-    return Array.from({ length: count }, () => ({ severity: "minor" }));
+    return Array.from({ length: count }, () => ({ severity: "unknown" }));
   }
 
   const fromClaims = supplementalAccidentsFromClaims(input.insuranceClaims ?? []);

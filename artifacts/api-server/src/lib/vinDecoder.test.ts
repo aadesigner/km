@@ -146,14 +146,14 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     // Year-sensitive letter VDS is covered in mercedes-vds / premium QA tests.
     ["WDDC", "C-Class"],
     ["WDDE", "E-Class"],
-    ["WDDS", "SLK/SLC"],
+    ["WDDS", "CLA-Class"],
     // Letter-series passenger VINs (premium resolver; not unique chassis gen).
     ["WDDG", "C-Class"],
     ["WDDA", "A-Class"],
     ["WDDB", "B-Class"],
     ["WDDF", "E-Class"],
     ["WDDN", "GLA-Class"],
-    ["WDDP", "CLA-Class"],
+    ["WDDP", "SLK/SLC"],
     ["WDDR", "GLC-Class"],
     ["WDDW", "SLK/SLC"],
     ["WDDX", "SL-Class"],
@@ -203,7 +203,7 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["SAJC", "I-Pace (X590)"],
     // Hyundai — CRITICAL: these were the source of the regression
     ["KMHS", "Santa Fe Sport"],   // regression fix: was "Sonata"
-    ["KMHR", "Santa Fe"],
+    // Bare KMHR is deliberately unmapped — KMHR28=Venue, KMHR58/68=Kona.
     ["KMHD", "Elantra"],
     ["KM8J", "Tucson"],
     ["KM8S", "Santa Fe"],
@@ -599,17 +599,18 @@ describe("engine code decoding", () => {
     expect(decodeEngineCode(vin)).toBeNull();
     const decoded = decodeVin(vin);
     expect(decoded.make).toBe("Audi");
-    expect(decoded.model).toMatch(/A6|A7/);
+    // 4G6 (A6 allroad C7) has no series mapping yet; null is correct, A7 would not be.
+    expect(decoded.model == null || /A6/.test(decoded.model)).toBe(true);
     expect(decoded.year).toBe(2014);
     expect(decoded.engineDecoded).toBeNull();
     expect(decoded.engineCode).toBeNull();
   });
 
-  it("WAUZZZ4G5 EU type code → A7 Sportback C7 (not generic A6)", () => {
+  it("WAUZZZ4G5 EU type code → A6 Avant C7 (4G8 is the A7 Sportback)", () => {
     const vin = "WAUZZZ4G5GN050914";
     const decoded = decodeVin(vin);
     expect(decoded.make).toBe("Audi");
-    expect(decoded.model).toMatch(/A7/);
+    expect(decoded.model).toMatch(/A6 Avant/);
     expect(decoded.year).toBe(2016);
     expect(decodeEngineCode(vin)).toBeNull();
   });
@@ -756,9 +757,11 @@ describe("regressions", () => {
     expect(r.model).toBe("Santa Fe Sport");
   });
 
-  it("[REG-001] KMHR prefix is still Santa Fe (full-size, unaffected)", () => {
+  it("[REG-001] bare KMHR stays unresolved instead of guessing Santa Fe", () => {
     const r = decodeVin(pad("KMHR"));
-    expect(r.model).toBe("Santa Fe");
+    expect(r.model).toBeNull();
+    expect(decodeVin("KMHR281BGNU123456").model).toBe("Venue");
+    expect(decodeVin("KMHR681BGNU123456").model).toBe("Kona");
   });
 
   it("[REG-002] 1VWZZZA3ZDC050213 must decode as Volkswagen Passat NMS without throwing", () => {

@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { decodeVin } from "./vinDecoder";
 import {
+  decodeOpelOldPaddedYear,
   decodeOpelVauxhallMake,
   decodeOpelVauxhallModel,
   decodeOpelVauxhallPlant,
+  isOpelOldPaddedTypeVin,
 } from "./opel-vauxhall";
 
 function pad(prefix: string): string {
@@ -62,5 +64,32 @@ describe("Opel / Vauxhall plant", () => {
       country: "United Kingdom",
     });
     expect(decodeVin(vin).plantCity).toBe("Ellesmere Port");
+  });
+});
+
+describe("Opel old padded type VINs (pre-~1998)", () => {
+  const realAstraCaravan = "W0L000052N2586893";
+
+  it("detects W0L0000TT layout", () => {
+    expect(isOpelOldPaddedTypeVin(realAstraCaravan)).toBe(true);
+    expect(isOpelOldPaddedTypeVin(pad("W0L0ZEC"))).toBe(false);
+    expect(isOpelOldPaddedTypeVin(pad("W0LP"))).toBe(false);
+  });
+
+  it("W0L000052N2586893 is Astra F Caravan 1992 Bochum — not Corsa 2022", () => {
+    expect(decodeOpelOldPaddedYear(realAstraCaravan)).toBe(1992);
+    expect(decodeOpelVauxhallModel(realAstraCaravan)).toBe("Astra F Caravan");
+    const r = decodeVin(realAstraCaravan);
+    expect(r.make).toBe("Opel");
+    expect(r.model).toBe("Astra F Caravan");
+    expect(r.year).toBe(1992);
+    expect(r.plantCity).toBe("Bochum");
+  });
+
+  it("does not change modern Corsa-e year N → 2022", () => {
+    const vin = "W0L0ZEC00N0123456";
+    expect(isOpelOldPaddedTypeVin(vin)).toBe(false);
+    expect(decodeVin(vin).model).toBe("Corsa-e");
+    expect(decodeVin(vin).year).toBe(2022);
   });
 });

@@ -82,16 +82,20 @@ export function resolveAccidentSeverityForDisplay(
       accidentCountry: accident.country,
       hasKoreanInsuranceClaims: ctx.hasKoreanInsuranceClaims,
     });
-    return inferAccidentSeverityFromLossAmount(accident.lossAmount, {
+    const fromAmount = inferAccidentSeverityFromLossAmount(accident.lossAmount, {
       amountCurrency: asKrw ? "KRW" : "USD",
       krwPerUsd: ctx.krwPerUsd,
     });
+    if (fromAmount) return fromAmount;
   }
 
   if (raw === "major" || raw === "severe") return "major";
   if (raw === "moderate") return "moderate";
   if (raw === "minor" || raw === "light") return "minor";
-  return raw ?? "minor";
+  if (raw === "unknown") return "unknown";
+  // No price and no provider severity → do not invent "small accident".
+  if (!raw) return "unknown";
+  return raw;
 }
 
 export const ACCIDENT_SEVERITY_I18N_KEYS: Record<string, string> = {
@@ -102,6 +106,7 @@ export const ACCIDENT_SEVERITY_I18N_KEYS: Record<string, string> = {
   severe: "sev_major",
   total_loss: "sev_total_loss",
   "total loss": "sev_total_loss",
+  unknown: "sev_unknown",
 };
 
 export type AccidentSeverityStyle = {
@@ -111,7 +116,7 @@ export type AccidentSeverityStyle = {
   amount: string;
 };
 
-/** Color coding: yellow = small · orange = moderate · red = major / total loss */
+/** Color coding: yellow = small · orange = moderate · red = major / total loss · muted = unknown */
 export function accidentSeverityStyle(sev: string | null | undefined): AccidentSeverityStyle {
   const s = sev?.toLowerCase().trim() ?? "";
 
@@ -142,10 +147,20 @@ export function accidentSeverityStyle(sev: string | null | undefined): AccidentS
     };
   }
 
+  if (s.includes("minor") || s.includes("light")) {
+    return {
+      card: "border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/30",
+      dot: "bg-yellow-500",
+      text: "text-yellow-800 dark:text-yellow-400 font-semibold text-sm",
+      amount: "text-yellow-800 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/40",
+    };
+  }
+
+  // No amount / unknown severity — neutral, not yellow "small".
   return {
-    card: "border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/30",
-    dot: "bg-yellow-500",
-    text: "text-yellow-800 dark:text-yellow-400 font-semibold text-sm",
-    amount: "text-yellow-800 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/40",
+    card: "border-border bg-muted/40",
+    dot: "bg-muted-foreground/60",
+    text: "text-foreground font-semibold text-sm",
+    amount: "text-muted-foreground bg-muted",
   };
 }

@@ -1,6 +1,11 @@
 /**
  * Opel vs Vauxhall — shared Stellantis/GM platforms, separate market badges.
  * WMI W0L serves both; VXK and W0V are UK-market identifiers.
+ *
+ * Pre-~1998 passenger VINs use a padded numeric type block:
+ *   W0L + 0000 + TT + year + plant + serial
+ * (e.g. W0L000052N2586893 = Astra F Caravan, 1992, Bochum).
+ * Those must NOT use the modern pos.4 platform letter map or the ISO +30 year cycle.
  */
 
 import { compilePrefixRules, matchLongestPrefix } from "./prefix-match";
@@ -23,6 +28,49 @@ const OPEL_VAUXHALL_PLANTS: Record<string, { city: string; country: string }> = 
   T: { city: "Rüsselsheim", country: "Germany" },
   U: { city: "Luton", country: "United Kingdom" },
   A: { city: "Rüsselsheim", country: "Germany" },
+};
+
+/**
+ * Old Opel 2-digit type codes (positions 8–9) after the 0000 filler.
+ * Sources: Opel VIN tables (opel-infos / PNG / period documentation).
+ */
+const OLD_PADDED_TYPE_CODES: Record<string, string> = {
+  "51": "Astra F Caravan",
+  "52": "Astra F Caravan",
+  "53": "Astra F",
+  "54": "Astra F",
+  "55": "Astra F",
+  "56": "Astra F",
+  "57": "Astra F",
+  "58": "Astra F",
+  "59": "Astra F",
+  "61": "Astra G Caravan",
+  "62": "Astra G",
+  "63": "Astra G",
+  "66": "Astra G",
+  "67": "Astra G",
+  "71": "Corsa B Combo",
+  "73": "Corsa B",
+  "78": "Corsa B",
+  "79": "Corsa B",
+  "91": "Corsa A",
+  "92": "Corsa A",
+  "93": "Corsa A",
+  "94": "Corsa A",
+  "96": "Corsa A",
+  "97": "Corsa A",
+  "98": "Corsa A",
+  "99": "Corsa A",
+};
+
+/** First ISO year cycle only — used by old padded Opel VINs (no +30 roll-forward). */
+const OLD_PADDED_YEAR_MAP: Record<string, number> = {
+  A: 1980, B: 1981, C: 1982, D: 1983, E: 1984,
+  F: 1985, G: 1986, H: 1987, J: 1988, K: 1989,
+  L: 1990, M: 1991, N: 1992, P: 1993, R: 1994,
+  S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
+  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
+  "6": 2006, "7": 2007, "8": 2008, "9": 2009,
 };
 
 /** Platform letter at VIN position 4 (index 3) — GM/Stellantis era. */
@@ -72,6 +120,29 @@ export function isOpelVauxhallVin(vin: string): boolean {
   return (OPEL_VAUXHALL_WMIS as readonly string[]).includes(wmi);
 }
 
+/**
+ * Pre-~1998 Opel layout: W0L/W0V + 0000 filler + 2-digit type + year + plant + serial.
+ * Modern Stellantis codes (W0L0ZEC, W0L0ADF, W0LP…) do not match.
+ */
+export function isOpelOldPaddedTypeVin(vin: string): boolean {
+  const upper = vin.toUpperCase().trim();
+  if (upper.length !== 17) return false;
+  const wmi = upper.slice(0, 3);
+  if (wmi !== "W0L" && wmi !== "W0V") return false;
+  return upper.slice(3, 7) === "0000" && /^\d{2}$/.test(upper.slice(7, 9));
+}
+
+/** Model year for old padded Opel VINs — first cycle only (N = 1992, not 2022). */
+export function decodeOpelOldPaddedYear(vin: string): number | null {
+  if (!isOpelOldPaddedTypeVin(vin)) return null;
+  return OLD_PADDED_YEAR_MAP[vin[9]?.toUpperCase() ?? ""] ?? null;
+}
+
+function decodeOpelOldPaddedModel(vin: string): string | null {
+  if (!isOpelOldPaddedTypeVin(vin)) return null;
+  return OLD_PADDED_TYPE_CODES[vin.slice(7, 9)] ?? null;
+}
+
 export function decodeOpelVauxhallPlant(vin: string): { city: string; country: string } | null {
   if (!isOpelVauxhallVin(vin) || vin.length < 11) return null;
   return OPEL_VAUXHALL_PLANTS[vin[10].toUpperCase()] ?? null;
@@ -94,6 +165,10 @@ export function decodeOpelVauxhallMake(vin: string): "Opel" | "Vauxhall" | null 
 export function decodeOpelVauxhallModel(vin: string): string | null {
   if (!isOpelVauxhallVin(vin)) return null;
   const upper = vin.toUpperCase();
+  // Old padded type codes before modern pos.4="0"→Corsa fallback.
+  const oldModel = decodeOpelOldPaddedModel(upper);
+  if (oldModel) return oldModel;
+  if (isOpelOldPaddedTypeVin(upper)) return null;
   const prefixHit = matchLongestPrefix(upper, PREFIX_RULES);
   if (prefixHit) return prefixHit.model;
   if (upper.length >= 4) {

@@ -17,6 +17,7 @@ import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } fro
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel, isFordEuXxLayout, decodeFordEuXxYear } from "./ford-eu";
+import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin } from "./opel-vauxhall";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine } from "./asian-eu";
 import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
@@ -73,6 +74,8 @@ function decodeVinModelYear(vin: string): number | null {
   if (bmwEtkOmitsIsoYear(vin)) return null;
   // Ford Europe XX layout: production year is at position 11, not ISO pos.10.
   if (isFordEuXxLayout(vin)) return decodeFordEuXxYear(vin);
+  // Pre-~1998 Opel W0L0000TT… — first year cycle only (N=1992, not 2022).
+  if (isOpelOldPaddedTypeVin(vin)) return decodeOpelOldPaddedYear(vin);
   return decodeYear(vin[9] ?? "");
 }
 

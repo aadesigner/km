@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { inferAccidentSeverityFromUsd } from "@workspace/accident-severity";
+import { inferAccidentSeverityFromUsd, inferAccidentSeverityFromLossAmount } from "@workspace/accident-severity";
 
 vi.hoisted(() => {
   process.env.DATABASE_URL = process.env.DATABASE_URL ?? "postgres://localhost:5432/kmcheck_test";
@@ -35,7 +35,6 @@ import {
   repairEncarMisParsedIsoDate,
   sanitizeReportIsoDate,
   classifyKoreanRegistryTitle,
-  dedupeRegistryHistoryEvents,
   normalizeHistoryGroupDate,
   mapRegistryEventToAccident,
   resolveRegistryAccidentLossAmount,
@@ -48,6 +47,13 @@ describe("accident severity USD tiers", () => {
     expect(inferAccidentSeverityFromUsd(1300)).toBe("moderate");
     expect(inferAccidentSeverityFromUsd(2999)).toBe("moderate");
     expect(inferAccidentSeverityFromUsd(3000)).toBe("major");
+  });
+
+  it("does not invent minor when amount is missing or non-positive", () => {
+    expect(inferAccidentSeverityFromUsd(0)).toBeNull();
+    expect(inferAccidentSeverityFromUsd(-1)).toBeNull();
+    expect(inferAccidentSeverityFromLossAmount(null)).toBeNull();
+    expect(inferAccidentSeverityFromLossAmount(0)).toBeNull();
   });
 });
 

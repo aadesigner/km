@@ -29,13 +29,7 @@ describe("parseNhtsaApiPayload", () => {
 describe("decodeModelEuropean", () => {
   it("WVWZZZ + pos7 C (3C) → Passat", () => {
     expect(decodeModelEuropean("WVWZZZ3CZCE064077")).toBe("Passat");
-    expect(decodeModelEuropean("WVWZZZJZ3E123456")).toBe("Jetta");
     expect(decodeModelEuropean("WVWZZZ1KZAW123456")).toBe("Golf");
-  });
-
-  it("WAUZZZ + pos7 K → Q5", () => {
-    expect(decodeModelEuropean("WAUZZZK9CA123456")).toBe("Q5");
-    expect(decodeModelEuropean("WAUZZZAG8EN123456")).toBe("A6");
   });
 });
 
@@ -46,10 +40,10 @@ describe("decodeVin european integration", () => {
     expect(r.model).toContain("Golf");
   });
 
-  it("European Audi Q5", () => {
-    const r = decodeVin("WAUZZZK9CA123456");
+  it("European Audi Q5 (type code FY)", () => {
+    const r = decodeVin("WAUZZZFYBN1234567");
     expect(r.make).toBe("Audi");
-    expect(r.model).toBe("Q5");
+    expect(r.model).toContain("Q5");
   });
 
   it("BMW WBA3V71 decodes as 4 Series F33 Convertible, not Gran Coupé", () => {

@@ -128,3 +128,12 @@ export {
   isFordEuXxLayout,
   decodeFordEuXxYear,
 } from "./ford-eu";
+export {
+  decodeOpelOldPaddedYear,
+  decodeOpelVauxhallMake,
+  decodeOpelVauxhallModel,
+  decodeOpelVauxhallPlant,
+  isOpelOldPaddedTypeVin,
+  isOpelVauxhallVin,
+  OPEL_VAUXHALL_WMIS,
+} from "./opel-vauxhall";

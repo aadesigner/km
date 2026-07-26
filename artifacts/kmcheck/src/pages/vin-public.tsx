@@ -869,7 +869,7 @@ export default function VinPublic({ params }: Props) {
                                 <div className="flex-1 space-y-0.5 min-w-0">
                                   <div className="flex items-center justify-between gap-2 flex-wrap">
                                     <p className={style.text}>
-                                      {translateValue(acc.severity, SEVERITY_KEYS, t) ?? t("sev_moderate")}
+                                      {translateValue(acc.severity, SEVERITY_KEYS, t) ?? t("sev_unknown")}
                                     </p>
                                     {hasExtra && (
                                       <button
