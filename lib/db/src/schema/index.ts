@@ -6,6 +6,7 @@ export * from "./pendingVinChecks";
 export * from "./payments";
 export * from "./settings";
 export * from "./logs";
+export * from "./emailLogs";
 export * from "./coupons";
 export * from "./passwordResetTokens";
 export * from "./loginAttempts";

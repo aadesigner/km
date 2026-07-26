@@ -2250,12 +2250,20 @@ components:
           type: boolean
         emailSendReportConfirm:
           type: boolean
+          description: Deprecated — merged into emailSendVinReady
         emailSendVinReady:
           type: boolean
+          description: Combined report-ready + payment confirmation email
         emailSendPasswordReset:
           type: boolean
         emailSendAbandonedCart:
           type: boolean
+        emailSendAdminPendingVin:
+          type: boolean
+          description: Admin alert when a customer pays for a manual-pending VIN (off by default)
+        emailLogRetentionEnabled:
+          type: boolean
+          description: Auto-delete email logs older than 7 days
         krwPerUsd:
           type: number
           description: Korean won per 1 USD for insurance claim display on Korean VIN reports
@@ -2338,12 +2346,20 @@ components:
           type: boolean
         emailSendReportConfirm:
           type: boolean
+          description: Deprecated — merged into emailSendVinReady
         emailSendVinReady:
           type: boolean
+          description: Combined report-ready + payment confirmation email
         emailSendPasswordReset:
           type: boolean
         emailSendAbandonedCart:
           type: boolean
+        emailSendAdminPendingVin:
+          type: boolean
+          description: Admin alert when a customer pays for a manual-pending VIN (off by default)
+        emailLogRetentionEnabled:
+          type: boolean
+          description: Auto-delete email logs older than 7 days
         maxFailedLogins:
           type: integer
         lockoutMinutes:

@@ -3,7 +3,6 @@ import {
   vinLookupsTable,
   paymentsTable,
   couponsTable,
-  usersTable,
 } from "@workspace/db";
 import { and, eq, sql, desc } from "drizzle-orm";
 import { logger } from "./logger.js";
@@ -23,7 +22,6 @@ import {
 } from "./pendingVinService.js";
 import { finalizePaymentOnFulfillment } from "./recordedPayments.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
-import { claimEmailDelivery, paymentConfirmEmailDeliveryKey } from "./emailDeliveryGuard.js";
 import {
   applyFrozenKrwPerUsd,
   getCurrentKrwPerUsd,
@@ -52,7 +50,8 @@ export type ProviderFulfillmentInput = {
   freeCouponCode: string | null;
   resolvedPayment: ProviderFulfillmentPayment;
   provider: { id: number; name: string; baseUrl: string; apiKey: string };
-  user: typeof usersTable.$inferSelect | undefined;
+  /** Recipient for the report-ready email — must include name and email. */
+  user: { name: string | null; email: string } | undefined;
 };
 
 async function stampLookupReportData(
@@ -123,62 +122,6 @@ async function failFreeCouponPayment(paymentId: number, couponCode: string | nul
   }
 }
 
-async function firePaymentConfirmEmail(
-  lookupId: number,
-  vin: string,
-  data: Record<string, unknown> | null,
-  user: { name: string | null; email: string } | undefined,
-  payment: ProviderFulfillmentPayment,
-): Promise<void> {
-  if (!user) return;
-  const deliveryKey = paymentConfirmEmailDeliveryKey(lookupId, user.email);
-  if (!claimEmailDelivery(deliveryKey)) {
-    logger.info({ vin, lookupId, email: user.email }, "Payment confirmation email skipped — duplicate guard");
-    return;
-  }
-  try {
-    const { systemSettingsTable } = await import("@workspace/db");
-    const { desc, eq } = await import("drizzle-orm");
-    const [settings] = await db
-      .select({
-        emailSendReportConfirm: systemSettingsTable.emailSendReportConfirm,
-        siteUrl: systemSettingsTable.siteUrl,
-        emailTemplates: systemSettingsTable.emailTemplates,
-      })
-      .from(systemSettingsTable)
-      .orderBy(desc(systemSettingsTable.id))
-      .limit(1);
-    if (settings?.emailSendReportConfirm === false) return;
-    const siteUrl = settings?.siteUrl?.replace(/\/$/, "") ?? "https://kmcheck.com";
-    const templates = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
-    const { sendEmail, buildPaymentConfirmationEmail } = await import("./emailService.js");
-    const d = data ?? {};
-    const result = await sendEmail({
-      to: user.email,
-      ...buildPaymentConfirmationEmail({
-        name: user.name ?? user.email.split("@")[0],
-        email: user.email,
-        vin,
-        reportUrl: `${siteUrl}/en/report/${lookupId}`,
-        make: (d.make as string | null) ?? null,
-        model: (d.model as string | null) ?? null,
-        year: (d.year as number | null) ?? null,
-        mileage: (d.mileage as number | null) ?? (d.odometer as number | null) ?? null,
-        accidents: (d.accidentCount as number | null) ?? (Array.isArray(d.accidents) ? (d.accidents as unknown[]).length : null),
-        owners: (d.owners as number | null) ?? null,
-        photos: Array.isArray(d.photos) ? (d.photos as string[]).filter(Boolean).slice(0, 6) : null,
-        amount: payment?.amount ?? 0,
-        currency: payment?.currency ?? "EUR",
-        paymentRef: payment?.ref ?? null,
-        siteUrl,
-      }, templates.confirm),
-    });
-    if (!result.ok) logger.warn({ vin, err: result.error }, "Payment confirmation email failed");
-  } catch (err) {
-    logger.warn({ vin, err }, "Payment confirmation email threw");
-  }
-}
-
 export async function findUserFulfillingLookup(userId: string, vin: string) {
   const [row] = await db
     .select()
@@ -213,8 +156,7 @@ async function completeLookupFromCatalog(
   if (input.freeCouponPaymentId && input.freeCouponCode) {
     void countFreeCoupon(input.freeCouponPaymentId, input.freeCouponCode);
   }
-  void fireVinReadyEmailForUser(lookupId, input.normalizedVin, stampedData, input.user);
-  void firePaymentConfirmEmail(lookupId, input.normalizedVin, stampedData, input.user, input.resolvedPayment);
+  void fireVinReadyEmailForUser(lookupId, input.normalizedVin, stampedData, input.user, input.resolvedPayment);
   logger.info({
     msg: "vin_lookup_hit",
     source: "catalog_async",
@@ -270,8 +212,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           if (freeCouponPaymentId && freeCouponCode) {
             void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
           }
-          void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user);
-          void firePaymentConfirmEmail(lookupId, normalizedVin, stampedData, user, resolvedPayment);
+          void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
           logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
           return;
         }
@@ -294,8 +235,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         if (freeCouponPaymentId && freeCouponCode) {
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
-        void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user);
-        void firePaymentConfirmEmail(lookupId, normalizedVin, stampedData, user, resolvedPayment);
+        void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
         logger.info({ msg: "vin_lookup_hit", source: "provider_async", vin: normalizedVin, userId, lookupId });
     });
   } catch (err) {

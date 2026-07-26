@@ -351,7 +351,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
       const siteUrl = settings?.siteUrl?.replace(/\/$/, "") ?? "https://kmcheck.com";
       const templates = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
       const { subject, html } = buildWelcomeEmail(displayName, siteUrl, templates.welcome);
-      void sendEmail({ to: normalizedEmail, subject, html });
+      void sendEmail({ to: normalizedEmail, subject, html, logType: "welcome" });
     }
   } catch (err) {
     logger.warn({ err }, "Welcome email failed to send after registration");
@@ -567,7 +567,13 @@ router.post("/auth/forgot-password", forgotPasswordIpLimiter, forgotPasswordEmai
       return;
     }
 
-    const emailResult = await sendEmail({ to: normalizedEmail, subject, html });
+    const emailResult = await sendEmail({
+      to: normalizedEmail,
+      subject,
+      html,
+      logType: "reset",
+      logMeta: { userId: user.id },
+    });
     if (!emailResult.ok) {
       logger.error({ msg: "auth_forgot_password_email_failed", userId: user.id, error: emailResult.error });
       return;

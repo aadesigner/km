@@ -1,6 +1,10 @@
 import { buildEmailBase } from "./emailLayout.js";
 
-export type EmailTemplateKey = "welcome" | "confirm" | "vinready" | "reset" | "abandoned";
+/**
+ * `vinready` is the single combined report-ready + payment-confirmation email.
+ * The former separate `confirm` template was merged into it.
+ */
+export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned";
 
 export type EmailTemplateOverride = {
   subject?: string;
@@ -11,8 +15,10 @@ export type EmailTemplatesConfig = Partial<Record<EmailTemplateKey, EmailTemplat
 
 export const EMAIL_TEMPLATE_VARIABLES: Record<EmailTemplateKey, string[]> = {
   welcome: ["name", "siteUrl"],
-  confirm: ["name", "email", "vin", "reportUrl", "vehicleLabel", "year", "make", "model", "mileage", "accidents", "owners", "amount", "paymentRef", "siteUrl"],
-  vinready: ["name", "vin", "reportUrl", "vehicleLabel", "year", "make", "model", "mileage", "accidents", "siteUrl"],
+  vinready: [
+    "name", "email", "vin", "reportUrl", "vehicleLabel", "year", "make", "model",
+    "mileage", "mileageText", "accidents", "owners", "amount", "paymentRef", "siteUrl",
+  ],
   reset: ["resetUrl", "siteUrl"],
   abandoned: ["name", "vin", "checkoutUrl", "price", "siteUrl"],
 };
@@ -44,33 +50,12 @@ export const EMAIL_TEMPLATE_DEFAULTS: Record<EmailTemplateKey, TemplateDefaults>
   `,
   },
   vinready: {
-    subject: "Your VIN report is ready — {{vin}}",
-    preheader: "Your VIN history report for {{vin}} is ready to view.",
+    subject: "Your kmcheck report is ready — {{vin}}",
+    preheader: "Payment confirmed — your VIN history report for {{vin}} is ready to view.",
     contentHtml: `
-    <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#111111">Your report is ready! &#127881;</h1>
-    <p style="margin:0 0 8px;color:#444444">Hi {{name}},</p>
-    <p style="margin:0 0 4px;color:#444444">Your VIN history report for <strong>{{vehicleLabel}}</strong> <strong style="font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px">{{vin}}</strong> has been generated and is ready to view.</p>
-    <p style="margin:16px 0 8px;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif">Key findings</p>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-radius:8px;overflow:hidden;border:1px solid #e5e7eb">
-      <tr>
-        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#555555;font-family:Arial,Helvetica,sans-serif">Recorded mileage</td>
-        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700;color:#111111;text-align:right;font-family:Arial,Helvetica,sans-serif">{{mileage}} km</td>
-      </tr>
-      <tr>
-        <td style="padding:10px 16px;font-size:14px;color:#555555;font-family:Arial,Helvetica,sans-serif">Reported accidents</td>
-        <td style="padding:10px 16px;font-size:14px;font-weight:700;color:#111111;text-align:right;font-family:Arial,Helvetica,sans-serif">{{accidents}}</td>
-      </tr>
-    </table>
-    ${btn("{{reportUrl}}", "View Report &rarr;")}
-  `,
-  },
-  confirm: {
-    subject: "Payment confirmed — Your kmcheck report for {{vin}} is ready",
-    preheader: "Your kmcheck VIN report for {{vin}} is ready to view.",
-    contentHtml: `
-    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111111">Payment confirmed &#10003;</h1>
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111111">Your report is ready! &#127881;</h1>
     <p style="margin:0 0 4px;color:#444444">Hi {{name}},</p>
-    <p style="margin:0 0 16px;color:#444444">Your payment was successful and your full VIN history report is ready to view.</p>
+    <p style="margin:0 0 16px;color:#444444">Your payment is confirmed and your full VIN history report is ready to view.</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb">
       <tr>
         <td bgcolor="#f9fafb" style="padding:16px 20px;background:#f9fafb">
@@ -81,10 +66,10 @@ export const EMAIL_TEMPLATE_DEFAULTS: Record<EmailTemplateKey, TemplateDefaults>
       </tr>
     </table>
     <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;font-family:Arial,Helvetica,sans-serif">Key findings</p>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;margin-bottom:16px">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;margin-bottom:20px">
       <tr>
         <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#555555;font-family:Arial,Helvetica,sans-serif">Recorded mileage</td>
-        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700;color:#111111;text-align:right;font-family:Arial,Helvetica,sans-serif">{{mileage}} km</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700;color:#111111;text-align:right;font-family:Arial,Helvetica,sans-serif">{{mileageText}}</td>
       </tr>
       <tr>
         <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#555555;font-family:Arial,Helvetica,sans-serif">Reported accidents</td>
@@ -168,18 +153,6 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
     case "vinready":
       return {
         ...common,
-        vin: "WBA3A5G59DNP26082",
-        reportUrl: `${base}/en/report/42`,
-        year: "2019",
-        make: "BMW",
-        model: "3 Series",
-        vehicleLabel: "2019 BMW 3 Series",
-        mileage: "48,200",
-        accidents: "1",
-      };
-    case "confirm":
-      return {
-        ...common,
         email: "alex@example.com",
         vin: "WBA3A5G59DNP26082",
         reportUrl: `${base}/en/report/42`,
@@ -188,6 +161,7 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
         model: "3 Series",
         vehicleLabel: "2019 BMW 3 Series",
         mileage: "48,200",
+        mileageText: "48,200 km",
         accidents: "1",
         owners: "2",
         amount: "€15.99",
@@ -213,36 +187,28 @@ export function mergeTemplateForAdmin(
   };
 }
 
-/** Build string vars from runtime email data. */
-export function varsFromVinReady(data: {
-  name: string;
-  vin: string;
-  reportUrl: string;
-  make?: string | null;
-  model?: string | null;
-  year?: number | null;
-  mileage?: number | null;
-  accidents?: number | null;
-  siteUrl: string;
-}): Record<string, string> {
-  const vehicleLabel = [data.year, data.make, data.model].filter(Boolean).join(" ") || "your vehicle";
-  return {
-    name: data.name || "there",
-    vin: data.vin,
-    reportUrl: data.reportUrl,
-    year: data.year != null ? String(data.year) : "",
-    make: data.make ?? "",
-    model: data.model ?? "",
-    vehicleLabel,
-    mileage: data.mileage != null ? data.mileage.toLocaleString() : "—",
-    accidents: data.accidents != null ? String(data.accidents) : "—",
-    siteUrl: data.siteUrl.replace(/\/$/, ""),
-  };
+/**
+ * Vehicle title from whatever the report actually knows — "2019 BMW 3 Series",
+ * "2019 BMW", or "BMW 3 Series" all render naturally.
+ */
+export function buildVehicleLabel(
+  year?: number | null,
+  make?: string | null,
+  model?: string | null,
+): string {
+  return [year, make, model].filter(Boolean).join(" ") || "your vehicle";
 }
 
-export function varsFromPaymentConfirm(data: {
+export function formatEmailAmount(amount: number | null | undefined, currency?: string | null): string {
+  if (amount == null || !Number.isFinite(amount) || amount <= 0) return "Free";
+  const symbol = (currency ?? "EUR") === "EUR" ? "€" : "$";
+  return `${symbol}${amount.toFixed(2)}`;
+}
+
+/** Build string vars for the combined report-ready + payment-confirmation email. */
+export function varsFromReportReady(data: {
   name: string;
-  email: string;
+  email?: string | null;
   vin: string;
   reportUrl: string;
   make?: string | null;
@@ -251,18 +217,27 @@ export function varsFromPaymentConfirm(data: {
   mileage?: number | null;
   accidents?: number | null;
   owners?: number | null;
-  amount: number;
-  currency: string;
+  amount?: number | null;
+  currency?: string | null;
   paymentRef?: string | null;
   siteUrl: string;
 }): Record<string, string> {
-  const currencySymbol = data.currency === "EUR" ? "€" : "$";
-  const amountFormatted = data.amount > 0 ? `${currencySymbol}${data.amount.toFixed(2)}` : "Free";
+  const mileage = data.mileage != null ? data.mileage.toLocaleString() : "—";
   return {
-    ...varsFromVinReady(data),
-    email: data.email,
+    name: data.name || "there",
+    email: data.email ?? "",
+    vin: data.vin,
+    reportUrl: data.reportUrl,
+    year: data.year != null ? String(data.year) : "",
+    make: data.make ?? "",
+    model: data.model ?? "",
+    vehicleLabel: buildVehicleLabel(data.year, data.make, data.model),
+    mileage,
+    mileageText: data.mileage != null ? `${mileage} km` : "—",
+    accidents: data.accidents != null ? String(data.accidents) : "—",
     owners: data.owners != null ? String(data.owners) : "—",
-    amount: amountFormatted,
+    amount: formatEmailAmount(data.amount, data.currency),
     paymentRef: data.paymentRef ?? "—",
+    siteUrl: data.siteUrl.replace(/\/$/, ""),
   };
 }

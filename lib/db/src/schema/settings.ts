@@ -9,9 +9,16 @@ export const pricingTable = pgTable("pricing", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export type EmailTemplateKey = "welcome" | "confirm" | "vinready" | "reset" | "abandoned";
+/**
+ * `vinready` is the combined "report ready + payment confirmation" email.
+ * `confirm` is retained only so previously stored overrides stay readable; it is
+ * no longer rendered or editable.
+ */
+export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned";
+export type LegacyEmailTemplateKey = "confirm";
 export type EmailTemplateOverride = { subject?: string; contentHtml?: string };
-export type EmailTemplatesConfig = Partial<Record<EmailTemplateKey, EmailTemplateOverride>>;
+export type EmailTemplatesConfig =
+  Partial<Record<EmailTemplateKey | LegacyEmailTemplateKey, EmailTemplateOverride>>;
 
 export const systemSettingsTable = pgTable("system_settings", {
   id: serial("id").primaryKey(),
@@ -75,11 +82,17 @@ export const systemSettingsTable = pgTable("system_settings", {
   // Site URL + Email send toggles
   siteUrl: text("site_url").default("https://kmcheck.com"),
   emailSendWelcome: boolean("email_send_welcome").notNull().default(true),
+  /** @deprecated merged into emailSendVinReady; kept so old rows still read. */
   emailSendReportConfirm: boolean("email_send_report_confirm").notNull().default(true),
+  /** Single trigger for the combined report-ready + payment-confirmation email. */
   emailSendVinReady: boolean("email_send_vin_ready").notNull().default(true),
   emailSendPasswordReset: boolean("email_send_password_reset").notNull().default(true),
   emailSendAbandonedCart: boolean("email_send_abandoned_cart").notNull().default(false),
+  /** Admin alert when a customer pays for a manual-pending VIN. Off by default. */
+  emailSendAdminPendingVin: boolean("email_send_admin_pending_vin").notNull().default(false),
   emailTemplates: jsonb("email_templates").$type<EmailTemplatesConfig>(),
+  /** When true, email_logs rows older than EMAIL_LOG_RETENTION_DAYS are purged. */
+  emailLogRetentionEnabled: boolean("email_log_retention_enabled").notNull().default(true),
   // Google Analytics / Tag Manager (public site tracking)
   analyticsGtmEnabled: boolean("analytics_gtm_enabled").notNull().default(false),
   analyticsGtmContainerId: text("analytics_gtm_container_id"),

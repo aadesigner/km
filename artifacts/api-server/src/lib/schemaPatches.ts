@@ -29,6 +29,8 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS linkedin_client_id text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS linkedin_client_secret text`,
   `ALTER TABLE vin_lookups ADD COLUMN IF NOT EXISTS data_corrupt boolean NOT NULL DEFAULT false`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS email_log_retention_enabled boolean NOT NULL DEFAULT true`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS email_send_admin_pending_vin boolean NOT NULL DEFAULT false`,
 ];
 
 const TABLE_PATCHES = [
@@ -73,6 +75,35 @@ const TABLE_PATCHES = [
   `CREATE INDEX IF NOT EXISTS access_blocks_user_id_idx ON access_blocks (user_id)`,
   `CREATE INDEX IF NOT EXISTS access_blocks_created_at_idx ON access_blocks (created_at)`,
   `CREATE INDEX IF NOT EXISTS vin_lookups_user_created_idx ON vin_lookups (user_id, created_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS email_logs (
+    id serial PRIMARY KEY,
+    type text NOT NULL DEFAULT 'other',
+    recipient text NOT NULL,
+    subject text NOT NULL DEFAULT '',
+    status text NOT NULL DEFAULT 'sent',
+    error text,
+    meta jsonb,
+    created_at timestamp NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS email_logs_created_at_idx ON email_logs (created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS email_logs_type_created_at_idx ON email_logs (type, created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS email_logs_status_idx ON email_logs (status)`,
+  `CREATE INDEX IF NOT EXISTS email_logs_recipient_idx ON email_logs (recipient)`,
+];
+
+/**
+ * The payment-confirmation and report-ready emails were merged into a single
+ * `vinready` template with a single `email_send_vin_ready` trigger. Carry the
+ * old settings forward so admins keep their customisation and don't silently
+ * lose the email if they had only the confirmation half switched on.
+ */
+const EMAIL_MERGE_PATCHES = [
+  `UPDATE system_settings
+     SET email_send_vin_ready = true
+   WHERE email_send_vin_ready = false AND email_send_report_confirm = true`,
+  `UPDATE system_settings
+     SET email_templates = jsonb_set(email_templates, '{vinready}', email_templates->'confirm', true)
+   WHERE email_templates ? 'confirm' AND NOT (email_templates ? 'vinready')`,
 ];
 
 const PRICING_DATA_PATCHES = [
@@ -90,7 +121,12 @@ const PRICING_DATA_PATCHES = [
 
 /** Idempotent schema adds for DBs that predate newer fields/tables. */
 export async function patchSystemSettingsSchema(): Promise<void> {
-  for (const statement of [...SYSTEM_SETTINGS_PATCHES, ...TABLE_PATCHES, ...PRICING_DATA_PATCHES]) {
+  for (const statement of [
+    ...SYSTEM_SETTINGS_PATCHES,
+    ...TABLE_PATCHES,
+    ...EMAIL_MERGE_PATCHES,
+    ...PRICING_DATA_PATCHES,
+  ]) {
     await db.execute(sql.raw(statement));
   }
 

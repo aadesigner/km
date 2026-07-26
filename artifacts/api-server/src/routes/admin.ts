@@ -6,7 +6,7 @@ import { parse as csvParse } from "csv-parse";
 import { createReadStream, unlink } from "fs";
 import { readFile } from "fs/promises";
 import { tmpdir } from "os";
-import { db, usersTable, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable, pricingTable, systemSettingsTable, systemLogsTable, couponsTable, passwordResetTokensTable, loginAttemptsTable, announcementsTable, pendingVinChecksTable, pendingVinCheckRequestsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
+import { db, usersTable, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable, pricingTable, systemSettingsTable, systemLogsTable, emailLogsTable, EMAIL_LOG_TYPES, couponsTable, passwordResetTokensTable, loginAttemptsTable, announcementsTable, pendingVinChecksTable, pendingVinCheckRequestsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
 import { eq, desc, count, sum, sql, gte, like, ilike, lte, and, inArray, gt, or, lt, exists, not, ne } from "drizzle-orm";
 import { requireAdmin, hashPassword, clampSessionDays } from "../lib/auth";
 import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins } from "../lib/vinService";
@@ -706,7 +706,7 @@ router.post("/admin/users/import", requireAdmin, userImportLimiter, upload.singl
         if (emailEnabled) {
           const resetUrl = `${siteUrl}/en/reset-password?token=${tokenId}.${rawVerifier}`;
           const { subject, html } = buildPasswordResetEmail(resetUrl, siteUrl, importTemplates.reset);
-          void sendEmail({ to: rawEmail, subject, html });
+          void sendEmail({ to: rawEmail, subject, html, logType: "reset", logMeta: { source: "user_import" } });
         }
         rows.push({ row: i + 1, email: rawEmail, status: "inserted" });
       }
@@ -1350,6 +1350,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     siteUrl: string | null;
     emailSendWelcome: boolean; emailSendReportConfirm: boolean; emailSendVinReady: boolean;
     emailSendPasswordReset: boolean; emailSendAbandonedCart: boolean;
+    emailSendAdminPendingVin: boolean;
+    emailLogRetentionEnabled: boolean;
     emailTemplates: import("@workspace/db").EmailTemplatesConfig | null;
     smtpEnabled: boolean; smtpHost: string | null; smtpPort: number | null;
     smtpUser: string | null; smtpPass: string | null;
@@ -1498,6 +1500,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       emailSendVinReady: updates.emailSendVinReady ?? true,
       emailSendPasswordReset: updates.emailSendPasswordReset ?? true,
       emailSendAbandonedCart: updates.emailSendAbandonedCart ?? false,
+      emailSendAdminPendingVin: updates.emailSendAdminPendingVin ?? false,
       maxFailedLogins: updates.maxFailedLogins ?? 5,
       lockoutMinutes: updates.lockoutMinutes ?? 30,
       sessionDays: clampSessionDays(updates.sessionDays ?? 30),
@@ -1796,7 +1799,8 @@ router.delete("/admin/announcements/:id", requireAdmin, async (req, res) => {
 
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
 
-const EMAIL_TEMPLATE_TYPES = ["welcome", "confirm", "vinready", "reset", "abandoned"] as const;
+/** `confirm` was merged into `vinready` — it is no longer editable. */
+const EMAIL_TEMPLATE_TYPES = ["welcome", "vinready", "reset", "abandoned"] as const;
 type EmailTemplateType = typeof EMAIL_TEMPLATE_TYPES[number];
 
 function isEmailTemplateType(v: string): v is EmailTemplateType {
@@ -1860,7 +1864,7 @@ router.post("/admin/email/preview", requireAdmin, async (req, res) => {
     contentHtml?: string;
     siteUrl?: string;
   };
-  const type = String(body.type ?? req.query.type ?? "confirm");
+  const type = String(body.type ?? req.query.type ?? "vinready");
   if (!isEmailTemplateType(type)) {
     res.status(400).json({ error: "Invalid template type" });
     return;
@@ -1881,7 +1885,7 @@ router.post("/admin/email/preview", requireAdmin, async (req, res) => {
 });
 
 router.get("/admin/email/preview", requireAdmin, async (req, res) => {
-  const type = String(req.query.type ?? "confirm");
+  const type = String(req.query.type ?? "vinready");
   if (!isEmailTemplateType(type)) {
     res.status(400).json({ error: "Invalid template type" });
     return;
@@ -1929,6 +1933,8 @@ router.post("/admin/email/test", requireAdmin, async (req, res) => {
       subject: emailPayload.subject,
       html: emailPayload.html,
       text: emailPayload.text,
+      logType: "test",
+      logMeta: { template: type ?? "smtp" },
     }, smtp && typeof smtp === "object" ? smtp : undefined);
 
     if (result.ok) {
@@ -1952,6 +1958,61 @@ router.post("/admin/email/test", requireAdmin, async (req, res) => {
       code: detail.code ?? "EMAIL_TEST_FAILED",
     });
   }
+});
+
+// ── EMAIL LOGS ────────────────────────────────────────────────────────────────
+
+const EMAIL_LOG_TYPE_SET = new Set<string>(EMAIL_LOG_TYPES);
+
+router.get("/admin/email/logs", requireAdmin, async (req, res) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "25"), 10) || 25));
+  const offset = (page - 1) * limit;
+
+  const type = String(req.query.type ?? "").trim();
+  const status = String(req.query.status ?? "").trim();
+  const search = String(req.query.search ?? "").trim();
+  const from = req.query.from ? String(req.query.from) : undefined;
+  const to = req.query.to ? String(req.query.to) : undefined;
+
+  const conditions = [];
+  if (type && EMAIL_LOG_TYPE_SET.has(type)) {
+    conditions.push(eq(emailLogsTable.type, type as (typeof EMAIL_LOG_TYPES)[number]));
+  }
+  if (status === "sent" || status === "failed") {
+    conditions.push(eq(emailLogsTable.status, status));
+  }
+  if (search) {
+    conditions.push(ilike(emailLogsTable.recipient, `%${search}%`));
+  }
+  if (from) {
+    const d = new Date(from);
+    if (!isNaN(d.getTime())) conditions.push(gte(emailLogsTable.createdAt, d));
+  }
+  if (to) {
+    const d = new Date(to);
+    if (!isNaN(d.getTime())) {
+      d.setHours(23, 59, 59, 999);
+      conditions.push(lte(emailLogsTable.createdAt, d));
+    }
+  }
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [items, [{ total }]] = await Promise.all([
+    db.select().from(emailLogsTable).where(where)
+      .orderBy(desc(emailLogsTable.createdAt), desc(emailLogsTable.id))
+      .limit(limit).offset(offset),
+    db.select({ total: count() }).from(emailLogsTable).where(where),
+  ]);
+
+  res.json({ items, total, page, limit, types: EMAIL_LOG_TYPES });
+});
+
+router.delete("/admin/email/logs", requireAdmin, async (req, res) => {
+  await db.delete(emailLogsTable);
+  await logAdminAction(req.userId!, "admin_clear_email_logs", "system", {});
+  res.json({ ok: true });
 });
 
 router.post("/admin/email/pending-reminder", requireAdmin, async (req, res) => {
@@ -1996,7 +2057,13 @@ router.post("/admin/email/pending-reminder", requireAdmin, async (req, res) => {
     siteUrl,
     templates.abandoned,
   );
-  const result = await sendEmail({ to: user.email, subject, html });
+  const result = await sendEmail({
+    to: user.email,
+    subject,
+    html,
+    logType: "abandoned",
+    logMeta: { userId: user.id, vin: vin || null },
+  });
   res.json(result);
 });
 

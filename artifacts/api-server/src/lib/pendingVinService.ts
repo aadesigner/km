@@ -202,6 +202,8 @@ export async function fulfillManualPendingVinLookup(opts: {
     },
   });
 
+  // Intentionally no customer report-ready email here — that fires only from
+  // publishPendingVinCheck after the admin publishes the catalog entry.
   logger.info({
     msg: "manual_pending_vin_fulfilled",
     vin: normalized,
@@ -212,6 +214,78 @@ export async function fulfillManualPendingVinLookup(opts: {
   });
 
   return lookup;
+}
+
+/**
+ * Same combined report-ready + payment email as instant API fulfillment.
+ * Call only after the pending VIN is published to the catalog.
+ */
+export async function notifyPurchasersOnPendingPublish(opts: {
+  vin: string;
+  stamped: Record<string, unknown>;
+  requests: Array<{
+    id: number;
+    userId: string;
+    paymentId: number | null;
+    lookupId: number;
+    notifyOnPublish: boolean;
+    notifiedAt: Date | null;
+  }>;
+  notifiedAt: Date;
+}): Promise<void> {
+  const notifiedUsers = new Set<string>();
+  const jobs: Promise<void>[] = [];
+
+  for (const req of opts.requests) {
+    if (!req.notifyOnPublish || req.notifiedAt) continue;
+    if (notifiedUsers.has(req.userId)) {
+      void db.update(pendingVinCheckRequestsTable)
+        .set({ notifiedAt: opts.notifiedAt })
+        .where(eq(pendingVinCheckRequestsTable.id, req.id));
+      continue;
+    }
+    notifiedUsers.add(req.userId);
+
+    jobs.push((async () => {
+      const [user] = await db.select({
+        name: usersTable.name,
+        email: usersTable.email,
+      }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
+      if (!user?.email) {
+        logger.warn({
+          vin: opts.vin,
+          userId: req.userId,
+          lookupId: req.lookupId,
+        }, "Pending publish report email skipped — no recipient email");
+        return;
+      }
+
+      let payment: { amount: number; currency: string; ref: string | null } | null = null;
+      if (req.paymentId) {
+        const [pay] = await db.select({
+          amount: paymentsTable.amount,
+          currency: paymentsTable.currency,
+          ref: paymentsTable.paypalOrderId,
+        }).from(paymentsTable).where(eq(paymentsTable.id, req.paymentId)).limit(1);
+        payment = pay ?? null;
+      }
+
+      // Identical helper + template as catalog/cache/provider instant fulfillment.
+      const sent = await fireVinReadyEmailForUser(
+        req.lookupId,
+        opts.vin,
+        opts.stamped,
+        user,
+        payment,
+      );
+      if (!sent) return;
+      await db.update(pendingVinCheckRequestsTable)
+        .set({ notifiedAt: opts.notifiedAt })
+        .where(eq(pendingVinCheckRequestsTable.id, req.id));
+    })());
+  }
+
+  await Promise.allSettled(jobs);
 }
 
 export async function publishPendingVinCheck(opts: {
@@ -265,29 +339,13 @@ export async function publishPendingVinCheck(opts: {
 
   notifyVinLookupPublished(vin);
 
-  const notifiedUsers = new Set<string>();
-  for (const req of requests) {
-    if (!req.notifyOnPublish || req.notifiedAt) continue;
-    if (notifiedUsers.has(req.userId)) {
-      void db.update(pendingVinCheckRequestsTable)
-        .set({ notifiedAt: now })
-        .where(eq(pendingVinCheckRequestsTable.id, req.id));
-      continue;
-    }
-    notifiedUsers.add(req.userId);
-    void (async () => {
-      const [user] = await db.select({
-        name: usersTable.name,
-        email: usersTable.email,
-      }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
-      if (!user?.email) return;
-      const sent = await fireVinReadyEmailForUser(req.lookupId, vin, stamped, user);
-      if (!sent) return;
-      await db.update(pendingVinCheckRequestsTable)
-        .set({ notifiedAt: now })
-        .where(eq(pendingVinCheckRequestsTable.id, req.id));
-    })();
-  }
+  // Customer report-ready email (same as instant) — publish only, never on draft save.
+  void notifyPurchasersOnPendingPublish({
+    vin,
+    stamped,
+    requests,
+    notifiedAt: now,
+  });
 
   return { vin, stamped, requests, lookupIds };
 }
@@ -296,6 +354,7 @@ export async function savePendingVinCheckDraft(opts: {
   pendingId: number;
   draftData: Record<string, unknown>;
 }) {
+  // Draft save only — never emails customers. Report-ready email is publish-only.
   const [pending] = await db.select().from(pendingVinChecksTable)
     .where(eq(pendingVinChecksTable.id, opts.pendingId))
     .limit(1);

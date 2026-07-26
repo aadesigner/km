@@ -17,10 +17,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import AdminEmailLogs from "./email-logs";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-type EmailType = "welcome" | "confirm" | "vinready" | "reset" | "abandoned";
+type EmailType = "welcome" | "vinready" | "reset" | "abandoned";
 
 type TemplateData = {
   subject: string;
@@ -31,10 +32,10 @@ type TemplateData = {
 
 type TriggersForm = {
   emailSendWelcome: boolean;
-  emailSendReportConfirm: boolean;
   emailSendVinReady: boolean;
   emailSendPasswordReset: boolean;
   emailSendAbandonedCart: boolean;
+  emailSendAdminPendingVin: boolean;
 };
 
 const EMAIL_TYPES: {
@@ -54,19 +55,11 @@ const EMAIL_TYPES: {
     icon: Zap,
   },
   {
-    type: "confirm",
-    triggerKey: "emailSendReportConfirm",
-    label: "Payment Confirmation",
-    description: "Confirms purchase and links to the full report.",
-    trigger: "Fires after a paid VIN lookup completes.",
-    icon: CheckCircle2,
-  },
-  {
     type: "vinready",
     triggerKey: "emailSendVinReady",
-    label: "Report Ready",
-    description: "Notifies the user their VIN report is ready to view.",
-    trigger: "Fires after every successful VIN lookup.",
+    label: "Report Ready & Payment",
+    description: "Single email confirming the payment and delivering the finished report.",
+    trigger: "Fires once per report — instant API fulfillment or manual publish.",
     icon: FileText,
   },
   {
@@ -95,11 +88,12 @@ export default function AdminEmails() {
   const [general, setGeneral] = useState({ siteUrl: "https://kmcheck.com" });
   const [triggers, setTriggers] = useState<TriggersForm>({
     emailSendWelcome: true,
-    emailSendReportConfirm: true,
     emailSendVinReady: true,
     emailSendPasswordReset: true,
     emailSendAbandonedCart: false,
+    emailSendAdminPendingVin: false,
   });
+  const [logRetention, setLogRetention] = useState(true);
 
   const [templates, setTemplates] = useState<Record<EmailType, TemplateData> | null>(null);
   const [selectedType, setSelectedType] = useState<EmailType>("welcome");
@@ -146,6 +140,24 @@ export default function AdminEmails() {
     },
   });
 
+  const retentionUpdater = useAdminUpdateSettings({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      },
+      onError: (err: Error) => {
+        toast({ variant: "destructive", title: "Save failed", description: err.message || "Could not save log retention." });
+      },
+    },
+  });
+
+  const handleRetentionChange = (value: boolean) => {
+    setLogRetention(value);
+    retentionUpdater.mutate({
+      data: { emailLogRetentionEnabled: value } as Parameters<typeof retentionUpdater.mutate>[0]["data"],
+    });
+  };
+
   const loadTemplates = useCallback(async () => {
     const resp = await fetch(`${basePath}/api/admin/email/templates`, { credentials: "include" });
     if (!resp.ok) return;
@@ -159,11 +171,12 @@ export default function AdminEmails() {
     setGeneral({ siteUrl: (s.siteUrl as string) ?? "https://kmcheck.com" });
     setTriggers({
       emailSendWelcome: (s.emailSendWelcome as boolean) ?? true,
-      emailSendReportConfirm: (s.emailSendReportConfirm as boolean) ?? true,
       emailSendVinReady: (s.emailSendVinReady as boolean) ?? true,
       emailSendPasswordReset: (s.emailSendPasswordReset as boolean) ?? true,
       emailSendAbandonedCart: (s.emailSendAbandonedCart as boolean) ?? false,
+      emailSendAdminPendingVin: (s.emailSendAdminPendingVin as boolean) ?? false,
     });
+    setLogRetention((s.emailLogRetentionEnabled as boolean) ?? true);
     void loadTemplates();
   }, [settings, loadTemplates]);
 
@@ -358,6 +371,7 @@ export default function AdminEmails() {
         <TabsList>
           <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="general">General &amp; Triggers</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="mt-4 space-y-4">
@@ -596,6 +610,27 @@ export default function AdminEmails() {
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Admin notifications</CardTitle>
+              <CardDescription>Emails sent to admins, not customers.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium">Pending VIN alert</p>
+                  <p className="text-xs text-muted-foreground">
+                    Emails all admins when a customer pays for a VIN that needs a manual report. Off by default.
+                  </p>
+                </div>
+                <Switch
+                  checked={triggers.emailSendAdminPendingVin}
+                  onCheckedChange={v => setTriggers(f => ({ ...f, emailSendAdminPendingVin: v }))}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="flex justify-end">
             <Button
               disabled={generalUpdater.isPending || triggersUpdater.isPending}
@@ -612,6 +647,14 @@ export default function AdminEmails() {
               Save General &amp; Triggers
             </Button>
           </div>
+        </TabsContent>
+
+        <TabsContent value="logs" className="mt-4">
+          <AdminEmailLogs
+            retentionEnabled={logRetention}
+            onRetentionChange={handleRetentionChange}
+            retentionSaving={retentionUpdater.isPending}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -33,17 +33,23 @@ export async function firePendingVinAdminNotification(opts: {
   vehicle: { year?: number | null; make?: string | null; model?: string | null };
 }): Promise<void> {
   try {
+    const [settings] = await db
+      .select({
+        siteUrl: systemSettingsTable.siteUrl,
+        emailSendAdminPendingVin: systemSettingsTable.emailSendAdminPendingVin,
+      })
+      .from(systemSettingsTable)
+      .orderBy(desc(systemSettingsTable.id))
+      .limit(1);
+
+    // Off by default — admins opt in from Admin → Emails.
+    if (settings?.emailSendAdminPendingVin !== true) return;
+
     const recipients = await getAdminRecipientEmails();
     if (recipients.length === 0) {
       logger.warn({ vin: opts.vin }, "Pending VIN admin email skipped — no admin recipients");
       return;
     }
-
-    const [settings] = await db
-      .select({ siteUrl: systemSettingsTable.siteUrl })
-      .from(systemSettingsTable)
-      .orderBy(desc(systemSettingsTable.id))
-      .limit(1);
 
     const siteUrl = settings?.siteUrl?.replace(/\/$/, "") ?? "https://kmcheck.com";
     const adminUrl = `${siteUrl}/adminx/pending-vin-checks/${opts.pendingId}`;
@@ -64,7 +70,12 @@ export async function firePendingVinAdminNotification(opts: {
     });
 
     for (const to of recipients) {
-      const result = await sendEmail({ to, ...payload });
+      const result = await sendEmail({
+        to,
+        ...payload,
+        logType: "admin_pending",
+        logMeta: { vin: opts.vin },
+      });
       if (!result.ok) {
         logger.warn({ vin: opts.vin, to, err: result.error }, "Pending VIN admin email failed");
       }

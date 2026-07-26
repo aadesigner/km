@@ -1440,7 +1440,7 @@ export default function AdminSettings() {
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="flex items-center gap-2 text-base">
               <Mail className="h-4 w-4 text-primary" />
-              Payment Confirmation Email — Preview
+              Report Ready Email — Preview
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-hidden">

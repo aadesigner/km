@@ -19,7 +19,3 @@ export function claimEmailDelivery(key: string): boolean {
 export function vinReadyEmailDeliveryKey(lookupId: number, email: string): string {
   return `vinready:${lookupId}:${email.trim().toLowerCase()}`;
 }
-
-export function paymentConfirmEmailDeliveryKey(lookupId: number, email: string): string {
-  return `paymentconfirm:${lookupId}:${email.trim().toLowerCase()}`;
-}

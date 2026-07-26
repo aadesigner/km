@@ -4,10 +4,11 @@ import type { EmailTemplateOverride, EmailTemplatesConfig } from "@workspace/db"
 import { desc } from "drizzle-orm";
 import {
   renderEmailTemplate,
-  varsFromPaymentConfirm,
-  varsFromVinReady,
+  varsFromReportReady,
   getSampleTemplateVars,
 } from "./emailTemplates.js";
+import { recordEmailLog } from "./emailLog.js";
+import type { EmailLogType } from "@workspace/db";
 import {
   normalizeSmtpSecurity,
   smtpTransportSecurity,
@@ -68,6 +69,10 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  /** Category recorded in Admin → Emails → Logs. Omit to skip logging. */
+  logType?: EmailLogType;
+  /** Extra context stored alongside the log row (vin, lookupId, userId, …). */
+  logMeta?: Record<string, unknown>;
 }
 
 type ResolvedSmtp = {
@@ -184,9 +189,22 @@ export async function sendEmail(
   smtpOverride?: SmtpOverride,
 ): Promise<SendEmailResult> {
   let smtpHost: string | undefined;
+  const log = (status: "sent" | "failed", error?: string) => {
+    if (!opts.logType) return;
+    recordEmailLog({
+      type: opts.logType,
+      recipient: opts.to,
+      subject: opts.subject,
+      status,
+      error,
+      meta: opts.logMeta ?? null,
+    });
+  };
+
   try {
     const resolved = await resolveSmtpConfig(smtpOverride);
     if (!resolved.ok) {
+      log("failed", resolved.error);
       return { ok: false, error: resolved.error, hint: resolved.hint, code: resolved.code };
     }
     const smtp = resolved.config;
@@ -216,10 +234,12 @@ export async function sendEmail(
       text: opts.text,
     });
 
+    log("sent");
     return { ok: true };
   } catch (err) {
     const detail = formatSmtpTransportError(err);
     logger.warn({ ...detail, smtpHost }, "sendEmail failed");
+    log("failed", detail.error);
     return { ok: false, ...detail };
   }
 }
@@ -240,8 +260,10 @@ export function buildWelcomeEmail(
   );
 }
 
-export interface VinReadyEmailData {
+/** Combined report-ready + payment-confirmation email. */
+export interface ReportReadyEmailData {
   name: string;
+  email?: string | null;
   vin: string;
   reportUrl: string;
   make?: string | null;
@@ -249,32 +271,26 @@ export interface VinReadyEmailData {
   year?: number | null;
   mileage?: number | null;
   accidents?: number | null;
+  owners?: number | null;
+  amount?: number | null;
+  currency?: string | null;
+  paymentRef?: string | null;
 }
 
-export function buildVinReadyEmail(
-  data: VinReadyEmailData & { siteUrl?: string },
+export function buildReportReadyEmail(
+  data: ReportReadyEmailData & { siteUrl?: string },
   override?: EmailTemplateOverride,
 ): { subject: string; html: string } {
   const siteUrl = (data.siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
   return renderEmailTemplate(
     "vinready",
-    varsFromVinReady({
-      name: data.name,
-      vin: data.vin,
-      reportUrl: data.reportUrl,
-      make: data.make,
-      model: data.model,
-      year: data.year,
-      mileage: data.mileage,
-      accidents: data.accidents,
-      siteUrl,
-    }),
+    varsFromReportReady({ ...data, siteUrl }),
     override,
     siteUrl,
   );
 }
 
-export function buildVinReadySampleHtml(siteUrl = "https://kmcheck.com"): string {
+export function buildReportReadySampleHtml(siteUrl = "https://kmcheck.com"): string {
   const { html } = renderEmailTemplate(
     "vinready",
     getSampleTemplateVars("vinready", siteUrl),
@@ -349,63 +365,6 @@ export function buildSmtpTestEmail(siteUrl?: string): { subject: string; html: s
     subject: "kmcheck — SMTP test email",
     html: buildEmailBase(content, "Your kmcheck SMTP configuration is working correctly.", siteUrl),
   };
-}
-
-// ── Payment confirmation ───────────────────────────────────────────────────────
-
-export interface PaymentConfirmationData {
-  name: string;
-  email: string;
-  vin: string;
-  reportUrl: string;
-  make?: string | null;
-  model?: string | null;
-  year?: number | null;
-  mileage?: number | null;
-  accidents?: number | null;
-  owners?: number | null;
-  photos?: string[] | null;
-  amount: number;
-  currency: string;
-  paymentRef?: string | null;
-}
-
-export function buildPaymentConfirmationEmail(
-  data: PaymentConfirmationData & { siteUrl?: string },
-  override?: EmailTemplateOverride,
-): { subject: string; html: string } {
-  const siteUrl = (data.siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
-  return renderEmailTemplate(
-    "confirm",
-    varsFromPaymentConfirm({
-      name: data.name,
-      email: data.email,
-      vin: data.vin,
-      reportUrl: data.reportUrl,
-      make: data.make,
-      model: data.model,
-      year: data.year,
-      mileage: data.mileage,
-      accidents: data.accidents,
-      owners: data.owners,
-      amount: data.amount,
-      currency: data.currency,
-      paymentRef: data.paymentRef,
-      siteUrl,
-    }),
-    override,
-    siteUrl,
-  );
-}
-
-export function buildPaymentConfirmationSampleHtml(siteUrl = "https://kmcheck.com"): string {
-  const { html } = renderEmailTemplate(
-    "confirm",
-    getSampleTemplateVars("confirm", siteUrl),
-    undefined,
-    siteUrl,
-  );
-  return html;
 }
 
 // ── Admin pending VIN notification ─────────────────────────────────────────────

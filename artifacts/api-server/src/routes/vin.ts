@@ -1,5 +1,5 @@
 import { Router, type Response } from "express";
-import { db, vinLookupsTable, paymentsTable, providersTable, usersTable, systemSettingsTable, couponsTable, pricingTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
+import { db, vinLookupsTable, paymentsTable, providersTable, usersTable, couponsTable, pricingTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
 import { eq, desc, and, sql, or } from "drizzle-orm";
 import { requireAuth, optionalAuth } from "../lib/auth.js";
 import {
@@ -49,7 +49,6 @@ import {
 } from "../lib/pendingVinService.js";
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
 import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
-import { claimEmailDelivery, paymentConfirmEmailDeliveryKey } from "../lib/emailDeliveryGuard.js";
 import { waitForVinLookupPublish } from "../lib/vinLookupNotify.js";
 
 const router = Router();
@@ -378,68 +377,6 @@ router.get("/vin/image", async (req, res) => {
   }
 });
 
-// ── Fire-and-forget VIN report ready email ────────────────────────────────────
-async function fireVinReadyEmail(
-  lookupId: number,
-  vin: string,
-  data: Record<string, unknown> | null,
-  user: { name: string | null; email: string } | undefined,
-): Promise<void> {
-  await fireVinReadyEmailForUser(lookupId, vin, data, user);
-}
-
-// ── Fire-and-forget payment confirmation email ─────────────────────────────────
-async function firePaymentConfirmEmail(
-  lookupId: number,
-  vin: string,
-  data: Record<string, unknown> | null,
-  user: { name: string | null; email: string } | undefined,
-  payment: { amount: number; currency: string; ref: string | null } | null,
-): Promise<void> {
-  if (!user) return;
-  const deliveryKey = paymentConfirmEmailDeliveryKey(lookupId, user.email);
-  if (!claimEmailDelivery(deliveryKey)) return;
-  try {
-    const [settings] = await db
-      .select({
-        emailSendReportConfirm: systemSettingsTable.emailSendReportConfirm,
-        siteUrl: systemSettingsTable.siteUrl,
-        emailTemplates: systemSettingsTable.emailTemplates,
-      })
-      .from(systemSettingsTable)
-      .orderBy(desc(systemSettingsTable.id))
-      .limit(1);
-    if (settings?.emailSendReportConfirm === false) return;
-    const siteUrl = settings?.siteUrl?.replace(/\/$/, "") ?? "https://kmcheck.com";
-    const templates = (settings?.emailTemplates ?? {}) as import("@workspace/db").EmailTemplatesConfig;
-    const { sendEmail, buildPaymentConfirmationEmail } = await import("../lib/emailService.js");
-    const d = data ?? {};
-    const result = await sendEmail({
-      to: user.email,
-      ...buildPaymentConfirmationEmail({
-        name: user.name ?? user.email.split("@")[0],
-        email: user.email,
-        vin,
-        reportUrl: `${siteUrl}/en/report/${lookupId}`,
-        make: (d.make as string | null) ?? null,
-        model: (d.model as string | null) ?? null,
-        year: (d.year as number | null) ?? null,
-        mileage: (d.mileage as number | null) ?? (d.odometer as number | null) ?? null,
-        accidents: (d.accidentCount as number | null) ?? (Array.isArray(d.accidents) ? (d.accidents as unknown[]).length : null),
-        owners: (d.owners as number | null) ?? null,
-        photos: Array.isArray(d.photos) ? (d.photos as string[]).filter(Boolean).slice(0, 6) : null,
-        amount: payment?.amount ?? 0,
-        currency: payment?.currency ?? "EUR",
-        paymentRef: payment?.ref ?? null,
-        siteUrl,
-      }, templates.confirm),
-    });
-    if (!result.ok) logger.warn({ vin, err: result.error }, "Payment confirmation email failed");
-  } catch (err) {
-    logger.warn({ vin, err }, "Payment confirmation email threw");
-  }
-}
-
 // ── Free-coupon bookkeeping (use counted atomically at payment creation) ─────
 async function countFreeCoupon(paymentId: number, couponCode: string): Promise<void> {
   try {
@@ -618,8 +555,13 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const normalizedVin = vin.toUpperCase();
 
+  // name/email are required so the report-ready email has a recipient.
   const user = await db
-    .select({ isBanned: usersTable.isBanned })
+    .select({
+      isBanned: usersTable.isBanned,
+      name: usersTable.name,
+      email: usersTable.email,
+    })
     .from(usersTable)
     .where(eq(usersTable.id, userId))
     .limit(1);
@@ -724,8 +666,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
     }
-    void fireVinReadyEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0]);
-    void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
+    void fireVinReadyEmailForUser(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
     return;
   }
 
@@ -757,8 +698,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
     }
-    void fireVinReadyEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0]);
-    void firePaymentConfirmEmail(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
+    void fireVinReadyEmailForUser(lookup.id, normalizedVin, lookup.data as Record<string, unknown> | null, user[0], resolvedPayment);
     return;
   }
 
