@@ -57,6 +57,66 @@ describe("accident severity USD tiers", () => {
   });
 });
 
+describe("normalizeCarstatResponse accident keep without invented severity", () => {
+  it("keeps standard accidents that have type/date but no loss amount", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2018,
+      vin: "KNATEST0000000001",
+      manufacturer: { name: "Hyundai" },
+      model: { name: "Sonata" },
+      lots: [{
+        domain: { name: "example_com" },
+        location: { country: { iso: "us", name: "us" } },
+        details: {
+          insurance_v2: {
+            accidentCnt: 1,
+            accidents: [
+              { date: "2021-04-16", type: "collision", description: "Front impact" },
+            ],
+          },
+        },
+      }],
+    });
+
+    expect(normalized.accidents).toHaveLength(1);
+    expect(normalized.accidents?.[0]?.severity).toBeNull();
+    expect(normalized.accidents?.[0]?.date).toBe("2021-04-16");
+    expect(normalized.accidentCount).toBe(1);
+  });
+
+  it("still maps Korean insurance claims and registry when claim amounts are present", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2018,
+      vin: "KNATEST0000000002",
+      manufacturer: { name: "Hyundai" },
+      model: { name: "Sonata" },
+      lots: [{
+        domain: { name: "encar_com" },
+        location: { country: { iso: "kr", name: "kr" } },
+        details: {
+          history: [{
+            date: "2021-04",
+            content: [{
+              title: "Insurance processing",
+              sub: "own damage\nRepair cost 1,200,000won",
+            }],
+          }],
+          insurance_v2: {
+            accidentCnt: 1,
+            accidents: [
+              { date: "2021-04-16", type: "2", insuranceBenefit: 1_200_000, partCost: 800_000 },
+            ],
+          },
+        },
+      }],
+    });
+
+    expect(normalized.insuranceClaims).toHaveLength(1);
+    expect(normalized.accidents?.length).toBeGreaterThan(0);
+    expect(normalized.registryHistory?.length).toBeGreaterThan(0);
+  });
+});
+
 describe("parseLotOdometerKm", () => {
   it("converts US auction miles to km", () => {
     expect(parseLotOdometerKm({ odometer: { mi: 100_000 } })).toBe(160_934);

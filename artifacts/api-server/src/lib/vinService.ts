@@ -2679,9 +2679,21 @@ export function resolveVinAccidents(input: {
       : [],
   );
 
+  // Keep rows with any real signal. Do not require severity — missing loss amount
+  // correctly yields severity null (not invented "minor"), and that must not drop the accident.
   const standardAccidents = standardRecords
     .map((r) => mapStandardInsuranceAccident(r, country, totalLoss))
-    .filter((a) => a.date || a.description || a.primaryDamage || a.severity || a.lossAmount);
+    .filter((a) =>
+      a.date
+      || a.description
+      || a.primaryDamage
+      || a.secondaryDamage
+      || a.type
+      || a.lossAmount != null
+      || a.odometerAtLoss != null
+      || a.airbagDeployed != null
+      || a.severity
+    );
 
   const inspect = parseKoreanInspectAccident(lotDetails);
   const inspectionAccidents: NonNullable<NormalizedVinData["accidents"]> = [];
