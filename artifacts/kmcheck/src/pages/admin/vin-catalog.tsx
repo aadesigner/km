@@ -705,11 +705,27 @@ export default function AdminVinCatalog() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Page {page} of {totalPages} · {total} total</p>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => { setPage(1); setSelected(new Set()); }}
+            >
+              Latest
+            </Button>
             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage(p => p - 1); setSelected(new Set()); }}>
               Previous
             </Button>
             <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage(p => p + 1); setSelected(new Set()); }}>
               Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => { setPage(totalPages); setSelected(new Set()); }}
+            >
+              Last
             </Button>
           </div>
         </div>
