@@ -78,7 +78,7 @@ describe("varsFromReportReady", () => {
   const base = {
     name: "Alex",
     vin: "WBA3A5G59DNP26082",
-    reportUrl: "https://kmcheck.com/en/report/42",
+    reportUrl: "https://kmcheck.com/en/vin/WBA3A5G59DNP26082",
     siteUrl: "https://kmcheck.com",
   };
 

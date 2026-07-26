@@ -97,7 +97,7 @@ export async function fireVinReadyEmailForUser(
         name: user.name ?? user.email.split("@")[0],
         email: user.email,
         vin,
-        reportUrl: `${siteUrl}/en/report/${lookupId}`,
+        reportUrl: `${siteUrl}/en/vin/${encodeURIComponent(vin)}`,
         make: (d.make as string | null) ?? null,
         model: (d.model as string | null) ?? null,
         year: toNumber(d.year),

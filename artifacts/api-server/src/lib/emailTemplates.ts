@@ -155,7 +155,7 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
         ...common,
         email: "alex@example.com",
         vin: "WBA3A5G59DNP26082",
-        reportUrl: `${base}/en/report/42`,
+        reportUrl: `${base}/en/vin/WBA3A5G59DNP26082`,
         year: "2019",
         make: "BMW",
         model: "3 Series",
