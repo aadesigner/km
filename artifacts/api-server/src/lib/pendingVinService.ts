@@ -219,8 +219,11 @@ export async function fulfillManualPendingVinLookup(opts: {
 /**
  * Same combined report-ready + payment email as instant API fulfillment.
  * Call only after the pending VIN is published to the catalog.
+ *
+ * Fully fire-and-forget: never await this from publish. Emails are deferred with
+ * setImmediate so SMTP cannot delay the publish HTTP response.
  */
-export async function notifyPurchasersOnPendingPublish(opts: {
+export function notifyPurchasersOnPendingPublish(opts: {
   vin: string;
   stamped: Record<string, unknown>;
   requests: Array<{
@@ -232,9 +235,8 @@ export async function notifyPurchasersOnPendingPublish(opts: {
     notifiedAt: Date | null;
   }>;
   notifiedAt: Date;
-}): Promise<void> {
+}): void {
   const notifiedUsers = new Set<string>();
-  const jobs: Promise<void>[] = [];
 
   for (const req of opts.requests) {
     if (!req.notifyOnPublish || req.notifiedAt) continue;
@@ -246,46 +248,52 @@ export async function notifyPurchasersOnPendingPublish(opts: {
     }
     notifiedUsers.add(req.userId);
 
-    jobs.push((async () => {
-      const [user] = await db.select({
-        name: usersTable.name,
-        email: usersTable.email,
-      }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
-      if (!user?.email) {
-        logger.warn({
-          vin: opts.vin,
-          userId: req.userId,
-          lookupId: req.lookupId,
-        }, "Pending publish report email skipped — no recipient email");
-        return;
-      }
+    // Defer each send past the current publish request so SMTP / DB lookups
+    // cannot compete with res.json latency.
+    setImmediate(() => {
+      void (async () => {
+        try {
+          const [user] = await db.select({
+            name: usersTable.name,
+            email: usersTable.email,
+          }).from(usersTable).where(eq(usersTable.id, req.userId)).limit(1);
+          if (!user?.email) {
+            logger.warn({
+              vin: opts.vin,
+              userId: req.userId,
+              lookupId: req.lookupId,
+            }, "Pending publish report email skipped — no recipient email");
+            return;
+          }
 
-      let payment: { amount: number; currency: string; ref: string | null } | null = null;
-      if (req.paymentId) {
-        const [pay] = await db.select({
-          amount: paymentsTable.amount,
-          currency: paymentsTable.currency,
-          ref: paymentsTable.paypalOrderId,
-        }).from(paymentsTable).where(eq(paymentsTable.id, req.paymentId)).limit(1);
-        payment = pay ?? null;
-      }
+          let payment: { amount: number; currency: string; ref: string | null } | null = null;
+          if (req.paymentId) {
+            const [pay] = await db.select({
+              amount: paymentsTable.amount,
+              currency: paymentsTable.currency,
+              ref: paymentsTable.paypalOrderId,
+            }).from(paymentsTable).where(eq(paymentsTable.id, req.paymentId)).limit(1);
+            payment = pay ?? null;
+          }
 
-      // Identical helper + template as catalog/cache/provider instant fulfillment.
-      const sent = await fireVinReadyEmailForUser(
-        req.lookupId,
-        opts.vin,
-        opts.stamped,
-        user,
-        payment,
-      );
-      if (!sent) return;
-      await db.update(pendingVinCheckRequestsTable)
-        .set({ notifiedAt: opts.notifiedAt })
-        .where(eq(pendingVinCheckRequestsTable.id, req.id));
-    })());
+          // Identical helper + template as catalog/cache/provider instant fulfillment.
+          const sent = await fireVinReadyEmailForUser(
+            req.lookupId,
+            opts.vin,
+            opts.stamped,
+            user,
+            payment,
+          );
+          if (!sent) return;
+          await db.update(pendingVinCheckRequestsTable)
+            .set({ notifiedAt: opts.notifiedAt })
+            .where(eq(pendingVinCheckRequestsTable.id, req.id));
+        } catch (err) {
+          logger.warn({ vin: opts.vin, lookupId: req.lookupId, err }, "Pending publish report email threw");
+        }
+      })();
+    });
   }
-
-  await Promise.allSettled(jobs);
 }
 
 export async function publishPendingVinCheck(opts: {

@@ -8,11 +8,22 @@ const pendingSrc = readFileSync(join(here, "pendingVinService.ts"), "utf8");
 const vinRouteSrc = readFileSync(join(here, "../routes/vin.ts"), "utf8");
 const fulfillmentSrc = readFileSync(join(here, "vinFulfillmentService.ts"), "utf8");
 
-/** Extract source between `export async function Name` and the next `export async function` / EOF. */
+/** Extract source between `export … function Name` and the next export function / EOF. */
 function exportRegion(src: string, exportName: string): string {
-  const start = src.indexOf(`export async function ${exportName}`);
+  const patterns = [
+    `export async function ${exportName}`,
+    `export function ${exportName}`,
+  ];
+  let start = -1;
+  for (const p of patterns) {
+    start = src.indexOf(p);
+    if (start >= 0) break;
+  }
   expect(start, `missing export ${exportName}`).toBeGreaterThanOrEqual(0);
-  const next = src.indexOf("\nexport async function ", start + 1);
+  const nextAsync = src.indexOf("\nexport async function ", start + 1);
+  const nextSync = src.indexOf("\nexport function ", start + 1);
+  const candidates = [nextAsync, nextSync].filter((n) => n > start);
+  const next = candidates.length ? Math.min(...candidates) : -1;
   return next === -1 ? src.slice(start) : src.slice(start, next);
 }
 
@@ -36,9 +47,13 @@ describe("pending VIN customer email contract", () => {
     const publish = exportRegion(pendingSrc, "publishPendingVinCheck");
     expect(publish).toContain("notifyPurchasersOnPendingPublish");
     expect(publish).not.toMatch(/fireVinReadyEmailForUser\s*\(/);
+    // Must not await the notifier — SMTP must stay off the publish critical path.
+    expect(publish).not.toMatch(/await\s+notifyPurchasersOnPendingPublish/);
 
     const notify = exportRegion(pendingSrc, "notifyPurchasersOnPendingPublish");
     expect(notify).toContain("fireVinReadyEmailForUser");
+    expect(notify).toContain("setImmediate");
+    expect(notify).not.toContain("Promise.allSettled");
     expect(notify).toMatch(/Identical helper \+ template as catalog\/cache\/provider instant fulfillment/);
   });
 
