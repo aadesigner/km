@@ -521,8 +521,8 @@
   "checkout_manual_pending_title": "Livrat în câteva secunde în majoritatea cazurilor",
   "checkout_manual_pending_desc": "Dacă sistemul verifică încă informații de la partenerii noștri, vă vom trimite un e-mail când este gata.",
   "pending_report_title": "Sistemul nostru verifică toate bazele de date disponibile. Veți primi un e-mail când este gata.",
-  "pending_report_top_notice": "Căutăm toate informațiile disponibile. Vă vom trimite un e-mail când este gata.",
-  "pending_report_top_notice_sub": "De obicei gata în maxim o zi. Dacă nu se găsesc informații, vă rambursăm suma.",
+  "pending_report_top_notice": "Căutăm",
+  "pending_report_top_notice_sub": "Dacă ați tastat greșit o cifră, contactați-ne la {{email}} cu noul VIN corect.",
   "pending_report_desc": "Dacă sistemul nu găsește date, vă rambursăm suma.",
   "pending_report_badge": "În curs",
   "pending_coffee_popup_title": "E timpul unei pauze de cafea",
@@ -1569,5 +1569,9 @@
   "flag_country_de": "Germania",
   "flag_country_fr": "Franța",
   "help_faq_6_q": "Este plata mea securizată?",
-  "help_faq_6_a": "Toate plățile sunt procesate în siguranță de PayPal. Nu stocăm niciodată detaliile cardului. Puteți plăti cu orice card major sau contul PayPal."
+  "help_faq_6_a": "Toate plățile sunt procesate în siguranță de PayPal. Nu stocăm niciodată detaliile cardului. Puteți plăti cu orice card major sau contul PayPal.",
+  "pending_report_top_notice_tail": "în toate bazele noastre de date.",
+  "pending_report_eta_title": "Căutarea poate dura câteva ore",
+  "pending_report_eta_body": "Relaxați-vă — vă vom trimite un e-mail când raportul este gata. Nu trebuie să lăsați această pagină deschisă.",
+  "pending_report_top_notice_verify": "Asigurați-vă că VIN-ul este corect!"
 }

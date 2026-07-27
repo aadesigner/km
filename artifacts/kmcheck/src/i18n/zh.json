@@ -542,8 +542,8 @@
   "checkout_manual_pending_title": "大多数情况下数秒内交付",
   "checkout_manual_pending_desc": "若系统仍在向合作伙伴查询信息，就绪后我们会邮件通知。",
   "pending_report_title": "系统正在查询所有可用数据库。完成后您将收到邮件。",
-  "pending_report_top_notice": "我们正在搜索所有可用信息。就绪后我们会邮件通知。",
-  "pending_report_top_notice_sub": "通常一天内完成。若未找到信息，我们将退款。",
+  "pending_report_top_notice": "我们正在搜索",
+  "pending_report_top_notice_sub": "如输错一位数字，请将新的正确 VIN 发送至 {{email}} 联系我们。",
   "pending_report_desc": "若系统未找到任何数据，我们将退还相应金额。",
   "pending_report_badge": "进行中",
   "pending_coffee_popup_title": "喝杯咖啡休息一下",
@@ -1569,5 +1569,9 @@
   "flag_country_de": "德国",
   "flag_country_fr": "法国",
   "help_faq_6_q": "付款安全吗？",
-  "help_faq_6_a": "所有付款由 PayPal 安全处理。我们从不存储您的卡号。可使用主流银行卡或 PayPal 账户支付。"
+  "help_faq_6_a": "所有付款由 PayPal 安全处理。我们从不存储您的卡号。可使用主流银行卡或 PayPal 账户支付。",
+  "pending_report_top_notice_tail": "于我们的全部数据库。",
+  "pending_report_eta_title": "搜索可能需要数小时",
+  "pending_report_eta_body": "请放心等候 — 报告完成后我们会发邮件通知您。无需一直打开此页面。",
+  "pending_report_top_notice_verify": "请确认 VIN 正确！"
 }

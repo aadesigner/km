@@ -161,7 +161,7 @@ function ReportCard({
   const model = vd?.model;
   const year = vd?.year;
   const isPendingManual = lookup.status === "pending_manual";
-  const pendingVehicleName = [year ? String(year) : null, make ?? null].filter(Boolean).join(" ") || null;
+  const pendingVehicleName = [make ?? null, year ? String(year) : null].filter(Boolean).join(" ") || null;
   // Always surface make/year even when model is unknown.
   const vehicleName = isPendingManual
     ? pendingVehicleName

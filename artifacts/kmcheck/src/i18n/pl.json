@@ -521,8 +521,8 @@
   "checkout_manual_pending_title": "Dostawa w kilka sekund w większości przypadków",
   "checkout_manual_pending_desc": "Jeśli system wciąż sprawdza informacje u naszych partnerów, wyślemy e-mail, gdy raport będzie gotowy.",
   "pending_report_title": "Nasz system sprawdza wszystkie dostępne bazy danych. Otrzymasz e-mail, gdy sprawdzenie się zakończy.",
-  "pending_report_top_notice": "Szukamy wszystkich dostępnych informacji. Wyślemy e-mail, gdy raport będzie gotowy.",
-  "pending_report_top_notice_sub": "Zwykle gotowe w ciągu jednego dnia. Jeśli nie znajdziemy informacji, zwrócimy pieniądze.",
+  "pending_report_top_notice": "Wyszukujemy",
+  "pending_report_top_notice_sub": "Jeśli wpisałeś złą cyfrę, skontaktuj się z nami pod {{email}}, podając nowy poprawny VIN.",
   "pending_report_desc": "Jeśli system nie znajdzie żadnych danych, zwrócimy Ci kwotę.",
   "pending_report_badge": "W trakcie",
   "pending_coffee_popup_title": "Czas na kawę",
@@ -1569,5 +1569,9 @@
   "flag_country_de": "Niemcy",
   "flag_country_fr": "Francja",
   "help_faq_6_q": "Czy moja płatność jest bezpieczna?",
-  "help_faq_6_a": "Wszystkie płatności są bezpiecznie przetwarzane przez PayPal. Nigdy nie przechowujemy danych Twojej karty. Możesz płacić dowolną główną kartą lub kontem PayPal."
+  "help_faq_6_a": "Wszystkie płatności są bezpiecznie przetwarzane przez PayPal. Nigdy nie przechowujemy danych Twojej karty. Możesz płacić dowolną główną kartą lub kontem PayPal.",
+  "pending_report_top_notice_tail": "we wszystkich naszych bazach danych.",
+  "pending_report_eta_title": "Wyszukiwanie może potrwać kilka godzin",
+  "pending_report_eta_body": "Zrelaksuj się — wyślemy e-mail, gdy raport będzie gotowy. Nie musisz trzymać tej strony otwartej.",
+  "pending_report_top_notice_verify": "Upewnij się, że VIN jest poprawny!"
 }

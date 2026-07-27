@@ -49,6 +49,8 @@ type VinReportHeroProps = {
   photoPlaceholderLabel?: string;
   /** Animated radar placeholder while a manual report is being compiled. */
   pendingPhotoScan?: boolean;
+  /** Show “can take a couple of hours + email” note under the VIN (pending reports). */
+  pendingEta?: boolean;
   children: React.ReactNode;
   showStatsRow?: boolean;
 };
@@ -510,6 +512,7 @@ export function VinReportHero({
   onPhotoClick,
   photoPlaceholderLabel,
   pendingPhotoScan = false,
+  pendingEta = false,
   showStatsRow = true,
   children,
 }: VinReportHeroProps) {
@@ -595,6 +598,18 @@ export function VinReportHero({
                 >
                   {vin}
                 </Badge>
+                {pendingEta ? (
+                  <div className="mt-3.5 pt-3.5 border-t border-border/50 max-w-md">
+                    <div className="rounded-lg border border-sky-500/20 bg-sky-500/[0.06] px-3 py-2.5">
+                      <p className="text-sm sm:text-[15px] font-medium text-foreground leading-snug">
+                        {t("pending_report_eta_title")}
+                      </p>
+                      <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        {t("pending_report_eta_body")}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
               {scoreData && (
                 <div

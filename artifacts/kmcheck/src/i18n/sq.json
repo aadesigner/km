@@ -524,8 +524,8 @@
   "checkout_manual_pending_title": "Dorëzohet brenda sekondave në shumicën e rasteve.",
   "checkout_manual_pending_desc": "Nëse sistemi vazhdon kontrollin e informacioneve nga partnerët tanë, do t'ju dërgojmë email kur të jetë gati.",
   "pending_report_title": "Sistemi ynë po kontrollon të gjitha bazat e të dhënave të disponueshme. Do të merrni një email kur të përfundojë.",
-  "pending_report_top_notice": "Po kërkojmë të gjitha informacionet e disponueshme. Do t'ju dërgojmë email kur të jetë gati.",
-  "pending_report_top_notice_sub": "Zakonisht gati brenda një dite. Nëse nuk gjendet asnjë informacion, do t'ju rimbursojmë.",
+  "pending_report_top_notice": "Po kërkojmë",
+  "pending_report_top_notice_sub": "Nëse keni shkruar gabim një shifër, na kontaktoni në {{email}} me VIN(Shasia)-n e ri të saktë.",
   "pending_report_desc": "Nëse sistemi nuk gjen asnjë të dhënë, do t'ju rimbursojmë shumën.",
   "pending_report_badge": "Në proces",
   "pending_coffee_popup_title": "Koha për një kafe",
@@ -1016,7 +1016,7 @@
   "report_no_salvage": "Nuk shënohet dëmtim total",
   "report_salvage_flag": "Dëmtim total i shënuar",
   "report_clean_flag": "Titull i pastër",
-  "report_not_stolen": "Nuk është raportuar",
+  "report_not_stolen": "Nuk është raportuar e vjedhur",
   "report_stolen_flag": "Raportuar si i vjedhur",
   "report_accidents_recorded": "aksidente të regjistruara",
   "accident_no_desc": "Nuk ka përshkrim për këtë aksident",
@@ -1572,5 +1572,9 @@
   "flag_country_de": "Gjermani",
   "flag_country_fr": "Francë",
   "help_faq_6_q": "A është pagesa e sigurt?",
-  "help_faq_6_a": "Të gjitha pagesat procesohen në mënyrë të sigurt përmes PayPal. Ne nuk ruajmë kurrë të dhënat e kartës suaj. Mund të paguani me çdo kartë kryesore ose me llogarinë tuaj PayPal."
+  "help_faq_6_a": "Të gjitha pagesat procesohen në mënyrë të sigurt përmes PayPal. Ne nuk ruajmë kurrë të dhënat e kartës suaj. Mund të paguani me çdo kartë kryesore ose me llogarinë tuaj PayPal.",
+  "pending_report_top_notice_tail": "në të gjitha bazat tona të të dhënave.",
+  "pending_report_eta_title": "Kërkimi mund të zgjasë disa orë",
+  "pending_report_eta_body": "Relaksohuni — do t'ju dërgojmë email sapo raporti të jetë gati. Nuk ka nevojë ta mbani këtë faqe hapur.",
+  "pending_report_top_notice_verify": "Ju lutemi sigurohuni që VIN(Shasia) është e saktë!"
 }

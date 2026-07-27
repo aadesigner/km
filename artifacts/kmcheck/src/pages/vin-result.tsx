@@ -647,7 +647,7 @@ export default function VinResult({ params }: Props) {
     : `${t("report_for")} ${lookup.vin}`;
 
   const pendingHeroTitle = (() => {
-    if (data?.year && data?.make) return `${data.year} ${data.make}`;
+    if (data?.year && data?.make) return `${data.make} ${data.year}`;
     if (data?.make) return data.make;
     if (data?.year) return String(data.year);
     return null;
@@ -783,7 +783,7 @@ export default function VinResult({ params }: Props) {
 
       <div className="vin-report-screen space-y-4 sm:space-y-6">
       {isPendingManual ? (
-        <PendingVinTopNotice />
+        <PendingVinTopNotice vin={lookup.vin} />
       ) : null}
       {isPendingManual ? <PendingVinCoffeeDialog /> : null}
       <VinReportHero
@@ -798,6 +798,7 @@ export default function VinResult({ params }: Props) {
         pendingPhotoScan={isPendingManual}
         unlockedLabel={isPendingManual ? t("pending_report_badge") : undefined}
         showStatsRow={!isPendingManual}
+        pendingEta={isPendingManual}
         onPhotoClick={!isPendingManual && photos.length > 0 ? (i) => openLightbox(i) : undefined}
       >
         {odometer && odoCol && !isPendingManual ? (

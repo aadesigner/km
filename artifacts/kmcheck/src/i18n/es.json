@@ -521,8 +521,8 @@
   "checkout_manual_pending_title": "Entregado en segundos en la mayoría de los casos",
   "checkout_manual_pending_desc": "Si el sistema sigue buscando información de nuestros socios, le enviaremos un correo cuando esté listo.",
   "pending_report_title": "Estamos buscando en todas las bases de datos disponibles. Recibirá un correo cuando termine.",
-  "pending_report_top_notice": "Estamos buscando toda la información disponible. Le enviaremos un correo cuando esté listo.",
-  "pending_report_top_notice_sub": "Normalmente listo en un día. Si no se encuentra información, le reembolsaremos.",
+  "pending_report_top_notice": "Estamos buscando",
+  "pending_report_top_notice_sub": "Si escribió un dígito mal, contáctenos en {{email}} con el VIN nuevo y correcto.",
   "pending_report_desc": "Si el sistema no encuentra datos, le reembolsaremos el importe.",
   "pending_report_badge": "En curso",
   "pending_coffee_popup_title": "Hora de un descanso",
@@ -1569,5 +1569,9 @@
   "flag_country_de": "Alemania",
   "flag_country_fr": "Francia",
   "help_faq_6_q": "¿Es seguro mi pago?",
-  "help_faq_6_a": "Todos los pagos se procesan de forma segura mediante PayPal. Nunca almacenamos los datos de su tarjeta. Puede pagar con cualquier tarjeta principal o su cuenta de PayPal."
+  "help_faq_6_a": "Todos los pagos se procesan de forma segura mediante PayPal. Nunca almacenamos los datos de su tarjeta. Puede pagar con cualquier tarjeta principal o su cuenta de PayPal.",
+  "pending_report_top_notice_tail": "en todas nuestras bases de datos.",
+  "pending_report_eta_title": "La búsqueda puede tardar varias horas",
+  "pending_report_eta_body": "Relájese — le enviaremos un correo cuando su informe esté listo. No necesita dejar esta página abierta.",
+  "pending_report_top_notice_verify": "¡Asegúrese de que el VIN sea correcto!"
 }
