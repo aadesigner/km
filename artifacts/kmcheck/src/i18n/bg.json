@@ -522,7 +522,7 @@
   "checkout_manual_pending_desc": "Ако системата все още проверява информация от партньорите ни, ще ви изпратим имейл, когато е готово.",
   "pending_report_title": "Системата ни проверява всички налични бази данни. Ще получите имейл, когато приключи.",
   "pending_report_top_notice": "Търсим",
-  "pending_report_top_notice_sub": "Ако сте въвели грешна цифра, свържете се с нас на {{email}} с новия правилен VIN.",
+  "pending_report_top_notice_sub": "Ако сте въвели грешна цифра, изпратете ни правилния VIN по имейл на {{email}}.",
   "pending_report_desc": "Ако системата не намери данни, ще ви възстановим сумата.",
   "pending_report_badge": "В процес",
   "pending_coffee_popup_title": "Време за кафе",

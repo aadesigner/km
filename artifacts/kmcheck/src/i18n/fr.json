@@ -522,7 +522,7 @@
   "checkout_manual_pending_desc": "Si le système consulte encore les informations de nos partenaires, nous vous enverrons un e-mail lorsque ce sera prêt.",
   "pending_report_title": "Notre système consulte toutes les bases de données disponibles. Vous recevrez un e-mail lorsque ce sera terminé.",
   "pending_report_top_notice": "Nous recherchons",
-  "pending_report_top_notice_sub": "Si vous avez saisi un chiffre incorrect, contactez-nous à {{email}} avec le nouveau VIN correct.",
+  "pending_report_top_notice_sub": "Si vous avez saisi un chiffre incorrect, envoyez-nous le VIN correct par e-mail à {{email}}.",
   "pending_report_desc": "Si le système ne trouve aucune donnée, nous vous rembourserons le montant.",
   "pending_report_badge": "En cours",
   "pending_coffee_popup_title": "L'heure d'une pause café",

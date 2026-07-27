@@ -525,7 +525,7 @@
   "checkout_manual_pending_desc": "Nëse sistemi vazhdon kontrollin e informacioneve nga partnerët tanë, do t'ju dërgojmë email kur të jetë gati.",
   "pending_report_title": "Sistemi ynë po kontrollon të gjitha bazat e të dhënave të disponueshme. Do të merrni një email kur të përfundojë.",
   "pending_report_top_notice": "Po kërkojmë",
-  "pending_report_top_notice_sub": "Nëse keni shkruar gabim një shifër, na kontaktoni në {{email}} me VIN(Shasia)-n e ri të saktë.",
+  "pending_report_top_notice_sub": "Nëse keni shkruajtur gabim një shifër, na dërgoni VIN(Shasinë) e saktë në email {{email}}.",
   "pending_report_desc": "Nëse sistemi nuk gjen asnjë të dhënë, do t'ju rimbursojmë shumën.",
   "pending_report_badge": "Në proces",
   "pending_coffee_popup_title": "Koha për një kafe",

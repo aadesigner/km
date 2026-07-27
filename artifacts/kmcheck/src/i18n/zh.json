@@ -543,7 +543,7 @@
   "checkout_manual_pending_desc": "若系统仍在向合作伙伴查询信息，就绪后我们会邮件通知。",
   "pending_report_title": "系统正在查询所有可用数据库。完成后您将收到邮件。",
   "pending_report_top_notice": "我们正在搜索",
-  "pending_report_top_notice_sub": "如输错一位数字，请将新的正确 VIN 发送至 {{email}} 联系我们。",
+  "pending_report_top_notice_sub": "如输错一位数字，请将正确的 VIN 发送至邮箱 {{email}}。",
   "pending_report_desc": "若系统未找到任何数据，我们将退还相应金额。",
   "pending_report_badge": "进行中",
   "pending_coffee_popup_title": "喝杯咖啡休息一下",

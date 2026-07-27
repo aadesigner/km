@@ -573,7 +573,7 @@
   "pending_report_title": "Our system is checking all available databases. You'll receive an email when it's done.",
   "pending_report_top_notice": "We're searching",
   "pending_report_top_notice_tail": "in all our databases.",
-  "pending_report_top_notice_sub": "If you typed a digit wrong, contact us at {{email}} with the new correct VIN.",
+  "pending_report_top_notice_sub": "If you typed a digit wrong, send us the correct VIN by email at {{email}}.",
   "pending_report_desc": "If the system does not find any data, we will refund you the amount.",
   "pending_report_badge": "In progress",
   "pending_report_eta_title": "The search can take several hours",
