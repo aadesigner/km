@@ -2,8 +2,10 @@
  * Ford Europe free-decoder QA — XX layout + ZZZ homologation.
  *
  * Contract:
- * - XX layout: year from position 11 (Ford cycle), never ISO pos.10.
+ * - Legacy Saarlouis XX (WF0[digit]XXGC…): year from position 11.
+ * - Modern XX (Galaxy, Mondeo, …): ISO year at position 10; pos.11 = plant.
  * - WF05XXGCC5FD58410 → Focus, year 2015 (not 2005).
+ * - WF0LXXGCBLBT76866 → Galaxy, year 2020 (not 2011 from plant code B).
  * - ZZZ homologation lines stay green.
  * - Ambiguous / unknown → null (no invent).
  */
@@ -13,6 +15,8 @@ import {
   isFordEuXxLayout,
   decodeFordEuXxYear,
   decodeFordEuModel,
+  isFordEuLegacyXxYearAtPos11,
+  fordEuXxUsesIsoYearAtPos10,
 } from "./index";
 
 describe("Ford Europe QA — XX layout regression", () => {
@@ -47,6 +51,28 @@ describe("Ford Europe QA — XX layout regression", () => {
     expect(decodeFordEuModel("WF0EXXGCDM4E44162")).toBe("Focus");
     expect(decodeFordEuModel("WF0FXXGAJD8S12345")).toBe("Fiesta");
     expect(decodeFordEuModel("WF0JXXGAJD8S12345")).toBe("C-Max");
+  });
+
+  it("WF0LXXGCBLBT76866 → Galaxy, year 2020 (pos.10 L, not plant B at pos.11)", () => {
+    const vin = "WF0LXXGCBLBT76866";
+    expect(isFordEuXxLayout(vin)).toBe(true);
+    expect(fordEuXxUsesIsoYearAtPos10(vin)).toBe(true);
+    expect(decodeFordEuXxYear(vin)).toBe(2020);
+
+    const r = decodeVin(vin);
+    expect(r.make).toBe("Ford");
+    expect(r.model).toMatch(/Galaxy/i);
+    expect(r.year).toBe(2020);
+    expect(r.year).not.toBe(2011);
+  });
+
+  it.each([
+    ["WF0KXXWPCKLB71430", 2020],
+    ["WF0KXXWPCKMJ44715", 2021],
+    ["WF0KXXWPCKHM77066", 2017],
+  ])("%s → year %i (Mondeo-platform XX, calendar at pos.11)", (vin, year) => {
+    expect(fordEuXxUsesIsoYearAtPos10(vin)).toBe(false);
+    expect(decodeVin(vin).year).toBe(year);
   });
 });
 

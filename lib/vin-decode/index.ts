@@ -127,6 +127,8 @@ export {
   isFordEuWmi,
   isFordEuXxLayout,
   decodeFordEuXxYear,
+  isFordEuLegacyXxYearAtPos11,
+  fordEuXxUsesIsoYearAtPos10,
 } from "./ford-eu";
 export {
   decodeOpelOldPaddedYear,

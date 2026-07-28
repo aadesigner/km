@@ -3,8 +3,9 @@
  *
  * Two layouts:
  * - ZZZ homologation: type code at positions 7–9 after ZZZ filler.
- * - XX layout (older EU): positions 5–6 are "XX"; production year at
- *   position 11 (Ford calendar cycle), NOT ISO position 10.
+ * - XX layout (older EU): positions 5–6 are "XX".
+ *   • Legacy Saarlouis Focus (WF0[digit]XXGC…): year at position 11.
+ *   • Modern XX (Galaxy, Mondeo, …): ISO year at position 10, plant at 11.
  *
  * Conservative: ambiguous plant/model → family or null, never invent.
  */
@@ -118,9 +119,9 @@ const FORD_XX_MODEL_AT_9: Record<string, string> = {
 };
 
 /**
- * Ford Europe XX-layout production year at position 11 (calendar year).
- * Digits 1–9 = 2001–2009; letters follow Ford fleet / workshop tables
- * (C=2012 … F=2015 … P=2023 …). Prefer recent cycle when ambiguous.
+ * Ford fleet build-calendar year at position 11 — only on legacy Saarlouis
+ * XX VINs where position 10 is a digit (1–9), not the ISO model year.
+ * Digits 1–9 = 2001–2009; letters C=2012 … F=2015 … L=2020 …
  */
 const FORD_XX_YEAR_AT_11: Record<string, number> = {
   "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
@@ -130,6 +131,24 @@ const FORD_XX_YEAR_AT_11: Record<string, number> = {
   N: 2022, P: 2023, R: 2024, S: 2025, T: 2026, V: 2027,
   W: 2028, X: 2029, Y: 2030,
 };
+
+const ISO_MODEL_YEAR_MAP: Record<string, number> = {
+  A: 1980, B: 1981, C: 1982, D: 1983, E: 1984,
+  F: 1985, G: 1986, H: 1987, J: 1988, K: 1989,
+  L: 1990, M: 1991, N: 1992, P: 1993, R: 1994,
+  S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
+  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
+  "6": 2006, "7": 2007, "8": 2008, "9": 2009,
+};
+
+/** ISO 3779 model year (position 10) — same 30-year cycle heuristic as vinDecoder. */
+function decodeIsoModelYear(code: string): number | null {
+  const base = ISO_MODEL_YEAR_MAP[code.toUpperCase()];
+  if (base == null) return null;
+  const candidate = base < 2010 ? base + 30 : base;
+  const currentYear = new Date().getFullYear();
+  return candidate <= currentYear + 2 ? candidate : base;
+}
 
 export function isFordEuWmi(wmi: string): boolean {
   if (FORD_EU_WMIS.some((p) => wmi.startsWith(p))) return true;
@@ -149,10 +168,44 @@ export function isFordEuXxLayout(vin: string): boolean {
   return u.slice(4, 6) === "XX";
 }
 
-/** Production calendar year from position 11 for XX-layout Ford Europe VINs. */
+/**
+ * Legacy Saarlouis Focus XX VINs (WF0[digit]XXGC…): ISO position 10 is not
+ * model year — production calendar year lives at position 11 instead.
+ */
+export function isFordEuLegacyXxYearAtPos11(vin: string): boolean {
+  if (!isFordEuXxLayout(vin)) return false;
+  const pos10 = vin.trim().toUpperCase()[9];
+  return pos10 >= "1" && pos10 <= "9";
+}
+
+/** Galaxy XX prefixes — ISO model year at position 10; position 11 is plant code. */
+const FORD_XX_ISO_YEAR_PREFIXES = [
+  "WF0LXX", "WF0MXX", "WF0WXX",
+  "WF1LXX", "WF1MXX", "WF1WXX",
+] as const;
+
+/** True when this XX-layout VIN carries ISO model year at position 10 (Galaxy lines). */
+export function fordEuXxUsesIsoYearAtPos10(vin: string): boolean {
+  const u = vin.trim().toUpperCase();
+  if (!isFordEuXxLayout(vin) || isFordEuLegacyXxYearAtPos11(vin)) return false;
+  return FORD_XX_ISO_YEAR_PREFIXES.some((p) => u.startsWith(p));
+}
+
+/**
+ * Model / production year for Ford Europe XX-layout VINs.
+ * - Legacy Saarlouis (WF0[digit]XXGC…): calendar year at position 11.
+ * - Galaxy (WF0LXX / MXX / WXX): ISO model year at position 10.
+ * - Other classic XX (Mondeo KXX, Focus EXX, …): calendar year at position 11.
+ */
 export function decodeFordEuXxYear(vin: string): number | null {
   if (!isFordEuXxLayout(vin)) return null;
-  const code = vin.trim().toUpperCase()[10];
+  const u = vin.trim().toUpperCase();
+
+  if (fordEuXxUsesIsoYearAtPos10(vin)) {
+    return decodeIsoModelYear(u[9] ?? "");
+  }
+
+  const code = u[10];
   if (!code) return null;
   const year = FORD_XX_YEAR_AT_11[code];
   if (year == null) return null;
