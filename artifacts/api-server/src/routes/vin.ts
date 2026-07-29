@@ -1079,8 +1079,9 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
     .from(usersTable)
     .where(eq(usersTable.id, userId))
     .limit(1);
+  // Same 404 as a missing row — do not leak existence of other users' lookup IDs.
   if (lookup.userId !== userId && !user?.isAdmin) {
-    res.status(403).json({ error: "Forbidden" });
+    res.status(404).json({ error: "VIN lookup not found" });
     return;
   }
 
