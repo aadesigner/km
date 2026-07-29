@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { normalizeAppPath, splitRouterLocation } from "./normalize-app-path";
+import {
+  normalizeAppPath,
+  pathNormalizeRedirectTarget,
+  splitRouterLocation,
+} from "./normalize-app-path";
 
 describe("normalizeAppPath", () => {
   it("strips trailing slashes", () => {
@@ -23,5 +27,25 @@ describe("splitRouterLocation", () => {
       pathname: "/adminx/users/",
       suffix: "?tab=1#x",
     });
+  });
+});
+
+describe("pathNormalizeRedirectTarget", () => {
+  it("keeps referral vin and utm query when stripping trailing slash", () => {
+    const path = normalizeAppPath("/sq/checkout/");
+    expect(
+      pathNormalizeRedirectTarget(
+        path,
+        "?vin=LVYPSAKVDLP082054&utm_source=kilometra&utm_medium=referral&utm_campaign=kilometra_al",
+      ),
+    ).toBe(
+      "/sq/checkout?vin=LVYPSAKVDLP082054&utm_source=kilometra&utm_medium=referral&utm_campaign=kilometra_al",
+    );
+  });
+
+  it("accepts search without leading ? and preserves hash", () => {
+    expect(pathNormalizeRedirectTarget("/en/sign-up", "vin=ABC", "#top")).toBe(
+      "/en/sign-up?vin=ABC#top",
+    );
   });
 });

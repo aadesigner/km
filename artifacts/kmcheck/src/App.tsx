@@ -32,7 +32,11 @@ import {
   resolveEntryLanguageSync,
 } from "@/lib/geo-language-client";
 import { SUPPORTED_LANGS, isSupportedLang, type Language, LANG_PATH_ALT } from "@/lib/languages";
-import { normalizeAppPath, splitRouterLocation } from "@/lib/normalize-app-path";
+import {
+  normalizeAppPath,
+  pathNormalizeRedirectTarget,
+  splitRouterLocation,
+} from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
 import Home from "@/pages/home";
@@ -658,7 +662,20 @@ function AppRouter() {
   const normalized = normalizeAppPath(pathname);
 
   if (normalized !== pathname) {
-    return <Redirect to={`${normalized}${suffix}`} />;
+    // Server often 301s to a trailing slash; wouter location has no ?query — keep it.
+    const search =
+      typeof window !== "undefined" && window.location.search
+        ? window.location.search
+        : suffix.startsWith("?")
+          ? suffix.split("#")[0] ?? ""
+          : "";
+    const hash =
+      typeof window !== "undefined" && window.location.hash
+        ? window.location.hash
+        : suffix.includes("#")
+          ? `#${suffix.split("#").slice(1).join("#")}`
+          : "";
+    return <Redirect to={pathNormalizeRedirectTarget(normalized, search, hash)} />;
   }
 
   const unprefixedRest = pathNeedingLangPrefix(pathname);
