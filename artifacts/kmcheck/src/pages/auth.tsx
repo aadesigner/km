@@ -343,6 +343,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     if (oauthError) setError(translateAuthOAuthError(t, oauthError));
   }, [oauthError, t]);
 
+  // If already signed in on an auth page with ?vin=, go straight to checkout with prefill.
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);

@@ -160,7 +160,9 @@ export default function Home() {
   const [vin, setVin] = useState(() => {
     if (typeof window === "undefined") return "";
     const urlVin = new URLSearchParams(window.location.search).get("vin");
-    return urlVin ? urlVin.trim().toUpperCase() : "";
+    if (!urlVin) return "";
+    const cleaned = urlVin.trim().toUpperCase().replace(/[\s-]/g, "");
+    return cleaned;
   });
   const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
 

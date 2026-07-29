@@ -46,9 +46,8 @@ describe("getPostAuthCheckoutPath", () => {
 
 describe("guestVinAuthPath", () => {
   it("includes vin query for valid 17-char VINs", () => {
-    expect(guestVinAuthPath("sq", "lvypsakvdlp082054")).toBe(
-      "/sq/sign-up?vin=LVYPSAKVDLP082054",
-    );
+    expect(guestVinAuthPath("sq", "lvypsakvdlp082054")).toContain("vin=LVYPSAKVDLP082054");
+    expect(guestVinAuthPath("sq", "lvypsakvdlp082054").startsWith("/sq/sign-up?")).toBe(true);
   });
 
   it("omits vin query when missing or invalid", () => {

@@ -1,5 +1,7 @@
 export const PENDING_VIN_KEY = "pending_vin";
 export const CHECKOUT_VIN_KEY = "checkout_vin";
+/** Survives some sessionStorage loss (tab restore); cleared when checkout consumes it. */
+export const REFERRAL_VIN_KEY = "kmcheck_referral_vin";
 export const AUTH_RETURN_PATH_KEY = "auth_return_path";
 export const DECODER_PENDING_VIN_KEY = "decoder_pending_vin";
 export const PAYPAL_CHECKOUT_SESSION_KEY = "kmcheck_paypal_checkout";
@@ -77,16 +79,48 @@ export function normalizeCheckoutVin(vin: string): string {
   return vin.trim().toUpperCase();
 }
 
+/** URL / referral candidates: strip spaces and dashes, then normalize. */
+export function sanitizeVinCandidate(vin: string): string {
+  return normalizeCheckoutVin(vin).replace(/[\s-]/g, "");
+}
+
+function writeReferralVinBackup(vin: string): void {
+  try {
+    localStorage.setItem(REFERRAL_VIN_KEY, vin);
+  } catch { /* private browsing */ }
+}
+
+function readReferralVinBackup(): string | null {
+  try {
+    const raw = localStorage.getItem(REFERRAL_VIN_KEY);
+    if (!raw) return null;
+    const normalized = sanitizeVinCandidate(raw);
+    if (!VIN_FORMAT_RE.test(normalized)) {
+      localStorage.removeItem(REFERRAL_VIN_KEY);
+      return null;
+    }
+    return normalized;
+  } catch {
+    return null;
+  }
+}
+
+function clearReferralVinBackup(): void {
+  try {
+    localStorage.removeItem(REFERRAL_VIN_KEY);
+  } catch { /* private browsing */ }
+}
+
 /** Read pending/checkout VIN from sessionStorage; clears invalid entries. */
 export function readStoredPendingVin(): string | null {
   if (typeof sessionStorage === "undefined") return null;
   const raw = sessionStorage.getItem(PENDING_VIN_KEY) || sessionStorage.getItem(CHECKOUT_VIN_KEY);
-  if (!raw) return null;
-  const normalized = normalizeCheckoutVin(raw);
+  if (!raw) return readReferralVinBackup();
+  const normalized = sanitizeVinCandidate(raw);
   if (!VIN_FORMAT_RE.test(normalized)) {
     sessionStorage.removeItem(PENDING_VIN_KEY);
     sessionStorage.removeItem(CHECKOUT_VIN_KEY);
-    return null;
+    return readReferralVinBackup();
   }
   return normalized;
 }
@@ -94,6 +128,7 @@ export function readStoredPendingVin(): string | null {
 export function clearStoredPendingVin(): void {
   sessionStorage.removeItem(PENDING_VIN_KEY);
   sessionStorage.removeItem(CHECKOUT_VIN_KEY);
+  clearReferralVinBackup();
 }
 
 /** True when VIN is in local-exists / catalog and the user has not already unlocked it. */
@@ -104,13 +139,31 @@ export function isEligiblePendingVin(peek: PendingVinPeek): boolean {
   return false;
 }
 
-/** Persist VIN for checkout (sessionStorage). Returns normalized VIN or null if not 17 chars. */
+/** Persist VIN for checkout (session + local backup). Returns normalized VIN or null if invalid. */
 export function persistVinForCheckout(vin: string): string | null {
-  const normalized = normalizeCheckoutVin(vin);
-  if (normalized.length !== 17) return null;
-  sessionStorage.setItem(CHECKOUT_VIN_KEY, normalized);
-  sessionStorage.setItem(PENDING_VIN_KEY, normalized);
+  const normalized = sanitizeVinCandidate(vin);
+  if (!VIN_FORMAT_RE.test(normalized)) return null;
+  try {
+    sessionStorage.setItem(CHECKOUT_VIN_KEY, normalized);
+    sessionStorage.setItem(PENDING_VIN_KEY, normalized);
+  } catch { /* private browsing */ }
+  writeReferralVinBackup(normalized);
   return normalized;
+}
+
+/**
+ * Resolve VIN for checkout prefill: URL ?vin= → session → localStorage backup.
+ * Does not change payment / unlock behavior — display/handoff only.
+ */
+export function resolveCheckoutPrefillVin(
+  search: string = typeof window !== "undefined" ? window.location.search : "",
+): string | null {
+  const urlVin = new URLSearchParams(search).get("vin");
+  if (urlVin) {
+    const fromUrl = persistVinForCheckout(urlVin);
+    if (fromUrl) return fromUrl;
+  }
+  return readStoredPendingVin();
 }
 
 export type UnlockCheckoutTarget = {
@@ -120,15 +173,26 @@ export type UnlockCheckoutTarget = {
 
 /**
  * Where guests land when a VIN check requires an account (register, not login).
- * Keep ?vin= in the URL so post-auth checkout still works if sessionStorage is flaky
- * (referral redirects, private mode, www/non-www switches).
+ * Keep ?vin= (and existing UTM params) in the URL so post-auth checkout still works
+ * if sessionStorage is flaky (referral redirects, private mode, www/non-www switches).
  */
 export function guestVinAuthPath(language: string, vin?: string | null): string {
-  const normalized = vin ? normalizeCheckoutVin(vin) : "";
+  const params = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : "",
+  );
+  const normalized = vin ? sanitizeVinCandidate(vin) : "";
   if (VIN_FORMAT_RE.test(normalized)) {
-    return `/${language}/sign-up?vin=${encodeURIComponent(normalized)}`;
+    params.set("vin", normalized);
   }
-  return `/${language}/sign-up`;
+  const qs = params.toString();
+  return `/${language}/sign-up${qs ? `?${qs}` : ""}`;
+}
+
+/** Full-page navigation to guest auth — guarantees ?vin= lands in the address bar. */
+export function assignGuestVinAuth(language: string, vin?: string | null): void {
+  const path = guestVinAuthPath(language, vin);
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  window.location.assign(`${base}${path}`);
 }
 
 /**
@@ -207,15 +271,21 @@ function preparePostAuthCheckoutLanding(): void {
 export function getPostAuthCheckoutPath(language: string): string | null {
   const pending = sessionStorage.getItem(PENDING_VIN_KEY);
   if (pending) {
-    sessionStorage.setItem(CHECKOUT_VIN_KEY, pending);
-    sessionStorage.removeItem(PENDING_VIN_KEY);
-    preparePostAuthCheckoutLanding();
-    return `/${language}/checkout?vin=${encodeURIComponent(pending)}`;
+    const normalized = persistVinForCheckout(pending);
+    if (normalized) {
+      try { sessionStorage.removeItem(PENDING_VIN_KEY); } catch { /* ignore */ }
+      preparePostAuthCheckoutLanding();
+      return `/${language}/checkout?vin=${encodeURIComponent(normalized)}`;
+    }
   }
-  const stored = sessionStorage.getItem(CHECKOUT_VIN_KEY);
+  const stored = sessionStorage.getItem(CHECKOUT_VIN_KEY) || readReferralVinBackup();
   if (stored) {
-    preparePostAuthCheckoutLanding();
-    return `/${language}/checkout?vin=${encodeURIComponent(stored)}`;
+    const normalized = persistVinForCheckout(stored);
+    if (normalized) {
+      try { sessionStorage.removeItem(PENDING_VIN_KEY); } catch { /* ignore */ }
+      preparePostAuthCheckoutLanding();
+      return `/${language}/checkout?vin=${encodeURIComponent(normalized)}`;
+    }
   }
   return null;
 }

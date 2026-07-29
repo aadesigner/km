@@ -35,8 +35,9 @@ import {
   markPaypalCheckoutAwaitingApproval,
   markPaypalCheckoutCapturePending,
   normalizeCheckoutVin,
-  guestVinAuthPath,
+  assignGuestVinAuth,
   persistVinForCheckout,
+  resolveCheckoutPrefillVin,
   readPaypalCheckoutSession,
   shouldResumePaypalCapture,
 } from "@/lib/checkout-vin-flow";
@@ -168,24 +169,7 @@ export default function Checkout({ params }: Props) {
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-  const [vin, setVin] = useState(() => {
-    // URL query param takes precedence (e.g. from public VIN page unlock CTA / kilometra referral)
-    const urlVin = new URLSearchParams(window.location.search).get("vin");
-    if (urlVin) {
-      const normalized = persistVinForCheckout(urlVin) ?? normalizeCheckoutVin(urlVin);
-      return normalized;
-    }
-    // Consume pending_vin if checkout_vin is not already set
-    const checkoutVin = sessionStorage.getItem("checkout_vin");
-    if (checkoutVin) return checkoutVin;
-    const pendingVin = sessionStorage.getItem("pending_vin");
-    if (pendingVin) {
-      sessionStorage.setItem("checkout_vin", pendingVin);
-      sessionStorage.removeItem("pending_vin");
-      return pendingVin;
-    }
-    return "";
-  });
+  const [vin, setVin] = useState(() => resolveCheckoutPrefillVin() ?? "");
   const [vinError, setVinError] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [couponResult, setCouponResult] = useState<CouponResult | null>(null);
@@ -282,14 +266,14 @@ export default function Checkout({ params }: Props) {
       : 0;
 
   // Redirect to sign-up if not authenticated (wait until auth has loaded).
-  // Keep VIN in both sessionStorage and the sign-up URL for referral/?vin= landings.
+  // Full-page assign keeps ?vin= (+ UTMs) in the address bar — more reliable than SPA navigate.
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
-      const stored = vin ? persistVinForCheckout(vin) : null;
-      setLocation(guestVinAuthPath(language, stored ?? vin));
+      const stored = vin ? persistVinForCheckout(vin) : resolveCheckoutPrefillVin();
+      assignGuestVinAuth(language, stored);
     }
-  }, [isLoaded, isSignedIn, language, setLocation, vin]);
+  }, [isLoaded, isSignedIn, language, vin]);
 
   useEffect(() => {
     checkoutActiveRef.current = true;
@@ -654,13 +638,11 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  // Apply ?vin= from navigation only (not on every keystroke)
-  useEffect(() => {
-    const urlVin = new URLSearchParams(window.location.search).get("vin");
-    if (!urlVin) return;
-    const normalized = persistVinForCheckout(urlVin);
-    if (!normalized) return;
-    setVin(normalized);
+  // Apply ?vin= / stored referral VIN whenever the route location changes
+  useLayoutEffect(() => {
+    const resolved = resolveCheckoutPrefillVin();
+    if (!resolved) return;
+    setVin((prev) => (prev === resolved ? prev : resolved));
   }, [location]);
 
   const handleApplyCoupon = async () => {
