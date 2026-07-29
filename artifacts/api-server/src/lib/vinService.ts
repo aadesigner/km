@@ -1053,15 +1053,19 @@ export type LocalExistsResult =
   | { status: "no_access"; hint?: string }
   | { status: "unavailable"; reason: string };
 
+/** Safe for any client/payment JSON — never include vendor name, host, or API paths. */
+export const PUBLIC_VIN_CHECK_UNAVAILABLE =
+  "VIN check is temporarily unavailable. Please try again later.";
+
 function parseProviderReportError(status: number, text: string): LocalExistsResult | null {
   if (status === 403) {
     try {
       const body = JSON.parse(text) as { error?: string; balance?: number };
       if (/balance/i.test(body.error ?? text)) {
-        return { status: "unavailable", reason: "Provider account balance is insufficient. Contact support." };
+        return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
       }
     } catch { /* fall through */ }
-    return { status: "unavailable", reason: "Provider access denied — check API key and subscription." };
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   }
 
   if (status === 404) {
@@ -1099,10 +1103,8 @@ async function checkLocalReportAvailable(
     }
 
     if (isDeprecatedRoute404(res.status, text)) {
-      return {
-        status: "unavailable",
-        reason: "Provider local-report endpoint is not available. Verify the base URL is https://carstat.dev.",
-      };
+      logger.warn({ msg: "local_report_route_missing", vin, base });
+      return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
     }
 
     const parsed = parseProviderReportError(res.status, text);
@@ -1114,11 +1116,11 @@ async function checkLocalReportAvailable(
     }
 
     logger.warn({ msg: "local_report_error", vin, status: res.status, body: text.slice(0, 120) });
-    return { status: "unavailable", reason: `Provider report check failed (HTTP ${res.status}).` };
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.warn({ msg: "local_report_fetch_failed", vin, err: msg });
-    return { status: "unavailable", reason: "Could not reach the VIN data provider." };
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   }
 }
 
@@ -1171,19 +1173,21 @@ export async function checkLocalExists(
           return { status: "not_found" };
         }
         logger.warn({ msg: "local_exists_unexpected_body", vin, body: text.slice(0, 120) });
-        return { status: "unavailable", reason: "Provider returned an unexpected response." };
+        return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
       } catch {
         logger.warn({ msg: "local_exists_bad_json", vin, status: res.status, body: text.slice(0, 120) });
-        return { status: "unavailable", reason: "Provider returned an invalid response." };
+        return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
       }
     }
 
     if (isDeprecatedRoute404(res.status, text)) {
-      logger.warn({ msg: "local_exists_route_missing", vin, base, hint: "Use https://carstat.dev as provider base URL" });
-      return {
-        status: "unavailable",
-        reason: "Provider local-exists endpoint is not available. Verify the base URL is https://carstat.dev.",
-      };
+      logger.warn({
+        msg: "local_exists_route_missing",
+        vin,
+        base,
+        hint: "Provider base URL may be wrong — check admin provider settings",
+      });
+      return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
     }
 
     if (res.status === 404) {
@@ -1191,16 +1195,11 @@ export async function checkLocalExists(
     }
 
     logger.warn({ msg: "local_exists_error", vin, status: res.status, body: text.slice(0, 120) });
-    return {
-      status: "unavailable",
-      reason: res.status === 403
-        ? "Provider access denied — check API key and subscription."
-        : `Provider check failed (HTTP ${res.status}).`,
-    };
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.warn({ msg: "local_exists_fetch_failed", vin, err: msg });
-    return { status: "unavailable", reason: "Could not reach the VIN data provider." };
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   }
 }
 
@@ -1223,21 +1222,23 @@ async function fetchLocalReport(
   }
 
   if (isDeprecatedRoute404(res.status, text)) {
-    throw new Error("Provider local-report endpoint is not available. Verify the base URL is https://carstat.dev.");
+    logger.warn({ msg: "local_report_route_missing", vin, base });
+    throw new Error(PUBLIC_VIN_CHECK_UNAVAILABLE);
   }
 
   const parsed = parseProviderReportError(res.status, text);
   if (parsed?.status === "no_access") {
-    throw new Error("No vehicle history data is available for this VIN with the current provider subscription.");
+    throw new Error(PUBLIC_VIN_CHECK_UNAVAILABLE);
   }
   if (parsed?.status === "not_found") {
     throw new Error("No vehicle history data found for this VIN in our database.");
   }
   if (parsed?.status === "unavailable") {
-    throw new Error(parsed.reason);
+    throw new Error(PUBLIC_VIN_CHECK_UNAVAILABLE);
   }
 
-  throw new Error(`Provider returned ${res.status}: ${text.slice(0, 200)}`);
+  logger.warn({ msg: "local_report_unexpected_status", vin, status: res.status, body: text.slice(0, 200) });
+  throw new Error(PUBLIC_VIN_CHECK_UNAVAILABLE);
 }
 
 export async function fetchFromProvider(
@@ -1328,7 +1329,7 @@ export async function ensureVinPayableForPayment(userId: string, vin: string): P
     .orderBy(providersTable.id)
     .limit(1);
   if (!provider?.apiKey?.trim()) {
-    return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: "No active VIN provider configured." };
+    return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
   }
 
   const exists = await checkLocalExists(normalizedVin, provider.baseUrl, provider.apiKey);
@@ -1340,8 +1341,7 @@ export async function ensureVinPayableForPayment(userId: string, vin: string): P
   }
 
   if (exists.status === "not_found") return { ok: false, code: "VIN_NO_DATA" };
-  const reason = exists.status === "unavailable" ? exists.reason : "VIN check unavailable.";
-  return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason };
+  return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
 }
 
 // Parse a date value that may arrive as:

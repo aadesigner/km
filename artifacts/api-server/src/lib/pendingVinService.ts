@@ -425,8 +425,10 @@ export function serializeLookupForClient(
   lookup: typeof vinLookupsTable.$inferSelect,
 ) {
   const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt);
+  // Never expose upstream vendor identity to clients (admin APIs still return providerName).
+  const { providerName: _providerName, ...safe } = lookup;
   return {
-    ...lookup,
+    ...safe,
     data: transformVinPhotos(lookup.data, mediaVersion),
     isPendingManual: lookup.status === PENDING_MANUAL_LOOKUP_STATUS,
   };

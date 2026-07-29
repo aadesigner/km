@@ -1768,10 +1768,9 @@ components:
           type: string
         name:
           type: string
-        activeProvider:
-          $ref: "#/components/schemas/Provider"
         hasProvider:
           type: boolean
+          description: Whether an upstream data source is configured for this country (vendor identity is never exposed)
 
     VinExportFilter:
       type: object

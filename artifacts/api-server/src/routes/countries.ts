@@ -24,7 +24,6 @@ type CountryEntry = {
   code: string;
   name: string;
   hasProvider: boolean;
-  activeProvider?: Record<string, unknown>;
 };
 
 const cache = makeTtlCache<CountryEntry[]>(30 * 60_000);
@@ -36,19 +35,17 @@ export function invalidateCountriesCache(): void {
 router.get("/countries", async (_req, res) => {
   const countries = await cache.getOrFetch(async () => {
     const activeProviders = await db
-      .select()
+      .select({ countryCode: providersTable.countryCode })
       .from(providersTable)
       .where(eq(providersTable.isActive, true));
 
-    return SUPPORTED_COUNTRIES.map((c) => {
-      const provider = activeProviders.find((p) => p.countryCode === c.code);
-      return {
-        code: c.code,
-        name: c.name,
-        hasProvider: !!provider,
-        activeProvider: provider ? { ...provider, apiKey: undefined } : undefined,
-      };
-    });
+    const activeCodes = new Set(activeProviders.map((p) => p.countryCode));
+
+    return SUPPORTED_COUNTRIES.map((c) => ({
+      code: c.code,
+      name: c.name,
+      hasProvider: activeCodes.has(c.code),
+    }));
   });
 
   res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=1800");

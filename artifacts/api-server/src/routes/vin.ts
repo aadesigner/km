@@ -660,9 +660,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
       paymentId: resolvedPaymentId,
     }).returning();
     logger.info({ msg: "vin_lookup_hit", source: "catalog", vin: normalizedVin, userId, provider: catalogEntry.providerName });
-    const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt ?? catalogEntry.updatedAt);
     await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
-    res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: true });
+    res.json(serializeLookupForClient(lookup));
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
     }
@@ -692,9 +691,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
       paymentId: resolvedPaymentId,
     }).returning();
     logger.info({ msg: "vin_lookup_hit", source: "cache", vin: normalizedVin, userId, provider: cached.providerName });
-    const mediaVersion = mediaVersionFromUpdatedAt(lookup.updatedAt ?? cached.updatedAt);
     await finalizePaymentOnFulfillment(resolvedPaymentId, lookup.id);
-    res.json({ ...lookup, data: transformVinPhotos(lookup.data, mediaVersion), fromCache: true });
+    res.json(serializeLookupForClient(lookup));
     if (freeCouponPaymentId && freeCouponCode) {
       void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
     }
@@ -737,12 +735,12 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
   const provider = providers[0];
 
   if (!provider) {
-    res.status(503).json({ error: "No active VIN data provider configured" });
+    res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
     return;
   }
 
   if (!provider.apiKey?.trim()) {
-    res.status(503).json({ error: "Provider API key not configured" });
+    res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
     return;
   }
 
@@ -826,7 +824,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     return;
   }
 
-  const { dataSource: d, providerName, inCatalog, mediaVersion } = report;
+  const { dataSource: d, inCatalog, mediaVersion } = report;
   // Only the purchasing account (or admin) unlocks — share links never bypass payment.
   const isUnlocked = ownsReport;
 
@@ -1061,7 +1059,6 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
           userId,
           status: "complete",
           data: transformVinPhotos(report.dataSource, report.mediaVersion),
-          providerName: report.providerName,
           fromCache: true,
           paymentId: null,
           createdAt: new Date(),
@@ -1092,8 +1089,9 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
 
   if (lookup.status === VIN_FULFILLING_STATUS) {
     res.setHeader("Cache-Control", "private, no-store");
+    const { providerName: _providerName, ...safe } = lookup;
     res.json({
-      ...lookup,
+      ...safe,
       data: null,
       status: VIN_FULFILLING_STATUS,
       fulfilling: true,

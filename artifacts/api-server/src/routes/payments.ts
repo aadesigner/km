@@ -3,7 +3,7 @@ import { db, paymentsTable, pricingTable, usersTable, systemSettingsTable, coupo
 import { eq, desc, and, lt, sql } from "drizzle-orm";
 import { requireAuth } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
-import { ensureVinPayableForPayment } from "../lib/vinService.js";
+import { ensureVinPayableForPayment, PUBLIC_VIN_CHECK_UNAVAILABLE } from "../lib/vinService.js";
 import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import rateLimit from "express-rate-limit";
 import { isTrustedApiRequest } from "../lib/clientGuard.js";
@@ -334,7 +334,7 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
       res.status(422).json({ error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
       return;
     }
-    res.status(503).json({ error: payable.reason, code: "VIN_CHECK_UNAVAILABLE" });
+    res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
     return;
   }
 

@@ -12,7 +12,8 @@ function proxyVinRow(row: Record<string, unknown>): Record<string, unknown> {
   const mediaVersion = mediaVersionFromUpdatedAt(
     row.updatedAt as Date | string | null | undefined,
   );
-  const result: Record<string, unknown> = { ...row };
+  const { providerName: _providerName, ...rest } = row;
+  const result: Record<string, unknown> = { ...rest };
 
   if (result.data && typeof result.data === "object" && !Array.isArray(result.data)) {
     result.data = transformVinPhotoData(result.data, mediaVersion);
