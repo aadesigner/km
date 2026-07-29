@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { translateAuthOAuthError, translateClientError } from "@/lib/translate-client-error";
-import { getPostAuthRedirectPath, applyPostAuthRedirect } from "@/lib/checkout-vin-flow";
+import { getPostAuthRedirectPath, applyPostAuthRedirect, captureVinFromSearch } from "@/lib/checkout-vin-flow";
 import { prefetchRoute } from "@/lib/prefetch-route";
 import { PasswordRequirements } from "@/components/password-requirements";
 import {
@@ -333,6 +333,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   };
 
   const [error, setError] = useState("");
+
+  // Referral / checkout guest landings pass ?vin= so post-auth can return to checkout with it filled.
+  useEffect(() => {
+    captureVinFromSearch();
+  }, []);
 
   useEffect(() => {
     if (oauthError) setError(translateAuthOAuthError(t, oauthError));

@@ -157,7 +157,11 @@ export default function Home() {
   const { t, language } = useTranslation();
   const [, setLocation] = useLocation();
   const { isSignedIn, user } = useAuth();
-  const [vin, setVin] = useState("");
+  const [vin, setVin] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const urlVin = new URLSearchParams(window.location.search).get("vin");
+    return urlVin ? urlVin.trim().toUpperCase() : "";
+  });
   const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
 
   const STEPS = useSteps(t);
@@ -181,7 +185,7 @@ export default function Home() {
       return;
     }
     sessionStorage.setItem("checkout_vin", v);
-    setLocation(`/${language}/checkout`);
+    setLocation(`/${language}/checkout?vin=${encodeURIComponent(v)}`);
   };
 
   const seo = usePageSeo("home");

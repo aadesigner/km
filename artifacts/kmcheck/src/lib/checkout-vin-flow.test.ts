@@ -7,6 +7,7 @@ import {
   clearCheckoutPaymentResumeState,
   consumeCheckoutPrefillOnly,
   getPostAuthCheckoutPath,
+  guestVinAuthPath,
   markCheckoutPrefillOnly,
   markPaypalCheckoutAwaitingApproval,
   markPaypalCheckoutCapturePending,
@@ -40,6 +41,19 @@ describe("getPostAuthCheckoutPath", () => {
   it("returns null when no VIN is waiting", () => {
     expect(getPostAuthCheckoutPath("en")).toBeNull();
     expect(sessionStorage.getItem(CHECKOUT_PREFILL_ONLY_KEY)).toBeNull();
+  });
+});
+
+describe("guestVinAuthPath", () => {
+  it("includes vin query for valid 17-char VINs", () => {
+    expect(guestVinAuthPath("sq", "lvypsakvdlp082054")).toBe(
+      "/sq/sign-up?vin=LVYPSAKVDLP082054",
+    );
+  });
+
+  it("omits vin query when missing or invalid", () => {
+    expect(guestVinAuthPath("en")).toBe("/en/sign-up");
+    expect(guestVinAuthPath("en", "SHORT")).toBe("/en/sign-up");
   });
 });
 

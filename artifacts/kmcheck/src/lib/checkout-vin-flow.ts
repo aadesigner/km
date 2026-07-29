@@ -118,8 +118,16 @@ export type UnlockCheckoutTarget = {
   vin: string;
 };
 
-/** Where guests land when a VIN check requires an account (register, not login). */
-export function guestVinAuthPath(language: string): string {
+/**
+ * Where guests land when a VIN check requires an account (register, not login).
+ * Keep ?vin= in the URL so post-auth checkout still works if sessionStorage is flaky
+ * (referral redirects, private mode, www/non-www switches).
+ */
+export function guestVinAuthPath(language: string, vin?: string | null): string {
+  const normalized = vin ? normalizeCheckoutVin(vin) : "";
+  if (VIN_FORMAT_RE.test(normalized)) {
+    return `/${language}/sign-up?vin=${encodeURIComponent(normalized)}`;
+  }
   return `/${language}/sign-up`;
 }
 
@@ -145,7 +153,7 @@ export function buildUnlockCheckoutTarget(
 
   return {
     vin: normalized,
-    href: guestVinAuthPath(language),
+    href: guestVinAuthPath(language, normalized),
   };
 }
 
@@ -153,7 +161,14 @@ export function buildUnlockCheckoutTarget(
 export function redirectGuestForVinCheckout(vin: string, language: string): string | null {
   const normalized = persistVinForCheckout(vin);
   if (!normalized) return null;
-  return guestVinAuthPath(language);
+  return guestVinAuthPath(language, normalized);
+}
+
+/** Capture ?vin= from the current URL into sessionStorage (auth / referral landings). */
+export function captureVinFromSearch(search: string = typeof window !== "undefined" ? window.location.search : ""): string | null {
+  const urlVin = new URLSearchParams(search).get("vin");
+  if (!urlVin) return null;
+  return persistVinForCheckout(urlVin);
 }
 
 export function clearCheckoutPaymentResumeState(): void {

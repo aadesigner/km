@@ -36,6 +36,7 @@ import {
   markPaypalCheckoutCapturePending,
   normalizeCheckoutVin,
   guestVinAuthPath,
+  persistVinForCheckout,
   readPaypalCheckoutSession,
   shouldResumePaypalCapture,
 } from "@/lib/checkout-vin-flow";
@@ -168,11 +169,10 @@ export default function Checkout({ params }: Props) {
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const [vin, setVin] = useState(() => {
-    // URL query param takes precedence (e.g. from public VIN page unlock CTA)
+    // URL query param takes precedence (e.g. from public VIN page unlock CTA / kilometra referral)
     const urlVin = new URLSearchParams(window.location.search).get("vin");
     if (urlVin) {
-      const normalized = urlVin.trim().toUpperCase();
-      sessionStorage.setItem("checkout_vin", normalized);
+      const normalized = persistVinForCheckout(urlVin) ?? normalizeCheckoutVin(urlVin);
       return normalized;
     }
     // Consume pending_vin if checkout_vin is not already set
@@ -281,12 +281,13 @@ export default function Checkout({ params }: Props) {
       ? Math.round((promoDiscountAmount / standardPrice) * 100)
       : 0;
 
-  // Redirect to sign-up if not authenticated (wait until auth has loaded)
+  // Redirect to sign-up if not authenticated (wait until auth has loaded).
+  // Keep VIN in both sessionStorage and the sign-up URL for referral/?vin= landings.
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
-      if (vin) sessionStorage.setItem("pending_vin", vin);
-      setLocation(guestVinAuthPath(language));
+      const stored = vin ? persistVinForCheckout(vin) : null;
+      setLocation(guestVinAuthPath(language, stored ?? vin));
     }
   }, [isLoaded, isSignedIn, language, setLocation, vin]);
 
@@ -657,10 +658,8 @@ export default function Checkout({ params }: Props) {
   useEffect(() => {
     const urlVin = new URLSearchParams(window.location.search).get("vin");
     if (!urlVin) return;
-    const normalized = normalizeCheckoutVin(urlVin);
-    if (normalized.length !== 17) return;
-    sessionStorage.setItem(CHECKOUT_VIN_KEY, normalized);
-    sessionStorage.removeItem(PENDING_VIN_KEY);
+    const normalized = persistVinForCheckout(urlVin);
+    if (!normalized) return;
     setVin(normalized);
   }, [location]);
 
