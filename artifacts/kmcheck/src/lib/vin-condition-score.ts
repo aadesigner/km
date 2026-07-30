@@ -41,8 +41,12 @@ export type VinScoreResult = {
 };
 
 const PERFECT_MAX_KM = 130_000;
+/** Pre-finalize cap for clean cars at 130k–250k km. */
 const HIGH_KM_CLEAN_SCORE = 9.5;
 const MIN_SCORE = 2.0;
+/** Applied to every car in finalize — displayed scores never exceed this. */
+const MAX_SCORE = 9.5;
+const SCORE_REDUCTION = 0.5;
 
 const GREEN = {
   textColor: "text-green-700 dark:text-green-400",
@@ -179,11 +183,12 @@ function labelForScore(final: number, t: (key: string) => string): Pick<VinScore
 }
 
 function finalize(raw: number, t: (key: string) => string): VinScoreResult {
-  const final = Math.max(MIN_SCORE, Math.min(10, parseFloat(raw.toFixed(1))));
+  const adjusted = parseFloat((raw - SCORE_REDUCTION).toFixed(1));
+  const final = Math.max(MIN_SCORE, Math.min(MAX_SCORE, adjusted));
   return { score: final.toFixed(1), ...labelForScore(final, t) };
 }
 
-/** Condition score 0–10 from report data. Shared by full and public VIN report pages. */
+/** Condition score from report data (display max 9.5). Shared by full and public VIN report pages. */
 export function computeVinConditionScore(
   input: VinScoreInput | null | undefined,
   t: (key: string) => string,
@@ -195,7 +200,7 @@ export function computeVinConditionScore(
   const rollback = history.length >= 2 && hasMileageRollback(history);
   const clean = isCleanBase(input);
 
-  // Perfect 10: under 130k km, no accidents, ≤3 owners, not salvage/stolen, no rollback
+  // Best case: under 130k km, no accidents, ≤3 owners, not salvage/stolen, no rollback → displays 9.5
   if (
     km != null
     && km < PERFECT_MAX_KM
