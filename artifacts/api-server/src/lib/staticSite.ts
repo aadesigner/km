@@ -132,7 +132,9 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
 }
 
 function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean {
-  const safe = path.normalize(reqPath).replace(/^(\.\.(\/|\\|$))+/, "");
+  // Match sitemap/canonical paths (no trailing slash) and legacy slashed URLs.
+  const trimmed = reqPath.replace(/\/+$/, "") || "/";
+  const safe = path.normalize(trimmed).replace(/^(\.\.(\/|\\|$))+/, "");
   const direct = path.join(publicDir, safe);
   if (existsSync(direct) && statSync(direct).isFile()) {
     applyStaticCacheHeaders(res, direct);
@@ -245,6 +247,10 @@ export function mountStaticSite(app: Express): string | null {
   app.use(
     express.static(publicDir, {
       index: false,
+      // Sitemap/canonicals use no trailing slash. Default redirect:true 301s
+      // /en/pricing → /en/pricing/ (prerender dirs), which GSC flags and the SPA strips again.
+      // Fall through to sendSpaFile, which serves …/index.html at the unsashed URL.
+      redirect: false,
       maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
       setHeaders(res, filePath) {
         applyStaticCacheHeaders(res, filePath);
