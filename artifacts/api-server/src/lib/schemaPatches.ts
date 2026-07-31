@@ -96,7 +96,42 @@ const TABLE_PATCHES = [
   `CREATE INDEX IF NOT EXISTS email_logs_type_created_at_idx ON email_logs (type, created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS email_logs_status_idx ON email_logs (status)`,
   `CREATE INDEX IF NOT EXISTS email_logs_recipient_idx ON email_logs (recipient)`,
+  `CREATE TABLE IF NOT EXISTS app_data_migrations (
+    id text PRIMARY KEY,
+    applied_at timestamp NOT NULL DEFAULT now()
+  )`,
 ];
+
+/**
+ * One-shot: set profile country to AL (Albania/Kosovo) for users with NULL only.
+ * Guarded by app_data_migrations so new OAuth users who leave country unset are not
+ * force-filled on later restarts.
+ */
+async function backfillUnsetUserCountryAlOnce(): Promise<void> {
+  const result = await db.execute(sql.raw(`
+    WITH marker AS (
+      INSERT INTO app_data_migrations (id)
+      VALUES ('user_country_backfill_al_v1')
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    ),
+    upd AS (
+      UPDATE users
+      SET country_code = 'AL',
+          updated_at = NOW()
+      WHERE country_code IS NULL
+        AND EXISTS (SELECT 1 FROM marker)
+      RETURNING id
+    )
+    SELECT count(*)::int AS n FROM upd
+  `));
+  const rows = (result as unknown as { rows?: Array<{ n?: number }> }).rows
+    ?? (Array.isArray(result) ? (result as Array<{ n?: number }>) : []);
+  const n = Number(rows[0]?.n ?? 0);
+  if (n > 0) {
+    logger.info({ updated: n }, "one-shot backfill: unset user country_code → AL");
+  }
+}
 
 /**
  * The payment-confirmation and report-ready emails were merged into a single
@@ -136,6 +171,8 @@ export async function patchSystemSettingsSchema(): Promise<void> {
   ]) {
     await db.execute(sql.raw(statement));
   }
+
+  await backfillUnsetUserCountryAlOnce();
 
   const [missingPlugins] = await db
     .select({ id: systemSettingsTable.id })
