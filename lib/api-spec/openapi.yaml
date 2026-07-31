@@ -212,7 +212,7 @@ paths:
     patch:
       operationId: patchUserProfile
       tags: [user]
-      summary: Update profile fields (country)
+      summary: Update profile fields (country and/or phone)
       security:
         - bearerAuth: []
       requestBody:
@@ -225,6 +225,12 @@ paths:
                 countryCode:
                   type: ["string", "null"]
                   description: ISO 3166-1 alpha-2 (AL = Albania / Kosovo)
+                phonePrefix:
+                  type: ["string", "null"]
+                  description: Dialing prefix including +, e.g. +355
+                phoneNational:
+                  type: ["string", "null"]
+                  description: National number digits only
       responses:
         "200":
           description: Updated profile
@@ -233,13 +239,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserProfile"
         "400":
-          description: Invalid country
+          description: Invalid country or phone
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "429":
-          description: Daily country change limit reached
+          description: Daily country or phone change limit reached
           content:
             application/json:
               schema:
@@ -1600,6 +1606,14 @@ components:
         countryChangesLimit:
           type: integer
           description: Max country/nationality changes per UTC day
+        phonePrefix:
+          type: ["string", "null"]
+        phoneNational:
+          type: ["string", "null"]
+        phoneChangesRemaining:
+          type: integer
+        phoneChangesLimit:
+          type: integer
         totalChecks:
           type: integer
         totalSpent:

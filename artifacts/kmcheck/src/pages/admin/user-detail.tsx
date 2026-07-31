@@ -17,10 +17,12 @@ import {
   ArrowLeft, Mail, Calendar, Clock, Key, Gift,
   Ban, CheckCircle2, Loader2, Save, Car,
   ShieldOff, AlertTriangle, ImageOff, ChevronLeft, ChevronRight, Trash2,
-  DollarSign, Search, Globe,
+  DollarSign, Search, Globe, Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserCountrySelect } from "@/components/user-country-select";
+import { UserPhoneFields } from "@/components/user-phone-fields";
+import { formatPhoneDisplay } from "@/lib/user-phone";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -31,6 +33,8 @@ export interface UserRow {
   isBanned: boolean;
   isAdmin: boolean;
   countryCode?: string | null;
+  phonePrefix?: string | null;
+  phoneNational?: string | null;
   lastLoginAt: string | null;
   createdAt: string;
   totalChecks?: number;
@@ -129,6 +133,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editCountry, setEditCountry] = useState("");
+  const [editPhonePrefix, setEditPhonePrefix] = useState("+355");
+  const [editPhoneNational, setEditPhoneNational] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [grantVin, setGrantVin] = useState("");
   const [lookups, setLookups] = useState<VinLookup[]>([]);
@@ -214,7 +220,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     setEditName(user.name ?? "");
     setEditEmail(user.email);
     setEditCountry(user.countryCode ?? "");
-  }, [user?.id, user?.email, user?.name, user?.countryCode]);
+    setEditPhonePrefix(user.phonePrefix || "+355");
+    setEditPhoneNational(user.phoneNational ?? "");
+  }, [user?.id, user?.email, user?.name, user?.countryCode, user?.phonePrefix, user?.phoneNational]);
 
   useEffect(() => {
     if (!user) return;
@@ -242,6 +250,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         name: editName || null,
         email: editEmail,
         countryCode: editCountry || null,
+        phonePrefix: editPhoneNational ? editPhonePrefix : null,
+        phoneNational: editPhoneNational || null,
       });
       if ("error" in data && data.error) { setDetailsMsg({ ok: false, text: data.error }); return; }
       setDetailsMsg({ ok: true, text: "Details updated" });
@@ -454,6 +464,29 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 />
                 <p className="text-[11px] text-muted-foreground">
                   Informational profile field — saved with details above.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Phone className="h-3.5 w-3.5" />
+                  Phone
+                  {formatPhoneDisplay(user.phonePrefix, user.phoneNational) && (
+                    <span className="ml-auto font-normal tabular-nums text-foreground">
+                      {formatPhoneDisplay(user.phonePrefix, user.phoneNational)}
+                    </span>
+                  )}
+                </Label>
+                <UserPhoneFields
+                  prefix={editPhonePrefix}
+                  national={editPhoneNational}
+                  onPrefixChange={setEditPhonePrefix}
+                  onNationalChange={setEditPhoneNational}
+                  searchPlaceholder="Search prefix…"
+                  emptySearchLabel="No prefix found."
+                  nationalPlaceholder="Insert your phone number..."
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Prefix is independent of country. Clear the number field to unset. No daily limit for admin.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 pt-0.5">

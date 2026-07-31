@@ -29,15 +29,17 @@ import {
 import {
   FileText, Search,
   AlertCircle, User, HelpCircle,
-  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2,
+  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2, Phone, PartyPopper,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { UserCountrySelect } from "@/components/user-country-select";
+import { UserPhoneFields } from "@/components/user-phone-fields";
 import { FlagImg } from "@/components/flag-img";
 import { userCountryLabel } from "@/lib/user-countries";
+import { formatPhoneDisplay } from "@/lib/user-phone";
 import { Label } from "@/components/ui/label";
 import {
   buildPrefillOnlyCheckoutPath,
@@ -136,6 +138,11 @@ export default function Dashboard() {
   const [savingCountry, setSavingCountry] = useState(false);
   const [countryMsg, setCountryMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [countryChangesRemaining, setCountryChangesRemaining] = useState<number | null>(null);
+  const [phonePrefix, setPhonePrefix] = useState("+355");
+  const [phoneNational, setPhoneNational] = useState("");
+  const [savingPhone, setSavingPhone] = useState(false);
+  const [phoneMsg, setPhoneMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [phoneChangesRemaining, setPhoneChangesRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -202,7 +209,10 @@ export default function Dashboard() {
   useEffect(() => {
     setAccountCountry(user?.countryCode ?? "");
     setCountryMsg(null);
-  }, [user?.id, user?.countryCode]);
+    setPhonePrefix(user?.phonePrefix || "+355");
+    setPhoneNational(user?.phoneNational ?? "");
+    setPhoneMsg(null);
+  }, [user?.id, user?.countryCode, user?.phonePrefix, user?.phoneNational]);
 
   useEffect(() => {
     if (activeView !== "account" || !isSignedIn) return;
@@ -216,12 +226,19 @@ export default function Dashboard() {
         const data = await res.json() as {
           countryCode?: string | null;
           countryChangesRemaining?: number;
-          countryChangesLimit?: number;
+          phonePrefix?: string | null;
+          phoneNational?: string | null;
+          phoneChangesRemaining?: number;
         };
         if (cancelled) return;
         if (typeof data.countryChangesRemaining === "number") {
           setCountryChangesRemaining(data.countryChangesRemaining);
         }
+        if (typeof data.phoneChangesRemaining === "number") {
+          setPhoneChangesRemaining(data.phoneChangesRemaining);
+        }
+        if (data.phonePrefix) setPhonePrefix(data.phonePrefix);
+        if (data.phoneNational != null) setPhoneNational(data.phoneNational);
       } catch {
         /* ignore */
       }
@@ -285,9 +302,13 @@ export default function Dashboard() {
         countryCode?: string | null;
         countryChangesRemaining?: number;
         countryChangesLimit?: number;
+        phoneChangesRemaining?: number;
       };
       if (typeof data.countryChangesRemaining === "number") {
         setCountryChangesRemaining(data.countryChangesRemaining);
+      }
+      if (typeof data.phoneChangesRemaining === "number") {
+        setPhoneChangesRemaining(data.phoneChangesRemaining);
       }
       if (!res.ok) {
         setCountryMsg({
@@ -304,6 +325,58 @@ export default function Dashboard() {
       setCountryMsg({ ok: false, text: t("error_generic") });
     } finally {
       setSavingCountry(false);
+    }
+  };
+
+  const saveAccountPhone = async () => {
+    if (!phonePrefix || !phoneNational) {
+      setPhoneMsg({ ok: false, text: t("account_phone_required") });
+      return;
+    }
+    if (phoneChangesRemaining === 0) {
+      setPhoneMsg({ ok: false, text: t("account_phone_change_limit") });
+      return;
+    }
+    setSavingPhone(true);
+    setPhoneMsg(null);
+    try {
+      const res = await fetch(`${basePath}/api/user/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ phonePrefix, phoneNational }),
+      });
+      const data = await res.json() as {
+        error?: string;
+        code?: string;
+        phonePrefix?: string | null;
+        phoneNational?: string | null;
+        phoneChangesRemaining?: number;
+        countryChangesRemaining?: number;
+      };
+      if (typeof data.phoneChangesRemaining === "number") {
+        setPhoneChangesRemaining(data.phoneChangesRemaining);
+      }
+      if (typeof data.countryChangesRemaining === "number") {
+        setCountryChangesRemaining(data.countryChangesRemaining);
+      }
+      if (!res.ok) {
+        setPhoneMsg({
+          ok: false,
+          text: data.code === "PHONE_CHANGE_LIMIT"
+            ? t("account_phone_change_limit")
+            : data.code === "INVALID_PHONE"
+              ? t("account_phone_invalid")
+              : (data.error || t("error_generic")),
+        });
+        return;
+      }
+      await refreshUser();
+      setPhoneMsg({ ok: true, text: t("account_phone_saved") });
+    } catch {
+      setPhoneMsg({ ok: false, text: t("error_generic") });
+    } finally {
+      setSavingPhone(false);
     }
   };
 
@@ -471,115 +544,212 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                {/* Profile country / nationality */}
-                <div className="px-5 sm:px-6 py-5 border-t">
-                  <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5 space-y-4">
-                    {!user?.countryCode && (
+                {/* Profile: country + phone */}
+                <div className={cn(
+                  "px-5 sm:px-6 py-5 border-t",
+                )}>
+                  <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5 space-y-5">
+                    {(!user?.countryCode || !user?.phonePrefix || !user?.phoneNational) && (
                       <div
                         role="status"
-                        className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-3 text-amber-950 dark:text-amber-100"
+                        className={cn(
+                          "relative overflow-hidden rounded-xl",
+                          "border border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.06] to-transparent",
+                          "dark:from-primary/20 dark:via-primary/10 dark:to-transparent",
+                          "px-3.5 py-3.5 sm:px-4 sm:py-4",
+                        )}
                       >
-                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-                        <div className="min-w-0 space-y-0.5">
-                          <p className="text-sm font-semibold leading-snug">
-                            {t("account_country_prompt_title")}
-                          </p>
-                          <p className="text-xs leading-relaxed opacity-90">
-                            {t("account_country_prompt_body")}
-                          </p>
+                        <div
+                          className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl"
+                          aria-hidden
+                        />
+                        <div className="relative flex gap-3 items-start">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/20 shadow-sm">
+                            <PartyPopper className="h-5 w-5" aria-hidden />
+                          </span>
+                          <div className="min-w-0 space-y-1 pt-0.5">
+                            <p className="text-sm font-semibold leading-snug text-foreground flex items-center gap-1.5 flex-wrap">
+                              <span>{t("account_country_prompt_title")}</span>
+                              <span className="text-base leading-none" aria-hidden>🎉</span>
+                            </p>
+                            <p className="text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
+                              {t("account_country_prompt_body")}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold flex items-center gap-2">
-                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
-                            <Globe className="h-3.5 w-3.5" />
-                          </span>
-                          {t("account_country_label")}
-                        </p>
-                      </div>
-                      {(() => {
-                        const currentCode = user?.countryCode ?? null;
-                        const currentName = userCountryLabel(currentCode);
-                        if (!currentCode || !currentName) {
+                    {/* Country */}
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold flex items-center gap-2">
+                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                              <Globe className="h-3.5 w-3.5" />
+                            </span>
+                            {t("account_country_label")}
+                          </p>
+                        </div>
+                        {(() => {
+                          const currentCode = user?.countryCode ?? null;
+                          const currentName = userCountryLabel(currentCode);
+                          if (!currentCode || !currentName) {
+                            return (
+                              <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                                {t("account_country_unset")}
+                              </span>
+                            );
+                          }
                           return (
-                            <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                              {t("account_country_unset")}
+                            <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm">
+                              {currentCode === "AL" ? (
+                                <>
+                                  <FlagImg code="al" size={14} />
+                                  <span className="text-[11px] leading-none select-none" aria-hidden>🤝</span>
+                                  <FlagImg code="xk" size={14} />
+                                </>
+                              ) : (
+                                <FlagImg code={currentCode.toLowerCase()} size={14} />
+                              )}
+                              <span className="max-w-[9rem] truncate">{currentName}</span>
                             </span>
                           );
-                        }
-                        return (
-                          <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm">
-                            {currentCode === "AL" ? (
-                              <>
-                                <FlagImg code="al" size={14} />
-                                <span className="text-[11px] leading-none select-none" aria-hidden>🤝</span>
-                                <FlagImg code="xk" size={14} />
-                              </>
-                            ) : (
-                              <FlagImg code={currentCode.toLowerCase()} size={14} />
-                            )}
-                            <span className="max-w-[9rem] truncate">{currentName}</span>
+                        })()}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="account-country" className="text-xs text-muted-foreground">
+                          {t("account_country_choose")}
+                        </Label>
+                        <UserCountrySelect
+                          id="account-country"
+                          value={accountCountry}
+                          onValueChange={(v) => {
+                            setAccountCountry(v);
+                            setCountryMsg(null);
+                          }}
+                          preferredCode={user?.countryCode}
+                          placeholder={t("auth_country_placeholder")}
+                          searchPlaceholder={t("auth_country_search")}
+                          emptySearchLabel={t("auth_country_search_empty")}
+                          emptyLabel={user?.countryCode ? t("account_country_unset") : undefined}
+                          disabled={savingCountry || countryChangesRemaining === 0}
+                          triggerClassName="h-11 rounded-xl bg-background"
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="shrink-0 gap-1.5"
+                          onClick={() => void saveAccountCountry()}
+                          disabled={
+                            savingCountry
+                            || !accountCountry
+                            || accountCountry === (user?.countryCode ?? "")
+                            || countryChangesRemaining === 0
+                          }
+                        >
+                          {savingCountry ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : null}
+                          {t("account_country_save")}
+                        </Button>
+                      </div>
+
+                      {countryMsg && (
+                        <p
+                          className={cn(
+                            "text-xs font-medium rounded-lg px-3 py-2",
+                            countryMsg.ok
+                              ? "bg-primary/10 text-primary"
+                              : "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          {countryMsg.text}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="border-t border-border/50" />
+
+                    {/* Phone */}
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold flex items-center gap-2">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                            <Phone className="h-3.5 w-3.5" />
                           </span>
-                        );
-                      })()}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="account-country" className="text-xs text-muted-foreground">
-                        {t("account_country_choose")}
-                      </Label>
-                      <UserCountrySelect
-                        id="account-country"
-                        value={accountCountry}
-                        onValueChange={(v) => {
-                          setAccountCountry(v);
-                          setCountryMsg(null);
-                        }}
-                        preferredCode={user?.countryCode}
-                        placeholder={t("auth_country_placeholder")}
-                        searchPlaceholder={t("auth_country_search")}
-                        emptySearchLabel={t("auth_country_search_empty")}
-                        emptyLabel={user?.countryCode ? t("account_country_unset") : undefined}
-                        disabled={savingCountry || countryChangesRemaining === 0}
-                        triggerClassName="h-11 bg-background"
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-end pt-0.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="shrink-0 gap-1.5"
-                        onClick={() => void saveAccountCountry()}
-                        disabled={
-                          savingCountry
-                          || !accountCountry
-                          || accountCountry === (user?.countryCode ?? "")
-                          || countryChangesRemaining === 0
-                        }
-                      >
-                        {savingCountry ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : null}
-                        {t("account_country_save")}
-                      </Button>
-                    </div>
-
-                    {countryMsg && (
-                      <p
-                        className={cn(
-                          "text-xs font-medium rounded-lg px-3 py-2",
-                          countryMsg.ok
-                            ? "bg-primary/10 text-primary"
-                            : "bg-destructive/10 text-destructive",
+                          {t("account_phone_label")}
+                        </p>
+                        {formatPhoneDisplay(user?.phonePrefix, user?.phoneNational) ? (
+                          <span className="shrink-0 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm tabular-nums">
+                            {formatPhoneDisplay(user?.phonePrefix, user?.phoneNational)}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                            {t("account_phone_unset")}
+                          </span>
                         )}
-                      >
-                        {countryMsg.text}
-                      </p>
-                    )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="account-phone-national" className="text-xs text-muted-foreground">
+                          {t("account_phone_choose")}
+                        </Label>
+                        <UserPhoneFields
+                          prefix={phonePrefix}
+                          national={phoneNational}
+                          onPrefixChange={(v) => { setPhonePrefix(v); setPhoneMsg(null); }}
+                          onNationalChange={(v) => { setPhoneNational(v); setPhoneMsg(null); }}
+                          disabled={savingPhone || phoneChangesRemaining === 0}
+                          prefixId="account-phone-prefix"
+                          nationalId="account-phone-national"
+                          searchPlaceholder={t("account_phone_prefix_search")}
+                          emptySearchLabel={t("account_phone_prefix_empty")}
+                          nationalPlaceholder={t("account_phone_placeholder")}
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="shrink-0 gap-1.5"
+                          onClick={() => void saveAccountPhone()}
+                          disabled={
+                            savingPhone
+                            || !phonePrefix
+                            || !phoneNational
+                            || (
+                              phonePrefix === (user?.phonePrefix ?? "")
+                              && phoneNational === (user?.phoneNational ?? "")
+                            )
+                            || phoneChangesRemaining === 0
+                          }
+                        >
+                          {savingPhone ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : null}
+                          {t("account_phone_save")}
+                        </Button>
+                      </div>
+
+                      {phoneMsg && (
+                        <p
+                          className={cn(
+                            "text-xs font-medium rounded-lg px-3 py-2",
+                            phoneMsg.ok
+                              ? "bg-primary/10 text-primary"
+                              : "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          {phoneMsg.text}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 

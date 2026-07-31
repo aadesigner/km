@@ -7,5 +7,7 @@ export interface AuthUser {
   isBanned: boolean;
   hasPassword: boolean;
   countryCode?: string | null;
+  phonePrefix?: string | null;
+  phoneNational?: string | null;
   createdAt?: string | Date | null;
 }

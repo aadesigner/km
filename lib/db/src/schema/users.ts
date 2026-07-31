@@ -23,6 +23,12 @@ export const usersTable = pgTable("users", {
   countryChangeDay: text("country_change_day"),
   /** Country profile changes already used on countryChangeDay (max 2/day). */
   countryChangeCount: integer("country_change_count").notNull().default(0),
+  /** International dialing prefix including +, e.g. +355. Independent of countryCode. */
+  phonePrefix: text("phone_prefix"),
+  /** National phone digits only (no spaces or symbols). */
+  phoneNational: text("phone_national"),
+  phoneChangeDay: text("phone_change_day"),
+  phoneChangeCount: integer("phone_change_count").notNull().default(0),
   /** Updated at most once per minute per user while signed in (lightweight presence). */
   lastSeenAt: timestamp("last_seen_at"),
   lastSeenPath: text("last_seen_path"),

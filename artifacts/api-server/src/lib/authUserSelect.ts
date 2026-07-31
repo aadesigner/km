@@ -15,6 +15,8 @@ export const authSessionUserSelect = {
   isAdmin: usersTable.isAdmin,
   isBanned: usersTable.isBanned,
   countryCode: usersTable.countryCode,
+  phonePrefix: usersTable.phonePrefix,
+  phoneNational: usersTable.phoneNational,
   createdAt: usersTable.createdAt,
 } as const;
 

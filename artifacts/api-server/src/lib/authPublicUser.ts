@@ -7,6 +7,8 @@ export type AuthSessionUser = {
   isAdmin: boolean;
   isBanned: boolean;
   countryCode: string | null;
+  phonePrefix: string | null;
+  phoneNational: string | null;
   createdAt: Date;
 };
 
@@ -27,6 +29,8 @@ export function toPublicUser(user: AuthSessionUser) {
     isBanned: user.isBanned,
     hasPassword: !!user.passwordHash,
     countryCode: user.countryCode ?? null,
+    phonePrefix: user.phonePrefix ?? null,
+    phoneNational: user.phoneNational ?? null,
     createdAt: user.createdAt,
   };
 }

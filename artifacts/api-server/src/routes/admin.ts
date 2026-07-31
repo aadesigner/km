@@ -91,6 +91,7 @@ import {
 import { invalidatePricingCache, invalidatePublicSettingsCache } from "./payments.js";
 import { invalidatePluginSettingsCache } from "../lib/pluginSettingsCache.js";
 import { parseUserCountryCode } from "../lib/userCountry.js";
+import { parseUserPhone } from "../lib/userPhone.js";
 import {
   DEFAULT_PLUGIN_SETTINGS,
   normalizePluginSettings,
@@ -882,11 +883,13 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
 
 router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   const userId = String(req.params.userId ?? "");
-  const { name, email, password, countryCode: rawCountry } = req.body as {
+  const { name, email, password, countryCode: rawCountry, phonePrefix: rawPrefix, phoneNational: rawNational } = req.body as {
     name?: string;
     email?: string;
     password?: string;
     countryCode?: string | null;
+    phonePrefix?: string | null;
+    phoneNational?: string | null;
   };
 
   const [target] = await db.select({ isAdmin: usersTable.isAdmin }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -921,6 +924,23 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
       return;
     }
     updates.countryCode = countryCode;
+  }
+  if (rawPrefix !== undefined || rawNational !== undefined) {
+    const [cur] = await db
+      .select({ phonePrefix: usersTable.phonePrefix, phoneNational: usersTable.phoneNational })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+    const merged = parseUserPhone({
+      phonePrefix: rawPrefix !== undefined ? rawPrefix : (cur?.phonePrefix ?? null),
+      phoneNational: rawNational !== undefined ? rawNational : (cur?.phoneNational ?? null),
+    });
+    if (!merged) {
+      res.status(400).json({ error: "Invalid phone number" });
+      return;
+    }
+    updates.phonePrefix = merged.prefix;
+    updates.phoneNational = merged.national;
   }
 
   const [user] = await db.update(usersTable)

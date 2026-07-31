@@ -254,6 +254,12 @@ export interface UserProfile {
   countryCode?: string | null;
   countryChangesRemaining?: number;
   countryChangesLimit?: number;
+  /** @nullable */
+  phonePrefix?: string | null;
+  /** @nullable */
+  phoneNational?: string | null;
+  phoneChangesRemaining?: number;
+  phoneChangesLimit?: number;
   totalChecks?: number;
   totalSpent?: number;
   createdAt: string;
