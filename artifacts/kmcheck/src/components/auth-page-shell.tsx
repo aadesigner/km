@@ -17,7 +17,7 @@ export function AuthPageShell({ children, className }: Props) {
     <section
       className={cn(
         "relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pb-6 sm:pb-10",
-        "-mt-[var(--site-header-offset,84px)] pt-[calc(1.25rem+var(--site-header-offset,84px))] sm:pt-[calc(2rem+var(--site-header-offset,84px))]",
+        "-mt-[var(--site-header-offset,84px)] pt-[calc(0.5rem+var(--site-header-offset,84px))] sm:pt-[calc(1.25rem+var(--site-header-offset,84px))]",
       )}
     >
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/90 via-background to-background dark:hidden" />

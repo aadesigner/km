@@ -14,6 +14,7 @@ export const authSessionUserSelect = {
   passwordHash: usersTable.passwordHash,
   isAdmin: usersTable.isAdmin,
   isBanned: usersTable.isBanned,
+  countryCode: usersTable.countryCode,
   createdAt: usersTable.createdAt,
 } as const;
 

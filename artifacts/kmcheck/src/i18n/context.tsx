@@ -23,6 +23,13 @@ const dictCache: Partial<Record<Language, Translations>> = {
 
 const loadPromises: Partial<Record<Language, Promise<Translations>>> = {};
 
+/** Dev HMR: locale JSON is cached in memory — invalidate so t() does not keep returning raw keys. */
+if (import.meta.hot) {
+  import.meta.hot.accept("./en.json", () => {
+    import.meta.hot?.invalidate();
+  });
+}
+
 export function readDict(lang: Language): Translations | undefined {
   return dictCache[lang];
 }

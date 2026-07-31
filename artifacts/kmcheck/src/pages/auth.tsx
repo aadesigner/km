@@ -20,6 +20,10 @@ import {
   resolveAuthRecaptchaToken,
   validateAuthSignupInput,
 } from "@/lib/auth-email-submit";
+import {
+  parseUserCountryCode,
+} from "@/lib/user-countries";
+import { UserCountrySelect } from "@/components/user-country-select";
 import { cn } from "@/lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -297,6 +301,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [countryCode, setCountryCode] = useState("");
+  const [geoCountryHint, setGeoCountryHint] = useState<string | null>(null);
+  const [countryHintLoaded, setCountryHintLoaded] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
   const recaptchaPrimeRef = useRef<Promise<string | null> | null>(null);
   const recaptchaPrimeAtRef = useRef(0);
@@ -338,6 +345,29 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   useEffect(() => {
     captureVinFromSearch();
   }, []);
+
+  // Prefill country from IP (informational — does not affect geo redirects).
+  useEffect(() => {
+    if (mode !== "sign-up" || countryHintLoaded) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`${basePath}/api/auth/geo-country`, { credentials: "include" });
+        if (!res.ok) return;
+        const data = await res.json() as { countryCode?: string | null };
+        const parsed = parseUserCountryCode(data.countryCode);
+        if (!cancelled && parsed) {
+          setGeoCountryHint(parsed);
+          setCountryCode((prev) => prev || parsed);
+        }
+      } catch {
+        /* ignore — user still picks manually */
+      } finally {
+        if (!cancelled) setCountryHintLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [mode, countryHintLoaded]);
 
   useEffect(() => {
     if (oauthError) setError(translateAuthOAuthError(t, oauthError));
@@ -410,7 +440,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     const creds = readAuthCredentials(form, { email, password, name });
 
     if (!isSignInMode) {
-      const signupCheck = validateAuthSignupInput(creds, acceptedTerms, t);
+      const signupCheck = validateAuthSignupInput(creds, acceptedTerms, t, countryCode);
       if (!signupCheck.ok) {
         setError(signupCheck.error);
         return;
@@ -443,7 +473,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (isSignInMode) {
         await login(creds.email, creds.password, recaptchaToken);
       } else {
-        await register(creds.email, creds.password, creds.name || undefined, recaptchaToken);
+        await register(creds.email, creds.password, creds.name || undefined, recaptchaToken, countryCode);
       }
       applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);
     } catch (err) {
@@ -455,40 +485,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
   };
 
-  const submitDisabled = loading || (!isSignIn && !acceptedTerms);
+  const submitDisabled = loading || (!isSignIn && (!acceptedTerms || !countryCode));
 
   return (
     <>
       <SEOHead title={seo.title} description={seo.description} lang={seo.lang} noIndex />
       <AuthPageShell>
-            {/* Mode switch */}
-            <div className="flex p-1 rounded-xl bg-muted/45 border border-border/50 mb-4">
-              <button
-                type="button"
-                className={cn(
-                  "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200",
-                  isSignIn
-                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                onClick={() => switchAuthMode("sign-in")}
-              >
-                {t("sign_in")}
-              </button>
-              <button
-                type="button"
-                className={cn(
-                  "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200",
-                  !isSignIn
-                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                onClick={() => switchAuthMode("sign-up")}
-              >
-                {t("sign_up")}
-              </button>
-            </div>
-
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={mode}
@@ -625,6 +627,26 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     </AnimatePresence>
                   </AuthField>
 
+                  {!isSignIn && (
+                    <AuthField id="country" label={t("auth_country_label")}>
+                      <UserCountrySelect
+                        id="country"
+                        value={countryCode}
+                        onValueChange={setCountryCode}
+                        preferredCode={geoCountryHint}
+                        placeholder={t("auth_country_placeholder")}
+                        searchPlaceholder={t("auth_country_search")}
+                        emptySearchLabel={t("auth_country_search_empty")}
+                        disabled={loading}
+                        size="lg"
+                        triggerClassName={cn(
+                          AUTH_INPUT,
+                          "justify-between",
+                        )}
+                      />
+                    </AuthField>
+                  )}
+
                   <AnimatePresence>
                     {error && (
                       <motion.div
@@ -640,13 +662,13 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   </AnimatePresence>
 
                   {!isSignIn && (
-                    <div className="flex items-start gap-2.5 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
+                    <div className="flex items-start gap-3.5 sm:gap-2.5 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
                       <Checkbox
                         id="accept-terms"
                         checked={acceptedTerms}
                         onCheckedChange={(v) => setAcceptedTerms(v === true)}
                         disabled={loading}
-                        className="mt-0.5 h-[1.15rem] w-[1.15rem] rounded-[4px] border-muted-foreground/40 data-[state=checked]:border-primary"
+                        className="mt-0.5 h-5 w-5 shrink-0 rounded-[5px] border-muted-foreground/40 data-[state=checked]:border-primary [&_svg]:h-[0.95rem] [&_svg]:w-[0.95rem] max-sm:mr-0.5"
                       />
                       <label
                         htmlFor="accept-terms"

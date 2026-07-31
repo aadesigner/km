@@ -17,6 +17,12 @@ export const usersTable = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   lastLoginAt: timestamp("last_login_at"),
   lastLoginIp: text("last_login_ip"),
+  /** ISO 3166-1 alpha-2 profile country (informational). XK stored as AL (Albania / Kosovo). */
+  countryCode: text("country_code"),
+  /** UTC calendar day (YYYY-MM-DD) for country change rate limit. */
+  countryChangeDay: text("country_change_day"),
+  /** Country profile changes already used on countryChangeDay (max 2/day). */
+  countryChangeCount: integer("country_change_count").notNull().default(0),
   /** Updated at most once per minute per user while signed in (lightweight presence). */
   lastSeenAt: timestamp("last_seen_at"),
   lastSeenPath: text("last_seen_path"),

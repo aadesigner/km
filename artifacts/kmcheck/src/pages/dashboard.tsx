@@ -29,12 +29,16 @@ import {
 import {
   FileText, Search,
   AlertCircle, User, HelpCircle,
-  ShieldCheck, Zap, MessageCircle, CalendarDays,
+  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 import { SEOHead, usePageSeo } from "@/components/seo";
+import { UserCountrySelect } from "@/components/user-country-select";
+import { FlagImg } from "@/components/flag-img";
+import { userCountryLabel } from "@/lib/user-countries";
+import { Label } from "@/components/ui/label";
 import {
   buildPrefillOnlyCheckoutPath,
   clearStoredPendingVin,
@@ -124,10 +128,14 @@ function DashboardStatCard({
 export default function Dashboard() {
   const { t, language } = useTranslation();
   const seo = usePageSeo("dashboard");
-  const { isSignedIn, isLoaded, user } = useAuth();
+  const { isSignedIn, isLoaded, user, refreshUser } = useAuth();
   const [location, setLocation] = useLocation();
   const greeting = useGreeting(t);
   const activeView = parseDashboardView(location, language);
+  const [accountCountry, setAccountCountry] = useState("");
+  const [savingCountry, setSavingCountry] = useState(false);
+  const [countryMsg, setCountryMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [countryChangesRemaining, setCountryChangesRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -192,6 +200,36 @@ export default function Dashboard() {
   }, [isLoaded, isSignedIn, user, language, setLocation]);
 
   useEffect(() => {
+    setAccountCountry(user?.countryCode ?? "");
+    setCountryMsg(null);
+  }, [user?.id, user?.countryCode]);
+
+  useEffect(() => {
+    if (activeView !== "account" || !isSignedIn) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/user/profile`, {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json() as {
+          countryCode?: string | null;
+          countryChangesRemaining?: number;
+          countryChangesLimit?: number;
+        };
+        if (cancelled) return;
+        if (typeof data.countryChangesRemaining === "number") {
+          setCountryChangesRemaining(data.countryChangesRemaining);
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeView, isSignedIn, user?.id]);
+
+  useEffect(() => {
     const err = historyError ? historyErr : statsError ? statsErr : null;
     if (!err) return;
     if (getErrorStatus(err) === 401) {
@@ -222,6 +260,52 @@ export default function Dashboard() {
   // Pending VIN check saved in sessionStorage before auth / checkout
   const [pendingVin, setPendingVin] = useState<string | null>(() => readStoredPendingVin());
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const saveAccountCountry = async () => {
+    if (!accountCountry) {
+      setCountryMsg({ ok: false, text: t("auth_error_country_required") });
+      return;
+    }
+    if (countryChangesRemaining === 0) {
+      setCountryMsg({ ok: false, text: t("account_country_change_limit") });
+      return;
+    }
+    setSavingCountry(true);
+    setCountryMsg(null);
+    try {
+      const res = await fetch(`${basePath}/api/user/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ countryCode: accountCountry }),
+      });
+      const data = await res.json() as {
+        error?: string;
+        code?: string;
+        countryCode?: string | null;
+        countryChangesRemaining?: number;
+        countryChangesLimit?: number;
+      };
+      if (typeof data.countryChangesRemaining === "number") {
+        setCountryChangesRemaining(data.countryChangesRemaining);
+      }
+      if (!res.ok) {
+        setCountryMsg({
+          ok: false,
+          text: data.code === "COUNTRY_CHANGE_LIMIT"
+            ? t("account_country_change_limit")
+            : (data.error || t("error_generic")),
+        });
+        return;
+      }
+      await refreshUser();
+      setCountryMsg({ ok: true, text: t("account_country_saved") });
+    } catch {
+      setCountryMsg({ ok: false, text: t("error_generic") });
+    } finally {
+      setSavingCountry(false);
+    }
+  };
 
   const { data: pendingPeek, isLoading: pendingPeekLoading, isError: pendingPeekError, error: pendingPeekErr } = useQuery<PendingVinPeek>({
     queryKey: ["/api/vin/peek", "pending-banner", pendingVin],
@@ -385,6 +469,118 @@ export default function Dashboard() {
                       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Profile country / nationality */}
+                <div className="px-5 sm:px-6 py-5 border-t">
+                  <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5 space-y-4">
+                    {!user?.countryCode && (
+                      <div
+                        role="status"
+                        className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-3 text-amber-950 dark:text-amber-100"
+                      >
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                        <div className="min-w-0 space-y-0.5">
+                          <p className="text-sm font-semibold leading-snug">
+                            {t("account_country_prompt_title")}
+                          </p>
+                          <p className="text-xs leading-relaxed opacity-90">
+                            {t("account_country_prompt_body")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold flex items-center gap-2">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                            <Globe className="h-3.5 w-3.5" />
+                          </span>
+                          {t("account_country_label")}
+                        </p>
+                      </div>
+                      {(() => {
+                        const currentCode = user?.countryCode ?? null;
+                        const currentName = userCountryLabel(currentCode);
+                        if (!currentCode || !currentName) {
+                          return (
+                            <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                              {t("account_country_unset")}
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm">
+                            {currentCode === "AL" ? (
+                              <>
+                                <FlagImg code="al" size={14} />
+                                <span className="text-[11px] leading-none select-none" aria-hidden>🤝</span>
+                                <FlagImg code="xk" size={14} />
+                              </>
+                            ) : (
+                              <FlagImg code={currentCode.toLowerCase()} size={14} />
+                            )}
+                            <span className="max-w-[9rem] truncate">{currentName}</span>
+                          </span>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="account-country" className="text-xs text-muted-foreground">
+                        {t("account_country_choose")}
+                      </Label>
+                      <UserCountrySelect
+                        id="account-country"
+                        value={accountCountry}
+                        onValueChange={(v) => {
+                          setAccountCountry(v);
+                          setCountryMsg(null);
+                        }}
+                        preferredCode={user?.countryCode}
+                        placeholder={t("auth_country_placeholder")}
+                        searchPlaceholder={t("auth_country_search")}
+                        emptySearchLabel={t("auth_country_search_empty")}
+                        emptyLabel={user?.countryCode ? t("account_country_unset") : undefined}
+                        disabled={savingCountry || countryChangesRemaining === 0}
+                        triggerClassName="h-11 bg-background"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-end pt-0.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="shrink-0 gap-1.5"
+                        onClick={() => void saveAccountCountry()}
+                        disabled={
+                          savingCountry
+                          || !accountCountry
+                          || accountCountry === (user?.countryCode ?? "")
+                          || countryChangesRemaining === 0
+                        }
+                      >
+                        {savingCountry ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : null}
+                        {t("account_country_save")}
+                      </Button>
+                    </div>
+
+                    {countryMsg && (
+                      <p
+                        className={cn(
+                          "text-xs font-medium rounded-lg px-3 py-2",
+                          countryMsg.ok
+                            ? "bg-primary/10 text-primary"
+                            : "bg-destructive/10 text-destructive",
+                        )}
+                      >
+                        {countryMsg.text}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}

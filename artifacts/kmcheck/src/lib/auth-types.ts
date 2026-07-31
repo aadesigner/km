@@ -6,5 +6,6 @@ export interface AuthUser {
   isAdmin: boolean;
   isBanned: boolean;
   hasPassword: boolean;
+  countryCode?: string | null;
   createdAt?: string | Date | null;
 }

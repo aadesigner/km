@@ -23,9 +23,13 @@ export function validateAuthSignupInput(
   creds: AuthCredentials,
   acceptedTerms: boolean,
   t: (key: string) => string,
+  countryCode?: string,
 ): { ok: true } | { ok: false; error: string } {
   if (!acceptedTerms) {
     return { ok: false, error: t("auth_error_terms_required") };
+  }
+  if (!countryCode?.trim()) {
+    return { ok: false, error: t("auth_error_country_required") };
   }
   if (!isPasswordStrongEnough(creds.password)) {
     return { ok: false, error: getPasswordErrorMessage(t, creds.password) };

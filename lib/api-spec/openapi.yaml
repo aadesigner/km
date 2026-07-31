@@ -209,6 +209,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: patchUserProfile
+      tags: [user]
+      summary: Update profile fields (country)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCode:
+                  type: ["string", "null"]
+                  description: ISO 3166-1 alpha-2 (AL = Albania / Kosovo)
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          description: Invalid country
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Daily country change limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /user/history:
     get:
@@ -384,6 +425,13 @@ paths:
             type: string
             enum: [checked, unchecked]
             description: Filter by whether the user has any VIN lookups
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: >
+            ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo),
+            or unset/none for users with no country. Combines with status and checks (AND).
       responses:
         "200":
           description: Paginated user list
@@ -414,6 +462,13 @@ paths:
           schema:
             type: string
             enum: [checked, unchecked]
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: >
+            ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo),
+            or unset/none for users with no country. Combines with other filters (AND).
       responses:
         "200":
           description: CSV file download
@@ -1536,6 +1591,15 @@ components:
           type: boolean
         isAdmin:
           type: boolean
+        countryCode:
+          type: ["string", "null"]
+          description: ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
+        countryChangesRemaining:
+          type: integer
+          description: Remaining country/nationality changes allowed today (UTC)
+        countryChangesLimit:
+          type: integer
+          description: Max country/nationality changes per UTC day
         totalChecks:
           type: integer
         totalSpent:
@@ -1819,6 +1883,9 @@ components:
           type: boolean
         banReason:
           type: ["string", "null"]
+        countryCode:
+          type: ["string", "null"]
+          description: ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
         totalChecks:
           type: integer
         totalSpent:

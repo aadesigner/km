@@ -26,6 +26,8 @@ import {
   toPublicUser,
   type AuthSessionUser,
 } from "../lib/authUserSelect.js";
+import { resolveRequestCountryCode, resolveRequestCountryCodeAsync } from "../lib/geoCountry.js";
+import { parseUserCountryCode } from "../lib/userCountry.js";
 
 const router = Router();
 
@@ -56,6 +58,15 @@ function setOAuthLangCookie(res: import("express").Response, lang: string, secur
 
 function clearOAuthLangCookie(res: import("express").Response): void {
   res.clearCookie(OAUTH_LANG_COOKIE, { path: "/" });
+}
+
+/** Profile country from request IP (XK → AL). Informational only. */
+function countryFromRequest(req: import("express").Request): string | null {
+  return parseUserCountryCode(resolveRequestCountryCode(req));
+}
+
+async function countryFromRequestAsync(req: import("express").Request): Promise<string | null> {
+  return parseUserCountryCode(await resolveRequestCountryCodeAsync(req));
 }
 
 function oauthSignInRedirect(frontendBase: string, lang: string, error: string): string {
@@ -257,12 +268,20 @@ async function syncUserAdminFlag(user: AuthSessionUser): Promise<AuthSessionUser
   return user;
 }
 
+// GET /auth/geo-country — IP country for registration prefill (no language / redirect rules)
+router.get("/auth/geo-country", async (req, res) => {
+  const countryCode = await countryFromRequestAsync(req);
+  res.setHeader("Cache-Control", "private, no-store");
+  res.json({ countryCode });
+});
+
 // POST /auth/register
 router.post("/auth/register", registerLimiter, async (req, res) => {
-  const { email, password, name, recaptchaToken } = req.body as {
+  const { email, password, name, countryCode: rawCountry, recaptchaToken } = req.body as {
     email?: string;
     password?: string;
     name?: string;
+    countryCode?: string;
     recaptchaToken?: string;
   };
 
@@ -278,6 +297,12 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
   }
   if (!password || typeof password !== "string") {
     res.status(400).json({ error: "Password is required" });
+    return;
+  }
+
+  const countryCode = parseUserCountryCode(rawCountry);
+  if (!countryCode) {
+    res.status(400).json({ error: "Country is required", code: "COUNTRY_REQUIRED" });
     return;
   }
 
@@ -314,6 +339,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     name: name?.trim() || undefined,
     passwordHash,
     isAdmin,
+    countryCode,
     lastLoginAt: new Date(),
   }).returning(authSessionUserSelect);
 
@@ -853,6 +879,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
         facebookId,
         authProvider: "facebook",
         isAdmin,
+        // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
       }).returning(authSessionUserSelect);
       user = created;
@@ -1076,6 +1103,7 @@ router.get("/auth/google/callback", async (req, res) => {
         googleId: googleSub,
         authProvider: "google",
         isAdmin,
+        // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
       }).returning(authSessionUserSelect);
       user = created;
@@ -1301,6 +1329,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
         linkedinId,
         authProvider: "linkedin",
         isAdmin,
+        // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
         lastLoginIp: oauthIp,
       }).returning(authSessionUserSelect);

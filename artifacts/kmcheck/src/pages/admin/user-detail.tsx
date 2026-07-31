@@ -17,9 +17,10 @@ import {
   ArrowLeft, Mail, Calendar, Clock, Key, Gift,
   Ban, CheckCircle2, Loader2, Save, Car,
   ShieldOff, AlertTriangle, ImageOff, ChevronLeft, ChevronRight, Trash2,
-  DollarSign, Search,
+  DollarSign, Search, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserCountrySelect } from "@/components/user-country-select";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -29,6 +30,7 @@ export interface UserRow {
   name: string | null;
   isBanned: boolean;
   isAdmin: boolean;
+  countryCode?: string | null;
   lastLoginAt: string | null;
   createdAt: string;
   totalChecks?: number;
@@ -126,6 +128,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
 
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [editCountry, setEditCountry] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [grantVin, setGrantVin] = useState("");
   const [lookups, setLookups] = useState<VinLookup[]>([]);
@@ -210,7 +213,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     if (!user) return;
     setEditName(user.name ?? "");
     setEditEmail(user.email);
-  }, [user?.id, user?.email, user?.name]);
+    setEditCountry(user.countryCode ?? "");
+  }, [user?.id, user?.email, user?.name, user?.countryCode]);
 
   useEffect(() => {
     if (!user) return;
@@ -234,7 +238,11 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     setSavingDetails(true);
     setDetailsMsg(null);
     try {
-      const data = await patch({ name: editName || null, email: editEmail });
+      const data = await patch({
+        name: editName || null,
+        email: editEmail,
+        countryCode: editCountry || null,
+      });
       if ("error" in data && data.error) { setDetailsMsg({ ok: false, text: data.error }); return; }
       setDetailsMsg({ ok: true, text: "Details updated" });
       invalidateUsers();
@@ -433,6 +441,20 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   <Label className="text-xs text-muted-foreground">Email</Label>
                   <Input type="email" placeholder="email@example.com" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-9 md:h-10" />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5" />
+                  Country / Nationality
+                </Label>
+                <UserCountrySelect
+                  value={editCountry}
+                  onValueChange={setEditCountry}
+                  emptyLabel="Not set"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Informational profile field — saved with details above.
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <Button size="sm" onClick={handleSaveDetails} disabled={savingDetails} className="h-9">

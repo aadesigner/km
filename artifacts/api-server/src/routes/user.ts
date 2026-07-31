@@ -7,6 +7,12 @@ import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import { transformVinPhotoData } from "../lib/imageProxy.js";
 import { mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { summarizeVinLookupData } from "../lib/vinLookupSummary.js";
+import { parseUserCountryCode } from "../lib/userCountry.js";
+import {
+  MAX_COUNTRY_CHANGES_PER_DAY,
+  countryChangesRemaining,
+  nextCountryChangeCount,
+} from "../lib/countryChangeLimit.js";
 
 function proxyVinRow(row: Record<string, unknown>): Record<string, unknown> {
   const mediaVersion = mediaVersionFromUpdatedAt(
@@ -34,7 +40,11 @@ router.get("/user/profile", requireAuth, async (req, res) => {
   const userId = req.userId!;
 
   const [user] = await db
-    .select(authSessionUserSelect)
+    .select({
+      ...authSessionUserSelect,
+      countryChangeDay: usersTable.countryChangeDay,
+      countryChangeCount: usersTable.countryChangeCount,
+    })
     .from(usersTable)
     .where(eq(usersTable.id, userId))
     .limit(1);
@@ -55,8 +65,101 @@ router.get("/user/profile", requireAuth, async (req, res) => {
     avatarUrl: user.avatarUrl,
     isBanned: user.isBanned,
     isAdmin: user.isAdmin,
+    countryCode: user.countryCode ?? null,
+    countryChangesRemaining: countryChangesRemaining(user.countryChangeDay, user.countryChangeCount),
+    countryChangesLimit: MAX_COUNTRY_CHANGES_PER_DAY,
     totalChecks: checksResult?.total ?? 0,
     totalSpent: Number(spentResult?.total ?? 0),
+    createdAt: user.createdAt,
+  });
+});
+
+// PATCH /user/profile — update informational profile fields (country)
+router.patch("/user/profile", requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  const { countryCode: rawCountry } = req.body as { countryCode?: string | null };
+
+  if (rawCountry === undefined) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+
+  const countryCode = parseUserCountryCode(rawCountry);
+  if (rawCountry !== null && rawCountry !== "" && !countryCode) {
+    res.status(400).json({ error: "Invalid country", code: "INVALID_COUNTRY" });
+    return;
+  }
+
+  const [current] = await db
+    .select({
+      countryCode: usersTable.countryCode,
+      countryChangeDay: usersTable.countryChangeDay,
+      countryChangeCount: usersTable.countryChangeCount,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+
+  if (!current) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const previous = current.countryCode ?? null;
+  const next = countryCode;
+  const remainingBefore = countryChangesRemaining(current.countryChangeDay, current.countryChangeCount);
+
+  // No-op save — do not consume a daily change.
+  if (previous === next) {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      id: userId,
+      countryCode: previous,
+      countryChangesRemaining: remainingBefore,
+      countryChangesLimit: MAX_COUNTRY_CHANGES_PER_DAY,
+    });
+    return;
+  }
+
+  if (remainingBefore <= 0) {
+    res.status(429).json({
+      error: "You can change country / nationality at most twice per day.",
+      code: "COUNTRY_CHANGE_LIMIT",
+      countryChangesRemaining: 0,
+      countryChangesLimit: MAX_COUNTRY_CHANGES_PER_DAY,
+    });
+    return;
+  }
+
+  const bump = nextCountryChangeCount(current.countryChangeDay, current.countryChangeCount);
+
+  const [user] = await db
+    .update(usersTable)
+    .set({
+      countryCode: next,
+      countryChangeDay: bump.day,
+      countryChangeCount: bump.count,
+      updatedAt: new Date(),
+    })
+    .where(eq(usersTable.id, userId))
+    .returning(authSessionUserSelect);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.setHeader("Cache-Control", "private, no-store");
+  res.json({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    avatarUrl: user.avatarUrl,
+    isBanned: user.isBanned,
+    isAdmin: user.isAdmin,
+    countryCode: user.countryCode ?? null,
+    countryChangesRemaining: countryChangesRemaining(bump.day, bump.count),
+    countryChangesLimit: MAX_COUNTRY_CHANGES_PER_DAY,
     createdAt: user.createdAt,
   });
 });

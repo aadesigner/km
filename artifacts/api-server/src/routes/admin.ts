@@ -7,7 +7,7 @@ import { createReadStream, unlink } from "fs";
 import { readFile } from "fs/promises";
 import { tmpdir } from "os";
 import { db, usersTable, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable, pricingTable, systemSettingsTable, systemLogsTable, emailLogsTable, EMAIL_LOG_TYPES, couponsTable, passwordResetTokensTable, loginAttemptsTable, announcementsTable, pendingVinChecksTable, pendingVinCheckRequestsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
-import { eq, desc, count, sum, sql, gte, like, ilike, lte, and, inArray, gt, or, lt, exists, not, ne } from "drizzle-orm";
+import { eq, desc, count, sum, sql, gte, like, ilike, lte, and, inArray, gt, or, lt, exists, not, ne, isNull } from "drizzle-orm";
 import { requireAdmin, hashPassword, clampSessionDays } from "../lib/auth";
 import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins } from "../lib/vinService";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "../lib/vinImageCache.js";
@@ -90,6 +90,7 @@ import {
 } from "../lib/krwRate.js";
 import { invalidatePricingCache, invalidatePublicSettingsCache } from "./payments.js";
 import { invalidatePluginSettingsCache } from "../lib/pluginSettingsCache.js";
+import { parseUserCountryCode } from "../lib/userCountry.js";
 import {
   DEFAULT_PLUGIN_SETTINGS,
   normalizePluginSettings,
@@ -464,7 +465,7 @@ router.get("/admin/presence-users", requireAdmin, async (req, res) => {
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
 
-function buildAdminUserWhere(searchRaw: string, status: string, checks: string) {
+function buildAdminUserWhere(searchRaw: string, status: string, checks: string, countryRaw = "") {
   const conditions = [];
   const search = searchRaw.trim();
   if (search) {
@@ -490,6 +491,13 @@ function buildAdminUserWhere(searchRaw: string, status: string, checks: string) 
         ),
       ),
     );
+  }
+  const countryKey = countryRaw.trim().toLowerCase();
+  if (countryKey === "unset" || countryKey === "none" || countryKey === "null") {
+    conditions.push(isNull(usersTable.countryCode));
+  } else if (countryKey) {
+    const countryCode = parseUserCountryCode(countryRaw);
+    if (countryCode) conditions.push(eq(usersTable.countryCode, countryCode));
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
@@ -540,8 +548,9 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
     const search = String(req.query.search ?? "");
     const status = String(req.query.status ?? "");
     const checks = String(req.query.checks ?? "");
+    const country = String(req.query.country ?? "");
 
-    const where = buildAdminUserWhere(search, status, checks);
+    const where = buildAdminUserWhere(search, status, checks, country);
 
     const [users, totalRow] = await Promise.all([
       db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(limit).offset(offset),
@@ -584,7 +593,8 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
   const search = String(req.query.search ?? "");
   const status = String(req.query.status ?? "");
   const checks = String(req.query.checks ?? "");
-  const where = buildAdminUserWhere(search, status, checks);
+  const country = String(req.query.country ?? "");
+  const where = buildAdminUserWhere(search, status, checks, country);
 
   const users = await db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(50000);
 
@@ -612,10 +622,10 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
     return s;
   };
 
-  const header = "id,email,name,status,created_at,total_checks,total_spent\n";
+  const header = "id,email,name,country_code,status,created_at,total_checks,total_spent\n";
   const csvBody = users
     .map(u => [
-      u.id, u.email, u.name ?? "",
+      u.id, u.email, u.name ?? "", u.countryCode ?? "",
       u.isBanned ? "banned" : "active",
       u.createdAt instanceof Date ? u.createdAt.toISOString() : String(u.createdAt ?? ""),
       checksMap.get(u.id) ?? 0,
@@ -872,7 +882,12 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
 
 router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   const userId = String(req.params.userId ?? "");
-  const { name, email, password } = req.body as { name?: string; email?: string; password?: string };
+  const { name, email, password, countryCode: rawCountry } = req.body as {
+    name?: string;
+    email?: string;
+    password?: string;
+    countryCode?: string | null;
+  };
 
   const [target] = await db.select({ isAdmin: usersTable.isAdmin }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
@@ -898,6 +913,14 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     if (password.length < 8) { res.status(400).json({ error: "Password must be at least 8 characters" }); return; }
     const { hashPassword } = await import("../lib/auth.js");
     updates.passwordHash = await hashPassword(password);
+  }
+  if (rawCountry !== undefined) {
+    const countryCode = parseUserCountryCode(rawCountry);
+    if (rawCountry !== null && rawCountry !== "" && !countryCode) {
+      res.status(400).json({ error: "Invalid country" });
+      return;
+    }
+    updates.countryCode = countryCode;
   }
 
   const [user] = await db.update(usersTable)

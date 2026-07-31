@@ -27,7 +27,7 @@ interface AuthContextValue {
   isLoaded: boolean;
   isSignedIn: boolean;
   login: (email: string, password: string, recaptchaToken?: string) => Promise<void>;
-  register: (email: string, password: string, name?: string, recaptchaToken?: string) => Promise<void>;
+  register: (email: string, password: string, name?: string, recaptchaToken?: string, countryCode?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -138,12 +138,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     invalidateClientAreaQueries(queryClient);
   }, [queryClient]);
 
-  const register = useCallback(async (email: string, password: string, name?: string, recaptchaToken?: string) => {
+  const register = useCallback(async (
+    email: string,
+    password: string,
+    name?: string,
+    recaptchaToken?: string,
+    countryCode?: string,
+  ) => {
     const res = await fetch(`${basePath}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password, name, recaptchaToken }),
+      body: JSON.stringify({ email, password, name, countryCode, recaptchaToken }),
     });
     const data = await res.json().catch(() => ({})) as { user?: AuthUser; error?: string; code?: string };
     if (!res.ok) throw new ApiRequestError(data.error ?? "Registration failed", data.code);

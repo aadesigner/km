@@ -23,11 +23,16 @@ import { adminUsersQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
+import { userCountryLabel } from "@/lib/user-countries";
+import { UserCountrySelect } from "@/components/user-country-select";
+
+const COUNTRY_UNSET = "unset";
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | AdminGetUsersStatus>("");
   const [checksFilter, setChecksFilter] = useState<"" | AdminGetUsersChecks>("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [page, setPage] = useState(1);
   const [importResult, setImportResult] = useState<UserImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -43,6 +48,7 @@ export default function AdminUsers() {
     search: search || undefined,
     status: statusFilter || undefined,
     checks: checksFilter || undefined,
+    country: countryFilter || undefined,
   };
 
   const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams, {
@@ -69,11 +75,16 @@ export default function AdminUsers() {
 
   const users = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
-  const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter);
+  const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter) || Boolean(countryFilter);
   useQueryRecovery(isError, isFetching, refetch);
   const loadError = showFatalQueryError(isError, isFetching, !!data)
     ? queryErrorMessage(error, "Failed to load users")
     : null;
+
+  const countryFilterLabel =
+    countryFilter === COUNTRY_UNSET
+      ? "No country set"
+      : userCountryLabel(countryFilter) ?? countryFilter;
 
   async function handleExport() {
     setExporting(true);
@@ -83,6 +94,7 @@ export default function AdminUsers() {
         search: search || undefined,
         status: statusFilter || undefined,
         checks: checksFilter || undefined,
+        country: countryFilter || undefined,
       });
       const blob = new Blob([csv.startsWith("\uFEFF") ? csv : `\uFEFF${csv}`], {
         type: "text/csv;charset=utf-8",
@@ -90,7 +102,12 @@ export default function AdminUsers() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "users.csv";
+      const parts = ["users"];
+      if (countryFilter && countryFilter !== COUNTRY_UNSET) parts.push(countryFilter.toLowerCase());
+      if (countryFilter === COUNTRY_UNSET) parts.push("no-country");
+      if (checksFilter) parts.push(checksFilter);
+      if (statusFilter) parts.push(statusFilter);
+      a.download = `${parts.join("-")}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: unknown) {
@@ -118,6 +135,7 @@ export default function AdminUsers() {
     setSearch("");
     setStatusFilter("");
     setChecksFilter("");
+    setCountryFilter("");
     setPage(1);
   }
 
@@ -194,6 +212,17 @@ export default function AdminUsers() {
             <SelectItem value="unchecked">No VIN checks</SelectItem>
           </SelectContent>
         </Select>
+        <UserCountrySelect
+          value={countryFilter}
+          onValueChange={(v) => {
+            setCountryFilter(v);
+            setPage(1);
+          }}
+          allLabel="All countries"
+          emptyLabel="No country set"
+          emptyValue={COUNTRY_UNSET}
+          className="w-full sm:w-[240px]"
+        />
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters} className="shrink-0">
             <X className="h-4 w-4 mr-1" />
@@ -211,12 +240,13 @@ export default function AdminUsers() {
               {checksFilter === "checked" ? "Has VIN checks" : "No VIN checks"}
             </Badge>
           )}
+          {countryFilter && <Badge variant="secondary">Country / Nationality: {countryFilterLabel}</Badge>}
         </div>
       )}
 
       <p className="text-xs text-muted-foreground -mt-2">
-        Import CSV needs an <span className="font-mono">email</span> column (optional <span className="font-mono">name</span>).
-        Export includes current filters and can be re-imported to update names.
+        Filters combine (AND). Export CSV uses the same filters — e.g. one country, or country + has VIN checks.
+        Import needs an <span className="font-mono">email</span> column (optional <span className="font-mono">name</span>).
       </p>
 
       <Card>
@@ -242,6 +272,7 @@ export default function AdminUsers() {
                 <thead className="border-b">
                   <tr>
                     <th className="text-left p-4 font-medium text-muted-foreground">Email</th>
+                    <th className="text-left p-4 font-medium text-muted-foreground">Country</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Checks</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Joined</th>
@@ -256,6 +287,9 @@ export default function AdminUsers() {
                           <p className="font-medium">{user.email}</p>
                           {user.name && <p className="text-xs text-muted-foreground">{user.name}</p>}
                         </div>
+                      </td>
+                      <td className="p-4 text-muted-foreground">
+                        {userCountryLabel(user.countryCode) ?? "—"}
                       </td>
                       <td className="p-4">
                         {user.isAdmin ? (

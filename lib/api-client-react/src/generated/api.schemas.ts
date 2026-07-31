@@ -250,6 +250,10 @@ export interface UserProfile {
   avatarUrl?: string | null;
   isBanned?: boolean;
   isAdmin?: boolean;
+  /** @nullable */
+  countryCode?: string | null;
+  countryChangesRemaining?: number;
+  countryChangesLimit?: number;
   totalChecks?: number;
   totalSpent?: number;
   createdAt: string;
@@ -449,6 +453,8 @@ export interface AdminUser {
   isAdmin: boolean;
   /** @nullable */
   banReason?: string | null;
+  /** @nullable */
+  countryCode?: string | null;
   totalChecks: number;
   totalSpent?: number;
   /** @nullable */
@@ -760,6 +766,10 @@ status?: AdminGetUsersStatus;
  * Filter by whether the user has any VIN lookups
  */
 checks?: AdminGetUsersChecks;
+/**
+ * ISO country code, or unset/none for null country. Combines with status/checks (AND).
+ */
+country?: string;
 };
 
 export type AdminGetUsersStatus = typeof AdminGetUsersStatus[keyof typeof AdminGetUsersStatus];
@@ -782,6 +792,10 @@ export type AdminExportUsersParams = {
 search?: string;
 status?: AdminExportUsersStatus;
 checks?: AdminExportUsersChecks;
+/**
+ * ISO country code, or unset/none for null country. Combines with other filters (AND).
+ */
+country?: string;
 };
 
 export type AdminExportUsersStatus = typeof AdminExportUsersStatus[keyof typeof AdminExportUsersStatus];
