@@ -1,7 +1,12 @@
 import { db, systemSettingsTable } from "@workspace/db";
 import { sql, desc, isNull, eq } from "drizzle-orm";
 import { logger } from "./logger.js";
-import { DEFAULT_PLUGIN_SETTINGS, normalizePluginSettings, mergeMissingChineseGeoRule } from "./pluginSettings.js";
+import {
+  DEFAULT_PLUGIN_SETTINGS,
+  normalizePluginSettings,
+  mergeMissingChineseGeoRule,
+  mergeMissingGeorgianGeoRule,
+} from "./pluginSettings.js";
 
 const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS krw_per_usd real NOT NULL DEFAULT 1537`,
@@ -161,12 +166,13 @@ export async function patchSystemSettingsSchema(): Promise<void> {
   if (pluginRow?.pluginSettings) {
     const current = normalizePluginSettings(pluginRow.pluginSettings);
     const withChinese = mergeMissingChineseGeoRule(current);
-    if (JSON.stringify(withChinese) !== JSON.stringify(current)) {
+    const withGeorgian = mergeMissingGeorgianGeoRule(withChinese);
+    if (JSON.stringify(withGeorgian) !== JSON.stringify(current)) {
       await db
         .update(systemSettingsTable)
-        .set({ pluginSettings: withChinese, updatedAt: new Date() })
+        .set({ pluginSettings: withGeorgian, updatedAt: new Date() })
         .where(eq(systemSettingsTable.id, pluginRow.id));
-      logger.info("patched plugin_settings with Chinese geo redirect rule");
+      logger.info("patched plugin_settings with missing geo redirect rules");
     }
   }
 

@@ -14,6 +14,7 @@ const FLAG_COUNTRY_I18N: Record<string, string> = {
   pe: "flag_country_pe",
   cl: "flag_country_cl",
   pl: "flag_country_pl",
+  ge: "flag_country_ge",
   ro: "flag_country_ro",
   al: "flag_country_al",
   xk: "flag_country_xk",

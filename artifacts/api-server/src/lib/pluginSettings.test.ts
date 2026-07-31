@@ -3,6 +3,7 @@ import {
   normalizePluginSettings,
   resolveLanguageForCountry,
   mergeMissingChineseGeoRule,
+  mergeMissingGeorgianGeoRule,
   DEFAULT_PLUGIN_SETTINGS,
 } from "./pluginSettings.js";
 import { isCrawlerUserAgent } from "./crawlerDetection.js";
@@ -49,6 +50,7 @@ describe("pluginSettings", () => {
     expect(resolveLanguageForCountry("RO", settings)).toBe("ro");
     expect(resolveLanguageForCountry("MD", settings)).toBe("ro");
     expect(resolveLanguageForCountry("PL", settings)).toBe("pl");
+    expect(resolveLanguageForCountry("GE", settings)).toBe("ka");
     expect(resolveLanguageForCountry("SA", settings)).toBe("ar");
     expect(resolveLanguageForCountry("PS", settings)).toBe("ar");
     expect(resolveLanguageForCountry("RU", settings)).toBe("ru");
@@ -100,6 +102,28 @@ describe("pluginSettings", () => {
     const merged = mergeMissingChineseGeoRule(current);
     expect(resolveLanguageForCountry("CN", merged)).toBe("zh");
     expect(resolveLanguageForCountry("TW", merged)).toBe("zh");
+  });
+
+  it("accepts ka in normalized rules", () => {
+    const settings = normalizePluginSettings({
+      geoLanguageRedirect: {
+        enabled: true,
+        rules: [{ countries: ["GE"], language: "ka" }],
+      },
+    });
+    expect(settings.geoLanguageRedirect.rules[0]?.language).toBe("ka");
+    expect(resolveLanguageForCountry("GE", settings)).toBe("ka");
+  });
+
+  it("merges missing Georgian geo rule into existing plugin settings", () => {
+    const current = normalizePluginSettings({
+      geoLanguageRedirect: {
+        enabled: true,
+        rules: DEFAULT_PLUGIN_SETTINGS.geoLanguageRedirect.rules.filter((r) => r.language !== "ka"),
+      },
+    });
+    const merged = mergeMissingGeorgianGeoRule(current);
+    expect(resolveLanguageForCountry("GE", merged)).toBe("ka");
   });
 });
 

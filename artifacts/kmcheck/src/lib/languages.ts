@@ -1,7 +1,7 @@
 /**
  * Single source of truth for site languages.
  * Display / picker priority (user-defined):
- * en → de → es → fr → sq → pl → ro → bg → ar → uk → ru → zh
+ * en → de → es → fr → sq → pl → ro → bg → ka → ar → uk → ru → zh
  */
 export const SUPPORTED_LANGS = [
   "en",
@@ -12,6 +12,7 @@ export const SUPPORTED_LANGS = [
   "pl",
   "ro",
   "bg",
+  "ka",
   "ar",
   "uk",
   "ru",
@@ -50,6 +51,7 @@ export const LANG_META: Record<Language, LangMeta> = {
   pl: { code: "pl", label: "Polski", short: "PL", flag: "pl", hreflang: "pl", ogLocale: "pl_PL", intl: "pl-PL" },
   ro: { code: "ro", label: "Română", short: "RO", flag: "ro", hreflang: "ro", ogLocale: "ro_RO", intl: "ro-RO" },
   bg: { code: "bg", label: "Български", short: "BG", flag: "bg", hreflang: "bg", ogLocale: "bg_BG", intl: "bg-BG" },
+  ka: { code: "ka", label: "ქართული", short: "KA", flag: "ge", hreflang: "ka", ogLocale: "ka_GE", intl: "ka-GE" },
   ar: { code: "ar", label: "العربية", short: "AR", flag: "sa", hreflang: "ar", ogLocale: "ar_SA", intl: "ar" },
   uk: { code: "uk", label: "Українська", short: "UK", flag: "ua", hreflang: "uk-UA", ogLocale: "uk_UA", intl: "uk-UA" },
   ru: { code: "ru", label: "Русский", short: "RU", flag: "ru", hreflang: "ru", ogLocale: "ru_RU", intl: "ru-RU" },

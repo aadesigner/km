@@ -1,29 +1,43 @@
 import type { VinPageSeo, VinSeoLang } from "@workspace/vin-page-seo";
-import { buildVinOnlyPageDescription, buildVinOnlyPageTitle, buildVinPageSeo, normalizeVin } from "@workspace/vin-page-seo";
+import {
+  VIN_SEO_LANGS,
+  buildVinOnlyPageDescription,
+  buildVinOnlyPageTitle,
+  buildVinPageSeo,
+  normalizeVin,
+} from "@workspace/vin-page-seo";
 
 const OG_LOCALE_MAP: Record<VinSeoLang, string> = {
   en: "en_US",
+  de: "de_DE",
   es: "es_ES",
+  fr: "fr_FR",
+  sq: "sq_AL",
+  pl: "pl_PL",
+  ro: "ro_RO",
+  bg: "bg_BG",
+  ka: "ka_GE",
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
-  ro: "ro_RO",
-  pl: "pl_PL",
-  sq: "sq_AL",
 };
 
 const HREFLANG_MAP: Record<VinSeoLang, string> = {
   en: "en",
+  de: "de",
   es: "es",
+  fr: "fr",
+  sq: "sq-AL",
+  pl: "pl",
+  ro: "ro",
+  bg: "bg",
+  ka: "ka",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
-  ro: "ro",
-  pl: "pl",
-  sq: "sq-AL",
 };
 
-const SEO_LANGS: VinSeoLang[] = ["en", "es", "uk", "ru", "ro", "pl", "ar", "sq"];
+const SEO_LANGS: readonly VinSeoLang[] = VIN_SEO_LANGS;
 
 function escapeHtml(value: string): string {
   return String(value)
@@ -47,7 +61,7 @@ function removeGeneratedSeoTags(html: string): string {
 
 function buildSeoHeadBlock(seo: VinPageSeo, lang: VinSeoLang, origin: string): string {
   const canonicalUrl = `${origin.replace(/\/$/, "")}${seo.canonicalPath}`;
-  const rest = seo.canonicalPath.replace(/^\/(en|es|uk|ru|ro|pl|ar|sq|de|fr|bg|zh)/, "");
+  const rest = seo.canonicalPath.replace(/^\/(en|es|uk|ru|ro|pl|ka|ar|sq|de|fr|bg|zh)/, "");
   const robots = seo.noIndex ? "noindex, follow" : "index, follow";
   const lines = [
     `<meta name="description" content="${escapeHtml(seo.description)}" />`,

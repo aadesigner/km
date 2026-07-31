@@ -34,7 +34,7 @@ import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
 import rateLimit from "express-rate-limit";
 import { createReadStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
-import type { VinSeoLang } from "@workspace/vin-page-seo";
+import { VIN_SEO_LANGS, type VinSeoLang } from "@workspace/vin-page-seo";
 import { buildVinSeoFromCatalogData } from "../lib/vinPageSeo.js";
 import {
   applyFrozenKrwPerUsd,
@@ -778,7 +778,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 router.get("/vin/seo/:vin", publicVinLimiter, async (req, res) => {
   const vin = String(req.params.vin ?? "").toUpperCase();
   const lang = String(req.query.lang ?? "en").toLowerCase();
-  const seoLang = (["en", "es", "ar", "uk", "ru", "ro", "sq"].includes(lang) ? lang : "en") as VinSeoLang;
+  const seoLang = ((VIN_SEO_LANGS as readonly string[]).includes(lang) ? lang : "en") as VinSeoLang;
 
   if (!VIN_RE.test(vin)) {
     res.status(400).json({ error: "Invalid VIN" });

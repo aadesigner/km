@@ -13,6 +13,7 @@ const loaders: Record<Language, () => Promise<{ default: LegalDict }>> = {
   pl: () => import("./legal/pl.json"),
   ro: () => import("./legal/ro.json"),
   bg: () => import("./legal/bg.json"),
+  ka: () => import("./legal/ka.json"),
   ar: () => import("./legal/ar.json"),
   uk: () => import("./legal/uk.json"),
   ru: () => import("./legal/ru.json"),

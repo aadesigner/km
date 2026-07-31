@@ -32,6 +32,10 @@
       "title": "VIN — przebieg, wypadki i szkoda całkowita | kmcheck.com",
       "description": "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i zapisy szkody całkowitej dowolnego auta."
     },
+    "ka": {
+      "title": "VIN შემოწმება — გარბენი, ავარიები და სალვაჟი | kmcheck.com",
+      "description": "შეამოწმე რეალური გარბენი, დამალული ავარიები, სალვაჟის ტიტულები და მანქანის სრული ისტორია VIN-ით. მყისიერი ანგარიში kmcheck.com-ზე."
+    },
     "de": {
       "title": "Kilometerstand prüfen — Unfälle & Totalschaden | kmcheck.com",
       "description": "VIN-Check sofort: Kilometerstand, Unfallhistorie und Totalschaden für jedes Auto prüfen."
@@ -81,6 +85,10 @@
     "pl": {
       "title": "Cennik — raporty historii VIN | kmcheck.com",
       "description": "Jeden przystępny raport VIN obejmuje weryfikację przebiegu, wypadki, szkodę całkowitą i kradzież. Natychmiastowa dostawa. Bez subskrypcji."
+    },
+    "ka": {
+      "title": "ფასები — VIN ისტორიის ანგარიში | kmcheck.com",
+      "description": "ერთი ხელმისაწვდომი VIN ანგარიში: გარბენი, ავარიები, სალვაჟი და ქურდობა. მყისიერი მიწოდება. გამოწერა არ არის."
     },
     "de": {
       "title": "Preise — Fahrzeughistorie & VIN-Bericht | kmcheck.com",
@@ -132,6 +140,10 @@
       "title": "Logowanie — kmcheck.com",
       "description": "Zaloguj się lub utwórz darmowe konto, aby wykonywać natychmiastowe sprawdzenia VIN i uzyskać dostęp do raportów historii pojazdu."
     },
+    "ka": {
+      "title": "შესვლა — kmcheck.com",
+      "description": "შედით ან შექმენით უფასო ანგარიში VIN-ის მყისიერი შემოწმების გასატარებლად და თქვენი მანქანის ისტორიის ანგარიშებზე წვდომისთვის."
+    },
     "de": {
       "title": "Anmelden — kmcheck.com",
       "description": "Melden Sie sich an oder erstellen Sie ein kostenloses Konto für sofortige VIN-Checks und Zugriff auf Fahrzeughistorien."
@@ -181,6 +193,10 @@
     "pl": {
       "title": "Moje raporty — historia VIN | kmcheck.com",
       "description": "Przeglądaj raporty historii pojazdów i wykonuj nowe sprawdzenia VIN."
+    },
+    "ka": {
+      "title": "ჩემი ანგარიშები — VIN ისტორია | kmcheck.com",
+      "description": "იხილეთ თქვენი მანქანის ისტორიის ანგარიშები და გაუშვით ახალი VIN შემოწმებები."
     },
     "de": {
       "title": "Meine Berichte — VIN-Historie | kmcheck.com",
@@ -232,6 +248,10 @@
       "title": "Raport historii VIN — kmcheck.com",
       "description": "Pełny raport historii pojazdu: przebieg, wypadki, właściciele, ubezpieczenie i aukcje. Natychmiastowy dostęp po zakupie."
     },
+    "ka": {
+      "title": "VIN ანგარიში | kmcheck.com",
+      "description": "შეამოწმეთ გარბენი, ავარიები და მანქანის სრული ისტორია. მყისიერი ანგარიში kmcheck.com-ზე."
+    },
     "de": {
       "title": "VIN-Historienbericht — kmcheck.com",
       "description": "Vollständiger Fahrzeughistorienbericht: Kilometerstand, Unfälle, Halter, Versicherung und Auktionen. Sofortiger Zugriff nach Kauf."
@@ -281,6 +301,10 @@
     "pl": {
       "title": "Auta z USA — przebieg, wypadki i kradzież | kmcheck.com",
       "description": "Sprawdź auto z USA po VIN: przebieg, wypadki, szkoda całkowita i kradzież. Raport dla Ford, Toyota, BMW, Honda i Chevrolet — wszystkie stany."
+    },
+    "ka": {
+      "title": "შეამოწმეთ აშშ მანქანის გარბენი, ავარიები და ქურდობა | kmcheck.com",
+      "description": "შეამოწმეთ მანქანის გარბენი, ავარიები, ქურდობა და სალვაჟის ტიტულები ამერიკული მანქანებისთვის. მომენტალური VIN ანგარიში Ford-ისთვის, Toyota-სთვის, BMW-სთვის, Honda-სთვის და Chevrolet-ისთვის - ყველა 50 შტატისთვის."
     },
     "de": {
       "title": "USA-Importe — Kilometerstand, Unfälle & Diebstahl | kmcheck.com",
@@ -332,6 +356,10 @@
       "title": "Auta z Korei — przebieg, wypadki i historia | kmcheck.com",
       "description": "Sprawdź auto z Korei po VIN: przebieg, wypadki, eksport i ukryte uszkodzenia. Raport dla Hyundai, Kia, Genesis, BMW, Mercedes i Toyota."
     },
+    "ka": {
+      "title": "კორეული მანქანები — გარბენი, ავარიები და ისტორია | kmcheck.com",
+      "description": "შეამოწმეთ მანქანის გარბენი, ავარიები, იმპორტის ისტორია და კორეიდან მანქანების ფარული დაზიანება. მომენტალური VIN ანგარიში Hyundai, Kia, Genesis, BMW, Mercedes და Toyota-სთვის."
+    },
     "de": {
       "title": "Korea-Importe — Kilometerstand, Unfälle & Historie | kmcheck.com",
       "description": "Fahrzeuge aus Korea per VIN prüfen: Kilometerstand, Unfälle, Export und versteckte Schäden. Bericht für Hyundai, Kia, Genesis, BMW, Mercedes und Toyota."
@@ -381,6 +409,10 @@
     "pl": {
       "title": "Auta z Kanady — przebieg, wypadki i historia | kmcheck.com",
       "description": "Sprawdź auto z Kanady po VIN: przebieg, wypadki, szkoda całkowita i kradzież. Raport dla Honda, Toyota, Ford, BMW i Mercedes — wszystkie prowincje."
+    },
+    "ka": {
+      "title": "კანადური მანქანები — გარბენი, ავარიები და ისტორია | kmcheck.com",
+      "description": "შეამოწმეთ მანქანის გარბენი, ავარიები, ბრენდირებული სათაურები და ქურდობა კანადური მანქანებისთვის. მომენტალური VIN ანგარიში Honda, Toyota, Ford, BMW და Mercedes - ყველა პროვინციისთვის."
     },
     "de": {
       "title": "Kanada-Importe — Kilometerstand, Unfälle & Historie | kmcheck.com",
@@ -432,6 +464,10 @@
       "title": "Darmowy dekoder VIN — BMW, Audi, Mercedes | kmcheck.com",
       "description": "Zdekoduj VIN 17 znaków za darmo. Dekoder BMW, Audi, Mercedes, Toyota. Rok, marka, model — bez rejestracji."
     },
+    "ka": {
+      "title": "უფასო VIN გაშიფვრა — BMW, Audi, Mercedes & ყველა ბრენდი | kmcheck.com",
+      "description": "გაშიფრეთ ნებისმიერი 17-ნიშნა VIN უფასო. BMW VIN გაშიფვრა, Audi VIN გაშიფვრა, Toyota, Ford და სხვა. წელი, მარკა, მოდელი, ძრავა — რეგისტრაცია არ არის."
+    },
     "de": {
       "title": "Kostenloser VIN-Decoder — BMW, Audi, Mercedes | kmcheck.com",
       "description": "VIN kostenlos dekodieren: BMW, Audi, Mercedes, VW, Toyota. Baujahr, Marke, Modell, Motor — ohne Registrierung."
@@ -481,6 +517,10 @@
     "pl": {
       "title": "Jak to działa — sprawdzenie VIN krok po kroku | kmcheck.com",
       "description": "Raport historii twojego auta. Wpisz VIN i sprawdź przebieg, wypadki, kradzieże, szkodę całkowitą i właścicieli — wyniki w kilka sekund z baz dostawców."
+    },
+    "ka": {
+      "title": "როგორ მუშაობს — VIN შემოწმება ნაბიჯ-ნაბიჯ | kmcheck.com",
+      "description": "შეიყვანე VIN, გადაიხადე უსაფრთხოდ და მიიღე სრული ისტორია წამებში. გარბენი, ავარიები, სალვაჟი და სხვა."
     },
     "de": {
       "title": "So funktioniert's — Kilometerstand & VIN prüfen | kmcheck.com",
@@ -532,6 +572,10 @@
       "title": "FAQ — sprawdzenie VIN i raporty historii | kmcheck.com",
       "description": "Odpowiedzi na pytania o sprawdzanie VIN, przebieg, wypadki, szkodę całkowitą, płatności i raporty historii pojazdu na kmcheck.com."
     },
+    "ka": {
+      "title": "კითხვები — VIN შემოწმება და ისტორიის ანგარიშები | kmcheck.com",
+      "description": "პასუხები VIN შემოწმებაზე, გარბენზე, ავარიებებზე, სალვაჟზე, გადახდასა და ანგარიშებზე kmcheck.com-ზე."
+    },
     "de": {
       "title": "FAQ — Kilometerstand prüfen & VIN-Bericht | kmcheck.com",
       "description": "Antworten zu VIN-Checks, Kilometerstand, Unfällen, Totalschaden, Zahlung und Fahrzeughistorienberichten auf kmcheck.com."
@@ -581,6 +625,10 @@
     "pl": {
       "title": "Regulamin — kmcheck.com",
       "description": "Regulamin korzystania z kmcheck.com i usług raportów historii VIN."
+    },
+    "ka": {
+      "title": "მომსახურების პირობები | kmcheck.com",
+      "description": "მომსახურების პირობები kmcheck.com VIN ისტორიის ანგარიშების, გადახდების, თანხის დაბრუნებისა და მონაცემთა ხელმისაწვდომობისთვის."
     },
     "de": {
       "title": "Nutzungsbedingungen — kmcheck.com",
@@ -632,6 +680,10 @@
       "title": "Polityka prywatności — kmcheck.com",
       "description": "Jak kmcheck.com zbiera, wykorzystuje i chroni Twoje dane osobowe."
     },
+    "ka": {
+      "title": "კონფიდენციალურობის პოლიტიკა და ქუქიების პოლიტიკა | kmcheck.com",
+      "description": "როგორ აგროვებს, იყენებს და იცავს kmcheck.com თქვენს მონაცემებს. მოიცავს ქუქიების პოლიტიკას."
+    },
     "de": {
       "title": "Datenschutz — kmcheck.com",
       "description": "Wie kmcheck.com Ihre personenbezogenen Daten erhebt, nutzt und schützt."
@@ -681,6 +733,10 @@
     "pl": {
       "title": "Strona nie znaleziona — kmcheck.com",
       "description": "Żądana strona nie istnieje. Wróć na kmcheck.com, aby sprawdzić VIN."
+    },
+    "ka": {
+      "title": "გვერდი ვერ მოიძებნა | kmcheck.com",
+      "description": "გვერდი, რომელსაც ეძებთ, არ არსებობს ან შესაძლოა გადატანილი იყოს."
     },
     "de": {
       "title": "Seite nicht gefunden — kmcheck.com",
@@ -732,6 +788,10 @@
       "title": "Rejestracja — kmcheck.com",
       "description": "Utwórz darmowe konto kmcheck, aby zapisywać raporty VIN i szybciej sprawdzać historię pojazdów."
     },
+    "ka": {
+      "title": "შექმენით ანგარიში - kmcheck.com",
+      "description": "შექმენით უფასო kmcheck ანგარიში, რომ ჩაატაროთ მყისიერი VIN შემოწმებები და მიიღოთ თქვენი მანქანის ისტორიის ანგარიშები."
+    },
     "de": {
       "title": "Registrieren — kmcheck.com",
       "description": "Kostenloses kmcheck-Konto erstellen, um VIN-Berichte zu speichern und schneller Fahrzeughistorien zu prüfen."
@@ -781,6 +841,10 @@
     "pl": {
       "title": "Płatność — raport VIN | kmcheck.com",
       "description": "Bezpieczna płatność za raport historii VIN. Natychmiastowy dostęp po potwierdzeniu."
+    },
+    "ka": {
+      "title": "შეკვეთა — kmcheck.com",
+      "description": "უსაფრთხოდ შეასრულეთ თქვენი VIN ისტორიის ანგარიში შესყიდვის შესახებ."
     },
     "de": {
       "title": "Kasse — VIN-Bericht | kmcheck.com",
@@ -832,6 +896,10 @@
       "title": "Zakupy — kmcheck.com",
       "description": "Historia zakupów raportów VIN i dostęp do wcześniej wygenerowanych raportów."
     },
+    "ka": {
+      "title": "შესყიდვების ისტორია — kmcheck.com",
+      "description": "ნახეთ თქვენი VIN ანგარიშის შესყიდვები და ქვითრები."
+    },
     "de": {
       "title": "Käufe — kmcheck.com",
       "description": "Übersicht Ihrer VIN-Berichtkäufe und Zugriff auf frühere Berichte."
@@ -881,6 +949,10 @@
     "pl": {
       "title": "Przypomnienie hasła — kmcheck.com",
       "description": "Zresetuj hasło do konta kmcheck, aby odzyskać dostęp do raportów VIN."
+    },
+    "ka": {
+      "title": "დაგავიწყდათ პაროლი — kmcheck.com",
+      "description": "გადააყენეთ თქვენი kmcheck ანგარიშის პაროლი."
     },
     "de": {
       "title": "Passwort vergessen — kmcheck.com",
@@ -932,6 +1004,10 @@
       "title": "Reset hasła — kmcheck.com",
       "description": "Ustaw nowe hasło do konta kmcheck."
     },
+    "ka": {
+      "title": "პაროლის აღდგენა — kmcheck.com",
+      "description": "აირჩიეთ ახალი პაროლი თქვენი kmcheck ანგარიშისთვის."
+    },
     "de": {
       "title": "Passwort zurücksetzen — kmcheck.com",
       "description": "Neues Passwort für Ihr kmcheck-Konto festlegen."
@@ -973,6 +1049,10 @@
     "pl": {
       "title": "Auta z Chin — przebieg, wypadki i historia | kmcheck.com",
       "description": "Sprawdź auto z Chin po VIN: przebieg, wypadki, fałszowanie licznika i szkoda całkowita. Raport dla BYD, Geely, NIO, BMW, Mercedes, Tesla i Toyota."
+    },
+    "ka": {
+      "title": "ჩინური მანქანები — გარბენი, ავარიები და ისტორია | kmcheck.com",
+      "description": "შეამოწმეთ მანქანის გარბენი, ავარიები, ოდომეტრის გაყალბება და ჩინური მანქანების სალვაჟი. მომენტალური VIN ანგარიში BYD, Geely, NIO, BMW, Mercedes, Tesla და Toyota-სთვის."
     },
     "ro": {
       "title": "Mașini China — kilometraj, accidente și istoric | kmcheck.com",
@@ -1023,6 +1103,10 @@
     "pl": {
       "title": "Auta ze ZEA — przebieg, wypadki i import | kmcheck.com",
       "description": "Sprawdź auto ze ZEA po VIN: przebieg, wypadki, szkody powodziowe i historia importu. Raport dla Toyota, Nissan, Mercedes, BMW i Lexus w Dubaju i GCC."
+    },
+    "ka": {
+      "title": "UAE მანქანები — გარბენი, ავარიები და იმპორტის ისტორია | kmcheck.com",
+      "description": "შეამოწმეთ მანქანის გარბენი, ავარიები, წყალდიდობის დაზიანება და იმპორტის ისტორია UAE მანქანებისთვის. მომენტალური VIN ანგარიში Toyota, Nissan, Mercedes, BMW და Lexus-ისთვის დუბაიში და GCC-ში."
     },
     "ro": {
       "title": "Mașini EAU — kilometraj, accidente și import | kmcheck.com",

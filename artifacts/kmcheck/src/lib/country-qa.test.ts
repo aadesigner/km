@@ -7,7 +7,7 @@ import {
   resolveCountrySelectValue,
 } from "./vehicle-attr-options";
 
-const UI_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru"] as const;
+const UI_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"] as const;
 
 const t = (key: string) => {
   const map: Record<string, string> = {

@@ -48,6 +48,7 @@ export async function loadDict(lang: Language): Promise<Translations> {
       pl: () => import("./pl.json"),
       ro: () => import("./ro.json"),
       bg: () => import("./bg.json"),
+      ka: () => import("./ka.json"),
       ar: () => import("./ar.json"),
       uk: () => import("./uk.json"),
       ru: () => import("./ru.json"),

@@ -1,6 +1,9 @@
-export const PLUGIN_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru", "zh"] as const;
+export const PLUGIN_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"] as const;
+export type PluginLanguage = (typeof PLUGIN_LANGS)[number];
 /** Chinese-speaking regions — default geo redirect target is `zh` (Simplified). */
 export const CHINESE_SPEAKING_COUNTRIES = ["CN", "TW", "HK", "MO", "SG"] as const;
+/** Georgia — default geo redirect target is `ka` (Georgian). */
+export const GEORGIAN_GEO_COUNTRIES = ["GE"] as const;
 
 
 /** Never geo-redirect these ISO codes — even if added to a rule by mistake. */
@@ -37,6 +40,7 @@ export const DEFAULT_GEO_LANGUAGE_RULES: GeoLanguageRule[] = [
   { countries: ["RO", "MD"], language: "ro" },
   { countries: ["PL"], language: "pl" },
   { countries: ["BG"], language: "bg" },
+  { countries: ["GE"], language: "ka" },
   {
     countries: [
       "SA", "AE", "EG", "IQ", "JO", "LB", "KW", "QA", "BH", "OM",
@@ -114,6 +118,37 @@ export function mergeMissingChineseGeoRule(settings: PluginSettings): PluginSett
     }
   } else {
     rules.push({ countries: [...missing], language: "zh" });
+  }
+
+  return normalizePluginSettings({
+    geoLanguageRedirect: {
+      ...settings.geoLanguageRedirect,
+      rules,
+    },
+  });
+}
+
+/** Ensure GE → ka exists on installs that saved plugin_settings before Georgian was added. */
+export function mergeMissingGeorgianGeoRule(settings: PluginSettings): PluginSettings {
+  const assigned = new Set(settings.geoLanguageRedirect.rules.flatMap((rule) => rule.countries));
+  const missing = GEORGIAN_GEO_COUNTRIES.filter((code) => !assigned.has(code));
+  if (missing.length === 0) return settings;
+
+  const rules = settings.geoLanguageRedirect.rules.map((rule) => ({
+    countries: [...rule.countries],
+    language: rule.language,
+  }));
+  const kaRule = rules.find((rule) => rule.language === "ka");
+  if (kaRule) {
+    for (const code of missing) {
+      if (!kaRule.countries.includes(code)) kaRule.countries.push(code);
+    }
+  } else {
+    // Keep picker-adjacent order: after BG rule when present, else append.
+    const bgIdx = rules.findIndex((rule) => rule.language === "bg");
+    const entry = { countries: [...missing], language: "ka" as const };
+    if (bgIdx >= 0) rules.splice(bgIdx + 1, 0, entry);
+    else rules.push(entry);
   }
 
   return normalizePluginSettings({

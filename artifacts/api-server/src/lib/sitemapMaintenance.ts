@@ -12,7 +12,7 @@ const ORIGIN = "https://kmcheck.com";
 const MAX_URLS_PER_SHARD = 25_000;
 
 /** Keep in sync with artifacts/kmcheck/scripts/languages.mjs */
-const LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru", "zh"] as const;
+const LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"] as const;
 const HREFLANG: Record<(typeof LANGS)[number], string> = {
   en: "en",
   de: "de",
@@ -22,6 +22,7 @@ const HREFLANG: Record<(typeof LANGS)[number], string> = {
   pl: "pl",
   ro: "ro",
   bg: "bg",
+  ka: "ka",
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",

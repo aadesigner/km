@@ -16,7 +16,7 @@ import {
 const ENGLISH_MONTH =
   /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i;
 
-const NON_EN_LANGUAGES: Language[] = ["de", "es", "fr", "sq", "pl", "ro", "bg", "ar", "uk", "ru"];
+const NON_EN_LANGUAGES: Language[] = ["de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"];
 
 const t = (key: string) => {
   const dict: Record<string, string> = {

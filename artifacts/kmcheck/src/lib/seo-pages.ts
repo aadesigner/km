@@ -244,7 +244,7 @@ export function getRouteSeo(
             "@type": "ContactPoint",
             contactType: "sales",
             email: "info@kmcheck.com",
-            availableLanguage: ["en", "de", "es", "fr", "pl", "ro", "bg", "sq", "ar", "uk", "ru", "zh"],
+            availableLanguage: ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"],
           },
         },
       ]
