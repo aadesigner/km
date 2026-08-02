@@ -7,6 +7,8 @@ import { getCreditPack, isCreditPackId } from "@/lib/creditPacks";
 import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { AUTH_RETURN_PATH_KEY } from "@/lib/checkout-vin-flow";
+import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
+import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/seo";
@@ -17,6 +19,8 @@ import {
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+
+type PublicSettings = { paypalClientId: string | null };
 
 type Props = { params: { lang: string } };
 
@@ -48,15 +52,23 @@ export default function CreditsCheckout({ params }: Props) {
 
   const pack = packId ? getCreditPack(packId) : null;
 
-  const { data: pubSettings } = useQuery<{ paypalClientId: string | null }>({
+  const {
+    data: pubSettings,
+    isLoading: pubSettingsLoading,
+    isError: pubSettingsError,
+    isFetching: pubSettingsFetching,
+    refetch: refetchPubSettings,
+  } = useQuery<PublicSettings>({
     queryKey: ["/api/payments/public-settings"],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/payments/public-settings`);
       if (!r.ok) throw new Error("settings");
-      return r.json();
+      return r.json() as Promise<PublicSettings>;
     },
-    staleTime: 5 * 60_000,
+    ...spreadQueryExtras<PublicSettings>(CHECKOUT_QUERY_OPTIONS),
   });
+  useQueryRecovery(pubSettingsError, pubSettingsFetching, refetchPubSettings);
+  const paypalReady = !!pubSettings?.paypalClientId;
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [paymentStarted, setPaymentStarted] = useState(false);
@@ -87,8 +99,10 @@ export default function CreditsCheckout({ params }: Props) {
 
   useEffect(() => {
     if (!pubSettings?.paypalClientId) return;
-    const existing = document.getElementById("paypal-sdk-credits");
-    if (existing) return;
+    // Reuse the normal checkout SDK when already loaded (same client id / EUR).
+    if (window.paypal || document.getElementById("paypal-sdk") || document.getElementById("paypal-sdk-credits")) {
+      return;
+    }
     const script = document.createElement("script");
     script.id = "paypal-sdk-credits";
     script.src = `https://www.paypal.com/sdk/js?client-id=${pubSettings.paypalClientId}&currency=EUR&intent=capture&components=buttons`;
@@ -129,13 +143,30 @@ export default function CreditsCheckout({ params }: Props) {
   }, [finalizeCapture]);
 
   const mountPaypal = useCallback(async (orderId: string) => {
-    if (!pubSettings?.paypalClientId) {
+    // Settings can still be loading after create-order succeeds (server uses env secrets).
+    let clientId = pubSettings?.paypalClientId ?? null;
+    if (!clientId) {
+      try {
+        const r = await refetchPubSettings();
+        clientId = r.data?.paypalClientId ?? null;
+      } catch {
+        clientId = null;
+      }
+    }
+    if (!clientId) {
       setErrorMsg(t("checkout_payment_not_configured"));
       setStatus("error");
       return;
     }
+    if (!document.getElementById("paypal-sdk") && !document.getElementById("paypal-sdk-credits") && !window.paypal) {
+      const script = document.createElement("script");
+      script.id = "paypal-sdk-credits";
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+      script.async = true;
+      document.body.appendChild(script);
+    }
     let attempts = 0;
-    while (!window.paypal && attempts < 30) {
+    while (!window.paypal && attempts < 40) {
       await new Promise((r) => setTimeout(r, 200));
       attempts++;
     }
@@ -182,10 +213,16 @@ export default function CreditsCheckout({ params }: Props) {
     paypalInstanceRef.current = buttons;
     paypalContainerRef.current.innerHTML = "";
     await buttons.render(paypalContainerRef.current);
-  }, [pubSettings?.paypalClientId, resolvedTheme, t]);
+  }, [pubSettings?.paypalClientId, refetchPubSettings, resolvedTheme, t]);
 
   const handleStartPayment = async () => {
     if (!pack) return;
+    if (pubSettingsLoading) return;
+    if (!paypalReady) {
+      setErrorMsg(t("checkout_payment_not_configured"));
+      setStatus("error");
+      return;
+    }
     setStatus("creating");
     setErrorMsg("");
     try {
@@ -255,12 +292,12 @@ export default function CreditsCheckout({ params }: Props) {
         </button>
 
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
-          {/* Left — pack summary */}
+          {/* Pack summary — second on mobile, left on desktop */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="rounded-[1.75rem] border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10"
+            className="order-2 lg:order-1 rounded-[1.75rem] border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10"
           >
             <div className="relative px-5 sm:px-7 pt-7 pb-6 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
@@ -326,12 +363,12 @@ export default function CreditsCheckout({ params }: Props) {
             </div>
           </motion.div>
 
-          {/* Right — payment panel */}
+          {/* Order / payment — first on mobile, right on desktop */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.4 }}
-            className="space-y-4 lg:sticky lg:top-24"
+            className="order-1 lg:order-2 space-y-4 lg:sticky lg:top-24"
           >
             <div className="rounded-2xl border border-border/80 bg-background/90 backdrop-blur-sm overflow-hidden shadow-md shadow-black/[0.03] dark:shadow-black/20 ring-1 ring-black/[0.03] dark:ring-white/[0.04]">
               <div className="px-5 sm:px-6 py-3.5 border-b bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-transparent">
@@ -415,14 +452,25 @@ export default function CreditsCheckout({ params }: Props) {
                       <Button
                         className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15"
                         onClick={() => void handleStartPayment()}
-                        disabled={status === "creating" || status === "paying"}
+                        disabled={
+                          status === "creating"
+                          || status === "paying"
+                          || pubSettingsLoading
+                          || (!paypalReady && !pubSettingsError)
+                        }
                       >
-                        {status === "creating" || status === "paying" ? (
+                        {status === "creating" || status === "paying" || pubSettingsLoading ? (
                           <><Loader2 className="h-4 w-4 animate-spin" />{t("processing")}…</>
                         ) : (
                           <><Lock className="h-4 w-4" />{t("proceed_to_payment")}</>
                         )}
                       </Button>
+                    )}
+
+                    {!pubSettingsLoading && !paypalReady && (
+                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
+                        {t("checkout_payment_not_configured")}
+                      </div>
                     )}
 
                     {status === "paying" && (
