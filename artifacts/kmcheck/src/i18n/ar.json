@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "احصل على تقارير",
   "pricing_best_value": "الأكثر طلباً",
   "credits_checkout_title": "أكمل عملية الشراء",
-  "credits_checkout_desc": "ادفع مرة واحدة وافتح عدة تقارير VIN كاملة متى احتجت إليها.",
+  "credits_checkout_desc": "افتح التقارير في أي وقت تحتاجها.",
   "credits_checkout_badge": "باقة التقارير",
   "credits_checkout_credits": "التقارير مشمولة",
   "credits_checkout_unit": "لكل تقرير",
@@ -1638,5 +1638,6 @@
   "photos_available": "صور متوفرة",
   "credits_checkout_pack_title": "{n} تقارير VIN",
   "checkout_credits_left": "{n} أرصدة متاحة",
-  "credits_checkout_credit_notice": "بعد الدفع الناجح تُضاف التقارير إلى حسابك. يمكنك استخدامها لاحقاً كطريقة دفع عند فحص رقم VIN."
+  "credits_checkout_credit_notice": "بعد الدفع الناجح سنضيف {n} أرصدة إلى حسابك. يمكنك استخدامها لاحقاً كطريقة دفع في صفحة الدفع.",
+  "dashboard_stat_credits_tooltip": "استخدم الرصيد كطريقة دفع لفتح تقرير VIN."
 }

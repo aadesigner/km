@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Obține rapoarte",
   "pricing_best_value": "Popular",
   "credits_checkout_title": "Finalizează achiziția",
-  "credits_checkout_desc": "Plătești o dată și deblochezi mai multe rapoarte VIN complete oricând ai nevoie.",
+  "credits_checkout_desc": "Deblochează rapoarte oricând ai nevoie.",
   "credits_checkout_badge": "Pachet de rapoarte",
   "credits_checkout_credits": "Rapoarte incluse",
   "credits_checkout_unit": "Per raport",
@@ -1638,5 +1638,6 @@
   "photos_available": "Fotografii disponibile",
   "credits_checkout_pack_title": "{n} rapoarte VIN",
   "checkout_credits_left": "{n} credite disponibile",
-  "credits_checkout_credit_notice": "După o plată reușită, rapoartele sunt creditate în contul tău. Le poți folosi ulterior ca metodă de plată când verifici un VIN."
+  "credits_checkout_credit_notice": "După o plată reușită, adăugăm {n} credite în contul tău. Le poți folosi ulterior ca metodă de plată pe pagina de checkout.",
+  "dashboard_stat_credits_tooltip": "Folosește creditele ca metodă de plată pentru a debloca un raport VIN."
 }

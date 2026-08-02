@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Получить отчёты",
   "pricing_best_value": "Популярное",
   "credits_checkout_title": "Завершите покупку",
-  "credits_checkout_desc": "Оплатите один раз и открывайте несколько полных VIN-отчётов, когда они понадобятся.",
+  "credits_checkout_desc": "Открывайте отчёты, когда они понадобятся.",
   "credits_checkout_badge": "Пакет отчётов",
   "credits_checkout_credits": "Отчёты включены",
   "credits_checkout_unit": "За отчёт",
@@ -1638,5 +1638,6 @@
   "photos_available": "Фотографии доступны",
   "credits_checkout_pack_title": "{n} VIN-отчётов",
   "checkout_credits_left": "{n} кредитов доступно",
-  "credits_checkout_credit_notice": "После успешной оплаты отчёты будут зачислены на ваш аккаунт. Позже вы сможете использовать их как способ оплаты при проверке VIN."
+  "credits_checkout_credit_notice": "После успешной оплаты мы добавим {n} кредитов на ваш аккаунт. Позже вы сможете использовать их как способ оплаты на странице оформления заказа.",
+  "dashboard_stat_credits_tooltip": "Используйте кредиты как способ оплаты, чтобы открыть VIN-отчёт."
 }

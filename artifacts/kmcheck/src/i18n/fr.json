@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Obtenir des rapports",
   "pricing_best_value": "Populaire",
   "credits_checkout_title": "Finaliser votre achat",
-  "credits_checkout_desc": "Payez une fois et débloquez plusieurs rapports VIN complets quand vous en avez besoin.",
+  "credits_checkout_desc": "Débloquez des rapports quand vous en avez besoin.",
   "credits_checkout_badge": "Pack de rapports",
   "credits_checkout_credits": "Rapports inclus",
   "credits_checkout_unit": "Par rapport",
@@ -1638,5 +1638,6 @@
   "photos_available": "Photos disponibles",
   "credits_checkout_pack_title": "{n} rapports VIN",
   "checkout_credits_left": "{n} crédits disponibles",
-  "credits_checkout_credit_notice": "Après un paiement réussi, les rapports sont crédités sur votre compte. Vous pourrez les utiliser plus tard comme moyen de paiement lors d’une vérification VIN."
+  "credits_checkout_credit_notice": "Après un paiement réussi, nous ajouterons {n} crédits à votre compte. Vous pourrez les utiliser plus tard comme moyen de paiement sur la page de paiement.",
+  "dashboard_stat_credits_tooltip": "Utilisez vos crédits comme moyen de paiement pour débloquer un rapport VIN."
 }

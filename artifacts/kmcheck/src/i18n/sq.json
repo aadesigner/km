@@ -1608,12 +1608,12 @@
   "pricing_plan_pack5_title": "5 Raporte",
   "pricing_plan_credits_count": "{n} raporte të përfshira",
   "pricing_credits_each": "{price} secila",
-  "pricing_credits_never_expire": "Përdore kur të duash — pa skadencë",
+  "pricing_credits_never_expire": "Përdori kur të duash",
   "pricing_credits_use_any_vin": "Për çdo raport VIN",
   "pricing_buy_credits": "Merr raporte",
   "pricing_best_value": "Popullore",
   "credits_checkout_title": "Përfundo blerjen",
-  "credits_checkout_desc": "Paguaj një herë dhe zhblloko disa raporte të plota VIN sa herë të duash.",
+  "credits_checkout_desc": "Zhblloko raportet kur të duash.",
   "credits_checkout_badge": "Paketë",
   "credits_checkout_credits": "Raporte të përfshira",
   "credits_checkout_unit": "Për raport",
@@ -1641,5 +1641,6 @@
   "photos_available": "Foto të disponueshme",
   "credits_checkout_pack_title": "{n} Raporte makine",
   "checkout_credits_left": "{n} kredite në dispozicion",
-  "credits_checkout_credit_notice": "Pas pagesës së suksesshme, raportet i shtohen llogarisë suaj. Mund t’i përdorni më vonë si metodë pagese kur kontrolloni një shasi (VIN)."
+  "credits_checkout_credit_notice": "Pas pagesës së suksesshme, do t’ju shtojmë {n} kredite në llogari. Mund t’i përdorni më vonë si metodë pagese në faqen e pagesës.",
+  "dashboard_stat_credits_tooltip": "Përdorni kreditët si metodë pagese kur blini një raport VIN për ta zhbllokuar."
 }

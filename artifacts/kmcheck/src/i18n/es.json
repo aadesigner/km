@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Obtener informes",
   "pricing_best_value": "Popular",
   "credits_checkout_title": "Completa tu compra",
-  "credits_checkout_desc": "Paga una vez y desbloquea varios informes VIN completos cuando los necesites.",
+  "credits_checkout_desc": "Desbloquea informes cuando los necesites.",
   "credits_checkout_badge": "Pack de informes",
   "credits_checkout_credits": "Informes incluidos",
   "credits_checkout_unit": "Por informe",
@@ -1638,5 +1638,6 @@
   "photos_available": "Fotos disponibles",
   "credits_checkout_pack_title": "{n} informes VIN",
   "checkout_credits_left": "{n} créditos disponibles",
-  "credits_checkout_credit_notice": "Tras un pago correcto, los informes se acreditan en tu cuenta. Podrás usarlos más tarde como método de pago al consultar un VIN."
+  "credits_checkout_credit_notice": "Tras un pago correcto, añadiremos {n} créditos a tu cuenta. Podrás usarlos más tarde como método de pago en la página de checkout.",
+  "dashboard_stat_credits_tooltip": "Usa los créditos como método de pago para desbloquear un informe VIN."
 }

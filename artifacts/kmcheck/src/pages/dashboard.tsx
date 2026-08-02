@@ -29,7 +29,7 @@ import {
 import {
   FileText, Search,
   AlertCircle, User, HelpCircle,
-  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2, Phone, PartyPopper, Coins,
+  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2, Phone, PartyPopper, Coins, Info,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
@@ -56,6 +56,7 @@ import {
 } from "@/lib/dashboard-nav";
 import { ClientQueryFallback } from "@/components/client-query-fallback";
 import { getErrorStatus } from "@/lib/api-error";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 function useGreeting(t: (k: string) => string): string {
   const hour = new Date().getHours();
@@ -73,7 +74,7 @@ function DashboardStatCard({
   loading,
   icon: Icon,
   variant = "muted",
-  delay = 0,
+  tooltip,
 }: {
   label: string;
   hint: string;
@@ -82,8 +83,63 @@ function DashboardStatCard({
   icon: React.ElementType;
   variant?: "muted" | "primary";
   delay?: number;
+  tooltip?: string;
 }) {
-  const isPrimary = variant === "primary";
+  if (variant === "primary") {
+    return (
+      <div className="relative overflow-hidden rounded-lg border border-primary/40 dark:border-primary/30 shadow-sm shadow-primary/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/85 dark:from-primary/80 dark:via-primary/70 dark:to-primary/55" />
+        <div className="absolute inset-0 hidden dark:block bg-black/25 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_15%_-25%,hsl(var(--primary-foreground)_/_0.18),transparent)] dark:bg-[radial-gradient(ellipse_90%_80%_at_15%_-25%,hsl(var(--primary-foreground)_/_0.08),transparent)] pointer-events-none" />
+        <div className="relative flex items-center justify-between gap-2 px-3 py-2.5 sm:px-3.5 sm:py-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-primary-foreground/15 ring-1 ring-primary-foreground/25 flex items-center justify-center shrink-0 text-primary-foreground">
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-[13px] font-semibold text-primary-foreground leading-tight truncate">
+                {label}
+              </p>
+              <p className="text-[10px] sm:text-[11px] text-primary-foreground/75 leading-tight truncate">
+                {hint}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {tooltip ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="h-7 w-7 rounded-md inline-flex items-center justify-center text-primary-foreground/85 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                    aria-label={tooltip}
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="bottom"
+                  align="end"
+                  sideOffset={8}
+                  className="w-[16.5rem] max-w-[calc(100vw-2rem)] p-3 text-xs font-medium leading-snug text-foreground"
+                >
+                  {tooltip}
+                </PopoverContent>
+              </Popover>
+            ) : null}
+            <p className="text-lg sm:text-xl font-black tabular-nums tracking-tight leading-none text-primary-foreground">
+              {loading ? (
+                <span className="inline-block h-5 sm:h-6 w-8 rounded bg-primary-foreground/20 animate-pulse" aria-hidden />
+              ) : (
+                value
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -91,16 +147,12 @@ function DashboardStatCard({
         "bg-gradient-to-br from-background via-background to-muted/20",
         "px-3 py-2.5 sm:px-3.5 sm:py-3",
         "hover:shadow-md hover:border-border transition-[box-shadow,border-color] duration-200",
-        isPrimary ? "border-l-[3px] border-l-primary/55" : "border-l-[3px] border-l-border",
+        "border-l-[3px] border-l-border",
       )}
     >
       <div className="flex items-center justify-between gap-2 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className={cn(
-            "h-7 w-7 sm:h-8 sm:w-8 rounded-md flex items-center justify-center shrink-0",
-            "ring-1 ring-border/50",
-            isPrimary ? "bg-primary/10 text-primary" : "bg-muted/70 text-muted-foreground",
-          )}>
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-md flex items-center justify-center shrink-0 ring-1 ring-border/50 bg-muted/70 text-muted-foreground">
             <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
           </div>
           <div className="min-w-0">
@@ -112,10 +164,7 @@ function DashboardStatCard({
             </p>
           </div>
         </div>
-        <p className={cn(
-          "text-lg sm:text-xl font-black tabular-nums tracking-tight leading-none shrink-0",
-          isPrimary && "text-primary",
-        )}>
+        <p className="text-lg sm:text-xl font-black tabular-nums tracking-tight leading-none shrink-0">
           {loading ? (
             <span className="inline-block h-5 sm:h-6 w-8 rounded bg-muted animate-pulse" aria-hidden />
           ) : (
@@ -824,18 +873,25 @@ export default function Dashboard() {
               custom={1}
               className="space-y-6"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
-                <div className="col-span-2 sm:col-span-1">
-                  <DashboardStatCard
-                    label={t("dashboard_stat_credits")}
-                    hint={t("dashboard_stat_credits_hint")}
-                    value={String(user?.creditBalance ?? 0)}
-                    loading={!isLoaded}
-                    icon={Coins}
-                    variant="primary"
-                    delay={0}
-                  />
-                </div>
+              <div className={cn(
+                "grid gap-2 sm:gap-2.5",
+                isLoaded && (user?.creditBalance ?? 0) > 0
+                  ? "grid-cols-2 sm:grid-cols-3"
+                  : "grid-cols-2",
+              )}>
+                {isLoaded && (user?.creditBalance ?? 0) > 0 && (
+                  <div className="col-span-2 sm:col-span-1">
+                    <DashboardStatCard
+                      label={t("dashboard_stat_credits")}
+                      hint={t("dashboard_stat_credits_hint")}
+                      value={String(user?.creditBalance ?? 0)}
+                      loading={false}
+                      icon={Coins}
+                      variant="primary"
+                      tooltip={t("dashboard_stat_credits_tooltip")}
+                    />
+                  </div>
+                )}
                 <DashboardStatCard
                   label={t("dashboard_stat_month_reports")}
                   hint={t("dashboard_stat_month_reports_hint")}
@@ -843,7 +899,6 @@ export default function Dashboard() {
                   loading={statsLoading && historyLoading}
                   icon={CalendarDays}
                   variant="muted"
-                  delay={0.04}
                 />
                 <DashboardStatCard
                   label={t("dashboard_stat_total_reports")}
@@ -852,7 +907,6 @@ export default function Dashboard() {
                   loading={statsLoading && historyLoading}
                   icon={FileText}
                   variant="muted"
-                  delay={0.08}
                 />
               </div>
 

@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Вземете доклади",
   "pricing_best_value": "Популярно",
   "credits_checkout_title": "Завършете покупката",
-  "credits_checkout_desc": "Платете веднъж и отключвайте няколко пълни VIN доклада, когато са ви нужни.",
+  "credits_checkout_desc": "Отключвайте доклади, когато са ви нужни.",
   "credits_checkout_badge": "Пакет доклади",
   "credits_checkout_credits": "Доклади включени",
   "credits_checkout_unit": "На доклад",
@@ -1638,5 +1638,6 @@
   "photos_available": "Налични снимки",
   "credits_checkout_pack_title": "{n} VIN доклада",
   "checkout_credits_left": "{n} кредита налични",
-  "credits_checkout_credit_notice": "След успешно плащане докладите се кредитират в акаунта ви. По-късно можете да ги използвате като метод на плащане при проверка на VIN."
+  "credits_checkout_credit_notice": "След успешно плащане ще добавим {n} кредита към акаунта ви. По-късно можете да ги използвате като метод на плащане в страницата за плащане.",
+  "dashboard_stat_credits_tooltip": "Използвайте кредитите като метод на плащане, за да отключите VIN доклад."
 }

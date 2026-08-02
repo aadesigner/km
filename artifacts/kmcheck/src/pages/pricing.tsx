@@ -74,19 +74,19 @@ function PricingHeroPrice({
     <div className="flex flex-col items-center gap-1">
       <div className="inline-flex items-end justify-center gap-2 tabular-nums leading-none">
         {showDiscount && baseAmount != null && baseAmount > amount && (
-          <span className="text-base sm:text-lg font-medium text-white/40 line-through pb-1">
+          <span className="text-lg sm:text-xl font-medium text-white/40 line-through pb-1">
             {currencySymbol}
             {baseAmount.toFixed(2)}
           </span>
         )}
         <div className="inline-flex items-end leading-none">
-          <span className="text-lg sm:text-xl font-semibold text-white/90 pb-1 pe-0.5">
+          <span className="text-xl sm:text-2xl font-semibold text-white/90 pb-1 pe-0.5">
             {currencySymbol}
           </span>
-          <span className="text-[2.75rem] sm:text-[3.1rem] font-black text-white tracking-tighter">
+          <span className="text-[3.05rem] sm:text-[3.4rem] font-black text-white tracking-tighter">
             {whole}
           </span>
-          <span className="text-lg sm:text-xl font-bold text-white/80 pb-1 ps-1">
+          <span className="text-xl sm:text-2xl font-bold text-white/80 pb-1 ps-1">
             .{fraction}
           </span>
         </div>

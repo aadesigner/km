@@ -247,7 +247,7 @@
   "pricing_buy_pack": "Get {n} reports",
   "pricing_best_value": "Popular",
   "credits_checkout_title": "Complete your purchase",
-  "credits_checkout_desc": "Pay once and unlock multiple full VIN reports whenever you need them.",
+  "credits_checkout_desc": "Unlock reports any time you need them.",
   "credits_checkout_badge": "Reports pack",
   "credits_checkout_credits": "Reports included",
   "credits_checkout_unit": "Per report",
@@ -1641,5 +1641,6 @@
   "photos_available": "Photos available",
   "credits_checkout_pack_title": "{n} VIN Reports",
   "checkout_credits_left": "{n} credits available",
-  "credits_checkout_credit_notice": "After a successful payment, the reports are credited to your account. You can use them later as a payment method when checking a VIN."
+  "credits_checkout_credit_notice": "After a successful payment, we will add {n} credits to your account. You can use them later as a payment method on the checkout page.",
+  "dashboard_stat_credits_tooltip": "Use credits as a payment method when paying for a VIN report to unlock it."
 }

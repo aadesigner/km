@@ -1613,7 +1613,7 @@
   "pricing_buy_credits": "მიიღეთ ანგარიშები",
   "pricing_best_value": "პოპულარული",
   "credits_checkout_title": "დაასრულეთ შესყიდვა",
-  "credits_checkout_desc": "გადაიხადეთ ერთხელ და განბლოკეთ რამდენიმე VIN ანგარიში, როცა გსჭირდებათ.",
+  "credits_checkout_desc": "განბლოკეთ ანგარიშები როცა გჭირდებათ.",
   "credits_checkout_badge": "ანგარიშების პაკეტი",
   "credits_checkout_credits": "ანგარიშები შედის",
   "credits_checkout_unit": "თითო ანგარიშზე",
@@ -1641,5 +1641,6 @@
   "photos_available": "ფოტოები ხელმისაწვდომია",
   "credits_checkout_pack_title": "{n} VIN ანგარიში",
   "checkout_credits_left": "{n} კრედიტი ხელმისაწვდომია",
-  "credits_checkout_credit_notice": "წარმატებული გადახდის შემდეგ ანგარიშები ჩაირიცხება თქვენს ანგარიშზე. მოგვიანებით შეგიძლიათ გამოიყენოთ ისინი გადახდის მეთოდად VIN-ის შემოწმებისას."
+  "credits_checkout_credit_notice": "წარმატებული გადახდის შემდეგ თქვენს ანგარიშზე დაგემატებათ {n} კრედიტი. მოგვიანებით შეგიძლიათ გამოიყენოთ ისინი გადახდის მეთოდად checkout გვერდზე.",
+  "dashboard_stat_credits_tooltip": "გამოიყენეთ კრედიტები გადახდის მეთოდად, რათა VIN ანგარიში გასახსნათ."
 }

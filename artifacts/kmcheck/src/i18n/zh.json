@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "获取报告",
   "pricing_best_value": "热门",
   "credits_checkout_title": "完成购买",
-  "credits_checkout_desc": "一次付款，随时解锁多份完整 VIN 报告。",
+  "credits_checkout_desc": "随时按需解锁报告。",
   "credits_checkout_badge": "报告套餐",
   "credits_checkout_credits": "包含报告",
   "credits_checkout_unit": "每份报告",
@@ -1638,5 +1638,6 @@
   "photos_available": "提供车辆照片",
   "credits_checkout_pack_title": "{n} 份 VIN 报告",
   "checkout_credits_left": "可用额度 {n}",
-  "credits_checkout_credit_notice": "付款成功后，报告将计入您的账户。之后检查 VIN 时，可用它们作为支付方式。"
+  "credits_checkout_credit_notice": "付款成功后，我们将向您的账户添加 {n} 个积分。之后可在结账页将其用作支付方式。",
+  "dashboard_stat_credits_tooltip": "使用额度作为支付方式即可解锁 VIN 报告。"
 }

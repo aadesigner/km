@@ -492,7 +492,7 @@ export default function CreditsCheckout({ params }: Props) {
         </div>
 
         <p className="mt-8 sm:mt-10 max-w-xl mx-auto text-center text-xs sm:text-sm text-muted-foreground/70 leading-relaxed">
-          {t("credits_checkout_credit_notice")}
+          {t("credits_checkout_credit_notice").replace("{n}", String(pack.credits))}
         </p>
       </div>
     </div>

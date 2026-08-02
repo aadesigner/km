@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Kup raporty",
   "pricing_best_value": "Popularne",
   "credits_checkout_title": "Dokończ zakup",
-  "credits_checkout_desc": "Zapłać raz i odblokuj wiele pełnych raportów VIN, kiedy ich potrzebujesz.",
+  "credits_checkout_desc": "Odblokowuj raporty, kiedy ich potrzebujesz.",
   "credits_checkout_badge": "Pakiet raportów",
   "credits_checkout_credits": "Raporty w pakiecie",
   "credits_checkout_unit": "Za raport",
@@ -1638,5 +1638,6 @@
   "photos_available": "Zdjęcia dostępne",
   "credits_checkout_pack_title": "{n} raportów VIN",
   "checkout_credits_left": "{n} kredytów dostępnych",
-  "credits_checkout_credit_notice": "Po udanej płatności raporty trafią na Twoje konto. Możesz ich później użyć jako metody płatności przy sprawdzaniu VIN."
+  "credits_checkout_credit_notice": "Po udanej płatności dodamy {n} kredytów do Twojego konta. Możesz ich później użyć jako metody płatności na stronie płatności.",
+  "dashboard_stat_credits_tooltip": "Użyj kredytów jako metody płatności, aby odblokować raport VIN."
 }

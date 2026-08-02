@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Berichte holen",
   "pricing_best_value": "Beliebt",
   "credits_checkout_title": "Kauf abschließen",
-  "credits_checkout_desc": "Einmal zahlen und mehrere vollständige VIN-Berichte freischalten, wann immer Sie sie brauchen.",
+  "credits_checkout_desc": "Berichte freischalten, wann immer Sie sie brauchen.",
   "credits_checkout_badge": "Berichtspaket",
   "credits_checkout_credits": "Berichte inklusive",
   "credits_checkout_unit": "Pro Bericht",
@@ -1638,5 +1638,6 @@
   "photos_available": "Fotos verfügbar",
   "credits_checkout_pack_title": "{n} VIN-Berichte",
   "checkout_credits_left": "{n} Credits verfügbar",
-  "credits_checkout_credit_notice": "Nach erfolgreicher Zahlung werden die Berichte Ihrem Konto gutgeschrieben. Sie können sie später als Zahlungsmethode nutzen, wenn Sie eine VIN prüfen."
+  "credits_checkout_credit_notice": "Nach erfolgreicher Zahlung schreiben wir {n} Credits Ihrem Konto gut. Sie können sie später auf der Checkout-Seite als Zahlungsmethode nutzen.",
+  "dashboard_stat_credits_tooltip": "Nutzen Sie Credits als Zahlungsmethode, wenn Sie einen VIN-Bericht freischalten."
 }

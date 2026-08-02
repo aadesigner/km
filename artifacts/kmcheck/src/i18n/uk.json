@@ -1610,7 +1610,7 @@
   "pricing_buy_credits": "Отримати звіти",
   "pricing_best_value": "Популярне",
   "credits_checkout_title": "Завершіть покупку",
-  "credits_checkout_desc": "Сплатіть один раз і розблоковуйте кілька повних VIN-звітів, коли вони потрібні.",
+  "credits_checkout_desc": "Розблоковуйте звіти, коли вони потрібні.",
   "credits_checkout_badge": "Пакет звітів",
   "credits_checkout_credits": "Звіти включено",
   "credits_checkout_unit": "За звіт",
@@ -1638,5 +1638,6 @@
   "photos_available": "Фотографії доступні",
   "credits_checkout_pack_title": "{n} VIN-звітів",
   "checkout_credits_left": "{n} кредитів доступно",
-  "credits_checkout_credit_notice": "Після успішної оплати звіти буде зараховано на ваш обліковий запис. Пізніше ви зможете використати їх як спосіб оплати під час перевірки VIN."
+  "credits_checkout_credit_notice": "Після успішної оплати ми додамо {n} кредитів на ваш обліковий запис. Пізніше ви зможете використати їх як спосіб оплати на сторінці оформлення.",
+  "dashboard_stat_credits_tooltip": "Використовуйте кредити як спосіб оплати, щоб розблокувати VIN-звіт."
 }
