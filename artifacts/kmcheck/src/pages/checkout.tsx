@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check, CheckCircle2, Tag, X, Loader2, ShieldCheck,
-  Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard,
+  Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard, Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
@@ -153,10 +153,16 @@ interface Props {
 
 export default function Checkout({ params }: Props) {
   const { t, language } = useTranslation();
-  const { isSignedIn, isLoaded, user } = useAuth();
+  const { isSignedIn, isLoaded, user, refreshUser } = useAuth();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { resolvedTheme } = useTheme();
+
+  // Fresh credit balance (admin edits / pack purchases) before showing Pay with credit.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    void refreshUser();
+  }, [isLoaded, isSignedIn, refreshUser]);
 
   const LOCKED_ROWS = [
     { icon: Gauge,         labelKey: "mileage_verification", blur: "47,832 km" },
@@ -1082,6 +1088,56 @@ export default function Checkout({ params }: Props) {
     void finalizePaidCheckout(token, normalizedVin);
   }, [isSignedIn, vinIsValid, normalizedVin, finalizePaidCheckout]);
 
+  const creditBalance = user?.creditBalance ?? 0;
+  const canPayWithCredits = creditBalance >= 1 && !couponResult?.isFree;
+
+  const handlePayWithCredits = async () => {
+    if (!vinIsValid || !canPayWithCredits) return;
+    setStatus("paying");
+    setErrorMsg("");
+    try {
+      const resp = await fetch(`${basePath}/api/payments/redeem-credit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ vin: normalizedVin }),
+      });
+      const data = await resp.json() as {
+        paymentId?: number;
+        creditBalance?: number;
+        error?: string;
+        code?: string;
+        alreadyUnlocked?: boolean;
+        lookupId?: number | null;
+      };
+      if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
+        goToVinReport(normalizedVin, data.lookupId ?? undefined, { refreshClientArea: true });
+        return;
+      }
+      if (data.code === "VIN_NO_DATA") {
+        setErrorMsg(t("vin_not_in_db"));
+        setStatus("error");
+        return;
+      }
+      if (data.code === "INSUFFICIENT_CREDITS") {
+        setErrorMsg(t("checkout_insufficient_credits"));
+        setStatus("error");
+        void refreshUser();
+        return;
+      }
+      if (!resp.ok || !data.paymentId) {
+        setErrorMsg(data.error || t("checkout_error_payment_create"));
+        setStatus("error");
+        return;
+      }
+      void refreshUser();
+      await submitVinLookupRef.current(normalizedVin, undefined, data.paymentId);
+    } catch {
+      setErrorMsg(t("checkout_error_payment_create"));
+      setStatus("error");
+    }
+  };
+
   const handleProceedToPayment = async () => {
     postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
@@ -1921,10 +1977,51 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
+                  {/* Credits — primary unlock when available; PayPal/card unchanged below */}
+                  {canPayWithCredits && showProceedButton && paymentAllowed && (
+                    <div className="space-y-2.5">
+                      <button
+                        type="button"
+                        onClick={() => void handlePayWithCredits()}
+                        disabled={isBusy}
+                        className={cn(
+                          "w-full rounded-xl border border-primary/25 bg-gradient-to-b from-primary/[0.09] to-primary/[0.03]",
+                          "px-3 py-2.5 text-left transition-colors",
+                          "hover:from-primary/[0.13] hover:to-primary/[0.05] hover:border-primary/40",
+                          "disabled:opacity-60 disabled:pointer-events-none",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35",
+                        )}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+                            {isBusy
+                              ? <Loader2 className="h-4 w-4 animate-spin" />
+                              : <Coins className="h-4 w-4" />}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-bold text-foreground leading-tight">
+                              {isBusy ? `${t("processing")}…` : t("checkout_pay_with_credits")}
+                            </span>
+                            <span className="block mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+                              {t("checkout_credits_left").replace("{n}", String(creditBalance))}
+                            </span>
+                          </span>
+                        </span>
+                      </button>
+                      <div className="relative flex items-center gap-3 py-0.5" aria-hidden>
+                        <div className="h-px flex-1 bg-border/70" />
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          {t("or")}
+                        </span>
+                        <div className="h-px flex-1 bg-border/70" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
-                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow -mt-0.5"
+                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
                     >
@@ -1937,16 +2034,6 @@ export default function Checkout({ params }: Props) {
                             : <><Lock className="h-4 w-4" />{t("proceed_to_payment")}</>
                       }
                     </Button>
-                  )}
-
-                  {showProceedButton && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5">
-                      <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{t("checkout_manual_pending_title")}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t("checkout_manual_pending_desc")}</p>
-                      </div>
-                    </div>
                   )}
 
                   {/* PayPal configured — no footer note */}

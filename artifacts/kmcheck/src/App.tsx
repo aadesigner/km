@@ -73,6 +73,7 @@ const AdminAnnouncements    = lazyWithRetry(() => import("@/pages/admin/announce
 const AdminAnalytics        = lazyWithRetry(() => import("@/pages/admin/analytics"));
 const AdminPlugins          = lazyWithRetry(() => import("@/pages/admin/plugins"));
 const Checkout         = lazyWithRetry(() => import("@/pages/checkout"));
+const CreditsCheckout  = lazyWithRetry(() => import("@/pages/credits-checkout"));
 const ForgotPassword  = lazyWithRetry(() => import("@/pages/forgot-password"));
 const ResetPassword   = lazyWithRetry(() => import("@/pages/reset-password"));
 const SetPassword     = lazyWithRetry(() => import("@/pages/set-password"));
@@ -175,6 +176,7 @@ function AuthSubPage({ lang, children }: { lang: Language; children: React.React
 const HomeLang         = withLang(Home, "home");
 const PricingLang      = withLang(Pricing as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "pricing");
 const CheckoutLang     = withLang(Checkout as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "checkout");
+const CreditsCheckoutLang = withLang(CreditsCheckout as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "credits-checkout");
 const DashboardLang    = withLang(Dashboard as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "dashboard");
 const VinProcessingLang = withLang(VinProcessing as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "vin-processing");
 const TermsLang           = withLang(Terms as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
@@ -723,6 +725,7 @@ function AppRouter() {
         {/* Main pages */}
         <Route path="/:lang/pricing" component={PricingLang} />
         <Route path="/:lang/checkout" component={CheckoutLang} />
+        <Route path="/:lang/credits/checkout" component={CreditsCheckoutLang} />
         <Route path="/:lang/dashboard/account" component={DashboardLang} />
         <Route path="/:lang/dashboard/help" component={DashboardLang} />
         <Route path="/:lang/dashboard" component={DashboardLang} />

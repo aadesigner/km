@@ -52,6 +52,7 @@ function profilePayload(
     countryCode: string | null;
     phonePrefix: string | null;
     phoneNational: string | null;
+    creditBalance?: number;
     createdAt: Date;
   },
   extras: {
@@ -75,6 +76,7 @@ function profilePayload(
     phoneNational: user.phoneNational ?? null,
     phoneChangesRemaining: extras.phoneChangesRemaining,
     phoneChangesLimit: MAX_PHONE_CHANGES_PER_DAY,
+    creditBalance: user.creditBalance ?? 0,
     ...(extras.totalChecks !== undefined ? { totalChecks: extras.totalChecks } : {}),
     ...(extras.totalSpent !== undefined ? { totalSpent: extras.totalSpent } : {}),
     createdAt: user.createdAt,
@@ -311,6 +313,40 @@ router.get("/user/payments", requireAuth, async (req, res) => {
       .limit(limit)
       .offset(offset),
     db.select({ total: count() }).from(paymentsTable).where(fulfilledForUser),
+  ]);
+
+  res.setHeader("Cache-Control", "private, no-store");
+  res.json({ items, total, page, limit });
+});
+
+// GET /user/credit-purchases — this user's credit_pack payments
+router.get("/user/credit-purchases", requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
+  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
+  const offset = (page - 1) * limit;
+
+  const where = and(
+    eq(paymentsTable.userId, userId),
+    eq(paymentsTable.kind, "credit_pack"),
+    eq(paymentsTable.status, "completed"),
+  );
+
+  const [items, [{ total }]] = await Promise.all([
+    db.select({
+      id: paymentsTable.id,
+      amount: paymentsTable.amount,
+      currency: paymentsTable.currency,
+      status: paymentsTable.status,
+      credits: paymentsTable.credits,
+      createdAt: paymentsTable.createdAt,
+    })
+      .from(paymentsTable)
+      .where(where)
+      .orderBy(desc(paymentsTable.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(paymentsTable).where(where),
   ]);
 
   res.setHeader("Cache-Control", "private, no-store");

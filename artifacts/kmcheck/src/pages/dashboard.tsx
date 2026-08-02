@@ -29,7 +29,7 @@ import {
 import {
   FileText, Search,
   AlertCircle, User, HelpCircle,
-  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2, Phone, PartyPopper,
+  ShieldCheck, Zap, MessageCircle, CalendarDays, Globe, Loader2, Phone, PartyPopper, Coins,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
@@ -131,6 +131,14 @@ export default function Dashboard() {
   const { t, language } = useTranslation();
   const seo = usePageSeo("dashboard");
   const { isSignedIn, isLoaded, user, refreshUser } = useAuth();
+  // Refresh credit balance on mount / focus (admin pack edits, pack purchase, redeem)
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    void refreshUser();
+    const onFocus = () => { void refreshUser(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [isLoaded, isSignedIn, refreshUser]);
   const [location, setLocation] = useLocation();
   const greeting = useGreeting(t);
   const activeView = parseDashboardView(location, language);
@@ -816,7 +824,18 @@ export default function Dashboard() {
               custom={1}
               className="space-y-6"
             >
-              <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+                <div className="col-span-2 sm:col-span-1">
+                  <DashboardStatCard
+                    label={t("dashboard_stat_credits")}
+                    hint={t("dashboard_stat_credits_hint")}
+                    value={String(user?.creditBalance ?? 0)}
+                    loading={!isLoaded}
+                    icon={Coins}
+                    variant="primary"
+                    delay={0}
+                  />
+                </div>
                 <DashboardStatCard
                   label={t("dashboard_stat_month_reports")}
                   hint={t("dashboard_stat_month_reports_hint")}
@@ -824,7 +843,7 @@ export default function Dashboard() {
                   loading={statsLoading && historyLoading}
                   icon={CalendarDays}
                   variant="muted"
-                  delay={0}
+                  delay={0.04}
                 />
                 <DashboardStatCard
                   label={t("dashboard_stat_total_reports")}
@@ -832,8 +851,8 @@ export default function Dashboard() {
                   value={String(totalChecks)}
                   loading={statsLoading && historyLoading}
                   icon={FileText}
-                  variant="primary"
-                  delay={0.06}
+                  variant="muted"
+                  delay={0.08}
                 />
               </div>
 

@@ -43,6 +43,9 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE vin_lookups ADD COLUMN IF NOT EXISTS data_corrupt boolean NOT NULL DEFAULT false`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS email_log_retention_enabled boolean NOT NULL DEFAULT true`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS email_send_admin_pending_vin boolean NOT NULL DEFAULT false`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS credit_balance integer NOT NULL DEFAULT 0`,
+  `ALTER TABLE payments ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'vin_report'`,
+  `ALTER TABLE payments ADD COLUMN IF NOT EXISTS credits integer`,
 ];
 
 const TABLE_PATCHES = [

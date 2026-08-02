@@ -277,12 +277,19 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
 
     if (resolvedPaymentId) {
       try {
-        const [pmt] = await db.select({ amount: paymentsTable.amount })
+        const [pmt] = await db.select({
+          amount: paymentsTable.amount,
+          kind: paymentsTable.kind,
+        })
           .from(paymentsTable)
           .where(eq(paymentsTable.id, resolvedPaymentId))
           .limit(1);
-        const isFreeCoupon = Number(pmt?.amount ?? 0) === 0;
-        if (isFreeCoupon) {
+        const isCreditRedemption = (pmt?.kind ?? "") === "credit_redemption";
+        const isFreeCoupon = Number(pmt?.amount ?? 0) === 0 && !isCreditRedemption;
+        if (isCreditRedemption) {
+          const { refundCreditRedemption } = await import("./creditRedemption.js");
+          await refundCreditRedemption(resolvedPaymentId, `provider_error:${errorCode ?? "unknown"}`);
+        } else if (isFreeCoupon) {
           await failFreeCouponPayment(resolvedPaymentId, freeCouponCode);
         } else {
           logger.error({

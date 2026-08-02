@@ -315,6 +315,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/PaymentHistoryPage"
 
+  /user/credit-purchases:
+    get:
+      operationId: getUserCreditPurchases
+      tags: [user]
+      summary: Get the current user's credit pack purchases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated credit pack purchases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditPurchasePage"
+
   /user/stats:
     get:
       operationId: getUserStats
@@ -396,6 +422,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PricingConfig"
+
+  /payments/create-credit-pack-order:
+    post:
+      operationId: createCreditPackOrder
+      tags: [payments]
+      summary: Create a PayPal order for a prepaid credit pack
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCreditPackOrderInput"
+      responses:
+        "200":
+          description: PayPal order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCreditPackOrderResult"
+        "400":
+          description: Invalid pack
+        "401":
+          description: Unauthorized
+        "403":
+          description: Account suspended
+
+  /payments/capture-credit-pack-order:
+    post:
+      operationId: captureCreditPackOrder
+      tags: [payments]
+      summary: Capture a credit pack PayPal order and grant credits
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaptureCreditPackOrderInput"
+      responses:
+        "200":
+          description: Credits granted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaptureCreditPackOrderResult"
+        "402":
+          description: Payment not completed
+        "404":
+          description: Payment not found
+
+  /payments/redeem-credit:
+    post:
+      operationId: redeemCredit
+      tags: [payments]
+      summary: Spend one credit to unlock a VIN report
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedeemCreditInput"
+      responses:
+        "200":
+          description: Credit redeemed; call POST /vin/lookup with paymentId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RedeemCreditResult"
+        "402":
+          description: Insufficient credits
+        "409":
+          description: Already unlocked
+        "422":
+          description: No VIN data
 
   # ── ADMIN: USERS ─────────────────────────────────────────────────────────────
   /admin/users:
@@ -632,6 +737,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VinHistoryPage"
+
+  /admin/users/{userId}/credits:
+    post:
+      operationId: adminAdjustUserCredits
+      tags: [admin]
+      summary: Set or adjust prepaid credits for a user (clamped at 0)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAdjustCreditsInput"
+      responses:
+        "200":
+          description: Updated user with credit balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "400":
+          description: Invalid delta
+        "404":
+          description: User not found
+
+  /admin/users/{userId}/credit-purchases:
+    get:
+      operationId: adminGetUserCreditPurchases
+      tags: [admin]
+      summary: List credit pack purchases for a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated credit pack purchases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditPurchasePage"
 
   # ── ADMIN: VIN ───────────────────────────────────────────────────────────────
   /admin/vin:
@@ -1618,6 +1785,9 @@ components:
           type: integer
         totalSpent:
           type: number
+        creditBalance:
+          type: integer
+          description: Prepaid report credits remaining
         createdAt:
           type: string
           format: date-time
@@ -1675,6 +1845,11 @@ components:
         status:
           type: string
           enum: [pending, completed, failed, refunded, revoked]
+        kind:
+          type: string
+          enum: [vin_report, credit_pack, credit_redemption]
+        credits:
+          type: ["integer", "null"]
         paypalOrderId:
           type: ["string", "null"]
         couponCode:
@@ -1686,6 +1861,114 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    CreateCreditPackOrderInput:
+      type: object
+      required: [packId]
+      properties:
+        packId:
+          type: string
+          enum: [pack3, pack5]
+
+    CreateCreditPackOrderResult:
+      type: object
+      required: [orderId, paymentId, packId, credits, finalPrice, currency]
+      properties:
+        orderId:
+          type: string
+        paymentId:
+          type: integer
+        packId:
+          type: string
+          enum: [pack3, pack5]
+        credits:
+          type: integer
+        finalPrice:
+          type: number
+        currency:
+          type: string
+
+    CaptureCreditPackOrderInput:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
+
+    CaptureCreditPackOrderResult:
+      type: object
+      required: [success, paymentId, creditsAdded, creditBalance]
+      properties:
+        success:
+          type: boolean
+        paymentId:
+          type: integer
+        creditsAdded:
+          type: integer
+        creditBalance:
+          type: integer
+
+    RedeemCreditInput:
+      type: object
+      required: [vin]
+      properties:
+        vin:
+          type: string
+
+    RedeemCreditResult:
+      type: object
+      required: [paymentId, creditBalance, vin]
+      properties:
+        paymentId:
+          type: integer
+        creditBalance:
+          type: integer
+        vin:
+          type: string
+
+    CreditPurchase:
+      type: object
+      required: [id, amount, currency, status, createdAt]
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        credits:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    CreditPurchasePage:
+      type: object
+      required: [items, total, page, limit]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditPurchase"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    AdminAdjustCreditsInput:
+      type: object
+      properties:
+        creditBalance:
+          type: integer
+          minimum: 0
+          description: Absolute credit balance to set
+        delta:
+          type: integer
+          description: Optional relative change when creditBalance is omitted
 
     PaymentHistoryPage:
       type: object
@@ -1900,6 +2183,13 @@ components:
         countryCode:
           type: ["string", "null"]
           description: ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
+        phonePrefix:
+          type: ["string", "null"]
+        phoneNational:
+          type: ["string", "null"]
+        creditBalance:
+          type: integer
+          description: Prepaid report credits remaining
         totalChecks:
           type: integer
         totalSpent:
@@ -1909,6 +2199,9 @@ components:
         createdAt:
           type: string
           format: date-time
+        appliedDelta:
+          type: integer
+          description: Present on credit adjust responses — credits actually applied
 
     AdminUserPage:
       type: object
@@ -2355,11 +2648,6 @@ components:
         analyticsGaEnabled:
           type: boolean
         analyticsGaMeasurementId:
-          type: string
-          nullable: true
-        analyticsClarityEnabled:
-          type: boolean
-        analyticsClarityProjectId:
           type: string
           nullable: true
         analyticsClarityEnabled:

@@ -1032,6 +1032,136 @@ router.get("/admin/users/:userId/history", requireAdmin, async (req, res) => {
   res.json({ items, total, page, limit });
 });
 
+// POST /admin/users/:userId/credits — adjust prepaid credit balance (clamp at 0)
+router.post("/admin/users/:userId/credits", requireAdmin, async (req, res) => {
+  const userId = String(req.params.userId ?? "").trim();
+  if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
+
+  const body = req.body as { delta?: unknown; creditBalance?: unknown };
+  const [existing] = await db.select({ id: usersTable.id, creditBalance: usersTable.creditBalance })
+    .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!existing) { res.status(404).json({ error: "User not found" }); return; }
+
+  let nextBalance: number;
+  if (body.creditBalance !== undefined && body.creditBalance !== null && body.creditBalance !== "") {
+    const absolute = typeof body.creditBalance === "number" ? body.creditBalance : Number(body.creditBalance);
+    if (!Number.isFinite(absolute) || !Number.isInteger(absolute) || absolute < 0) {
+      res.status(400).json({ error: "creditBalance must be a non-negative integer", code: "INVALID_BALANCE" });
+      return;
+    }
+    if (absolute > 100_000) {
+      res.status(400).json({ error: "creditBalance too large", code: "BALANCE_TOO_LARGE" });
+      return;
+    }
+    nextBalance = absolute;
+  } else {
+    const deltaNum = typeof body.delta === "number" ? body.delta : Number(body.delta);
+    if (!Number.isFinite(deltaNum) || !Number.isInteger(deltaNum) || deltaNum === 0) {
+      res.status(400).json({ error: "delta must be a non-zero integer", code: "INVALID_DELTA" });
+      return;
+    }
+    if (Math.abs(deltaNum) > 10_000) {
+      res.status(400).json({ error: "delta too large", code: "DELTA_TOO_LARGE" });
+      return;
+    }
+    nextBalance = Math.max(0, existing.creditBalance + deltaNum);
+  }
+
+  const appliedDelta = nextBalance - existing.creditBalance;
+
+  const [user] = await db.update(usersTable)
+    .set({ creditBalance: nextBalance, updatedAt: new Date() })
+    .where(eq(usersTable.id, userId))
+    .returning();
+
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+  await logAdminAction(req.userId!, "admin_adjust_credits", userId, {
+    delta: appliedDelta,
+    previousBalance: existing.creditBalance,
+    creditBalance: nextBalance,
+  });
+
+  res.json({
+    ...toAdminUser(user),
+    creditBalance: nextBalance,
+    appliedDelta,
+  });
+});
+
+// GET /admin/users/:userId/credit-purchases
+router.get("/admin/users/:userId/credit-purchases", requireAdmin, async (req, res) => {
+  const userId = String(req.params.userId ?? "").trim();
+  if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
+
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
+  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
+  const offset = (page - 1) * limit;
+
+  const where = and(
+    eq(paymentsTable.userId, userId),
+    eq(paymentsTable.kind, "credit_pack"),
+    eq(paymentsTable.status, "completed"),
+  );
+
+  const [items, [{ total }]] = await Promise.all([
+    db.select({
+      id: paymentsTable.id,
+      amount: paymentsTable.amount,
+      currency: paymentsTable.currency,
+      status: paymentsTable.status,
+      credits: paymentsTable.credits,
+      createdAt: paymentsTable.createdAt,
+    })
+      .from(paymentsTable)
+      .where(where)
+      .orderBy(desc(paymentsTable.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(paymentsTable).where(where),
+  ]);
+
+  res.json({ items, total, page, limit });
+});
+
+// GET /admin/users/:userId/transactions — all payment activity for this user
+router.get("/admin/users/:userId/transactions", requireAdmin, async (req, res) => {
+  const userId = String(req.params.userId ?? "").trim();
+  if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
+
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
+  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
+  const offset = (page - 1) * limit;
+
+  // Hide abandoned PayPal checkouts (order created, never captured).
+  const where = and(
+    eq(paymentsTable.userId, userId),
+    ne(paymentsTable.status, "pending"),
+  );
+
+  const [items, [{ total }]] = await Promise.all([
+    db.select({
+      id: paymentsTable.id,
+      vin: paymentsTable.vin,
+      amount: paymentsTable.amount,
+      currency: paymentsTable.currency,
+      status: paymentsTable.status,
+      kind: paymentsTable.kind,
+      credits: paymentsTable.credits,
+      couponCode: paymentsTable.couponCode,
+      createdAt: paymentsTable.createdAt,
+    })
+      .from(paymentsTable)
+      .where(where)
+      .orderBy(desc(paymentsTable.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(paymentsTable).where(where),
+  ]);
+
+  res.json({ items, total, page, limit });
+});
+
 // ── VIN LOOKUPS ───────────────────────────────────────────────────────────────
 
 router.get("/admin/vin", requireAdmin, async (req, res) => {

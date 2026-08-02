@@ -17,6 +17,7 @@ export const authSessionUserSelect = {
   countryCode: usersTable.countryCode,
   phonePrefix: usersTable.phonePrefix,
   phoneNational: usersTable.phoneNational,
+  creditBalance: usersTable.creditBalance,
   createdAt: usersTable.createdAt,
 } as const;
 

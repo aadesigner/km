@@ -29,8 +29,6 @@ export type VinLookupStatus = typeof VinLookupStatus[keyof typeof VinLookupStatu
 
 export const VinLookupStatus = {
   pending: 'pending',
-  pending_manual: 'pending_manual',
-  fulfilling: 'fulfilling',
   complete: 'complete',
   error: 'error',
 } as const;
@@ -101,15 +99,6 @@ export interface MarketData {
   lastAuctionDate?: string | null;
 }
 
-export interface InsuranceClaimRecord {
-  /** @nullable */
-  date?: string | null;
-  /** @nullable */
-  type?: string | null;
-  /** @nullable */
-  lossAmount?: number | null;
-}
-
 export interface VinData {
   /** @nullable */
   make?: string | null;
@@ -145,9 +134,6 @@ export interface VinData {
   isSalvage?: boolean | null;
   /** @nullable */
   isStolen?: boolean | null;
-  /** @nullable */
-  odometerLocked?: boolean | null;
-  insuranceClaims?: InsuranceClaimRecord[];
   photos?: string[];
   accidents?: AccidentRecord[];
   mileageHistory?: MileageRecord[];
@@ -250,9 +236,14 @@ export interface UserProfile {
   avatarUrl?: string | null;
   isBanned?: boolean;
   isAdmin?: boolean;
-  /** @nullable */
+  /**
+     * ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
+     * @nullable
+     */
   countryCode?: string | null;
+  /** Remaining country/nationality changes allowed today (UTC) */
   countryChangesRemaining?: number;
+  /** Max country/nationality changes per UTC day */
   countryChangesLimit?: number;
   /** @nullable */
   phonePrefix?: string | null;
@@ -262,6 +253,8 @@ export interface UserProfile {
   phoneChangesLimit?: number;
   totalChecks?: number;
   totalSpent?: number;
+  /** Prepaid report credits remaining */
+  creditBalance?: number;
   createdAt: string;
 }
 
@@ -269,8 +262,6 @@ export interface UserStats {
   totalChecks: number;
   totalSpent: number;
   checksThisMonth: number;
-  completedPayments?: number;
-  paymentCurrency?: string;
   recentChecks: VinLookup[];
 }
 
@@ -296,6 +287,15 @@ export const PaymentStatus = {
   revoked: 'revoked',
 } as const;
 
+export type PaymentKind = typeof PaymentKind[keyof typeof PaymentKind];
+
+
+export const PaymentKind = {
+  vin_report: 'vin_report',
+  credit_pack: 'credit_pack',
+  credit_redemption: 'credit_redemption',
+} as const;
+
 export interface Payment {
   id: number;
   userId?: string;
@@ -304,6 +304,9 @@ export interface Payment {
   amount: number;
   currency: string;
   status: PaymentStatus;
+  kind?: PaymentKind;
+  /** @nullable */
+  credits?: number | null;
   /** @nullable */
   paypalOrderId?: string | null;
   /** @nullable */
@@ -313,6 +316,80 @@ export interface Payment {
   /** @nullable */
   vinLookupId?: number | null;
   createdAt: string;
+}
+
+export type CreateCreditPackOrderInputPackId = typeof CreateCreditPackOrderInputPackId[keyof typeof CreateCreditPackOrderInputPackId];
+
+
+export const CreateCreditPackOrderInputPackId = {
+  pack3: 'pack3',
+  pack5: 'pack5',
+} as const;
+
+export interface CreateCreditPackOrderInput {
+  packId: CreateCreditPackOrderInputPackId;
+}
+
+export type CreateCreditPackOrderResultPackId = typeof CreateCreditPackOrderResultPackId[keyof typeof CreateCreditPackOrderResultPackId];
+
+
+export const CreateCreditPackOrderResultPackId = {
+  pack3: 'pack3',
+  pack5: 'pack5',
+} as const;
+
+export interface CreateCreditPackOrderResult {
+  orderId: string;
+  paymentId: number;
+  packId: CreateCreditPackOrderResultPackId;
+  credits: number;
+  finalPrice: number;
+  currency: string;
+}
+
+export interface CaptureCreditPackOrderInput {
+  orderId: string;
+}
+
+export interface CaptureCreditPackOrderResult {
+  success: boolean;
+  paymentId: number;
+  creditsAdded: number;
+  creditBalance: number;
+}
+
+export interface RedeemCreditInput {
+  vin: string;
+}
+
+export interface RedeemCreditResult {
+  paymentId: number;
+  creditBalance: number;
+  vin: string;
+}
+
+export interface CreditPurchase {
+  id: number;
+  amount: number;
+  currency: string;
+  status: string;
+  /** @nullable */
+  credits?: number | null;
+  createdAt: string;
+}
+
+export interface CreditPurchasePage {
+  items: CreditPurchase[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminAdjustCreditsInput {
+  /** Absolute credit balance to set */
+  creditBalance?: number;
+  /** Optional relative change when creditBalance is omitted */
+  delta?: number;
 }
 
 export interface PaymentHistoryPage {
@@ -413,7 +490,7 @@ export interface ProviderUpdate {
 export interface Country {
   code: string;
   name: string;
-  activeProvider?: Provider;
+  /** Whether an upstream data source is configured for this country (vendor identity is never exposed) */
   hasProvider?: boolean;
 }
 
@@ -459,13 +536,24 @@ export interface AdminUser {
   isAdmin: boolean;
   /** @nullable */
   banReason?: string | null;
-  /** @nullable */
+  /**
+     * ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
+     * @nullable
+     */
   countryCode?: string | null;
+  /** @nullable */
+  phonePrefix?: string | null;
+  /** @nullable */
+  phoneNational?: string | null;
+  /** Prepaid report credits remaining */
+  creditBalance?: number;
   totalChecks: number;
   totalSpent?: number;
   /** @nullable */
   lastLoginAt?: string | null;
   createdAt: string;
+  /** Present on credit adjust responses — credits actually applied */
+  appliedDelta?: number;
 }
 
 export interface AdminUserPage {
@@ -692,12 +780,24 @@ export interface SystemSettings {
   freeVinDecoderRequireSignIn?: boolean;
   siteUrl?: string | null;
   emailSendWelcome?: boolean;
+  /** Deprecated — merged into emailSendVinReady */
   emailSendReportConfirm?: boolean;
+  /** Combined report-ready + payment confirmation email */
   emailSendVinReady?: boolean;
   emailSendPasswordReset?: boolean;
   emailSendAbandonedCart?: boolean;
+  /** Admin alert when a customer pays for a manual-pending VIN (off by default) */
+  emailSendAdminPendingVin?: boolean;
+  /** Auto-delete email logs older than 7 days */
+  emailLogRetentionEnabled?: boolean;
   /** Korean won per 1 USD for insurance claim display on Korean VIN reports */
   krwPerUsd?: number;
+  analyticsGtmEnabled?: boolean;
+  analyticsGtmContainerId?: string | null;
+  analyticsGaEnabled?: boolean;
+  analyticsGaMeasurementId?: string | null;
+  analyticsClarityEnabled?: boolean;
+  analyticsClarityProjectId?: string | null;
 }
 
 export interface SystemSettingsUpdate {
@@ -723,10 +823,16 @@ export interface SystemSettingsUpdate {
   freeVinDecoderRequireSignIn?: boolean;
   siteUrl?: string | null;
   emailSendWelcome?: boolean;
+  /** Deprecated — merged into emailSendVinReady */
   emailSendReportConfirm?: boolean;
+  /** Combined report-ready + payment confirmation email */
   emailSendVinReady?: boolean;
   emailSendPasswordReset?: boolean;
   emailSendAbandonedCart?: boolean;
+  /** Admin alert when a customer pays for a manual-pending VIN (off by default) */
+  emailSendAdminPendingVin?: boolean;
+  /** Auto-delete email logs older than 7 days */
+  emailLogRetentionEnabled?: boolean;
   maxFailedLogins?: number;
   lockoutMinutes?: number;
   adminMaxFailedLogins?: number;
@@ -740,25 +846,61 @@ export interface SystemSettingsUpdate {
   recaptchaMinScore?: number;
   googleClientId?: string | null;
   googleClientSecret?: string | null;
-  facebookAppId?: string | null;
-  facebookAppSecret?: string | null;
-  linkedinClientId?: string | null;
-  linkedinClientSecret?: string | null;
-  logRetentionDays?: number | null;
+  logRetentionDays?: number;
   failedTxnRetentionDays?: number;
   krwPerUsd?: number;
+  analyticsGtmEnabled?: boolean;
+  analyticsGtmContainerId?: string | null;
+  analyticsGaEnabled?: boolean;
+  analyticsGaMeasurementId?: string | null;
+  analyticsClarityEnabled?: boolean;
+  analyticsClarityProjectId?: string | null;
 }
 
 export type ResolveVinId200 = {
   vin: string;
 };
 
+export type PatchUserProfileBody = {
+  /**
+     * ISO 3166-1 alpha-2 (AL = Albania / Kosovo)
+     * @nullable
+     */
+  countryCode?: string | null;
+  /**
+     * Dialing prefix including +, e.g. +355
+     * @nullable
+     */
+  phonePrefix?: string | null;
+  /**
+     * National number digits only
+     * @nullable
+     */
+  phoneNational?: string | null;
+};
+
 export type GetUserHistoryParams = {
+page?: number;
+limit?: number;
+/**
+ * Use `summary` for dashboard list cards (trimmed report fields only).
+ */
+view?: GetUserHistoryView;
+};
+
+export type GetUserHistoryView = typeof GetUserHistoryView[keyof typeof GetUserHistoryView];
+
+
+export const GetUserHistoryView = {
+  summary: 'summary',
+} as const;
+
+export type GetUserPaymentsParams = {
 page?: number;
 limit?: number;
 };
 
-export type GetUserPaymentsParams = {
+export type GetUserCreditPurchasesParams = {
 page?: number;
 limit?: number;
 };
@@ -773,7 +915,8 @@ status?: AdminGetUsersStatus;
  */
 checks?: AdminGetUsersChecks;
 /**
- * ISO country code, or unset/none for null country. Combines with status/checks (AND).
+ * ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo), or unset/none for users with no country. Combines with status and checks (AND).
+
  */
 country?: string;
 };
@@ -799,7 +942,8 @@ search?: string;
 status?: AdminExportUsersStatus;
 checks?: AdminExportUsersChecks;
 /**
- * ISO country code, or unset/none for null country. Combines with other filters (AND).
+ * ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo), or unset/none for users with no country. Combines with other filters (AND).
+
  */
 country?: string;
 };
@@ -822,6 +966,11 @@ export const AdminExportUsersChecks = {
 
 export type AdminImportUsersBody = {
   file: Blob;
+};
+
+export type AdminGetUserCreditPurchasesParams = {
+page?: number;
+limit?: number;
 };
 
 export type AdminGetVinLookupsParams = {
@@ -904,6 +1053,11 @@ export type AdminAssignVinCatalogToUser201 = {
 export type AdminRefreshVinCatalog200 = {
   ok: boolean;
   vin: string;
+};
+
+export type AdminGetPendingVinChecksCount200 = {
+  /** @minimum 0 */
+  open: number;
 };
 
 export type AdminGetLogsParams = {

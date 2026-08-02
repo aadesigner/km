@@ -252,10 +252,11 @@ if (errors === 0) {
 /** Albanian (sq) keyword alignment — title/description should match on-page SEO targets */
 const SQ_KEYWORDS = {
   home: ["kontroll kilometrash", "shasi"],
-  pricing: ["kontroll kilometrash", "shasi"],
+  // Pricing / how-it-works / FAQ: page-focused copy (not homepage "kontroll kilometrash")
+  pricing: ["çmime", "shasi"],
   free_decoder: ["shasi", "kontroll kilometrash"],
-  how_it_works: ["kontroll", "shasi"],
-  faq: ["kontroll kilometrash", "shasi"],
+  how_it_works: ["si funksionon", "shasi"],
+  faq: ["pyetje", "shasi"],
   country_usa: ["kontroll kilometrash", "vjedhjesh", "shba"],
   country_korea: ["kontroll kilometrash", "vjedhjesh", "koreja"],
   country_canada: ["kontroll kilometrash", "vjedhjesh", "kanadaja"],
@@ -277,13 +278,10 @@ if (sqWarn === 0) {
   console.log("OK — Albanian SEO keywords aligned for indexable pages");
 }
 
-/** sq: search queries use "kontroll kilometrash", not "kontroll kilometra" alone in titles */
+/** sq: homepage/country titles use "kontroll kilometrash", not "kontroll kilometra" alone */
 const SQ_TITLE_KEYS = [
   "home",
-  "pricing",
   "free_decoder",
-  "how_it_works",
-  "faq",
   "country_usa",
   "country_korea",
   "country_canada",

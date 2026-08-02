@@ -4,10 +4,11 @@ import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
 import { useState, useMemo, type FormEvent } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  CheckCircle2, ShieldCheck, RotateCcw,
-  Sparkles, CreditCard, UserCircle, Zap, FileText,
+  CheckCircle2, RotateCcw,
+  CreditCard, UserCircle, Zap, FileText, Coins,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEOHead, usePageSeo, productOfferJsonLd } from "@/components/seo";
@@ -16,7 +17,9 @@ import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
 import { getTestimonials } from "@/data/testimonials";
 import { TestimonialsSlider } from "@/components/testimonials-slider";
 import { HeroVinForm } from "@/components/hero-vin-form";
-import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
+import { AUTH_RETURN_PATH_KEY, redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
+import { CREDIT_PACKS, type CreditPackId } from "@/lib/creditPacks";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
@@ -29,8 +32,8 @@ const CARD_FEATURES = [
   "pricing_feature_accidents",
   "mileage_verification",
   "theft_records",
+  "photos_available",
   "auction_history",
-  "technical_specs",
 ] as const;
 
 const SEO_INCLUDED = [
@@ -64,30 +67,43 @@ function PricingHeroPrice({
   const [whole, fraction] = amount.toFixed(2).split(".");
 
   if (loading) {
-    return <Skeleton className="h-14 w-44 mx-auto rounded-lg bg-white/10" />;
+    return <Skeleton className="h-12 w-36 mx-auto rounded-lg bg-white/10" />;
   }
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="inline-flex items-end justify-center gap-2 sm:gap-3 tabular-nums leading-none">
+      <div className="inline-flex items-end justify-center gap-2 tabular-nums leading-none">
         {showDiscount && baseAmount != null && baseAmount > amount && (
-          <span className="text-lg sm:text-xl font-medium text-white/40 line-through pb-1 sm:pb-1.5">
+          <span className="text-base sm:text-lg font-medium text-white/40 line-through pb-1">
             {currencySymbol}
             {baseAmount.toFixed(2)}
           </span>
         )}
         <div className="inline-flex items-end leading-none">
-          <span className="text-xl sm:text-2xl font-semibold text-white/90 pb-1 sm:pb-1.5 pe-0.5">
+          <span className="text-lg sm:text-xl font-semibold text-white/90 pb-1 pe-0.5">
             {currencySymbol}
           </span>
-          <span className="text-[3.35rem] sm:text-[3.75rem] font-black text-white tracking-tighter">
+          <span className="text-[2.75rem] sm:text-[3.1rem] font-black text-white tracking-tighter">
             {whole}
           </span>
-          <span className="text-xl sm:text-2xl font-bold text-white/80 pb-1 sm:pb-1.5 ps-1 sm:ps-1.5">
+          <span className="text-lg sm:text-xl font-bold text-white/80 pb-1 ps-1">
             .{fraction}
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FeatureGrid({ items }: { items: { key: string; label: string }[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+      {items.map(({ key, label }) => (
+        <div key={key} className="flex items-start gap-1.5 min-w-0">
+          <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0 mt-0.5" />
+          <span className="text-[11px] sm:text-sm font-medium leading-snug">{label}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -106,6 +122,7 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const [vin, setVin] = useState("");
   const [vinError, setVinError] = useState("");
+  const [selectedPack, setSelectedPack] = useState<CreditPackId>("pack3");
 
   const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
   const displayPrice = rawDisplayPrice ?? 0;
@@ -135,6 +152,16 @@ export default function Pricing() {
     setLocation(`/${language}/checkout`);
   };
 
+  const handleBuyCredits = (packId: CreditPackId) => {
+    const path = `/${language}/credits/checkout?pack=${packId}`;
+    if (!isSignedIn) {
+      sessionStorage.setItem(AUTH_RETURN_PATH_KEY, path);
+      setLocation(`/${language}/sign-up`);
+      return;
+    }
+    setLocation(path);
+  };
+
   const faqs = [
     { q: t("faq_1_q"), a: t("faq_1_a") },
     { q: t("faq_2_q"), a: t("faq_2_a") },
@@ -142,6 +169,7 @@ export default function Pricing() {
   ];
 
   const seo = usePageSeo("pricing");
+  const selectedPackData = CREDIT_PACKS[selectedPack];
 
   const pricingJsonLd = useMemo(() => {
     const price = rawDisplayPrice ?? (discountEnabled ? DEFAULT_PRICING.discountPrice : DEFAULT_PRICING.basePrice);
@@ -181,133 +209,174 @@ export default function Pricing() {
         />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col gap-8 sm:gap-10 lg:grid lg:grid-cols-[1fr_minmax(340px,440px)] lg:gap-x-12 xl:gap-x-14 lg:items-center">
-            {/* Left column — split on mobile; vertically centered with card on desktop */}
-            <div className="contents lg:flex lg:flex-col lg:justify-center lg:gap-6 lg:col-start-1 lg:row-start-1">
-            {/* Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="order-1 text-center lg:text-left lg:order-none space-y-3 sm:space-y-4"
-            >
-              <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold uppercase tracking-widest text-primary bg-primary/10 border border-primary/15 px-3.5 py-1.5 rounded-full">
-                <Sparkles className="h-3.5 w-3.5" />
-                {t("pricing_hero_eyebrow")}
-              </span>
-              <h1 className="text-[2.9rem] sm:text-5xl md:text-5xl lg:text-[3.5rem] xl:text-[3.85rem] font-black tracking-tight leading-[1.08]">
-                {t("pricing_hero_title_1")}
-                <br />
-                <span className="block text-primary">
-                  {t("pricing_hero_title_2")}
-                </span>
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground dark:text-white/60 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                {t("pricing_hero_lead")}
-              </p>
-            </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-10"
+          >
+            <h1 className="text-[2.6rem] sm:text-[3.15rem] md:text-[3.25rem] lg:text-[3.5rem] font-black tracking-tight leading-[1.12] sm:leading-[1.14]">
+              {t("pricing_hero_title_1")}
+              <br />
+              <span className="text-primary">{t("pricing_hero_title_2")}</span>
+            </h1>
+            <p className="text-base sm:text-lg text-muted-foreground dark:text-white/60 leading-relaxed max-w-2xl mx-auto">
+              {t("pricing_hero_lead")}
+            </p>
+          </motion.div>
 
-            {/* Proof + trust — below card on mobile */}
+          {/* Two equal columns on desktop */}
+          <div className="grid gap-5 lg:grid-cols-2 lg:gap-6 lg:items-stretch max-w-5xl mx-auto w-full">
+            {/* Primary — single report + VIN */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
-              className="order-3 lg:order-none text-center lg:text-left space-y-3 sm:space-y-4 lg:space-y-3"
+              transition={{ duration: 0.45 }}
+              className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10"
             >
-              <div className="hidden sm:flex justify-center lg:justify-start mt-3 sm:mt-4 lg:mt-5">
-                <p className="inline-flex items-start gap-1.5 text-[11px] sm:text-xs leading-snug text-muted-foreground dark:text-white/50 max-w-[19rem] sm:max-w-md text-left">
-                  <RotateCcw className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>{t("money_back")}</span>
-                </p>
+              <div className="relative px-6 sm:px-8 pt-8 pb-7 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
+                {discountEnabled && savePct > 0 && (
+                  <Badge className="absolute top-4 right-4 rounded-full bg-orange-500 text-white border-0 px-2.5 py-0.5 text-[10px] font-bold">
+                    {t("pricing_save").replace("{n}", String(savePct))}
+                  </Badge>
+                )}
+                <div className="relative space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-white/80">
+                    {t("pricing_report_title")}
+                  </p>
+                  <PricingHeroPrice
+                    amount={displayPrice}
+                    baseAmount={discountEnabled ? (basePrice ?? null) : null}
+                    currencySymbol={currencySymbol}
+                    loading={priceLoading}
+                    showDiscount={discountEnabled}
+                  />
+                  <p className="text-sm text-white/70">{t("per_report")}</p>
+                </div>
+              </div>
+
+              <div className="px-6 sm:px-8 py-5 border-b border-border/60 bg-muted/15">
+                <FeatureGrid
+                  items={CARD_FEATURES.map((key) => ({ key, label: t(key) }))}
+                />
+              </div>
+
+              <div className="px-6 sm:px-8 py-6 space-y-3 flex-1 flex flex-col justify-end">
+                <HeroVinForm
+                  vin={vin}
+                  onVinChange={(v) => {
+                    setVin(v);
+                    setVinError("");
+                  }}
+                  onSubmit={handleGetReport}
+                  error={vinError}
+                  placeholder={t("vin_placeholder")}
+                  submitLabelKey="check_vin_short"
+                  showHelp={false}
+                  className="max-w-none mx-0 [&_.hero-vin-field]:rounded-xl [&_input]:h-12 [&_input]:sm:h-14 [&_input]:text-sm [&_input]:pr-[5rem] [&_button]:h-9 [&_button]:sm:h-11 [&_button]:px-3 [&_button]:text-xs"
+                />
               </div>
             </motion.div>
-            </div>
 
-            {/* Pricing card — right after headline on mobile */}
+            {/* Packs — equal-weight companion to single report */}
             <motion.div
-              initial={{ opacity: 0, y: 32 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.55 }}
-              className="order-2 relative w-full max-w-lg mx-auto lg:max-w-none lg:mx-0 lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[calc(var(--site-header-offset,84px)+1rem)]"
+              transition={{ delay: 0.08, duration: 0.45 }}
+              className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden lg:sticky lg:top-24"
             >
-              <div
-                aria-hidden
-                className="absolute -inset-1.5 rounded-[1.85rem] bg-gradient-to-b from-primary/35 via-emerald-400/25 to-primary/15 dark:from-primary/50 dark:via-emerald-400/35 dark:to-primary/20 blur-lg opacity-70 dark:opacity-85"
-              />
-
-              <div className="relative rounded-[1.75rem] border border-border/70 dark:border-white/20 bg-card shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden ring-1 ring-primary/15">
-                {/* Price panel */}
-                <div className="relative px-7 sm:px-8 pt-7 sm:pt-8 pb-6 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] dark:bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(34,197,94,0.45),transparent)] pointer-events-none" />
-                  <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:18px_18px] opacity-[0.12] dark:opacity-[0.05] pointer-events-none" />
-                  <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-emerald-400/50" />
-
-                  {discountEnabled && savePct > 0 && (
-                    <Badge className="absolute top-4 right-4 rounded-full bg-orange-500 text-white border-0 px-2.5 py-0.5 text-[10px] font-bold shadow-lg shadow-orange-500/35">
-                      {t("pricing_save").replace("{n}", String(savePct))}
-                    </Badge>
-                  )}
-
-                  <div className="relative space-y-2">
-                    <Badge className="rounded-full bg-white/20 text-white border-white/25 hover:bg-white/20 dark:bg-white/10 dark:text-emerald-100 dark:border-white/15 text-[10px] sm:text-[11px] font-semibold tracking-wide px-2.5 py-0.5">
-                      {t("pricing_report_title")}
-                    </Badge>
-
-                    <PricingHeroPrice
-                      amount={displayPrice}
-                      baseAmount={discountEnabled ? (basePrice ?? null) : null}
-                      currencySymbol={currencySymbol}
-                      loading={priceLoading}
-                      showDiscount={discountEnabled}
-                    />
-
-                    <p className="text-sm text-white/75 dark:text-white/55">{t("per_report")}</p>
+              <div className="relative px-6 sm:px-8 pt-8 pb-7 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
+                <div className="relative space-y-2.5">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/90">
+                    <Coins className="h-3.5 w-3.5" />
+                    {t("pricing_packs_section")}
                   </div>
+                  <p className="text-sm sm:text-[15px] text-white/75 leading-relaxed max-w-xs mx-auto">
+                    {t("pricing_packs_section_lead")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-6 sm:px-8 py-6 flex-1 flex flex-col gap-5">
+                <div
+                  className="grid grid-cols-2 gap-3"
+                  role="radiogroup"
+                  aria-label={t("pricing_packs_section")}
+                >
+                  {(["pack3", "pack5"] as const).map((id) => {
+                    const active = selectedPack === id;
+                    const option = CREDIT_PACKS[id];
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setSelectedPack(id)}
+                        className={cn(
+                          "relative rounded-xl px-3 py-4 text-center transition-all duration-200",
+                          "border outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                          active
+                            ? "border-primary/40 bg-primary/[0.06] shadow-md shadow-primary/10 ring-1 ring-primary/25"
+                            : "border-border/70 bg-muted/25 hover:bg-muted/45 hover:border-border",
+                        )}
+                      >
+                        {id === "pack3" && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-2 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
+                            {t("pricing_best_value")}
+                          </span>
+                        )}
+                        <span className={cn(
+                          "block text-sm font-semibold tracking-tight",
+                          active ? "text-foreground" : "text-muted-foreground",
+                        )}>
+                          {t(`pricing_plan_${id}_title`)}
+                        </span>
+                        <span className={cn(
+                          "mt-2 inline-flex items-baseline justify-center gap-0.5 tabular-nums leading-none",
+                          active ? "text-primary" : "text-foreground",
+                        )}>
+                          <span className="text-base font-semibold opacity-80">{currencySymbol}</span>
+                          <span className="text-[2.15rem] font-black tracking-tighter">
+                            {option.unitPrice.toFixed(2).split(".")[0]}
+                          </span>
+                          <span className="text-base font-bold opacity-70">
+                            .{option.unitPrice.toFixed(2).split(".")[1]}
+                          </span>
+                        </span>
+                        <span className="block mt-1.5 text-[11px] text-muted-foreground">
+                          {t("per_report").toLowerCase()}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Features */}
-                <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-border/60 bg-muted/20 dark:bg-white/[0.02]">
-                  <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-x-4 gap-y-2.5 max-w-[19rem] min-[400px]:max-w-none mx-auto min-[400px]:mx-0">
-                    {CARD_FEATURES.map((key) => (
-                      <div key={key} className="flex items-center gap-2 min-w-0 justify-center min-[400px]:justify-start">
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-xs sm:text-sm font-medium leading-snug">{t(key)}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-medium leading-snug text-foreground/90">
+                    {t("pricing_plan_reports_included").replace("{n}", String(selectedPackData.credits))}
+                  </span>
                 </div>
 
-                {/* VIN + CTA */}
-                <div className="px-5 sm:px-6 py-5 sm:py-6 space-y-3.5 bg-background">
-                  <HeroVinForm
-                    vin={vin}
-                    onVinChange={(v) => {
-                      setVin(v);
-                      setVinError("");
-                    }}
-                    onSubmit={handleGetReport}
-                    error={vinError}
-                    placeholder={t("vin_placeholder")}
-                    submitLabelKey="check_vin_short"
-                    showHelp={false}
-                    className="max-w-none mx-0 [&_.hero-vin-field]:rounded-xl [&_input]:h-[3.25rem] [&_input]:sm:h-14 [&_input]:text-base [&_input]:pr-[5.5rem] [&_button]:h-10 [&_button]:sm:h-11 [&_button]:px-4 [&_button]:text-sm"
-                  />
-
-                  <div className="flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-muted-foreground text-center">
-                    <span className="inline-flex items-center gap-1">
-                      <ShieldCheck className="h-3 w-3 text-primary shrink-0" />
-                      {t("trust_secure_payment")}
-                    </span>
-                    <span className="text-border">·</span>
-                    <span className="inline-flex items-center gap-1">
-                      <RotateCcw className="h-3 w-3 text-primary shrink-0" />
-                      {t("trust_money_back")}
-                    </span>
-                  </div>
+                <div className="mt-auto pt-1">
+                  <Button
+                    className="w-full h-12 font-bold rounded-xl shadow-md shadow-primary/15 text-[15px]"
+                    onClick={() => handleBuyCredits(selectedPack)}
+                  >
+                    {t("pricing_buy_pack").replace("{n}", String(selectedPackData.credits))}
+                  </Button>
                 </div>
               </div>
             </motion.div>
           </div>
+
+          <p className="mt-6 text-center text-[11px] sm:text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
+            <RotateCcw className="h-3.5 w-3.5 text-primary shrink-0" />
+            {t("money_back")}
+          </p>
         </div>
       </section>
 

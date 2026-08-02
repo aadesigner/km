@@ -9,6 +9,10 @@ export const paymentsTable = pgTable("payments", {
   amount: real("amount").notNull(),
   currency: text("currency").notNull().default("EUR"),
   status: text("status").notNull().default("pending"), // pending | completed | failed | refunded
+  /** vin_report | credit_pack | credit_redemption */
+  kind: text("kind").notNull().default("vin_report"),
+  /** Pack size granted (3/5) or 1 on redemption. */
+  credits: integer("credits"),
   paypalOrderId: text("paypal_order_id"),
   couponCode: text("coupon_code"),
   discountAmount: real("discount_amount"),

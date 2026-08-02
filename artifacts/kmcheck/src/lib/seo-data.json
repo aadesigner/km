@@ -71,8 +71,8 @@
       "description": "Один отчёт VIN: пробег, ДТП, утилизация и угон. Мгновенная доставка. Без подписки."
     },
     "sq": {
-      "title": "Çmimet — kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Një raport për kontroll kilometrash, aksidentesh dhe dëmtimit total me shasi. Dorëzim i menjëhershëm, pa abonim."
+      "title": "Çmimet — raport historiku me shasi | kmcheck.com",
+      "description": "Një raport i përballueshëm me shasi: kilometrazhi, aksidentet, dëmtimi total dhe vjedhjet. Dorëzim i menjëhershëm, pa abonim."
     },
     "es": {
       "title": "Precios — Informes de historial VIN | kmcheck.com",
@@ -503,8 +503,8 @@
       "description": "Получите отчёт об истории автомобиля. Введите VIN для проверки пробега, аварий, угонов, тотала и владельцев — за секунды из баз поставщиков."
     },
     "sq": {
-      "title": "Si funksionon — kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Shkruaj numrin e shasisë për kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtimi total — raport për sekonda nga bazat e ofruesve."
+      "title": "Si funksionon kontrolli me shasi — 3 hapa | kmcheck.com",
+      "description": "Merrni raportin e historikut të makinës. Shkruani numrin e shasisë për të kontrolluar kilometrazhin, aksidentet, vjedhjet dhe dëmtimin total — rezultat për sekonda."
     },
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
@@ -557,8 +557,8 @@
       "description": "Ответы о проверке VIN, покрытии, точности данных, доставке, оплате и возвратах."
     },
     "sq": {
-      "title": "Pyetje të shpeshta — kontroll kilometrash | kmcheck.com",
-      "description": "Përgjigje për kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtimit total me shasi, pagesat dhe raportet në kmcheck.com."
+      "title": "Pyetje të shpeshta — kontroll me shasi | kmcheck.com",
+      "description": "Përgjigje për kontrollin me shasi, mbulimin e të dhënave, saktësinë, dorëzimin, pagesat dhe rimbursimet në kmcheck.com."
     },
     "es": {
       "title": "Preguntas frecuentes — Comprobación VIN | kmcheck.com",

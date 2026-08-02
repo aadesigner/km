@@ -20,12 +20,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminAdjustCreditsInput,
   AdminAssignVinCatalogToUser201,
   AdminBulkDeleteVin200,
   AdminCreateVinCatalogBody,
   AdminExportUsersParams,
   AdminGetLogsParams,
+  AdminGetPendingVinChecksCount200,
   AdminGetTransactionsParams,
+  AdminGetUserCreditPurchasesParams,
   AdminGetUsersParams,
   AdminGetVinCatalogByVinParams,
   AdminGetVinCatalogParams,
@@ -43,22 +46,31 @@ import type {
   AssignVinInput,
   BanUserInput,
   BulkDeleteVinInput,
+  CaptureCreditPackOrderInput,
+  CaptureCreditPackOrderResult,
   CheckoutInput,
   CheckoutSession,
   Country,
+  CreateCreditPackOrderInput,
+  CreateCreditPackOrderResult,
+  CreditPurchasePage,
   DeleteUserInput,
   DeleteUserResult,
   ErrorResponse,
+  GetUserCreditPurchasesParams,
   GetUserHistoryParams,
   GetUserPaymentsParams,
   HealthStatus,
   LogPage,
+  PatchUserProfileBody,
   PaymentHistoryPage,
   PricingConfig,
   PricingUpdate,
   Provider,
   ProviderInput,
   ProviderUpdate,
+  RedeemCreditInput,
+  RedeemCreditResult,
   ResolveVinId200,
   SystemSettings,
   SystemSettingsUpdate,
@@ -622,6 +634,77 @@ export function useGetUserProfile<TData = Awaited<ReturnType<typeof getUserProfi
 
 
 
+export const getPatchUserProfileUrl = () => {
+
+
+
+
+  return `/api/user/profile`
+}
+
+/**
+ * @summary Update profile fields (country and/or phone)
+ */
+export const patchUserProfile = async (patchUserProfileBody: PatchUserProfileBody, options?: RequestInit): Promise<UserProfile> => {
+
+  return customFetch<UserProfile>(getPatchUserProfileUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      patchUserProfileBody,)
+  }
+);}
+
+
+
+
+export const getPatchUserProfileMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUserProfile>>, TError,{data: BodyType<PatchUserProfileBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchUserProfile>>, TError,{data: BodyType<PatchUserProfileBody>}, TContext> => {
+
+const mutationKey = ['patchUserProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchUserProfile>>, {data: BodyType<PatchUserProfileBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  patchUserProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchUserProfileMutationResult = NonNullable<Awaited<ReturnType<typeof patchUserProfile>>>
+    export type PatchUserProfileMutationBody = BodyType<PatchUserProfileBody>
+    export type PatchUserProfileMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update profile fields (country and/or phone)
+ */
+export const usePatchUserProfile = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUserProfile>>, TError,{data: BodyType<PatchUserProfileBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof patchUserProfile>>,
+        TError,
+        {data: BodyType<PatchUserProfileBody>},
+        TContext
+      > => {
+      return useMutation(getPatchUserProfileMutationOptions(options));
+    }
+
 export const getGetUserHistoryUrl = (params?: GetUserHistoryParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -778,6 +861,90 @@ export function useGetUserPayments<TData = Awaited<ReturnType<typeof getUserPaym
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetUserPaymentsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetUserCreditPurchasesUrl = (params?: GetUserCreditPurchasesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/user/credit-purchases?${stringifiedParams}` : `/api/user/credit-purchases`
+}
+
+/**
+ * @summary Get the current user's credit pack purchases
+ */
+export const getUserCreditPurchases = async (params?: GetUserCreditPurchasesParams, options?: RequestInit): Promise<CreditPurchasePage> => {
+
+  return customFetch<CreditPurchasePage>(getGetUserCreditPurchasesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUserCreditPurchasesQueryKey = (params?: GetUserCreditPurchasesParams,) => {
+    return [
+    `/api/user/credit-purchases`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetUserCreditPurchasesQueryOptions = <TData = Awaited<ReturnType<typeof getUserCreditPurchases>>, TError = ErrorType<unknown>>(params?: GetUserCreditPurchasesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserCreditPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUserCreditPurchasesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserCreditPurchases>>> = ({ signal }) => getUserCreditPurchases(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserCreditPurchases>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUserCreditPurchasesQueryResult = NonNullable<Awaited<ReturnType<typeof getUserCreditPurchases>>>
+export type GetUserCreditPurchasesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the current user's credit pack purchases
+ */
+
+export function useGetUserCreditPurchases<TData = Awaited<ReturnType<typeof getUserCreditPurchases>>, TError = ErrorType<unknown>>(
+ params?: GetUserCreditPurchasesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserCreditPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUserCreditPurchasesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1154,6 +1321,219 @@ export function useGetCurrentPricing<TData = Awaited<ReturnType<typeof getCurren
 
 
 
+
+export const getCreateCreditPackOrderUrl = () => {
+
+
+
+
+  return `/api/payments/create-credit-pack-order`
+}
+
+/**
+ * @summary Create a PayPal order for a prepaid credit pack
+ */
+export const createCreditPackOrder = async (createCreditPackOrderInput: CreateCreditPackOrderInput, options?: RequestInit): Promise<CreateCreditPackOrderResult> => {
+
+  return customFetch<CreateCreditPackOrderResult>(getCreateCreditPackOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createCreditPackOrderInput,)
+  }
+);}
+
+
+
+
+export const getCreateCreditPackOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCreditPackOrder>>, TError,{data: BodyType<CreateCreditPackOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCreditPackOrder>>, TError,{data: BodyType<CreateCreditPackOrderInput>}, TContext> => {
+
+const mutationKey = ['createCreditPackOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCreditPackOrder>>, {data: BodyType<CreateCreditPackOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCreditPackOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCreditPackOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createCreditPackOrder>>>
+    export type CreateCreditPackOrderMutationBody = BodyType<CreateCreditPackOrderInput>
+    export type CreateCreditPackOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a PayPal order for a prepaid credit pack
+ */
+export const useCreateCreditPackOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCreditPackOrder>>, TError,{data: BodyType<CreateCreditPackOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCreditPackOrder>>,
+        TError,
+        {data: BodyType<CreateCreditPackOrderInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCreditPackOrderMutationOptions(options));
+    }
+
+export const getCaptureCreditPackOrderUrl = () => {
+
+
+
+
+  return `/api/payments/capture-credit-pack-order`
+}
+
+/**
+ * @summary Capture a credit pack PayPal order and grant credits
+ */
+export const captureCreditPackOrder = async (captureCreditPackOrderInput: CaptureCreditPackOrderInput, options?: RequestInit): Promise<CaptureCreditPackOrderResult> => {
+
+  return customFetch<CaptureCreditPackOrderResult>(getCaptureCreditPackOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      captureCreditPackOrderInput,)
+  }
+);}
+
+
+
+
+export const getCaptureCreditPackOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof captureCreditPackOrder>>, TError,{data: BodyType<CaptureCreditPackOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof captureCreditPackOrder>>, TError,{data: BodyType<CaptureCreditPackOrderInput>}, TContext> => {
+
+const mutationKey = ['captureCreditPackOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof captureCreditPackOrder>>, {data: BodyType<CaptureCreditPackOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  captureCreditPackOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CaptureCreditPackOrderMutationResult = NonNullable<Awaited<ReturnType<typeof captureCreditPackOrder>>>
+    export type CaptureCreditPackOrderMutationBody = BodyType<CaptureCreditPackOrderInput>
+    export type CaptureCreditPackOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Capture a credit pack PayPal order and grant credits
+ */
+export const useCaptureCreditPackOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof captureCreditPackOrder>>, TError,{data: BodyType<CaptureCreditPackOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof captureCreditPackOrder>>,
+        TError,
+        {data: BodyType<CaptureCreditPackOrderInput>},
+        TContext
+      > => {
+      return useMutation(getCaptureCreditPackOrderMutationOptions(options));
+    }
+
+export const getRedeemCreditUrl = () => {
+
+
+
+
+  return `/api/payments/redeem-credit`
+}
+
+/**
+ * @summary Spend one credit to unlock a VIN report
+ */
+export const redeemCredit = async (redeemCreditInput: RedeemCreditInput, options?: RequestInit): Promise<RedeemCreditResult> => {
+
+  return customFetch<RedeemCreditResult>(getRedeemCreditUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      redeemCreditInput,)
+  }
+);}
+
+
+
+
+export const getRedeemCreditMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemCredit>>, TError,{data: BodyType<RedeemCreditInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof redeemCredit>>, TError,{data: BodyType<RedeemCreditInput>}, TContext> => {
+
+const mutationKey = ['redeemCredit'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemCredit>>, {data: BodyType<RedeemCreditInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  redeemCredit(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RedeemCreditMutationResult = NonNullable<Awaited<ReturnType<typeof redeemCredit>>>
+    export type RedeemCreditMutationBody = BodyType<RedeemCreditInput>
+    export type RedeemCreditMutationError = ErrorType<void>
+
+    /**
+ * @summary Spend one credit to unlock a VIN report
+ */
+export const useRedeemCredit = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemCredit>>, TError,{data: BodyType<RedeemCreditInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof redeemCredit>>,
+        TError,
+        {data: BodyType<RedeemCreditInput>},
+        TContext
+      > => {
+      return useMutation(getRedeemCreditMutationOptions(options));
+    }
 
 export const getAdminGetUsersUrl = (params?: AdminGetUsersParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -1754,6 +2134,167 @@ export function useAdminGetUserHistory<TData = Awaited<ReturnType<typeof adminGe
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getAdminGetUserHistoryQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAdminAdjustUserCreditsUrl = (userId: string,) => {
+
+
+
+
+  return `/api/admin/users/${userId}/credits`
+}
+
+/**
+ * @summary Add or remove prepaid credits for a user (clamped at 0)
+ */
+export const adminAdjustUserCredits = async (userId: string,
+    adminAdjustCreditsInput: AdminAdjustCreditsInput, options?: RequestInit): Promise<AdminUser> => {
+
+  return customFetch<AdminUser>(getAdminAdjustUserCreditsUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      adminAdjustCreditsInput,)
+  }
+);}
+
+
+
+
+export const getAdminAdjustUserCreditsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminAdjustUserCredits>>, TError,{userId: string;data: BodyType<AdminAdjustCreditsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminAdjustUserCredits>>, TError,{userId: string;data: BodyType<AdminAdjustCreditsInput>}, TContext> => {
+
+const mutationKey = ['adminAdjustUserCredits'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminAdjustUserCredits>>, {userId: string;data: BodyType<AdminAdjustCreditsInput>}> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  adminAdjustUserCredits(userId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AdminAdjustUserCreditsMutationResult = NonNullable<Awaited<ReturnType<typeof adminAdjustUserCredits>>>
+    export type AdminAdjustUserCreditsMutationBody = BodyType<AdminAdjustCreditsInput>
+    export type AdminAdjustUserCreditsMutationError = ErrorType<void>
+
+    /**
+ * @summary Add or remove prepaid credits for a user (clamped at 0)
+ */
+export const useAdminAdjustUserCredits = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminAdjustUserCredits>>, TError,{userId: string;data: BodyType<AdminAdjustCreditsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof adminAdjustUserCredits>>,
+        TError,
+        {userId: string;data: BodyType<AdminAdjustCreditsInput>},
+        TContext
+      > => {
+      return useMutation(getAdminAdjustUserCreditsMutationOptions(options));
+    }
+
+export const getAdminGetUserCreditPurchasesUrl = (userId: string,
+    params?: AdminGetUserCreditPurchasesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/users/${userId}/credit-purchases?${stringifiedParams}` : `/api/admin/users/${userId}/credit-purchases`
+}
+
+/**
+ * @summary List credit pack purchases for a user
+ */
+export const adminGetUserCreditPurchases = async (userId: string,
+    params?: AdminGetUserCreditPurchasesParams, options?: RequestInit): Promise<CreditPurchasePage> => {
+
+  return customFetch<CreditPurchasePage>(getAdminGetUserCreditPurchasesUrl(userId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAdminGetUserCreditPurchasesQueryKey = (userId: string,
+    params?: AdminGetUserCreditPurchasesParams,) => {
+    return [
+    `/api/admin/users/${userId}/credit-purchases`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAdminGetUserCreditPurchasesQueryOptions = <TData = Awaited<ReturnType<typeof adminGetUserCreditPurchases>>, TError = ErrorType<unknown>>(userId: string,
+    params?: AdminGetUserCreditPurchasesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetUserCreditPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminGetUserCreditPurchasesQueryKey(userId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetUserCreditPurchases>>> = ({ signal }) => adminGetUserCreditPurchases(userId,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetUserCreditPurchases>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type AdminGetUserCreditPurchasesQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetUserCreditPurchases>>>
+export type AdminGetUserCreditPurchasesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List credit pack purchases for a user
+ */
+
+export function useAdminGetUserCreditPurchases<TData = Awaited<ReturnType<typeof adminGetUserCreditPurchases>>, TError = ErrorType<unknown>>(
+ userId: string,
+    params?: AdminGetUserCreditPurchasesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetUserCreditPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getAdminGetUserCreditPurchasesQueryOptions(userId,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -3253,6 +3794,83 @@ export function useAdminGetStats<TData = Awaited<ReturnType<typeof adminGetStats
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getAdminGetStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAdminGetPendingVinChecksCountUrl = () => {
+
+
+
+
+  return `/api/admin/pending-vin-checks/count`
+}
+
+/**
+ * @summary Lightweight open pending VIN check count (admin nav badge)
+ */
+export const adminGetPendingVinChecksCount = async ( options?: RequestInit): Promise<AdminGetPendingVinChecksCount200> => {
+
+  return customFetch<AdminGetPendingVinChecksCount200>(getAdminGetPendingVinChecksCountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAdminGetPendingVinChecksCountQueryKey = () => {
+    return [
+    `/api/admin/pending-vin-checks/count`
+    ] as const;
+    }
+
+
+export const getAdminGetPendingVinChecksCountQueryOptions = <TData = Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminGetPendingVinChecksCountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>> = ({ signal }) => adminGetPendingVinChecksCount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type AdminGetPendingVinChecksCountQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>>
+export type AdminGetPendingVinChecksCountQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Lightweight open pending VIN check count (admin nav badge)
+ */
+
+export function useAdminGetPendingVinChecksCount<TData = Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetPendingVinChecksCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getAdminGetPendingVinChecksCountQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

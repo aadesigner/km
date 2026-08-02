@@ -301,7 +301,7 @@ export function getPostAuthRedirectPath(language: string): string {
 
 /** Full page load for checkout avoids stale lazy chunks right after sign-up. */
 export function applyPostAuthRedirect(path: string, setLocation: (path: string) => void): void {
-  if (path.includes("/checkout")) {
+  if (path.includes("/checkout") || path.includes("/credits/checkout")) {
     const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     window.location.assign(`${base}${path.startsWith("/") ? path : `/${path}`}`);
     return;

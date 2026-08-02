@@ -43,6 +43,9 @@ export function apiPathRestriction(path: string): MaintenancePartialRestriction 
   if (
     p === "/payments/create-paypal-order"
     || p === "/payments/capture-paypal-order"
+    || p === "/payments/create-credit-pack-order"
+    || p === "/payments/capture-credit-pack-order"
+    || p === "/payments/redeem-credit"
     || p === "/payments/validate-coupon"
   ) {
     return "checkout";

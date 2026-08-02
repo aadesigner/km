@@ -22,16 +22,26 @@ function clientAreaPathKey(path: string): string | null {
   return lang;
 }
 
-/** Refetch dashboard data after a long idle tab return. */
+/**
+ * Keep client-area data fresh after idle tab return / remount.
+ * Always refreshes auth (/auth/me) so credit balance updates after admin adjusts
+ * credits — that value lives in AuthContext + localStorage, not React Query.
+ */
 export function useClientAreaLiveRefresh(): void {
   const queryClient = useQueryClient();
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, refreshUser } = useAuth();
   const lastRefetchAtRef = useRef(0);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
 
-    const maybeRefetch = () => {
+    const path = normalizeClientPath(window.location.pathname);
+    if (!clientAreaPathKey(path)) return;
+
+    // Credits + profile: always pull fresh on client-area entry.
+    void refreshUser();
+
+    const maybeRefetchQueries = () => {
       const now = Date.now();
       if (now - lastRefetchAtRef.current < VISIBILITY_REFETCH_MS) return;
       lastRefetchAtRef.current = now;
@@ -40,9 +50,10 @@ export function useClientAreaLiveRefresh(): void {
 
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      const path = normalizeClientPath(window.location.pathname);
-      if (!clientAreaPathKey(path)) return;
-      maybeRefetch();
+      const current = normalizeClientPath(window.location.pathname);
+      if (!clientAreaPathKey(current)) return;
+      void refreshUser();
+      maybeRefetchQueries();
     };
 
     document.addEventListener("visibilitychange", onVisible);
@@ -55,5 +66,5 @@ export function useClientAreaLiveRefresh(): void {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("pageshow", onPageShow);
     };
-  }, [isLoaded, isSignedIn, queryClient]);
+  }, [isLoaded, isSignedIn, queryClient, refreshUser]);
 }

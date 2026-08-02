@@ -26,6 +26,8 @@ import {
   paypalAmountsMatch,
 } from "../lib/paypalCapture.js";
 import { paypalOrderCreateLimiter, paypalCaptureLimiter } from "../lib/expensiveEndpointLimiter.js";
+import { getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
+import { completeCreditPackPayment } from "../lib/creditRedemption.js";
 
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -488,6 +490,11 @@ router.post("/payments/capture-paypal-order", paypalCaptureLimiter, requireAuth,
     res.status(404).json({ error: "Payment not found", code: "PAYMENT_NOT_FOUND" });
     return;
   }
+  if ((payment.kind ?? "vin_report") === "credit_pack") {
+    res.status(400).json({ error: "Use credit-pack capture for this order", code: "WRONG_CAPTURE_ENDPOINT" });
+    return;
+  }
+
   if (payment.status === "completed") {
     res.json({ success: true, vin: payment.vin, paymentId: payment.id });
     return;
@@ -617,6 +624,390 @@ router.get("/payments/history", requireAuth, async (req, res) => {
     .orderBy(desc(paymentsTable.createdAt))
     .limit(50);
   res.json(payments);
+});
+
+// POST /payments/create-credit-pack-order — PayPal order for prepaid credits (no VIN)
+router.post("/payments/create-credit-pack-order", paypalOrderCreateLimiter, requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  const { packId } = req.body as { packId?: string };
+
+  if (!isCreditPackId(packId)) {
+    res.status(400).json({ error: "Invalid pack. Use pack3 or pack5.", code: "INVALID_PACK" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  if (user.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
+
+  const pack = getCreditPack(packId);
+  const { clientId, clientSecret, sandbox } = await getPaypalConfig();
+  if (!clientId || !clientSecret) {
+    res.status(503).json({ error: "Payment system not configured. Contact support." });
+    return;
+  }
+
+  try {
+    const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
+    const userEmail = user.email ?? "";
+    const amountValue = pack.totalPrice.toFixed(2);
+
+    const orderResp = await fetch(`${base}/v2/checkout/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${ppToken}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+      },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [{
+          amount: {
+            currency_code: pack.currency,
+            value: amountValue,
+            breakdown: {
+              item_total: { currency_code: pack.currency, value: amountValue },
+            },
+          },
+          description: `Kmcheck credit pack — ${pack.credits} credits`,
+          items: [{
+            name: `${pack.credits} VIN report credits`,
+            quantity: "1",
+            unit_amount: { currency_code: pack.currency, value: amountValue },
+          }],
+          custom_id: `${userId}|credit_pack|${pack.id}`,
+        }],
+        payer: userEmail ? { email_address: userEmail } : undefined,
+        application_context: {
+          brand_name: "kmcheck.com",
+          landing_page: "NO_PREFERENCE",
+          user_action: "PAY_NOW",
+          shipping_preference: "NO_SHIPPING",
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!orderResp.ok) {
+      const err = await orderResp.text();
+      throw new Error(`PayPal credit-pack order failed: ${err.slice(0, 300)}`);
+    }
+
+    const order = await orderResp.json() as { id: string };
+
+    const [payment] = await db.insert(paymentsTable).values({
+      userId,
+      vin: null,
+      amount: pack.totalPrice,
+      currency: pack.currency,
+      status: "pending",
+      kind: "credit_pack",
+      credits: pack.credits,
+      paypalOrderId: order.id,
+    }).returning();
+
+    logger.info({
+      msg: "payment_created",
+      type: "credit_pack_order",
+      paypalOrderId: order.id,
+      paymentId: payment.id,
+      userId,
+      packId: pack.id,
+      credits: pack.credits,
+      amount: pack.totalPrice,
+    });
+
+    res.json({
+      orderId: order.id,
+      paymentId: payment.id,
+      packId: pack.id,
+      credits: pack.credits,
+      finalPrice: pack.totalPrice,
+      currency: pack.currency,
+    });
+  } catch (err) {
+    logger.error({ err }, "PayPal credit-pack order creation failed");
+    res.status(502).json({ error: "Failed to create payment. Please try again." });
+  }
+});
+
+// POST /payments/capture-credit-pack-order
+router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  const { orderId } = req.body as { orderId?: string };
+  if (!orderId || !PAYPAL_ORDER_ID_RE.test(orderId)) {
+    res.status(400).json({ error: "Invalid order ID", code: "INVALID_ORDER_ID" });
+    return;
+  }
+
+  const [payment] = await db.select().from(paymentsTable)
+    .where(eq(paymentsTable.paypalOrderId, orderId))
+    .limit(1);
+
+  if (!payment || payment.userId !== userId) {
+    res.status(404).json({ error: "Payment not found", code: "PAYMENT_NOT_FOUND" });
+    return;
+  }
+  if (payment.kind !== "credit_pack") {
+    res.status(400).json({ error: "Not a credit pack order", code: "WRONG_PAYMENT_KIND" });
+    return;
+  }
+
+  const credits = Number(payment.credits ?? 0);
+  if (credits < 1) {
+    res.status(500).json({ error: "Invalid credit pack payment", code: "INVALID_CREDITS" });
+    return;
+  }
+
+  if (payment.status === "completed") {
+    const [user] = await db.select({ creditBalance: usersTable.creditBalance })
+      .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    res.json({
+      success: true,
+      paymentId: payment.id,
+      creditsAdded: 0,
+      creditBalance: user?.creditBalance ?? 0,
+    });
+    return;
+  }
+
+  const { clientId, clientSecret, sandbox } = await getPaypalConfig();
+  if (!clientId || !clientSecret) {
+    res.status(503).json({ error: "Payment system not configured. Contact support.", code: "PAYMENT_NOT_CONFIGURED" });
+    return;
+  }
+
+  try {
+    const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
+    const captureResp = await fetch(`${base}/v2/checkout/orders/${orderId}/capture`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${ppToken}`,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    const captureAttempt = await interpretPaypalCaptureResponse(
+      captureResp,
+      () => fetchPaypalOrderStatus(base, ppToken, orderId),
+    );
+
+    if (!captureAttempt.treatedAsCompleted) {
+      await db.update(paymentsTable)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(paymentsTable.paypalOrderId, orderId));
+      logger.warn({
+        msg: "credit_pack_capture_failed",
+        orderId,
+        userId,
+        captureStatus: captureAttempt.orderStatus,
+      });
+      res.status(402).json({
+        error: "Payment was not completed. Please try again.",
+        code: "PAYMENT_NOT_COMPLETED",
+      });
+      return;
+    }
+
+    let captured = captureAttempt.capturedAmount != null && captureAttempt.capturedCurrency
+      ? { amount: captureAttempt.capturedAmount, currency: captureAttempt.capturedCurrency }
+      : null;
+    if (!captured) {
+      captured = await fetchPaypalOrderCaptureAmount(base, ppToken, orderId);
+    }
+    if (captured && !paypalAmountsMatch(Number(payment.amount), payment.currency, captured)) {
+      await db.update(paymentsTable)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(paymentsTable.paypalOrderId, orderId));
+      logger.error({
+        msg: "credit_pack_capture_amount_mismatch",
+        orderId,
+        paymentId: payment.id,
+        expectedAmount: payment.amount,
+        expectedCurrency: payment.currency,
+        capturedAmount: captured.amount,
+        capturedCurrency: captured.currency,
+      });
+      res.status(402).json({
+        error: "Payment amount verification failed. Please contact support.",
+        code: "PAYMENT_AMOUNT_MISMATCH",
+      });
+      return;
+    }
+
+    const result = await completeCreditPackPayment(payment.id, userId, credits);
+    logger.info({
+      msg: "credit_pack_captured",
+      orderId,
+      paymentId: payment.id,
+      userId,
+      creditsAdded: result.creditsAdded,
+      creditBalance: result.creditBalance,
+      alreadyCompleted: result.alreadyCompleted,
+    });
+
+    res.json({
+      success: true,
+      paymentId: payment.id,
+      creditsAdded: result.creditsAdded,
+      creditBalance: result.creditBalance,
+    });
+  } catch (err) {
+    logger.error({ err, orderId }, "PayPal credit-pack capture failed");
+
+    try {
+      const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
+      const orderStatus = await fetchPaypalOrderStatus(base, ppToken, orderId);
+      if (orderStatus === "COMPLETED") {
+        const result = await completeCreditPackPayment(payment.id, userId, credits);
+        logger.info({
+          msg: "credit_pack_captured_recovered",
+          orderId,
+          paymentId: payment.id,
+          userId,
+          creditsAdded: result.creditsAdded,
+          creditBalance: result.creditBalance,
+        });
+        res.json({
+          success: true,
+          paymentId: payment.id,
+          creditsAdded: result.creditsAdded,
+          creditBalance: result.creditBalance,
+        });
+        return;
+      }
+    } catch (recoverErr) {
+      logger.error({ recoverErr, orderId }, "PayPal credit-pack capture recovery failed");
+    }
+
+    const [fresh] = await db.select().from(paymentsTable)
+      .where(eq(paymentsTable.paypalOrderId, orderId))
+      .limit(1);
+    if (fresh?.status === "completed") {
+      const [user] = await db.select({ creditBalance: usersTable.creditBalance })
+        .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+      res.json({
+        success: true,
+        paymentId: fresh.id,
+        creditsAdded: 0,
+        creditBalance: user?.creditBalance ?? 0,
+      });
+      return;
+    }
+
+    await db.update(paymentsTable)
+      .set({ status: "failed", updatedAt: new Date() })
+      .where(eq(paymentsTable.paypalOrderId, orderId));
+    res.status(502).json({
+      error: "Failed to capture payment. Please try again.",
+      code: "PAYMENT_CAPTURE_FAILED",
+    });
+  }
+});
+
+// POST /payments/redeem-credit — spend 1 credit to unlock a VIN (then client calls POST /vin/lookup)
+router.post("/payments/redeem-credit", requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  const { vin } = req.body as { vin?: string };
+  const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
+  if (!vin || !VIN_RE.test(vin)) {
+    res.status(400).json({ error: "Invalid VIN — must be 17 alphanumeric characters (no I, O, or Q)" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  if (user.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
+  if (await rejectVinLookupIfDisabled(req, res)) return;
+
+  const normalizedVin = vin.toUpperCase();
+  const payable = await ensureVinPayableForPayment(userId, normalizedVin);
+  if (!payable.ok) {
+    if (payable.code === "ALREADY_UNLOCKED") {
+      res.status(409).json({
+        error: "You already have access to this VIN report.",
+        code: "ALREADY_UNLOCKED",
+        alreadyUnlocked: true,
+        lookupId: payable.lookupId ?? null,
+      });
+      return;
+    }
+    if (payable.code === "VIN_NO_DATA") {
+      res.status(422).json({ error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
+      return;
+    }
+    res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
+    return;
+  }
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [locked] = await tx
+        .select({ creditBalance: usersTable.creditBalance })
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+
+      if (!locked || locked.creditBalance < 1) {
+        return { insufficient: true as const };
+      }
+
+      const [updatedUser] = await tx
+        .update(usersTable)
+        .set({
+          creditBalance: sql`${usersTable.creditBalance} - 1`,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(usersTable.id, userId), sql`${usersTable.creditBalance} >= 1`))
+        .returning({ creditBalance: usersTable.creditBalance });
+
+      if (!updatedUser) {
+        return { insufficient: true as const };
+      }
+
+      const [payment] = await tx.insert(paymentsTable).values({
+        userId,
+        vin: normalizedVin,
+        amount: 0,
+        currency: "EUR",
+        status: "completed",
+        kind: "credit_redemption",
+        credits: 1,
+      }).returning();
+
+      return {
+        insufficient: false as const,
+        paymentId: payment.id,
+        creditBalance: updatedUser.creditBalance,
+      };
+    });
+
+    if (result.insufficient) {
+      res.status(402).json({
+        error: "Not enough credits. Purchase a credit pack or pay with PayPal.",
+        code: "INSUFFICIENT_CREDITS",
+      });
+      return;
+    }
+
+    logger.info({
+      msg: "credit_redeemed",
+      paymentId: result.paymentId,
+      userId,
+      vin: normalizedVin,
+      creditBalance: result.creditBalance,
+    });
+
+    res.json({
+      paymentId: result.paymentId,
+      creditBalance: result.creditBalance,
+      vin: normalizedVin,
+    });
+  } catch (err) {
+    logger.error({ err, userId, vin: normalizedVin }, "credit redeem failed");
+    res.status(500).json({ error: "Failed to redeem credit. Please try again." });
+  }
 });
 
 export default router;

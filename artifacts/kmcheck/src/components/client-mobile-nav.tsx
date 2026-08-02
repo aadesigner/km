@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
-import { FileText, Search, User, HelpCircle } from "lucide-react";
+import { FileText, Search, User, HelpCircle, Tag } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { prefetchRouteFromHref } from "@/lib/prefetch-route";
-import { ShoppingBag } from "lucide-react";
 import {
   dashboardPath,
   isDashboardLocation,
-  isPurchasesLocation,
+  isOffersLocation,
   normalizeClientPath,
   parseDashboardView,
 } from "@/lib/dashboard-nav";
@@ -74,7 +73,7 @@ export function ClientMobileNav() {
   const dashboardView = parseDashboardView(currentPath, language);
   const isHome = currentPath === `/${language}`;
 
-  const isPurchases = isPurchasesLocation(currentPath, language);
+  const isOffers = isOffersLocation(currentPath, language);
 
   const items: NavItem[] = [
     {
@@ -85,11 +84,11 @@ export function ClientMobileNav() {
       active: isDashboard && dashboardView === "reports",
     },
     {
-      id: "purchases",
-      icon: ShoppingBag,
-      label: t("nav_purchases"),
-      href: `/${language}/purchases`,
-      active: isPurchases,
+      id: "offers",
+      icon: Tag,
+      label: t("nav_offers"),
+      href: `/${language}/pricing`,
+      active: isOffers,
     },
     {
       id: "check-vin",

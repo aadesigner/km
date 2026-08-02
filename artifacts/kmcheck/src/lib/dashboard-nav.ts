@@ -1,6 +1,6 @@
 export type DashboardView = "reports" | "account" | "help";
 
-export type ClientAreaSection = DashboardView | "purchases";
+export type ClientAreaSection = DashboardView | "purchases" | "offers";
 
 /** Strip trailing slash for stable path comparisons. */
 export function normalizeClientPath(path: string): string {
@@ -33,7 +33,14 @@ export function isPurchasesLocation(location: string, lang: string): boolean {
   return path === `/${lang}/purchases` || path.startsWith(`/${lang}/purchases/`);
 }
 
+export function isOffersLocation(location: string, lang: string): boolean {
+  const path = normalizeClientPath(location);
+  return path === `/${lang}/pricing` || path.startsWith(`/${lang}/pricing/`)
+    || path === `/${lang}/credits/checkout` || path.startsWith(`/${lang}/credits/`);
+}
+
 export function parseClientAreaSection(location: string, lang: string): ClientAreaSection {
+  if (isOffersLocation(location, lang)) return "offers";
   if (isPurchasesLocation(location, lang)) return "purchases";
   return parseDashboardView(location, lang);
 }

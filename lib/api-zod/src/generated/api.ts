@@ -251,8 +251,46 @@ export const GetUserProfileResponse = zod.object({
   "avatarUrl": zod.string().nullish(),
   "isBanned": zod.boolean().optional(),
   "isAdmin": zod.boolean().optional(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "countryChangesRemaining": zod.number().optional().describe('Remaining country\/nationality changes allowed today (UTC)'),
+  "countryChangesLimit": zod.number().optional().describe('Max country\/nationality changes per UTC day'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "phoneChangesRemaining": zod.number().optional(),
+  "phoneChangesLimit": zod.number().optional(),
   "totalChecks": zod.number().optional(),
   "totalSpent": zod.number().optional(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update profile fields (country and/or phone)
+ */
+export const PatchUserProfileBody = zod.object({
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish().describe('Dialing prefix including +, e.g. +355'),
+  "phoneNational": zod.string().nullish().describe('National number digits only')
+})
+
+export const PatchUserProfileResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "isBanned": zod.boolean().optional(),
+  "isAdmin": zod.boolean().optional(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "countryChangesRemaining": zod.number().optional().describe('Remaining country\/nationality changes allowed today (UTC)'),
+  "countryChangesLimit": zod.number().optional().describe('Max country\/nationality changes per UTC day'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "phoneChangesRemaining": zod.number().optional(),
+  "phoneChangesLimit": zod.number().optional(),
+  "totalChecks": zod.number().optional(),
+  "totalSpent": zod.number().optional(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
   "createdAt": zod.coerce.date()
 })
 
@@ -265,7 +303,8 @@ export const getUserHistoryQueryLimitDefault = 20;
 
 export const GetUserHistoryQueryParams = zod.object({
   "page": zod.coerce.number().default(getUserHistoryQueryPageDefault),
-  "limit": zod.coerce.number().default(getUserHistoryQueryLimitDefault)
+  "limit": zod.coerce.number().default(getUserHistoryQueryLimitDefault),
+  "view": zod.enum(['summary']).optional().describe('Use `summary` for dashboard list cards (trimmed report fields only).')
 })
 
 export const GetUserHistoryResponse = zod.object({
@@ -359,10 +398,38 @@ export const GetUserPaymentsResponse = zod.object({
   "amount": zod.number(),
   "currency": zod.string(),
   "status": zod.enum(['pending', 'completed', 'failed', 'refunded', 'revoked']),
+  "kind": zod.enum(['vin_report', 'credit_pack', 'credit_redemption']).optional(),
+  "credits": zod.number().nullish(),
   "paypalOrderId": zod.string().nullish(),
   "couponCode": zod.string().nullish(),
   "discountAmount": zod.number().nullish(),
   "vinLookupId": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number(),
+  "page": zod.number(),
+  "limit": zod.number()
+})
+
+
+/**
+ * @summary Get the current user's credit pack purchases
+ */
+export const getUserCreditPurchasesQueryPageDefault = 1;
+export const getUserCreditPurchasesQueryLimitDefault = 20;
+
+export const GetUserCreditPurchasesQueryParams = zod.object({
+  "page": zod.coerce.number().default(getUserCreditPurchasesQueryPageDefault),
+  "limit": zod.coerce.number().default(getUserCreditPurchasesQueryLimitDefault)
+})
+
+export const GetUserCreditPurchasesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.string(),
+  "credits": zod.number().nullish(),
   "createdAt": zod.coerce.date()
 })),
   "total": zod.number(),
@@ -481,6 +548,52 @@ export const GetCurrentPricingResponse = zod.object({
 
 
 /**
+ * @summary Create a PayPal order for a prepaid credit pack
+ */
+export const CreateCreditPackOrderBody = zod.object({
+  "packId": zod.enum(['pack3', 'pack5'])
+})
+
+export const CreateCreditPackOrderResponse = zod.object({
+  "orderId": zod.string(),
+  "paymentId": zod.number(),
+  "packId": zod.enum(['pack3', 'pack5']),
+  "credits": zod.number(),
+  "finalPrice": zod.number(),
+  "currency": zod.string()
+})
+
+
+/**
+ * @summary Capture a credit pack PayPal order and grant credits
+ */
+export const CaptureCreditPackOrderBody = zod.object({
+  "orderId": zod.string()
+})
+
+export const CaptureCreditPackOrderResponse = zod.object({
+  "success": zod.boolean(),
+  "paymentId": zod.number(),
+  "creditsAdded": zod.number(),
+  "creditBalance": zod.number()
+})
+
+
+/**
+ * @summary Spend one credit to unlock a VIN report
+ */
+export const RedeemCreditBody = zod.object({
+  "vin": zod.string()
+})
+
+export const RedeemCreditResponse = zod.object({
+  "paymentId": zod.number(),
+  "creditBalance": zod.number(),
+  "vin": zod.string()
+})
+
+
+/**
  * @summary List all users
  */
 export const adminGetUsersQueryPageDefault = 1;
@@ -491,7 +604,8 @@ export const AdminGetUsersQueryParams = zod.object({
   "limit": zod.coerce.number().default(adminGetUsersQueryLimitDefault),
   "search": zod.coerce.string().optional(),
   "status": zod.enum(['active', 'banned']).optional(),
-  "checks": zod.enum(['checked', 'unchecked']).optional()
+  "checks": zod.enum(['checked', 'unchecked']).optional(),
+  "country": zod.coerce.string().optional().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo), or unset\/none for users with no country. Combines with status and checks (AND).\n')
 })
 
 export const AdminGetUsersResponse = zod.object({
@@ -502,10 +616,15 @@ export const AdminGetUsersResponse = zod.object({
   "isBanned": zod.boolean(),
   "isAdmin": zod.boolean(),
   "banReason": zod.string().nullish(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
   "totalChecks": zod.number(),
   "totalSpent": zod.number().optional(),
   "lastLoginAt": zod.string().nullish(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "appliedDelta": zod.number().optional().describe('Present on credit adjust responses — credits actually applied')
 })),
   "total": zod.number(),
   "page": zod.number(),
@@ -519,7 +638,8 @@ export const AdminGetUsersResponse = zod.object({
 export const AdminExportUsersQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "status": zod.enum(['active', 'banned']).optional(),
-  "checks": zod.enum(['checked', 'unchecked']).optional()
+  "checks": zod.enum(['checked', 'unchecked']).optional(),
+  "country": zod.coerce.string().optional().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo), or unset\/none for users with no country. Combines with other filters (AND).\n')
 })
 
 
@@ -541,10 +661,15 @@ export const AdminBanUserResponse = zod.object({
   "isBanned": zod.boolean(),
   "isAdmin": zod.boolean(),
   "banReason": zod.string().nullish(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
   "totalChecks": zod.number(),
   "totalSpent": zod.number().optional(),
   "lastLoginAt": zod.string().nullish(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "appliedDelta": zod.number().optional().describe('Present on credit adjust responses — credits actually applied')
 })
 
 
@@ -562,10 +687,15 @@ export const AdminUnbanUserResponse = zod.object({
   "isBanned": zod.boolean(),
   "isAdmin": zod.boolean(),
   "banReason": zod.string().nullish(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
   "totalChecks": zod.number(),
   "totalSpent": zod.number().optional(),
   "lastLoginAt": zod.string().nullish(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "appliedDelta": zod.number().optional().describe('Present on credit adjust responses — credits actually applied')
 })
 
 
@@ -583,10 +713,15 @@ export const AdminGetUserResponse = zod.object({
   "isBanned": zod.boolean(),
   "isAdmin": zod.boolean(),
   "banReason": zod.string().nullish(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
   "totalChecks": zod.number(),
   "totalSpent": zod.number().optional(),
   "lastLoginAt": zod.string().nullish(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "appliedDelta": zod.number().optional().describe('Present on credit adjust responses — credits actually applied')
 })
 
 
@@ -683,6 +818,67 @@ export const AdminGetUserHistoryResponse = zod.object({
   "updatedAt": zod.coerce.date().optional(),
   "fromCache": zod.boolean().optional(),
   "providerName": zod.string().nullish()
+})),
+  "total": zod.number(),
+  "page": zod.number(),
+  "limit": zod.number()
+})
+
+
+/**
+ * @summary Add or remove prepaid credits for a user (clamped at 0)
+ */
+export const AdminAdjustUserCreditsParams = zod.object({
+  "userId": zod.coerce.string()
+})
+
+export const AdminAdjustUserCreditsBody = zod.object({
+  "creditBalance": zod.number().min(0).describe('Absolute credit balance to set').optional(),
+  "delta": zod.number().describe('Optional relative change when creditBalance is omitted').optional()
+})
+
+export const AdminAdjustUserCreditsResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "isBanned": zod.boolean(),
+  "isAdmin": zod.boolean(),
+  "banReason": zod.string().nullish(),
+  "countryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 profile country (AL = Albania \/ Kosovo)'),
+  "phonePrefix": zod.string().nullish(),
+  "phoneNational": zod.string().nullish(),
+  "creditBalance": zod.number().optional().describe('Prepaid report credits remaining'),
+  "totalChecks": zod.number(),
+  "totalSpent": zod.number().optional(),
+  "lastLoginAt": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "appliedDelta": zod.number().optional().describe('Present on credit adjust responses — credits actually applied')
+})
+
+
+/**
+ * @summary List credit pack purchases for a user
+ */
+export const AdminGetUserCreditPurchasesParams = zod.object({
+  "userId": zod.coerce.string()
+})
+
+export const adminGetUserCreditPurchasesQueryPageDefault = 1;
+export const adminGetUserCreditPurchasesQueryLimitDefault = 20;
+
+export const AdminGetUserCreditPurchasesQueryParams = zod.object({
+  "page": zod.coerce.number().default(adminGetUserCreditPurchasesQueryPageDefault),
+  "limit": zod.coerce.number().default(adminGetUserCreditPurchasesQueryLimitDefault)
+})
+
+export const AdminGetUserCreditPurchasesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.string(),
+  "credits": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
 })),
   "total": zod.number(),
   "page": zod.number(),
@@ -1229,6 +1425,18 @@ export const AdminGetStatsResponse = zod.object({
 
 
 /**
+ * @summary Lightweight open pending VIN check count (admin nav badge)
+ */
+export const adminGetPendingVinChecksCountResponseOpenMin = 0;
+
+
+
+export const AdminGetPendingVinChecksCountResponse = zod.object({
+  "open": zod.number().min(adminGetPendingVinChecksCountResponseOpenMin)
+})
+
+
+/**
  * @summary Get system error logs
  */
 export const adminGetLogsQueryPageDefault = 1;
@@ -1283,11 +1491,19 @@ export const AdminGetSettingsResponse = zod.object({
   "freeVinDecoderRequireSignIn": zod.boolean().optional(),
   "siteUrl": zod.string().nullish(),
   "emailSendWelcome": zod.boolean().optional(),
-  "emailSendReportConfirm": zod.boolean().optional(),
-  "emailSendVinReady": zod.boolean().optional(),
+  "emailSendReportConfirm": zod.boolean().optional().describe('Deprecated — merged into emailSendVinReady'),
+  "emailSendVinReady": zod.boolean().optional().describe('Combined report-ready + payment confirmation email'),
   "emailSendPasswordReset": zod.boolean().optional(),
   "emailSendAbandonedCart": zod.boolean().optional(),
-  "krwPerUsd": zod.number().optional().describe('Korean won per 1 USD for insurance claim display on Korean VIN reports')
+  "emailSendAdminPendingVin": zod.boolean().optional().describe('Admin alert when a customer pays for a manual-pending VIN (off by default)'),
+  "emailLogRetentionEnabled": zod.boolean().optional().describe('Auto-delete email logs older than 7 days'),
+  "krwPerUsd": zod.number().optional().describe('Korean won per 1 USD for insurance claim display on Korean VIN reports'),
+  "analyticsGtmEnabled": zod.boolean().optional(),
+  "analyticsGtmContainerId": zod.string().nullish(),
+  "analyticsGaEnabled": zod.boolean().optional(),
+  "analyticsGaMeasurementId": zod.string().nullish(),
+  "analyticsClarityEnabled": zod.boolean().optional(),
+  "analyticsClarityProjectId": zod.string().nullish()
 })
 
 
@@ -1317,10 +1533,12 @@ export const AdminUpdateSettingsBody = zod.object({
   "freeVinDecoderRequireSignIn": zod.boolean().optional(),
   "siteUrl": zod.string().nullish(),
   "emailSendWelcome": zod.boolean().optional(),
-  "emailSendReportConfirm": zod.boolean().optional(),
-  "emailSendVinReady": zod.boolean().optional(),
+  "emailSendReportConfirm": zod.boolean().optional().describe('Deprecated — merged into emailSendVinReady'),
+  "emailSendVinReady": zod.boolean().optional().describe('Combined report-ready + payment confirmation email'),
   "emailSendPasswordReset": zod.boolean().optional(),
   "emailSendAbandonedCart": zod.boolean().optional(),
+  "emailSendAdminPendingVin": zod.boolean().optional().describe('Admin alert when a customer pays for a manual-pending VIN (off by default)'),
+  "emailLogRetentionEnabled": zod.boolean().optional().describe('Auto-delete email logs older than 7 days'),
   "maxFailedLogins": zod.number().optional(),
   "lockoutMinutes": zod.number().optional(),
   "adminMaxFailedLogins": zod.number().optional(),
@@ -1336,7 +1554,13 @@ export const AdminUpdateSettingsBody = zod.object({
   "googleClientSecret": zod.string().nullish(),
   "logRetentionDays": zod.number().optional(),
   "failedTxnRetentionDays": zod.number().optional(),
-  "krwPerUsd": zod.number().optional()
+  "krwPerUsd": zod.number().optional(),
+  "analyticsGtmEnabled": zod.boolean().optional(),
+  "analyticsGtmContainerId": zod.string().nullish(),
+  "analyticsGaEnabled": zod.boolean().optional(),
+  "analyticsGaMeasurementId": zod.string().nullish(),
+  "analyticsClarityEnabled": zod.boolean().optional(),
+  "analyticsClarityProjectId": zod.string().nullish()
 })
 
 export const AdminUpdateSettingsResponse = zod.object({
@@ -1362,11 +1586,19 @@ export const AdminUpdateSettingsResponse = zod.object({
   "freeVinDecoderRequireSignIn": zod.boolean().optional(),
   "siteUrl": zod.string().nullish(),
   "emailSendWelcome": zod.boolean().optional(),
-  "emailSendReportConfirm": zod.boolean().optional(),
-  "emailSendVinReady": zod.boolean().optional(),
+  "emailSendReportConfirm": zod.boolean().optional().describe('Deprecated — merged into emailSendVinReady'),
+  "emailSendVinReady": zod.boolean().optional().describe('Combined report-ready + payment confirmation email'),
   "emailSendPasswordReset": zod.boolean().optional(),
   "emailSendAbandonedCart": zod.boolean().optional(),
-  "krwPerUsd": zod.number().optional().describe('Korean won per 1 USD for insurance claim display on Korean VIN reports')
+  "emailSendAdminPendingVin": zod.boolean().optional().describe('Admin alert when a customer pays for a manual-pending VIN (off by default)'),
+  "emailLogRetentionEnabled": zod.boolean().optional().describe('Auto-delete email logs older than 7 days'),
+  "krwPerUsd": zod.number().optional().describe('Korean won per 1 USD for insurance claim display on Korean VIN reports'),
+  "analyticsGtmEnabled": zod.boolean().optional(),
+  "analyticsGtmContainerId": zod.string().nullish(),
+  "analyticsGaEnabled": zod.boolean().optional(),
+  "analyticsGaMeasurementId": zod.string().nullish(),
+  "analyticsClarityEnabled": zod.boolean().optional(),
+  "analyticsClarityProjectId": zod.string().nullish()
 })
 
 
@@ -1376,16 +1608,7 @@ export const AdminUpdateSettingsResponse = zod.object({
 export const GetCountriesResponseItem = zod.object({
   "code": zod.string(),
   "name": zod.string(),
-  "activeProvider": zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "countryCode": zod.string(),
-  "baseUrl": zod.string().optional(),
-  "isActive": zod.boolean(),
-  "rateLimit": zod.number().optional(),
-  "createdAt": zod.coerce.date()
-}).optional(),
-  "hasProvider": zod.boolean().optional()
+  "hasProvider": zod.boolean().optional().describe('Whether an upstream data source is configured for this country (vendor identity is never exposed)')
 })
 export const GetCountriesResponse = zod.array(GetCountriesResponseItem)
 

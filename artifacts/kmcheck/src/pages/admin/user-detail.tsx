@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
-import { useAdminBanUser, useAdminUnbanUser, useAdminDeleteUser, useAdminGetUser, getAdminGetUserQueryKey } from "@workspace/api-client-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useAdminBanUser,
+  useAdminUnbanUser,
+  useAdminDeleteUser,
+  useAdminGetUser,
+  useAdminAdjustUserCredits,
+  useAdminGetUserCreditPurchases,
+  getAdminGetUserQueryKey,
+  getAdminGetUserCreditPurchasesQueryKey,
+} from "@workspace/api-client-react";
 import type { ApiError } from "@workspace/api-client-react";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import { Button } from "@/components/ui/button";
@@ -17,12 +26,13 @@ import {
   ArrowLeft, Mail, Calendar, Clock, Key, Gift,
   Ban, CheckCircle2, Loader2, Save, Car,
   ShieldOff, AlertTriangle, ImageOff, ChevronLeft, ChevronRight, Trash2,
-  DollarSign, Search, Globe, Phone,
+  DollarSign, Search, Globe, Phone, Coins, ReceiptText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserCountrySelect } from "@/components/user-country-select";
 import { UserPhoneFields } from "@/components/user-phone-fields";
 import { formatPhoneDisplay } from "@/lib/user-phone";
+import { useAuth } from "@/lib/auth-context";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -39,6 +49,7 @@ export interface UserRow {
   createdAt: string;
   totalChecks?: number;
   totalSpent?: number;
+  creditBalance?: number;
 }
 
 interface VinData {
@@ -61,6 +72,34 @@ interface VinLookup {
 }
 
 interface Msg { ok: boolean; text: string }
+
+type UserPaymentRow = {
+  id: number;
+  vin?: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  kind?: string | null;
+  credits?: number | null;
+  couponCode?: string | null;
+  createdAt: string;
+};
+
+type UserPaymentsPage = {
+  items: UserPaymentRow[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+function kindLabel(kind: string | null | undefined): string {
+  switch (kind) {
+    case "credit_pack": return "Credit pack";
+    case "credit_redemption": return "Credit redeem";
+    case "vin_report": return "VIN report";
+    default: return kind || "Payment";
+  }
+}
 
 function VinPhoto({ photos }: { photos?: string[] }) {
   const [err, setErr] = useState(false);
@@ -129,6 +168,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const userId = params.userId;
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { user: authUser, refreshUser } = useAuth();
 
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
@@ -141,7 +181,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const [lookupsLoading, setLookupsLoading] = useState(false);
   const [lookupsTotal, setLookupsTotal] = useState(0);
   const [lookupsPage, setLookupsPage] = useState(1);
-  const LOOKUPS_LIMIT = 10;
+  const LOOKUPS_LIMIT = 5;
   const [savingDetails, setSavingDetails] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [granting, setGranting] = useState(false);
@@ -152,6 +192,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [creditBalanceEdit, setCreditBalanceEdit] = useState("0");
+  const [creditMsg, setCreditMsg] = useState<Msg | null>(null);
 
   const {
     data: user,
@@ -160,6 +202,27 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     error: userLoadError,
     refetch: refetchUser,
   } = useAdminGetUser(userId);
+
+  const {
+    data: creditPurchases,
+    refetch: refetchCreditPurchases,
+  } = useAdminGetUserCreditPurchases(userId, { page: 1, limit: 20 });
+
+  const {
+    data: userTransactions,
+    refetch: refetchUserTransactions,
+  } = useQuery<UserPaymentsPage>({
+    queryKey: ["/api/admin/users", userId, "transactions"],
+    queryFn: async () => {
+      const r = await fetch(
+        `${basePath}/api/admin/users/${encodeURIComponent(userId)}/transactions?page=1&limit=30`,
+        { credentials: "include" },
+      );
+      if (!r.ok) throw new Error("Failed to load transactions");
+      return r.json();
+    },
+    enabled: !!userId,
+  });
 
   const userError = userLoadFailed
     ? ((userLoadError as ApiError<{ error?: string }>)?.data?.error
@@ -170,12 +233,28 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const invalidateUsers = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
     queryClient.invalidateQueries({ queryKey: getAdminGetUserQueryKey(userId) });
+    queryClient.invalidateQueries({ queryKey: getAdminGetUserCreditPurchasesQueryKey(userId) });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/transactions"] });
   };
 
   const banUser = useAdminBanUser({ mutation: { onSuccess: invalidateUsers } });
   const unbanUser = useAdminUnbanUser({ mutation: { onSuccess: invalidateUsers } });
+  const adjustCredits = useAdminAdjustUserCredits({
+    mutation: {
+      onSuccess: () => {
+        invalidateUsers();
+        void refetchUser();
+        void refetchCreditPurchases();
+        void refetchUserTransactions();
+        // Same browser session as the edited user (e.g. admin editing self):
+        // drop stale AuthContext / localStorage credit balance immediately.
+        if (authUser?.id === userId) {
+          void refreshUser();
+        }
+      },
+    },
+  });
   const deleteUser = useAdminDeleteUser({
     mutation: {
       onSuccess: () => {
@@ -212,6 +291,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     setDeleteOpen(false);
     setDeleteEmail("");
     setDeleteError(null);
+    setCreditBalanceEdit("0");
+    setCreditMsg(null);
     setLookupsPage(1);
   }, [userId]);
 
@@ -222,7 +303,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     setEditCountry(user.countryCode ?? "");
     setEditPhonePrefix(user.phonePrefix || "+355");
     setEditPhoneNational(user.phoneNational ?? "");
-  }, [user?.id, user?.email, user?.name, user?.countryCode, user?.phonePrefix, user?.phoneNational]);
+    setCreditBalanceEdit(String(user.creditBalance ?? 0));
+  }, [user?.id, user?.email, user?.name, user?.countryCode, user?.phonePrefix, user?.phoneNational, user?.creditBalance]);
 
   useEffect(() => {
     if (!user) return;
@@ -230,6 +312,11 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   }, [user?.id, lookupsPage]);
 
   const totalPages = Math.ceil(lookupsTotal / LOOKUPS_LIMIT) || 1;
+  const lookupPageNumbers = (() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const start = Math.min(Math.max(1, lookupsPage - 2), totalPages - 4);
+    return Array.from({ length: 5 }, (_, i) => start + i);
+  })();
   const emailMatches = user ? deleteEmail.trim().toLowerCase() === user.email.toLowerCase() : false;
 
   const patch = async (body: Record<string, unknown>) => {
@@ -326,18 +413,54 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     });
   };
 
+  const handleSaveCredits = () => {
+    const next = parseInt(creditBalanceEdit, 10);
+    if (!Number.isFinite(next) || next < 0) {
+      setCreditMsg({ ok: false, text: "Enter a non-negative whole number" });
+      return;
+    }
+    const current = user?.creditBalance ?? 0;
+    if (next === current) {
+      setCreditMsg({ ok: true, text: "No change" });
+      return;
+    }
+    setCreditMsg(null);
+    adjustCredits.mutate(
+      {
+        userId,
+        // Send absolute balance (new API) and delta (compat with older API processes).
+        data: { creditBalance: next, delta: next - current },
+      },
+      {
+        onSuccess: (data) => {
+          setCreditBalanceEdit(String(data.creditBalance ?? next));
+          setCreditMsg({
+            ok: true,
+            text: `Credits set to ${data.creditBalance ?? next}`,
+          });
+        },
+        onError: (err: unknown) => {
+          const apiErr = err as ApiError<{ error?: string }>;
+          setCreditMsg({
+            ok: false,
+            text: apiErr?.data?.error ?? (err as Error)?.message ?? "Failed to update credits",
+          });
+        },
+      },
+    );
+  };
+
   if (userLoading) {
     return (
       <div className="space-y-4 md:space-y-5 max-w-5xl">
         <Skeleton className="h-24 w-full rounded-xl" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 md:gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
         </div>
         <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
           <Skeleton className="h-56 rounded-xl" />
           <Skeleton className="h-56 rounded-xl" />
         </div>
-        <Skeleton className="h-72 w-full rounded-xl" />
       </div>
     );
   }
@@ -400,7 +523,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         </div>
       </Panel>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 md:gap-3">
         <Panel className="px-3.5 py-3 md:px-4 md:py-4">
           <div className="flex items-center justify-between gap-2 mb-2">
             <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">VIN checks</span>
@@ -417,6 +540,13 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         </Panel>
         <Panel className="px-3.5 py-3 md:px-4 md:py-4">
           <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">Credits</span>
+            <Coins className="h-3.5 w-3.5 text-primary/60" />
+          </div>
+          <p className="text-xl md:text-2xl font-bold tabular-nums text-primary">{user.creditBalance ?? 0}</p>
+        </Panel>
+        <Panel className="px-3.5 py-3 md:px-4 md:py-4">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">Joined</span>
             <Calendar className="h-3.5 w-3.5 text-primary/60" />
           </div>
@@ -424,7 +554,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             {new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </p>
         </Panel>
-        <Panel className="px-3.5 py-3 md:px-4 md:py-4">
+        <Panel className="px-3.5 py-3 md:px-4 md:py-4 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between gap-2 mb-2">
             <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">Last login</span>
             <Clock className="h-3.5 w-3.5 text-primary/60" />
@@ -462,9 +592,6 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   onValueChange={setEditCountry}
                   emptyLabel="Not set"
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  Informational profile field — saved with details above.
-                </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -485,9 +612,6 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   emptySearchLabel="No prefix found."
                   nationalPlaceholder="Insert your phone number..."
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  Prefix is independent of country. Clear the number field to unset. No daily limit for admin.
-                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <Button size="sm" onClick={handleSaveDetails} disabled={savingDetails} className="h-9">
@@ -496,6 +620,31 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 </Button>
                 {detailsMsg && <StatusMessage msg={detailsMsg} />}
               </div>
+            </div>
+          </Panel>
+
+          <Panel className="overflow-hidden">
+            <SectionLabel icon={Coins} title="Credits" />
+            <div className="p-3.5 md:p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                <div className="space-y-1.5 flex-1">
+                  <Label className="text-xs text-muted-foreground">Balance</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={creditBalanceEdit}
+                    onChange={(e) => setCreditBalanceEdit(e.target.value)}
+                    className="h-9 md:h-10 tabular-nums"
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSaveCredits(); }}
+                  />
+                </div>
+                <Button size="sm" onClick={handleSaveCredits} disabled={adjustCredits.isPending} className="h-9 md:h-10 shrink-0">
+                  {adjustCredits.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  <span className="ml-1.5">Save credits</span>
+                </Button>
+              </div>
+              {creditMsg && <StatusMessage msg={creditMsg} />}
             </div>
           </Panel>
 
@@ -545,6 +694,61 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
               {grantMsg && <StatusMessage msg={grantMsg} />}
             </div>
           </Panel>
+
+          <Panel className="overflow-hidden">
+            <SectionLabel icon={ReceiptText} title="Transaction history" hint="All payments for this user (VIN reports, packs, redemptions)." />
+            <div className="p-2 md:p-3">
+              {(userTransactions?.items?.length ?? 0) === 0 ? (
+                <p className="text-xs md:text-sm text-muted-foreground text-center py-6">No transactions yet</p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-border/40">
+                  <table className="w-full text-xs md:text-sm">
+                    <thead>
+                      <tr className="border-b border-border/40 bg-muted/30 text-left text-muted-foreground">
+                        <th className="px-3 py-2 font-medium">Date</th>
+                        <th className="px-3 py-2 font-medium">Type</th>
+                        <th className="px-3 py-2 font-medium">VIN</th>
+                        <th className="px-3 py-2 font-medium">Amount</th>
+                        <th className="px-3 py-2 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {userTransactions!.items.map((row) => (
+                        <tr key={row.id}>
+                          <td className="px-3 py-2 tabular-nums whitespace-nowrap">
+                            {new Date(row.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                          </td>
+                          <td className="px-3 py-2">
+                            <span className="text-foreground">{kindLabel(row.kind)}</span>
+                            {row.credits != null && row.kind === "credit_pack" && (
+                              <span className="text-muted-foreground"> · {row.credits} cr</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 font-mono text-[11px]">
+                            {row.vin ? (
+                              <Link href={`/adminx/vin/${row.vin}`}>
+                                <span className="hover:text-primary transition-colors">{row.vin}</span>
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 tabular-nums whitespace-nowrap">
+                            €{Number(row.amount).toFixed(2)}
+                          </td>
+                          <td className="px-3 py-2">
+                            <Badge variant={row.status === "completed" ? "default" : "secondary"} className="text-[10px]">
+                              {row.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </Panel>
         </div>
 
         <div className="space-y-3 md:space-y-4">
@@ -556,11 +760,24 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 <span className="text-xs font-normal text-muted-foreground tabular-nums">({lookupsTotal})</span>
               </h2>
               {totalPages > 1 && (
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[11px] text-muted-foreground tabular-nums mr-1">{lookupsPage}/{totalPages}</span>
+                <div className="flex items-center gap-0.5 shrink-0">
                   <Button size="icon" variant="ghost" className="h-7 w-7" disabled={lookupsPage <= 1} onClick={() => setLookupsPage(p => p - 1)}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
+                  {lookupPageNumbers.map((pageNum) => (
+                    <Button
+                      key={pageNum}
+                      size="sm"
+                      variant={pageNum === lookupsPage ? "default" : "ghost"}
+                      className={cn(
+                        "h-7 min-w-7 px-2 text-xs tabular-nums",
+                        pageNum === lookupsPage && "pointer-events-none",
+                      )}
+                      onClick={() => setLookupsPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  ))}
                   <Button size="icon" variant="ghost" className="h-7 w-7" disabled={lookupsPage >= totalPages} onClick={() => setLookupsPage(p => p + 1)}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -570,7 +787,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             <div className="p-2 md:p-3">
               {lookupsLoading ? (
                 <div className="space-y-2 px-1">
-                  {[0, 1, 2].map(i => <Skeleton key={i} className="h-[4.5rem] rounded-lg" />)}
+                  {[0, 1, 2, 3, 4].map(i => <Skeleton key={i} className="h-[4.5rem] rounded-lg" />)}
                 </div>
               ) : lookups.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
@@ -645,6 +862,44 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          </Panel>
+
+          <Panel className="overflow-hidden">
+            <SectionLabel icon={DollarSign} title="Credit pack purchases" hint="Pack purchases for this user only." />
+            <div className="p-2 md:p-3">
+              {(creditPurchases?.items?.length ?? 0) === 0 ? (
+                <p className="text-xs md:text-sm text-muted-foreground text-center py-6">No credit pack purchases yet</p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-border/40">
+                  <table className="w-full text-xs md:text-sm">
+                    <thead>
+                      <tr className="border-b border-border/40 bg-muted/30 text-left text-muted-foreground">
+                        <th className="px-3 py-2 font-medium">Date</th>
+                        <th className="px-3 py-2 font-medium">Amount</th>
+                        <th className="px-3 py-2 font-medium">Credits</th>
+                        <th className="px-3 py-2 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {creditPurchases!.items.map((row) => (
+                        <tr key={row.id}>
+                          <td className="px-3 py-2 tabular-nums">
+                            {new Date(row.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                          </td>
+                          <td className="px-3 py-2 tabular-nums">€{Number(row.amount).toFixed(2)}</td>
+                          <td className="px-3 py-2 tabular-nums">{row.credits ?? "—"}</td>
+                          <td className="px-3 py-2">
+                            <Badge variant={row.status === "completed" ? "default" : "secondary"} className="text-[10px]">
+                              {row.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

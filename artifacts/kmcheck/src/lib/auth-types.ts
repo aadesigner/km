@@ -9,5 +9,6 @@ export interface AuthUser {
   countryCode?: string | null;
   phonePrefix?: string | null;
   phoneNational?: string | null;
+  creditBalance?: number;
   createdAt?: string | Date | null;
 }

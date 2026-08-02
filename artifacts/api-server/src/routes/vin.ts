@@ -49,6 +49,7 @@ import {
 } from "../lib/pendingVinService.js";
 import { fireVinReadyEmailForUser } from "../lib/vinReadyEmail.js";
 import { finalizePaymentOnFulfillment, isPaymentUsableForLookup } from "../lib/recordedPayments.js";
+import { refundCreditRedemption } from "../lib/creditRedemption.js";
 import { waitForVinLookupPublish } from "../lib/vinLookupNotify.js";
 
 const router = Router();
@@ -627,6 +628,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
   }
 
   if (resolvedPaymentVin && resolvedPaymentVin.toUpperCase() !== normalizedVin) {
+    await refundCreditRedemption(resolvedPaymentId, "VIN_MISMATCH");
     res.status(400).json({ error: "Payment is for a different VIN", code: "VIN_MISMATCH" });
     return;
   }
@@ -726,6 +728,7 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
       if (freeCouponPaymentId) {
         await failFreeCouponPayment(freeCouponPaymentId, freeCouponCode);
       }
+      await refundCreditRedemption(resolvedPaymentId, "VIN_INVALID");
       res.status(422).json({ error: "VIN failed validation for manual report.", code: "VIN_INVALID" });
       return;
     }
@@ -735,11 +738,13 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
   const provider = providers[0];
 
   if (!provider) {
+    await refundCreditRedemption(resolvedPaymentId, "VIN_CHECK_UNAVAILABLE");
     res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
     return;
   }
 
   if (!provider.apiKey?.trim()) {
+    await refundCreditRedemption(resolvedPaymentId, "VIN_CHECK_UNAVAILABLE");
     res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
     return;
   }

@@ -32,6 +32,8 @@ export const usersTable = pgTable("users", {
   /** Updated at most once per minute per user while signed in (lightweight presence). */
   lastSeenAt: timestamp("last_seen_at"),
   lastSeenPath: text("last_seen_path"),
+  /** Prepaid report credits (1 credit = 1 VIN report unlock). Never expires. */
+  creditBalance: integer("credit_balance").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [

@@ -9,6 +9,7 @@ export type AuthSessionUser = {
   countryCode: string | null;
   phonePrefix: string | null;
   phoneNational: string | null;
+  creditBalance: number;
   createdAt: Date;
 };
 
@@ -31,6 +32,7 @@ export function toPublicUser(user: AuthSessionUser) {
     countryCode: user.countryCode ?? null,
     phonePrefix: user.phonePrefix ?? null,
     phoneNational: user.phoneNational ?? null,
+    creditBalance: user.creditBalance ?? 0,
     createdAt: user.createdAt,
   };
 }
