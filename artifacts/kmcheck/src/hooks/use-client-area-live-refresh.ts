@@ -38,8 +38,10 @@ export function useClientAreaLiveRefresh(): void {
     const path = normalizeClientPath(window.location.pathname);
     if (!clientAreaPathKey(path)) return;
 
-    // Credits + profile: always pull fresh on client-area entry.
+    // Credits + reports: always pull fresh on client-area entry.
     void refreshUser();
+    lastRefetchAtRef.current = Date.now();
+    refetchClientAreaQueries(queryClient);
 
     const maybeRefetchQueries = () => {
       const now = Date.now();

@@ -35,12 +35,16 @@ export const STATIC_QUERY_OPTIONS: SharedQueryExtras = {
   refetchOnReconnect: false,
 };
 
-/** Signed-in client area — fresh enough for navigation without refetch storms. */
+/**
+ * Signed-in client area (dashboard / purchases).
+ * Always refetch on mount so admin removals (e.g. pending VIN deleted) show up
+ * immediately instead of a stale React Query cache.
+ */
 export const CLIENT_AREA_QUERY_OPTIONS: SharedQueryExtras = {
-  staleTime: 60 * 1000,
+  staleTime: 0,
   gcTime: 10 * 60 * 1000,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
+  refetchOnWindowFocus: true,
+  refetchOnMount: "always",
   refetchOnReconnect: true,
 };
 
