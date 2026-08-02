@@ -386,21 +386,40 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         credentials: "include",
         body: JSON.stringify({ vin }),
       });
-      const data = await resp.json() as { error?: string; fromCache?: boolean; lookupId?: number };
+      let data: { error?: string; fromCache?: boolean; lookupId?: number } = {};
+      try {
+        data = await resp.json() as { error?: string; fromCache?: boolean; lookupId?: number };
+      } catch {
+        setGrantMsg({
+          ok: false,
+          text: resp.ok
+            ? "Invalid response from server"
+            : `Grant failed (HTTP ${resp.status}). Often a provider timeout — if the VIN is already in catalog, redeploy the local-first fix.`,
+        });
+        return;
+      }
       if (resp.status === 409) {
         setGrantMsg({ ok: false, text: data.error ?? "User already has this report" });
         return;
       }
-      if (!resp.ok) { setGrantMsg({ ok: false, text: data.error ?? "Failed to grant" }); return; }
+      if (!resp.ok) { setGrantMsg({ ok: false, text: data.error ?? `Failed to grant (HTTP ${resp.status})` }); return; }
       setGrantVin("");
-      const source = data.fromCache ? "from cache" : "fetched from provider";
+      const source = data.fromCache ? "from local database" : "fetched from provider";
       setGrantMsg({ ok: true, text: `Report added to account (${source})` });
       loadHistory(1);
       setLookupsPage(1);
       invalidateUsers();
       invalidateVinReportCaches(queryClient, vin);
       void refetchUser();
-    } catch { setGrantMsg({ ok: false, text: "Network error" }); }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      setGrantMsg({
+        ok: false,
+        text: msg.includes("fetch") || msg.includes("network") || msg.includes("Failed to fetch")
+          ? "Request failed or timed out (often waiting on Carstat). Local catalog grants should be instant after deploy."
+          : (msg || "Request failed"),
+      });
+    }
     finally { setGranting(false); }
   };
 

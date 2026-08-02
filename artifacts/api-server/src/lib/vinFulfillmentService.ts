@@ -13,7 +13,6 @@ import {
   getCatalogVin,
   upsertVinCatalog,
   enrichVinReportDataForServe,
-  isStaleCachedReport,
 } from "./vinService.js";
 import { catalogHasDeliverableReport } from "./vinCatalogImport.js";
 import {
@@ -189,14 +188,15 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
 
       const catalogEntry = await getCatalogVin(normalizedVin);
         const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-        if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
+        // Local catalog wins — never call provider when we already have a deliverable report.
+        if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
           await completeLookupFromCatalog(lookupId, input, catalogEntry);
           return;
         }
 
         const cached = await getCachedVin(normalizedVin);
         const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-        if (cached && cached.status === "complete" && cachedData && !isStaleCachedReport(cachedData)) {
+        if (cached && cachedData) {
           const enriched = await enrichVinReportDataForServe(normalizedVin, cachedData, {
             primaryUpdatedAt: cached.updatedAt,
           });

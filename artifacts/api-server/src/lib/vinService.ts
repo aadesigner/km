@@ -901,22 +901,33 @@ export async function getCachedVinForPreview(vin: string): Promise<VinPreviewCac
   };
 }
 
+/**
+ * Newest reusable local report for this VIN (any user).
+ * Only `complete` rows — ignores newer fulfilling/error/pending_manual so a second
+ * payer still unlocks from the first successful report without calling the provider.
+ */
 export async function getCachedVin(vin: string) {
   const normalized = vin.toUpperCase();
   const results = await db
     .select()
     .from(vinLookupsTable)
-    .where(eq(vinLookupsTable.vin, normalized))
+    .where(and(
+      eq(vinLookupsTable.vin, normalized),
+      eq(vinLookupsTable.status, "complete"),
+    ))
     .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.createdAt))
-    .limit(1);
-  const row = results[0] ?? null;
-  if (!row) return null;
+    .limit(8);
 
-  if (isCorruptCachedVinRow({ id: row.id, dataCorrupt: row.dataCorrupt, data: row.data }, normalized)) {
-    return null;
+  for (const row of results) {
+    if (isCorruptCachedVinRow({ id: row.id, dataCorrupt: row.dataCorrupt, data: row.data }, normalized)) {
+      continue;
+    }
+    const data = row.data as Record<string, unknown> | null;
+    if (!catalogHasDeliverableReport(data)) continue;
+    return row;
   }
 
-  return row;
+  return null;
 }
 
 export type GrantVinReportResult =
@@ -949,7 +960,7 @@ export async function grantVinReportToUser(
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(catalogData, {
       existingRate: readFrozenKrwPerUsd(catalogData),
@@ -970,7 +981,7 @@ export async function grantVinReportToUser(
 
   const cached = await getCachedVin(normalizedVin);
   const cachedPayload = (cached?.data as Record<string, unknown> | null) ?? null;
-  if (cached?.status === "complete" && cachedPayload && !isStaleCachedReport(cachedPayload)) {
+  if (cachedPayload) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(cachedPayload, {
       existingRate: readFrozenKrwPerUsd(cachedPayload),

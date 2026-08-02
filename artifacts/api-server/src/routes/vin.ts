@@ -9,12 +9,12 @@ import {
   getCatalogVin,
   getCatalogVinPeekHint,
   checkLocalExists,
-  isStaleCachedReport,
   enrichVinReportDataForServe,
   vinHasReportData,
   resolveVinReportForViewer,
   resolveLockedPreviewPhotoSources,
 } from "../lib/vinService.js";
+import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger.js";
 import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
@@ -644,7 +644,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && !isStaleCachedReport(catalogData)) {
+  // Deliver from local catalog when present — do not call provider (even if marked "stale").
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
@@ -673,7 +674,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const cached = await getCachedVin(normalizedVin);
   const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-  if (cached && cached.status === "complete" && cachedData && !isStaleCachedReport(cachedData)) {
+  // Reuse another user's complete local report — no provider call.
+  if (cached && cachedData) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
