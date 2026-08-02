@@ -171,7 +171,6 @@ const HYUNDAI_REGIONAL_FAMILY: Record<string, string> = {
   Z94: "Solaris / Creta",
   PFD: "IONIQ 5 / IONIQ 6",
   "7YA": "IONIQ 5 / IONIQ 9",
-  "5XY": "Santa Fe",
   AC5: "Hyundai South Africa",
   MB2: "Hyundai India MPV",
   NLJ: "Hyundai commercial van",
@@ -191,7 +190,6 @@ export function isHyundaiVin(vin: string): boolean {
     || wmi.startsWith("5NM")
     || wmi.startsWith("5NP")
     || wmi.startsWith("5NT")
-    || wmi === "5XY"
     || wmi === "7YA"
     || wmi.startsWith("2HM")
     || wmi.startsWith("9BH")

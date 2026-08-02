@@ -298,7 +298,10 @@ function finalizePremium(
  */
 function resolveBmwFourSeriesBody(vin: string): PremiumEuropeanDecode | null {
   const wmi = vin.slice(0, 3);
-  if (!wmi.startsWith("WBA") && !wmi.startsWith("5UX") && !wmi.startsWith("4US")) return null;
+  if (
+    !wmi.startsWith("WBA") && !wmi.startsWith("5UX") && !wmi.startsWith("5UM")
+    && !wmi.startsWith("4US") && !wmi.startsWith("3MW") && !wmi.startsWith("3MF")
+  ) return null;
 
   const usSuffix = wmi.startsWith("WBA") ? "" : " (US)";
 
@@ -428,6 +431,9 @@ const BMW_RULES = compilePrefixRules([
   { prefix: "5UX53", model: "X7", chassis: "G07 (US)" },
   { prefix: "5UXXW", model: "X3", chassis: "G01 (US)" },
   { prefix: "5UX43", model: "X4", chassis: "G02 (US)" },
+  // BMW Mexico / legacy NA — NHTSA DecodeVinValues samples
+  { prefix: "3MW5R", model: "3 Series", chassis: "G20 (MX)" },
+  { prefix: "5UMB", model: "Z4" },
   { prefix: "WBS3", model: "M3" },
   { prefix: "WBS4", model: "M4" },
   { prefix: "WBS5", model: "M5" },
@@ -842,6 +848,8 @@ function mercedesRuleVin(vin: string): string {
 }
 
 function isMercedesPassengerWmi(wmi: string): boolean {
+  // W1L / W1M / 55S are in WMI_MAP for make identity only — do not run letter-VDS
+  // series fallbacks until their VDS layouts are verified (avoids invented models).
   return wmi.startsWith("WDD") || wmi.startsWith("W1K") || wmi.startsWith("WDB") || wmi.startsWith("WDF");
 }
 
@@ -945,7 +953,12 @@ export function decodePremiumEuropean(vin: string): PremiumEuropeanDecode | null
   const upper = normalizeVagVinForPremium(raw);
   const wmi = upper.slice(0, 3);
 
-  if (wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("WBX") || wmi.startsWith("5UX") || wmi.startsWith("4US") || wmi.startsWith("5YM")) {
+  if (
+    wmi.startsWith("WBA") || wmi.startsWith("WBS") || wmi.startsWith("WBY") || wmi.startsWith("WBX")
+    || wmi.startsWith("WB5") || wmi.startsWith("WAP")
+    || wmi.startsWith("5UX") || wmi.startsWith("5UM") || wmi.startsWith("5YM") || wmi.startsWith("4US")
+    || wmi.startsWith("3MW") || wmi.startsWith("3MF")
+  ) {
     if (raw.slice(3, 6) === "ZZZ") {
       const euHit = fromHomologation(decodeBmwEuHomologation(raw), raw);
       if (euHit) return euHit;

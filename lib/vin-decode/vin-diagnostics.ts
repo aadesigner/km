@@ -59,15 +59,21 @@ function wmiFamily(wmi: string): string | null {
     JHM: "Honda Japan", "1HG": "Honda USA", "5FN": "Honda USA", "5J6": "Honda USA",
     JT: "Toyota Japan", "4T1": "Toyota USA", "5TD": "Toyota USA", "5TF": "Toyota USA", "2T2": "Lexus",
     KMH: "Hyundai", KNA: "Kia", KND: "Kia", KMT: "Genesis", KMU: "Genesis",
+    "5XX": "Kia Georgia", "5XY": "Kia Georgia", "3KP": "Kia Mexico", "3KM": "Kia Mexico",
     "5VF": "VinFast", SBM: "McLaren", VFA: "Alpine", W1A: "Smart",
     YS3: "Saab", YSR: "Polestar", "7SY": "Polestar", YSM: "Polestar",
     "50E": "Lucid", "7UU": "Lucid", "5LA": "Lucid",
     "1FT": "Ford Truck", "1FA": "Ford", "3FA": "Ford",
     "1GC": "Chevrolet", "1G1": "Chevrolet",
-    "5YJ": "Tesla", "7SA": "Tesla",
+    "5YJ": "Tesla", "7SA": "Tesla", "7G2": "Tesla", SFZ: "Tesla",
+    LRW: "Tesla Shanghai", XP7: "Tesla Berlin",
+    "5UX": "BMW USA", "5UM": "BMW", "5YM": "BMW USA", "3MW": "BMW Mexico", "3MF": "BMW",
+    WBA: "BMW", WBS: "BMW M", WBY: "BMW", WBX: "BMW", WAP: "BMW",
+    WDD: "Mercedes-Benz", W1K: "Mercedes-Benz", W1N: "Mercedes-Benz",
+    "4JG": "Mercedes-Benz USA", "55S": "Mercedes-Benz USA",
     JN1: "Nissan", "1N4": "Nissan USA",
     JF1: "Subaru", "4S3": "Subaru USA",
-    YV1: "Volvo", SAL: "Land Rover", SAJ: "Jaguar",
+    YV1: "Volvo", SAL: "Land Rover", SAJ: "Jaguar", SAD: "Jaguar",
   };
   return map[wmi.slice(0, 3)] ?? map[wmi.slice(0, 2)] ?? null;
 }

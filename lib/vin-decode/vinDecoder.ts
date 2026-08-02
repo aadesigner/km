@@ -208,6 +208,12 @@ const WMI_MAP: Record<string, string> = {
   "3TM": "Toyota", "3MY": "Toyota",
   "3N1": "Nissan", "3N6": "Nissan",
   "3VW": "Volkswagen", "3VV": "Volkswagen",
+  // Kia Mexico — NHTSA DecodeWMI CommonName Kia / GetWMIsForManufacturer(kia)
+  "3KP": "Kia", // passenger (Forte, etc.)
+  "3KM": "Kia", // MPV
+  // BMW Mexico / EU-linked NA — NHTSA GetWMIsForManufacturer(bmw)
+  "3MW": "BMW",
+  "3MF": "BMW",
   "4S3": "Subaru", "4S4": "Subaru", "4S6": "Subaru",
   "4T1": "Toyota", "4T3": "Toyota", "4T4": "Toyota",
   "4US": "BMW",
@@ -218,11 +224,16 @@ const WMI_MAP: Record<string, string> = {
   "5FN": "Honda", "5FR": "Honda", "5J6": "Honda", "5J8": "Honda",
   "5L1": "Lincoln",
   "5NM": "Hyundai", "5NP": "Hyundai", "5NT": "Hyundai", "5N1": "Nissan",
-  "5XY": "Hyundai", "7YA": "Hyundai",
+  // Kia Georgia (KMMG) — NHTSA DecodeWMI / GetWMIsForManufacturer(kia)
+  "5XX": "Kia", // passenger (K5 / Optima, etc.)
+  "5XY": "Kia", // MPV (Telluride / Sorento, etc.) — was incorrectly Hyundai
+  "7YA": "Hyundai",
   "5TD": "Toyota", "5TE": "Toyota", "5TF": "Toyota",
   "5UX": "BMW",
+  "5UM": "BMW", // NHTSA: BMW AG passenger (legacy NA / Z4-era)
   "5YM": "BMW",
   "5YJ": "Tesla", "5YF": "Toyota",
+  "SFZ": "Tesla", // NHTSA: Tesla Inc. passenger (Roadster-era UK/US listing)
   // ── CANADA ────────────────────────────────────────────────────────────────
   // 2HG / 2HH / 2HK / 2HM already listed under USA-block Honda/Hyundai WMIs
   // ── MEXICO ────────────────────────────────────────────────────────────────
@@ -249,10 +260,18 @@ const WMI_MAP: Record<string, string> = {
   "KPT": "SsangYong",
   "KPA": "SsangYong",
   // ── GERMANY ───────────────────────────────────────────────────────────────
-  "WAU": "Audi", "WUA": "Audi", "WAP": "Porsche", "WA1": "Audi",
+  "WAU": "Audi", "WUA": "Audi", "WA1": "Audi",
+  // WAP: NHTSA DecodeWMI → BMW (Alpina / BMW NA), not Porsche (Porsche is WP0/WP1)
+  "WAP": "BMW",
   "WBA": "BMW", "WBS": "BMW M", "WBR": "BMW", "WBY": "BMW", "WBX": "BMW",
+  "WB5": "BMW", // NHTSA: BMW AG MPV
   "WDB": "Mercedes-Benz", "WDC": "Mercedes-Benz", "WDD": "Mercedes-Benz",
   "WDF": "Mercedes-Benz", "W1K": "Mercedes-Benz", "W1N": "Mercedes-Benz",
+  // Additional MB AG WMIs from NHTSA GetWMIsForManufacturer(mercedes)
+  "W1L": "Mercedes-Benz", "W1M": "Mercedes-Benz",
+  "W1P": "Mercedes-Benz", "W1R": "Mercedes-Benz", "W1W": "Mercedes-Benz",
+  "55S": "Mercedes-Benz", // US passenger
+  "WDZ": "Mercedes-Benz", // Sprinter (bus type in NHTSA)
   "4JG": "Mercedes-Benz", "WME": "Smart", "HES": "Smart",
   "WP0": "Porsche", "WP1": "Porsche",
   "WVW": "Volkswagen", "WVG": "Volkswagen", "WV1": "Volkswagen", "WV2": "Volkswagen",
@@ -345,6 +364,7 @@ const WMI_MAP: Record<string, string> = {
   // SA9 is a shared UK small-volume WMI (Morgan, Noble, McLaren F1, …) — do not map to one make.
   // ── GERMANY (continued) ───────────────────────────────────────────────────
   "WMW": "MINI",
+  "WMZ": "MINI", // NHTSA: MINI MPV
   "W1A": "Smart", // Mercedes-Benz AG Smart since late 2019 (successor to WME)
   "W0L": "Opel",
   "W0V": "Vauxhall",
@@ -503,6 +523,9 @@ const MODEL_MAP_4: Record<string, string> = {
   "KNAE": "Cadenza",    "KNAF": "Carnival",
   "KNDJ": "Soul",       "KNDL": "Telluride",  "KNDM": "Niro",
   "KNDN": "Sorento",    "KNDP": "Sportage",   "KNDR": "Stonic",
+  // Kia Georgia / Mexico — only prefixes verified via NHTSA DecodeVinValues
+  "5XYP": "Telluride",  "5XYR": "Sorento",
+  "3KPF": "Forte",
   // ── Tesla ─────────────────────────────────────────────────────────────────
   "5YJ3": "Model 3",    "5YJS": "Model S",    "5YJX": "Model X",
   "7SAY": "Model Y",    "7G2A": "Model Y",
@@ -661,6 +684,12 @@ const MODEL_MAP_4: Record<string, string> = {
 // Longer-prefix overrides checked before MODEL_MAP_4 (longest match wins).
 // Keys can be 5–7 chars. Add entries here whenever a 4-char prefix is ambiguous.
 const MODEL_OVERRIDES: Record<string, string> = {
+  // Kia Georgia: 5XXG alone is Optima (legacy) or K5 — disambiguate with pos.5
+  "5XXGT":   "Optima",   // NHTSA DecodeVinValues
+  "5XXG4":   "K5",       // NHTSA DecodeVinValues (ErrorCode 0 sample)
+  "5XXG6":   "K5",
+  // BMW legacy NA Z4 — NHTSA DecodeVinValues 5UMBT* → Z4
+  "5UMB":    "Z4",
   // Mercedes-Benz CLS (C218/C257) — pos-5 J disambiguates from WDDL→GLE
   "WDDLJ":   "CLS-Class",
   // Mercedes-Benz W1K (2016+ passenger cars) — same chassis codes as WDD*
@@ -1344,6 +1373,7 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
   "5YJ": TESLA_PLANTS,
   "7SA": TESLA_PLANTS,
   "7G2": TESLA_PLANTS,
+  SFZ: TESLA_PLANTS,
   LRW: TESLA_PLANTS,
   XP7: TESLA_PLANTS,
   // Volvo — position 11 factory code (NHTSA MY2019+ decoder)
@@ -1626,7 +1656,8 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
 
 // ── Electric-only WMIs (every vehicle from these manufacturers is battery-electric) ──
 const ELECTRIC_ONLY_WMI = new Set([
-  "5YJ", "7SA", "7G2",  // Tesla USA / Fremont / Berlin / Shanghai
+  "5YJ", "7SA", "7G2", "SFZ", // Tesla US (NHTSA) + Roadster-era SFZ
+  "LRW", "XP7",               // Tesla Shanghai / Berlin (kept; not in NHTSA WMI list)
   "LE4",                 // NIO
   "5LA", "50E", "7UU",  // Lucid (legacy 5LA + NHTSA 50E Air / 7UU Gravity)
   "7FC",                 // Rivian
@@ -1769,7 +1800,11 @@ export function decodeTransmission(
   const wmi3 = upper.slice(0, 3);
 
   // BMW does not encode transmission in position 7 (NHTSA marks VDS positions unused).
-  if (wmi3 === "WBA" || wmi3 === "WBS" || wmi3 === "WBY" || wmi3 === "5UX" || wmi3 === "4US" || wmi3 === "5YM") {
+  if (
+    wmi3 === "WBA" || wmi3 === "WBS" || wmi3 === "WBY" || wmi3 === "WBX" || wmi3 === "WB5"
+    || wmi3 === "5UX" || wmi3 === "5UM" || wmi3 === "5YM" || wmi3 === "4US"
+    || wmi3 === "3MW" || wmi3 === "3MF" || wmi3 === "WAP"
+  ) {
     const m = (model ?? decodePremiumEuropeanModel(upper) ?? "").toLowerCase();
     if (/x[1-7]\b|xm\b|\bix\b|i[3478x]|7 series|8 series/.test(m)) return "Automatic";
     const fromEngine = inferTransmissionFromEngine(engineDecoded);

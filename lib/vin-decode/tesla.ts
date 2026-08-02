@@ -8,7 +8,8 @@
 import type { BrandVinSpec } from "./brand-vin-spec";
 
 export const TESLA_WMIS = new Set([
-  "5YJ", "7SA", "7G2", "LRW", "XP7",
+  "5YJ", "7SA", "7G2", "SFZ", // NHTSA-listed US WMIs (+ SFZ Roadster-era)
+  "LRW", "XP7",               // Shanghai / Berlin (widely used; not in NHTSA WMI list)
 ]);
 
 export function isTeslaVin(vin: string): boolean {
