@@ -354,11 +354,16 @@ export default function Pricing() {
                   })}
                 </div>
 
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  <span className="font-medium leading-snug text-foreground/90">
-                    {t("pricing_plan_reports_included").replace("{n}", String(selectedPackData.credits))}
-                  </span>
+                <div className="text-center space-y-1">
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    <span className="font-medium leading-snug text-foreground/90">
+                      {t("pricing_plan_reports_included").replace("{n}", String(selectedPackData.credits))}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("pricing_credits_never_expire")}
+                  </p>
                 </div>
 
                 <div className="mt-auto pt-1">

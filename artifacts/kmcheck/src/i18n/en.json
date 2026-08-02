@@ -1640,5 +1640,6 @@
   "credits_checkout_theft": "Theft records",
   "photos_available": "Photos available",
   "credits_checkout_pack_title": "{n} VIN Reports",
-  "checkout_credits_left": "{n} credits available"
+  "checkout_credits_left": "{n} credits available",
+  "credits_checkout_credit_notice": "After a successful payment, the reports are credited to your account. You can use them later as a payment method when checking a VIN."
 }

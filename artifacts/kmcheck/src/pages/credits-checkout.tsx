@@ -299,18 +299,19 @@ export default function CreditsCheckout({ params }: Props) {
             transition={{ duration: 0.4 }}
             className="order-2 lg:order-1 rounded-[1.75rem] border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10"
           >
-            <div className="relative px-5 sm:px-7 pt-7 pb-6 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
+            <div className="relative px-4 sm:px-7 pt-3.5 pb-3 lg:pt-7 lg:pb-6 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
               {pack.id === "pack3" && (
-                <Badge className="absolute top-4 right-4 rounded-full bg-orange-500 text-white border-0 text-[10px] font-bold">
+                <Badge className="absolute top-3 right-3 lg:top-4 lg:right-4 rounded-full bg-orange-500 text-white border-0 text-[10px] font-bold">
                   {t("pricing_best_value")}
                 </Badge>
               )}
               <div className="relative space-y-3">
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                <h1 className="text-xl sm:text-xl lg:text-2xl font-black text-white tracking-tight">
                   {t(`pricing_plan_${pack.id}_title`)}
                 </h1>
-                <div className="flex flex-col items-center gap-1">
+                {/* Unit price shown on desktop only — order summary covers pricing on mobile */}
+                <div className="hidden lg:flex flex-col items-center gap-1">
                   <div className="inline-flex items-end justify-center gap-2 tabular-nums leading-none text-white">
                     {singleUnit > pack.unitPrice && (
                       <span className="text-base sm:text-lg font-medium text-white/40 line-through pb-1">
@@ -329,17 +330,17 @@ export default function CreditsCheckout({ params }: Props) {
                       </span>
                     </div>
                   </div>
+                  <p className="text-sm text-white/70">{t("per_report")}</p>
                 </div>
-                <p className="text-sm text-white/70">{t("per_report")}</p>
               </div>
             </div>
 
-            <div className="px-5 sm:px-7 py-6 space-y-5">
+            <div className="px-4 sm:px-7 py-4 lg:py-6 space-y-4 lg:space-y-5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2.5 lg:mb-3">
                   {t("credits_checkout_what_you_get")}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 lg:gap-y-2.5">
                   {PACK_FEATURES.map((key) => (
                     <div key={key} className="flex items-start gap-2.5">
                       <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -349,7 +350,7 @@ export default function CreditsCheckout({ params }: Props) {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-3.5">
+              <div className="rounded-xl border border-primary/20 bg-primary/[0.04] px-3.5 py-3 lg:px-4 lg:py-3.5">
                 <div className="flex items-start gap-2.5">
                   <FileText className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
@@ -489,6 +490,10 @@ export default function CreditsCheckout({ params }: Props) {
             </div>
           </motion.div>
         </div>
+
+        <p className="mt-8 sm:mt-10 max-w-xl mx-auto text-center text-xs sm:text-sm text-muted-foreground/70 leading-relaxed">
+          {t("credits_checkout_credit_notice")}
+        </p>
       </div>
     </div>
   );
