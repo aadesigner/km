@@ -24,7 +24,8 @@ import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { userCountryLabel } from "@/lib/user-countries";
-import { UserCountrySelect } from "@/components/user-country-select";
+import { UserCountrySelect, AlbaniaKosovoLabel } from "@/components/user-country-select";
+import { FlagImg } from "@/components/flag-img";
 
 const COUNTRY_UNSET = "unset";
 
@@ -240,7 +241,16 @@ export default function AdminUsers() {
               {checksFilter === "checked" ? "Has VIN checks" : "No VIN checks"}
             </Badge>
           )}
-          {countryFilter && <Badge variant="secondary">Country / Nationality: {countryFilterLabel}</Badge>}
+          {countryFilter && (
+            <Badge variant="secondary" className="inline-flex items-center gap-1.5">
+              <span>Country / Nationality:</span>
+              {countryFilter === "AL" ? (
+                <AlbaniaKosovoLabel size={12} nameClassName="text-xs font-medium" />
+              ) : (
+                <span>{countryFilterLabel}</span>
+              )}
+            </Badge>
+          )}
         </div>
       )}
 
@@ -289,7 +299,16 @@ export default function AdminUsers() {
                         </div>
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {userCountryLabel(user.countryCode) ?? "—"}
+                        {user.countryCode === "AL" ? (
+                          <AlbaniaKosovoLabel size={14} nameClassName="text-sm text-muted-foreground" />
+                        ) : user.countryCode ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <FlagImg code={user.countryCode.toLowerCase()} size={14} className="rounded-[2px]" />
+                            <span>{userCountryLabel(user.countryCode)}</span>
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="p-4">
                         {user.isAdmin ? (

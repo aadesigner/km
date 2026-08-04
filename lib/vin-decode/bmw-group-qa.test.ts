@@ -64,6 +64,25 @@ describe("BMW Group QA — classic ETK families", () => {
     expect(r.model).toMatch(modelRe);
     expect(decodePremiumEuropean(vin)?.chassis).toBe(chassis);
   });
+
+  it("WBAAV110X0FU03083 → 320i E46 Munich (RealOEM AV11), no invented ISO year", () => {
+    const vin = "WBAAV110X0FU03083";
+    expect(isBmwEuroEtkVin(vin)).toBe(true);
+    expect(bmwEtkOmitsIsoYear(vin)).toBe(true);
+
+    const r = decodeVin(vin);
+    expect(r.make).toBe("BMW");
+    expect(r.model).toMatch(/320i/i);
+    expect(r.model).toMatch(/E46/);
+    expect(r.year).toBeNull();
+    expect(r.plantCity).toBe("Munich");
+    expect(r.engineDecoded).toBeNull();
+
+    const free = decodeVinLocalFree(vin)!;
+    expect(free.series).toBe("E46");
+    expect(free.modelYearRange).toBe("1998\u20132006 (E46)");
+    expect(decodePremiumEuropean(vin)?.chassis).toBe("E46");
+  });
 });
 
 describe("BMW Group QA — modern prefixes still win", () => {

@@ -29,7 +29,6 @@ const ALL_SENTINEL = "__all__";
 
 /** Instant flag glyph — no CDN / layout thrash in long lists. */
 function flagEmoji(code: string): string {
-  if (code === "AL") return "🇦🇱🤝🇽🇰";
   const cc = code.toUpperCase();
   if (cc.length !== 2) return "";
   return String.fromCodePoint(
@@ -37,23 +36,51 @@ function flagEmoji(code: string): string {
   );
 }
 
-function SelectedFlags({ code, size = 16 }: { code: string; size?: number }) {
-  const lower = code.toLowerCase();
-  if (code === "AL") {
-    return (
-      <span className="inline-flex items-center gap-0.5 shrink-0" aria-hidden>
+/** Albania / Kosovo: each flag sits before its own name (no handshake). */
+export function AlbaniaKosovoLabel({
+  size = 16,
+  className,
+  nameClassName,
+}: {
+  size?: number;
+  className?: string;
+  nameClassName?: string;
+}) {
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 min-w-0", className)}>
+      <span className="inline-flex items-center gap-1 shrink-0">
         <FlagImg code="al" size={size} className="rounded-[2px]" />
-        <span
-          className="leading-none select-none"
-          style={{ fontSize: Math.max(11, Math.round(size * 0.85)) }}
-        >
-          🤝
-        </span>
-        <FlagImg code="xk" size={size} className="rounded-[2px]" />
+        <span className={cn("truncate", nameClassName)}>Albania</span>
       </span>
-    );
+      <span className="text-muted-foreground shrink-0" aria-hidden>
+        /
+      </span>
+      <span className="inline-flex items-center gap-1 shrink-0">
+        <FlagImg code="xk" size={size} className="rounded-[2px]" />
+        <span className={cn("truncate", nameClassName)}>Kosovo</span>
+      </span>
+    </span>
+  );
+}
+
+function CountryOptionLabel({
+  code,
+  name,
+  size = 16,
+}: {
+  code: string;
+  name: string;
+  size?: number;
+}) {
+  if (code === "AL") {
+    return <AlbaniaKosovoLabel size={size} />;
   }
-  return <FlagImg code={lower} size={size} className="rounded-[2px]" />;
+  return (
+    <span className="inline-flex items-center gap-2 min-w-0">
+      <FlagImg code={code.toLowerCase()} size={size} className="rounded-[2px]" />
+      <span className="truncate">{name}</span>
+    </span>
+  );
 }
 
 export type UserCountrySelectProps = {
@@ -128,10 +155,7 @@ export function UserCountrySelect({
     triggerLabel = <span className="truncate text-muted-foreground">{emptyLabel}</span>;
   } else if (value && selectedLabel) {
     triggerLabel = (
-      <span className="inline-flex items-center gap-2 min-w-0">
-        <SelectedFlags code={value} size={flagSize} />
-        <span className="truncate">{selectedLabel}</span>
-      </span>
+      <CountryOptionLabel code={value} name={selectedLabel} size={flagSize} />
     );
   } else {
     triggerLabel = <span className="truncate text-muted-foreground">{placeholder}</span>;
@@ -238,18 +262,22 @@ export function UserCountrySelect({
                           selected ? "opacity-100" : "opacity-0",
                         )}
                       />
-                      <span className="mr-2 inline-flex items-center justify-center gap-0.5 shrink-0 text-[15px] leading-none" aria-hidden>
-                        {c.code === "AL" ? (
-                          <>
-                            <span>🇦🇱</span>
-                            <span className="text-[12px]">🤝</span>
-                            <span>🇽🇰</span>
-                          </>
-                        ) : (
-                          flagEmoji(c.code)
-                        )}
-                      </span>
-                      <span className="truncate">{c.name}</span>
+                      {c.code === "AL" ? (
+                        <span className="inline-flex items-center gap-1.5 min-w-0 text-[15px] leading-none">
+                          <span aria-hidden>🇦🇱</span>
+                          <span className="truncate">Albania</span>
+                          <span className="text-muted-foreground" aria-hidden>/</span>
+                          <span aria-hidden>🇽🇰</span>
+                          <span className="truncate">Kosovo</span>
+                        </span>
+                      ) : (
+                        <>
+                          <span className="mr-2 inline-flex items-center justify-center shrink-0 text-[15px] leading-none" aria-hidden>
+                            {flagEmoji(c.code)}
+                          </span>
+                          <span className="truncate">{c.name}</span>
+                        </>
+                      )}
                     </CommandItem>
                   );
                 })}

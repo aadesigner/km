@@ -35,7 +35,7 @@ import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 import { SEOHead, usePageSeo } from "@/components/seo";
-import { UserCountrySelect } from "@/components/user-country-select";
+import { UserCountrySelect, AlbaniaKosovoLabel } from "@/components/user-country-select";
 import { UserPhoneFields } from "@/components/user-phone-fields";
 import { FlagImg } from "@/components/flag-img";
 import { userCountryLabel } from "@/lib/user-countries";
@@ -659,17 +659,15 @@ export default function Dashboard() {
                             );
                           }
                           return (
-                            <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm">
+                            <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm max-w-[14rem]">
                               {currentCode === "AL" ? (
-                                <>
-                                  <FlagImg code="al" size={14} />
-                                  <span className="text-[11px] leading-none select-none" aria-hidden>🤝</span>
-                                  <FlagImg code="xk" size={14} />
-                                </>
+                                <AlbaniaKosovoLabel size={14} nameClassName="text-[11px] font-medium" />
                               ) : (
-                                <FlagImg code={currentCode.toLowerCase()} size={14} />
+                                <>
+                                  <FlagImg code={currentCode.toLowerCase()} size={14} />
+                                  <span className="max-w-[9rem] truncate">{currentName}</span>
+                                </>
                               )}
-                              <span className="max-w-[9rem] truncate">{currentName}</span>
                             </span>
                           );
                         })()}

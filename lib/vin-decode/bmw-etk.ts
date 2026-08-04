@@ -71,6 +71,9 @@ const ETK_CODES: Array<{ code: string; model: string; chassis?: string; yearFrom
   { code: "HL61", model: "7 Series", chassis: "E66", yearFrom: 2001, yearTo: 2008 },
 
   // ── E46 3 Series ─────────────────────────────────────────────────────────
+  // AV11 = EUR 320i sedan M54 (RealOEM / BMW parts catalog); not a generic 3 Series guess.
+  { code: "AV11", model: "320i", chassis: "E46", yearFrom: 1999, yearTo: 2001 },
+  { code: "AV12", model: "320i", chassis: "E46", yearFrom: 2000, yearTo: 2001 },
   { code: "AM53", model: "3 Series", chassis: "E46", yearFrom: 1998, yearTo: 2006 },
   { code: "AM33", model: "3 Series", chassis: "E46", yearFrom: 1998, yearTo: 2006 },
   { code: "AV53", model: "3 Series", chassis: "E46", yearFrom: 1998, yearTo: 2006 },
