@@ -9,8 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Megaphone, ExternalLink, Edit2, Check, X, Globe } from "lucide-react";
+import { LANG_PICKER_OPTIONS, type Language } from "@/lib/languages";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+/** Site languages — same source as navbar / i18n (includes ka, zh, …). */
+const SUPPORTED_LANGUAGES = LANG_PICKER_OPTIONS;
+const DEFAULT_LANG_TAB: Language = SUPPORTED_LANGUAGES[0]?.code ?? "en";
 
 type LangOverride = {
   message?: string;
@@ -42,20 +47,6 @@ type FormState = {
   endsAt: string;
   translations: Record<string, LangOverride>;
 };
-
-const SUPPORTED_LANGUAGES: { code: string; label: string; flag: string }[] = [
-  { code: "en", label: "English", flag: "gb" },
-  { code: "de", label: "German", flag: "de" },
-  { code: "es", label: "Spanish", flag: "es" },
-  { code: "fr", label: "French", flag: "fr" },
-  { code: "sq", label: "Albanian", flag: "al" },
-  { code: "pl", label: "Polish", flag: "pl" },
-  { code: "ro", label: "Romanian", flag: "ro" },
-  { code: "bg", label: "Bulgarian", flag: "bg" },
-  { code: "ar", label: "Arabic", flag: "sa" },
-  { code: "uk", label: "Ukrainian", flag: "ua" },
-  { code: "ru", label: "Russian", flag: "ru" },
-];
 
 const PAGE_OPTIONS = [
   { value: "home",    label: "Home" },
@@ -161,7 +152,7 @@ function LangOverrideTab({
   override,
   onChange,
 }: {
-  lang: { code: string; label: string; flag: string };
+  lang: (typeof SUPPORTED_LANGUAGES)[number];
   override: LangOverride;
   onChange: (v: LangOverride) => void;
 }) {
@@ -169,10 +160,11 @@ function LangOverrideTab({
 
   return (
     <div className="space-y-3 pt-1">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <img src={`https://flagcdn.com/${lang.flag}.svg`} alt="" className="h-4 w-auto rounded-sm" />
           <span className="text-sm font-medium">{lang.label}</span>
+          <span className="text-[11px] text-muted-foreground uppercase">{lang.code}</span>
         </div>
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <Switch
@@ -292,7 +284,7 @@ function AnnouncementForm({
         <button
           type="button"
           className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold hover:bg-muted/40 transition-colors"
-          onClick={() => setActiveLangTab(t => t === "open" ? null : "open")}
+          onClick={() => setActiveLangTab(t => (t ? null : DEFAULT_LANG_TAB))}
         >
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
@@ -302,14 +294,17 @@ function AnnouncementForm({
                 {Object.keys(form.translations).length} set
               </Badge>
             )}
+            <span className="text-[11px] font-normal text-muted-foreground">
+              ({SUPPORTED_LANGUAGES.length} languages)
+            </span>
           </div>
           <span className="text-muted-foreground text-xs">{activeLangTab ? "▲ collapse" : "▼ expand"}</span>
         </button>
 
         {activeLangTab && (
           <div className="border-t">
-            {/* Language tab strip */}
-            <div className="flex border-b bg-muted/10">
+            {/* Language tab strip — all site langs; scroll if needed */}
+            <div className="flex border-b bg-muted/10 overflow-x-auto">
               {SUPPORTED_LANGUAGES.map(lang => {
                 const hasOverride = !!form.translations[lang.code];
                 return (
@@ -317,7 +312,7 @@ function AnnouncementForm({
                     key={lang.code}
                     type="button"
                     onClick={() => setActiveLangTab(lang.code)}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors shrink-0 ${
                       activeLangTab === lang.code
                         ? "border-primary text-primary bg-background"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
