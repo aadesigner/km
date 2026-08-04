@@ -129,6 +129,10 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "E66": { from: 2001, to: 2008 },
   "E70": { from: 2006, to: 2013 },
   "E83": { from: 2003, to: 2010 },
+  "E84": { from: 2009, to: 2015 },
+  "E87": { from: 2004, to: 2011 },
+  "E81": { from: 2007, to: 2012 },
+  "F25": { from: 2010, to: 2017 },
   // MINI
   "R55": { from: 2007, to: 2014 },
   "R56": { from: 2006, to: 2013 },

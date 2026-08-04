@@ -1212,6 +1212,8 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
     make: identity.make,
     model: identity.model,
     year: identity.year,
+    modelYearRange: identity.modelYearRange,
+    series: identity.series,
     trim: identity.trim,
     engine: identity.engine,
     country: identity.country,

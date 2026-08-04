@@ -2,6 +2,7 @@ import {
   decodeVin,
   decodeCountry,
   decodeLocalSeries,
+  decodeVinLocalFree,
   isPlausibleMake,
   isPlausibleModel,
   isYearLikeModelName,
@@ -11,6 +12,11 @@ export type VinPeekIdentity = {
   make: string | null;
   model: string | null;
   year: number | null;
+  /**
+   * Generation production window when exact model year is not in the VIN
+   * (e.g. Euro Mercedes Baumuster / classic BMW ETK). Never a guessed single year.
+   */
+  modelYearRange: string | null;
   series: string | null;
   trim: string | null;
   engine: string | null;
@@ -74,11 +80,15 @@ function fromLocalDecode(vin: string): VinPeekIdentity {
   const local = decodeVin(vin);
   let model = isPlausibleModel(local.model, vin) ? local.model : null;
   if (isYearLikeModelName(model)) model = null;
+  const series = plausibleTrim(decodeLocalSeries(vin, model), vin);
+  // Same generation-window contract as free decoder — never invent a single year.
+  const free = local.year == null ? decodeVinLocalFree(vin) : null;
   return {
     make: isPlausibleMake(local.make, vin) ? local.make : null,
     model,
     year: local.year,
-    series: plausibleTrim(decodeLocalSeries(vin, model), vin),
+    modelYearRange: free?.modelYearRange ?? null,
+    series,
     trim: null,
     engine: local.engineDecoded,
     country: local.country ?? decodeCountry(vin),
@@ -113,6 +123,8 @@ export async function decodeVinPeek(
     make: cachedMake,
     model: cachedModel,
     year: cachedYear,
+    // Keep generation window only when we still lack an exact year.
+    modelYearRange: cachedYear != null ? null : base.modelYearRange,
     series: base.series,
     trim: base.trim,
     engine: base.engine,

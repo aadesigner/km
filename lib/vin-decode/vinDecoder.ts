@@ -333,10 +333,17 @@ const WMI_MAP: Record<string, string> = {
   "LJC": "Chery", "LVR": "Chery", "LVS": "Ford China",
   "LVG": "Toyota", "LYV": "Volvo China", "LVY": "Volvo China",
   "LFP": "BYD", "LBV": "BYD", "LC0": "BYD", "LPE": "BYD",
-  "LSJ": "MG", "LE4": "NIO", "LUC": "Neta",
+  "LSJ": "MG", "LUC": "Neta",
+  // LE4 = Beijing Benz (WMI registry) — not NIO. NIO uses LJ1 (shared with JAC) / HJN.
+  "LE4": "Beijing Benz",
+  // Unambiguous Chinese EV WMIs (make only until a verified VDS prefix hits).
+  "HJN": "NIO",
+  "L1N": "XPeng", "LMV": "XPeng",
+  "LW4": "Li Auto", "HLX": "Li Auto",
   "L6T": "Zeekr", "LGW": "Haval / Great Wall",
   "LNB": "Xiaomi", "HXM": "Xiaomi", "LNY": "Yuejin",
   "LTN": "Changan", "LPA": "Changan",
+  // LJ1 is shared (JAC + NIO in registries) — keep JAC; do not invent NIO from bare LJ1.
   "LJ1": "JAC", "LHG": "GAC", "LMG": "GAC Trumpchi",
   "LVH": "Dongfeng Honda", "LDN": "Dongfeng Nissan",
   "LDC": "Dongfeng Peugeot-Citroën", "LBE": "Hyundai",
@@ -1658,12 +1665,16 @@ const PLANT_CODE_MAP: Record<string, Record<string, PlantInfo>> = {
 const ELECTRIC_ONLY_WMI = new Set([
   "5YJ", "7SA", "7G2", "SFZ", // Tesla US (NHTSA) + Roadster-era SFZ
   "LRW", "XP7",               // Tesla Shanghai / Berlin (kept; not in NHTSA WMI list)
-  "LE4",                 // NIO
+  "HJN",                 // NIO / Firefly (WMI registry)
+  "L1N", "LMV",          // XPeng
+  "LW4", "HLX",          // Li Auto
   "5LA", "50E", "7UU",  // Lucid (legacy 5LA + NHTSA 50E Air / 7UU Gravity)
   "7FC",                 // Rivian
   "LBV",                 // BYD Electric
   "HES",                 // Smart Automobile (#1 / #3 BEV)
   "YSR", "7SY",          // Polestar 3 MPV WMIs (BEV)
+  "LNB", "HXM",          // Xiaomi SU7
+  "L6T",                 // Zeekr
 ]);
 
 // ── AWD-standard WMIs (Subaru symmetrical AWD ships on almost every model) ────
