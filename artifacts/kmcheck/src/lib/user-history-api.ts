@@ -33,9 +33,9 @@ export async function fetchUserHistory(
   return r.json() as Promise<VinHistoryPage>;
 }
 
-/** Default list query — lightweight rows for dashboard / warm-cache. */
+/** Default list query — one dashboard page of lightweight rows. */
 export const DEFAULT_USER_HISTORY_SUMMARY: UserHistoryParams = {
   page: 1,
-  limit: 50,
+  limit: 12,
   view: "summary",
 };

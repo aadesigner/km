@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "@/i18n/context";
-import { DashboardReportList } from "@/components/dashboard-report-list";
+import { DashboardReportList, DASHBOARD_REPORTS_PER_PAGE } from "@/components/dashboard-report-list";
 import { ClientAreaLayout } from "@/components/client-area-layout";
 import { ObfuscatedEmailLink } from "@/components/obfuscated-email-link";
 import { prefetchVinPageChunk, seedVinLookupsFromHistory } from "@/lib/prefetch-vin-report";
@@ -13,13 +13,13 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { CLIENT_AREA_QUERY_OPTIONS, orvalQuery } from "@/lib/query-options";
 import type { UserStats } from "@workspace/api-client-react";
 import {
-  DEFAULT_USER_HISTORY_SUMMARY,
   fetchUserHistory,
   userHistoryQueryKey,
+  type UserHistoryParams,
 } from "@/lib/user-history-api";
 import { useAuth } from "@/lib/auth-context";
 import { useLocation, Link } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -224,7 +224,12 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
 
-  const historyParams = DEFAULT_USER_HISTORY_SUMMARY;
+  const [historyPage, setHistoryPage] = useState(1);
+  const historyParams = useMemo((): UserHistoryParams => ({
+    page: historyPage,
+    limit: DASHBOARD_REPORTS_PER_PAGE,
+    view: "summary",
+  }), [historyPage]);
   const authReady = isLoaded && isSignedIn;
   const {
     data: history,
@@ -238,7 +243,16 @@ export default function Dashboard() {
     queryFn: ({ signal }) => fetchUserHistory(historyParams, signal),
     enabled: authReady,
     ...CLIENT_AREA_QUERY_OPTIONS,
+    // Per-page cache: flipping 1↔2 within 30s reuses data instead of re-hitting the API.
+    // New pages still fetch once (new query key). Window focus only refetches if stale.
+    staleTime: 30_000,
+    refetchOnMount: true,
+    placeholderData: (prev) => prev,
   });
+  const onHistoryPageChange = useCallback((page: number) => {
+    if (historyFetching) return;
+    setHistoryPage(Math.max(1, page));
+  }, [historyFetching]);
   const { data: stats, isLoading: statsLoading, isError: statsError, error: statsErr, refetch: refetchStats, isFetching: statsFetching } = useGetUserStats(
     { query: { enabled: authReady, ...orvalQuery<UserStats>(CLIENT_AREA_QUERY_OPTIONS) } },
   );
@@ -500,10 +514,12 @@ export default function Dashboard() {
 
   const lookups = history?.items ?? [];
   const hasHistoryData = history != null;
-  const totalChecks = stats?.totalChecks ?? lookups.length;
+  const historyTotal = history?.total ?? lookups.length;
+  const totalChecks = stats?.totalChecks ?? historyTotal;
   const checksThisMonth = stats?.checksThisMonth ?? 0;
   const isViewableReport = (status: string) => status === "complete" || status === "pending_manual";
-  const completed = lookups.filter(l => l.status === "complete" || l.status === "pending_manual").length;
+  // Prefer full history total — page items alone under-count when paginated.
+  const completed = historyTotal;
   const handlePendingVinCheckout = () => {
     if (!pendingVin) return;
     const target = buildPrefillOnlyCheckoutPath(pendingVin, language);
@@ -927,7 +943,7 @@ export default function Dashboard() {
                     </div>
                   )}
                 >
-                {lookups.length === 0 ? (
+                {historyTotal === 0 ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -978,6 +994,10 @@ export default function Dashboard() {
                 ) : (
                   <DashboardReportList
                     lookups={lookups}
+                    total={historyTotal}
+                    page={historyPage}
+                    onPageChange={onHistoryPageChange}
+                    isFetching={historyFetching}
                     language={language}
                     deleteLookup={deleteLookup}
                   />

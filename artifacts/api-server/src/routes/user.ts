@@ -7,6 +7,7 @@ import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import { transformVinPhotoData } from "../lib/imageProxy.js";
 import { mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { summarizeVinLookupData } from "../lib/vinLookupSummary.js";
+import { userHistoryLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { parseUserCountryCode } from "../lib/userCountry.js";
 import { parseUserPhone } from "../lib/userPhone.js";
 import {
@@ -19,6 +20,16 @@ import {
   phoneChangesRemaining,
   nextPhoneChangeCount,
 } from "../lib/phoneChangeLimit.js";
+
+/** Safe positive int from query; rejects NaN / Infinity / junk. */
+function parsePositiveInt(raw: unknown, fallback: number): number {
+  const n = Number.parseInt(String(raw ?? ""), 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/** Hard caps so deep OFFSET / huge limit cannot abuse the DB. */
+const HISTORY_MAX_LIMIT = 50;
+const HISTORY_MAX_PAGE = 500;
 
 function proxyVinRow(row: Record<string, unknown>): Record<string, unknown> {
   const mediaVersion = mediaVersionFromUpdatedAt(
@@ -270,10 +281,10 @@ router.patch("/user/profile", requireAuth, async (req, res) => {
 });
 
 // GET /user/history
-router.get("/user/history", requireAuth, async (req, res) => {
+router.get("/user/history", requireAuth, userHistoryLimiter, async (req, res) => {
   const userId = req.userId!;
-  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
-  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
+  const page = Math.min(HISTORY_MAX_PAGE, parsePositiveInt(req.query.page, 1));
+  const limit = Math.min(HISTORY_MAX_LIMIT, parsePositiveInt(req.query.limit, 20));
   const offset = (page - 1) * limit;
   const summaryView = String(req.query.view ?? "").toLowerCase() === "summary";
 

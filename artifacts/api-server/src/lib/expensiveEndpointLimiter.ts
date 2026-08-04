@@ -88,3 +88,14 @@ export const presenceHeartbeatLimiter = rateLimit({
     res.status(200).json({ ok: true });
   },
 });
+
+/** Client-area VIN history paging — small payloads, but capped against click/script spam. */
+export const userHistoryLimiter = rateLimit({
+  windowMs: 60_000,
+  max: envRateMax("USER_HISTORY_RATE_MAX", 60, 120),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many history requests. Please wait a moment." },
+  keyGenerator: userOrIpKey,
+  validate: { ip: false },
+});

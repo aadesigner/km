@@ -366,75 +366,146 @@ function ReportPageTabs({
   page,
   totalPages,
   onSelect,
+  disabled,
 }: {
   page: number;
   totalPages: number;
   onSelect: (page: number) => void;
+  disabled?: boolean;
 }) {
+  const pages = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const set = new Set<number>([1, totalPages, page]);
+    for (let p = page - 1; p <= page + 1; p++) {
+      if (p >= 1 && p <= totalPages) set.add(p);
+    }
+    const sorted = [...set].sort((a, b) => a - b);
+    const out: Array<number | "ellipsis"> = [];
+    for (let i = 0; i < sorted.length; i++) {
+      const cur = sorted[i]!;
+      const prev = sorted[i - 1];
+      if (prev != null && cur - prev > 1) out.push("ellipsis");
+      out.push(cur);
+    }
+    return out;
+  }, [page, totalPages]);
+
   return (
     <nav
-      className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2"
+      className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-2"
       aria-label="Report pages"
     >
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onSelect(p)}
-          aria-current={p === page ? "page" : undefined}
-          className={cn(
-            "min-w-[2.25rem] h-9 sm:h-10 rounded-full border px-3 text-sm font-bold tabular-nums transition-all",
-            p === page
-              ? "bg-primary text-primary-foreground border-primary shadow-sm"
-              : "bg-background hover:bg-muted/60 border-border/70 text-foreground",
-          )}
-        >
-          {p}
-        </button>
-      ))}
+      <button
+        type="button"
+        disabled={disabled || page <= 1}
+        onClick={() => onSelect(page - 1)}
+        className={cn(
+          "min-w-[2.25rem] h-9 sm:h-10 rounded-full border px-3 text-sm font-bold transition-all",
+          disabled || page <= 1
+            ? "opacity-40 cursor-not-allowed bg-muted border-border/50"
+            : "bg-background hover:bg-muted/60 border-border/70 text-foreground",
+        )}
+        aria-label="Previous page"
+      >
+        ‹
+      </button>
+      {pages.map((p, idx) =>
+        p === "ellipsis" ? (
+          <span
+            key={`e-${idx}`}
+            className="min-w-[1.5rem] text-center text-muted-foreground text-sm select-none"
+            aria-hidden
+          >
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(p)}
+            aria-current={p === page ? "page" : undefined}
+            className={cn(
+              "min-w-[2.25rem] h-9 sm:h-10 rounded-full border px-3 text-sm font-bold tabular-nums transition-all",
+              p === page
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : disabled
+                  ? "opacity-40 cursor-not-allowed bg-muted border-border/50"
+                  : "bg-background hover:bg-muted/60 border-border/70 text-foreground",
+            )}
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button
+        type="button"
+        disabled={disabled || page >= totalPages}
+        onClick={() => onSelect(page + 1)}
+        className={cn(
+          "min-w-[2.25rem] h-9 sm:h-10 rounded-full border px-3 text-sm font-bold transition-all",
+          disabled || page >= totalPages
+            ? "opacity-40 cursor-not-allowed bg-muted border-border/50"
+            : "bg-background hover:bg-muted/60 border-border/70 text-foreground",
+        )}
+        aria-label="Next page"
+      >
+        ›
+      </button>
     </nav>
   );
 }
 
 type Props = {
   lookups: VinLookup[];
+  /** Full unlocked-report count from API (not just the current page). */
+  total: number;
+  page: number;
+  onPageChange: (page: number) => void;
+  /** Disable pager while a page request is in flight. */
+  isFetching?: boolean;
   language: string;
   deleteLookup: DeleteMutation;
 };
 
-export function DashboardReportList({ lookups, language, deleteLookup }: Props) {
-  const showFilter = lookups.length >= DASHBOARD_FILTER_THRESHOLD;
+export function DashboardReportList({
+  lookups,
+  total,
+  page,
+  onPageChange,
+  isFetching = false,
+  language,
+  deleteLookup,
+}: Props) {
+  const showFilter = total >= DASHBOARD_FILTER_THRESHOLD;
   const [sort, setSort] = useState<DashboardLookupSort>("newest");
-  const [page, setPage] = useState(1);
 
   const sorted = useMemo(
     () => (showFilter ? sortDashboardLookups(lookups, sort) : lookups),
     [lookups, showFilter, sort],
   );
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / DASHBOARD_REPORTS_PER_PAGE));
-  const showPagination = sorted.length > DASHBOARD_REPORTS_PER_PAGE;
+  const totalPages = Math.max(1, Math.ceil(total / DASHBOARD_REPORTS_PER_PAGE));
+  const showPagination = total > DASHBOARD_REPORTS_PER_PAGE;
 
   useEffect(() => {
-    setPage(1);
-  }, [sort]);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
-
-  const displayed = useMemo(() => {
-    if (!showPagination) return sorted;
-    const start = (page - 1) * DASHBOARD_REPORTS_PER_PAGE;
-    return sorted.slice(start, start + DASHBOARD_REPORTS_PER_PAGE);
-  }, [sorted, page, showPagination]);
+    if (page > totalPages) onPageChange(totalPages);
+  }, [page, totalPages, onPageChange]);
 
   return (
     <div className="client-report-list space-y-2.5 sm:space-y-3">
       {showFilter && (
-        <SortFilterBar active={sort} onSelect={setSort} />
+        <SortFilterBar
+          active={sort}
+          onSelect={(next) => {
+            setSort(next);
+            if (page !== 1) onPageChange(1);
+          }}
+        />
       )}
-      {displayed.map((lookup, i) => (
+      {sorted.map((lookup, i) => (
         <ReportCard
           key={lookup.id ?? lookup.vin}
           lookup={lookup}
@@ -444,7 +515,12 @@ export function DashboardReportList({ lookups, language, deleteLookup }: Props) 
         />
       ))}
       {showPagination && (
-        <ReportPageTabs page={page} totalPages={totalPages} onSelect={setPage} />
+        <ReportPageTabs
+          page={page}
+          totalPages={totalPages}
+          onSelect={onPageChange}
+          disabled={isFetching}
+        />
       )}
     </div>
   );
