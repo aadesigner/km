@@ -1503,7 +1503,9 @@ export const AdminGetSettingsResponse = zod.object({
   "analyticsGaEnabled": zod.boolean().optional(),
   "analyticsGaMeasurementId": zod.string().nullish(),
   "analyticsClarityEnabled": zod.boolean().optional(),
-  "analyticsClarityProjectId": zod.string().nullish()
+  "analyticsClarityProjectId": zod.string().nullish(),
+  "analyticsMetaPixelEnabled": zod.boolean().optional(),
+  "analyticsMetaPixelId": zod.string().nullish()
 })
 
 
@@ -1560,7 +1562,9 @@ export const AdminUpdateSettingsBody = zod.object({
   "analyticsGaEnabled": zod.boolean().optional(),
   "analyticsGaMeasurementId": zod.string().nullish(),
   "analyticsClarityEnabled": zod.boolean().optional(),
-  "analyticsClarityProjectId": zod.string().nullish()
+  "analyticsClarityProjectId": zod.string().nullish(),
+  "analyticsMetaPixelEnabled": zod.boolean().optional(),
+  "analyticsMetaPixelId": zod.string().nullish()
 })
 
 export const AdminUpdateSettingsResponse = zod.object({
@@ -1598,7 +1602,9 @@ export const AdminUpdateSettingsResponse = zod.object({
   "analyticsGaEnabled": zod.boolean().optional(),
   "analyticsGaMeasurementId": zod.string().nullish(),
   "analyticsClarityEnabled": zod.boolean().optional(),
-  "analyticsClarityProjectId": zod.string().nullish()
+  "analyticsClarityProjectId": zod.string().nullish(),
+  "analyticsMetaPixelEnabled": zod.boolean().optional(),
+  "analyticsMetaPixelId": zod.string().nullish()
 })
 
 

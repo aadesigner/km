@@ -3,6 +3,7 @@ import {
   normalizeGtmContainerId,
   normalizeGaMeasurementId,
   normalizeClarityProjectId,
+  normalizeMetaPixelId,
   resolveClarityProjectId,
   validateAnalyticsSettingsPatch,
   validateAnalyticsSettingsMerged,
@@ -43,6 +44,20 @@ describe("normalizeClarityProjectId", () => {
   });
 });
 
+describe("normalizeMetaPixelId", () => {
+  it("accepts numeric pixel IDs", () => {
+    expect(normalizeMetaPixelId("123456789012345")).toBe("123456789012345");
+    expect(normalizeMetaPixelId(" 9876543210 ")).toBe("9876543210");
+  });
+
+  it("rejects invalid IDs", () => {
+    expect(normalizeMetaPixelId("")).toBeNull();
+    expect(normalizeMetaPixelId("abc")).toBeNull();
+    expect(normalizeMetaPixelId("12")).toBeNull();
+    expect(normalizeMetaPixelId("123456789012345678901")).toBeNull();
+  });
+});
+
 describe("resolveClarityProjectId", () => {
   it("prefers DB value over env", () => {
     const prev = process.env.CLARITY_PROJECT_ID;
@@ -76,6 +91,17 @@ describe("validateAnalyticsSettingsPatch", () => {
     expect(validateAnalyticsSettingsPatch(patch)).toBeNull();
     expect(patch.analyticsClarityProjectId).toBe("xltusyn0a9");
   });
+
+  it("requires Pixel ID when Meta Pixel is enabled", () => {
+    const patch = { analyticsMetaPixelEnabled: true, analyticsMetaPixelId: null };
+    expect(validateAnalyticsSettingsPatch(patch)).toContain("Pixel ID");
+  });
+
+  it("normalizes Meta Pixel ID in patch", () => {
+    const patch = { analyticsMetaPixelId: " 123456789012345 " };
+    expect(validateAnalyticsSettingsPatch(patch)).toBeNull();
+    expect(patch.analyticsMetaPixelId).toBe("123456789012345");
+  });
 });
 
 describe("validateAnalyticsSettingsMerged", () => {
@@ -89,5 +115,14 @@ describe("validateAnalyticsSettingsMerged", () => {
       ),
     ).toBeNull();
     process.env.CLARITY_PROJECT_ID = prev;
+  });
+
+  it("requires Meta Pixel ID when enabled", () => {
+    expect(
+      validateAnalyticsSettingsMerged(
+        { analyticsMetaPixelEnabled: true, analyticsMetaPixelId: null },
+        null,
+      ),
+    ).toContain("Pixel ID");
   });
 });

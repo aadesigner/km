@@ -2,14 +2,20 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPublicSettings, PUBLIC_SETTINGS_QUERY_KEY } from "@/lib/public-settings";
-import { isPublicAnalyticsPath, removeInjectedAnalytics } from "@/lib/analytics-scope";
+import {
+  isPublicAnalyticsPath,
+  isSiteTrackingPath,
+  removeInjectedAnalytics,
+  removeInjectedMetaPixel,
+  removeInjectedPublicAnalytics,
+} from "@/lib/analytics-scope";
 
 const GTM_HEAD_ATTR = "data-kmcheck-gtm-head";
 const GTM_BODY_ATTR = "data-kmcheck-gtm-body";
 const GA_LOADER_ATTR = "data-kmcheck-ga-loader";
 const GA_CONFIG_ATTR = "data-kmcheck-ga-config";
-
 const CLARITY_LOADER_ATTR = "data-kmcheck-clarity";
+const META_PIXEL_ATTR = "data-kmcheck-meta-pixel";
 
 type AnalyticsPublicSettings = {
   analyticsGtmEnabled?: boolean;
@@ -18,6 +24,16 @@ type AnalyticsPublicSettings = {
   analyticsGaMeasurementId?: string | null;
   analyticsClarityEnabled?: boolean;
   analyticsClarityProjectId?: string | null;
+  analyticsMetaPixelEnabled?: boolean;
+  analyticsMetaPixelId?: string | null;
+};
+
+type FbqFn = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void;
+  queue?: unknown[];
+  loaded?: boolean;
+  version?: string;
+  push?: (...args: unknown[]) => void;
 };
 
 declare global {
@@ -25,6 +41,8 @@ declare global {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
     clarity?: ClarityStub;
+    fbq?: FbqFn;
+    _fbq?: FbqFn;
   }
 }
 
@@ -97,6 +115,28 @@ function injectClarity(projectId: string) {
   }
 }
 
+function injectMetaPixel(pixelId: string) {
+  if (document.querySelector(`script[${META_PIXEL_ATTR}]`)) return;
+
+  const script = document.createElement("script");
+  script.setAttribute(META_PIXEL_ATTR, pixelId);
+  script.innerHTML = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','${pixelId}');
+fbq('track','PageView');`;
+  document.head.appendChild(script);
+
+  if (!document.querySelector(`noscript[${META_PIXEL_ATTR}]`)) {
+    const noscript = document.createElement("noscript");
+    noscript.setAttribute(META_PIXEL_ATTR, pixelId);
+    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${encodeURIComponent(pixelId)}&ev=PageView&noscript=1" alt="" />`;
+    document.body.insertBefore(noscript, document.body.firstChild);
+  }
+}
+
 function trackPageView(path: string, gaId: string | null, gtmEnabled: boolean) {
   if (!isPublicAnalyticsPath(path)) return;
 
@@ -118,6 +158,13 @@ function trackPageView(path: string, gaId: string | null, gtmEnabled: boolean) {
   }
 }
 
+function trackMetaPageView(path: string) {
+  if (!isSiteTrackingPath(path)) return;
+  if (typeof window.fbq === "function") {
+    window.fbq("track", "PageView");
+  }
+}
+
 async function fetchAnalyticsSettings(): Promise<AnalyticsPublicSettings> {
   const d = await fetchPublicSettings();
   return {
@@ -127,19 +174,29 @@ async function fetchAnalyticsSettings(): Promise<AnalyticsPublicSettings> {
     analyticsGaMeasurementId: (d.analyticsGaMeasurementId as string | null) ?? null,
     analyticsClarityEnabled: !!d.analyticsClarityEnabled,
     analyticsClarityProjectId: (d.analyticsClarityProjectId as string | null) ?? null,
+    analyticsMetaPixelEnabled: !!d.analyticsMetaPixelEnabled,
+    analyticsMetaPixelId: (d.analyticsMetaPixelId as string | null) ?? null,
   };
 }
 
-/** Injects GTM / GA / Clarity on public marketing routes only (never /adminx or /:lang/dashboard). */
+/**
+ * Injects tracking tags based on admin Analytics settings.
+ * - GTM / GA / Clarity: public marketing routes only (not admin / dashboard)
+ * - Meta Pixel: public + client area when enabled with a Pixel ID (not admin)
+ */
 export function SiteAnalytics() {
   const [location] = useLocation();
   const injectedRef = useRef(false);
-  const configRef = useRef<{ gtm: string | null; ga: string | null; clarity: string | null }>({
+  const metaInjectedRef = useRef(false);
+  const metaSkipNextPvRef = useRef(false);
+  const configRef = useRef<{ gtm: string | null; ga: string | null; clarity: string | null; meta: string | null }>({
     gtm: null,
     ga: null,
     clarity: null,
+    meta: null,
   });
-  const trackable = isPublicAnalyticsPath(location);
+  const publicTrackable = isPublicAnalyticsPath(location);
+  const siteTrackable = isSiteTrackingPath(location);
 
   const { data: settings } = useQuery({
     queryKey: PUBLIC_SETTINGS_QUERY_KEY,
@@ -156,32 +213,61 @@ export function SiteAnalytics() {
   const clarityId = settings?.analyticsClarityEnabled && settings.analyticsClarityProjectId
     ? settings.analyticsClarityProjectId
     : null;
+  const metaId = settings?.analyticsMetaPixelEnabled && settings.analyticsMetaPixelId
+    ? settings.analyticsMetaPixelId
+    : null;
 
   useEffect(() => {
-    if (!trackable) {
+    if (!siteTrackable) {
       removeInjectedAnalytics();
       injectedRef.current = false;
-      configRef.current = { gtm: null, ga: null, clarity: null };
+      metaInjectedRef.current = false;
+      configRef.current = { gtm: null, ga: null, clarity: null, meta: null };
       return;
     }
-    if (!gtmId && !gaId && !clarityId) return;
 
-    if (gtmId) injectGtm(gtmId);
-    if (gaId) injectGa(gaId);
-    if (clarityId) injectClarity(clarityId);
+    if (!publicTrackable) {
+      removeInjectedPublicAnalytics();
+      injectedRef.current = false;
+      configRef.current = { ...configRef.current, gtm: null, ga: null, clarity: null };
+    } else if (gtmId || gaId || clarityId) {
+      if (gtmId) injectGtm(gtmId);
+      if (gaId) injectGa(gaId);
+      if (clarityId) injectClarity(clarityId);
+      configRef.current = { ...configRef.current, gtm: gtmId, ga: gaId, clarity: clarityId };
+      injectedRef.current = true;
+      trackPageView(location, gaId, !!gtmId);
+    }
 
-    configRef.current = { gtm: gtmId, ga: gaId, clarity: clarityId };
-    injectedRef.current = true;
+    if (!metaId) {
+      removeInjectedMetaPixel();
+      metaInjectedRef.current = false;
+      configRef.current = { ...configRef.current, meta: null };
+      return;
+    }
 
-    trackPageView(location, gaId, !!gtmId);
-  }, [gtmId, gaId, clarityId, trackable]); // eslint-disable-line react-hooks/exhaustive-deps -- inject + first pageview only
+    injectMetaPixel(metaId);
+    configRef.current = { ...configRef.current, meta: metaId };
+    metaInjectedRef.current = true;
+    // Base snippet already fires PageView — skip the next SPA location effect once.
+    metaSkipNextPvRef.current = true;
+  }, [gtmId, gaId, clarityId, metaId, publicTrackable, siteTrackable]); // eslint-disable-line react-hooks/exhaustive-deps -- inject + first pageview only
 
   useEffect(() => {
-    if (!trackable || !injectedRef.current) return;
+    if (!publicTrackable || !injectedRef.current) return;
     const { gtm, ga } = configRef.current;
     if (!gtm && !ga) return;
     trackPageView(location, ga, !!gtm);
-  }, [location, trackable]);
+  }, [location, publicTrackable]);
+
+  useEffect(() => {
+    if (!siteTrackable || !metaInjectedRef.current || !configRef.current.meta) return;
+    if (metaSkipNextPvRef.current) {
+      metaSkipNextPvRef.current = false;
+      return;
+    }
+    trackMetaPageView(location);
+  }, [location, siteTrackable]);
 
   return null;
 }

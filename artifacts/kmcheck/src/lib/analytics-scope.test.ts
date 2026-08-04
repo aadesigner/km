@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPublicAnalyticsPath } from "./analytics-scope";
+import { isPublicAnalyticsPath, isSiteTrackingPath } from "./analytics-scope";
 
 describe("isPublicAnalyticsPath", () => {
   it("allows marketing and checkout routes", () => {
@@ -26,5 +26,20 @@ describe("isPublicAnalyticsPath", () => {
     expect(isPublicAnalyticsPath("/de/dashboard?tab=1")).toBe(false);
     expect(isPublicAnalyticsPath("/en/purchases")).toBe(false);
     expect(isPublicAnalyticsPath("/sq/purchases/")).toBe(false);
+  });
+});
+
+describe("isSiteTrackingPath", () => {
+  it("allows public and client area", () => {
+    expect(isSiteTrackingPath("/en")).toBe(true);
+    expect(isSiteTrackingPath("/en/pricing")).toBe(true);
+    expect(isSiteTrackingPath("/en/dashboard")).toBe(true);
+    expect(isSiteTrackingPath("/sq/purchases")).toBe(true);
+    expect(isSiteTrackingPath("/en/checkout")).toBe(true);
+  });
+
+  it("blocks admin only", () => {
+    expect(isSiteTrackingPath("/adminx")).toBe(false);
+    expect(isSiteTrackingPath("/adminx/analytics")).toBe(false);
   });
 });

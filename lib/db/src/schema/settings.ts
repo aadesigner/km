@@ -100,6 +100,8 @@ export const systemSettingsTable = pgTable("system_settings", {
   analyticsGaMeasurementId: text("analytics_ga_measurement_id"),
   analyticsClarityEnabled: boolean("analytics_clarity_enabled").notNull().default(false),
   analyticsClarityProjectId: text("analytics_clarity_project_id"),
+  analyticsMetaPixelEnabled: boolean("analytics_meta_pixel_enabled").notNull().default(false),
+  analyticsMetaPixelId: text("analytics_meta_pixel_id"),
   // Log retention (days; 0 = use 4-day default in cleanup job)
   logRetentionDays: integer("log_retention_days").notNull().default(4),
   // Failed transaction auto-removal (days, 0 = disabled)

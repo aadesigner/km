@@ -1544,6 +1544,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     analyticsGaMeasurementId: string | null;
     analyticsClarityEnabled: boolean;
     analyticsClarityProjectId: string | null;
+    analyticsMetaPixelEnabled: boolean;
+    analyticsMetaPixelId: string | null;
   }>;
 
   const patch: Record<string, unknown> = { ...updates, updatedAt: new Date() };

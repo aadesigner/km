@@ -2655,6 +2655,11 @@ components:
         analyticsClarityProjectId:
           type: string
           nullable: true
+        analyticsMetaPixelEnabled:
+          type: boolean
+        analyticsMetaPixelId:
+          type: string
+          nullable: true
 
     SystemSettingsUpdate:
       type: object
@@ -2777,5 +2782,10 @@ components:
         analyticsClarityEnabled:
           type: boolean
         analyticsClarityProjectId:
+          type: string
+          nullable: true
+        analyticsMetaPixelEnabled:
+          type: boolean
+        analyticsMetaPixelId:
           type: string
           nullable: true

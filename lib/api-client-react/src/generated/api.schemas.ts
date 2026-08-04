@@ -798,6 +798,8 @@ export interface SystemSettings {
   analyticsGaMeasurementId?: string | null;
   analyticsClarityEnabled?: boolean;
   analyticsClarityProjectId?: string | null;
+  analyticsMetaPixelEnabled?: boolean;
+  analyticsMetaPixelId?: string | null;
 }
 
 export interface SystemSettingsUpdate {
@@ -855,6 +857,8 @@ export interface SystemSettingsUpdate {
   analyticsGaMeasurementId?: string | null;
   analyticsClarityEnabled?: boolean;
   analyticsClarityProjectId?: string | null;
+  analyticsMetaPixelEnabled?: boolean;
+  analyticsMetaPixelId?: string | null;
 }
 
 export type ResolveVinId200 = {

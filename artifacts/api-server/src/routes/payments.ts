@@ -108,6 +108,8 @@ type PublicSettingsResponse = {
   analyticsGaMeasurementId: string | null;
   analyticsClarityEnabled: boolean;
   analyticsClarityProjectId: string | null;
+  analyticsMetaPixelEnabled: boolean;
+  analyticsMetaPixelId: string | null;
   maintenanceMode: boolean;
   maintenanceRestrictions: string[];
   maintenanceMessage: string | null;
@@ -165,6 +167,10 @@ router.get("/payments/public-settings", async (req, res) => {
         settings?.analyticsClarityEnabled && resolveClarityProjectId(settings)
       ),
       analyticsClarityProjectId: resolveClarityProjectId(settings),
+      analyticsMetaPixelEnabled: !!(
+        settings?.analyticsMetaPixelEnabled && settings.analyticsMetaPixelId?.trim()
+      ),
+      analyticsMetaPixelId: settings?.analyticsMetaPixelId?.trim() || null,
       maintenanceMode: settings?.maintenanceMode ?? false,
       maintenanceRestrictions: normalizeMaintenanceRestrictions(settings?.maintenanceRestrictions),
       maintenanceMessage: settings?.maintenanceMessage?.trim() || null,

@@ -24,6 +24,14 @@ export function normalizeClarityProjectId(raw: string | null | undefined): strin
   return /^[a-z0-9]{5,32}$/.test(id) ? id : null;
 }
 
+/** Normalize and validate a Meta (Facebook) Pixel ID (numeric). */
+export function normalizeMetaPixelId(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  const id = raw.trim();
+  if (!id) return null;
+  return /^\d{5,20}$/.test(id) ? id : null;
+}
+
 /** Resolve Clarity project ID from DB settings or Railway/env fallback. */
 export function resolveClarityProjectId(
   settings: { analyticsClarityProjectId?: string | null } | null | undefined,
@@ -73,6 +81,19 @@ export function validateAnalyticsSettingsPatch(patch: Record<string, unknown>): 
     }
   }
 
+  if ("analyticsMetaPixelId" in patch) {
+    const raw = patch.analyticsMetaPixelId;
+    if (raw == null || raw === "") {
+      patch.analyticsMetaPixelId = null;
+    } else {
+      const normalized = normalizeMetaPixelId(String(raw));
+      if (!normalized) {
+        return "analyticsMetaPixelId must be a valid Meta Pixel ID (5–20 digits)";
+      }
+      patch.analyticsMetaPixelId = normalized;
+    }
+  }
+
   if (patch.analyticsGtmEnabled === true && patch.analyticsGtmContainerId === null) {
     return "Enable GTM only when a container ID is set";
   }
@@ -88,6 +109,10 @@ export function validateAnalyticsSettingsPatch(patch: Record<string, unknown>): 
     }
   }
 
+  if (patch.analyticsMetaPixelEnabled === true && patch.analyticsMetaPixelId === null) {
+    return "Enable Meta Pixel only when a Pixel ID is set";
+  }
+
   return null;
 }
 
@@ -101,6 +126,8 @@ export function validateAnalyticsSettingsMerged(
     analyticsGaMeasurementId?: string | null;
     analyticsClarityEnabled?: boolean;
     analyticsClarityProjectId?: string | null;
+    analyticsMetaPixelEnabled?: boolean;
+    analyticsMetaPixelId?: string | null;
   } | null | undefined,
 ): string | null {
   const gtmEnabled = "analyticsGtmEnabled" in patch
@@ -124,6 +151,13 @@ export function validateAnalyticsSettingsMerged(
     : existing?.analyticsClarityProjectId;
   const clarityId = resolveClarityProjectId({ analyticsClarityProjectId: clarityIdFromPatch as string | null | undefined });
 
+  const metaEnabled = "analyticsMetaPixelEnabled" in patch
+    ? patch.analyticsMetaPixelEnabled
+    : existing?.analyticsMetaPixelEnabled;
+  const metaId = "analyticsMetaPixelId" in patch
+    ? patch.analyticsMetaPixelId
+    : existing?.analyticsMetaPixelId;
+
   if (gtmEnabled && !gtmId) {
     return "Google Tag Manager requires a container ID (GTM-XXXXXXX)";
   }
@@ -132,6 +166,9 @@ export function validateAnalyticsSettingsMerged(
   }
   if (clarityEnabled && !clarityId) {
     return "Microsoft Clarity requires a project ID";
+  }
+  if (metaEnabled && !metaId) {
+    return "Meta Pixel requires a Pixel ID";
   }
   return null;
 }

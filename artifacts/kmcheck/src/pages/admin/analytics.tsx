@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Save, CheckCircle2, Loader2, BarChart3, Tag, Info, MousePointerClick } from "lucide-react";
+import { Save, CheckCircle2, Loader2, BarChart3, Tag, Info, MousePointerClick, Facebook } from "lucide-react";
 
 type AnalyticsSettings = {
   analyticsGtmEnabled?: boolean;
@@ -16,6 +16,8 @@ type AnalyticsSettings = {
   analyticsGaMeasurementId?: string | null;
   analyticsClarityEnabled?: boolean;
   analyticsClarityProjectId?: string | null;
+  analyticsMetaPixelEnabled?: boolean;
+  analyticsMetaPixelId?: string | null;
 };
 
 type AnalyticsForm = {
@@ -25,6 +27,8 @@ type AnalyticsForm = {
   gaMeasurementId: string;
   clarityEnabled: boolean;
   clarityProjectId: string;
+  metaPixelEnabled: boolean;
+  metaPixelId: string;
 };
 
 const EMPTY_FORM: AnalyticsForm = {
@@ -34,6 +38,8 @@ const EMPTY_FORM: AnalyticsForm = {
   gaMeasurementId: "",
   clarityEnabled: false,
   clarityProjectId: "",
+  metaPixelEnabled: false,
+  metaPixelId: "",
 };
 
 export default function AdminAnalytics() {
@@ -53,6 +59,8 @@ export default function AdminAnalytics() {
       gaMeasurementId: s.analyticsGaMeasurementId ?? "",
       clarityEnabled: s.analyticsClarityEnabled ?? false,
       clarityProjectId: s.analyticsClarityProjectId ?? "",
+      metaPixelEnabled: s.analyticsMetaPixelEnabled ?? false,
+      metaPixelId: s.analyticsMetaPixelId ?? "",
     });
   }, [settings]);
 
@@ -85,6 +93,14 @@ export default function AdminAnalytics() {
       setError("Enter a Clarity project ID or disable Microsoft Clarity.");
       return;
     }
+    if (form.metaPixelEnabled && !form.metaPixelId.trim()) {
+      setError("Enter a Meta Pixel ID or disable Meta Pixel.");
+      return;
+    }
+    if (form.metaPixelEnabled && !/^\d{5,20}$/.test(form.metaPixelId.trim())) {
+      setError("Meta Pixel ID must be 5–20 digits (from Events Manager).");
+      return;
+    }
 
     updater.mutate({
       data: {
@@ -94,6 +110,8 @@ export default function AdminAnalytics() {
         analyticsGaMeasurementId: form.gaMeasurementId.trim() || null,
         analyticsClarityEnabled: form.clarityEnabled,
         analyticsClarityProjectId: form.clarityProjectId.trim() || null,
+        analyticsMetaPixelEnabled: form.metaPixelEnabled,
+        analyticsMetaPixelId: form.metaPixelId.trim() || null,
       } as never,
     });
   };
@@ -113,7 +131,7 @@ export default function AdminAnalytics() {
       <div>
         <h1 className="text-2xl font-extrabold tracking-tight">Analytics</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Configure Google Tag Manager, Google Analytics, and Microsoft Clarity for the public website.
+          Configure Google Tag Manager, Google Analytics, Microsoft Clarity, and Meta Pixel for the website.
         </p>
       </div>
 
@@ -121,7 +139,8 @@ export default function AdminAnalytics() {
         <CardContent className="pt-5 pb-4 flex gap-3">
           <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Scripts are injected into the site header on all public pages and the client area (not the admin panel).
+            Nothing loads until you enable a tool and save an ID. GTM / GA / Clarity run on public pages (not admin or the client dashboard).
+            Meta Pixel runs on public pages and the client area when enabled (still never on the admin panel).
             If you use GTM, you can configure GA4 inside GTM and leave direct GA disabled to avoid double counting.
             For Clarity, you can store the project ID here or set the <code className="text-xs bg-muted px-1 rounded">CLARITY_PROJECT_ID</code> environment variable on Railway (DB value takes precedence).
           </p>
@@ -146,7 +165,7 @@ export default function AdminAnalytics() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="gtm-enabled" className="font-medium">Enable GTM</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Inject GTM on public pages and the client area (not admin)</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Inject GTM on public pages (not admin / client dashboard)</p>
             </div>
             <Switch
               id="gtm-enabled"
@@ -186,7 +205,7 @@ export default function AdminAnalytics() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="ga-enabled" className="font-medium">Enable Google Analytics</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Track SPA page views on public and client routes only (admin excluded)</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Track SPA page views on public routes only (admin / dashboard excluded)</p>
             </div>
             <Switch
               id="ga-enabled"
@@ -226,7 +245,7 @@ export default function AdminAnalytics() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="clarity-enabled" className="font-medium">Enable Microsoft Clarity</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Loads the Clarity tag on public and client routes only (admin excluded)</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Loads the Clarity tag on public routes only (admin / dashboard excluded)</p>
             </div>
             <Switch
               id="clarity-enabled"
@@ -243,6 +262,50 @@ export default function AdminAnalytics() {
               onChange={(e) => setForm((f) => ({ ...f, clarityProjectId: e.target.value }))}
               disabled={!form.clarityEnabled}
               className="font-mono"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Facebook className="h-4 w-4 text-[#1877F2]" />
+            Meta Pixel
+          </CardTitle>
+          <CardDescription>
+            Facebook / Meta ads pixel from{" "}
+            <a href="https://business.facebook.com/events_manager" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
+              Events Manager
+            </a>
+            . Paste the numeric Pixel ID only — the base code is injected automatically when enabled.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <Label htmlFor="meta-pixel-enabled" className="font-medium">Enable Meta Pixel</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Loads on public pages and the client area when a Pixel ID is saved (never on admin)
+              </p>
+            </div>
+            <Switch
+              id="meta-pixel-enabled"
+              checked={form.metaPixelEnabled}
+              onCheckedChange={(v) => setForm((f) => ({ ...f, metaPixelEnabled: v }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="meta-pixel-id">Pixel ID</Label>
+            <Input
+              id="meta-pixel-id"
+              placeholder="123456789012345"
+              value={form.metaPixelId}
+              onChange={(e) => setForm((f) => ({ ...f, metaPixelId: e.target.value }))}
+              disabled={!form.metaPixelEnabled}
+              className="font-mono"
+              inputMode="numeric"
+              autoComplete="off"
             />
           </div>
         </CardContent>
