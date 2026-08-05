@@ -1,4 +1,13 @@
-export type PrefixRule = { prefix: string; model: string; body?: string; drive?: string; chassis?: string };
+export type PrefixRule = {
+  prefix: string;
+  model: string;
+  body?: string;
+  drive?: string;
+  chassis?: string;
+  /** Verified production window — used to resolve ISO year without cycle guessing. */
+  yearFrom?: number;
+  yearTo?: number;
+};
 
 /** Pre-sort once at module load — avoids per-decode sorting cost. */
 export function compilePrefixRules<T extends PrefixRule>(rules: T[]): T[] {

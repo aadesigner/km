@@ -8,7 +8,7 @@
  */
 
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
-import { decodePremiumEuropeanModel } from "./european-premium";
+import { chassisProductionWindow, decodePremiumEuropeanModel } from "./european-premium";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 import { bmwEtkOmitsIsoYear, isBmwEuroEtkVin } from "./bmw-etk";
 import { decodeEuropeanBrandModel } from "./european-brands";
@@ -17,8 +17,8 @@ import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } fro
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel, isFordEuXxLayout, decodeFordEuXxYear } from "./ford-eu";
-import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin } from "./opel-vauxhall";
-import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine } from "./asian-eu";
+import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin, isOpelVauxhallVin, matchOpelVauxhallRule } from "./opel-vauxhall";
+import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule } from "./asian-eu";
 import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
@@ -32,51 +32,105 @@ import {
   isSkodaVin,
   isVolkswagenVin,
   resolveChinaJointVentureMake,
+  decodeVolkswagenModern,
+  decodeAudiModern,
+  decodeSkodaModern,
+  decodePorscheModern,
 } from "./vag-modern";
 import { decodeJlr, isJlrVin } from "./jlr-eu";
+import { resolveIsoModelYear, type IsoYearWindow } from "./iso-year";
+import { decodeLocalSeries } from "./local-trim";
 
 // ── Model year encoding (position 10) ────────────────────────────────────────
-// Letters I, O, Q, U, Z are never used. Digits 0 is never used.
-// Cycles: A-Y (skipping I,O,Q,U,Z) = 1980–2009, then 1-9 = 2001–2009 (overlap),
-// then repeats from A=2010, 1=2031, etc.
+// Letters I, O, Q, U, Z and digit 0 are never used as ISO year codes.
+// Codes repeat every 30 years — never "prefer recent"; see iso-year.ts.
 
-const YEAR_MAP: Record<string, number> = {
-  // 1980-2000
-  A: 1980, B: 1981, C: 1982, D: 1983, E: 1984,
-  F: 1985, G: 1986, H: 1987, J: 1988, K: 1989,
-  L: 1990, M: 1991, N: 1992, P: 1993, R: 1994,
-  S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
-  // 2001-2009
-  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
-  "6": 2006, "7": 2007, "8": 2008, "9": 2009,
-  // 2010-2039 (A-Y cycle repeats, skip I/O/Q/U/Z)
-  // A=2010 (already mapped above but overriding for latest cycle isn't correct)
-  // The correct approach: each letter/digit appears twice (1980s and 2010s cycle)
-  // We pick the most recent plausible year (post-2009 vehicles are more common)
-};
-
-// The year encoding repeats every 30 years. We prefer the most recent cycle.
-function decodeYear(code: string): number | null {
-  const upper = code.toUpperCase();
-  const base = YEAR_MAP[upper];
-  if (!base) return null;
-  // If the base year is in the 1980-2009 range, also check if 30 years later is plausible
-  const candidate = base < 2010 ? base + 30 : base;
-  // Use heuristic: if candidate > current year + 2, fall back to base
-  const currentYear = new Date().getFullYear();
-  return candidate <= currentYear + 2 ? candidate : base;
+/** Layout-specific year (or null when ISO pos.10 is not a year). */
+function decodeVinLayoutYear(vin: string): { handled: true; year: number | null } | { handled: false } {
+  // Classic European Mercedes Baumuster: pos.10 is LHD/RHD, not ISO model year.
+  if (isMercedesEuroBaumusterVin(vin)) return { handled: true, year: null };
+  // Classic BMW ETK FINs often put "0" at pos.10 — not a year digit.
+  if (bmwEtkOmitsIsoYear(vin)) return { handled: true, year: null };
+  // Ford Europe XX layout: production year is at position 11, not ISO pos.10.
+  if (isFordEuXxLayout(vin)) return { handled: true, year: decodeFordEuXxYear(vin) };
+  // Pre-~1998 Opel W0L0000TT… — first year cycle only (N=1992, not 2022).
+  if (isOpelOldPaddedTypeVin(vin)) return { handled: true, year: decodeOpelOldPaddedYear(vin) };
+  return { handled: false };
 }
 
-function decodeVinModelYear(vin: string): number | null {
-  // Classic European Mercedes Baumuster: pos.10 is LHD/RHD, not ISO model year.
-  if (isMercedesEuroBaumusterVin(vin)) return null;
-  // Classic BMW ETK FINs often put "0" at pos.10 — not a year digit.
-  if (bmwEtkOmitsIsoYear(vin)) return null;
-  // Ford Europe XX layout: production year is at position 11, not ISO pos.10.
-  if (isFordEuXxLayout(vin)) return decodeFordEuXxYear(vin);
-  // Pre-~1998 Opel W0L0000TT… — first year cycle only (N=1992, not 2022).
-  if (isOpelOldPaddedTypeVin(vin)) return decodeOpelOldPaddedYear(vin);
-  return decodeYear(vin[9] ?? "");
+/**
+ * Resolve model year without inventing data for unknown manufacturers.
+ * - Unknown make → null (obscure WMIs like WSD may not use ISO year at pos.10).
+ * - Verified production / platform window → unique cycle only.
+ * - Known make without window → newest plausible ISO cycle (same as prior decoder default).
+ */
+function resolveVinModelYear(
+  vin: string,
+  make: string | null,
+  model: string | null,
+  yearWindow?: IsoYearWindow | null,
+): number | null {
+  const layout = decodeVinLayoutYear(vin);
+  if (layout.handled) return layout.year;
+  // Do not invent a year for unmapped manufacturers (e.g. WSD).
+  if (!make) return null;
+  const code = vin[9] ?? "";
+  if (yearWindow) return resolveIsoModelYear(code, yearWindow);
+
+  // Static VAG type chassis (ignore guessed year so windows are not stripped first).
+  const vagHit =
+    decodeVolkswagenModern(vin, null)
+    ?? decodeAudiModern(vin, null)
+    ?? decodeSkodaModern(vin, null)
+    ?? decodePorscheModern(vin, null);
+  if (vagHit?.chassis) {
+    const vagWin = chassisProductionWindow(vagHit.chassis);
+    if (vagWin) {
+      const gated = resolveIsoModelYear(code, vagWin);
+      if (gated != null) return gated;
+      // Window rejects every cycle: allow unambiguous digit years only.
+      // Do not prefer-recent a letter into a generation the chassis window forbids.
+      const digitOnly = resolveIsoModelYear(code, null);
+      if (digitOnly != null) return digitOnly;
+      return null;
+    }
+  }
+
+  const series = decodeLocalSeries(vin, model) ?? seriesFromDisplayModel(model);
+  const chassisWin = chassisProductionWindow(series);
+  if (chassisWin) return resolveIsoModelYear(code, chassisWin);
+
+  // Platform / prefix verified window (e.g. Hyundai IONIQ 5 from 2021).
+  if (isHyundaiVin(vin)) {
+    const rule = matchHyundaiRule(vin);
+    if (rule?.yearFrom != null || rule?.yearTo != null) {
+      return resolveIsoModelYear(code, {
+        from: rule.yearFrom ?? 1980,
+        to: rule.yearTo ?? 2099,
+      });
+    }
+  }
+  if (isOpelVauxhallVin(vin)) {
+    const rule = matchOpelVauxhallRule(vin);
+    if (rule?.yearFrom != null || rule?.yearTo != null) {
+      return resolveIsoModelYear(code, {
+        from: rule.yearFrom ?? 1980,
+        to: rule.yearTo ?? 2099,
+      });
+    }
+  }
+  // Known make, no verified window: prefer newest plausible cycle (never for unknown WMI).
+  return resolveIsoModelYear(code, null, { preferRecentIfAmbiguous: true });
+}
+
+/** Platform token in parentheses on display models, e.g. "Passat / CC (B6-B8/3C)". */
+function seriesFromDisplayModel(model: string | null): string | null {
+  if (!model) return null;
+  const m = model.match(/\(([^)]+)\)\s*$/);
+  if (!m) return null;
+  const inner = m[1]!.trim();
+  if (!inner || /^\d{4}$/.test(inner)) return null;
+  return inner.split(",")[0]?.trim() || inner;
 }
 
 // ── Country / region from VIN position 1 ────────────────────────────────────
@@ -1992,7 +2046,9 @@ export function decodeVin(vin: string): VinDecodeResult {
   const model = (brandSpec?.model && brandSpec.model.length > 0)
     ? brandSpec.model
     : (jlr?.displayModel ?? decodeModel(upper, global));
-  const year = jlr?.year ?? decodeVinModelYear(upper);
+  const year = jlr?.year != null
+    ? jlr.year
+    : resolveVinModelYear(upper, make, model);
   const hyundaiEngine = isHyundaiVin(upper) ? decodeHyundaiEngine(upper, model, year) : null;
   const engineDecoded = brandSpec?.engineDecoded ?? hyundaiEngine ?? decodeEngineCode(upper);
   const specs = extractEngineSpecs(engineDecoded);

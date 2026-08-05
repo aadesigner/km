@@ -21,7 +21,7 @@ function assertCase(c: Case): void {
   expect(r.make, `${c.label}: make`).toBe(c.make);
   expect(r.model?.toLowerCase(), `${c.label}: model`).toContain(c.modelContains.toLowerCase());
   for (const bad of c.modelExcludes ?? []) {
-    expect(r.model?.toLowerCase(), `${c.label}: exclude ${bad}`).not.toContain(bad.toLowerCase());
+    expect(r.model?.toLowerCase() ?? "", `${c.label}: exclude ${bad}`).not.toContain(bad.toLowerCase());
   }
   if (c.year !== undefined) expect(r.year, `${c.label}: year`).toBe(c.year);
   expect(isPlausibleMake(r.make, c.vin), `${c.label}: plausible make`).toBe(true);

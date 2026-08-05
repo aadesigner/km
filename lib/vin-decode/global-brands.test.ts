@@ -16,7 +16,7 @@ describe("decodeGlobalBrand lightweight dispatch", () => {
 });
 
 describe("decodeVin year + identity accuracy", () => {
-  it("decodes model year from position 10 (recent cycle)", () => {
+  it("decodes model year when a verified chassis/platform window uniquely selects a cycle", () => {
     expect(decodeVin("WBA21EM00P9R09775").year).toBe(2023);
     expect(decodeVin("KMHL341BGM1234567").year).toBe(2021);
   });

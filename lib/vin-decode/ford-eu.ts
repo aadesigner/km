@@ -11,6 +11,7 @@
  */
 
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
+import { resolveIsoModelYear } from "./iso-year";
 
 type CodeRule = { code: string; model: string; chassis?: string };
 
@@ -25,8 +26,8 @@ const FORD_EU_CODES: CodeRule[] = [
   { code: "GBJ", model: "Focus", chassis: "Mk4" },
   { code: "FFJ", model: "Fiesta", chassis: "Mk7/Mk8" },
   { code: "U5J", model: "Kuga", chassis: "Mk2/Mk3" },
-  { code: "NUG", model: "Puma" },
-  { code: "TKD", model: "Mondeo", chassis: "Mk5" },
+  { code: "NUG", model: "Puma", chassis: "Puma" },
+  { code: "TKD", model: "Mondeo", chassis: "Mondeo Mk5" },
   { code: "BSF", model: "S-Max" },
   { code: "CGB", model: "Galaxy" },
   { code: "RUG", model: "EcoSport" },
@@ -121,7 +122,7 @@ const FORD_XX_MODEL_AT_9: Record<string, string> = {
 /**
  * Ford fleet build-calendar year at position 11 — only on legacy Saarlouis
  * XX VINs where position 10 is a digit (1–9), not the ISO model year.
- * Digits 1–9 = 2001–2009; letters C=2012 … F=2015 … L=2020 …
+ * Digits 1–9 = 2001–2009; letters A–Y = 2010–2030.
  */
 const FORD_XX_YEAR_AT_11: Record<string, number> = {
   "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
@@ -131,24 +132,6 @@ const FORD_XX_YEAR_AT_11: Record<string, number> = {
   N: 2022, P: 2023, R: 2024, S: 2025, T: 2026, V: 2027,
   W: 2028, X: 2029, Y: 2030,
 };
-
-const ISO_MODEL_YEAR_MAP: Record<string, number> = {
-  A: 1980, B: 1981, C: 1982, D: 1983, E: 1984,
-  F: 1985, G: 1986, H: 1987, J: 1988, K: 1989,
-  L: 1990, M: 1991, N: 1992, P: 1993, R: 1994,
-  S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
-  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
-  "6": 2006, "7": 2007, "8": 2008, "9": 2009,
-};
-
-/** ISO 3779 model year (position 10) — same 30-year cycle heuristic as vinDecoder. */
-function decodeIsoModelYear(code: string): number | null {
-  const base = ISO_MODEL_YEAR_MAP[code.toUpperCase()];
-  if (base == null) return null;
-  const candidate = base < 2010 ? base + 30 : base;
-  const currentYear = new Date().getFullYear();
-  return candidate <= currentYear + 2 ? candidate : base;
-}
 
 export function isFordEuWmi(wmi: string): boolean {
   if (FORD_EU_WMIS.some((p) => wmi.startsWith(p))) return true;
@@ -202,7 +185,8 @@ export function decodeFordEuXxYear(vin: string): number | null {
   const u = vin.trim().toUpperCase();
 
   if (fordEuXxUsesIsoYearAtPos10(vin)) {
-    return decodeIsoModelYear(u[9] ?? "");
+    // Galaxy XX prefixes (WF0LXX/MXX/WXX…): ISO pos.10 — Mk3+ era only.
+    return resolveIsoModelYear(u[9] ?? "", { from: 2015, to: 2099 });
   }
 
   const code = u[10];

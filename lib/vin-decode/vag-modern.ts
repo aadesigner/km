@@ -9,28 +9,17 @@
  * usually not an exact trim, battery, drivetrain or body variant.
  */
 
+import { resolveIsoModelYear } from "./iso-year";
+
 export type VagModernHit = {
   model: string;
   chassis: string | null;
   electric?: boolean;
 };
 
-const YEAR_CODES: Record<string, number> = {
-  A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
-  J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
-  T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
-  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005, "6": 2006,
-  "7": 2007, "8": 2008, "9": 2009,
-};
-
-export function vagModelYear(vin: string): number | null {
-  const code = vin.trim().toUpperCase()[9];
-  if (!code) return null;
-  const year = YEAR_CODES[code];
-  if (year == null) return null;
-  const currentYear = new Date().getFullYear();
-  if (year >= 2010) return year <= currentYear + 2 ? year : year - 30;
-  return year;
+export function vagModelYear(vin: string, window?: { from: number; to: number } | null): number | null {
+  if (window) return resolveIsoModelYear(vin.trim().toUpperCase()[9] ?? "", window);
+  return resolveIsoModelYear(vin.trim().toUpperCase()[9] ?? "", null, { preferRecentIfAmbiguous: true });
 }
 
 const VW_WMIS = new Set([
@@ -85,7 +74,7 @@ const VW_EU_YEAR_GATED: YearGatedEuType[] = [
   { code: "16", model: "Beetle", chassis: "A5", yearFrom: 2012, yearTo: 2019 },
 ];
 
-function matchVwYearGated(code: string, year: number | null): VagModernHit | null {
+function matchVwYearGated(code: string, year: number | null, _yearCode?: string): VagModernHit | null {
   const candidates = VW_EU_YEAR_GATED.filter((r) => r.code === code);
   if (candidates.length === 0) return null;
   if (year == null) return null;
@@ -189,7 +178,7 @@ export function decodeVolkswagenModern(vin: string, year = vagModelYear(vin)): V
     u.slice(3, 6) === "ZZZ"
     && (wmi === "WVW" || wmi === "WVG" || wmi === "WV1" || wmi === "WV2" || wmi === "WV3");
   if (isEuZzz) {
-    const gated = matchVwYearGated(type78, year);
+    const gated = matchVwYearGated(type78, year, u[9]);
     if (gated) return gated;
     // Reused codes with no year window match stay null (do not fall through to invent).
     if (VW_EU_YEAR_GATED.some((r) => r.code === type78)) return null;

@@ -24,6 +24,7 @@ import {
   isPorscheVin,
   isVolkswagenVin,
 } from "./vag-modern";
+import { resolveIsoModelYear } from "./iso-year";
 
 export { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 export { isBmwEuroEtkVin, bmwEtkOmitsIsoYear } from "./bmw-etk";
@@ -31,30 +32,20 @@ export { isBmwEuroEtkVin, bmwEtkOmitsIsoYear } from "./bmw-etk";
 type PremiumPrefixRule = PrefixRule & { chassis?: string };
 
 /**
- * Model-year from VIN position 10 (ISO 3779 cycle heuristic).
- * Shared by premium decoders so chassis annotations can be year-gated.
+ * Model-year from VIN position 10 (ISO 3779).
+ * Returns a year only when exactly one ISO cycle remains after optional
+ * chassis gating — never "prefer recent".
  *
  * Classic European Mercedes Baumuster FINs do not encode year at pos.10
  * (that digit is LHD/RHD) — returns null for those VINs.
  * Classic BMW ETK FINs often put "0" at pos.10 — also null.
  */
-export function premiumVinModelYear(vin: string): number | null {
+export function premiumVinModelYear(vin: string, window?: { from: number; to: number } | null): number | null {
   if (isMercedesEuroBaumusterVin(vin)) return null;
   if (bmwEtkOmitsIsoYear(vin)) return null;
-  const YEAR_MAP: Record<string, number> = {
-    A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
-    J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
-    T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
-    "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005, "6": 2006,
-    "7": 2007, "8": 2008, "9": 2009,
-  };
-  const code = vin[9]?.toUpperCase();
-  if (!code) return null;
-  const base = YEAR_MAP[code];
-  if (base == null) return null;
-  const candidate = base < 2010 ? base + 30 : base;
-  const currentYear = new Date().getFullYear();
-  return candidate <= currentYear + 2 ? candidate : base;
+  if (window) return resolveIsoModelYear(vin[9] ?? "", window);
+  // Callers that need a year for gating without a chassis window use the known-make fallback.
+  return resolveIsoModelYear(vin[9] ?? "", null, { preferRecentIfAmbiguous: true });
 }
 
 /** @deprecated Use premiumVinModelYear */
@@ -214,23 +205,71 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "95B": { from: 2014, to: 2099 },
   "E3": { from: 2017, to: 2099 },
   // VW generation labels (when not literal Typ in VIN)
+  "Mk8": { from: 2019, to: 2099 },
+  "B6-B8/3C": { from: 2005, to: 2023 },
+  "5N": { from: 2007, to: 2018 },
+  "CT1": { from: 2016, to: 2099 },
+  "Mk4": { from: 2018, to: 2099 },
+  "Mk2/Mk3": { from: 2012, to: 2099 },
+  "Puma": { from: 2019, to: 2099 },
+  "Mondeo Mk5": { from: 2014, to: 2022 },
   "Mk5": { from: 2003, to: 2009 },
   "Mk6": { from: 2008, to: 2013 },
   "Mk7": { from: 2012, to: 2020 },
   "Mk7/Mk8": { from: 2012, to: 2099 },
-  "Mk8": { from: 2019, to: 2099 },
   "B6/B7": { from: 2005, to: 2014 },
   "B8": { from: 2014, to: 2023 },
-  "B9": { from: 2023, to: 2099 },
+  // Passat B9 only — never bare "B9" (collides with Audi A4 B9).
+  "B9/CJ": { from: 2023, to: 2099 },
+  // Land Rover / Range Rover / Jaguar platforms
+  "L316": { from: 1983, to: 2016 },
+  "L318": { from: 1990, to: 2004 },
+  "L319": { from: 2005, to: 2016 },
+  "L314": { from: 1998, to: 2006 },
+  "L320": { from: 2006, to: 2013 },
+  "L322": { from: 2002, to: 2012 },
+  "L359": { from: 2007, to: 2015 },
+  "L405": { from: 2013, to: 2022 },
+  "L405/L460": { from: 2013, to: 2099 },
+  "L460": { from: 2022, to: 2099 },
+  "L494": { from: 2014, to: 2022 },
+  "L461": { from: 2023, to: 2099 },
+  "L538": { from: 2012, to: 2019 },
+  "L551": { from: 2020, to: 2099 },
+  "L560": { from: 2017, to: 2099 },
+  "L550": { from: 2014, to: 2099 },
+  "L462": { from: 2017, to: 2099 },
+  "L663": { from: 2020, to: 2099 },
+  "X761": { from: 2016, to: 2099 },
+  "X540": { from: 2018, to: 2099 },
+  "X590": { from: 2019, to: 2099 },
+  "X260": { from: 2015, to: 2099 },
+  "X152": { from: 2013, to: 2099 },
+  "X760": { from: 2015, to: 2099 },
+  "X351": { from: 2010, to: 2019 },
+  "X150": { from: 2006, to: 2014 },
+  "X200": { from: 1999, to: 2008 },
+  "X400": { from: 2001, to: 2009 },
   // Audi generation labels
   "C7": { from: 2011, to: 2018 },
   "C8": { from: 2018, to: 2099 },
-  "C9": { from: 2025, to: 2099 },
+  "C9": { from: 2023, to: 2099 },
   "B9 8W": { from: 2015, to: 2099 },
   "B8 8K": { from: 2008, to: 2016 },
   "C7 4G": { from: 2011, to: 2018 },
   "C8 4K": { from: 2018, to: 2099 },
   "C6 4F": { from: 2004, to: 2011 },
+  // Audi Typ codes (EU ZZZ / homologation) — wide enough for NA digit-year fixtures
+  "4H": { from: 2010, to: 2018 },
+  "4E": { from: 2002, to: 2010 },
+  "4D": { from: 1994, to: 2010 },
+  "4N": { from: 2017, to: 2099 },
+  "4A": { from: 1994, to: 2099 },
+  "4K": { from: 2008, to: 2099 },
+  "FD": { from: 2008, to: 2099 },
+  "8W": { from: 2015, to: 2099 },
+  "5N": { from: 2007, to: 2024 },
+  "B9/CJ": { from: 2020, to: 2099 },
 };
 
 /** Chassis codes uniquely encoded in the VIN (Mercedes Baumuster / BMW E/F/G gens). */
@@ -239,6 +278,8 @@ function isLiteralPlatformChassis(key: string): boolean {
   if (/^[WCXARNVH]\d{3}\b/.test(key)) return true;
   // BMW E60, F10, G20, R56, U11, …
   if (/^[EFRGU]\d{2}\b/.test(key)) return true;
+  // Land Rover / Jaguar Lxxx / Xxxx platforms
+  if (/^L\d{3}\b/.test(key) || /^X\d{3}\b/.test(key)) return true;
   // Rolls model names / MINI Electric token kept when year unknown
   if (/^(Ghost|Phantom|Cullinan|Wraith|Dawn|Spectre|Electric)\b/i.test(key)) return true;
   return false;
@@ -247,18 +288,28 @@ function isLiteralPlatformChassis(key: string): boolean {
 /**
  * Production-year window for a chassis/generation code (e.g. "W213" → 2016–2023).
  * Used when the exact model year is not encoded (Euro Mercedes / classic BMW ETK).
+ * Also resolves compound labels like "G16 Gran Coupé" via the leading platform token.
  */
 export function chassisProductionWindow(
   chassis: string | null,
 ): { from: number; to: number } | null {
   if (!chassis) return null;
   const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();
-  return (
+  const direct =
     CHASSIS_YEAR[key]
     ?? CHASSIS_YEAR[key.split("/")[0]!]
-    ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined)
-    ?? null
-  );
+    ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined);
+  if (direct) return direct;
+
+  // "G16 Gran Coupé" / "F33 Convertible" → match G16 / F33 inside slash groups too.
+  const token = key.match(/^([EFRGULWXHACVN]\d{2,3})\b/i)?.[1]?.toUpperCase();
+  if (!token) return null;
+  if (CHASSIS_YEAR[token]) return CHASSIS_YEAR[token]!;
+  for (const [k, w] of Object.entries(CHASSIS_YEAR)) {
+    const parts = k.split(/[/\s]+/).map((p) => p.toUpperCase());
+    if (parts.includes(token)) return w;
+  }
+  return null;
 }
 
 /**
@@ -503,6 +554,7 @@ const MERCEDES_RULES = compilePrefixRules([
  * Mercedes passenger cars — position 4 series letter (North American / letter VDS).
  * Letters were reused across generations (Wikibooks Mercedes VIN Codes); year-band the class.
  * Chassis omitted here — letter alone is not a unique generation.
+ * When year is null, only return a model if the letter is unambiguous across eras.
  */
 function mercedesPassengerSeriesAt4(
   letter: string,
@@ -511,16 +563,17 @@ function mercedesPassengerSeriesAt4(
   switch (letter) {
     case "H":
       // ≤2000: W202 C-Class; ≥2009: W212 E-Class. Never map modern H → C-Class.
-      return year != null && year <= 2000 ? { model: "C-Class" } : { model: "E-Class" };
+      if (year == null) return null;
+      return year <= 2000 ? { model: "C-Class" } : { model: "E-Class" };
     case "Z":
-      // W213/S213/X213 E-Class
+      // W213/S213/X213 E-Class family letter (not reused for another class).
       return { model: "E-Class" };
     case "1":
       // C238/A238 E-Class coupe/cabriolet
       return { model: "E-Class Coupé/Cabrio" };
     case "K":
       // C207/A207 E-Class coupe/cabriolet (~2009–2017)
-      if (year == null || (year >= 2009 && year <= 2017)) return { model: "E-Class Coupé/Cabrio" };
+      if (year != null && year >= 2009 && year <= 2017) return { model: "E-Class Coupé/Cabrio" };
       return null;
     case "L":
       // ≥2023: W214 E-Class; ~2011–2020: C218 CLS
@@ -529,14 +582,16 @@ function mercedesPassengerSeriesAt4(
       return null;
     case "G":
       // ≤2006: W140 S-Class; ~2007+: W204 C-Class
-      return year != null && year <= 2006 ? { model: "S-Class" } : { model: "C-Class" };
+      if (year == null) return null;
+      return year <= 2006 ? { model: "S-Class" } : { model: "C-Class" };
     case "W":
       // Pre-W205 letter W was R171 SLK; from ~2014: W205 C-Class
-      if (year != null && year < 2014) return { model: "SLK/SLC" };
+      if (year == null) return null;
+      if (year < 2014) return { model: "SLK/SLC" };
       return { model: "C-Class" };
     case "A":
       // ≥2021: W206 C-Class (earlier eras reused A for unrelated lines)
-      if (year == null || year >= 2021) return { model: "C-Class" };
+      if (year != null && year >= 2021) return { model: "C-Class" };
       return null;
     case "R":
       // ≤2007: W203 C-Class; later reused for SLS / AMG GT — do not force C-Class
@@ -663,7 +718,7 @@ const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZ8Y", model: "A3 / S3 / RS3", chassis: "8Y" },
   { prefix: "WAUZZZ8X", model: "A1" },
   { prefix: "WAUZZZ8Z", model: "A2", chassis: "8Z" },
-  { prefix: "WAUZZZ8W", model: "A4 / S4 / RS4", chassis: "B9" },
+  { prefix: "WAUZZZ8W", model: "A4 / S4 / RS4", chassis: "B9 8W" },
   { prefix: "WAUZZZ8K", model: "A4" },
   { prefix: "WAUZZZ8H", model: "A4 / A5" },
   { prefix: "WAUZZZ8N", model: "TT", chassis: "8N" },

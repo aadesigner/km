@@ -8,7 +8,7 @@
  * Those must NOT use the modern pos.4 platform letter map or the ISO +30 year cycle.
  */
 
-import { compilePrefixRules, matchLongestPrefix } from "./prefix-match";
+import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
 
 export const OPEL_VAUXHALL_WMIS = ["W0L", "W0V", "VXK"] as const;
 
@@ -93,8 +93,8 @@ const PLATFORM_AT_4: Record<string, string> = {
 };
 
 const PREFIX_RULES = compilePrefixRules([
-  { prefix: "W0L0ZEL", model: "Corsa F" },
-  { prefix: "W0L0ZEC", model: "Corsa-e" },
+  { prefix: "W0L0ZEL", model: "Corsa F", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "W0L0ZEC", model: "Corsa-e", yearFrom: 2019, yearTo: 2099 },
   { prefix: "W0L0ADF", model: "Astra L" },
   { prefix: "W0L0AD", model: "Astra L" },
   { prefix: "W0LJD", model: "Mokka" },
@@ -118,6 +118,14 @@ const PREFIX_RULES = compilePrefixRules([
 export function isOpelVauxhallVin(vin: string): boolean {
   const wmi = vin.toUpperCase().slice(0, 3);
   return (OPEL_VAUXHALL_WMIS as readonly string[]).includes(wmi);
+}
+
+/** Longest verified Opel/Vauxhall prefix hit (may include yearFrom/yearTo). */
+export function matchOpelVauxhallRule(vin: string): PrefixRule | null {
+  if (!isOpelVauxhallVin(vin)) return null;
+  const upper = vin.toUpperCase().trim();
+  if (isOpelOldPaddedTypeVin(upper)) return null;
+  return matchLongestPrefix(upper, PREFIX_RULES);
 }
 
 /**

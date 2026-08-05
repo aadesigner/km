@@ -7,23 +7,21 @@
  */
 
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
+import { isoModelYearCandidates } from "./iso-year";
 
-const YEAR_MAP: Record<string, number> = {
-  A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
-  J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
-  T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
-  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005, "6": 2006,
-  "7": 2007, "8": 2008, "9": 2009,
-};
-
-function hyundaiModelYear(vin: string): number | null {
-  const code = vin[9]?.toUpperCase();
-  if (!code) return null;
-  const base = YEAR_MAP[code];
-  if (base == null) return null;
-  const candidate = base < 2010 ? base + 30 : base;
-  const currentYear = new Date().getFullYear();
-  return candidate <= currentYear + 2 ? candidate : base;
+/** Try each ISO year candidate; return a line hit only when the model is unique. */
+function decodeHyundaiLineUnique(vin: string): PrefixRule | null {
+  const maxY = new Date().getFullYear() + 2;
+  const years = isoModelYearCandidates(vin[9] ?? "").filter((y) => y >= 1980 && y <= maxY);
+  const hits: PrefixRule[] = [];
+  for (const year of years) {
+    const hit = decodeHyundaiLineYear(vin, year);
+    if (hit) hits.push(hit);
+  }
+  if (hits.length === 0) return null;
+  const models = new Set(hits.map((h) => h.model));
+  if (models.size !== 1) return null;
+  return hits[0]!;
 }
 
 /** Documented / high-confidence platform prefixes (longest match wins). */
@@ -101,12 +99,12 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHB281", model: "i20", chassis: "GB" },
   { prefix: "KMHA381", model: "i10", chassis: "AC3" },
   // IONIQ 5 / 6 — specific NE platforms only (do NOT map bare KMHL*; that is also Sonata DN8 KR)
-  { prefix: "KMHL341", model: "IONIQ 5" },
-  { prefix: "KMHLW4", model: "IONIQ 5" },
-  { prefix: "KMHM341", model: "IONIQ 6" },
-  { prefix: "KMHN341", model: "IONIQ 5 N" },
-  { prefix: "KMHC281", model: "IONIQ" },
-  { prefix: "KMHC381", model: "IONIQ" },
+  { prefix: "KMHL341", model: "IONIQ 5", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "KMHLW4", model: "IONIQ 5", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "KMHM341", model: "IONIQ 6", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "KMHN341", model: "IONIQ 5 N", yearFrom: 2023, yearTo: 2099 },
+  { prefix: "KMHC281", model: "IONIQ", yearFrom: 2016, yearTo: 2022 },
+  { prefix: "KMHC381", model: "IONIQ", yearFrom: 2016, yearTo: 2022 },
   // i40 VF (EU D-segment, 2011–2019) — L-line before Sonata DN8 reused it from MY2020.
   // Body digit: 4 = saloon, 8 = Tourer/wagon. C/B series prefixes are well-attested.
   { prefix: "KMHLC81", model: "i40", chassis: "VF" },
@@ -325,7 +323,7 @@ export function matchHyundaiRule(vin: string): PrefixRule | null {
   const platform = matchLongestPrefix(u, HYUNDAI_PLATFORM_RULES);
   if (platform) return platform;
 
-  const line = decodeHyundaiLineYear(u, hyundaiModelYear(u));
+  const line = decodeHyundaiLineUnique(u);
   if (line) return line;
 
   const family = HYUNDAI_REGIONAL_FAMILY[u.slice(0, 3)];

@@ -1,0 +1,79 @@
+/**
+ * ISO 3779 model-year codes (VIN position 10).
+ *
+ * Letters/digits repeat every 30 years. We never "prefer the recent cycle" —
+ * a year is returned only when exactly one candidate remains after optional
+ * production-window filtering (and excluding impossible future years).
+ */
+
+/** First-cycle base map: A–Y → 1980–2000, 1–9 → 2001–2009. */
+const YEAR_BASE: Record<string, number> = {
+  A: 1980, B: 1981, C: 1982, D: 1983, E: 1984,
+  F: 1985, G: 1986, H: 1987, J: 1988, K: 1989,
+  L: 1990, M: 1991, N: 1992, P: 1993, R: 1994,
+  S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
+  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005,
+  "6": 2006, "7": 2007, "8": 2008, "9": 2009,
+};
+
+export type IsoYearWindow = { from: number; to: number };
+
+/** All ISO cycles for a position-10 code (oldest first). */
+export function isoModelYearCandidates(code: string): number[] {
+  const upper = code.toUpperCase();
+  const base = YEAR_BASE[upper];
+  if (base == null) return [];
+  const out = [base];
+  // Letters A–Y also encode 2010–2030; digits 1–9 also encode 2031–2039.
+  if (base <= 2009) out.push(base + 30);
+  return out;
+}
+
+function maxPlausibleModelYear(now = new Date().getFullYear()): number {
+  return now + 2;
+}
+
+/**
+ * Resolve a single model year from a position-10 code.
+ * Returns null when zero candidates remain.
+ * When multiple candidates remain:
+ * - default: null (no cycle guessing)
+ * - preferRecentIfAmbiguous: pick the newest candidate ≤ now+2 (known-make fallback only)
+ */
+export function resolveIsoModelYear(
+  code: string,
+  window?: IsoYearWindow | null,
+  opts?: { preferRecentIfAmbiguous?: boolean; now?: number },
+): number | null {
+  const now = opts?.now ?? new Date().getFullYear();
+  const maxY = maxPlausibleModelYear(now);
+  let cands = isoModelYearCandidates(code).filter((y) => y >= 1980 && y <= maxY);
+  if (window) {
+    cands = cands.filter((y) => y >= window.from && y <= window.to);
+  }
+  if (cands.length === 1) return cands[0]!;
+  if (cands.length === 0) return null;
+  // A production window that spans both ISO cycles still uniquely prefers the
+  // newest in-window year (the generation was still in production).
+  if (window) return Math.max(...cands);
+  if (opts?.preferRecentIfAmbiguous) {
+    return Math.max(...cands);
+  }
+  return null;
+}
+
+/**
+ * Pick the unique candidate that satisfies a predicate (e.g. brand year gate).
+ * Returns null if zero or multiple candidates match — never first-hit guessing.
+ */
+export function resolveIsoModelYearWhere(
+  code: string,
+  pred: (year: number) => boolean,
+  now = new Date().getFullYear(),
+): number | null {
+  const maxY = maxPlausibleModelYear(now);
+  const hits = isoModelYearCandidates(code)
+    .filter((y) => y >= 1980 && y <= maxY)
+    .filter(pred);
+  return hits.length === 1 ? hits[0]! : null;
+}

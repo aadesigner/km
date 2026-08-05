@@ -271,11 +271,15 @@ function matchJlrRules(vin: string, rules: readonly JlrPrefixRule[]): JlrDecode 
   for (const rule of rules) {
     if (!vin.startsWith(rule.prefix)) continue;
     if (rule.yearFrom == null && rule.yearTo == null) {
-      // Ungated: do not override global year cycle preference.
-      return hitToDecode(rule, years[0] ?? null, null);
+      // Ungated: model only — do not invent a year cycle.
+      return hitToDecode(rule, null, null);
     }
-    const fit = years.find((y) => yearFits(y, rule));
-    if (fit != null) return hitToDecode(rule, fit, fit);
+    const fits = years.filter((y) => yearFits(y, rule));
+    if (fits.length === 1) return hitToDecode(rule, fits[0]!, fits[0]!);
+    if (fits.length > 1) {
+      // Multiple ISO cycles fit the production window — keep model, omit year.
+      return hitToDecode(rule, null, null);
+    }
   }
   return null;
 }

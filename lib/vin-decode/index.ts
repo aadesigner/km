@@ -48,6 +48,12 @@ export {
 } from "./european-premium";
 export { decodeVinLocalFree, type LocalFreeDecodeResult } from "./local-free-decode";
 export { decodeLocalSeries, decodeLocalTrim } from "./local-trim";
+export {
+  isoModelYearCandidates,
+  resolveIsoModelYear,
+  resolveIsoModelYearWhere,
+  type IsoYearWindow,
+} from "./iso-year";
 export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
 export { decodeMazdaModel, matchMazdaRule, isMazdaVin } from "./mazda";
 export { decodeHyundaiModel, matchHyundaiRule, isHyundaiVin, decodeHyundaiEngine } from "./hyundai";

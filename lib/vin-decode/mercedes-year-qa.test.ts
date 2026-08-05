@@ -8,6 +8,7 @@ import {
   decodeVinLocalFree,
   isMercedesEuroBaumusterVin,
   premiumVinModelYear,
+  chassisProductionWindow,
 } from "./index";
 
 describe("Mercedes Euro Baumuster year encoding", () => {
@@ -31,7 +32,7 @@ describe("Mercedes Euro Baumuster year encoding", () => {
     { vin: "WDDGF8HB6LA123456", year: 2020, model: /C-Class/i },
     { vin: "WDDHF5KB6FA123456", year: 2015, model: /E-Class/i },
     { vin: "WDDZF4JB0LA123456", year: 2020, model: /E-Class/i },
-    { vin: "WDCDA5HB6HA123456", year: 2017, model: /GLE/i },
+    { vin: "WDCDA5HB6HA123456", year: 2017, model: /GLE|ML/i, chassis: "W166" },
     { vin: "WDDZZZ213GAA12345", year: 2016, model: /E-Class/i },
   ];
 
@@ -45,11 +46,13 @@ describe("Mercedes Euro Baumuster year encoding", () => {
 
   it.each(isoYear)("keeps ISO year for $vin", ({ vin, year, model, chassis }) => {
     expect(isMercedesEuroBaumusterVin(vin)).toBe(false);
-    expect(premiumVinModelYear(vin)).toBe(year);
+    const prem = decodePremiumEuropean(vin);
+    const win = chassisProductionWindow(chassis ?? prem?.chassis ?? null);
+    expect(premiumVinModelYear(vin, win)).toBe(year);
     expect(decodeVin(vin).year).toBe(year);
     expect(decodeVin(vin).model).toMatch(model);
     if (chassis) {
-      expect(decodePremiumEuropean(vin)?.chassis).toBe(chassis);
+      expect(prem?.chassis).toBe(chassis);
     }
   });
 

@@ -20,6 +20,8 @@
  * and the community Wikibooks Volvo VIN reference.
  */
 
+import { isoModelYearCandidates, resolveIsoModelYear } from "./iso-year";
+
 export const VOLVO_WMIS = new Set<string>([
   "YV1", // Volvo passenger cars (Sweden/Belgium) — non-XC
   "YV4", // Volvo XC & Cross Country (Sweden/Belgium/China)
@@ -151,20 +153,9 @@ const LEGACY_CODES: Record<string, Candidate[]> = {
   V: [{ model: "S40", from: 2000, to: 2004 }],
 };
 
-const YEAR_MAP: Record<string, number> = {
-  A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016, H: 2017,
-  J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023, R: 2024, S: 2025,
-  T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
-  "1": 2001, "2": 2002, "3": 2003, "4": 2004, "5": 2005, "6": 2006,
-  "7": 2007, "8": 2008, "9": 2009,
-};
-
-function volvoModelYear(vin: string): number | null {
-  const base = YEAR_MAP[vin[9]?.toUpperCase() ?? ""];
-  if (base == null) return null;
-  const candidate = base < 2010 ? base + 30 : base;
-  const currentYear = new Date().getFullYear();
-  return candidate <= currentYear + 2 ? candidate : base;
+function volvoModelYear(vin: string, window?: { from: number; to: number } | null): number | null {
+  if (window) return resolveIsoModelYear(vin[9] ?? "", window);
+  return resolveIsoModelYear(vin[9] ?? "", null, { preferRecentIfAmbiguous: true });
 }
 
 /** Pick the model for a vehicle-line letter, constrained by year and XC-ness. */
@@ -189,8 +180,36 @@ function pickModel(
     return inRange[inRange.length - 1].model;
   }
 
-  // Year unknown — assume the most recent generation for this letter.
-  return cands.reduce((a, b) => (b.from >= a.from ? b : a)).model;
+  // Year unknown — do not invent the newest generation.
+  return null;
+}
+
+/**
+ * When ISO year is ambiguous, try each candidate and keep the model only if unique.
+ */
+function pickModelAcrossYearCandidates(
+  letter: string | undefined,
+  xcWmi: boolean | null,
+  yearCode: string,
+): { model: string; year: number | null } | null {
+  if (!letter) return null;
+  const maxY = new Date().getFullYear() + 2;
+  const years = isoModelYearCandidates(yearCode).filter((y) => y >= 1980 && y <= maxY);
+  if (years.length === 0) return null;
+  if (years.length === 1) {
+    const model = pickModel(letter, years[0]!, xcWmi);
+    return model ? { model, year: years[0]! } : null;
+  }
+  const hits: { model: string; year: number }[] = [];
+  for (const y of years) {
+    const model = pickModel(letter, y, xcWmi);
+    if (model) hits.push({ model, year: y });
+  }
+  if (hits.length === 0) return null;
+  const models = new Set(hits.map((h) => h.model));
+  if (models.size !== 1) return null;
+  // Same model name across cycles — year still ambiguous.
+  return { model: hits[0]!.model, year: null };
 }
 
 function specFor(model: string): VolvoSpec {
@@ -214,12 +233,11 @@ export function decodeVolvoSpec(vin: string): VolvoSpec | null {
   if (!VOLVO_WMIS.has(wmi)) return null;
 
   const year = volvoModelYear(upper);
+  const xcWmi = wmi === "YV4" ? true : wmi === "YV1" ? false : null;
 
   // Model-specific WMIs decode directly and reliably.
   if (wmi === "LVY") return specFor("S90");
   if (wmi === "7JR") return specFor("S60");
-
-  const xcWmi = wmi === "YV4" ? true : wmi === "YV1" ? false : null;
 
   // US-built VINs (7-prefix) use the NHTSA-swapped layout with the model at
   // position 7; every other market keeps the model at position 4. We do NOT
@@ -228,8 +246,13 @@ export function decodeVolvoSpec(vin: string): VolvoSpec | null {
   const usBuilt = wmi.startsWith("7");
   const modelIdx = usBuilt ? 6 : 3;
 
-  const model = pickModel(upper[modelIdx], year, xcWmi);
-  return model ? specFor(model) : null;
+  if (year != null) {
+    const model = pickModel(upper[modelIdx], year, xcWmi);
+    return model ? specFor(model) : null;
+  }
+
+  const across = pickModelAcrossYearCandidates(upper[modelIdx], xcWmi, upper[9] ?? "");
+  return across ? specFor(across.model) : null;
 }
 
 /** Model-line string only (used by the shared model resolver). */
