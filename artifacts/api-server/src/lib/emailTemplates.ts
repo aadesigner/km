@@ -4,7 +4,7 @@ import { buildEmailBase } from "./emailLayout.js";
  * `vinready` is the single combined report-ready + payment-confirmation email.
  * The former separate `confirm` template was merged into it.
  */
-export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned";
+export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned" | "noinfo";
 
 export type EmailTemplateOverride = {
   subject?: string;
@@ -21,6 +21,7 @@ export const EMAIL_TEMPLATE_VARIABLES: Record<EmailTemplateKey, string[]> = {
   ],
   reset: ["resetUrl", "siteUrl"],
   abandoned: ["name", "vin", "checkoutUrl", "price", "siteUrl"],
+  noinfo: ["name", "vin", "credits", "checkoutUrl", "siteUrl"],
 };
 
 type TemplateDefaults = {
@@ -108,6 +109,19 @@ export const EMAIL_TEMPLATE_DEFAULTS: Record<EmailTemplateKey, TemplateDefaults>
     ${btn("{{checkoutUrl}}", "Complete Purchase &mdash; {{price}} &rarr;")}
   `,
   },
+  noinfo: {
+    subject: "No information found for {{vin}} — {{credits}} free credit added",
+    preheader: "Please double-check your VIN. Meanwhile we credited {{credits}} free report to your account.",
+    contentHtml: `
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#111111">No information found</h1>
+    <p style="margin:0 0 8px;color:#444444">Hi {{name}},</p>
+    <p style="margin:0 0 12px;color:#444444">We looked into VIN <strong style="font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px">{{vin}}</strong> and found no information on this VIN.</p>
+    <p style="margin:0 0 12px;color:#444444">If you typed a digit or character wrong, try again with the correct one.</p>
+    <p style="margin:0 0 24px;color:#444444">Meanwhile, we have credited <strong>{{credits}} free report credit</strong> to your account. You can use it on our marketplace for another VIN check at no charge.</p>
+    ${btn("{{checkoutUrl}}", "Check another VIN &rarr;")}
+    <p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#888888">If you don&apos;t want to check another car, you can request a refund &mdash; just <a href="mailto:info@kmcheck.com" style="color:#16a34a;text-decoration:underline">send us an email</a>.</p>
+  `,
+  },
 };
 
 export function interpolateEmailVars(template: string, vars: Record<string, string>): string {
@@ -149,6 +163,13 @@ export function getSampleTemplateVars(type: EmailTemplateKey, siteUrl: string): 
         vin: "WBA3A5G59DNP26082",
         checkoutUrl: `${base}/en/checkout?vin=WBA3A5G59DNP26082`,
         price: "€15.99",
+      };
+    case "noinfo":
+      return {
+        ...common,
+        vin: "WBA3A5G59DNP26082",
+        credits: "1",
+        checkoutUrl: `${base}/en`,
       };
     case "vinready":
       return {

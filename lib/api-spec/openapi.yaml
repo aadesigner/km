@@ -2631,6 +2631,9 @@ components:
           type: boolean
         emailSendAbandonedCart:
           type: boolean
+        emailSendNoinfo:
+          type: boolean
+          description: Customer email when admin closes a pending VIN with no data and grants 1 credit
         emailSendAdminPendingVin:
           type: boolean
           description: Admin alert when a customer pays for a manual-pending VIN (off by default)
@@ -2727,6 +2730,9 @@ components:
           type: boolean
         emailSendAbandonedCart:
           type: boolean
+        emailSendNoinfo:
+          type: boolean
+          description: Customer email when admin closes a pending VIN with no data and grants 1 credit
         emailSendAdminPendingVin:
           type: boolean
           description: Admin alert when a customer pays for a manual-pending VIN (off by default)

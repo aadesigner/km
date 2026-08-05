@@ -4,7 +4,7 @@ import { Link, useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2, Rocket } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2, Rocket, Gift } from "lucide-react";
 import { AdminVinSaveBar } from "@/components/admin/admin-vin-save-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -51,6 +51,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [crediting, setCrediting] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const exportLinkRef = useRef<HTMLAnchorElement>(null);
   const lastHydratedAtRef = useRef<string | null>(null);
@@ -220,6 +221,45 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
     }
   };
 
+  const handleCreditAndNotify = async () => {
+    if (!detail) return;
+    const uniqueUsers = new Set(detail.requests.map((r) => r.userId)).size;
+    if (!confirm(
+      `Credit user & send email for ${detail.vin}?\n\n` +
+      `• Add 1 free report credit to ${uniqueUsers} user(s)\n` +
+      `• Email them that no information was found (Admin → Emails → No info / credit)\n` +
+      `• Remove this pending check (same as Remove pending)\n\n` +
+      `This cannot be undone.`,
+    )) return;
+    setCrediting(true);
+    try {
+      const r = await fetch(`${basePath}/api/admin/pending-vin-checks/${pendingId}/credit-and-notify`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = await r.json().catch(() => ({})) as {
+        error?: string;
+        creditedUsers?: unknown[];
+        emailsSent?: number;
+      };
+      if (!r.ok) {
+        alert(body.error ?? "Credit & notify failed");
+        return;
+      }
+      for (const req of detail.requests) {
+        invalidateVinReportCaches(queryClient, detail.vin, req.lookupId);
+      }
+      invalidateVinReportCaches(queryClient, detail.vin);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
+      setLocation("/adminx/pending-vin-checks");
+    } catch {
+      alert("Credit & notify failed — network error");
+    } finally {
+      setCrediting(false);
+    }
+  };
+
   if (isNaN(pendingId)) {
     return <p className="text-muted-foreground">Invalid ID</p>;
   }
@@ -264,15 +304,25 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={handleExportJson} disabled={exportLoading || saving || publishing || removing}>
+          <Button variant="outline" size="sm" onClick={handleExportJson} disabled={exportLoading || saving || publishing || removing || crediting}>
             {exportLoading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Download className="h-4 w-4 mr-1.5" />}
             Download JSON
           </Button>
           <Button
             variant="outline"
+            className="border-amber-300 text-amber-800 hover:bg-amber-50"
+            onClick={handleCreditAndNotify}
+            disabled={saving || publishing || removing || crediting || (detail.requests ?? []).length === 0}
+            title="Adds 1 credit per user, emails them, and removes this pending check"
+          >
+            {crediting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Gift className="h-4 w-4 mr-1.5" />}
+            Credit user &amp; send email
+          </Button>
+          <Button
+            variant="outline"
             className="text-destructive border-destructive/30 hover:bg-destructive/10"
             onClick={handleRemove}
-            disabled={saving || publishing || removing}
+            disabled={saving || publishing || removing || crediting}
           >
             {removing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
             Remove pending
@@ -333,9 +383,9 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             saveLabel="Save draft"
             saveMsg={saveMsg}
             hint="Ctrl+S to save draft · publish adds this VIN to the catalog"
-            disabled={publishing || removing}
+            disabled={publishing || removing || crediting}
             extra={(
-              <Button onClick={handlePublish} disabled={saving || publishing || removing} className="gap-1.5">
+              <Button onClick={handlePublish} disabled={saving || publishing || removing || crediting} className="gap-1.5">
                 {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
                 {publishing ? "Publishing…" : "Publish"}
               </Button>

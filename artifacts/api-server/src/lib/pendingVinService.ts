@@ -7,6 +7,7 @@ import {
   paymentsTable,
 } from "@workspace/db";
 import { eq, and, desc, inArray, count } from "drizzle-orm";
+import { fireNoinfoCreditEmail } from "./noinfoCreditEmail.js";
 import {
   getCatalogVin,
   upsertVinCatalog,
@@ -597,7 +598,12 @@ export async function importPendingVinDraftsFromJson(payload: unknown) {
 }
 
 /** Remove an open pending VIN check, delete linked client lookups, and revoke their payments. */
-export async function removePendingVinCheck(opts: { pendingId: number; adminId?: string }) {
+export async function removePendingVinCheck(opts: {
+  pendingId: number;
+  adminId?: string;
+  /** When set, grant this many credits to each unique requesting user before removal. */
+  creditPerUser?: number;
+}) {
   const row = await getPendingVinCheckById(opts.pendingId);
   if (!row || row.status !== "open") {
     throw Object.assign(new Error("Pending VIN check not found"), { code: "NOT_FOUND" });
@@ -609,8 +615,32 @@ export async function removePendingVinCheck(opts: { pendingId: number; adminId?:
   const vin = row.vin.toUpperCase();
   const now = new Date();
   const revokedPaymentIds = new Set<number>();
+  const creditedUsers: { userId: string; previousBalance: number; creditBalance: number }[] = [];
+  const creditPerUser = opts.creditPerUser != null && opts.creditPerUser > 0
+    ? Math.floor(opts.creditPerUser)
+    : 0;
 
   await db.transaction(async (tx) => {
+    if (creditPerUser > 0) {
+      for (const userId of userIds) {
+        const [existing] = await tx
+          .select({ creditBalance: usersTable.creditBalance })
+          .from(usersTable)
+          .where(eq(usersTable.id, userId))
+          .limit(1);
+        if (!existing) continue;
+        const nextBalance = existing.creditBalance + creditPerUser;
+        await tx.update(usersTable)
+          .set({ creditBalance: nextBalance, updatedAt: now })
+          .where(eq(usersTable.id, userId));
+        creditedUsers.push({
+          userId,
+          previousBalance: existing.creditBalance,
+          creditBalance: nextBalance,
+        });
+      }
+    }
+
     if (lookupIds.length > 0) {
       await tx.delete(vinLookupsTable).where(inArray(vinLookupsTable.id, lookupIds));
     }
@@ -623,7 +653,7 @@ export async function removePendingVinCheck(opts: { pendingId: number; adminId?:
           eq(paymentsTable.status, "completed"),
         ))
         .returning({ id: paymentsTable.id });
-      for (const row of revokedById) revokedPaymentIds.add(row.id);
+      for (const payment of revokedById) revokedPaymentIds.add(payment.id);
     }
 
     for (const userId of userIds) {
@@ -635,7 +665,7 @@ export async function removePendingVinCheck(opts: { pendingId: number; adminId?:
           eq(paymentsTable.status, "completed"),
         ))
         .returning({ id: paymentsTable.id });
-      for (const row of revokedByUser) revokedPaymentIds.add(row.id);
+      for (const payment of revokedByUser) revokedPaymentIds.add(payment.id);
     }
 
     await tx.delete(pendingVinCheckRequestsTable)
@@ -644,13 +674,71 @@ export async function removePendingVinCheck(opts: { pendingId: number; adminId?:
   });
 
   logger.info({
-    msg: "pending_vin_removed",
+    msg: creditPerUser > 0 ? "pending_vin_credited_and_removed" : "pending_vin_removed",
     pendingId: opts.pendingId,
     vin,
     adminId: opts.adminId,
     removedLookupIds: lookupIds,
     revokedPaymentIds: [...revokedPaymentIds],
+    creditedUsers: creditedUsers.map((u) => u.userId),
+    creditPerUser: creditPerUser || undefined,
   });
 
-  return { vin, removedLookupIds: lookupIds, paymentsRevoked: revokedPaymentIds.size };
+  return {
+    vin,
+    removedLookupIds: lookupIds,
+    paymentsRevoked: revokedPaymentIds.size,
+    creditedUsers,
+  };
+}
+
+/**
+ * Grant 1 credit per requesting user, remove the pending check, and email each
+ * user that no report data was found (template: Admin → Emails → noinfo).
+ */
+export async function creditNoInfoAndRemovePendingVinCheck(opts: {
+  pendingId: number;
+  adminId?: string;
+}) {
+  const row = await getPendingVinCheckById(opts.pendingId);
+  if (!row || row.status !== "open") {
+    throw Object.assign(new Error("Pending VIN check not found"), { code: "NOT_FOUND" });
+  }
+
+  const recipientsByUser = new Map<string, { userId: string; email: string | null; name: string | null }>();
+  for (const req of row.requests) {
+    if (!recipientsByUser.has(req.userId)) {
+      recipientsByUser.set(req.userId, {
+        userId: req.userId,
+        email: req.email,
+        name: req.name,
+      });
+    }
+  }
+  const recipients = [...recipientsByUser.values()];
+
+  const result = await removePendingVinCheck({
+    pendingId: opts.pendingId,
+    adminId: opts.adminId,
+    creditPerUser: 1,
+  });
+
+  let emailsSent = 0;
+  const emailResults: { userId: string; email: string | null; sent: boolean }[] = [];
+  for (const user of recipients) {
+    const sent = await fireNoinfoCreditEmail({
+      vin: result.vin,
+      user: { name: user.name, email: user.email },
+      credits: 1,
+    });
+    if (sent) emailsSent++;
+    emailResults.push({ userId: user.userId, email: user.email, sent });
+  }
+
+  return {
+    ...result,
+    emailsSent,
+    emailResults,
+    recipients: recipients.length,
+  };
 }

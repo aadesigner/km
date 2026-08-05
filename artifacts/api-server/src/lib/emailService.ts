@@ -317,6 +317,34 @@ export function buildPendingVinEmail(
   );
 }
 
+export interface NoinfoCreditEmailData {
+  name: string;
+  vin: string;
+  credits: string;
+  checkoutUrl: string;
+  siteUrl?: string;
+}
+
+/** Admin compensation: no report data found + 1 free credit granted. */
+export function buildNoinfoCreditEmail(
+  data: NoinfoCreditEmailData,
+  override?: EmailTemplateOverride,
+): { subject: string; html: string } {
+  const base = (data.siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
+  return renderEmailTemplate(
+    "noinfo",
+    {
+      name: data.name || "there",
+      vin: data.vin,
+      credits: data.credits,
+      checkoutUrl: data.checkoutUrl,
+      siteUrl: base,
+    },
+    override,
+    base,
+  );
+}
+
 export function buildPasswordResetEmail(
   resetUrl: string,
   siteUrl?: string,

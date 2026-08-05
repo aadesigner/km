@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "wouter";
 import {
   Mail, Settings, CheckCircle2, Globe, Zap, Shield, ShoppingCart,
-  Save, ExternalLink, Loader2, FileText, Send, RotateCcw, AlertTriangle,
+  Save, ExternalLink, Loader2, FileText, Send, RotateCcw, AlertTriangle, Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +21,7 @@ import AdminEmailLogs from "./email-logs";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-type EmailType = "welcome" | "vinready" | "reset" | "abandoned";
+type EmailType = "welcome" | "vinready" | "reset" | "abandoned" | "noinfo";
 
 type TemplateData = {
   subject: string;
@@ -35,6 +35,7 @@ type TriggersForm = {
   emailSendVinReady: boolean;
   emailSendPasswordReset: boolean;
   emailSendAbandonedCart: boolean;
+  emailSendNoinfo: boolean;
   emailSendAdminPendingVin: boolean;
 };
 
@@ -78,6 +79,14 @@ const EMAIL_TYPES: {
     trigger: "Sent manually from Admin → Users.",
     icon: ShoppingCart,
   },
+  {
+    type: "noinfo",
+    triggerKey: "emailSendNoinfo",
+    label: "No info / free credit",
+    description: "Tells the customer we found no data for their VIN and credited 1 free report check.",
+    trigger: "Sent from Pending VIN detail → Credit user & send email.",
+    icon: Gift,
+  },
 ];
 
 export default function AdminEmails() {
@@ -91,6 +100,7 @@ export default function AdminEmails() {
     emailSendVinReady: true,
     emailSendPasswordReset: true,
     emailSendAbandonedCart: false,
+    emailSendNoinfo: true,
     emailSendAdminPendingVin: false,
   });
   const [logRetention, setLogRetention] = useState(true);
@@ -174,6 +184,7 @@ export default function AdminEmails() {
       emailSendVinReady: (s.emailSendVinReady as boolean) ?? true,
       emailSendPasswordReset: (s.emailSendPasswordReset as boolean) ?? true,
       emailSendAbandonedCart: (s.emailSendAbandonedCart as boolean) ?? false,
+      emailSendNoinfo: (s.emailSendNoinfo as boolean) ?? true,
       emailSendAdminPendingVin: (s.emailSendAdminPendingVin as boolean) ?? false,
     });
     setLogRetention((s.emailLogRetentionEnabled as boolean) ?? true);

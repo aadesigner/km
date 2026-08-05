@@ -55,6 +55,7 @@ import {
   savePendingVinCheckDraft,
   publishPendingVinCheck,
   removePendingVinCheck,
+  creditNoInfoAndRemovePendingVinCheck,
   buildPendingVinExportPayload,
   importPendingVinDraftFromJson,
   buildAllPendingVinExportPayload,
@@ -1523,6 +1524,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     siteUrl: string | null;
     emailSendWelcome: boolean; emailSendReportConfirm: boolean; emailSendVinReady: boolean;
     emailSendPasswordReset: boolean; emailSendAbandonedCart: boolean;
+    emailSendNoinfo: boolean;
     emailSendAdminPendingVin: boolean;
     emailLogRetentionEnabled: boolean;
     emailTemplates: import("@workspace/db").EmailTemplatesConfig | null;
@@ -1675,6 +1677,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       emailSendVinReady: updates.emailSendVinReady ?? true,
       emailSendPasswordReset: updates.emailSendPasswordReset ?? true,
       emailSendAbandonedCart: updates.emailSendAbandonedCart ?? false,
+      emailSendNoinfo: updates.emailSendNoinfo ?? true,
       emailSendAdminPendingVin: updates.emailSendAdminPendingVin ?? false,
       maxFailedLogins: updates.maxFailedLogins ?? 5,
       lockoutMinutes: updates.lockoutMinutes ?? 30,
@@ -1975,7 +1978,7 @@ router.delete("/admin/announcements/:id", requireAdmin, async (req, res) => {
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
 
 /** `confirm` was merged into `vinready` — it is no longer editable. */
-const EMAIL_TEMPLATE_TYPES = ["welcome", "vinready", "reset", "abandoned"] as const;
+const EMAIL_TEMPLATE_TYPES = ["welcome", "vinready", "reset", "abandoned", "noinfo"] as const;
 type EmailTemplateType = typeof EMAIL_TEMPLATE_TYPES[number];
 
 function isEmailTemplateType(v: string): v is EmailTemplateType {
@@ -3575,6 +3578,32 @@ router.delete("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) =>
     }
     logger.error({ err, pendingId: id }, "Remove pending VIN failed");
     res.status(500).json({ error: "Failed to remove pending VIN check" });
+  }
+});
+
+/** Credit each requester +1, remove pending, email "no info / free credit" (Admin → Emails → noinfo). */
+router.post("/admin/pending-vin-checks/:id/credit-and-notify", requireAdmin, async (req, res) => {
+  const id = parseInt(String(req.params.id ?? ""), 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  try {
+    const result = await creditNoInfoAndRemovePendingVinCheck({ pendingId: id, adminId: req.userId! });
+    await logAdminAction(req.userId!, "admin_credit_noinfo_pending_vin", String(id), {
+      vin: result.vin,
+      removedLookupIds: result.removedLookupIds,
+      paymentsRevoked: result.paymentsRevoked,
+      creditedUsers: result.creditedUsers,
+      emailsSent: result.emailsSent,
+      recipients: result.recipients,
+    });
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (code === "NOT_FOUND") {
+      res.status(404).json({ error: "Pending VIN check not found" });
+      return;
+    }
+    logger.error({ err, pendingId: id }, "Credit & notify pending VIN failed");
+    res.status(500).json({ error: "Failed to credit users and remove pending VIN check" });
   }
 });
 
