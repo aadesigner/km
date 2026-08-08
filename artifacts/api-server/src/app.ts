@@ -97,6 +97,10 @@ app.use(
           "wss://api.pokpay.io",
           "wss://api-staging.pokpay.io",
           "wss://*.pokpay.io",
+          // Cardinal Cruise device fingerprint / 3DS collect
+          "https://*.cardinalcommerce.com",
+          "https://centinelapi.cardinalcommerce.com",
+          "https://centinelapistag.cardinalcommerce.com",
           "https://connect.facebook.net",
           "https://www.facebook.com",
         ],
@@ -114,6 +118,18 @@ app.use(
           "https://*.cardinalcommerce.com",
           "https://*.cybersource.com",
           // Bank ACS / 3-D Secure challenge pages (issuer-specific hosts)
+          "https:",
+        ],
+        // Helmet defaults form-action to 'self', which blocks Cardinal Collect and hangs Pay.
+        formAction: [
+          "'self'",
+          "https://*.cardinalcommerce.com",
+          "https://centinelapi.cardinalcommerce.com",
+          "https://centinelapistag.cardinalcommerce.com",
+          "https://*.pokpay.io",
+          "https://api.pokpay.io",
+          "https://api-staging.pokpay.io",
+          // Issuer ACS challenge form POSTs (host varies by bank)
           "https:",
         ],
         objectSrc: ["'none'"],
