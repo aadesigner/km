@@ -189,6 +189,8 @@ export default function Checkout({ params }: Props) {
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  /** While status===paying: confirm payment vs unlock report (clearer than one spinner). */
+  const [payingPhase, setPayingPhase] = useState<"payment" | "report">("payment");
   const [payMethod, setPayMethod] = useState<"paypal" | "card">("paypal");
   const [hostedFieldsReady, setHostedFieldsReady] = useState(false);
   // "unknown" = SDK not yet checked, "yes" = eligible, "no" = confirmed ineligible
@@ -799,6 +801,7 @@ export default function Checkout({ params }: Props) {
     attempt = 0,
   ): Promise<boolean> => {
     setStatus("paying");
+    setPayingPhase("report");
     setErrorMsg("");
     try {
       const resp = await fetch(`${basePath}/api/vin/lookup`, {
@@ -897,6 +900,7 @@ export default function Checkout({ params }: Props) {
     paypalFlowPhaseRef.current = "approving";
     setPaymentStarted(true);
     setStatus("paying");
+    setPayingPhase("payment");
     setErrorMsg("");
     try {
       const resp = await fetch(`${basePath}/api/payments/capture-paypal-order`, {
@@ -1403,6 +1407,7 @@ export default function Checkout({ params }: Props) {
     if (!orderId || !nvin) return;
     pokConfirmingRef.current = true;
     setStatus("paying");
+    setPayingPhase("payment");
     setErrorMsg("");
     try {
       const resp = await fetch(`${basePath}/api/payments/confirm-pok-order`, {
@@ -1423,6 +1428,7 @@ export default function Checkout({ params }: Props) {
         setStatus("error");
         return;
       }
+      setPayingPhase("report");
       await submitVinLookup(result.vin ?? nvin, undefined, result.paymentId ?? pokPaymentId ?? undefined);
     } catch {
       setErrorMsg(t("checkout_error_capture"));
@@ -2279,7 +2285,9 @@ export default function Checkout({ params }: Props) {
                   {status === "paying" && (
                     <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {isFreeCoupon ? t("processing_retrieving_data") : t("processing_payment")}
+                      {isFreeCoupon || payingPhase === "report"
+                        ? t("processing_retrieving_data")
+                        : t("processing_payment")}
                     </div>
                   )}
 

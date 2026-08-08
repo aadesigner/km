@@ -1233,6 +1233,34 @@ function parseLocalExistsBody(body: unknown): boolean | null {
   return null;
 }
 
+/** Short TTL cache so checkout peek + create-pok/PayPal create share one local-exists call. */
+const LOCAL_EXISTS_CACHE_TTL_MS = 10 * 60_000;
+const localExistsCache = new Map<string, { expiresAt: number; result: LocalExistsResult }>();
+
+function localExistsCacheKey(vin: string, providerBaseUrl: string): string {
+  return `${normalizeProviderBaseUrl(providerBaseUrl)}|${vin.toUpperCase()}`;
+}
+
+function readLocalExistsCache(vin: string, providerBaseUrl: string): LocalExistsResult | null {
+  const key = localExistsCacheKey(vin, providerBaseUrl);
+  const hit = localExistsCache.get(key);
+  if (!hit) return null;
+  if (Date.now() >= hit.expiresAt) {
+    localExistsCache.delete(key);
+    return null;
+  }
+  return hit.result;
+}
+
+function writeLocalExistsCache(vin: string, providerBaseUrl: string, result: LocalExistsResult): void {
+  // Only cache definitive answers — never "unavailable" (would stick a transient outage).
+  if (result.status !== "exists" && result.status !== "not_found") return;
+  localExistsCache.set(localExistsCacheKey(vin, providerBaseUrl), {
+    expiresAt: Date.now() + LOCAL_EXISTS_CACHE_TTL_MS,
+    result,
+  });
+}
+
 /** Strict pre-payment gate — local-exists only, no fail-open. */
 export async function checkLocalExists(
   vin: string,
@@ -1240,6 +1268,12 @@ export async function checkLocalExists(
   apiKey: string,
 ): Promise<LocalExistsResult> {
   const base = normalizeProviderBaseUrl(providerBaseUrl);
+  const cached = readLocalExistsCache(vin, base);
+  if (cached) {
+    logger.info({ msg: "local_exists_cache_hit", vin, status: cached.status });
+    return cached;
+  }
+
   const url = localExistsUrl(base, vin);
   const headers = providerHeaders(apiKey);
 
@@ -1253,11 +1287,15 @@ export async function checkLocalExists(
         const exists = parseLocalExistsBody(body);
         if (exists === true) {
           logger.info({ msg: "local_exists_ok", vin, base });
-          return { status: "exists" };
+          const result = { status: "exists" as const };
+          writeLocalExistsCache(vin, base, result);
+          return result;
         }
         if (exists === false) {
           logger.info({ msg: "local_exists_false", vin });
-          return { status: "not_found" };
+          const result = { status: "not_found" as const };
+          writeLocalExistsCache(vin, base, result);
+          return result;
         }
         logger.warn({ msg: "local_exists_unexpected_body", vin, body: text.slice(0, 120) });
         return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
@@ -1278,7 +1316,9 @@ export async function checkLocalExists(
     }
 
     if (res.status === 404) {
-      return { status: "not_found" };
+      const result = { status: "not_found" as const };
+      writeLocalExistsCache(vin, base, result);
+      return result;
     }
 
     logger.warn({ msg: "local_exists_error", vin, status: res.status, body: text.slice(0, 120) });
