@@ -272,6 +272,20 @@ export default function Checkout({ params }: Props) {
   const subtotalPrice = salePrice ?? 0;
   const finalPrice = couponResult ? couponResult.finalPrice : subtotalPrice;
   const couponDiscountAmount = couponResult?.discountAmount ?? 0;
+  /** Prefer server `isFree`; also treat finalPrice 0 so free coupons never take a paid gateway path. */
+  const isFreeCoupon = !!(couponResult && (couponResult.isFree || couponResult.finalPrice === 0));
+
+  const resetGatewayCheckoutUi = () => {
+    clearCheckoutPaymentResumeState();
+    setPaymentStarted(false);
+    setPokOrderId(null);
+    setPokPaymentId(null);
+    pendingPaypalOrderRef.current = null;
+    paypalFlowPhaseRef.current = "idle";
+    paypalInstanceRef.current?.close();
+    paypalInstanceRef.current = null;
+    if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+  };
   const promoSavePercent =
     isDiscount && standardPrice && salePrice && standardPrice > 0
       ? Math.round((promoDiscountAmount / standardPrice) * 100)
@@ -555,7 +569,7 @@ export default function Checkout({ params }: Props) {
   };
 
   const deliveryFetchErrorMsg = () =>
-    couponResult?.isFree
+    isFreeCoupon
       ? t("checkout_error_free_coupon_fetch")
       : t("checkout_error_payment_fetch");
 
@@ -586,7 +600,7 @@ export default function Checkout({ params }: Props) {
       if (!checkoutActiveRef.current) return false;
       if (await tryResumeVinDelivery(lookupId, reportVin)) return true;
     }
-    if (couponResult?.isFree && paymentId) {
+    if (isFreeCoupon && paymentId) {
       try {
         const resp = await fetch(`${basePath}/api/vin/lookup`, {
           method: "POST",
@@ -641,7 +655,7 @@ export default function Checkout({ params }: Props) {
   };
 
   const handleVinInputChange = (raw: string) => {
-    if (paymentStarted && !couponResult?.isFree) return;
+    if (paymentStarted && !isFreeCoupon) return;
     const next = raw.replace(/\s/g, "").toUpperCase();
     setVin(next);
     setVinError("");
@@ -682,7 +696,14 @@ export default function Checkout({ params }: Props) {
       });
       const data = await resp.json() as CouponResult & { error?: string };
       if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
-      setCouponResult(data);
+      // Free coupons must not race a resumed PayPal/POK session (shows "Payment failed").
+      if (data.isFree || data.finalPrice === 0) {
+        resetGatewayCheckoutUi();
+        paypalResumeAttemptedRef.current = true;
+        setStatus("idle");
+        setErrorMsg("");
+      }
+      setCouponResult({ ...data, isFree: data.isFree || data.finalPrice === 0 });
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
     } finally {
@@ -694,14 +715,9 @@ export default function Checkout({ params }: Props) {
     setCouponResult(null);
     setCouponCode("");
     setCouponError("");
-    setPaymentStarted(false);
     setStatus("idle");
     setErrorMsg("");
-    pendingPaypalOrderRef.current = null;
-    clearCheckoutPaymentResumeState();
-    paypalInstanceRef.current?.close();
-    paypalInstanceRef.current = null;
-    if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+    resetGatewayCheckoutUi();
   };
 
   const createOrder = async (nvin: string): Promise<string | null> => {
@@ -1037,6 +1053,8 @@ export default function Checkout({ params }: Props) {
     if (!isLoaded || !isSignedIn || !vinIsValid || peekLoadingUi) return;
     if (!pubSettings?.paypalClientId || pubSettingsLoading) return;
     if (paypalResumeAttemptedRef.current) return;
+    // Never remount PayPal over a free coupon — that races and shows "Payment failed".
+    if (isFreeCoupon) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("token")) return;
 
@@ -1080,6 +1098,7 @@ export default function Checkout({ params }: Props) {
     pubSettings?.paypalClientId,
     pubSettingsLoading,
     vinLookupDisabled,
+    isFreeCoupon,
     finalizePaidCheckout,
     mountPaypalButtons,
   ]);
@@ -1106,7 +1125,7 @@ export default function Checkout({ params }: Props) {
   }, [isSignedIn, vinIsValid, normalizedVin, finalizePaidCheckout]);
 
   const creditBalance = user?.creditBalance ?? 0;
-  const canPayWithCredits = creditBalance >= 1 && !couponResult?.isFree;
+  const canPayWithCredits = creditBalance >= 1 && !isFreeCoupon;
 
   const handlePayWithCredits = async () => {
     if (!vinIsValid || !canPayWithCredits) return;
@@ -1159,7 +1178,7 @@ export default function Checkout({ params }: Props) {
     postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
     if (!nvin) return;
-    if (couponResult?.isFree) { await createOrder(nvin); return; }
+    if (isFreeCoupon) { await createOrder(nvin); return; }
     if (!pubSettings?.paypalClientId) { setErrorMsg(t("checkout_payment_not_configured")); setStatus("error"); return; }
 
     const orderId = await createOrder(nvin);
@@ -1175,7 +1194,7 @@ export default function Checkout({ params }: Props) {
     postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
     if (!nvin) return;
-    if (couponResult?.isFree) { await createOrder(nvin); return; }
+    if (isFreeCoupon) { await createOrder(nvin); return; }
 
     // POK inline card form — create order then show GuestCheckoutForm
     if (pubSettings?.pokEnabled) {
@@ -1192,6 +1211,7 @@ export default function Checkout({ params }: Props) {
         const data = await resp.json() as {
           orderId?: string;
           paymentId?: number;
+          free?: boolean;
           error?: string;
           code?: string;
           alreadyUnlocked?: boolean;
@@ -1201,6 +1221,20 @@ export default function Checkout({ params }: Props) {
           goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
           return;
         }
+        // Free coupon: server returns zero-amount payment (no POK charge).
+        if (data.free && data.paymentId) {
+          freeCouponPaymentIdRef.current = data.paymentId;
+          setPaymentStarted(false);
+          setPokOrderId(null);
+          setPokPaymentId(null);
+          await submitVinLookup(nvin, undefined, data.paymentId);
+          return;
+        }
+        if (data.code === "USE_PAYPAL_FREE_PATH" || (resp.status === 400 && /free coupon/i.test(data.error ?? ""))) {
+          setPaymentStarted(false);
+          await createOrder(nvin);
+          return;
+        }
         if (data.code === "VIN_NO_DATA" || data.code === "VIN_CHECK_UNAVAILABLE") {
           setErrorMsg(translateClientError(t, data.code, data.error));
           setStatus("error");
@@ -1208,7 +1242,7 @@ export default function Checkout({ params }: Props) {
           return;
         }
         if (!resp.ok || !data.orderId || !data.paymentId) {
-          setErrorMsg(data.error || t("checkout_error_payment_create"));
+          setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
@@ -1348,7 +1382,7 @@ export default function Checkout({ params }: Props) {
     checkoutDataReady &&
     showCardTab &&
     !!pubSettings?.paypalClientId &&
-    !couponResult?.isFree &&
+    !isFreeCoupon &&
     status !== "success";
   const showProceedButton =
     checkoutDataReady &&
@@ -1357,7 +1391,7 @@ export default function Checkout({ params }: Props) {
     !(payMethod === "card" && pubSettings?.pokEnabled && !!pokOrderId);
   const showCreditsOption =
     canPayWithCredits && showProceedButton && paymentAllowed && !paymentStarted;
-  const vinLocked = paymentStarted && !couponResult?.isFree;
+  const vinLocked = paymentStarted && !isFreeCoupon;
   const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
     vinIsValid &&
@@ -1371,7 +1405,7 @@ export default function Checkout({ params }: Props) {
   const showCouponSection = !paymentStarted && status !== "creating" && status !== "paying";
   const showPaymentLogos =
     paymentAllowed &&
-    !couponResult?.isFree &&
+    !isFreeCoupon &&
     status !== "success" &&
     (
       // PayPal trust strip only before payment is opened; hide once PayPal buttons are shown
@@ -2076,12 +2110,12 @@ export default function Checkout({ params }: Props) {
                   )}
 
                   {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
-                  {paymentAllowed && !couponResult?.isFree && (
+                  {paymentAllowed && !isFreeCoupon && (
                     <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
                   )}
 
                   {/* Hosted card fields (PayPal) or POK GuestCheckoutForm */}
-                  {payMethod === "card" && !couponResult?.isFree && paymentAllowed && (
+                  {payMethod === "card" && !isFreeCoupon && paymentAllowed && (
                     <div className="space-y-3 [color-scheme:none]">
                       {pubSettings?.pokEnabled ? (
                         pokOrderId ? (
@@ -2163,7 +2197,7 @@ export default function Checkout({ params }: Props) {
                   {status === "paying" && (
                     <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {couponResult?.isFree ? t("processing_retrieving_data") : t("processing_payment")}
+                      {isFreeCoupon ? t("processing_retrieving_data") : t("processing_payment")}
                     </div>
                   )}
 
@@ -2171,12 +2205,12 @@ export default function Checkout({ params }: Props) {
                   {showProceedButton && (
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
-                      onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
-                      disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && !pubSettings?.pokEnabled && (!hostedFieldsReady || cardEligible === "no"))}
+                      onClick={(!isFreeCoupon && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
+                      disabled={isBusy || (!isFreeCoupon && payMethod === "card" && !pubSettings?.pokEnabled && (!hostedFieldsReady || cardEligible === "no"))}
                     >
                       {isBusy
                         ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("processing")}…</>
-                        : couponResult?.isFree
+                        : isFreeCoupon
                           ? <><Zap className="h-4 w-4" />{t("get_free_report")}</>
                           : payMethod === "card"
                             ? <><CreditCard className="h-4 w-4" />{t("checkout_pay_by_card")}</>

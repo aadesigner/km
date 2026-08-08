@@ -282,6 +282,78 @@ async function releaseCouponUse(couponId: number): Promise<void> {
     .where(eq(couponsTable.id, couponId));
 }
 
+async function releaseCouponUseByCode(code: string | null | undefined): Promise<void> {
+  if (!code?.trim()) return;
+  const [coupon] = await db.select({ id: couponsTable.id })
+    .from(couponsTable)
+    .where(eq(couponsTable.code, code.toUpperCase().trim()))
+    .limit(1);
+  if (coupon) await releaseCouponUse(coupon.id);
+}
+
+/**
+ * Create or reuse a pending €0 coupon payment (no gateway).
+ * Caller must already have validated the coupon and VIN payability.
+ */
+async function createOrReuseFreeCouponPayment(input: {
+  userId: string;
+  vin: string;
+  currency: string;
+  discountAmount: number;
+  appliedCoupon: typeof couponsTable.$inferSelect | null;
+}): Promise<{ paymentId: number; reused: boolean } | { error: string }> {
+  const { userId, vin, currency, discountAmount, appliedCoupon } = input;
+
+  const [existingPendingFree] = await db.select().from(paymentsTable)
+    .where(and(
+      eq(paymentsTable.userId, userId),
+      eq(paymentsTable.vin, vin),
+      eq(paymentsTable.status, "pending"),
+      eq(paymentsTable.amount, 0),
+      sql`${paymentsTable.couponCode} IS NOT NULL`,
+    ))
+    .orderBy(desc(paymentsTable.id))
+    .limit(1);
+
+  if (existingPendingFree) {
+    logger.info({
+      msg: "payment_reused",
+      type: "free_coupon_pending",
+      paymentId: existingPendingFree.id,
+      userId,
+      vin,
+      couponCode: existingPendingFree.couponCode ?? null,
+    });
+    return { paymentId: existingPendingFree.id, reused: true };
+  }
+
+  if (appliedCoupon) {
+    const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
+    if (!reserved) return { error: "Coupon usage limit reached" };
+  }
+
+  const [payment] = await db.insert(paymentsTable).values({
+    userId,
+    vin,
+    amount: 0,
+    currency,
+    status: "pending",
+    kind: "vin_report",
+    couponCode: appliedCoupon?.code ?? null,
+    discountAmount,
+  }).returning();
+
+  logger.info({
+    msg: "payment_created",
+    type: "free_coupon",
+    paymentId: payment.id,
+    userId,
+    vin,
+    couponCode: appliedCoupon?.code ?? null,
+  });
+  return { paymentId: payment.id, reused: false };
+}
+
 // POST /payments/validate-coupon
 router.post("/payments/validate-coupon", requireAuth, couponLimiter, async (req, res) => {
   if (await rejectVinLookupIfDisabled(req, res)) return;
@@ -366,49 +438,18 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
   }
 
   if (finalPrice === 0) {
-    const [existingPendingFree] = await db.select().from(paymentsTable)
-      .where(and(
-        eq(paymentsTable.userId, userId),
-        eq(paymentsTable.vin, normalizedVin),
-        eq(paymentsTable.status, "pending"),
-        eq(paymentsTable.amount, 0),
-        sql`${paymentsTable.couponCode} IS NOT NULL`,
-      ))
-      .orderBy(desc(paymentsTable.id))
-      .limit(1);
-
-    if (existingPendingFree) {
-      logger.info({
-        msg: "payment_reused",
-        type: "free_coupon_pending",
-        paymentId: existingPendingFree.id,
-        userId,
-        vin: normalizedVin,
-        couponCode: existingPendingFree.couponCode ?? null,
-      });
-      res.json({ free: true, paymentId: existingPendingFree.id, vin: normalizedVin });
-      return;
-    }
-
-    if (appliedCoupon) {
-      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
-      if (!reserved) {
-        res.status(422).json({ error: "Coupon usage limit reached" });
-        return;
-      }
-    }
-
-    const [payment] = await db.insert(paymentsTable).values({
+    const free = await createOrReuseFreeCouponPayment({
       userId,
       vin: normalizedVin,
-      amount: 0,
       currency,
-      status: "pending",
-      couponCode: appliedCoupon?.code ?? null,
       discountAmount,
-    }).returning();
-    logger.info({ msg: "payment_created", type: "free_coupon", paymentId: payment.id, userId, vin: normalizedVin, couponCode: appliedCoupon?.code ?? null });
-    res.json({ free: true, paymentId: payment.id, vin: normalizedVin });
+      appliedCoupon,
+    });
+    if ("error" in free) {
+      res.status(422).json({ error: free.error });
+      return;
+    }
+    res.json({ free: true, paymentId: free.paymentId, vin: normalizedVin });
     return;
   }
 
@@ -444,17 +485,19 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
         purchase_units: [{
           amount: {
             currency_code: currency,
+            // Charge the post-coupon total only. Do not send a PayPal `discount` breakdown —
+            // that path is fragile (AMOUNT_MISMATCH) and coupons are already recorded on our payment row.
             value: finalPrice.toFixed(2),
             breakdown: {
-              item_total: { currency_code: currency, value: discountAmount > 0 ? basePrice.toFixed(2) : finalPrice.toFixed(2) },
-              ...(discountAmount > 0 ? { discount: { currency_code: currency, value: discountAmount.toFixed(2) } } : {}),
+              item_total: { currency_code: currency, value: finalPrice.toFixed(2) },
             },
           },
           description: `VIN Report — ${normalizedVin}`,
           items: [{
             name: `VIN Report — ${normalizedVin}`,
             quantity: "1",
-            unit_amount: { currency_code: currency, value: discountAmount > 0 ? basePrice.toFixed(2) : finalPrice.toFixed(2) },
+            category: "DIGITAL_GOODS",
+            unit_amount: { currency_code: currency, value: finalPrice.toFixed(2) },
           }],
           custom_id: `${userId}|${normalizedVin}`,
         }],
@@ -1060,11 +1103,6 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
   if (user[0]?.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
   if (await rejectVinLookupIfDisabled(req, res)) return;
 
-  if (!(await resolvePokConfig())) {
-    res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
-    return;
-  }
-
   // Optional reCAPTCHA (same policy as other checkout paths when enabled)
   void recaptchaToken;
 
@@ -1084,14 +1122,6 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     appliedCoupon = couponResult.coupon;
   }
 
-  if (finalPrice === 0) {
-    res.status(400).json({
-      error: "Free coupons must use the standard checkout path.",
-      code: "USE_PAYPAL_FREE_PATH",
-    });
-    return;
-  }
-
   const normalizedVin = vin.toUpperCase();
   const payable = await ensureVinPayableForPayment(userId, normalizedVin);
   if (!payable.ok) {
@@ -1109,6 +1139,28 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       return;
     }
     res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
+    return;
+  }
+
+  // Free coupons: same zero-amount unlock as PayPal — do not create a POK order.
+  if (finalPrice === 0) {
+    const free = await createOrReuseFreeCouponPayment({
+      userId,
+      vin: normalizedVin,
+      currency,
+      discountAmount,
+      appliedCoupon,
+    });
+    if ("error" in free) {
+      res.status(422).json({ error: free.error });
+      return;
+    }
+    res.json({ free: true, paymentId: free.paymentId, vin: normalizedVin });
+    return;
+  }
+
+  if (!(await resolvePokConfig())) {
+    res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
     return;
   }
 
@@ -1209,6 +1261,7 @@ router.post("/payments/confirm-pok-order", pokConfirmLimiter, requireAuth, async
       await db.update(paymentsTable)
         .set({ status: "failed", updatedAt: new Date() })
         .where(eq(paymentsTable.pokOrderId, orderId));
+      await releaseCouponUseByCode(payment.couponCode);
       logger.warn({ msg: "pok_confirm_not_completed", orderId, userId, vin: payment.vin });
       res.status(402).json({
         error: "Payment was not completed. Please try again.",
@@ -1221,6 +1274,7 @@ router.post("/payments/confirm-pok-order", pokConfirmLimiter, requireAuth, async
       await db.update(paymentsTable)
         .set({ status: "failed", updatedAt: new Date() })
         .where(eq(paymentsTable.pokOrderId, orderId));
+      await releaseCouponUseByCode(payment.couponCode);
       logger.error({
         msg: "pok_confirm_amount_mismatch",
         orderId,
