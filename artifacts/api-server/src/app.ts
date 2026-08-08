@@ -47,6 +47,8 @@ app.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
+          // ThreatMetrix (Cardinal/CyberSource DF) used by POK 3DS
+          "'unsafe-eval'",
           "https://www.paypal.com",
           "https://www.paypalobjects.com",
           "https://www.google.com",
@@ -58,7 +60,13 @@ app.use(
           "https://www.clarity.ms",
           "https://scripts.clarity.ms",
           "https://static.pokpay.io",
+          "https://*.pokpay.io",
           "https://connect.facebook.net",
+          "https://h.online-metrix.net",
+          "https://*.online-metrix.net",
+          "https://*.cardinalcommerce.com",
+          "https://songbird.cardinalcommerce.com",
+          "https://songbirdstag.cardinalcommerce.com",
         ],
         styleSrc: [
           "'self'",
@@ -97,10 +105,13 @@ app.use(
           "wss://api.pokpay.io",
           "wss://api-staging.pokpay.io",
           "wss://*.pokpay.io",
-          // Cardinal Cruise device fingerprint / 3DS collect
+          // Cardinal Cruise + ThreatMetrix device fingerprint
           "https://*.cardinalcommerce.com",
           "https://centinelapi.cardinalcommerce.com",
           "https://centinelapistag.cardinalcommerce.com",
+          "https://geo.cardinalcommerce.com",
+          "https://h.online-metrix.net",
+          "https://*.online-metrix.net",
           "https://connect.facebook.net",
           "https://www.facebook.com",
         ],
@@ -117,6 +128,8 @@ app.use(
           "https://*.pokpay.io",
           "https://*.cardinalcommerce.com",
           "https://*.cybersource.com",
+          "https://h.online-metrix.net",
+          "https://*.online-metrix.net",
           // Bank ACS / 3-D Secure challenge pages (issuer-specific hosts)
           "https:",
         ],
@@ -129,9 +142,12 @@ app.use(
           "https://*.pokpay.io",
           "https://api.pokpay.io",
           "https://api-staging.pokpay.io",
+          "https://h.online-metrix.net",
+          "https://*.online-metrix.net",
           // Issuer ACS challenge form POSTs (host varies by bank)
           "https:",
         ],
+        workerSrc: ["'self'", "blob:", "https://h.online-metrix.net", "https://*.online-metrix.net"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
       },

@@ -837,9 +837,43 @@ router.get("/auth/facebook/callback", async (req, res) => {
     return;
   }
 
-  // Facebook doesn't guarantee email — require it for account creation/lookup
+  // Facebook often omits email (declined permission, phone-only account, or app
+  // lacks Advanced Access on the email permission). Returning users can still
+  // sign in by facebookId; new accounts still need an email.
   if (!email) {
-    res.redirect(oauthSignInRedirect(frontendBase, lang, "facebook_no_email"));
+    const [existingByFacebook] = await db
+      .select(oauthUserSelect)
+      .from(usersTable)
+      .where(eq(usersTable.facebookId, facebookId))
+      .limit(1);
+
+    if (!existingByFacebook) {
+      logger.warn({ msg: "facebook_oauth_no_email", facebookId });
+      res.redirect(oauthSignInRedirect(frontendBase, lang, "facebook_no_email"));
+      return;
+    }
+
+    if (existingByFacebook.isBanned) {
+      res.redirect(oauthSignInRedirect(frontendBase, lang, "banned"));
+      return;
+    }
+
+    const sessionDays = clampSessionDays(settings.sessionDays);
+    const oauthIp = clientIpKey(req);
+    const user = await syncUserAdminFlag(existingByFacebook);
+    await db.update(usersTable)
+      .set({
+        avatarUrl: existingByFacebook.avatarUrl ?? picture ?? undefined,
+        lastLoginAt: new Date(),
+        lastLoginIp: oauthIp,
+        updatedAt: new Date(),
+      })
+      .where(eq(usersTable.id, user.id));
+
+    logger.info({ msg: "facebook_oauth_login_no_email", userId: user.id, facebookId });
+    const token = await signJwt(user.id, sessionDays);
+    setAuthCookie(res, token, sessionDays);
+    res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
     return;
   }
 
