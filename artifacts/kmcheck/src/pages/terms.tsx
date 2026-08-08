@@ -63,12 +63,15 @@ export default function Terms() {
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_terms_s2_title")}</h2>
           <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s2_body1")}</p>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_terms_s2_body2")}</p>
+          <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s2_body2")}</p>
+          <p className="text-muted-foreground leading-relaxed">{t("legal_terms_s2_body3")}</p>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_terms_s3_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_terms_s3_body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            <TextWithObfuscatedEmail text={t("legal_terms_s3_body")} />
+          </p>
         </section>
 
         <section>
@@ -76,7 +79,7 @@ export default function Terms() {
           <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_terms_s4_body1")}</p>
           <p className="text-muted-foreground leading-relaxed">
             <strong className="font-semibold text-foreground">{t("legal_terms_s4_refund_label")}</strong>{" "}
-            {t("legal_terms_s4_refund_body")}
+            <TextWithObfuscatedEmail text={t("legal_terms_s4_refund_body")} />
           </p>
         </section>
 

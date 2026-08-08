@@ -6,9 +6,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TextWithObfuscatedEmail } from "@/components/obfuscated-email-link";
 
 const COOKIE_TYPES = [
-  { typeKey: "legal_cookie_essential_type", descKey: "legal_cookie_essential_desc", required: true },
-  { typeKey: "legal_cookie_functional_type", descKey: "legal_cookie_functional_desc", required: false },
-  { typeKey: "legal_cookie_analytics_type", descKey: "legal_cookie_analytics_desc", required: false },
+  { typeKey: "legal_cookie_essential_type", descKey: "legal_cookie_essential_desc", badge: "required" as const },
+  { typeKey: "legal_cookie_storage_type", descKey: "legal_cookie_storage_desc", badge: "required" as const },
+  { typeKey: "legal_cookie_analytics_type", descKey: "legal_cookie_analytics_desc", badge: "when_enabled" as const },
+] as const;
+
+const SHARE_KEYS = [
+  "legal_privacy_s3_auth",
+  "legal_privacy_s3_oauth",
+  "legal_privacy_s3_recaptcha",
+  "legal_privacy_s3_paypal",
+  "legal_privacy_s3_pok",
+  "legal_privacy_s3_providers",
+  "legal_privacy_s3_email",
+  "legal_privacy_s3_analytics",
 ] as const;
 
 export default function Privacy() {
@@ -34,6 +45,7 @@ export default function Privacy() {
     t("legal_privacy_s2_li4"),
     t("legal_privacy_s2_li5"),
     t("legal_privacy_s2_li6"),
+    t("legal_privacy_s2_li7"),
   ];
 
   const rightsItems = [
@@ -91,9 +103,9 @@ export default function Privacy() {
           <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s3_title")}</h2>
           <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_privacy_s3_intro")}</p>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            <li>{t("legal_privacy_s3_auth")}</li>
-            <li>{t("legal_privacy_s3_paypal")}</li>
-            <li>{t("legal_privacy_s3_providers")}</li>
+            {SHARE_KEYS.map((key) => (
+              <li key={key}>{t(key)}</li>
+            ))}
           </ul>
           <p className="text-muted-foreground leading-relaxed mt-3">{t("legal_privacy_s3_footer")}</p>
         </section>
@@ -106,7 +118,9 @@ export default function Privacy() {
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s5_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s5_body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            <TextWithObfuscatedEmail text={t("legal_privacy_s5_body")} />
+          </p>
         </section>
 
         <section>
@@ -121,10 +135,16 @@ export default function Privacy() {
             </p>
             <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_cookies_types")}</p>
             <div className="space-y-3">
-              {COOKIE_TYPES.map(({ typeKey, descKey, required }) => (
+              {COOKIE_TYPES.map(({ typeKey, descKey, badge }) => (
                 <div key={typeKey} className="flex items-start gap-3 p-4 rounded-xl border bg-muted/30">
-                  <div className={`px-2 py-0.5 rounded text-xs font-semibold shrink-0 mt-0.5 ${required ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                    {required ? t("legal_cookie_required") : t("legal_cookie_optional")}
+                  <div
+                    className={`px-2 py-0.5 rounded text-xs font-semibold shrink-0 mt-0.5 ${
+                      badge === "required"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {badge === "required" ? t("legal_cookie_required") : t("legal_cookie_when_enabled")}
                   </div>
                   <div>
                     <p className="font-medium text-sm">{t(typeKey)}</p>
@@ -158,7 +178,9 @@ export default function Privacy() {
 
         <section>
           <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s9_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s9_body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            <TextWithObfuscatedEmail text={t("legal_privacy_s9_body")} />
+          </p>
         </section>
 
         <section>
