@@ -552,7 +552,7 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
   } catch (err) {
     if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
     logger.error({ err }, "PayPal order creation failed");
-    res.status(502).json({ error: "Failed to create payment. Please try again." });
+    res.status(503).json({ error: "Failed to create payment. Please try again." });
   }
 });
 
@@ -692,7 +692,7 @@ router.post("/payments/capture-paypal-order", paypalCaptureLimiter, requireAuth,
     await db.update(paymentsTable)
       .set({ status: "failed", updatedAt: new Date() })
       .where(eq(paymentsTable.paypalOrderId, orderId));
-    res.status(502).json({
+    res.status(503).json({
       error: "Failed to capture payment. Please try again.",
       code: "PAYMENT_CAPTURE_FAILED",
     });
@@ -810,7 +810,7 @@ router.post("/payments/create-credit-pack-order", paypalOrderCreateLimiter, requ
     });
   } catch (err) {
     logger.error({ err }, "PayPal credit-pack order creation failed");
-    res.status(502).json({ error: "Failed to create payment. Please try again." });
+    res.status(503).json({ error: "Failed to create payment. Please try again." });
   }
 });
 
@@ -982,7 +982,7 @@ router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, require
     await db.update(paymentsTable)
       .set({ status: "failed", updatedAt: new Date() })
       .where(eq(paymentsTable.paypalOrderId, orderId));
-    res.status(502).json({
+    res.status(503).json({
       error: "Failed to capture payment. Please try again.",
       code: "PAYMENT_CAPTURE_FAILED",
     });
@@ -1111,7 +1111,8 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     res.status(status).json(body);
   };
 
-  // Cloudflare returns an HTML 502 if origin stays silent too long — always answer with JSON first.
+  // Answer with JSON before Cloudflare gives up. Use 503 (not 502): CF replaces origin 502
+  // bodies with its HTML error page, which breaks the checkout client's JSON parsing.
   const watchdog = setTimeout(() => {
     logger.error({
       msg: "create_pok_watchdog",
@@ -1119,7 +1120,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       vin: normalizedVin || null,
       couponCode: couponCodeLog,
     }, "POK create-pok-order watchdog fired");
-    sendJson(502, {
+    sendJson(503, {
       error: "Failed to create card payment. Please try again.",
       code: "POK_CREATE_TIMEOUT",
       detail: "Server timed out creating the card payment",
@@ -1353,7 +1354,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       finalPrice: finalPriceLog,
       currency: currencyLog,
     }, "POK order creation failed");
-    sendJson(502, {
+    sendJson(503, {
       error: "Failed to create card payment. Please try again.",
       code: "POK_CREATE_FAILED",
       detail: errMessage.slice(0, 240),
@@ -1456,7 +1457,7 @@ router.post("/payments/confirm-pok-order", pokConfirmLimiter, requireAuth, async
       res.json({ success: true, vin: fresh.vin, paymentId: fresh.id });
       return;
     }
-    res.status(502).json({
+    res.status(503).json({
       error: "Failed to confirm payment. Please try again.",
       code: "PAYMENT_CONFIRM_FAILED",
     });
@@ -1525,7 +1526,7 @@ router.post("/payments/create-pok-credit-pack-order", pokOrderCreateLimiter, req
     });
   } catch (err) {
     logger.error({ err }, "POK credit-pack order creation failed");
-    res.status(502).json({ error: "Failed to create card payment. Please try again." });
+    res.status(503).json({ error: "Failed to create card payment. Please try again." });
   }
 });
 
@@ -1639,7 +1640,7 @@ router.post("/payments/confirm-pok-credit-pack-order", pokConfirmLimiter, requir
       });
       return;
     }
-    res.status(502).json({
+    res.status(503).json({
       error: "Failed to confirm payment. Please try again.",
       code: "PAYMENT_CONFIRM_FAILED",
     });

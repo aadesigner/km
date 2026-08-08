@@ -1329,7 +1329,9 @@ export default function Checkout({ params }: Props) {
         const withCode = data.code
           ? `${detail || t("checkout_error_payment_create")} (${data.code})`
           : (detail || t("checkout_error_payment_create"));
-        setErrorMsg(withCode);
+        // Surface short server detail in console-friendly UI when present (POK upstream errors).
+        const serverDetail = typeof data.detail === "string" ? data.detail.trim().slice(0, 160) : "";
+        setErrorMsg(serverDetail ? `${withCode} — ${serverDetail}` : withCode);
         setStatus("error");
         setPaymentStarted(false);
         return;
