@@ -122,7 +122,7 @@ async function login(config: PokConfig): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ keyId: config.keyId, keySecret: config.keySecret }),
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(5_000),
   });
 
   if (!resp.ok) {
@@ -171,7 +171,7 @@ async function pokFetch<T>(
       Authorization: `Bearer ${token}`,
       ...(init?.headers ?? {}),
     },
-    signal: init?.signal ?? AbortSignal.timeout(8_000),
+    signal: init?.signal ?? AbortSignal.timeout(5_000),
   });
 
   if (resp.status === 401 && init?.retryAuth !== false) {

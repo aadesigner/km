@@ -1103,6 +1103,28 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
   let couponCodeLog: string | null = null;
   let finalPriceLog: number | null = null;
   let currencyLog = "EUR";
+  let responded = false;
+
+  const sendJson = (status: number, body: Record<string, unknown>) => {
+    if (responded || res.headersSent) return;
+    responded = true;
+    res.status(status).json(body);
+  };
+
+  // Cloudflare returns an HTML 502 if origin stays silent too long — always answer with JSON first.
+  const watchdog = setTimeout(() => {
+    logger.error({
+      msg: "create_pok_watchdog",
+      userId,
+      vin: normalizedVin || null,
+      couponCode: couponCodeLog,
+    }, "POK create-pok-order watchdog fired");
+    sendJson(502, {
+      error: "Failed to create card payment. Please try again.",
+      code: "POK_CREATE_TIMEOUT",
+      detail: "Server timed out creating the card payment",
+    });
+  }, 12_000);
 
   try {
     const { vin, couponCode, recaptchaToken } = req.body as {
@@ -1111,24 +1133,41 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
 
     const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
     if (!vin || !VIN_RE.test(vin)) {
-      res.status(400).json({ error: "Invalid VIN — must be 17 alphanumeric characters (no I, O, or Q)" });
+      sendJson(400, { error: "Invalid VIN — must be 17 alphanumeric characters (no I, O, or Q)" });
       return;
     }
 
     const COUPON_RE = /^[A-Z0-9_-]{1,50}$/i;
     if (couponCode?.trim() && !COUPON_RE.test(couponCode.trim())) {
-      res.status(400).json({ error: "Invalid coupon code format" });
+      sendJson(400, { error: "Invalid coupon code format" });
       return;
     }
 
-    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    if (user[0]?.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
-    if (await rejectVinLookupIfDisabled(req, res)) return;
+    normalizedVin = vin.toUpperCase();
+    if (couponCode?.trim()) couponCodeLog = couponCode.trim().toUpperCase();
 
-    // Optional reCAPTCHA (same policy as other checkout paths when enabled)
+    logger.info({
+      msg: "create_pok_begin",
+      userId,
+      vin: normalizedVin,
+      couponCode: couponCodeLog,
+    });
+
+    const userPromise = db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    const pricingPromise = getActivePricing();
+    const pokConfigPromise = resolvePokConfig();
+
+    const [userRows, pricing, pokConfig] = await Promise.all([
+      userPromise,
+      pricingPromise,
+      pokConfigPromise,
+    ]);
+
+    if (userRows[0]?.isBanned) { sendJson(403, { error: "Account suspended" }); return; }
+    if (await rejectVinLookupIfDisabled(req, res)) { responded = true; return; }
+
     void recaptchaToken;
 
-    const pricing = await getActivePricing();
     const basePrice = Number(pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice);
     const currency = String(pricing.currency || "EUR").trim() || "EUR";
     currencyLog = currency;
@@ -1137,35 +1176,14 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     let discountAmount = 0;
     let appliedCoupon: typeof couponsTable.$inferSelect | null = null;
 
-    if (couponCode?.trim()) {
-      couponCodeLog = couponCode.trim().toUpperCase();
-      const couponResult = await resolveCoupon(couponCode, basePrice);
-      if ("error" in couponResult) { res.status(422).json({ error: couponResult.error }); return; }
+    if (couponCodeLog) {
+      const couponResult = await resolveCoupon(couponCodeLog, basePrice);
+      if ("error" in couponResult) { sendJson(422, { error: couponResult.error }); return; }
       finalPrice = couponResult.finalPrice;
       discountAmount = couponResult.discountAmount;
       appliedCoupon = couponResult.coupon;
     }
     finalPriceLog = finalPrice;
-
-    normalizedVin = vin.toUpperCase();
-    const payable = await ensureVinPayableForPayment(userId, normalizedVin);
-    if (!payable.ok) {
-      if (payable.code === "ALREADY_UNLOCKED") {
-        res.status(409).json({
-          error: "You already have access to this VIN report.",
-          code: "ALREADY_UNLOCKED",
-          alreadyUnlocked: true,
-          lookupId: payable.lookupId ?? null,
-        });
-        return;
-      }
-      if (payable.code === "VIN_NO_DATA") {
-        res.status(422).json({ error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
-        return;
-      }
-      res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
-      return;
-    }
 
     // Free coupons: same zero-amount unlock as PayPal — do not create a POK order.
     if (finalPrice === 0) {
@@ -1177,27 +1195,25 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
         appliedCoupon,
       });
       if ("error" in free) {
-        res.status(422).json({ error: free.error });
+        sendJson(422, { error: free.error });
         return;
       }
-      res.json({ free: true, paymentId: Number(free.paymentId), vin: normalizedVin });
+      sendJson(200, { free: true, paymentId: Number(free.paymentId), vin: normalizedVin });
       return;
     }
 
     const chargeAmount = Number(Number(finalPrice).toFixed(2));
     if (!(Number.isFinite(chargeAmount) && chargeAmount > 0)) {
-      res.status(422).json({ error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
+      sendJson(422, { error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
       return;
     }
 
-    const pokConfig = await resolvePokConfig();
     if (!pokConfig) {
-      res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
+      sendJson(503, { error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
       return;
     }
 
-    // Reuse a recent pending POK payment (same user/vin/amount/coupon). Retries after a
-    // Cloudflare HTML 502 often already succeeded on origin — don't create another order.
+    // Reuse recent pending POK payment BEFORE provider checks — recovers CF 502 retries fast.
     const reuseAfter = new Date(Date.now() - 25 * 60_000);
     const couponClause = appliedCoupon
       ? eq(paymentsTable.couponCode, appliedCoupon.code)
@@ -1230,7 +1246,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
         vin: normalizedVin,
         couponCode: appliedCoupon?.code ?? null,
       });
-      res.json({
+      sendJson(200, {
         orderId: existingPending.pokOrderId,
         paymentId: Number(existingPending.id),
         finalPrice: chargeAmount,
@@ -1243,21 +1259,40 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       return;
     }
 
+    const payable = await ensureVinPayableForPayment(userId, normalizedVin);
+    if (responded) return;
+    if (!payable.ok) {
+      if (payable.code === "ALREADY_UNLOCKED") {
+        sendJson(409, {
+          error: "You already have access to this VIN report.",
+          code: "ALREADY_UNLOCKED",
+          alreadyUnlocked: true,
+          lookupId: payable.lookupId ?? null,
+        });
+        return;
+      }
+      if (payable.code === "VIN_NO_DATA") {
+        sendJson(422, { error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
+        return;
+      }
+      sendJson(503, { error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
+      return;
+    }
+
     // Create POK order first (network). Reserve coupon only after success so we don't
     // hold a coupon row lock during the external HTTP call.
     const order = await createPokSdkOrder({
       amount: chargeAmount,
       currencyCode: currency,
-      description: `VIN Report — ${normalizedVin}`,
+      description: `VIN Report - ${normalizedVin}`,
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
       config: pokConfig,
     });
+    if (responded) return;
 
     if (appliedCoupon) {
       const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
       if (!reserved) {
-        // POK order already exists at the discounted amount — still record payment so the
-        // card form can mount. resolveCoupon already checked the limit moments ago.
         logger.warn({
           msg: "coupon_consume_race_after_pok",
           couponId: appliedCoupon.id,
@@ -1295,7 +1330,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       couponCode: appliedCoupon?.code ?? null,
     });
 
-    res.json({
+    sendJson(200, {
       orderId: order.id,
       paymentId,
       finalPrice: chargeAmount,
@@ -1310,21 +1345,21 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     }
     const errMessage = err instanceof Error ? err.message : String(err);
     logger.error({
-      err,
       errMessage,
+      errName: err instanceof Error ? err.name : undefined,
       userId,
       vin: normalizedVin || null,
       couponCode: couponCodeLog,
       finalPrice: finalPriceLog,
       currency: currencyLog,
     }, "POK order creation failed");
-    if (!res.headersSent) {
-      res.status(502).json({
-        error: "Failed to create card payment. Please try again.",
-        code: "POK_CREATE_FAILED",
-        detail: errMessage.slice(0, 240),
-      });
-    }
+    sendJson(502, {
+      error: "Failed to create card payment. Please try again.",
+      code: "POK_CREATE_FAILED",
+      detail: errMessage.slice(0, 240),
+    });
+  } finally {
+    clearTimeout(watchdog);
   }
 });
 

@@ -28,6 +28,7 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   PAYMENT_CAPTURE_FAILED: "checkout_error_capture",
   PAYMENT_NOT_CONFIGURED: "checkout_payment_not_configured",
   POK_CREATE_FAILED: "checkout_error_payment_create",
+  POK_CREATE_TIMEOUT: "checkout_error_payment_create",
   POK_NOT_CONFIGURED: "checkout_payment_not_configured",
   COUPON_LIMIT: "checkout_error_coupon_inactive",
   INVALID_AMOUNT: "checkout_error_payment_create",
