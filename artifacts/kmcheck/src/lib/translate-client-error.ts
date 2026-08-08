@@ -38,6 +38,7 @@ const ERROR_CODE_KEYS: Record<string, string> = {
   VIN_INVALID: "vin_error_invalid_chars",
   INVALID_VIN: "vin_error_length",
   ALREADY_UNLOCKED: "checkout_already_unlocked",
+  INSUFFICIENT_CREDITS: "checkout_insufficient_credits",
   PASSWORD_TOO_SHORT: "reset_password_too_short",
   PASSWORD_NEEDS_LETTER: "error_password_needs_letter",
   PASSWORD_NEEDS_LOWERCASE: "error_password_needs_letter",
@@ -61,6 +62,15 @@ function isInternalErrorMessage(error: string): boolean {
   return /internal server error|unexpected error|econnrefused|etimedout|socket hang up/i.test(error);
 }
 
+/** Provider/stack traces, merchant paths, and raw HTTP payloads must never reach the UI. */
+function isUnsafeClientErrorMessage(error: string): boolean {
+  if (isInternalErrorMessage(error)) return true;
+  if (error.length > 160) return true;
+  return /[{}<>]|https?:\/\/|\/merchants\/|sdk-orders|csAuthentication|access[_-]?token|keySecret|keyId|Bearer\s|pokpay|statusCode|stack|at \w+\s*\(|ECONN|ENOTFOUND|postgres|drizzle/i.test(
+    error,
+  );
+}
+
 /** Maps API / PayPal English error strings and codes to i18n keys for all client pages. */
 export function translateClientError(t: TFn, code?: string, error?: string): string {
   const fromCode = translateByCode(t, code);
@@ -80,6 +90,9 @@ export function translateClientError(t: TFn, code?: string, error?: string): str
   }
   if (matchError(error, [/no active vin data provider/i, /no active vin provider/i])) {
     return t("checkout_check_unavailable_desc");
+  }
+  if (matchError(error, [/coupon has expired/i, /coupon.*expired/i])) {
+    return t("checkout_error_coupon_inactive");
   }
   if (matchError(error, [/invalid or inactive coupon/i])) {
     return t("checkout_error_coupon_inactive");
@@ -196,7 +209,7 @@ export function translateClientError(t: TFn, code?: string, error?: string): str
     return t("maintenance_body");
   }
 
-  if (error && !isInternalErrorMessage(error) && error.length <= 160 && !/[{}<>]/.test(error)) {
+  if (error && !isUnsafeClientErrorMessage(error)) {
     return error;
   }
 

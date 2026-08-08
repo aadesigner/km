@@ -1123,7 +1123,6 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     sendJson(503, {
       error: "Failed to create card payment. Please try again.",
       code: "POK_CREATE_TIMEOUT",
-      detail: "Server timed out creating the card payment",
     });
   }, 12_000);
 
@@ -1357,7 +1356,6 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     sendJson(503, {
       error: "Failed to create card payment. Please try again.",
       code: "POK_CREATE_FAILED",
-      detail: errMessage.slice(0, 240),
     });
   } finally {
     clearTimeout(watchdog);

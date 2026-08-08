@@ -991,7 +991,6 @@ export default function Checkout({ params }: Props) {
         await finalizePaidCheckoutRef.current(data.orderID, nvin);
       },
       onError: (err: unknown) => {
-        console.error("PayPal error", err);
         pendingPaypalOrderRef.current = null;
         if (paypalFlowPhaseRef.current !== "idle") {
           return;
@@ -1026,8 +1025,7 @@ export default function Checkout({ params }: Props) {
       paypalContainerRef.current.innerHTML = "";
       await buttons.render(paypalContainerRef.current);
       return true;
-    } catch (err) {
-      console.error("PayPal render error", err);
+    } catch {
       pendingPaypalOrderRef.current = null;
       setPaymentStarted(false);
       setErrorMsg(t("checkout_error_paypal_load"));
@@ -1193,7 +1191,7 @@ export default function Checkout({ params }: Props) {
         return;
       }
       if (!resp.ok || !data.paymentId) {
-        setErrorMsg(data.error || t("checkout_error_payment_create"));
+        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
         setStatus("error");
         return;
       }
@@ -1259,7 +1257,6 @@ export default function Checkout({ params }: Props) {
           free?: boolean;
           error?: string;
           code?: string;
-          detail?: string;
           alreadyUnlocked?: boolean;
           lookupId?: number | null;
         };
@@ -1268,12 +1265,7 @@ export default function Checkout({ params }: Props) {
           data = rawText ? JSON.parse(rawText) as typeof data : {};
         } catch {
           if (gen !== pokCreateGenRef.current) return;
-          console.error("create-pok-order non-JSON response", resp.status, rawText.slice(0, 200));
-          setErrorMsg(
-            resp.status >= 500
-              ? `${t("checkout_error_payment_create")} (HTTP ${resp.status})`
-              : t("checkout_error_payment_create"),
-          );
+          setErrorMsg(t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
@@ -1324,20 +1316,12 @@ export default function Checkout({ params }: Props) {
           setStatus("idle");
           return;
         }
-        console.error("create-pok-order failed", resp.status, data);
-        const detail = translateClientError(t, data.code, data.error) || data.error;
-        const withCode = data.code
-          ? `${detail || t("checkout_error_payment_create")} (${data.code})`
-          : (detail || t("checkout_error_payment_create"));
-        // Surface short server detail in console-friendly UI when present (POK upstream errors).
-        const serverDetail = typeof data.detail === "string" ? data.detail.trim().slice(0, 160) : "";
-        setErrorMsg(serverDetail ? `${withCode} — ${serverDetail}` : withCode);
+        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
         setStatus("error");
         setPaymentStarted(false);
         return;
-      } catch (err) {
+      } catch {
         if (gen !== pokCreateGenRef.current) return;
-        console.error("create-pok-order exception", err);
         setErrorMsg(t("checkout_error_payment_create"));
         setStatus("error");
         setPaymentStarted(false);

@@ -96,8 +96,7 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     onSuccessRef.current();
   }, []);
   const stableOnError = useMemo(
-    () => (error: PaymentErrorResponse) => {
-      console.error("POK checkout error", error);
+    () => (_error: PaymentErrorResponse) => {
       onErrorRef.current(t("checkout_error_card_declined"));
     },
     [t],

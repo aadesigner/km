@@ -9,6 +9,7 @@ import { useDisplayPrice } from "@/hooks/use-display-price";
 import { AUTH_RETURN_PATH_KEY } from "@/lib/checkout-vin-flow";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
+import { translateClientError } from "@/lib/translate-client-error";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/seo";
@@ -141,7 +142,7 @@ export default function CreditsCheckout({ params }: Props) {
         code?: string;
       };
       if (!resp.ok || !data.success) {
-        setErrorMsg(data.error || t("checkout_error_capture"));
+        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_capture"));
         setStatus("error");
         return;
       }
@@ -171,7 +172,7 @@ export default function CreditsCheckout({ params }: Props) {
         code?: string;
       };
       if (!resp.ok || !data.success) {
-        setErrorMsg(data.error || t("checkout_error_capture"));
+        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_capture"));
         setStatus("error");
         return;
       }
@@ -277,9 +278,9 @@ export default function CreditsCheckout({ params }: Props) {
           credentials: "include",
           body: JSON.stringify({ packId: pack.id }),
         });
-        const data = await resp.json() as { orderId?: string; error?: string };
+        const data = await resp.json() as { orderId?: string; error?: string; code?: string };
         if (!resp.ok || !data.orderId) {
-          setErrorMsg(data.error || t("checkout_error_payment_create"));
+          setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
@@ -308,9 +309,9 @@ export default function CreditsCheckout({ params }: Props) {
         credentials: "include",
         body: JSON.stringify({ packId: pack.id }),
       });
-      const data = await resp.json() as { orderId?: string; error?: string };
+      const data = await resp.json() as { orderId?: string; error?: string; code?: string };
       if (!resp.ok || !data.orderId) {
-        setErrorMsg(data.error || t("checkout_error_payment_create"));
+        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
         setStatus("error");
         return;
       }
