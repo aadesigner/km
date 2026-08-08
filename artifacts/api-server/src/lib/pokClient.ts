@@ -188,19 +188,29 @@ export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<Pok
   const config = await resolvePokConfig();
   if (!config) throw new Error("POK_NOT_CONFIGURED");
 
+  const amount = Number(input.amount);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(`POK_INVALID_AMOUNT:${input.amount}`);
+  }
+  // POK CreateSdkOrderPayload: `amount` is a string; `products[].price` is a number.
+  // Prefer amount-only (empty products) — docs allow amount XOR products; sending both
+  // is unnecessary and has caused client/SDK edge cases with discounted totals.
+  const amountValue = amount.toFixed(2);
+
   const body = await pokFetch<PokEnvelope<{ sdkOrder?: PokSdkOrder; id?: string }>>(
     config,
     `/merchants/${encodeURIComponent(config.merchantId)}/sdk-orders`,
     {
       method: "POST",
       body: JSON.stringify({
-        amount: input.amount,
+        amount: amountValue,
         currencyCode: input.currencyCode,
         autoCapture: true,
         shippingCost: 0,
         description: input.description,
         merchantCustomReference: input.merchantCustomReference,
         expiresAfterMinutes: 60,
+        products: [],
         ...(input.webhookUrl ? { webhookUrl: input.webhookUrl } : {}),
       }),
     },
@@ -209,7 +219,7 @@ export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<Pok
   const order = body.data?.sdkOrder ?? (body.data as PokSdkOrder | undefined);
   const id = order?.id ?? body.data?.id;
   if (!id) {
-    logger.error({ msg: "pok_create_order_missing_id", message: body.message });
+    logger.error({ msg: "pok_create_order_missing_id", message: body.message, amount: amountValue });
     throw new Error("POK_ORDER_CREATE_INVALID_RESPONSE");
   }
   return { ...order, id };

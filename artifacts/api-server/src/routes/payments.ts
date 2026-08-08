@@ -1171,22 +1171,29 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
   }
 
   let reservedCouponId: number | null = null;
-  if (appliedCoupon) {
-    const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
-    if (!reserved) {
-      res.status(422).json({ error: "Coupon usage limit reached" });
-      return;
-    }
-    reservedCouponId = appliedCoupon.id;
-  }
 
   try {
+    if (!(Number.isFinite(finalPrice) && finalPrice > 0)) {
+      res.status(422).json({ error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
+      return;
+    }
+
     const order = await createPokSdkOrder({
       amount: Number(finalPrice.toFixed(2)),
       currencyCode: currency,
       description: `VIN Report — ${normalizedVin}`,
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
     });
+
+    // Reserve coupon only after POK accepts the order — avoids burning uses when POK fails.
+    if (appliedCoupon) {
+      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
+      if (!reserved) {
+        res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
+        return;
+      }
+      reservedCouponId = appliedCoupon.id;
+    }
 
     const [payment] = await db.insert(paymentsTable).values({
       userId,
@@ -1215,7 +1222,9 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
 
     res.json({
       orderId: order.id,
-      paymentId: payment.id,
+      // Always a plain JSON number — avoids FE rejecting a successful POK create
+      // when paymentId arrives as a non-finite parse (seen with coupon responses).
+      paymentId: Number(payment.id),
       finalPrice,
       discountAmount,
       vin: normalizedVin,
@@ -1224,9 +1233,10 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     });
   } catch (err) {
     if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
+    const errMessage = err instanceof Error ? err.message : String(err);
     logger.error({
       err,
-      errMessage: err instanceof Error ? err.message : String(err),
+      errMessage,
       userId,
       vin: normalizedVin,
       couponCode: appliedCoupon?.code ?? null,
@@ -1236,6 +1246,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     res.status(502).json({
       error: "Failed to create card payment. Please try again.",
       code: "POK_CREATE_FAILED",
+      detail: errMessage.slice(0, 240),
     });
   }
 });

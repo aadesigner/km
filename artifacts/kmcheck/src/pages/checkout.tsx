@@ -277,7 +277,10 @@ export default function Checkout({ params }: Props) {
   const finalPrice = couponResult ? couponResult.finalPrice : subtotalPrice;
   const couponDiscountAmount = couponResult?.discountAmount ?? 0;
   /** Prefer server `isFree`; also treat finalPrice 0 so free coupons never take a paid gateway path. */
-  const isFreeCoupon = !!(couponResult && (couponResult.isFree || couponResult.finalPrice === 0));
+  const isFreeCoupon = !!(
+    couponResult
+    && (couponResult.isFree || Number(couponResult.finalPrice) === 0)
+  );
 
   const resetGatewayCheckoutUi = () => {
     clearCheckoutPaymentResumeState();
@@ -428,12 +431,13 @@ export default function Checkout({ params }: Props) {
     return () => { cancelled = true; };
   }, [pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, cardEligible]);
 
-  // Prefer card when POK is the only configured PSP
+  // Default to Card once when POK is available (users were hitting PayPal by default with coupons).
+  const pokCardDefaultedRef = useRef(false);
   useEffect(() => {
-    if (pubSettings?.pokEnabled && !pubSettings?.paypalClientId) {
-      setPayMethod("card");
-    }
-  }, [pubSettings?.pokEnabled, pubSettings?.paypalClientId]);
+    if (!pubSettings?.pokEnabled || pokCardDefaultedRef.current) return;
+    pokCardDefaultedRef.current = true;
+    setPayMethod("card");
+  }, [pubSettings?.pokEnabled]);
 
   // Auto-switch back to PayPal when confirmed ineligible (unless POK cards are available)
   useEffect(() => {
@@ -718,7 +722,10 @@ export default function Checkout({ params }: Props) {
       setCouponResult({
         ...data,
         code: String(data.code ?? couponCode).trim().toUpperCase(),
-        isFree: !!(data.isFree || data.finalPrice === 0),
+        finalPrice: Number(data.finalPrice),
+        discountAmount: Number(data.discountAmount) || 0,
+        value: Number(data.value),
+        isFree: !!(data.isFree || Number(data.finalPrice) === 0),
       });
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
@@ -1286,8 +1293,13 @@ export default function Checkout({ params }: Props) {
           return;
         }
         if (data.code === "USE_PAYPAL_FREE_PATH" || (resp.status === 400 && /free coupon/i.test(data.error ?? ""))) {
+          // Legacy server response — free unlock via PayPal path, then mount buttons.
           setPaymentStarted(false);
-          await createOrder(nvin);
+          const orderId = await createOrder(nvin);
+          if (orderId) {
+            markPaypalCheckoutAwaitingApproval(orderId, nvin);
+            await mountPaypalButtons(nvin, orderId);
+          }
           return;
         }
         if (data.code === "VIN_NO_DATA" || data.code === "VIN_CHECK_UNAVAILABLE") {
@@ -1296,16 +1308,25 @@ export default function Checkout({ params }: Props) {
           setPaymentStarted(false);
           return;
         }
-        if (!resp.ok || !data.orderId || !Number.isFinite(paymentIdNum)) {
+        // orderId alone mounts GuestCheckoutForm. Do NOT require paymentId — production
+        // was treating a successful discounted POK create as failure when paymentId
+        // failed Number.isFinite (exact "Failed to create payment" with coupon).
+        if (!resp.ok || !data.orderId) {
           console.error("create-pok-order failed", resp.status, data);
           const detail = translateClientError(t, data.code, data.error) || data.error;
-          setErrorMsg(detail || t("checkout_error_payment_create"));
+          const withCode = data.code
+            ? `${detail || t("checkout_error_payment_create")} (${data.code})`
+            : (detail || t("checkout_error_payment_create"));
+          setErrorMsg(withCode);
           setStatus("error");
           setPaymentStarted(false);
           return;
         }
+        if (!Number.isFinite(paymentIdNum)) {
+          console.warn("create-pok-order succeeded without numeric paymentId", data);
+        }
         setPokOrderId(data.orderId);
-        setPokPaymentId(paymentIdNum);
+        setPokPaymentId(Number.isFinite(paymentIdNum) ? paymentIdNum : null);
         setErrorMsg("");
         setStatus("idle");
       } catch (err) {
@@ -2194,10 +2215,7 @@ export default function Checkout({ params }: Props) {
                             pokEnv={pubSettings.pokEnv === "staging" ? "staging" : "production"}
                             onSuccess={() => { void handlePokSuccess(); }}
                             onError={(message) => {
-                              // Drop the dead order so "Pay by Card" returns; keep coupon applied.
-                              setPokOrderId(null);
-                              setPokPaymentId(null);
-                              setPaymentStarted(false);
+                              // Keep orderId mounted so card fields stay visible for retry.
                               setErrorMsg(message);
                               setStatus("error");
                             }}
