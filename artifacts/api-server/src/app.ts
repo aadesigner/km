@@ -92,6 +92,10 @@ app.use(
           "https://api-staging.pokpay.io",
           "https://static.pokpay.io",
           "https://*.pokpay.io",
+          // POK GuestCheckout 3DS / order status uses socket.io over WSS
+          "wss://api.pokpay.io",
+          "wss://api-staging.pokpay.io",
+          "wss://*.pokpay.io",
         ],
         frameSrc: [
           "'self'",
@@ -106,6 +110,8 @@ app.use(
           "https://*.pokpay.io",
           "https://*.cardinalcommerce.com",
           "https://*.cybersource.com",
+          // Bank ACS / 3-D Secure challenge pages (issuer-specific hosts)
+          "https:",
         ],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],

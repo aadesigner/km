@@ -7,6 +7,7 @@ import {
   type CountryCountRow,
   type PaymentMethodStat,
 } from "@/lib/admin-dashboard-stats";
+import { userCountryLabel } from "@/lib/user-countries";
 
 const TOOLTIP_STYLE = {
   fontSize: 11,
@@ -36,6 +37,14 @@ const COUNTRY_COLORS = [
   "hsl(200, 25%, 45%)",
 ];
 
+function countryDisplayName(countryCode: string): string {
+  const code = countryCode.trim();
+  if (!code || code === "—" || code === "-" || code.toLowerCase() === "unknown") {
+    return "No country set";
+  }
+  return userCountryLabel(code) ?? code;
+}
+
 type CountryProps = {
   height?: number;
   data: CountryCountRow[];
@@ -59,7 +68,7 @@ export function AdminCountrySignupsChart({
 
   const chartData = data.map((row, i) => ({
     country: row.countryCode,
-    name: row.countryCode,
+    name: countryDisplayName(row.countryCode),
     count: row.count,
     fill: COUNTRY_COLORS[i % COUNTRY_COLORS.length],
   }));
@@ -92,7 +101,7 @@ export function AdminCountrySignupsChart({
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
               return [`${count} · ${pct}%`, valueLabel];
             }}
-            labelFormatter={(label) => `Country ${label}`}
+            labelFormatter={(label) => String(label)}
           />
         </PieChart>
       </ResponsiveContainer>

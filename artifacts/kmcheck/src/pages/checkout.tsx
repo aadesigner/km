@@ -316,6 +316,8 @@ export default function Checkout({ params }: Props) {
     setPaymentStarted(false);
     setStatus("idle");
     setErrorMsg("");
+    setPokOrderId(null);
+    setPokPaymentId(null);
     pendingPaypalOrderRef.current = null;
     paypalFlowPhaseRef.current = "idle";
     paidDeliveryRetryRef.current = false;
