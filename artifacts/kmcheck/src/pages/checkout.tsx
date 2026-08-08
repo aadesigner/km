@@ -1206,7 +1206,10 @@ export default function Checkout({ params }: Props) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
+          body: JSON.stringify({
+            vin: nvin,
+            couponCode: (couponResult?.code ?? couponCode).trim() || undefined,
+          }),
         });
         const data = await resp.json() as {
           orderId?: string;
@@ -1242,7 +1245,8 @@ export default function Checkout({ params }: Props) {
           return;
         }
         if (!resp.ok || !data.orderId || !data.paymentId) {
-          setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
+          console.error("create-pok-order failed", resp.status, data);
+          setErrorMsg(translateClientError(t, data.code, data.error) || data.error || t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
@@ -1250,7 +1254,8 @@ export default function Checkout({ params }: Props) {
         setPokOrderId(data.orderId);
         setPokPaymentId(data.paymentId);
         setStatus("idle");
-      } catch {
+      } catch (err) {
+        console.error("create-pok-order exception", err);
         setErrorMsg(t("checkout_error_payment_create"));
         setStatus("error");
         setPaymentStarted(false);
@@ -2046,7 +2051,7 @@ export default function Checkout({ params }: Props) {
 
                   {/* Payment method tabs — stay visible after PayPal/Card is opened */}
                   {showPaymentMethodTabs && (
-                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mb-2">
+                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mt-3 mb-2">
                       <button
                         type="button"
                         className={cn(

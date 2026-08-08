@@ -1218,8 +1218,19 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     });
   } catch (err) {
     if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
-    logger.error({ err }, "POK order creation failed");
-    res.status(502).json({ error: "Failed to create card payment. Please try again." });
+    logger.error({
+      err,
+      errMessage: err instanceof Error ? err.message : String(err),
+      userId,
+      vin: normalizedVin,
+      couponCode: appliedCoupon?.code ?? null,
+      finalPrice,
+      currency,
+    }, "POK order creation failed");
+    res.status(502).json({
+      error: "Failed to create card payment. Please try again.",
+      code: "POK_CREATE_FAILED",
+    });
   }
 });
 
