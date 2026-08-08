@@ -1218,13 +1218,14 @@ export default function Checkout({ params }: Props) {
     postAuthPrefillLandingRef.current = false;
     const nvin = validateVin();
     if (!nvin) return;
-    if (isFreeCoupon) { await createOrder(nvin); return; }
 
     const appliedCouponCode = String(couponResult?.code ?? couponCode ?? "")
       .trim()
       .toUpperCase() || undefined;
 
-    // POK inline card form — create order then show GuestCheckoutForm
+    // POK inline card form — create order then show GuestCheckoutForm.
+    // Free coupons also go through create-pok-order (server returns { free, paymentId }).
+    // Do NOT divert to create-paypal-order here — that races and can show a false create failure.
     if (pubSettings?.pokEnabled) {
       if (pokCreatingRef.current) return;
       pokCreatingRef.current = true;
@@ -1247,7 +1248,7 @@ export default function Checkout({ params }: Props) {
         });
         let data: {
           orderId?: string;
-          paymentId?: number;
+          paymentId?: number | string;
           free?: boolean;
           error?: string;
           code?: string;
@@ -1269,13 +1270,19 @@ export default function Checkout({ params }: Props) {
           goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
           return;
         }
+        const paymentIdNum =
+          typeof data.paymentId === "number"
+            ? data.paymentId
+            : typeof data.paymentId === "string" && /^\d+$/.test(data.paymentId)
+              ? Number(data.paymentId)
+              : NaN;
         // Free coupon: server returns zero-amount payment (no POK charge).
-        if (data.free && data.paymentId) {
-          freeCouponPaymentIdRef.current = data.paymentId;
+        if (data.free && Number.isFinite(paymentIdNum)) {
+          freeCouponPaymentIdRef.current = paymentIdNum;
           setPaymentStarted(false);
           setPokOrderId(null);
           setPokPaymentId(null);
-          await submitVinLookup(nvin, undefined, data.paymentId);
+          await submitVinLookup(nvin, undefined, paymentIdNum);
           return;
         }
         if (data.code === "USE_PAYPAL_FREE_PATH" || (resp.status === 400 && /free coupon/i.test(data.error ?? ""))) {
@@ -1289,7 +1296,7 @@ export default function Checkout({ params }: Props) {
           setPaymentStarted(false);
           return;
         }
-        if (!resp.ok || !data.orderId || !data.paymentId) {
+        if (!resp.ok || !data.orderId || !Number.isFinite(paymentIdNum)) {
           console.error("create-pok-order failed", resp.status, data);
           const detail = translateClientError(t, data.code, data.error) || data.error;
           setErrorMsg(detail || t("checkout_error_payment_create"));
@@ -1298,7 +1305,7 @@ export default function Checkout({ params }: Props) {
           return;
         }
         setPokOrderId(data.orderId);
-        setPokPaymentId(data.paymentId);
+        setPokPaymentId(paymentIdNum);
         setErrorMsg("");
         setStatus("idle");
       } catch (err) {
@@ -1310,6 +1317,12 @@ export default function Checkout({ params }: Props) {
       } finally {
         if (gen === pokCreateGenRef.current) pokCreatingRef.current = false;
       }
+      return;
+    }
+
+    // Free coupon without POK: PayPal zero-amount path.
+    if (isFreeCoupon) {
+      await createOrder(nvin);
       return;
     }
 

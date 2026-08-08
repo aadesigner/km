@@ -4,4 +4,8 @@
     <loc>https://kmcheck.com/sitemap-pages.xml</loc>
     <lastmod>2026-08-08</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://kmcheck.com/sitemap-vins-1.xml</loc>
+    <lastmod>2026-08-08</lastmod>
+  </sitemap>
 </sitemapindex>
