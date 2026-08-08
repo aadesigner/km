@@ -247,14 +247,23 @@ async function resolveCoupon(code: string, basePrice: number): Promise<{
   if (coupon.expiresAt && coupon.expiresAt < new Date()) return { error: "Coupon has expired" };
   if (coupon.maxUses != null && coupon.uses >= coupon.maxUses) return { error: "Coupon usage limit reached" };
 
-  let discountAmount = 0;
-  if (coupon.type === "percent") {
-    discountAmount = parseFloat((basePrice * (coupon.value / 100)).toFixed(2));
-  } else {
-    discountAmount = Math.min(coupon.value, basePrice);
+  const price = Number(basePrice);
+  const rawValue = Number(coupon.value);
+  if (!Number.isFinite(price) || price < 0 || !Number.isFinite(rawValue)) {
+    return { error: "Invalid or inactive coupon code" };
   }
 
-  const finalPrice = parseFloat(Math.max(0, basePrice - discountAmount).toFixed(2));
+  let discountAmount = 0;
+  if (coupon.type === "percent") {
+    discountAmount = parseFloat((price * (rawValue / 100)).toFixed(2));
+  } else {
+    discountAmount = Math.min(rawValue, price);
+  }
+
+  const finalPrice = parseFloat(Math.max(0, price - discountAmount).toFixed(2));
+  if (!Number.isFinite(finalPrice) || !Number.isFinite(discountAmount)) {
+    return { error: "Invalid or inactive coupon code" };
+  }
   return { coupon, finalPrice, discountAmount };
 }
 
@@ -1113,8 +1122,8 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
   void recaptchaToken;
 
   const pricing = await getActivePricing();
-  const basePrice = pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice;
-  const currency = pricing.currency;
+  const basePrice = Number(pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice);
+  const currency = String(pricing.currency || "EUR").trim() || "EUR";
 
   let finalPrice = basePrice;
   let discountAmount = 0;
@@ -1170,35 +1179,36 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     return;
   }
 
+  // Same coupon reservation order as PayPal create — proven path with discounted totals.
   let reservedCouponId: number | null = null;
+  if (appliedCoupon) {
+    const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
+    if (!reserved) {
+      res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
+      return;
+    }
+    reservedCouponId = appliedCoupon.id;
+  }
 
   try {
-    if (!(Number.isFinite(finalPrice) && finalPrice > 0)) {
+    const chargeAmount = Number(Number(finalPrice).toFixed(2));
+    if (!(Number.isFinite(chargeAmount) && chargeAmount > 0)) {
+      if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
       res.status(422).json({ error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
       return;
     }
 
     const order = await createPokSdkOrder({
-      amount: Number(finalPrice.toFixed(2)),
+      amount: chargeAmount,
       currencyCode: currency,
       description: `VIN Report — ${normalizedVin}`,
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
     });
 
-    // Reserve coupon only after POK accepts the order — avoids burning uses when POK fails.
-    if (appliedCoupon) {
-      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
-      if (!reserved) {
-        res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
-        return;
-      }
-      reservedCouponId = appliedCoupon.id;
-    }
-
     const [payment] = await db.insert(paymentsTable).values({
       userId,
       vin: normalizedVin,
-      amount: finalPrice,
+      amount: chargeAmount,
       currency,
       status: "pending",
       kind: "vin_report",
@@ -1208,24 +1218,23 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     }).returning();
     reservedCouponId = null;
 
+    const paymentId = Number(payment.id);
     logger.info({
       msg: "payment_created",
       type: "pok_order",
       pokOrderId: order.id,
-      paymentId: payment.id,
+      paymentId,
       userId,
       vin: normalizedVin,
-      amount: finalPrice,
+      amount: chargeAmount,
       currency,
       couponCode: appliedCoupon?.code ?? null,
     });
 
     res.json({
       orderId: order.id,
-      // Always a plain JSON number — avoids FE rejecting a successful POK create
-      // when paymentId arrives as a non-finite parse (seen with coupon responses).
-      paymentId: Number(payment.id),
-      finalPrice,
+      paymentId,
+      finalPrice: chargeAmount,
       discountAmount,
       vin: normalizedVin,
       currency,

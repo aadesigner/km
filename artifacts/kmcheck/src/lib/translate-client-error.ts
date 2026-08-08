@@ -113,7 +113,7 @@ export function translateClientError(t: TFn, code?: string, error?: string): str
   if (matchError(error, [/already have access/i])) {
     return t("checkout_already_unlocked");
   }
-  if (matchError(error, [/failed to create payment/i, /order creation failed/i, /failed to create order/i])) {
+  if (matchError(error, [/failed to create payment/i, /failed to create card payment/i, /order creation failed/i, /failed to create order/i])) {
     return t("checkout_error_payment_create");
   }
   if (matchError(error, [/failed to fetch vin data/i])) {

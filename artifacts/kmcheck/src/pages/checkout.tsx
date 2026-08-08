@@ -1259,6 +1259,7 @@ export default function Checkout({ params }: Props) {
           free?: boolean;
           error?: string;
           code?: string;
+          detail?: string;
           alreadyUnlocked?: boolean;
           lookupId?: number | null;
         };
@@ -1277,11 +1278,12 @@ export default function Checkout({ params }: Props) {
           goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
           return;
         }
+        const paymentIdRaw = data.paymentId;
         const paymentIdNum =
-          typeof data.paymentId === "number"
-            ? data.paymentId
-            : typeof data.paymentId === "string" && /^\d+$/.test(data.paymentId)
-              ? Number(data.paymentId)
+          typeof paymentIdRaw === "number"
+            ? paymentIdRaw
+            : typeof paymentIdRaw === "string" && paymentIdRaw.trim() !== ""
+              ? Number(paymentIdRaw)
               : NaN;
         // Free coupon: server returns zero-amount payment (no POK charge).
         if (data.free && Number.isFinite(paymentIdNum)) {
@@ -1308,27 +1310,24 @@ export default function Checkout({ params }: Props) {
           setPaymentStarted(false);
           return;
         }
-        // orderId alone mounts GuestCheckoutForm. Do NOT require paymentId — production
-        // was treating a successful discounted POK create as failure when paymentId
-        // failed Number.isFinite (exact "Failed to create payment" with coupon).
-        if (!resp.ok || !data.orderId) {
-          console.error("create-pok-order failed", resp.status, data);
-          const detail = translateClientError(t, data.code, data.error) || data.error;
-          const withCode = data.code
-            ? `${detail || t("checkout_error_payment_create")} (${data.code})`
-            : (detail || t("checkout_error_payment_create"));
-          setErrorMsg(withCode);
-          setStatus("error");
-          setPaymentStarted(false);
+        const orderId = typeof data.orderId === "string" ? data.orderId.trim() : "";
+        // Mount card fields whenever POK returned an order id — even if paymentId is missing.
+        if (orderId) {
+          setPokOrderId(orderId);
+          setPokPaymentId(Number.isFinite(paymentIdNum) ? paymentIdNum : null);
+          setErrorMsg("");
+          setStatus("idle");
           return;
         }
-        if (!Number.isFinite(paymentIdNum)) {
-          console.warn("create-pok-order succeeded without numeric paymentId", data);
-        }
-        setPokOrderId(data.orderId);
-        setPokPaymentId(Number.isFinite(paymentIdNum) ? paymentIdNum : null);
-        setErrorMsg("");
-        setStatus("idle");
+        console.error("create-pok-order failed", resp.status, data);
+        const detail = translateClientError(t, data.code, data.error) || data.error;
+        const withCode = data.code
+          ? `${detail || t("checkout_error_payment_create")} (${data.code})`
+          : (detail || t("checkout_error_payment_create"));
+        setErrorMsg(withCode);
+        setStatus("error");
+        setPaymentStarted(false);
+        return;
       } catch (err) {
         if (gen !== pokCreateGenRef.current) return;
         console.error("create-pok-order exception", err);
