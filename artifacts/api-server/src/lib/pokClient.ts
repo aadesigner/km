@@ -86,9 +86,20 @@ export function isPokConfigured(settings?: PokCredentialSource | null): boolean 
 }
 
 /** Load effective system settings then resolve POK credentials. */
+let _pokConfigCache: { config: PokConfig | null; expiresAt: number } | null = null;
+
 export async function resolvePokConfig(): Promise<PokConfig | null> {
+  if (_pokConfigCache && Date.now() < _pokConfigCache.expiresAt) {
+    return _pokConfigCache.config;
+  }
   const settings = await getEffectiveSystemSettings();
-  return getPokConfig(settings);
+  const config = getPokConfig(settings);
+  _pokConfigCache = { config, expiresAt: Date.now() + 60_000 };
+  return config;
+}
+
+export function clearPokConfigCache(): void {
+  _pokConfigCache = null;
 }
 
 export async function isPokConfiguredAsync(): Promise<boolean> {
@@ -111,7 +122,7 @@ async function login(config: PokConfig): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ keyId: config.keyId, keySecret: config.keySecret }),
-    signal: AbortSignal.timeout(12_000),
+    signal: AbortSignal.timeout(8_000),
   });
 
   if (!resp.ok) {
@@ -160,7 +171,7 @@ async function pokFetch<T>(
       Authorization: `Bearer ${token}`,
       ...(init?.headers ?? {}),
     },
-    signal: init?.signal ?? AbortSignal.timeout(15_000),
+    signal: init?.signal ?? AbortSignal.timeout(8_000),
   });
 
   if (resp.status === 401 && init?.retryAuth !== false) {
@@ -182,10 +193,12 @@ export type CreatePokOrderInput = {
   description: string;
   merchantCustomReference: string;
   webhookUrl?: string;
+  /** Optional pre-resolved config — avoids a second settings DB round-trip. */
+  config?: PokConfig;
 };
 
 export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<PokSdkOrder> {
-  const config = await resolvePokConfig();
+  const config = input.config ?? (await resolvePokConfig());
   if (!config) throw new Error("POK_NOT_CONFIGURED");
 
   const amount = Number(input.amount);

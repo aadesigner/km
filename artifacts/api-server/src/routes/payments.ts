@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, paymentsTable, pricingTable, usersTable, systemSettingsTable, couponsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
-import { eq, desc, and, lt, sql } from "drizzle-orm";
+import { eq, desc, and, lt, sql, gte, isNull, isNotNull } from "drizzle-orm";
 import { requireAuth } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
 import { ensureVinPayableForPayment, PUBLIC_VIN_CHECK_UNAVAILABLE } from "../lib/vinService.js";
@@ -1184,37 +1184,90 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       return;
     }
 
-    if (!(await resolvePokConfig())) {
-      res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
-      return;
-    }
-
-    // Same coupon reservation order as PayPal create — proven path with discounted totals.
-    if (appliedCoupon) {
-      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
-      if (!reserved) {
-        res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
-        return;
-      }
-      reservedCouponId = appliedCoupon.id;
-    }
-
     const chargeAmount = Number(Number(finalPrice).toFixed(2));
     if (!(Number.isFinite(chargeAmount) && chargeAmount > 0)) {
-      if (reservedCouponId != null) {
-        await releaseCouponUse(reservedCouponId);
-        reservedCouponId = null;
-      }
       res.status(422).json({ error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
       return;
     }
 
+    const pokConfig = await resolvePokConfig();
+    if (!pokConfig) {
+      res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
+      return;
+    }
+
+    // Reuse a recent pending POK payment (same user/vin/amount/coupon). Retries after a
+    // Cloudflare HTML 502 often already succeeded on origin — don't create another order.
+    const reuseAfter = new Date(Date.now() - 25 * 60_000);
+    const couponClause = appliedCoupon
+      ? eq(paymentsTable.couponCode, appliedCoupon.code)
+      : isNull(paymentsTable.couponCode);
+    const [existingPending] = await db.select({
+      id: paymentsTable.id,
+      pokOrderId: paymentsTable.pokOrderId,
+    })
+      .from(paymentsTable)
+      .where(and(
+        eq(paymentsTable.userId, userId),
+        eq(paymentsTable.vin, normalizedVin),
+        eq(paymentsTable.status, "pending"),
+        eq(paymentsTable.kind, "vin_report"),
+        eq(paymentsTable.amount, chargeAmount),
+        isNotNull(paymentsTable.pokOrderId),
+        gte(paymentsTable.createdAt, reuseAfter),
+        couponClause,
+      ))
+      .orderBy(desc(paymentsTable.id))
+      .limit(1);
+
+    if (existingPending?.pokOrderId && POK_ORDER_ID_RE.test(existingPending.pokOrderId)) {
+      logger.info({
+        msg: "payment_reused",
+        type: "pok_order",
+        pokOrderId: existingPending.pokOrderId,
+        paymentId: existingPending.id,
+        userId,
+        vin: normalizedVin,
+        couponCode: appliedCoupon?.code ?? null,
+      });
+      res.json({
+        orderId: existingPending.pokOrderId,
+        paymentId: Number(existingPending.id),
+        finalPrice: chargeAmount,
+        discountAmount,
+        vin: normalizedVin,
+        currency,
+        pokEnv: pokConfig.env,
+        reused: true,
+      });
+      return;
+    }
+
+    // Create POK order first (network). Reserve coupon only after success so we don't
+    // hold a coupon row lock during the external HTTP call.
     const order = await createPokSdkOrder({
       amount: chargeAmount,
       currencyCode: currency,
       description: `VIN Report — ${normalizedVin}`,
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
+      config: pokConfig,
     });
+
+    if (appliedCoupon) {
+      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
+      if (!reserved) {
+        // POK order already exists at the discounted amount — still record payment so the
+        // card form can mount. resolveCoupon already checked the limit moments ago.
+        logger.warn({
+          msg: "coupon_consume_race_after_pok",
+          couponId: appliedCoupon.id,
+          pokOrderId: order.id,
+          userId,
+        });
+      } else {
+        reservedCouponId = appliedCoupon.id;
+      }
+    }
 
     const [payment] = await db.insert(paymentsTable).values({
       userId,
@@ -1249,7 +1302,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       discountAmount,
       vin: normalizedVin,
       currency,
-      pokEnv: (await resolvePokConfig())?.env ?? getPokEnv(),
+      pokEnv: pokConfig.env,
     });
   } catch (err) {
     if (reservedCouponId != null) {
