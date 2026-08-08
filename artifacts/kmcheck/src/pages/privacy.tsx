@@ -51,10 +51,12 @@ export default function Privacy() {
         description={seo.description}
         lang={seo.lang}
         canonicalPath={seo.canonicalPath}
+        noIndex={seo.noIndex}
       />
       <div className="mb-10">
         <p className="text-sm text-muted-foreground mb-2">{t("legal_updated")}</p>
         <h1 className="text-4xl font-extrabold tracking-tight mb-4">{t("legal_privacy_title")}</h1>
+        <p className="text-muted-foreground text-lg mb-3">{t("legal_operator_notice")}</p>
         <p className="text-muted-foreground text-lg">{t("legal_privacy_intro")}</p>
       </div>
 

@@ -5,7 +5,7 @@
   var OG_LOCALE = {"en":"en_US","de":"de_DE","es":"es_ES","fr":"fr_FR","sq":"sq_AL","pl":"pl_PL","ro":"ro_RO","bg":"bg_BG","ka":"ka_GE","ar":"ar_SA","uk":"uk_UA","ru":"ru_RU","zh":"zh_CN"};
   var SEO_LANGS = ["en","de","es","fr","sq","pl","ro","bg","ka","ar","uk","ru","zh"];
   var HREFLANG = {"en":"en","de":"de","es":"es","fr":"fr","sq":"sq-AL","pl":"pl","ro":"ro","bg":"bg","ka":"ka","ar":"ar","uk":"uk-UA","ru":"ru","zh":"zh-Hans"};
-  var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password","/set-password","/vin/processing"];
+  var NOINDEX = ["/sign-in","/sign-up","/dashboard","/checkout","/purchases","/forgot-password","/reset-password","/set-password","/vin/processing","/terms","/privacy"];
   var NOINDEX_PREFIXES = ["/adminx","/dashboard"];
   var VALID_COUNTRY_SLUGS = ["usa","korea","canada","china","uae"];
   var BASE = "";

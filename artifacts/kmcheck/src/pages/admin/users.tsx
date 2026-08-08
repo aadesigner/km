@@ -6,6 +6,7 @@ import {
   type ApiError,
   type AdminGetUsersChecks,
   type AdminGetUsersStatus,
+  type AdminGetUsersHasPhone,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,11 @@ import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { userCountryLabel } from "@/lib/user-countries";
 import { UserCountrySelect, AlbaniaKosovoLabel } from "@/components/user-country-select";
 import { FlagImg } from "@/components/flag-img";
+import { formatPhoneDisplay } from "@/lib/user-phone";
+
+function userHasPhone(user: { phonePrefix?: string | null; phoneNational?: string | null }) {
+  return Boolean(user.phonePrefix?.trim() && user.phoneNational?.trim());
+}
 
 const COUNTRY_UNSET = "unset";
 
@@ -34,6 +40,7 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState<"" | AdminGetUsersStatus>("");
   const [checksFilter, setChecksFilter] = useState<"" | AdminGetUsersChecks>("");
   const [countryFilter, setCountryFilter] = useState("");
+  const [hasPhoneFilter, setHasPhoneFilter] = useState<"" | AdminGetUsersHasPhone>("");
   const [page, setPage] = useState(1);
   const [importResult, setImportResult] = useState<UserImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -50,6 +57,7 @@ export default function AdminUsers() {
     status: statusFilter || undefined,
     checks: checksFilter || undefined,
     country: countryFilter || undefined,
+    hasPhone: hasPhoneFilter || undefined,
   };
 
   const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams, {
@@ -76,7 +84,8 @@ export default function AdminUsers() {
 
   const users = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
-  const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter) || Boolean(countryFilter);
+  const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter)
+    || Boolean(countryFilter) || Boolean(hasPhoneFilter);
   useQueryRecovery(isError, isFetching, refetch);
   const loadError = showFatalQueryError(isError, isFetching, !!data)
     ? queryErrorMessage(error, "Failed to load users")
@@ -96,6 +105,7 @@ export default function AdminUsers() {
         status: statusFilter || undefined,
         checks: checksFilter || undefined,
         country: countryFilter || undefined,
+        hasPhone: hasPhoneFilter || undefined,
       });
       const blob = new Blob([csv.startsWith("\uFEFF") ? csv : `\uFEFF${csv}`], {
         type: "text/csv;charset=utf-8",
@@ -106,6 +116,8 @@ export default function AdminUsers() {
       const parts = ["users"];
       if (countryFilter && countryFilter !== COUNTRY_UNSET) parts.push(countryFilter.toLowerCase());
       if (countryFilter === COUNTRY_UNSET) parts.push("no-country");
+      if (hasPhoneFilter === "yes") parts.push("has-phone");
+      if (hasPhoneFilter === "no") parts.push("no-phone");
       if (checksFilter) parts.push(checksFilter);
       if (statusFilter) parts.push(statusFilter);
       a.download = `${parts.join("-")}.csv`;
@@ -137,6 +149,7 @@ export default function AdminUsers() {
     setStatusFilter("");
     setChecksFilter("");
     setCountryFilter("");
+    setHasPhoneFilter("");
     setPage(1);
   }
 
@@ -213,6 +226,19 @@ export default function AdminUsers() {
             <SelectItem value="unchecked">No VIN checks</SelectItem>
           </SelectContent>
         </Select>
+        <Select
+          value={hasPhoneFilter || "all"}
+          onValueChange={(v) => { setHasPhoneFilter(v === "all" ? "" : v as AdminGetUsersHasPhone); setPage(1); }}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Phone number" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Phone number: any</SelectItem>
+            <SelectItem value="yes">Phone number: yes</SelectItem>
+            <SelectItem value="no">Phone number: no</SelectItem>
+          </SelectContent>
+        </Select>
         <UserCountrySelect
           value={countryFilter}
           onValueChange={(v) => {
@@ -241,6 +267,11 @@ export default function AdminUsers() {
               {checksFilter === "checked" ? "Has VIN checks" : "No VIN checks"}
             </Badge>
           )}
+          {hasPhoneFilter && (
+            <Badge variant="secondary">
+              Phone number: {hasPhoneFilter === "yes" ? "yes" : "no"}
+            </Badge>
+          )}
           {countryFilter && (
             <Badge variant="secondary" className="inline-flex items-center gap-1.5">
               <span>Country / Nationality:</span>
@@ -255,8 +286,10 @@ export default function AdminUsers() {
       )}
 
       <p className="text-xs text-muted-foreground -mt-2">
-        Filters combine (AND). Export CSV uses the same filters — e.g. one country, or country + has VIN checks.
-        Import needs an <span className="font-mono">email</span> column (optional <span className="font-mono">name</span>).
+        Filters combine (AND). Export CSV uses the same filters — e.g. one country, or country + has phone.
+        Import needs an <span className="font-mono">email</span> column (optional{" "}
+        <span className="font-mono">name</span>, <span className="font-mono">phone_prefix</span>,{" "}
+        <span className="font-mono">phone_national</span>).
       </p>
 
       <Card>
@@ -283,6 +316,7 @@ export default function AdminUsers() {
                   <tr>
                     <th className="text-left p-4 font-medium text-muted-foreground">Email</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Country</th>
+                    <th className="text-left p-4 font-medium text-muted-foreground">Phone number</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Checks</th>
                     <th className="text-left p-4 font-medium text-muted-foreground">Joined</th>
@@ -308,6 +342,18 @@ export default function AdminUsers() {
                           </span>
                         ) : (
                           "—"
+                        )}
+                      </td>
+                      <td className="p-4 text-muted-foreground">
+                        {userHasPhone(user) ? (
+                          <div>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 border-0">Yes</Badge>
+                            <p className="text-xs mt-1 font-mono">
+                              {formatPhoneDisplay(user.phonePrefix, user.phoneNational)}
+                            </p>
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">No</Badge>
                         )}
                       </td>
                       <td className="p-4">

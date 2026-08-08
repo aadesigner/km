@@ -148,6 +148,8 @@ export type MileageHistoryLike = {
   auctionPrice?: number | null;
   lotStatus?: string | null;
   titleStatus?: string | null;
+  location?: string | null;
+  description?: string | null;
 };
 
 export function mileageHistoryDedupeKey(
@@ -264,6 +266,32 @@ export function dedupeInsuranceClaims<T extends InsuranceClaimLike>(
   vehicleYear?: number | null,
 ): T[] {
   return dedupeByKey(entries, (entry) => insuranceClaimDedupeKey(entry, vehicleYear));
+}
+
+export type ServiceHistoryLike = {
+  date?: string | null;
+  mileage?: number | null;
+  title?: string | null;
+  location?: string | null;
+  description?: string | null;
+};
+
+export function serviceHistoryDedupeKey(
+  entry: ServiceHistoryLike,
+  vehicleYear?: number | null,
+): string {
+  const date = normalizedDateKey(entry.date, vehicleYear);
+  const title = normalizeToken(entry.title);
+  const mileage = entry.mileage ?? -1;
+  const location = normalizeToken(entry.location);
+  return `${date}|${title}|${mileage}|${location}`;
+}
+
+export function dedupeServiceHistory<T extends ServiceHistoryLike>(
+  entries: T[],
+  vehicleYear?: number | null,
+): T[] {
+  return dedupeByKey(entries, (entry) => serviceHistoryDedupeKey(entry, vehicleYear));
 }
 
 export type RegistryHistoryLike = {

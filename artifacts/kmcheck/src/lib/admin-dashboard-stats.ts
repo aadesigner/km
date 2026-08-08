@@ -1,10 +1,18 @@
 export type DaySeries = { date: string; count?: number; revenue?: number };
 
-export type DashboardPeriod = "today" | "yesterday" | "week" | "month" | "quarter";
+export type DashboardPeriod = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter";
 
 export type ChartMetric = "revenue" | "checks" | "signups";
 
 export type ChartRange = 7 | 30 | 90;
+
+export type CountryCountRow = { countryCode: string; count: number };
+
+export type PaymentMethodStat = {
+  method: "paypal" | "pok" | "credit" | "free";
+  count: number;
+  revenue: number;
+};
 
 export type ExtendedStats = {
   totalUsers: number;
@@ -68,6 +76,24 @@ export type ExtendedStats = {
     activeToday: number;
     activeYesterday: number;
   };
+  signupsByCountry?: Record<DashboardPeriod, CountryCountRow[]>;
+  purchasesByCountry?: Record<DashboardPeriod, CountryCountRow[]>;
+  paymentsByMethod?: Record<DashboardPeriod, PaymentMethodStat[]>;
+};
+
+export function slicePeriodBreakdown<T>(
+  maps: Record<DashboardPeriod, T[]> | undefined,
+  period: DashboardPeriod,
+): T[] {
+  if (!maps) return [];
+  return maps[period] ?? [];
+}
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethodStat["method"], string> = {
+  paypal: "PayPal",
+  pok: "POK",
+  credit: "Credit",
+  free: "Free",
 };
 
 export function utcDateKeyDaysAgo(daysAgo: number): string {
@@ -157,6 +183,11 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
     const now = new Date();
     return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
   })();
+  const lastMonthStartIso = (() => {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+    return d.toISOString().substring(0, 10);
+  })();
   const quarterStartIso = utcDateKeyDaysAgo(89);
 
   switch (period) {
@@ -205,6 +236,21 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
         checksTrend: trendPct(stats.checksThisMonth ?? 0, stats.checksLastMonth ?? 0),
         signupsTrend: trendPct(stats.signupsThisMonth ?? 0, stats.signupsLastMonth ?? 0),
       };
+    case "lastMonth":
+      return {
+        revenue: stats.revenueLastMonth ?? sumSeriesInUtcWindow(
+          revenueSeries, "revenue", lastMonthStartIso, monthStartIso,
+        ),
+        checks: stats.checksLastMonth ?? sumSeriesInUtcWindow(
+          checksSeries, "count", lastMonthStartIso, monthStartIso,
+        ),
+        signups: stats.signupsLastMonth ?? sumSeriesInUtcWindow(
+          usersSeries, "count", lastMonthStartIso, monthStartIso,
+        ),
+        revenueTrend: null,
+        checksTrend: null,
+        signupsTrend: null,
+      };
     case "quarter":
       return {
         revenue: sumSeriesInUtcWindow(revenueSeries, "revenue", quarterStartIso),
@@ -222,6 +268,7 @@ export const PERIOD_LABELS: Record<DashboardPeriod, string> = {
   yesterday: "Yesterday",
   week: "This week",
   month: "This month",
+  lastMonth: "Last month",
   quarter: "Last 90 days",
 };
 

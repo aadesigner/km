@@ -16,6 +16,7 @@ export function catalogHasDeliverableReport(data: unknown): boolean {
     claimsLen: Array.isArray(d.insuranceClaims) ? d.insuranceClaims.length : 0,
     registryLen: Array.isArray(d.registryHistory) ? d.registryHistory.length : 0,
     auctionLen: Array.isArray(d.auctionHistory) ? d.auctionHistory.length : 0,
+    serviceLen: Array.isArray(d.serviceHistory) ? d.serviceHistory.length : 0,
     photosLen: Array.isArray(d.photos) ? d.photos.length : 0,
     make: typeof d.make === "string" ? d.make : null,
     model: typeof d.model === "string" ? d.model : null,
@@ -31,6 +32,7 @@ export type CatalogDeliverableHint = {
   claimsLen: number;
   registryLen: number;
   auctionLen: number;
+  serviceLen: number;
   photosLen: number;
   make: string | null;
   model: string | null;
@@ -46,6 +48,7 @@ export function catalogDeliverableFromHint(hint: CatalogDeliverableHint): boolea
     || hint.claimsLen > 0
     || hint.registryLen > 0
     || hint.auctionLen > 0
+    || hint.serviceLen > 0
   ) {
     return true;
   }
@@ -98,6 +101,7 @@ export const CATALOG_JSON_KEYS = [
   "ownerHistory",
   "auctionHistory",
   "registryHistory",
+  "serviceHistory",
   "marketData",
 ] as const;
 
@@ -129,6 +133,7 @@ export const CATALOG_CSV_COLUMNS = [
   "owner_history_json",
   "auction_history_json",
   "registry_history_json",
+  "service_history_json",
   "market_data_json",
   "provider",
   "imported_at",
@@ -173,6 +178,7 @@ export type CatalogCsvRowInput = {
   ownerHistory?: unknown;
   auctionHistory?: unknown;
   registryHistory?: unknown;
+  serviceHistory?: unknown;
   marketData?: unknown;
   provider: string | null;
 };
@@ -473,6 +479,7 @@ export function catalogDataFromCsvRow(row: CatalogCsvRowInput): Record<string, u
     ownerHistory: row.ownerHistory,
     auctionHistory: row.auctionHistory,
     registryHistory: row.registryHistory,
+    serviceHistory: row.serviceHistory,
     marketData: row.marketData,
   });
 }
@@ -488,6 +495,7 @@ export function catalogDataFromCsvRecord(record: Record<string, unknown>): Catal
   const ownerHistory = parseCsvJsonField(record.owner_history_json);
   const auctionHistory = parseCsvJsonField(record.auction_history_json);
   const registryHistory = parseCsvJsonField(record.registry_history_json);
+  const serviceHistory = parseCsvJsonField(record.service_history_json);
   const marketData = parseCsvJsonField(record.market_data_json);
 
   return {
@@ -517,6 +525,7 @@ export function catalogDataFromCsvRecord(record: Record<string, unknown>): Catal
     ownerHistory,
     auctionHistory,
     registryHistory,
+    serviceHistory,
     marketData,
     provider: String(record.provider ?? "").trim() || null,
   };
@@ -566,6 +575,7 @@ export function catalogDataToCsvCells(
     csvEscape(jsonCell(data.ownerHistory)),
     csvEscape(jsonCell(data.auctionHistory)),
     csvEscape(jsonCell(data.registryHistory)),
+    csvEscape(jsonCell(data.serviceHistory)),
     csvEscape(jsonCell(data.marketData)),
     csvEscape(row.providerName),
     row.importedAt.toISOString(),

@@ -53,6 +53,18 @@ export function mergeMissingCredentials(
     ...target,
     paypalClientId: pick(target.paypalClientId, donor.paypalClientId),
     paypalClientSecret: pick(target.paypalClientSecret, donor.paypalClientSecret),
+    pokMerchantId: pick(
+      (target as SystemSettings & { pokMerchantId?: string | null }).pokMerchantId,
+      (donor as SystemSettings & { pokMerchantId?: string | null }).pokMerchantId,
+    ),
+    pokKeyId: pick(
+      (target as SystemSettings & { pokKeyId?: string | null }).pokKeyId,
+      (donor as SystemSettings & { pokKeyId?: string | null }).pokKeyId,
+    ),
+    pokKeySecret: pick(
+      (target as SystemSettings & { pokKeySecret?: string | null }).pokKeySecret,
+      (donor as SystemSettings & { pokKeySecret?: string | null }).pokKeySecret,
+    ),
     googleClientId: pick(target.googleClientId, donor.googleClientId),
     googleClientSecret: pick(target.googleClientSecret, donor.googleClientSecret),
     facebookAppId: pick(target.facebookAppId, donor.facebookAppId),
@@ -63,5 +75,9 @@ export function mergeMissingCredentials(
     smtpPass: pick(target.smtpPass, donor.smtpPass),
     paypalSandbox: target.paypalSandbox ?? donor.paypalSandbox,
     paypalEnableCards: target.paypalEnableCards ?? donor.paypalEnableCards,
+    pokEnv:
+      (target as SystemSettings & { pokEnv?: string | null }).pokEnv
+      ?? (donor as SystemSettings & { pokEnv?: string | null }).pokEnv
+      ?? "production",
   };
 }

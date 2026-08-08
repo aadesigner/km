@@ -35,6 +35,8 @@ type Payment = {
   discountAmount?: number | null;
   vinLookupId?: number | null;
   paypalOrderId?: string | null;
+  pokOrderId?: string | null;
+  kind?: string | null;
   createdAt: string;
 };
 
@@ -86,7 +88,9 @@ function formatMoney(currency: string, amount: number) {
 }
 
 function paymentMethodLabel(payment: Payment, t: (key: string) => string): string {
+  if (payment.pokOrderId) return "POK";
   if (payment.paypalOrderId) return t("checkout_pay_method_paypal");
+  if (payment.kind === "credit_redemption") return t("checkout_pay_with_credits");
   if (payment.amount === 0 && payment.couponCode) return t("purchase_pay_method_coupon");
   if (payment.amount === 0) return t("purchase_pay_method_free");
   return t("checkout_pay_method_paypal");

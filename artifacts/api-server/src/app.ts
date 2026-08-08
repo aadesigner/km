@@ -57,14 +57,16 @@ app.use(
           "https://static.cloudflareinsights.com",
           "https://www.clarity.ms",
           "https://scripts.clarity.ms",
+          "https://static.pokpay.io",
         ],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
           "https://fonts.googleapis.com",
           "https://www.paypal.com",
+          "https://static.pokpay.io",
         ],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://static.pokpay.io"],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
         connectSrc: [
           "'self'",
@@ -86,6 +88,10 @@ app.use(
           "https://scripts.clarity.ms",
           "https://c.clarity.ms",
           "https://h.clarity.ms",
+          "https://api.pokpay.io",
+          "https://api-staging.pokpay.io",
+          "https://static.pokpay.io",
+          "https://*.pokpay.io",
         ],
         frameSrc: [
           "'self'",
@@ -96,12 +102,16 @@ app.use(
           "https://www.google.com",
           "https://www.recaptcha.net",
           "https://www.googletagmanager.com",
+          "https://static.pokpay.io",
+          "https://*.pokpay.io",
+          "https://*.cardinalcommerce.com",
+          "https://*.cybersource.com",
         ],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
       },
     },
-    // PayPal checkout opens popups / lightboxes — strict same-origin COOP breaks them (blank tab + overlay).
+    // PayPal / POK 3DS open popups / lightboxes — strict same-origin COOP breaks them.
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
     // Default Helmet CORP is same-origin and blocks Facebook/WhatsApp/Telegram/Clarity
     // from loading /seo/og/*.webp preview images when a link is shared.

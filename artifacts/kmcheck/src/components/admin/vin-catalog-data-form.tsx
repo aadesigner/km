@@ -34,9 +34,11 @@ import {
   normalizeAuctionHistory,
   normalizeRegistryHistory,
   normalizeMarketData,
+  normalizeServiceHistory,
   accidentsToPayload,
   insuranceClaimsToPayload,
   mileageHistoryToPayload,
+  serviceHistoryToPayload,
   ownerHistoryToPayload,
   auctionHistoryToPayload,
   registryHistoryToPayload,
@@ -45,6 +47,7 @@ import {
   type CatalogAccidentForm,
   type CatalogInsuranceClaimForm,
   type CatalogMileageForm,
+  type CatalogServiceForm,
   type CatalogOwnerForm,
   type CatalogAuctionForm,
   type CatalogRegistryForm,
@@ -74,6 +77,7 @@ export type VinCatalogData = {
   accidents?: unknown;
   insuranceClaims?: unknown;
   mileageHistory?: unknown;
+  serviceHistory?: unknown;
   ownerHistory?: unknown;
   auctionHistory?: unknown;
   registryHistory?: unknown;
@@ -103,6 +107,7 @@ export type VinCatalogFormState = {
   accidents: CatalogAccidentForm[];
   insuranceClaims: CatalogInsuranceClaimForm[];
   mileageHistory: CatalogMileageForm[];
+  serviceHistory: CatalogServiceForm[];
   ownerHistory: CatalogOwnerForm[];
   auctionHistory: CatalogAuctionForm[];
   registryHistory: CatalogRegistryForm[];
@@ -132,6 +137,7 @@ export const EMPTY_VIN_CATALOG_FORM: VinCatalogFormState = {
   accidents: [],
   insuranceClaims: [],
   mileageHistory: [],
+  serviceHistory: [],
   ownerHistory: [],
   auctionHistory: [],
   registryHistory: [],
@@ -163,6 +169,7 @@ export function vinCatalogFormFromData(data: VinCatalogData | null | undefined):
     accidents: normalizeAccidents(d.accidents),
     insuranceClaims: normalizeInsuranceClaims(d.insuranceClaims),
     mileageHistory: normalizeMileageHistory(d.mileageHistory),
+    serviceHistory: normalizeServiceHistory(d.serviceHistory),
     ownerHistory: normalizeOwnerHistory(d.ownerHistory),
     auctionHistory: normalizeAuctionHistory(d.auctionHistory),
     registryHistory: normalizeRegistryHistory(d.registryHistory),
@@ -201,6 +208,7 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     accidents: accidentsToPayload(form.accidents),
     insuranceClaims: insuranceClaimsToPayload(form.insuranceClaims),
     mileageHistory: mileageHistoryToPayload(form.mileageHistory),
+    serviceHistory: serviceHistoryToPayload(form.serviceHistory),
     ownerHistory: ownerHistoryToPayload(form.ownerHistory),
     auctionHistory: auctionHistoryToPayload(form.auctionHistory),
     registryHistory: registryHistoryToPayload(form.registryHistory),
@@ -325,6 +333,7 @@ function historyRecordCount(form: VinCatalogFormState): number {
     form.accidents.length
     + form.insuranceClaims.length
     + form.mileageHistory.length
+    + form.serviceHistory.length
     + form.ownerHistory.length
     + form.auctionHistory.length
     + form.registryHistory.length

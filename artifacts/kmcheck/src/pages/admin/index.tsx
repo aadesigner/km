@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Users, Search, DollarSign, Server, TrendingUp, TrendingDown,
   RefreshCw, ArrowRight, Clock, Car, ReceiptText, Database,
-  Activity, UserPlus, BarChart3, Zap,
+  Activity, UserPlus, BarChart3, Zap, Globe, CreditCard,
 } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -25,17 +25,34 @@ import {
   fmtCompact,
   PERIOD_LABELS,
   PERIOD_COMPARE_LABEL,
+  slicePeriodBreakdown,
+  PAYMENT_METHOD_LABELS,
 } from "@/lib/admin-dashboard-stats";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
 const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
+const AdminCountrySignupsChart = lazyWithRetry(() =>
+  import("@/pages/admin/admin-dashboard-breakdown-charts").then((m) => ({
+    default: m.AdminCountrySignupsChart,
+  })),
+);
+const AdminCountryPurchasesChart = lazyWithRetry(() =>
+  import("@/pages/admin/admin-dashboard-breakdown-charts").then((m) => ({
+    default: m.AdminCountryPurchasesChart,
+  })),
+);
+const AdminPaymentMethodsChart = lazyWithRetry(() =>
+  import("@/pages/admin/admin-dashboard-breakdown-charts").then((m) => ({
+    default: m.AdminPaymentMethodsChart,
+  })),
+);
 
 const BRAND = "hsl(142, 76%, 36%)";
 const BRAND_LIGHT = "hsl(142, 76%, 36%)";
 const BRAND_MUTED = "hsl(142, 45%, 55%)";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const PERIODS: DashboardPeriod[] = ["today", "yesterday", "week", "month", "quarter"];
+const PERIODS: DashboardPeriod[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter"];
 const CHART_RANGES: ChartRange[] = [7, 30, 90];
 const CHART_METRICS: { id: ChartMetric; label: string; color: string; grad: string }[] = [
   { id: "revenue", label: "Revenue", color: BRAND, grad: "gradRevenue" },
@@ -482,6 +499,9 @@ export default function AdminOverview() {
     const activeChart = CHART_METRICS.find((m) => m.id === chartMetric)!;
     const compareLabel = PERIOD_COMPARE_LABEL[period];
     const chartTotal = chartData.reduce((sum, row) => sum + row.value, 0);
+    const countrySignupRows = slicePeriodBreakdown(stats.signupsByCountry, period);
+    const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
+    const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
 
     return {
       periodMetrics,
@@ -489,6 +509,9 @@ export default function AdminOverview() {
       chartTotal,
       activeChart,
       compareLabel,
+      countrySignupRows,
+      countryPurchaseRows,
+      methodRows,
       pendingOpen: stats.pendingVinChecksOpen ?? 0,
       recentPending: stats.recentPendingVinChecks ?? [],
       totalRevStr: fmtEuro(Number(stats.totalRevenue) || 0),
@@ -665,6 +688,72 @@ export default function AdminOverview() {
             </Panel>
           </section>
         )}
+
+        {/* Country + payment breakdowns (same period pills as Performance) */}
+        <section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 md:gap-4">
+            <Panel className="overflow-hidden">
+              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <UserPlus className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Top countries · Signups</h3>
+                </div>
+                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
+              </div>
+              <div className="px-2 pt-2 pb-2.5 md:px-3">
+                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                  <AdminCountrySignupsChart
+                    data={derived?.countrySignupRows ?? []}
+                  />
+                </Suspense>
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden">
+              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Globe className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Top countries · Purchases</h3>
+                </div>
+                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
+              </div>
+              <div className="px-2 pt-2 pb-2.5 md:px-3">
+                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                  <AdminCountryPurchasesChart
+                    data={derived?.countryPurchaseRows ?? []}
+                  />
+                </Suspense>
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden lg:col-span-2">
+              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CreditCard className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Payment methods</h3>
+                </div>
+                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
+              </div>
+              <div className="px-2 pt-2 pb-2.5 md:px-3">
+                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                  <AdminPaymentMethodsChart
+                    data={derived?.methodRows ?? []}
+                  />
+                </Suspense>
+              </div>
+              {(derived?.methodRows?.length ?? 0) > 0 && (
+                <div className="px-3.5 pb-3 md:px-4 md:pb-3.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground border-t border-border/30 pt-2">
+                  {(derived?.methodRows ?? []).map((row) => (
+                    <span key={row.method} className="tabular-nums">
+                      <span className="font-medium text-foreground">{PAYMENT_METHOD_LABELS[row.method]}</span>
+                      {" · "}{fmtCompact(row.revenue)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          </div>
+        </section>
 
         {/* Lifetime + ops strip */}
         <section>

@@ -65,6 +65,7 @@ describe("catalogHasDeliverableReport", () => {
         claimsLen: Array.isArray(d.insuranceClaims) ? d.insuranceClaims.length : 0,
         registryLen: Array.isArray(d.registryHistory) ? d.registryHistory.length : 0,
         auctionLen: Array.isArray(d.auctionHistory) ? d.auctionHistory.length : 0,
+        serviceLen: Array.isArray(d.serviceHistory) ? d.serviceHistory.length : 0,
         photosLen: Array.isArray(d.photos) ? d.photos.length : 0,
         make: typeof d.make === "string" ? d.make : null,
         model: typeof d.model === "string" ? d.model : null,

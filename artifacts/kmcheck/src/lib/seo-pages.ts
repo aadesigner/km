@@ -117,6 +117,8 @@ const NOINDEX_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/set-password",
+  "/terms",
+  "/privacy",
 ];
 
 export function isNoIndexPath(rest: string, pageKey: SeoPageKey): boolean {

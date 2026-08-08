@@ -30,8 +30,6 @@ export const INDEXABLE_PATHS = [
   "/free-vin-decoder",
   "/how-it-works",
   "/faq",
-  "/terms",
-  "/privacy",
   "/cars/usa",
   "/cars/korea",
   "/cars/canada",

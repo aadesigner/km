@@ -41,6 +41,17 @@ export type CatalogMileageForm = {
   titleStatus: string;
   auctionPrice: string;
   lotStatus: string;
+  location: string;
+  /** Free-text notes / services at this mileage (admin-entered; shown on report). */
+  description: string;
+};
+
+export type CatalogServiceForm = {
+  date: string;
+  mileage: string;
+  title: string;
+  location: string;
+  description: string;
 };
 
 export type CatalogOwnerForm = {
@@ -125,7 +136,11 @@ export const EMPTY_INSURANCE_CLAIM: CatalogInsuranceClaimForm = {
 export const EMPTY_MILEAGE: CatalogMileageForm = {
   date: "", odometer: "", unit: "", source: "", condition: "", damage: "",
   primaryDamage: "", secondaryDamage: "", titleStatus: "",
-  auctionPrice: "", lotStatus: "",
+  auctionPrice: "", lotStatus: "", location: "", description: "",
+};
+
+export const EMPTY_SERVICE: CatalogServiceForm = {
+  date: "", mileage: "", title: "", location: "", description: "",
 };
 
 export const EMPTY_OWNER: CatalogOwnerForm = {
@@ -198,6 +213,22 @@ export function normalizeMileageHistory(value: unknown): CatalogMileageForm[] {
       titleStatus: str(o.titleStatus),
       auctionPrice: str(o.auctionPrice),
       lotStatus: str(o.lotStatus),
+      location: str(o.location),
+      description: str(o.description),
+    };
+  });
+}
+
+export function normalizeServiceHistory(value: unknown): CatalogServiceForm[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => {
+    const o = (item ?? {}) as Record<string, unknown>;
+    return {
+      date: str(o.date),
+      mileage: str(o.mileage ?? o.odometer),
+      title: str(o.title),
+      location: str(o.location),
+      description: str(o.description ?? o.service),
     };
   });
 }
@@ -332,8 +363,21 @@ export function mileageHistoryToPayload(rows: CatalogMileageForm[]) {
     secondaryDamage: trimOrNull(r.secondaryDamage),
     titleStatus: trimOrNull(r.titleStatus),
     lotStatus: trimOrNull(r.lotStatus),
+    location: trimOrNull(r.location),
+    description: trimOrNull(r.description),
     odometer: numOrNull(r.odometer),
     auctionPrice: numOrNull(r.auctionPrice),
+  })).filter(Boolean);
+  return items;
+}
+
+export function serviceHistoryToPayload(rows: CatalogServiceForm[]) {
+  const items = rows.map((r) => rowOrNull({
+    date: trimOrNull(r.date),
+    title: trimOrNull(r.title),
+    location: trimOrNull(r.location),
+    description: trimOrNull(r.description),
+    mileage: numOrNull(r.mileage),
   })).filter(Boolean);
   return items;
 }
@@ -570,6 +614,7 @@ export type VinCatalogHistoryFormSlice = {
   accidents: CatalogAccidentForm[];
   insuranceClaims: CatalogInsuranceClaimForm[];
   mileageHistory: CatalogMileageForm[];
+  serviceHistory: CatalogServiceForm[];
   ownerHistory: CatalogOwnerForm[];
   auctionHistory: CatalogAuctionForm[];
   registryHistory: CatalogRegistryForm[];
@@ -653,7 +698,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Mileage history"
-        hint="Auction and inspection odometer readings."
+        hint="Odometer readings. Description and location are manual-only annotations (not filled by provider fetch)."
         items={form.mileageHistory}
         emptyItem={EMPTY_MILEAGE}
         onChange={(mileageHistory) => onChange({ mileageHistory })}
@@ -671,6 +716,40 @@ export function VinCatalogHistorySections({
             <Field label="Auction price" value={item.auctionPrice} onChange={(v) => update({ auctionPrice: v })} type="number" compact={compact} />
             <Field label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
             <Field label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
+            <Field label="Location (manual)" value={item.location} onChange={(v) => update({ location: v })} compact={compact} />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Field
+                label="Description / services (manual)"
+                value={item.description}
+                onChange={(v) => update({ description: v })}
+                compact={compact}
+              />
+            </div>
+          </div>
+        )}
+      />
+
+      <CatalogListSection
+        title="Service history (manual only)"
+        hint="Admin-entered workshop visits only — never filled by automatic provider fetch. Leave empty to hide on the report."
+        items={form.serviceHistory}
+        emptyItem={EMPTY_SERVICE}
+        onChange={(serviceHistory) => onChange({ serviceHistory })}
+        compact={compact}
+        renderItem={(item, _i, update) => (
+          <div className={grid}>
+            <Field label="Date (day/month/year)" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <Field label="Mileage (optional)" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
+            <Field label="Title (e.g. Service)" value={item.title} onChange={(v) => update({ title: v })} compact={compact} />
+            <Field label="Location" value={item.location} onChange={(v) => update({ location: v })} compact={compact} />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Field
+                label="What service"
+                value={item.description}
+                onChange={(v) => update({ description: v })}
+                compact={compact}
+              />
+            </div>
           </div>
         )}
       />

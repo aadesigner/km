@@ -33,6 +33,8 @@ const NOINDEX = [
   "/reset-password",
   "/set-password",
   "/vin/processing",
+  "/terms",
+  "/privacy",
 ];
 
 const NOINDEX_PREFIXES = ["/adminx", "/dashboard"];

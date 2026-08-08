@@ -927,6 +927,10 @@ checks?: AdminGetUsersChecks;
 
  */
 country?: string;
+/**
+ * Filter by complete phone number (yes/no). Combines with other filters (AND).
+ */
+hasPhone?: AdminGetUsersHasPhone;
 };
 
 export type AdminGetUsersStatus = typeof AdminGetUsersStatus[keyof typeof AdminGetUsersStatus];
@@ -945,6 +949,14 @@ export const AdminGetUsersChecks = {
   unchecked: 'unchecked',
 } as const;
 
+export type AdminGetUsersHasPhone = typeof AdminGetUsersHasPhone[keyof typeof AdminGetUsersHasPhone];
+
+
+export const AdminGetUsersHasPhone = {
+  yes: 'yes',
+  no: 'no',
+} as const;
+
 export type AdminExportUsersParams = {
 search?: string;
 status?: AdminExportUsersStatus;
@@ -954,6 +966,10 @@ checks?: AdminExportUsersChecks;
 
  */
 country?: string;
+/**
+ * Filter by complete phone number (yes/no). Combines with other filters (AND).
+ */
+hasPhone?: AdminExportUsersHasPhone;
 };
 
 export type AdminExportUsersStatus = typeof AdminExportUsersStatus[keyof typeof AdminExportUsersStatus];
@@ -970,6 +986,14 @@ export type AdminExportUsersChecks = typeof AdminExportUsersChecks[keyof typeof 
 export const AdminExportUsersChecks = {
   checked: 'checked',
   unchecked: 'unchecked',
+} as const;
+
+export type AdminExportUsersHasPhone = typeof AdminExportUsersHasPhone[keyof typeof AdminExportUsersHasPhone];
+
+
+export const AdminExportUsersHasPhone = {
+  yes: 'yes',
+  no: 'no',
 } as const;
 
 export type AdminImportUsersBody = {

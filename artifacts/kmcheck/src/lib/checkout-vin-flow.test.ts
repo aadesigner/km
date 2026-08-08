@@ -4,14 +4,18 @@ import {
   CHECKOUT_VIN_KEY,
   PAYPAL_CHECKOUT_SESSION_KEY,
   PENDING_VIN_KEY,
+  REFERRAL_VIN_KEY,
   clearCheckoutPaymentResumeState,
+  clearStoredPendingVin,
   consumeCheckoutPrefillOnly,
   getPostAuthCheckoutPath,
   guestVinAuthPath,
   markCheckoutPrefillOnly,
   markPaypalCheckoutAwaitingApproval,
   markPaypalCheckoutCapturePending,
+  persistVinForCheckout,
   readPaypalCheckoutSession,
+  resolveCheckoutPrefillVin,
   shouldResumePaypalCapture,
 } from "./checkout-vin-flow";
 
@@ -98,5 +102,30 @@ describe("checkout prefill helpers", () => {
   it("rejects invalid PayPal session payloads", () => {
     sessionStorage.setItem(PAYPAL_CHECKOUT_SESSION_KEY, JSON.stringify({ orderId: "x", vin: "short" }));
     expect(readPaypalCheckoutSession()).toBeNull();
+  });
+});
+
+describe("resolveCheckoutPrefillVin", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    localStorage.clear();
+  });
+
+  it("uses a valid ?vin= and replaces a previously stored VIN", () => {
+    persistVinForCheckout("1HGBH41JXMN109186");
+    expect(resolveCheckoutPrefillVin("?vin=WBA3A5G59DNP26082")).toBe("WBA3A5G59DNP26082");
+    expect(sessionStorage.getItem(CHECKOUT_VIN_KEY)).toBe("WBA3A5G59DNP26082");
+  });
+
+  it("does not resurrect an old VIN when ?vin= is present but invalid", () => {
+    persistVinForCheckout("1HGBH41JXMN109186");
+    expect(resolveCheckoutPrefillVin("?vin=WRONGVIN")).toBe("WRONGVIN");
+    expect(sessionStorage.getItem(CHECKOUT_VIN_KEY)).toBeNull();
+    expect(localStorage.getItem(REFERRAL_VIN_KEY)).toBeNull();
+  });
+
+  it("falls back to stored VIN only when ?vin= is absent", () => {
+    persistVinForCheckout("1HGBH41JXMN109186");
+    expect(resolveCheckoutPrefillVin("")).toBe("1HGBH41JXMN109186");
   });
 });

@@ -28,7 +28,11 @@ type AdminTransaction = {
   amount: number;
   currency: string;
   status: string;
+  kind?: string | null;
   paypalOrderId: string | null;
+  pokOrderId?: string | null;
+  paymentMethod?: "paypal" | "pok" | "credit" | "free" | null;
+  providerOrderId?: string | null;
   couponCode: string | null;
   discountAmount: number | null;
   vinLookupId: number | null;
@@ -89,6 +93,52 @@ function StatusBadge({ status }: { status: string }) {
       {cfg.label}
     </Badge>
   );
+}
+
+function PaymentMethodBadge({ method }: { method: AdminTransaction["paymentMethod"] }) {
+  if (method === "pok") {
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-semibold border-violet-400/70 text-violet-700 dark:text-violet-300">
+        POK
+      </Badge>
+    );
+  }
+  if (method === "paypal") {
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-semibold border-sky-400/70 text-sky-700 dark:text-sky-300">
+        PayPal
+      </Badge>
+    );
+  }
+  if (method === "credit") {
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-semibold">
+        Credit
+      </Badge>
+    );
+  }
+  if (method === "free") {
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-semibold">
+        Free
+      </Badge>
+    );
+  }
+  return <span className="text-muted-foreground">—</span>;
+}
+
+function resolvePaymentMethod(tx: AdminTransaction): AdminTransaction["paymentMethod"] {
+  if (tx.paymentMethod) return tx.paymentMethod;
+  if (tx.pokOrderId) return "pok";
+  if (tx.paypalOrderId) return "paypal";
+  if (tx.kind === "credit_redemption") return "credit";
+  if (tx.amount === 0) return "free";
+  // Legacy paid rows without a stored provider id were PayPal
+  return "paypal";
+}
+
+function resolveProviderOrderId(tx: AdminTransaction): string | null {
+  return tx.providerOrderId ?? tx.pokOrderId ?? tx.paypalOrderId ?? null;
 }
 
 function useTransactions(page: number, status: string, search: string) {
@@ -268,7 +318,7 @@ export default function AdminTransactions() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
-                  placeholder="Search email, VIN, or PayPal order ID…"
+                  placeholder="Search email, VIN, PayPal or POK order ID…"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                 />
@@ -299,7 +349,8 @@ export default function AdminTransactions() {
                   <TableHead>VIN</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Coupon</TableHead>
-                  <TableHead>PayPal Order</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Order ID</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -308,14 +359,14 @@ export default function AdminTransactions() {
                 {isLoading ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i}>
-                      {Array.from({ length: 8 }).map((_, j) => (
+                      {Array.from({ length: 9 }).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : (data?.items ?? []).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       <div className="flex flex-col items-center gap-2">
                         <CreditCard className="h-8 w-8 opacity-30" />
                         <p className="text-sm">No transactions found</p>
@@ -323,7 +374,10 @@ export default function AdminTransactions() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (data?.items ?? []).filter(tx => tx.status !== "pending").map((tx) => (
+                  (data?.items ?? []).filter(tx => tx.status !== "pending").map((tx) => {
+                    const method = resolvePaymentMethod(tx);
+                    const orderId = resolveProviderOrderId(tx);
+                    return (
                     <TableRow key={tx.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {new Date(tx.createdAt).toLocaleString(undefined, {
@@ -351,8 +405,11 @@ export default function AdminTransactions() {
                           : <span className="text-muted-foreground">—</span>
                         }
                       </TableCell>
-                      <TableCell className="font-mono text-xs max-w-[140px] truncate text-muted-foreground">
-                        {tx.paypalOrderId ?? "—"}
+                      <TableCell>
+                        <PaymentMethodBadge method={method} />
+                      </TableCell>
+                      <TableCell className="font-mono text-xs max-w-[160px] truncate text-muted-foreground" title={orderId ?? undefined}>
+                        {orderId ?? "—"}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={tx.status} />
@@ -368,7 +425,8 @@ export default function AdminTransactions() {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

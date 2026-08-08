@@ -5,6 +5,7 @@ import { fetchGeoLanguageHint } from "@/lib/geo-language-client";
 import { pathNeedingLangPrefix } from "@/lib/lang-preference";
 import App from "./App";
 import "./index.css";
+import "@nebula-ltd/pok-payments-js/lib/index.css";
 import { installFetchGuard } from "./lib/install-fetch-guard";
 import { installChunkLoadRecovery } from "./lib/lazy-with-retry";
 

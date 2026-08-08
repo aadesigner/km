@@ -42,6 +42,12 @@ export const systemSettingsTable = pgTable("system_settings", {
   paypalClientSecret: text("paypal_client_secret"),
   paypalSandbox: boolean("paypal_sandbox").notNull().default(true),
   paypalEnableCards: boolean("paypal_enable_cards").notNull().default(true),
+  /** POK Payments (card gateway) — server-only credentials; prefer DB over env. */
+  pokMerchantId: text("pok_merchant_id"),
+  pokKeyId: text("pok_key_id"),
+  pokKeySecret: text("pok_key_secret"),
+  /** staging | production */
+  pokEnv: text("pok_env").notNull().default("production"),
   // SMTP / Email
   smtpEnabled: boolean("smtp_enabled").notNull().default(false),
   smtpHost: text("smtp_host"),

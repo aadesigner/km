@@ -24,15 +24,17 @@ import {
   dedupeMileageHistory,
   dedupeOwnerHistory,
   dedupeRegistryHistory,
+  dedupeServiceHistory,
   type AccidentLike,
   type AuctionHistoryLike,
   type InsuranceClaimLike,
   type MileageHistoryLike,
   type OwnerHistoryLike,
   type RegistryHistoryLike,
+  type ServiceHistoryLike,
 } from "@/lib/history-dedupe";
 
-export type { AccidentLike, AuctionHistoryLike, InsuranceClaimLike, MileageHistoryLike, OwnerHistoryLike, RegistryHistoryLike };
+export type { AccidentLike, AuctionHistoryLike, InsuranceClaimLike, MileageHistoryLike, OwnerHistoryLike, RegistryHistoryLike, ServiceHistoryLike };
 
 const EXACT_NON_VALUES = new Set([
   "no information",
@@ -233,7 +235,43 @@ export function sanitizeMileageHistory<T extends MileageHistoryLike>(
         secondaryDamage: cleanDisplayText(entry.secondaryDamage),
         lotStatus: cleanDisplayText(entry.lotStatus),
         titleStatus: cleanDisplayText(entry.titleStatus),
+        location: cleanDisplayText(entry.location),
+        description: cleanDisplayText(entry.description),
       })),
+    vehicleYear,
+  );
+}
+
+export function isMeaningfulServiceHistoryEntry(entry: ServiceHistoryLike): boolean {
+  return Boolean(
+    cleanDisplayText(entry.date)
+    || cleanDisplayText(entry.title)
+    || cleanDisplayText(entry.location)
+    || cleanDisplayText(entry.description)
+    || (entry.mileage != null && Number(entry.mileage) > 0),
+  );
+}
+
+export function sanitizeServiceHistory<T extends ServiceHistoryLike>(
+  entries: T[] | null | undefined,
+  vehicleYear?: number | null,
+): T[] {
+  return dedupeServiceHistory(
+    (entries ?? [])
+      .map((entry) => {
+        const raw = entry.mileage;
+        const mileage =
+          raw == null || (typeof raw === "string" && raw === "") ? null : Number(raw);
+        return {
+          ...entry,
+          mileage: mileage != null && Number.isFinite(mileage) && mileage > 0 ? mileage : null,
+          date: cleanDisplayText(entry.date),
+          title: cleanDisplayText(entry.title),
+          location: cleanDisplayText(entry.location),
+          description: cleanDisplayText(entry.description),
+        };
+      })
+      .filter(isMeaningfulServiceHistoryEntry),
     vehicleYear,
   );
 }

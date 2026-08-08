@@ -30,6 +30,9 @@ import {
 import { logger } from "../lib/logger";
 import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
+  buildPaymentsByMethodPeriods,
+  buildSignupsByCountryPeriods,
+  buildCountryCountPeriods,
   normalizeDailyCounts,
   normalizeDailyRevenue,
   normalizePaymentStatusCounts,
@@ -90,6 +93,7 @@ import {
   readFrozenKrwPerUsd,
 } from "../lib/krwRate.js";
 import { invalidatePricingCache, invalidatePublicSettingsCache } from "./payments.js";
+import { clearPokTokenCache } from "../lib/pokClient.js";
 import { invalidatePluginSettingsCache } from "../lib/pluginSettingsCache.js";
 import { parseUserCountryCode } from "../lib/userCountry.js";
 import { parseUserPhone } from "../lib/userPhone.js";
@@ -181,6 +185,9 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     [{ pendingVinChecksOpen }],
     recentPendingRows,
     onlinePresence,
+    signupsByCountryRaw,
+    purchasesByCountryRaw,
+    paymentsByMethodRaw,
   ] = await Promise.all([
     // Merge totals + today count + weekly trends into one query
     db.execute(sql`
@@ -350,6 +357,62 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       .orderBy(desc(pendingVinChecksTable.updatedAt))
       .limit(5),
     fetchOnlinePresenceStats(),
+    db.execute(sql`
+      SELECT
+        (created_at AT TIME ZONE 'UTC')::date AS date,
+        COALESCE(NULLIF(TRIM(country_code), ''), '—') AS country_code,
+        COUNT(*)::int AS count
+      FROM users
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      GROUP BY 1, 2
+      ORDER BY date ASC
+    `),
+    db.execute(sql`
+      SELECT
+        (p.created_at AT TIME ZONE 'UTC')::date AS date,
+        COALESCE(NULLIF(TRIM(u.country_code), ''), '—') AS country_code,
+        COUNT(*)::int AS count
+      FROM payments p
+      LEFT JOIN users u ON u.id = p.user_id
+      WHERE p.status = 'completed'
+        AND p.amount > 0
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (
+          p.kind = 'credit_pack'
+          OR EXISTS (
+            SELECT 1 FROM vin_lookups vl
+            WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+          )
+        )
+      GROUP BY 1, 2
+      ORDER BY date ASC
+    `),
+    db.execute(sql`
+      SELECT
+        (p.created_at AT TIME ZONE 'UTC')::date AS date,
+        CASE
+          WHEN p.pok_order_id IS NOT NULL AND TRIM(p.pok_order_id) <> '' THEN 'pok'
+          WHEN p.paypal_order_id IS NOT NULL AND TRIM(p.paypal_order_id) <> '' THEN 'paypal'
+          WHEN p.kind = 'credit_redemption' THEN 'credit'
+          WHEN COALESCE(p.amount, 0) = 0 THEN 'free'
+          ELSE 'paypal'
+        END AS method,
+        COUNT(*)::int AS count,
+        COALESCE(SUM(p.amount), 0)::float AS revenue
+      FROM payments p
+      WHERE p.status IN ('completed', 'revoked')
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (
+          p.kind IN ('credit_redemption', 'credit_pack')
+          OR COALESCE(p.amount, 0) = 0
+          OR EXISTS (
+            SELECT 1 FROM vin_lookups vl
+            WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
+          )
+        )
+      GROUP BY 1, 2
+      ORDER BY date ASC
+    `),
   ]);
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
@@ -451,6 +514,15 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     pendingVinChecksOpen: pendingVinChecksOpen ?? 0,
     recentPendingVinChecks,
     onlinePresence,
+    signupsByCountry: buildSignupsByCountryPeriods(
+      signupsByCountryRaw.rows as Array<{ date: unknown; country_code: unknown; count: unknown }>,
+    ),
+    purchasesByCountry: buildCountryCountPeriods(
+      purchasesByCountryRaw.rows as Array<{ date: unknown; country_code: unknown; count: unknown }>,
+    ),
+    paymentsByMethod: buildPaymentsByMethodPeriods(
+      paymentsByMethodRaw.rows as Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
+    ),
   });
 });
 
@@ -467,7 +539,13 @@ router.get("/admin/presence-users", requireAdmin, async (req, res) => {
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
 
-function buildAdminUserWhere(searchRaw: string, status: string, checks: string, countryRaw = "") {
+function buildAdminUserWhere(
+  searchRaw: string,
+  status: string,
+  checks: string,
+  countryRaw = "",
+  hasPhoneRaw = "",
+) {
   const conditions = [];
   const search = searchRaw.trim();
   if (search) {
@@ -501,17 +579,37 @@ function buildAdminUserWhere(searchRaw: string, status: string, checks: string, 
     const countryCode = parseUserCountryCode(countryRaw);
     if (countryCode) conditions.push(eq(usersTable.countryCode, countryCode));
   }
+  const hasPhoneKey = hasPhoneRaw.trim().toLowerCase();
+  const hasCompletePhone = and(
+    sql`NULLIF(TRIM(${usersTable.phonePrefix}), '') IS NOT NULL`,
+    sql`NULLIF(TRIM(${usersTable.phoneNational}), '') IS NOT NULL`,
+  )!;
+  if (hasPhoneKey === "yes" || hasPhoneKey === "true" || hasPhoneKey === "1") {
+    conditions.push(hasCompletePhone);
+  } else if (hasPhoneKey === "no" || hasPhoneKey === "false" || hasPhoneKey === "0") {
+    conditions.push(not(hasCompletePhone));
+  }
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
-function normalizeUserCsvRecord(record: Record<string, string>): { email: string; name?: string } {
+function normalizeUserCsvRecord(record: Record<string, string>): {
+  email: string;
+  name?: string;
+  phonePrefix?: string;
+  phoneNational?: string;
+  hasPhoneColumns: boolean;
+} {
   const normalized = new Map<string, string>();
   for (const [key, value] of Object.entries(record)) {
-    normalized.set(key.trim().toLowerCase(), value);
+    normalized.set(key.trim().toLowerCase().replace(/[\s-]+/g, "_"), value);
   }
+  const hasPhoneColumns = normalized.has("phone_prefix") || normalized.has("phone_national");
   return {
     email: (normalized.get("email") ?? "").trim(),
     name: normalized.get("name")?.trim() || undefined,
+    phonePrefix: normalized.get("phone_prefix"),
+    phoneNational: normalized.get("phone_national"),
+    hasPhoneColumns,
   };
 }
 
@@ -551,8 +649,9 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
     const status = String(req.query.status ?? "");
     const checks = String(req.query.checks ?? "");
     const country = String(req.query.country ?? "");
+    const hasPhone = String(req.query.hasPhone ?? "");
 
-    const where = buildAdminUserWhere(search, status, checks, country);
+    const where = buildAdminUserWhere(search, status, checks, country, hasPhone);
 
     const [users, totalRow] = await Promise.all([
       db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(limit).offset(offset),
@@ -596,7 +695,8 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
   const status = String(req.query.status ?? "");
   const checks = String(req.query.checks ?? "");
   const country = String(req.query.country ?? "");
-  const where = buildAdminUserWhere(search, status, checks, country);
+  const hasPhone = String(req.query.hasPhone ?? "");
+  const where = buildAdminUserWhere(search, status, checks, country, hasPhone);
 
   const users = await db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(50000);
 
@@ -624,10 +724,11 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
     return s;
   };
 
-  const header = "id,email,name,country_code,status,created_at,total_checks,total_spent\n";
+  const header = "id,email,name,country_code,phone_prefix,phone_national,status,created_at,total_checks,total_spent\n";
   const csvBody = users
     .map(u => [
       u.id, u.email, u.name ?? "", u.countryCode ?? "",
+      u.phonePrefix ?? "", u.phoneNational ?? "",
       u.isBanned ? "banned" : "active",
       u.createdAt instanceof Date ? u.createdAt.toISOString() : String(u.createdAt ?? ""),
       checksMap.get(u.id) ?? 0,
@@ -681,7 +782,13 @@ router.post("/admin/users/import", requireAdmin, userImportLimiter, upload.singl
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
-    const { email: rawEmailField, name: recordName } = normalizeUserCsvRecord(record);
+    const {
+      email: rawEmailField,
+      name: recordName,
+      phonePrefix: rawPhonePrefix,
+      phoneNational: rawPhoneNational,
+      hasPhoneColumns,
+    } = normalizeUserCsvRecord(record);
     const rawEmail = rawEmailField.toLowerCase();
     if (!rawEmail || !emailRegex.test(rawEmail)) {
       rows.push({ row: i + 1, email: rawEmail || "(empty)", status: "error", reason: "Invalid email address" });
@@ -693,6 +800,24 @@ router.post("/admin/users/import", requireAdmin, userImportLimiter, upload.singl
     }
     seenEmails.add(rawEmail);
 
+    let phoneUpdate: { phonePrefix: string | null; phoneNational: string | null } | undefined;
+    if (hasPhoneColumns) {
+      const parsed = parseUserPhone({
+        phonePrefix: rawPhonePrefix ?? "",
+        phoneNational: rawPhoneNational ?? "",
+      });
+      if (!parsed) {
+        rows.push({
+          row: i + 1,
+          email: rawEmail,
+          status: "error",
+          reason: "Invalid phone (need both phone_prefix and phone_national, or both empty)",
+        });
+        continue;
+      }
+      phoneUpdate = { phonePrefix: parsed.prefix, phoneNational: parsed.national };
+    }
+
     try {
       const [existing] = await db.select({ id: usersTable.id })
         .from(usersTable).where(eq(usersTable.email, rawEmail)).limit(1);
@@ -700,6 +825,10 @@ router.post("/admin/users/import", requireAdmin, userImportLimiter, upload.singl
       if (existing) {
         const updates: Record<string, unknown> = { updatedAt: new Date() };
         if (recordName) updates.name = recordName;
+        if (phoneUpdate) {
+          updates.phonePrefix = phoneUpdate.phonePrefix;
+          updates.phoneNational = phoneUpdate.phoneNational;
+        }
         await db.update(usersTable)
           .set(updates as Parameters<ReturnType<typeof db.update>["set"]>[0])
           .where(eq(usersTable.id, existing.id));
@@ -707,7 +836,11 @@ router.post("/admin/users/import", requireAdmin, userImportLimiter, upload.singl
       } else {
         const id = crypto.randomUUID();
         await db.insert(usersTable).values({
-          id, email: rawEmail, name: recordName, authProvider: "local",
+          id,
+          email: rawEmail,
+          name: recordName,
+          authProvider: "local",
+          ...(phoneUpdate ?? {}),
         });
         // Create a 7-day password-reset token and send a setup email so the account is immediately usable
         const tokenId = crypto.randomUUID();
@@ -1501,7 +1634,7 @@ router.get("/admin/settings", requireAdmin, async (_req, res) => {
       maintenanceRestrictions: [], maintenanceMessage: null,
       vinLookupEnabled: true,
       freeVinDecoderEnabled: true, freeVinDecoderDailyLimit: 0, freeVinDecoderRequireSignIn: false,
-      hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasLinkedInSecret: false, hasSmtpPass: false,
+      hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasLinkedInSecret: false, hasSmtpPass: false, hasPokSecret: false,
       googleButtonVisible: false, facebookButtonVisible: false, linkedinButtonVisible: false,
     });
     return;
@@ -1520,6 +1653,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     vinLookupEnabled: boolean;
     paypalClientId: string | null; paypalClientSecret: string | null;
     paypalSandbox: boolean; paypalEnableCards: boolean;
+    pokMerchantId: string | null; pokKeyId: string | null; pokKeySecret: string | null;
+    pokEnv: string;
     freeVinDecoderEnabled: boolean; freeVinDecoderDailyLimit: number; freeVinDecoderRequireSignIn: boolean;
     siteUrl: string | null;
     emailSendWelcome: boolean; emailSendReportConfirm: boolean; emailSendVinReady: boolean;
@@ -1609,6 +1744,25 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     if (!secret) delete patch.paypalClientSecret;
     else patch.paypalClientSecret = secret;
   }
+  if ("pokMerchantId" in patch) {
+    const trimmed = trimText(patch.pokMerchantId);
+    if (trimmed === null) delete patch.pokMerchantId;
+    else patch.pokMerchantId = trimmed;
+  }
+  if ("pokKeyId" in patch) {
+    const trimmed = trimText(patch.pokKeyId);
+    if (trimmed === null) delete patch.pokKeyId;
+    else patch.pokKeyId = trimmed;
+  }
+  if ("pokKeySecret" in patch) {
+    const secret = typeof patch.pokKeySecret === "string" ? patch.pokKeySecret.trim() : patch.pokKeySecret;
+    if (!secret) delete patch.pokKeySecret;
+    else patch.pokKeySecret = secret;
+  }
+  if ("pokEnv" in patch) {
+    const env = typeof patch.pokEnv === "string" ? patch.pokEnv.trim().toLowerCase() : patch.pokEnv;
+    patch.pokEnv = env === "staging" ? "staging" : "production";
+  }
   if ("recaptchaSecretKey" in patch) {
     const secret = typeof patch.recaptchaSecretKey === "string" ? patch.recaptchaSecretKey.trim() : patch.recaptchaSecretKey;
     if (!secret) delete patch.recaptchaSecretKey;
@@ -1656,6 +1810,14 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
+    if (
+      "pokMerchantId" in updates
+      || "pokKeyId" in updates
+      || "pokKeySecret" in updates
+      || "pokEnv" in updates
+    ) {
+      clearPokTokenCache();
+    }
     const effective = await getEffectiveSystemSettings();
     res.json(sanitizeAdminSettings(effective ?? updated));
   } else {
@@ -1699,6 +1861,14 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
+    if (
+      "pokMerchantId" in updates
+      || "pokKeyId" in updates
+      || "pokKeySecret" in updates
+      || "pokEnv" in updates
+    ) {
+      clearPokTokenCache();
+    }
     const effective = await getEffectiveSystemSettings();
     res.json(sanitizeAdminSettings(effective ?? created));
   }
@@ -2327,6 +2497,7 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
     conditions.push(or(
       like(paymentsTable.vin, `%${search.toUpperCase()}%`),
       like(paymentsTable.paypalOrderId, `%${search}%`),
+      like(paymentsTable.pokOrderId, `%${search}%`),
       like(usersTable.email, `%${search}%`),
     )!);
   }
@@ -2342,7 +2513,9 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
       amount: paymentsTable.amount,
       currency: paymentsTable.currency,
       status: paymentsTable.status,
+      kind: paymentsTable.kind,
       paypalOrderId: paymentsTable.paypalOrderId,
+      pokOrderId: paymentsTable.pokOrderId,
       couponCode: paymentsTable.couponCode,
       discountAmount: paymentsTable.discountAmount,
       vinLookupId: paymentsTable.vinLookupId,
@@ -2351,7 +2524,7 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
     .from(paymentsTable)
     .leftJoin(usersTable, eq(paymentsTable.userId, usersTable.id));
 
-  const [items, countResult, summaryResult] = await Promise.all([
+  const [rawItems, countResult, summaryResult] = await Promise.all([
     (where ? baseQuery.where(where) : baseQuery)
       .orderBy(desc(paymentsTable.createdAt))
       .limit(limit)
@@ -2374,6 +2547,23 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
       GROUP BY status
     `),
   ]);
+
+  const items = rawItems.map((row) => {
+    const paymentMethod = row.pokOrderId
+      ? "pok"
+      : row.paypalOrderId
+        ? "paypal"
+        : row.kind === "credit_redemption"
+          ? "credit"
+          : row.amount === 0
+            ? "free"
+            : null;
+    return {
+      ...row,
+      paymentMethod,
+      providerOrderId: row.pokOrderId ?? row.paypalOrderId ?? null,
+    };
+  });
 
   const statusRows = summaryResult.rows as Array<{ status: string; cnt: number; rev: number }>;
   const counts: Record<string, number> = {};

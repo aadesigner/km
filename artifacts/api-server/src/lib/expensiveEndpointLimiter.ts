@@ -49,6 +49,26 @@ export const paypalCaptureLimiter = rateLimit({
   keyGenerator: userOrIpKey,
 });
 
+/** POK SDK order creation — may hit local-exists (VIN) or pack pricing. */
+export const pokOrderCreateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: Number(process.env.POK_ORDER_RATE_MAX ?? 20),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many checkout attempts. Please wait before trying again." },
+  keyGenerator: userOrIpKey,
+});
+
+/** POK confirm — after GuestCheckoutForm onSuccess. */
+export const pokConfirmLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: Number(process.env.POK_CONFIRM_RATE_MAX ?? 30),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many payment confirmations. Please wait before trying again." },
+  keyGenerator: userOrIpKey,
+});
+
 /** Post-payment lookup — provider path is async but still bounded per user. */
 export const vinLookupUserLimiter = rateLimit({
   windowMs: 60_000,

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
-import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
+import { redirectGuestForVinCheckout, persistVinForCheckout, clearStoredPendingVin } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { prefetchFlags } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
@@ -180,14 +180,18 @@ export default function Home() {
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
     if (vinLookupDisabled) return;
-    const v = vin.trim().toUpperCase();
+    const v = vin.trim().toUpperCase().replace(/[\s-]/g, "");
     if (!isSignedIn) {
       const authPath = redirectGuestForVinCheckout(v, language);
       if (authPath) setLocation(authPath);
       return;
     }
-    sessionStorage.setItem("checkout_vin", v);
-    setLocation(`/${language}/checkout?vin=${encodeURIComponent(v)}`);
+    // Always pass ?vin= so checkout replaces any previously stored VIN
+    const normalized = persistVinForCheckout(v);
+    if (!normalized) {
+      clearStoredPendingVin();
+    }
+    setLocation(`/${language}/checkout?vin=${encodeURIComponent(normalized || v)}`);
   };
 
   const seo = usePageSeo("home");

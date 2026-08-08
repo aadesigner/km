@@ -78,11 +78,13 @@ import { shouldFormatAccidentLossAsKrw } from "@/lib/korean-currency";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { RegistryHistorySection } from "@/components/registry-history-section";
+import { ServiceHistorySection } from "@/components/service-history-section";
 import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
+import type { ServiceHistoryEntry } from "@/components/service-history-section";
 import {
   cleanDisplayStr,
   hasMeaningfulMarketData,
@@ -94,6 +96,7 @@ import {
   sanitizeInsuranceClaims,
   sanitizeMileageHistory,
   sanitizeOwnerHistory,
+  sanitizeServiceHistory,
   enrichRegistryHistoryDates,
   sanitizeRegistryHistory,
 } from "@/lib/report-display";
@@ -145,6 +148,9 @@ type MileageEntry = {
   titleStatus?: string | null;
   auctionPrice?: number | null;
   lotStatus?: string | null;
+  location?: string | null;
+  /** Admin-entered notes / services at this reading. */
+  description?: string | null;
 };
 
 type OwnerEntry = {
@@ -218,6 +224,7 @@ type LookupData = {
   auctionHistory?: AuctionEntry[];
   insuranceClaims?: InsuranceClaimEntry[];
   registryHistory?: RegistryHistoryEntry[];
+  serviceHistory?: ServiceHistoryEntry[];
   krwPerUsd?: number | null;
   fulfillmentPending?: boolean;
 };
@@ -324,6 +331,8 @@ function MileageTimeline({
         const secondaryDmg = translateDamageLabel(t, cleanStr(entry.secondaryDamage));
         const status = translateLotStatus(t, cleanStr(entry.lotStatus));
         const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
+        const servicesNote = cleanStr(entry.description);
+        const locationLabel = cleanStr(entry.location);
         return (
           <div key={i} className="relative pl-7">
             <div className={cn(
@@ -350,6 +359,12 @@ function MileageTimeline({
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1 mt-1">
                   <DollarSign className="h-3 w-3 shrink-0" />
                   {entry.auctionPrice.toLocaleString()}
+                </p>
+              )}
+              {locationLabel && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  {locationLabel}
                 </p>
               )}
               {(cond || primaryDmg || secondaryDmg || status || titleLabel) && (
@@ -380,6 +395,12 @@ function MileageTimeline({
                     </span>
                   )}
                 </div>
+              )}
+              {servicesNote && (
+                <p className="text-sm text-muted-foreground mt-1.5 leading-snug">
+                  <span className="font-medium text-foreground/80">{t("mileage_services")}: </span>
+                  {servicesNote}
+                </p>
               )}
             </div>
           </div>
@@ -608,6 +629,9 @@ export default function VinResult({ params }: Props) {
       data?.year,
       { listingOdometer: data?.odometer },
     ),
+  );
+  const serviceHistory = sortHistoryNewestFirst(
+    sanitizeServiceHistory(repairDatedRecords(data?.serviceHistory, data?.year), data?.year),
   );
   const mileageSourceInput = {
     odometer: data?.odometer,
@@ -1298,6 +1322,16 @@ export default function VinResult({ params }: Props) {
           />
           </>
           ) : null}
+
+          <ServiceHistorySection
+            events={serviceHistory}
+            vehicleYear={data?.year}
+            vehicleCountry={data?.country}
+            t={t}
+            language={language}
+            variant="report"
+            delay={0.095}
+          />
 
           {/* Market Data */}
           {showMarketDataSection && marketData && !isPendingManual && (

@@ -16,6 +16,8 @@ describe("maintenancePolicy", () => {
     expect(apiPathRestriction("/vin/decode-free")).toBe("free_decoder");
     expect(apiPathRestriction("/payments/create-paypal-order")).toBe("checkout");
     expect(apiPathRestriction("/payments/create-credit-pack-order")).toBe("checkout");
+    expect(apiPathRestriction("/payments/create-pok-order")).toBe("checkout");
+    expect(apiPathRestriction("/payments/confirm-pok-order")).toBe("checkout");
     expect(apiPathRestriction("/payments/redeem-credit")).toBe("checkout");
     expect(apiPathRestriction("/vin/lookup")).toBe("vin_reports");
     expect(apiPathRestriction("/vin/peek/5YJSA1E14HF000001")).toBe("vin_reports");

@@ -14,6 +14,8 @@ export const paymentsTable = pgTable("payments", {
   /** Pack size granted (3/5) or 1 on redemption. */
   credits: integer("credits"),
   paypalOrderId: text("paypal_order_id"),
+  /** POK Payments SDK order id (card checkout). Mutually exclusive with paypalOrderId in practice. */
+  pokOrderId: text("pok_order_id"),
   couponCode: text("coupon_code"),
   discountAmount: real("discount_amount"),
   vinLookupId: integer("vin_lookup_id"),
@@ -23,6 +25,7 @@ export const paymentsTable = pgTable("payments", {
   index("payments_user_id_idx").on(table.userId),
   index("payments_vin_idx").on(table.vin),
   uniqueIndex("payments_paypal_order_id_idx").on(table.paypalOrderId),
+  uniqueIndex("payments_pok_order_id_idx").on(table.pokOrderId),
   index("payments_status_idx").on(table.status),
   index("payments_created_at_idx").on(table.createdAt),
 ]);

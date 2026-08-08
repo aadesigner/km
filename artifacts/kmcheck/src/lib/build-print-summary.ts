@@ -87,6 +87,8 @@ type MileageLike = {
   damage?: string | null;
   titleStatus?: string | null;
   lotStatus?: string | null;
+  location?: string | null;
+  description?: string | null;
 };
 
 type OwnerLike = {
@@ -177,7 +179,9 @@ export function buildMileagePrintRows(
   return entries.slice(0, PRINT_MILEAGE_LIMIT).map((entry) => {
     const damage = translateDamageLabel(t, entry.primaryDamage)
       ?? translateDamageLabel(t, entry.damage);
-    const detail = [damage, entry.titleStatus, entry.lotStatus].filter(Boolean).join(" · ") || null;
+    const detail = [damage, entry.titleStatus, entry.lotStatus, entry.location, entry.description]
+      .filter(Boolean)
+      .join(" · ") || null;
     return {
       date: entry.date ? localizeProviderDate(entry.date, language, vehicleYear, vehicleCountry) : null,
       odometer: entry.odometer != null ? `${entry.odometer.toLocaleString()} km` : "—",

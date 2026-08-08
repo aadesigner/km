@@ -34,6 +34,10 @@ type PaymentsForm = {
   paypalClientSecret: string;
   paypalSandbox: boolean;
   paypalEnableCards: boolean;
+  pokMerchantId: string;
+  pokKeyId: string;
+  pokKeySecret: string;
+  pokEnv: "staging" | "production";
 };
 
 type SocialForm = {
@@ -155,6 +159,7 @@ export default function AdminSettings() {
   const [paymSaved, setPaymSaved] = useState(false);
   const [paymError, setPaymError] = useState("");
   const [hasPaypalSecret, setHasPaypalSecret] = useState(false);
+  const [hasPokSecret, setHasPokSecret] = useState(false);
   const [hasGoogleSecret, setHasGoogleSecret] = useState(false);
   const [hasFacebookSecret, setHasFacebookSecret] = useState(false);
   const [hasLinkedInSecret, setHasLinkedInSecret] = useState(false);
@@ -181,7 +186,8 @@ export default function AdminSettings() {
         setPaymSaved(true);
         notifySaved("Payment settings");
         if (payments.paypalClientSecret.trim()) setHasPaypalSecret(true);
-        setPayments((f) => ({ ...f, paypalClientSecret: "" }));
+        if (payments.pokKeySecret.trim()) setHasPokSecret(true);
+        setPayments((f) => ({ ...f, paypalClientSecret: "", pokKeySecret: "" }));
         setTimeout(() => setPaymSaved(false), 2000);
       },
       onError: (err: Error) => {
@@ -275,6 +281,7 @@ export default function AdminSettings() {
 
   const [payments, setPayments] = useState<PaymentsForm>({
     paypalClientId: "", paypalClientSecret: "", paypalSandbox: true, paypalEnableCards: true,
+    pokMerchantId: "", pokKeyId: "", pokKeySecret: "", pokEnv: "production",
   });
   const [social, setSocial] = useState<SocialForm>({
     googleLoginEnabled: true, googleClientId: "", googleClientSecret: "",
@@ -320,8 +327,13 @@ export default function AdminSettings() {
       paypalClientSecret: "",
       paypalSandbox: (s.paypalSandbox as boolean) ?? true,
       paypalEnableCards: (s.paypalEnableCards as boolean) ?? true,
+      pokMerchantId: (s.pokMerchantId as string) ?? "",
+      pokKeyId: (s.pokKeyId as string) ?? "",
+      pokKeySecret: "",
+      pokEnv: (s.pokEnv as string) === "staging" ? "staging" : "production",
     });
     setHasPaypalSecret(!!s.hasPaypalSecret);
+    setHasPokSecret(!!s.hasPokSecret);
     setHasGoogleSecret(!!s.hasGoogleSecret);
     setHasFacebookSecret(!!s.hasFacebookSecret);
     setHasLinkedInSecret(!!s.hasLinkedInSecret);
@@ -604,7 +616,6 @@ export default function AdminSettings() {
                 <p className="text-xs text-muted-foreground">Used server-side only to create/capture orders</p>
                 <Input type="password" placeholder={hasPaypalSecret ? "••••••••  (leave blank to keep current)" : "EGl..."} value={payments.paypalClientSecret} onChange={(e) => setPayments(f => ({ ...f, paypalClientSecret: e.target.value }))} />
               </div>
-              {paymError && <p className="text-sm text-destructive">{paymError}</p>}
               <div className="flex items-center gap-3 p-3 border rounded-lg">
                 <Switch id="paypal-sandbox" checked={payments.paypalSandbox} onCheckedChange={(v) => setPayments(f => ({ ...f, paypalSandbox: v }))} />
                 <div>
@@ -628,6 +639,68 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CreditCard className="h-4 w-4 text-violet-600" />
+                POK Card Payments
+              </CardTitle>
+              <CardDescription>
+                Configure POK gateway credentials from{" "}
+                <a href="https://pokpay.io/en" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                  pokpay.io
+                </a>
+                {" "}(Business / developer keys). Secrets stay on the server — never sent to the browser.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Merchant ID</Label>
+                <Input
+                  placeholder="Merchant UUID"
+                  value={payments.pokMerchantId}
+                  onChange={(e) => setPayments((f) => ({ ...f, pokMerchantId: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Key ID</Label>
+                <Input
+                  placeholder="POK key id"
+                  value={payments.pokKeyId}
+                  onChange={(e) => setPayments((f) => ({ ...f, pokKeyId: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Key Secret (private)</Label>
+                <p className="text-xs text-muted-foreground">Used server-side only to create/confirm POK orders</p>
+                <Input
+                  type="password"
+                  placeholder={hasPokSecret ? "••••••••  (leave blank to keep current)" : "POK key secret"}
+                  value={payments.pokKeySecret}
+                  onChange={(e) => setPayments((f) => ({ ...f, pokKeySecret: e.target.value }))}
+                />
+              </div>
+              <div className="flex items-center gap-3 p-3 border rounded-lg">
+                <Switch
+                  id="pok-staging"
+                  checked={payments.pokEnv === "staging"}
+                  onCheckedChange={(v) => setPayments((f) => ({ ...f, pokEnv: v ? "staging" : "production" }))}
+                />
+                <div>
+                  <Label htmlFor="pok-staging" className="cursor-pointer">Staging environment</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Use POK staging API for test cards — turn off for live payments
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Card checkout enables when Merchant ID, Key ID, and Key Secret are all set (admin or env fallback).
+              </p>
+            </CardContent>
+          </Card>
+
+          {paymError && <p className="text-sm text-destructive">{paymError}</p>}
+
           <TabSaveButton
             isPending={paymUpdater.isPending}
             saved={paymSaved}
@@ -636,20 +709,41 @@ export default function AdminSettings() {
               setPaymError("");
               const clientId = payments.paypalClientId.trim();
               const clientSecret = payments.paypalClientSecret.trim();
-              if (!clientId) {
-                setPaymError("PayPal Client ID is required.");
+              const pokMerchantId = payments.pokMerchantId.trim();
+              const pokKeyId = payments.pokKeyId.trim();
+              const pokKeySecret = payments.pokKeySecret.trim();
+              const pokAny = !!(pokMerchantId || pokKeyId || pokKeySecret || hasPokSecret);
+              const pokComplete = !!(pokMerchantId && pokKeyId && (pokKeySecret || hasPokSecret));
+
+              if (clientId || clientSecret || hasPaypalSecret) {
+                if (!clientId) {
+                  setPaymError("PayPal Client ID is required when configuring PayPal.");
+                  return;
+                }
+                if (!clientSecret && !hasPaypalSecret) {
+                  setPaymError("PayPal Client Secret is required.");
+                  return;
+                }
+              }
+              if (pokAny && !pokComplete) {
+                setPaymError("POK requires Merchant ID, Key ID, and Key Secret.");
                 return;
               }
-              if (!clientSecret && !hasPaypalSecret) {
-                setPaymError("PayPal Client Secret is required.");
+              if (!clientId && !hasPaypalSecret && !pokComplete) {
+                setPaymError("Configure PayPal and/or POK credentials before saving.");
                 return;
               }
+
               const payload: Record<string, unknown> = {
-                paypalClientId: clientId,
                 paypalSandbox: payments.paypalSandbox,
                 paypalEnableCards: payments.paypalEnableCards,
+                pokEnv: payments.pokEnv,
               };
+              if (clientId) payload.paypalClientId = clientId;
               if (clientSecret) payload.paypalClientSecret = clientSecret;
+              if (pokMerchantId) payload.pokMerchantId = pokMerchantId;
+              if (pokKeyId) payload.pokKeyId = pokKeyId;
+              if (pokKeySecret) payload.pokKeySecret = pokKeySecret;
               paymUpdater.mutate({ data: payload as Parameters<typeof paymUpdater.mutate>[0]["data"] });
             }}
           />

@@ -16,8 +16,9 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
     facebookAppSecret,
     linkedinClientSecret,
     smtpPass,
+    pokKeySecret,
     ...safe
-  } = settings;
+  } = settings as SettingsRow & { pokKeySecret?: string | null };
   return {
     ...safe,
     hasPaypalSecret: !!paypalClientSecret?.trim(),
@@ -26,6 +27,7 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
     hasFacebookSecret: !!facebookAppSecret?.trim(),
     hasLinkedInSecret: !!linkedinClientSecret?.trim(),
     hasSmtpPass: !!smtpPass?.trim(),
+    hasPokSecret: !!pokKeySecret?.trim(),
     googleButtonVisible: isGoogleOAuthConfigured(settings),
     facebookButtonVisible: isFacebookOAuthConfigured(settings),
     linkedinButtonVisible: isLinkedInOAuthConfigured(settings),

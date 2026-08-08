@@ -154,14 +154,22 @@ export function persistVinForCheckout(vin: string): string | null {
 /**
  * Resolve VIN for checkout prefill: URL ?vin= → session → localStorage backup.
  * Does not change payment / unlock behavior — display/handoff only.
+ *
+ * When `?vin=` is present in the URL it always wins: a new (even invalid) VIN must
+ * never resurrect a previously stored checkout VIN.
  */
 export function resolveCheckoutPrefillVin(
   search: string = typeof window !== "undefined" ? window.location.search : "",
 ): string | null {
-  const urlVin = new URLSearchParams(search).get("vin");
-  if (urlVin) {
+  const params = new URLSearchParams(search);
+  if (params.has("vin")) {
+    const urlVin = params.get("vin") ?? "";
     const fromUrl = persistVinForCheckout(urlVin);
     if (fromUrl) return fromUrl;
+    // Explicit but invalid/incomplete — show the attempt, clear stale stored VINs
+    clearStoredPendingVin();
+    const attempted = sanitizeVinCandidate(urlVin);
+    return attempted || null;
   }
   return readStoredPendingVin();
 }

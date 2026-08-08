@@ -118,7 +118,7 @@ export interface NormalizedVinData {
     date?: string | null;
     odometer?: number | null;
     unit?: string | null;
-    source?: "na_auction" | "listing" | null;
+    source?: "na_auction" | "listing" | "admin" | string | null;
     condition?: string | null;
     damage?: string | null;
     primaryDamage?: string | null;
@@ -126,6 +126,21 @@ export interface NormalizedVinData {
     auctionPrice?: number | null;
     lotStatus?: string | null;
     titleStatus?: string | null;
+    /** Manual admin annotation only — never set by provider normalize. */
+    location?: string | null;
+    /** Manual admin annotation only — never set by provider normalize. */
+    description?: string | null;
+  }>;
+  /**
+   * Manual admin workshop / service visits only.
+   * Never produced by provider normalize / Carstat fetch.
+   */
+  serviceHistory?: Array<{
+    date?: string | null;
+    mileage?: number | null;
+    title?: string | null;
+    location?: string | null;
+    description?: string | null;
   }>;
   ownerHistory?: Array<{
     date?: string | null;
@@ -185,11 +200,28 @@ export async function upsertVinCatalog(
   data: Record<string, unknown>,
 ): Promise<void> {
   const existing = await getCatalogVin(vin);
-  const existingRate = readFrozenKrwPerUsd(
-    (existing?.data as Record<string, unknown> | null) ?? null,
-  );
+  const existingData = (existing?.data as Record<string, unknown> | null) ?? null;
+  const existingRate = readFrozenKrwPerUsd(existingData);
   const currentRate = await getCurrentKrwPerUsd();
   const cleaned = sanitizeCatalogPayload(data);
+
+  // Manual-only fields (admin pending / catalog edit). Provider payloads never set these —
+  // keep them when an automatic fetch replaces the catalog row.
+  if (existingData) {
+    const prevServices = existingData.serviceHistory;
+    if (
+      Array.isArray(prevServices)
+      && prevServices.length > 0
+      && (!Array.isArray(cleaned.serviceHistory) || cleaned.serviceHistory.length === 0)
+    ) {
+      cleaned.serviceHistory = prevServices;
+    }
+    cleaned.mileageHistory = preserveManualMileageAnnotations(
+      cleaned.mileageHistory,
+      existingData.mileageHistory,
+    );
+  }
+
   const stamped = applyFrozenKrwPerUsd(cleaned, { existingRate, currentRate });
 
   await db
@@ -199,6 +231,48 @@ export async function upsertVinCatalog(
       target: vinCatalogTable.vin,
       set: { data: stamped, providerName, updatedAt: new Date() },
     });
+}
+
+/** Keep admin-entered mileage description/location when provider history is rewritten. */
+export function preserveManualMileageAnnotations(
+  incoming: unknown,
+  previous: unknown,
+): unknown {
+  if (!Array.isArray(incoming)) return incoming;
+  if (!Array.isArray(previous) || previous.length === 0) return incoming;
+
+  const prevByKey = new Map<string, Record<string, unknown>>();
+  for (const raw of previous) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const e = raw as Record<string, unknown>;
+    const desc = typeof e.description === "string" ? e.description.trim() : "";
+    const loc = typeof e.location === "string" ? e.location.trim() : "";
+    if (!desc && !loc) continue;
+    const date = String(e.date ?? "").substring(0, 10);
+    const odo = Number(e.odometer ?? NaN);
+    if (!date || !Number.isFinite(odo)) continue;
+    prevByKey.set(`${date}|${odo}`, e);
+  }
+  if (prevByKey.size === 0) return incoming;
+
+  return incoming.map((raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    const e = { ...(raw as Record<string, unknown>) };
+    const date = String(e.date ?? "").substring(0, 10);
+    const odo = Number(e.odometer ?? NaN);
+    if (!date || !Number.isFinite(odo)) return e;
+    const prev = prevByKey.get(`${date}|${odo}`);
+    if (!prev) return e;
+    const incomingDesc = typeof e.description === "string" ? e.description.trim() : "";
+    const incomingLoc = typeof e.location === "string" ? e.location.trim() : "";
+    if (!incomingDesc && typeof prev.description === "string" && prev.description.trim()) {
+      e.description = prev.description;
+    }
+    if (!incomingLoc && typeof prev.location === "string" && prev.location.trim()) {
+      e.location = prev.location;
+    }
+    return e;
+  });
 }
 
 /** Prefer the report payload with richer timeline data (registry, claims, mileage). */
@@ -792,6 +866,7 @@ const catalogPeekHintSelect = {
   claimsLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'insuranceClaims', '[]'::jsonb))`,
   registryLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'registryHistory', '[]'::jsonb))`,
   auctionLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'auctionHistory', '[]'::jsonb))`,
+  serviceLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'serviceHistory', '[]'::jsonb))`,
   photosLen: sql<number>`jsonb_array_length(COALESCE(${vinCatalogTable.data}->'photos', '[]'::jsonb))`,
 };
 
@@ -847,6 +922,7 @@ export async function getCatalogVinPeekHint(vin: string): Promise<VinCatalogPeek
     claimsLen: Number(row.claimsLen) || 0,
     registryLen: Number(row.registryLen) || 0,
     auctionLen: Number(row.auctionLen) || 0,
+    serviceLen: Number(row.serviceLen) || 0,
     photosLen: Number(row.photosLen) || 0,
     make: row.make,
     model: row.model,

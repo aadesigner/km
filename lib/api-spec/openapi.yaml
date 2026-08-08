@@ -543,6 +543,14 @@ paths:
           description: >
             ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo),
             or unset/none for users with no country. Combines with status and checks (AND).
+        - name: hasPhone
+          in: query
+          schema:
+            type: string
+            enum: [yes, no]
+          description: >
+            Filter by whether the user has a complete phone number
+            (both phone_prefix and phone_national). Combines with other filters (AND).
       responses:
         "200":
           description: Paginated user list
@@ -580,6 +588,14 @@ paths:
           description: >
             ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo),
             or unset/none for users with no country. Combines with other filters (AND).
+        - name: hasPhone
+          in: query
+          schema:
+            type: string
+            enum: [yes, no]
+          description: >
+            Filter by whether the user has a complete phone number
+            (both phone_prefix and phone_national). Combines with other filters (AND).
       responses:
         "200":
           description: CSV file download

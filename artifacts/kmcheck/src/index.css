@@ -1355,3 +1355,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* POK GuestCheckout — card-only UI; email/billing prefilled & hidden (still validated by SDK) */
+.kmcheck-pok-checkout #pok-payment-container {
+  max-width: 100%;
+}
+
+.kmcheck-pok-checkout [data-kmcheck-pok-hidden="1"] {
+  display: none !important;
+}
+
+.kmcheck-pok-checkout .pok-payment-button {
+  border-radius: 0.75rem;
+  font-weight: 700;
+}

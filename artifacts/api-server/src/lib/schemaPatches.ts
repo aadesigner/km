@@ -49,6 +49,12 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS credit_balance integer NOT NULL DEFAULT 0`,
   `ALTER TABLE payments ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'vin_report'`,
   `ALTER TABLE payments ADD COLUMN IF NOT EXISTS credits integer`,
+  `ALTER TABLE payments ADD COLUMN IF NOT EXISTS pok_order_id text`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS payments_pok_order_id_idx ON payments (pok_order_id)`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_merchant_id text`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_key_id text`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_key_secret text`,
+  `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_env text NOT NULL DEFAULT 'production'`,
 ];
 
 const TABLE_PATCHES = [

@@ -81,6 +81,7 @@ export function buildManualPendingReportData(
     ownerHistory: [],
     insuranceClaims: [],
     registryHistory: [],
+    serviceHistory: [],
     auctionHistory: [],
     marketData: null,
     isSalvage: null,

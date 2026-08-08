@@ -107,3 +107,144 @@ export function trendPct(current: number, prev: number): number | null {
   if (prev === 0) return current > 0 ? 100 : null;
   return Math.round(((current - prev) / prev) * 100);
 }
+
+export type DashboardPeriodKey = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter";
+
+export type CountryCountRow = { countryCode: string; count: number };
+export type PaymentMethodRow = {
+  method: "paypal" | "pok" | "credit" | "free";
+  count: number;
+  revenue: number;
+};
+
+export type PeriodBreakdownMaps = {
+  signupsByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
+  purchasesByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
+  paymentsByMethod: Record<DashboardPeriodKey, PaymentMethodRow[]>;
+};
+
+const PERIOD_KEYS: DashboardPeriodKey[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter"];
+const METHOD_ORDER: Array<PaymentMethodRow["method"]> = ["paypal", "pok", "credit", "free"];
+
+function emptyCountryMaps(): Record<DashboardPeriodKey, CountryCountRow[]> {
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+}
+
+function emptyMethodMaps(): Record<DashboardPeriodKey, PaymentMethodRow[]> {
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+}
+
+function periodWindows(now = new Date()): Record<DashboardPeriodKey, { from: string; toExclusive?: string }> {
+  const today = utcTodayIso(now);
+  const yesterday = utcDateIsoDaysAgo(1, now);
+  const weekFrom = utcDateIsoDaysAgo(6, now);
+  const monthFrom = utcMonthStartIso(now);
+  const lastMonthFrom = utcPrevMonthStartIso(now);
+  const quarterFrom = utcDateIsoDaysAgo(89, now);
+  return {
+    today: { from: today },
+    yesterday: { from: yesterday, toExclusive: today },
+    week: { from: weekFrom },
+    month: { from: monthFrom },
+    lastMonth: { from: lastMonthFrom, toExclusive: monthFrom },
+    quarter: { from: quarterFrom },
+  };
+}
+
+function inWindow(date: string, from: string, toExclusive?: string): boolean {
+  if (!date || date < from) return false;
+  if (toExclusive && date >= toExclusive) return false;
+  return true;
+}
+
+function topCountries(
+  counts: Map<string, number>,
+  limit = 10,
+): CountryCountRow[] {
+  return [...counts.entries()]
+    .map(([countryCode, count]) => ({ countryCode, count }))
+    .sort((a, b) => b.count - a.count || a.countryCode.localeCompare(b.countryCode))
+    .slice(0, limit);
+}
+
+function normalizeMethod(raw: unknown): PaymentMethodRow["method"] {
+  const m = String(raw ?? "").toLowerCase();
+  if (m === "pok" || m === "credit" || m === "free" || m === "paypal") return m;
+  return "paypal";
+}
+
+/** Bucket daily country count rows into dashboard periods (top 10 each). */
+export function buildCountryCountPeriods(
+  rows: Array<{ date: unknown; country_code?: unknown; countryCode?: unknown; count: unknown }>,
+  now = new Date(),
+): Record<DashboardPeriodKey, CountryCountRow[]> {
+  const windows = periodWindows(now);
+  const maps: Record<DashboardPeriodKey, Map<string, number>> = {
+    today: new Map(),
+    yesterday: new Map(),
+    week: new Map(),
+    month: new Map(),
+    lastMonth: new Map(),
+    quarter: new Map(),
+  };
+
+  for (const row of rows) {
+    const date = normalizeDayKey(row.date);
+    const country = String(row.country_code ?? row.countryCode ?? "—").trim() || "—";
+    const count = Number(row.count ?? 0);
+    if (!date || count <= 0) continue;
+    for (const key of PERIOD_KEYS) {
+      const w = windows[key];
+      if (!inWindow(date, w.from, w.toExclusive)) continue;
+      maps[key].set(country, (maps[key].get(country) ?? 0) + count);
+    }
+  }
+
+  const out = emptyCountryMaps();
+  for (const key of PERIOD_KEYS) out[key] = topCountries(maps[key]);
+  return out;
+}
+
+/** @deprecated alias — prefer buildCountryCountPeriods */
+export const buildSignupsByCountryPeriods = buildCountryCountPeriods;
+
+/** Bucket daily payment-method rows into dashboard periods. */
+export function buildPaymentsByMethodPeriods(
+  rows: Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
+  now = new Date(),
+): Record<DashboardPeriodKey, PaymentMethodRow[]> {
+  const windows = periodWindows(now);
+  const maps: Record<DashboardPeriodKey, Map<PaymentMethodRow["method"], { count: number; revenue: number }>> = {
+    today: new Map(),
+    yesterday: new Map(),
+    week: new Map(),
+    month: new Map(),
+    lastMonth: new Map(),
+    quarter: new Map(),
+  };
+
+  for (const row of rows) {
+    const date = normalizeDayKey(row.date);
+    const method = normalizeMethod(row.method);
+    const count = Number(row.count ?? 0);
+    const revenue = Number(row.revenue ?? 0);
+    if (!date || count <= 0) continue;
+    for (const key of PERIOD_KEYS) {
+      const w = windows[key];
+      if (!inWindow(date, w.from, w.toExclusive)) continue;
+      const prev = maps[key].get(method) ?? { count: 0, revenue: 0 };
+      maps[key].set(method, { count: prev.count + count, revenue: prev.revenue + revenue });
+    }
+  }
+
+  const out = emptyMethodMaps();
+  for (const key of PERIOD_KEYS) {
+    out[key] = METHOD_ORDER
+      .map((method) => {
+        const v = maps[key].get(method);
+        return { method, count: v?.count ?? 0, revenue: v?.revenue ?? 0 };
+      })
+      .filter((r) => r.count > 0);
+  }
+  return out;
+}

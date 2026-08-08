@@ -25,6 +25,7 @@ import {
   pickRicherVinReportData,
   pickVinReportDataForServe,
   mergeVinPhotoLists,
+  preserveManualMileageAnnotations,
   isStaleKoreanReport,
   isStaleCachedReport,
   isPartialCarstatPhotoCache,
@@ -878,6 +879,46 @@ describe("mergeVinPhotoLists", () => {
     );
     expect(merged).toHaveLength(12);
     expect(merged[0]).toBe("https://encar/0.jpg");
+  });
+});
+
+describe("preserveManualMileageAnnotations", () => {
+  it("copies manual description/location onto matching provider mileage rows", () => {
+    const previous = [
+      { date: "2024-01-15", odometer: 50000, description: "Oil change", location: "Tirana" },
+      { date: "2023-06-01", odometer: 40000, description: "Brakes" },
+    ];
+    const incoming = [
+      { date: "2024-01-15", odometer: 50000, source: "listing", unit: "km" },
+      { date: "2023-06-01", odometer: 40000, source: "listing", unit: "km" },
+      { date: "2025-01-01", odometer: 60000, source: "listing", unit: "km" },
+    ];
+    expect(preserveManualMileageAnnotations(incoming, previous)).toEqual([
+      {
+        date: "2024-01-15",
+        odometer: 50000,
+        source: "listing",
+        unit: "km",
+        description: "Oil change",
+        location: "Tirana",
+      },
+      {
+        date: "2023-06-01",
+        odometer: 40000,
+        source: "listing",
+        unit: "km",
+        description: "Brakes",
+      },
+      { date: "2025-01-01", odometer: 60000, source: "listing", unit: "km" },
+    ]);
+  });
+
+  it("does not overwrite an incoming description", () => {
+    const previous = [{ date: "2024-01-15", odometer: 50000, description: "manual" }];
+    const incoming = [{ date: "2024-01-15", odometer: 50000, description: "from-provider" }];
+    expect(preserveManualMileageAnnotations(incoming, previous)).toEqual([
+      { date: "2024-01-15", odometer: 50000, description: "from-provider" },
+    ]);
   });
 });
 

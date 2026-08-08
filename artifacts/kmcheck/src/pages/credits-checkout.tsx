@@ -12,15 +12,20 @@ import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/seo";
-import { CheckoutPaymentLogos } from "@/components/checkout-payment-logos";
+import { CheckoutPaymentLogos, usePreloadCheckoutPaymentLogos } from "@/components/checkout-payment-logos";
+import { PokGuestCheckout } from "@/components/pok-guest-checkout";
 import {
-  ArrowLeft, CheckCircle2, FileText, Loader2, Lock,
+  ArrowLeft, CheckCircle2, CreditCard, FileText, Loader2, Lock,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-type PublicSettings = { paypalClientId: string | null };
+type PublicSettings = {
+  paypalClientId: string | null;
+  pokEnabled?: boolean;
+  pokEnv?: "staging" | "production";
+};
 
 type Props = { params: { lang: string } };
 
@@ -68,16 +73,26 @@ export default function CreditsCheckout({ params }: Props) {
     ...spreadQueryExtras<PublicSettings>(CHECKOUT_QUERY_OPTIONS),
   });
   useQueryRecovery(pubSettingsError, pubSettingsFetching, refetchPubSettings);
+  usePreloadCheckoutPaymentLogos(true);
   const paypalReady = !!pubSettings?.paypalClientId;
+  const pokEnabled = !!pubSettings?.pokEnabled;
+  const anyPaymentReady = paypalReady || pokEnabled;
+  const [payMethod, setPayMethod] = useState<"paypal" | "card">("paypal");
   const [status, setStatus] = useState<"idle" | "creating" | "paying" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [paymentStarted, setPaymentStarted] = useState(false);
+  const [pokOrderId, setPokOrderId] = useState<string | null>(null);
+  const pokConfirmingRef = useRef(false);
 
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<{ close: () => void } | null>(null);
   const pendingOrderRef = useRef<string | null>(null);
   const activeRef = useRef(true);
   const finalizeRef = useRef<(orderId: string) => Promise<void>>(async () => {});
+
+  useEffect(() => {
+    if (pokEnabled && !paypalReady) setPayMethod("card");
+  }, [pokEnabled, paypalReady]);
 
   useEffect(() => {
     activeRef.current = true;
@@ -135,6 +150,38 @@ export default function CreditsCheckout({ params }: Props) {
     } catch {
       setErrorMsg(t("checkout_error_capture"));
       setStatus("error");
+    }
+  }, [basePath, refreshUser, t]);
+
+  const finalizePokCapture = useCallback(async (orderId: string) => {
+    if (pokConfirmingRef.current) return;
+    pokConfirmingRef.current = true;
+    setStatus("paying");
+    setErrorMsg("");
+    try {
+      const resp = await fetch(`${basePath}/api/payments/confirm-pok-credit-pack-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await resp.json() as {
+        success?: boolean;
+        error?: string;
+        code?: string;
+      };
+      if (!resp.ok || !data.success) {
+        setErrorMsg(data.error || t("checkout_error_capture"));
+        setStatus("error");
+        return;
+      }
+      setStatus("success");
+      void refreshUser();
+    } catch {
+      setErrorMsg(t("checkout_error_capture"));
+      setStatus("error");
+    } finally {
+      pokConfirmingRef.current = false;
     }
   }, [basePath, refreshUser, t]);
 
@@ -218,6 +265,35 @@ export default function CreditsCheckout({ params }: Props) {
   const handleStartPayment = async () => {
     if (!pack) return;
     if (pubSettingsLoading) return;
+
+    if (payMethod === "card" && pokEnabled) {
+      setStatus("creating");
+      setErrorMsg("");
+      setPaymentStarted(true);
+      try {
+        const resp = await fetch(`${basePath}/api/payments/create-pok-credit-pack-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ packId: pack.id }),
+        });
+        const data = await resp.json() as { orderId?: string; error?: string };
+        if (!resp.ok || !data.orderId) {
+          setErrorMsg(data.error || t("checkout_error_payment_create"));
+          setStatus("error");
+          setPaymentStarted(false);
+          return;
+        }
+        setPokOrderId(data.orderId);
+        setStatus("idle");
+      } catch {
+        setErrorMsg(t("checkout_error_payment_create"));
+        setStatus("error");
+        setPaymentStarted(false);
+      }
+      return;
+    }
+
     if (!paypalReady) {
       setErrorMsg(t("checkout_payment_not_configured"));
       setStatus("error");
@@ -447,7 +523,77 @@ export default function CreditsCheckout({ params }: Props) {
                       </div>
                     )}
 
-                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", !paymentStarted && "hidden")} />
+                    {pokEnabled && paypalReady && status !== "success" && (
+                      <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mb-1">
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
+                            payMethod === "paypal"
+                              ? paymentStarted
+                                ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
+                                : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
+                          onClick={() => {
+                            if (payMethod === "paypal") return;
+                            paypalInstanceRef.current?.close();
+                            if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+                            setPaymentStarted(false);
+                            setPokOrderId(null);
+                            setPayMethod("paypal");
+                            setErrorMsg("");
+                            setStatus("idle");
+                          }}
+                        >
+                          {t("checkout_pay_method_paypal")}
+                        </button>
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
+                            payMethod === "card"
+                              ? paymentStarted
+                                ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
+                                : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
+                          onClick={() => {
+                            if (payMethod === "card") return;
+                            paypalInstanceRef.current?.close();
+                            if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+                            setPaymentStarted(false);
+                            setPokOrderId(null);
+                            setPayMethod("card");
+                            setErrorMsg("");
+                            setStatus("idle");
+                          }}
+                        >
+                          <CreditCard className="h-3.5 w-3.5" />
+                          {t("checkout_pay_method_card")}
+                        </button>
+                      </div>
+                    )}
+
+                    <div
+                      ref={paypalContainerRef}
+                      className={cn(
+                        "[color-scheme:none] min-h-0",
+                        (!paymentStarted || payMethod === "card") && "hidden",
+                      )}
+                    />
+
+                    {payMethod === "card" && pokOrderId && (
+                      <PokGuestCheckout
+                        orderId={pokOrderId}
+                        pokEnv={pubSettings?.pokEnv === "staging" ? "staging" : "production"}
+                        onSuccess={() => { void finalizePokCapture(pokOrderId); }}
+                        onError={(message) => {
+                          setErrorMsg(message);
+                          setStatus("error");
+                        }}
+                      />
+                    )}
 
                     {!paymentStarted && (
                       <Button
@@ -457,18 +603,20 @@ export default function CreditsCheckout({ params }: Props) {
                           status === "creating"
                           || status === "paying"
                           || pubSettingsLoading
-                          || (!paypalReady && !pubSettingsError)
+                          || (!anyPaymentReady && !pubSettingsError)
                         }
                       >
                         {status === "creating" || status === "paying" || pubSettingsLoading ? (
                           <><Loader2 className="h-4 w-4 animate-spin" />{t("processing")}…</>
+                        ) : payMethod === "card" && pokEnabled ? (
+                          <><CreditCard className="h-4 w-4" />{t("checkout_pay_by_card")}</>
                         ) : (
-                          <><Lock className="h-4 w-4" />{t("proceed_to_payment")}</>
+                          <><Lock className="h-4 w-4" />{t("checkout_pay_with_paypal")}</>
                         )}
                       </Button>
                     )}
 
-                    {!pubSettingsLoading && !paypalReady && (
+                    {!pubSettingsLoading && !anyPaymentReady && (
                       <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
                         {t("checkout_payment_not_configured")}
                       </div>
@@ -485,9 +633,21 @@ export default function CreditsCheckout({ params }: Props) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border/60 bg-background px-2 sm:px-3 py-1">
-              <CheckoutPaymentLogos />
-            </div>
+            {status !== "success"
+              && (
+                (payMethod === "card" && pokEnabled)
+                || (payMethod === "paypal" && paypalReady && !paymentStarted)
+              )
+              && (
+              <div className={cn(
+                "rounded-2xl border border-border/60 bg-background px-4",
+                payMethod === "paypal" ? "pt-3 pb-1.5" : "py-3",
+              )}>
+                <CheckoutPaymentLogos
+                  provider={payMethod === "card" && pokEnabled ? "pok" : "paypal"}
+                />
+              </div>
+            )}
           </motion.div>
         </div>
 

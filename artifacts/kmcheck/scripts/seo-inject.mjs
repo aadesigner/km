@@ -58,6 +58,8 @@ const NOINDEX_EXACT = new Set([
   "/reset-password",
   "/set-password",
   "/vin/processing",
+  "/terms",
+  "/privacy",
 ]);
 
 const NOINDEX_PREFIXES = ["/adminx", "/dashboard"];

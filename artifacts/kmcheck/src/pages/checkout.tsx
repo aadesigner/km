@@ -43,7 +43,8 @@ import {
 } from "@/lib/checkout-vin-flow";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
-import { CheckoutPaymentLogos } from "@/components/checkout-payment-logos";
+import { CheckoutPaymentLogos, usePreloadCheckoutPaymentLogos } from "@/components/checkout-payment-logos";
+import { PokGuestCheckout } from "@/components/pok-guest-checkout";
 import { VinDecodeRecheckHint } from "@/components/vin-decode-recheck-hint";
 import { VinPendingDoubleCheckHint } from "@/components/vin-pending-double-check-hint";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
@@ -110,6 +111,8 @@ interface PublicSettings {
   paypalClientId: string | null;
   paypalSandbox: boolean;
   paypalEnableCards: boolean;
+  pokEnabled?: boolean;
+  pokEnv?: "staging" | "production";
 }
 
 interface CouponResult {
@@ -157,6 +160,7 @@ export default function Checkout({ params }: Props) {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { resolvedTheme } = useTheme();
+  usePreloadCheckoutPaymentLogos(true);
 
   // Fresh credit balance (admin edits / pack purchases) before showing Pay with credit.
   useEffect(() => {
@@ -190,7 +194,9 @@ export default function Checkout({ params }: Props) {
   // "unknown" = SDK not yet checked, "yes" = eligible, "no" = confirmed ineligible
   const [cardEligible, setCardEligible] = useState<"unknown" | "yes" | "no">("unknown");
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
-  const paypalContainerRef = useRef<HTMLDivElement>(null);
+  const [pokOrderId, setPokOrderId] = useState<string | null>(null);
+  const [pokPaymentId, setPokPaymentId] = useState<number | null>(null);
+  const pokConfirmingRef = useRef(false);  const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<ReturnType<NonNullable<typeof window.paypal>["Buttons"]> | null>(null);
   /** Order created on "Proceed" so PayPal can open checkout immediately (async createOrder delays popup → blocked). */
   const pendingPaypalOrderRef = useRef<string | null>(null);
@@ -394,14 +400,21 @@ export default function Checkout({ params }: Props) {
     return () => { cancelled = true; };
   }, [pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, cardEligible]);
 
-  // Auto-switch back to PayPal when confirmed ineligible
+  // Prefer card when POK is the only configured PSP
   useEffect(() => {
-    if (cardEligible === "no") {
+    if (pubSettings?.pokEnabled && !pubSettings?.paypalClientId) {
+      setPayMethod("card");
+    }
+  }, [pubSettings?.pokEnabled, pubSettings?.paypalClientId]);
+
+  // Auto-switch back to PayPal when confirmed ineligible (unless POK cards are available)
+  useEffect(() => {
+    if (cardEligible === "no" && !pubSettings?.pokEnabled) {
       setPayMethod("paypal");
     }
-  }, [cardEligible]);
+  }, [cardEligible, pubSettings?.pokEnabled]);
 
-  // Initialize PayPal Hosted Fields when card tab is active
+  // Initialize PayPal Hosted Fields when card tab is active (skipped when POK is configured)
   useEffect(() => {
     if (payMethod !== "card") {
       hostedFieldsRef.current = null;
@@ -412,6 +425,7 @@ export default function Checkout({ params }: Props) {
       setCardErrors({});
       return;
     }
+    if (pubSettings?.pokEnabled) return;
     if (!pubSettings?.paypalEnableCards || !pubSettings.paypalClientId) return;
 
     let cancelled = false;
@@ -465,7 +479,7 @@ export default function Checkout({ params }: Props) {
       void hostedFieldsRef.current?.teardown?.();
       hostedFieldsRef.current = null;
     };
-  }, [payMethod, pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, resolvedTheme, t]);
+  }, [payMethod, pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, pubSettings?.pokEnabled, resolvedTheme, t]);
 
   const validateVin = () => {
     const v = vin.trim().toUpperCase();
@@ -644,9 +658,10 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  // Apply ?vin= / stored referral VIN whenever the route location changes
+  // Apply ?vin= / stored referral VIN whenever the route location changes.
+  // Wouter's `location` omits the query string, so always read window.location.search.
   useLayoutEffect(() => {
-    const resolved = resolveCheckoutPrefillVin();
+    const resolved = resolveCheckoutPrefillVin(window.location.search);
     if (!resolved) return;
     setVin((prev) => (prev === resolved ? prev : resolved));
   }, [location]);
@@ -1159,6 +1174,54 @@ export default function Checkout({ params }: Props) {
     const nvin = validateVin();
     if (!nvin) return;
     if (couponResult?.isFree) { await createOrder(nvin); return; }
+
+    // POK inline card form — create order then show GuestCheckoutForm
+    if (pubSettings?.pokEnabled) {
+      setStatus("creating");
+      setErrorMsg("");
+      setPaymentStarted(true);
+      try {
+        const resp = await fetch(`${basePath}/api/payments/create-pok-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
+        });
+        const data = await resp.json() as {
+          orderId?: string;
+          paymentId?: number;
+          error?: string;
+          code?: string;
+          alreadyUnlocked?: boolean;
+          lookupId?: number | null;
+        };
+        if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
+          goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
+          return;
+        }
+        if (data.code === "VIN_NO_DATA" || data.code === "VIN_CHECK_UNAVAILABLE") {
+          setErrorMsg(translateClientError(t, data.code, data.error));
+          setStatus("error");
+          setPaymentStarted(false);
+          return;
+        }
+        if (!resp.ok || !data.orderId || !data.paymentId) {
+          setErrorMsg(data.error || t("checkout_error_payment_create"));
+          setStatus("error");
+          setPaymentStarted(false);
+          return;
+        }
+        setPokOrderId(data.orderId);
+        setPokPaymentId(data.paymentId);
+        setStatus("idle");
+      } catch {
+        setErrorMsg(t("checkout_error_payment_create"));
+        setStatus("error");
+        setPaymentStarted(false);
+      }
+      return;
+    }
+
     if (!hostedFieldsRef.current) { setErrorMsg(t("checkout_error_card_not_ready")); setStatus("error"); return; }
     setPaymentStarted(true);
     hostedFieldsCreateOrderRef.current = async () => {
@@ -1218,6 +1281,42 @@ export default function Checkout({ params }: Props) {
     }
   };
 
+  const handlePokSuccess = async () => {
+    if (pokConfirmingRef.current) return;
+    const orderId = pokOrderId;
+    const nvin = validateVin() ?? vin.trim().toUpperCase();
+    if (!orderId || !nvin) return;
+    pokConfirmingRef.current = true;
+    setStatus("paying");
+    setErrorMsg("");
+    try {
+      const resp = await fetch(`${basePath}/api/payments/confirm-pok-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderId }),
+      });
+      const result = await resp.json() as {
+        success?: boolean;
+        error?: string;
+        code?: string;
+        vin?: string;
+        paymentId?: number;
+      };
+      if (!resp.ok || !result.success) {
+        setErrorMsg(translateClientError(t, result.code, result.error));
+        setStatus("error");
+        return;
+      }
+      await submitVinLookup(result.vin ?? nvin, undefined, result.paymentId ?? pokPaymentId ?? undefined);
+    } catch {
+      setErrorMsg(t("checkout_error_capture"));
+      setStatus("error");
+    } finally {
+      pokConfirmingRef.current = false;
+    }
+  };
+
   const isBusy = status === "creating" || status === "paying";
   const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;
   const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
@@ -1236,18 +1335,26 @@ export default function Checkout({ params }: Props) {
     !!peekForVin &&
     paymentAllowed &&
     paymentSettingsReady;
+  const showCardTab =
+    !!pubSettings?.pokEnabled
+    || (
+      !!pubSettings?.paypalEnableCards
+      && !!pubSettings?.paypalClientId
+      && cardEligible === "yes"
+    );
   const showPaymentMethodTabs =
     checkoutDataReady &&
-    !!pubSettings?.paypalEnableCards &&
+    showCardTab &&
     !!pubSettings?.paypalClientId &&
     !couponResult?.isFree &&
-    cardEligible === "yes" &&
-    !paymentStarted &&
-    (status === "idle" || status === "error");
+    status !== "success";
   const showProceedButton =
     checkoutDataReady &&
     (status === "idle" || status === "error") &&
-    (payMethod === "card" || !paymentStarted);
+    (payMethod === "card" || !paymentStarted) &&
+    !(payMethod === "card" && pubSettings?.pokEnabled && !!pokOrderId);
+  const showCreditsOption =
+    canPayWithCredits && showProceedButton && paymentAllowed && !paymentStarted;
   const vinLocked = paymentStarted && !couponResult?.isFree;
   const showVehicleTooOldNotice = vehicleTooOld;
   const showVinNoDataNotice =
@@ -1263,9 +1370,12 @@ export default function Checkout({ params }: Props) {
   const showPaymentLogos =
     paymentAllowed &&
     !couponResult?.isFree &&
-    (status === "idle" || status === "error") &&
-    payMethod === "paypal" &&
-    !paymentStarted;
+    status !== "success" &&
+    (
+      // PayPal trust strip only before payment is opened; hide once PayPal buttons are shown
+      (payMethod === "paypal" && !!pubSettings?.paypalClientId && !paymentStarted)
+      || (payMethod === "card" && !!pubSettings?.pokEnabled)
+    );
   const showLockedPreview =
     vinIsValid &&
     !peekLoadingUi &&
@@ -1857,128 +1967,8 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
-                  {/* Payment method tabs — PayPal vs Card */}
-                  {showPaymentMethodTabs && (
-                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1">
-                      <button
-                        type="button"
-                        className={cn(
-                          "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
-                          payMethod === "paypal"
-                            ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                        onClick={() => {
-                          paypalInstanceRef.current?.close();
-                          paypalInstanceRef.current = null;
-                          setPaymentStarted(false);
-                          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
-                          setPayMethod("paypal");
-                          setStatus("idle");
-                          setErrorMsg("");
-                        }}
-                      >
-                        {t("checkout_pay_method_paypal")}
-                      </button>
-                      <button
-                        type="button"
-                        className={cn(
-                          "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
-                          payMethod === "card"
-                            ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                        onClick={() => {
-                          paypalInstanceRef.current?.close();
-                          paypalInstanceRef.current = null;
-                          setPaymentStarted(false);
-                          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
-                          setPayMethod("card");
-                          setStatus("idle");
-                          setErrorMsg("");
-                        }}
-                      >
-                        <CreditCard className="h-3.5 w-3.5" />
-                        {t("checkout_pay_method_card")}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
-                  {paymentAllowed && !couponResult?.isFree && (
-                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
-                  )}
-
-                  {/* Hosted card fields */}
-                  {payMethod === "card" && pubSettings?.paypalEnableCards && !couponResult?.isFree && paymentAllowed && (
-                    <div className="space-y-3 [color-scheme:none]">
-                      {cardEligible === "no" ? (
-                        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
-                          {t("checkout_card_not_available")}
-                        </div>
-                      ) : (
-                        <>
-                          <div className="space-y-1.5">
-                            <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_number")}</p>
-                            <div
-                              id="hf-card-number"
-                              className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
-                            />
-                            {cardErrors.number && <p className="text-xs text-destructive">{cardErrors.number}</p>}
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                              <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_expiry")}</p>
-                              <div
-                                id="hf-expiry"
-                                className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
-                              />
-                              {cardErrors.expirationDate && <p className="text-xs text-destructive">{cardErrors.expirationDate}</p>}
-                            </div>
-                            <div className="space-y-1.5">
-                              <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_cvv")}</p>
-                              <div
-                                id="hf-cvv"
-                                className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
-                              />
-                              {cardErrors.cvv && <p className="text-xs text-destructive">{cardErrors.cvv}</p>}
-                            </div>
-                          </div>
-                          {!hostedFieldsReady && (
-                            <div className="flex items-center justify-center gap-2 py-1 text-xs text-muted-foreground">
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              {t("checkout_card_loading")}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Error */}
-                  <AnimatePresence>
-                    {status === "error" && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-sm text-destructive font-medium"
-                      >
-                        {errorMsg}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Processing state */}
-                  {status === "paying" && (
-                    <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {couponResult?.isFree ? t("processing_retrieving_data") : t("processing_payment")}
-                    </div>
-                  )}
-
-                  {/* Credits — primary unlock when available; PayPal/card unchanged below */}
-                  {canPayWithCredits && showProceedButton && paymentAllowed && (
+                  {/* Credits first when available (hidden once PayPal/Card payment is opened) */}
+                  {showCreditsOption && (
                     <div className="space-y-2.5">
                       <button
                         type="button"
@@ -2018,12 +2008,169 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
+                  {/* Payment method tabs — stay visible after PayPal/Card is opened */}
+                  {showPaymentMethodTabs && (
+                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mb-2">
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
+                          payMethod === "paypal"
+                            ? paymentStarted
+                              ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
+                              : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                        onClick={() => {
+                          if (payMethod === "paypal") return;
+                          // Switching from card → PayPal chooser from start
+                          paypalInstanceRef.current?.close();
+                          paypalInstanceRef.current = null;
+                          pendingPaypalOrderRef.current = null;
+                          paypalFlowPhaseRef.current = "idle";
+                          clearCheckoutPaymentResumeState();
+                          setPaymentStarted(false);
+                          setPokOrderId(null);
+                          setPokPaymentId(null);
+                          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+                          setPayMethod("paypal");
+                          setStatus("idle");
+                          setErrorMsg("");
+                        }}
+                      >
+                        {t("checkout_pay_method_paypal")}
+                      </button>
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
+                          payMethod === "card"
+                            ? paymentStarted
+                              ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
+                              : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                        onClick={() => {
+                          if (payMethod === "card") return;
+                          // Switching from PayPal → Card chooser from start
+                          paypalInstanceRef.current?.close();
+                          paypalInstanceRef.current = null;
+                          pendingPaypalOrderRef.current = null;
+                          paypalFlowPhaseRef.current = "idle";
+                          clearCheckoutPaymentResumeState();
+                          setPaymentStarted(false);
+                          setPokOrderId(null);
+                          setPokPaymentId(null);
+                          if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
+                          setPayMethod("card");
+                          setStatus("idle");
+                          setErrorMsg("");
+                        }}
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                        {t("checkout_pay_method_card")}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
+                  {paymentAllowed && !couponResult?.isFree && (
+                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
+                  )}
+
+                  {/* Hosted card fields (PayPal) or POK GuestCheckoutForm */}
+                  {payMethod === "card" && !couponResult?.isFree && paymentAllowed && (
+                    <div className="space-y-3 [color-scheme:none]">
+                      {pubSettings?.pokEnabled ? (
+                        pokOrderId ? (
+                          <PokGuestCheckout
+                            orderId={pokOrderId}
+                            pokEnv={pubSettings.pokEnv === "staging" ? "staging" : "production"}
+                            onSuccess={() => { void handlePokSuccess(); }}
+                            onError={(message) => {
+                              setErrorMsg(message);
+                              setStatus("error");
+                            }}
+                          />
+                        ) : status === "creating" ? (
+                          <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            {t("checkout_card_loading")}
+                          </div>
+                        ) : null
+                      ) : pubSettings?.paypalEnableCards ? (
+                        cardEligible === "no" ? (
+                          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
+                            {t("checkout_card_not_available")}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="space-y-1.5">
+                              <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_number")}</p>
+                              <div
+                                id="hf-card-number"
+                                className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                              />
+                              {cardErrors.number && <p className="text-xs text-destructive">{cardErrors.number}</p>}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_expiry")}</p>
+                                <div
+                                  id="hf-expiry"
+                                  className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                                />
+                                {cardErrors.expirationDate && <p className="text-xs text-destructive">{cardErrors.expirationDate}</p>}
+                              </div>
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_cvv")}</p>
+                                <div
+                                  id="hf-cvv"
+                                  className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                                />
+                                {cardErrors.cvv && <p className="text-xs text-destructive">{cardErrors.cvv}</p>}
+                              </div>
+                            </div>
+                            {!hostedFieldsReady && (
+                              <div className="flex items-center justify-center gap-2 py-1 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                {t("checkout_card_loading")}
+                              </div>
+                            )}
+                          </>
+                        )
+                      ) : null}
+                    </div>
+                  )}
+
+                  {/* Error */}
+                  <AnimatePresence>
+                    {status === "error" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-sm text-destructive font-medium"
+                      >
+                        {errorMsg}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Processing state */}
+                  {status === "paying" && (
+                    <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {couponResult?.isFree ? t("processing_retrieving_data") : t("processing_payment")}
+                    </div>
+                  )}
+
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
                       className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
                       onClick={(!couponResult?.isFree && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
-                      disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && (!hostedFieldsReady || cardEligible === "no"))}
+                      disabled={isBusy || (!couponResult?.isFree && payMethod === "card" && !pubSettings?.pokEnabled && (!hostedFieldsReady || cardEligible === "no"))}
                     >
                       {isBusy
                         ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("processing")}…</>
@@ -2031,7 +2178,7 @@ export default function Checkout({ params }: Props) {
                           ? <><Zap className="h-4 w-4" />{t("get_free_report")}</>
                           : payMethod === "card"
                             ? <><CreditCard className="h-4 w-4" />{t("checkout_pay_by_card")}</>
-                            : <><Lock className="h-4 w-4" />{t("proceed_to_payment")}</>
+                            : <><Lock className="h-4 w-4" />{t("checkout_pay_with_paypal")}</>
                       }
                     </Button>
                   )}
@@ -2048,8 +2195,11 @@ export default function Checkout({ params }: Props) {
             </div>
 
             {showPaymentLogos && (
-              <div className="rounded-2xl border border-border/60 bg-background px-4 py-1">
-                <CheckoutPaymentLogos />
+              <div className={cn(
+                "rounded-2xl border border-border/60 bg-background px-4",
+                payMethod === "paypal" ? "pt-3 pb-1.5" : "py-3",
+              )}>
+                <CheckoutPaymentLogos provider={payMethod === "card" ? "pok" : "paypal"} />
               </div>
             )}
           </div>

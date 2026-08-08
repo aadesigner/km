@@ -90,6 +90,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@nebula-ltd/pok-payments-js": "^2.0.1",
     "qrcode": "^1.5.4",
     "react-simple-maps": "^3.0.0",
     "world-atlas": "^2.0.2"

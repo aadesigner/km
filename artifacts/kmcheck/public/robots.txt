@@ -111,4 +111,31 @@ Disallow: /zh/checkout
 Disallow: /zh/purchases
 Disallow: /zh/vin/processing
 
+Disallow: /en/terms
+Disallow: /en/privacy
+Disallow: /de/terms
+Disallow: /de/privacy
+Disallow: /es/terms
+Disallow: /es/privacy
+Disallow: /fr/terms
+Disallow: /fr/privacy
+Disallow: /sq/terms
+Disallow: /sq/privacy
+Disallow: /pl/terms
+Disallow: /pl/privacy
+Disallow: /ro/terms
+Disallow: /ro/privacy
+Disallow: /bg/terms
+Disallow: /bg/privacy
+Disallow: /ka/terms
+Disallow: /ka/privacy
+Disallow: /ar/terms
+Disallow: /ar/privacy
+Disallow: /uk/terms
+Disallow: /uk/privacy
+Disallow: /ru/terms
+Disallow: /ru/privacy
+Disallow: /zh/terms
+Disallow: /zh/privacy
+
 Sitemap: https://kmcheck.com/sitemap.xml

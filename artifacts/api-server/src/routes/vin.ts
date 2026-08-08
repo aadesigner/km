@@ -890,6 +890,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
       ownerHistory: Array.isArray(d.ownerHistory) ? d.ownerHistory : [],
       insuranceClaims: Array.isArray(d.insuranceClaims) ? d.insuranceClaims : [],
       registryHistory: Array.isArray(d.registryHistory) ? d.registryHistory : [],
+      serviceHistory: Array.isArray(d.serviceHistory) ? d.serviceHistory : [],
       auctionHistory: Array.isArray(d.auctionHistory) ? d.auctionHistory : [],
       marketData: (d.marketData as Record<string, unknown> | null) ?? null,
       krwPerUsd: readFrozenKrwPerUsd(d),

@@ -62,6 +62,15 @@ function fullForm(): VinCatalogFormState {
       titleStatus: "clean",
       auctionPrice: "9000",
       lotStatus: "sold",
+      location: "Seoul",
+      description: "Oil change and brake service",
+    }],
+    serviceHistory: [{
+      date: "2023-06-15",
+      mileage: "46000",
+      title: "Service",
+      location: "Tirana",
+      description: "Full inspection and oil filter",
     }],
     ownerHistory: [{
       date: "2019-05-01",
@@ -154,9 +163,22 @@ describe("vin catalog form save round-trip", () => {
       primaryDamage: "none",
       secondaryDamage: "none",
       odometer: 45000,
+      location: "Seoul",
+      description: "Oil change and brake service",
     })]);
     expect(restored.mileageHistory[0]?.source).toBe("encar");
     expect(restored.mileageHistory[0]?.primaryDamage).toBe("none");
+    expect(restored.mileageHistory[0]?.location).toBe("Seoul");
+    expect(restored.mileageHistory[0]?.description).toBe("Oil change and brake service");
+
+    expect(payload.serviceHistory).toEqual([expect.objectContaining({
+      title: "Service",
+      location: "Tirana",
+      mileage: 46000,
+      description: "Full inspection and oil filter",
+    })]);
+    expect(restored.serviceHistory[0]?.title).toBe("Service");
+    expect(restored.serviceHistory[0]?.location).toBe("Tirana");
 
     expect(payload.auctionHistory).toEqual([expect.objectContaining({
       primaryDamage: "rear",

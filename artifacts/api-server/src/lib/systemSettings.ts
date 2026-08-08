@@ -16,6 +16,9 @@ function latestRowMayNeedCredentialMerge(row: SystemSettings): boolean {
     || !trimmed(row.linkedinClientSecret)
     || !trimmed(row.paypalClientId)
     || !trimmed(row.paypalClientSecret)
+    || !trimmed((row as SystemSettings & { pokMerchantId?: string | null }).pokMerchantId)
+    || !trimmed((row as SystemSettings & { pokKeyId?: string | null }).pokKeyId)
+    || !trimmed((row as SystemSettings & { pokKeySecret?: string | null }).pokKeySecret)
     || !trimmed(row.recaptchaSecretKey)
     || !trimmed(row.smtpPass);
 }
@@ -74,6 +77,16 @@ export async function consolidateSystemSettingsRows(): Promise<void> {
     if (!merged.paypalClientSecret?.trim() && row.paypalClientSecret?.trim()) {
       merged.paypalClientSecret = row.paypalClientSecret;
     }
+    const m = merged as SystemSettings & {
+      pokMerchantId?: string | null;
+      pokKeyId?: string | null;
+      pokKeySecret?: string | null;
+      pokEnv?: string | null;
+    };
+    const r = row as typeof m;
+    if (!m.pokMerchantId?.trim() && r.pokMerchantId?.trim()) m.pokMerchantId = r.pokMerchantId;
+    if (!m.pokKeyId?.trim() && r.pokKeyId?.trim()) m.pokKeyId = r.pokKeyId;
+    if (!m.pokKeySecret?.trim() && r.pokKeySecret?.trim()) m.pokKeySecret = r.pokKeySecret;
     if (!merged.googleClientId?.trim() && row.googleClientId?.trim()) {
       merged.googleClientId = row.googleClientId;
     }
@@ -107,6 +120,10 @@ export async function consolidateSystemSettingsRows(): Promise<void> {
       paypalClientSecret: merged.paypalClientSecret,
       paypalSandbox: merged.paypalSandbox,
       paypalEnableCards: merged.paypalEnableCards,
+      pokMerchantId: (merged as SystemSettings & { pokMerchantId?: string | null }).pokMerchantId,
+      pokKeyId: (merged as SystemSettings & { pokKeyId?: string | null }).pokKeyId,
+      pokKeySecret: (merged as SystemSettings & { pokKeySecret?: string | null }).pokKeySecret,
+      pokEnv: (merged as SystemSettings & { pokEnv?: string | null }).pokEnv ?? "production",
       googleClientId: merged.googleClientId,
       recaptchaSecretKey: merged.recaptchaSecretKey,
       googleClientSecret: merged.googleClientSecret,
