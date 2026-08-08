@@ -196,7 +196,11 @@ export default function Checkout({ params }: Props) {
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
   const [pokPaymentId, setPokPaymentId] = useState<number | null>(null);
-  const pokConfirmingRef = useRef(false);  const paypalContainerRef = useRef<HTMLDivElement>(null);
+  const pokConfirmingRef = useRef(false);
+  /** Prevents overlapping create-pok-order calls (double-click / Strict Mode). */
+  const pokCreatingRef = useRef(false);
+  const pokCreateGenRef = useRef(0);
+  const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<ReturnType<NonNullable<typeof window.paypal>["Buttons"]> | null>(null);
   /** Order created on "Proceed" so PayPal can open checkout immediately (async createOrder delays popup → blocked). */
   const pendingPaypalOrderRef = useRef<string | null>(null);
@@ -325,8 +329,14 @@ export default function Checkout({ params }: Props) {
     if (paypalContainerRef.current) paypalContainerRef.current.innerHTML = "";
   }, []);
 
-  // Reset payment state whenever the VIN changes — prevents stale "no data" / error UI bleeding across VINs
+  // Reset payment state when the VIN actually changes (skip initial mount — avoids wiping an in-flight create).
+  const prevNormalizedVinRef = useRef<string | null>(null);
   useEffect(() => {
+    const prev = prevNormalizedVinRef.current;
+    prevNormalizedVinRef.current = normalizedVin;
+    if (prev === null || prev === normalizedVin) return;
+    pokCreatingRef.current = false;
+    pokCreateGenRef.current += 1;
     setPaymentStarted(false);
     setStatus("idle");
     setErrorMsg("");
@@ -352,9 +362,11 @@ export default function Checkout({ params }: Props) {
     }
   }, [normalizedVin, vinHasInvalidChars]);
 
-  // While payment/delivery runs, refresh peek so we can redirect once the VIN unlocks.
+  // While paid delivery runs, refresh peek so we can redirect once the VIN unlocks.
+  // Do NOT invalidate during "creating" — that races paymentAllowed and can unmount the POK form
+  // right after create-pok-order succeeds (looks like "Failed to create payment").
   useEffect(() => {
-    if (status !== "paying" && status !== "creating") return;
+    if (status !== "paying") return;
     if (!vinIsValid || !isSignedIn) return;
     const refreshPeek = () => {
       void queryClient.invalidateQueries({ queryKey: ["/api/vin/peek", normalizedVin] });
@@ -1062,6 +1074,8 @@ export default function Checkout({ params }: Props) {
     if (paypalResumeAttemptedRef.current) return;
     // Never remount PayPal over a free coupon — that races and shows "Payment failed".
     if (isFreeCoupon) return;
+    // Card / POK checkout must not resume a stale PayPal session (overwrites UI with create/capture errors).
+    if (payMethod === "card" || !!pokOrderId || status === "creating" || pokCreatingRef.current) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("token")) return;
 
@@ -1106,6 +1120,9 @@ export default function Checkout({ params }: Props) {
     pubSettingsLoading,
     vinLookupDisabled,
     isFreeCoupon,
+    payMethod,
+    pokOrderId,
+    status,
     finalizePaidCheckout,
     mountPaypalButtons,
   ]);
@@ -1209,9 +1226,15 @@ export default function Checkout({ params }: Props) {
 
     // POK inline card form — create order then show GuestCheckoutForm
     if (pubSettings?.pokEnabled) {
+      if (pokCreatingRef.current) return;
+      pokCreatingRef.current = true;
+      const gen = ++pokCreateGenRef.current;
       setStatus("creating");
       setErrorMsg("");
       setPaymentStarted(true);
+      // Stale PayPal resume must not race card create and paint "Failed to create payment".
+      clearCheckoutPaymentResumeState();
+      paypalResumeAttemptedRef.current = true;
       try {
         const resp = await fetch(`${basePath}/api/payments/create-pok-order`, {
           method: "POST",
@@ -1234,12 +1257,14 @@ export default function Checkout({ params }: Props) {
         try {
           data = await resp.json() as typeof data;
         } catch {
+          if (gen !== pokCreateGenRef.current) return;
           console.error("create-pok-order non-JSON response", resp.status);
           setErrorMsg(t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
         }
+        if (gen !== pokCreateGenRef.current) return;
         if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
           goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
           return;
@@ -1274,12 +1299,16 @@ export default function Checkout({ params }: Props) {
         }
         setPokOrderId(data.orderId);
         setPokPaymentId(data.paymentId);
+        setErrorMsg("");
         setStatus("idle");
       } catch (err) {
+        if (gen !== pokCreateGenRef.current) return;
         console.error("create-pok-order exception", err);
         setErrorMsg(t("checkout_error_payment_create"));
         setStatus("error");
         setPaymentStarted(false);
+      } finally {
+        if (gen === pokCreateGenRef.current) pokCreatingRef.current = false;
       }
       return;
     }
@@ -2140,8 +2169,10 @@ export default function Checkout({ params }: Props) {
                     <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
                   )}
 
-                  {/* Hosted card fields (PayPal) or POK GuestCheckoutForm */}
-                  {payMethod === "card" && !isFreeCoupon && paymentAllowed && (
+                  {/* Hosted card fields (PayPal) or POK GuestCheckoutForm.
+                      Keep POK form mounted once we have an orderId even if peek flickers —
+                      unmounting right after a successful create looks like payment failure. */}
+                  {payMethod === "card" && !isFreeCoupon && (paymentAllowed || !!pokOrderId) && (
                     <div className="space-y-3 [color-scheme:none]">
                       {pubSettings?.pokEnabled ? (
                         pokOrderId ? (
@@ -2150,6 +2181,10 @@ export default function Checkout({ params }: Props) {
                             pokEnv={pubSettings.pokEnv === "staging" ? "staging" : "production"}
                             onSuccess={() => { void handlePokSuccess(); }}
                             onError={(message) => {
+                              // Drop the dead order so "Pay by Card" returns; keep coupon applied.
+                              setPokOrderId(null);
+                              setPokPaymentId(null);
+                              setPaymentStarted(false);
                               setErrorMsg(message);
                               setStatus("error");
                             }}
