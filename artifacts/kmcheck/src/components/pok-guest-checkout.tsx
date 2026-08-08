@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { GuestCheckoutForm } from "@nebula-ltd/pok-payments-js/react";
 import type { PaymentErrorResponse } from "@nebula-ltd/pok-payments-js";
 import { useTranslation } from "@/i18n/context";
@@ -24,37 +24,13 @@ export function pokLocaleFromLanguage(language: string): "en" | "it" | "al" {
   return "en";
 }
 
-/** Labels for fields we hide (SDK is en/it/al only). Card fields stay visible. */
-const HIDE_LABEL_RE =
-  /^(email|e-?mail|paese|shteti|country|indirizzo|adresa|address|stato|provinca|state|città|qyteti|city|cap|zip|kodi postar|telefono|phone|telefoni|add billing|aggiungi|shto informacion)/i;
-
-function hideNonCardPokFields(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>(".pok-payment-relative").forEach((row) => {
-    if (row.getAttribute("data-kmcheck-pok-hidden") === "1") return;
-    const label = row.querySelector(".pok-payment-label")?.textContent?.replace(/\*/g, "").trim() ?? "";
-    if (HIDE_LABEL_RE.test(label)) {
-      row.style.display = "none";
-      row.setAttribute("data-kmcheck-pok-hidden", "1");
-    }
-  });
-  const billing = root.querySelector<HTMLElement>("#addBillingCheckbox")?.closest(".pok-payment-checkbox-container")
-    ?? root.querySelector<HTMLElement>(".pok-payment-checkbox-container");
-  if (billing && billing.getAttribute("data-kmcheck-pok-hidden") !== "1") {
-    const wrap = billing.parentElement instanceof HTMLElement ? billing.parentElement : billing;
-    wrap.style.display = "none";
-    wrap.setAttribute("data-kmcheck-pok-hidden", "1");
-  }
-}
-
 /**
- * Inline POK card checkout. Card number / expiry / CVC / name stay visible.
- * Email & billing are prefilled from the signed-in account and hidden — never posted to kmcheck.
- * PAN/CVV are encrypted inside the POK SDK and sent only to POK (not our API).
+ * Inline POK card checkout with the SDK’s default fields (card + billing).
+ * Prefills account email/name/country when available; PAN/CVV stay inside POK only.
  */
 export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, className }: Props) {
   const { language, t } = useTranslation();
   const { user } = useAuth();
-  const hostRef = useRef<HTMLDivElement>(null);
   const onSuccessRef = useRef(onSuccess);
   const onErrorRef = useRef(onError);
   onSuccessRef.current = onSuccess;
@@ -64,19 +40,18 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
 
   const initialState = useMemo(() => {
     const countryRaw = (user?.countryCode ?? "").trim().toUpperCase();
-    // US/CA force address fields in the SDK — prefer a non-NA default when hiding billing.
     const countryCode =
       countryRaw && countryRaw !== "US" && countryRaw !== "CA"
         ? countryRaw
         : "AL";
-    const email = user?.email?.trim() || "checkout@kmcheck.com";
+    const email = user?.email?.trim() || undefined;
     const holdersName =
       user?.name?.trim()
-      || (email.includes("@") ? email.split("@")[0]!.replace(/[._+]/g, " ").trim() : "")
-      || "Cardholder";
+      || (email?.includes("@") ? email.split("@")[0]!.replace(/[._+]/g, " ").trim() : undefined)
+      || undefined;
     return {
-      email,
-      holdersName,
+      ...(email ? { email } : {}),
+      ...(holdersName ? { holdersName } : {}),
       countryCode,
     };
   }, [user?.email, user?.name, user?.countryCode]);
@@ -98,37 +73,13 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
   const stableOnError = useMemo(
     () => (error: PaymentErrorResponse) => {
       console.error("POK checkout error", error);
-      onErrorRef.current(t("checkout_error_card_declined"));
+      onErrorRef.current(error.message?.trim() || t("checkout_error_card_declined"));
     },
     [t],
   );
 
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-
-    let raf = 0;
-    const run = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => hideNonCardPokFields(host));
-    };
-    run();
-
-    // Debounced: only react to new nodes (not every style tweak) so we don't fight 3DS UI.
-    const obs = new MutationObserver((mutations) => {
-      const hasNewNodes = mutations.some((m) => m.addedNodes.length > 0);
-      if (hasNewNodes) run();
-    });
-    obs.observe(host, { childList: true, subtree: true });
-    return () => {
-      cancelAnimationFrame(raf);
-      obs.disconnect();
-    };
-  }, [orderId]);
-
   return (
     <div
-      ref={hostRef}
       className={cn("pok-guest-checkout kmcheck-pok-checkout [color-scheme:none]", className)}
       id="pok-payment-container-host"
     >
