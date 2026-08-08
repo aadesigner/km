@@ -363,6 +363,12 @@ router.post("/payments/validate-coupon", requireAuth, couponLimiter, async (req,
     return;
   }
 
+  const COUPON_RE = /^[A-Z0-9_-]{1,50}$/i;
+  if (!COUPON_RE.test(code.trim())) {
+    res.status(400).json({ error: "Invalid coupon code format" });
+    return;
+  }
+
   const pricing = await getActivePricing();
   const basePrice = pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice;
   const result = await resolveCoupon(code, basePrice);

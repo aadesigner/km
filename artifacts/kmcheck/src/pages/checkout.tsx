@@ -687,23 +687,27 @@ export default function Checkout({ params }: Props) {
     setCouponLoading(true);
     setCouponError("");
     setCouponResult(null);
+    // Always clear any in-progress PayPal/POK session before applying a new price.
+    resetGatewayCheckoutUi();
+    setStatus("idle");
+    setErrorMsg("");
     try {
       const resp = await fetch(`${basePath}/api/payments/validate-coupon`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ code: couponCode }),
+        body: JSON.stringify({ code: couponCode.trim().toUpperCase() }),
       });
       const data = await resp.json() as CouponResult & { error?: string };
       if (!resp.ok || data.error) { setCouponError(translateCouponError(t, data.error)); return; }
-      // Free coupons must not race a resumed PayPal/POK session (shows "Payment failed").
       if (data.isFree || data.finalPrice === 0) {
-        resetGatewayCheckoutUi();
         paypalResumeAttemptedRef.current = true;
-        setStatus("idle");
-        setErrorMsg("");
       }
-      setCouponResult({ ...data, isFree: data.isFree || data.finalPrice === 0 });
+      setCouponResult({
+        ...data,
+        code: String(data.code ?? couponCode).trim().toUpperCase(),
+        isFree: !!(data.isFree || data.finalPrice === 0),
+      });
     } catch {
       setCouponError(t("checkout_error_coupon_failed"));
     } finally {
@@ -728,7 +732,10 @@ export default function Checkout({ params }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
+        body: JSON.stringify({
+          vin: nvin,
+          couponCode: String(couponResult?.code ?? couponCode ?? "").trim().toUpperCase() || undefined,
+        }),
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
@@ -1196,6 +1203,10 @@ export default function Checkout({ params }: Props) {
     if (!nvin) return;
     if (isFreeCoupon) { await createOrder(nvin); return; }
 
+    const appliedCouponCode = String(couponResult?.code ?? couponCode ?? "")
+      .trim()
+      .toUpperCase() || undefined;
+
     // POK inline card form — create order then show GuestCheckoutForm
     if (pubSettings?.pokEnabled) {
       setStatus("creating");
@@ -1208,10 +1219,10 @@ export default function Checkout({ params }: Props) {
           credentials: "include",
           body: JSON.stringify({
             vin: nvin,
-            couponCode: (couponResult?.code ?? couponCode).trim() || undefined,
+            couponCode: appliedCouponCode,
           }),
         });
-        const data = await resp.json() as {
+        let data: {
           orderId?: string;
           paymentId?: number;
           free?: boolean;
@@ -1220,6 +1231,15 @@ export default function Checkout({ params }: Props) {
           alreadyUnlocked?: boolean;
           lookupId?: number | null;
         };
+        try {
+          data = await resp.json() as typeof data;
+        } catch {
+          console.error("create-pok-order non-JSON response", resp.status);
+          setErrorMsg(t("checkout_error_payment_create"));
+          setStatus("error");
+          setPaymentStarted(false);
+          return;
+        }
         if (resp.status === 409 || data.code === "ALREADY_UNLOCKED") {
           goToVinReport(nvin, data.lookupId ?? undefined, { refreshClientArea: true });
           return;
@@ -1246,7 +1266,8 @@ export default function Checkout({ params }: Props) {
         }
         if (!resp.ok || !data.orderId || !data.paymentId) {
           console.error("create-pok-order failed", resp.status, data);
-          setErrorMsg(translateClientError(t, data.code, data.error) || data.error || t("checkout_error_payment_create"));
+          const detail = translateClientError(t, data.code, data.error) || data.error;
+          setErrorMsg(detail || t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
@@ -1270,7 +1291,7 @@ export default function Checkout({ params }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vin: nvin, couponCode: couponResult?.code ?? undefined }),
+        body: JSON.stringify({ vin: nvin, couponCode: appliedCouponCode }),
       });
       const data = await resp.json() as {
         orderId?: string; free?: boolean; paymentId?: number; error?: string; code?: string; alreadyUnlocked?: boolean;
