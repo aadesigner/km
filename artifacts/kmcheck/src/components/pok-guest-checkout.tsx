@@ -24,9 +24,9 @@ export function pokLocaleFromLanguage(language: string): "en" | "it" | "al" {
   return "en";
 }
 
-/** Labels for fields we hide (SDK is en/it/al only). Card fields stay visible. */
+/** Labels for fields we hide (SDK is en/it/al only). Card + billing email stay visible. */
 const HIDE_LABEL_RE =
-  /^(email|e-?mail|paese|shteti|country|indirizzo|adresa|address|stato|provinca|state|città|qyteti|city|cap|zip|kodi postar|telefono|phone|telefoni|add billing|aggiungi|shto informacion)/i;
+  /^(paese|shteti|country|indirizzo|adresa|address|stato|provinca|state|città|qyteti|city|cap|zip|kodi postar|telefono|phone|telefoni|add billing|aggiungi|shto informacion)/i;
 
 function hideNonCardPokFields(root: HTMLElement): void {
   root.querySelectorAll<HTMLElement>(".pok-payment-relative").forEach((row) => {
@@ -47,9 +47,9 @@ function hideNonCardPokFields(root: HTMLElement): void {
 }
 
 /**
- * Inline POK card checkout. Card number / expiry / CVC / name stay visible.
- * Email & billing are prefilled from the signed-in account and hidden — never posted to kmcheck.
- * PAN/CVV are encrypted inside the POK SDK and sent only to POK (not our API).
+ * Inline POK card checkout. Shows card number / expiry / CVC / name + billing email.
+ * Email is prefilled from the signed-in account and editable in the POK form (sent only to POK).
+ * Address/phone stay hidden. PAN/CVV are encrypted inside the POK SDK — never posted to kmcheck.
  */
 export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, className }: Props) {
   const { language, t } = useTranslation();
@@ -64,18 +64,18 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
 
   const initialState = useMemo(() => {
     const countryRaw = (user?.countryCode ?? "").trim().toUpperCase();
-    // US/CA force address fields in the SDK — prefer a non-NA default when hiding billing.
+    // US/CA force address fields in the SDK — prefer a non-NA default when hiding billing address.
     const countryCode =
       countryRaw && countryRaw !== "US" && countryRaw !== "CA"
         ? countryRaw
         : "AL";
-    const email = user?.email?.trim() || "checkout@kmcheck.com";
+    const email = user?.email?.trim() || undefined;
     const holdersName =
       user?.name?.trim()
-      || (email.includes("@") ? email.split("@")[0]!.replace(/[._+]/g, " ").trim() : "")
+      || (email?.includes("@") ? email.split("@")[0]!.replace(/[._+]/g, " ").trim() : "")
       || "Cardholder";
     return {
-      email,
+      ...(email ? { email } : {}),
       holdersName,
       countryCode,
     };
