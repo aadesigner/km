@@ -58,6 +58,7 @@ app.use(
           "https://www.clarity.ms",
           "https://scripts.clarity.ms",
           "https://static.pokpay.io",
+          "https://connect.facebook.net",
         ],
         styleSrc: [
           "'self'",
@@ -96,6 +97,8 @@ app.use(
           "wss://api.pokpay.io",
           "wss://api-staging.pokpay.io",
           "wss://*.pokpay.io",
+          "https://connect.facebook.net",
+          "https://www.facebook.com",
         ],
         frameSrc: [
           "'self'",

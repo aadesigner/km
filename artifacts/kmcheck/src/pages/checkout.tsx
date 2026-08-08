@@ -1263,12 +1263,17 @@ export default function Checkout({ params }: Props) {
           alreadyUnlocked?: boolean;
           lookupId?: number | null;
         };
+        const rawText = await resp.text();
         try {
-          data = await resp.json() as typeof data;
+          data = rawText ? JSON.parse(rawText) as typeof data : {};
         } catch {
           if (gen !== pokCreateGenRef.current) return;
-          console.error("create-pok-order non-JSON response", resp.status);
-          setErrorMsg(t("checkout_error_payment_create"));
+          console.error("create-pok-order non-JSON response", resp.status, rawText.slice(0, 200));
+          setErrorMsg(
+            resp.status >= 500
+              ? `${t("checkout_error_payment_create")} (HTTP ${resp.status})`
+              : t("checkout_error_payment_create"),
+          );
           setStatus("error");
           setPaymentStarted(false);
           return;

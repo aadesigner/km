@@ -1098,102 +1098,113 @@ router.post("/payments/redeem-credit", requireAuth, async (req, res) => {
 // POST /payments/create-pok-order — VIN report card checkout
 router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, async (req, res) => {
   const userId = req.userId!;
-  const { vin, couponCode, recaptchaToken } = req.body as {
-    vin: string; couponCode?: string; recaptchaToken?: string;
-  };
-
-  const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
-  if (!vin || !VIN_RE.test(vin)) {
-    res.status(400).json({ error: "Invalid VIN — must be 17 alphanumeric characters (no I, O, or Q)" });
-    return;
-  }
-
-  const COUPON_RE = /^[A-Z0-9_-]{1,50}$/i;
-  if (couponCode?.trim() && !COUPON_RE.test(couponCode.trim())) {
-    res.status(400).json({ error: "Invalid coupon code format" });
-    return;
-  }
-
-  const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-  if (user[0]?.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
-  if (await rejectVinLookupIfDisabled(req, res)) return;
-
-  // Optional reCAPTCHA (same policy as other checkout paths when enabled)
-  void recaptchaToken;
-
-  const pricing = await getActivePricing();
-  const basePrice = Number(pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice);
-  const currency = String(pricing.currency || "EUR").trim() || "EUR";
-
-  let finalPrice = basePrice;
-  let discountAmount = 0;
-  let appliedCoupon: typeof couponsTable.$inferSelect | null = null;
-
-  if (couponCode?.trim()) {
-    const couponResult = await resolveCoupon(couponCode, basePrice);
-    if ("error" in couponResult) { res.status(422).json({ error: couponResult.error }); return; }
-    finalPrice = couponResult.finalPrice;
-    discountAmount = couponResult.discountAmount;
-    appliedCoupon = couponResult.coupon;
-  }
-
-  const normalizedVin = vin.toUpperCase();
-  const payable = await ensureVinPayableForPayment(userId, normalizedVin);
-  if (!payable.ok) {
-    if (payable.code === "ALREADY_UNLOCKED") {
-      res.status(409).json({
-        error: "You already have access to this VIN report.",
-        code: "ALREADY_UNLOCKED",
-        alreadyUnlocked: true,
-        lookupId: payable.lookupId ?? null,
-      });
-      return;
-    }
-    if (payable.code === "VIN_NO_DATA") {
-      res.status(422).json({ error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
-      return;
-    }
-    res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
-    return;
-  }
-
-  // Free coupons: same zero-amount unlock as PayPal — do not create a POK order.
-  if (finalPrice === 0) {
-    const free = await createOrReuseFreeCouponPayment({
-      userId,
-      vin: normalizedVin,
-      currency,
-      discountAmount,
-      appliedCoupon,
-    });
-    if ("error" in free) {
-      res.status(422).json({ error: free.error });
-      return;
-    }
-    res.json({ free: true, paymentId: free.paymentId, vin: normalizedVin });
-    return;
-  }
-
-  if (!(await resolvePokConfig())) {
-    res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
-    return;
-  }
-
-  // Same coupon reservation order as PayPal create — proven path with discounted totals.
   let reservedCouponId: number | null = null;
-  if (appliedCoupon) {
-    const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
-    if (!reserved) {
-      res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
-      return;
-    }
-    reservedCouponId = appliedCoupon.id;
-  }
+  let normalizedVin = "";
+  let couponCodeLog: string | null = null;
+  let finalPriceLog: number | null = null;
+  let currencyLog = "EUR";
 
   try {
+    const { vin, couponCode, recaptchaToken } = req.body as {
+      vin: string; couponCode?: string; recaptchaToken?: string;
+    };
+
+    const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
+    if (!vin || !VIN_RE.test(vin)) {
+      res.status(400).json({ error: "Invalid VIN — must be 17 alphanumeric characters (no I, O, or Q)" });
+      return;
+    }
+
+    const COUPON_RE = /^[A-Z0-9_-]{1,50}$/i;
+    if (couponCode?.trim() && !COUPON_RE.test(couponCode.trim())) {
+      res.status(400).json({ error: "Invalid coupon code format" });
+      return;
+    }
+
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (user[0]?.isBanned) { res.status(403).json({ error: "Account suspended" }); return; }
+    if (await rejectVinLookupIfDisabled(req, res)) return;
+
+    // Optional reCAPTCHA (same policy as other checkout paths when enabled)
+    void recaptchaToken;
+
+    const pricing = await getActivePricing();
+    const basePrice = Number(pricing.discountEnabled ? pricing.discountPrice : pricing.basePrice);
+    const currency = String(pricing.currency || "EUR").trim() || "EUR";
+    currencyLog = currency;
+
+    let finalPrice = basePrice;
+    let discountAmount = 0;
+    let appliedCoupon: typeof couponsTable.$inferSelect | null = null;
+
+    if (couponCode?.trim()) {
+      couponCodeLog = couponCode.trim().toUpperCase();
+      const couponResult = await resolveCoupon(couponCode, basePrice);
+      if ("error" in couponResult) { res.status(422).json({ error: couponResult.error }); return; }
+      finalPrice = couponResult.finalPrice;
+      discountAmount = couponResult.discountAmount;
+      appliedCoupon = couponResult.coupon;
+    }
+    finalPriceLog = finalPrice;
+
+    normalizedVin = vin.toUpperCase();
+    const payable = await ensureVinPayableForPayment(userId, normalizedVin);
+    if (!payable.ok) {
+      if (payable.code === "ALREADY_UNLOCKED") {
+        res.status(409).json({
+          error: "You already have access to this VIN report.",
+          code: "ALREADY_UNLOCKED",
+          alreadyUnlocked: true,
+          lookupId: payable.lookupId ?? null,
+        });
+        return;
+      }
+      if (payable.code === "VIN_NO_DATA") {
+        res.status(422).json({ error: "No vehicle history data found for this VIN.", code: "VIN_NO_DATA" });
+        return;
+      }
+      res.status(503).json({ error: PUBLIC_VIN_CHECK_UNAVAILABLE, code: "VIN_CHECK_UNAVAILABLE" });
+      return;
+    }
+
+    // Free coupons: same zero-amount unlock as PayPal — do not create a POK order.
+    if (finalPrice === 0) {
+      const free = await createOrReuseFreeCouponPayment({
+        userId,
+        vin: normalizedVin,
+        currency,
+        discountAmount,
+        appliedCoupon,
+      });
+      if ("error" in free) {
+        res.status(422).json({ error: free.error });
+        return;
+      }
+      res.json({ free: true, paymentId: Number(free.paymentId), vin: normalizedVin });
+      return;
+    }
+
+    if (!(await resolvePokConfig())) {
+      res.status(503).json({ error: "Card payment is not configured. Contact support.", code: "POK_NOT_CONFIGURED" });
+      return;
+    }
+
+    // Same coupon reservation order as PayPal create — proven path with discounted totals.
+    if (appliedCoupon) {
+      const reserved = await consumeCouponUse(appliedCoupon.id, appliedCoupon.maxUses);
+      if (!reserved) {
+        res.status(422).json({ error: "Coupon usage limit reached", code: "COUPON_LIMIT" });
+        return;
+      }
+      reservedCouponId = appliedCoupon.id;
+    }
+
     const chargeAmount = Number(Number(finalPrice).toFixed(2));
     if (!(Number.isFinite(chargeAmount) && chargeAmount > 0)) {
-      if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
+      if (reservedCouponId != null) {
+        await releaseCouponUse(reservedCouponId);
+        reservedCouponId = null;
+      }
       res.status(422).json({ error: "Invalid discounted price for card payment", code: "INVALID_AMOUNT" });
       return;
     }
@@ -1241,22 +1252,26 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       pokEnv: (await resolvePokConfig())?.env ?? getPokEnv(),
     });
   } catch (err) {
-    if (reservedCouponId != null) await releaseCouponUse(reservedCouponId);
+    if (reservedCouponId != null) {
+      try { await releaseCouponUse(reservedCouponId); } catch { /* best-effort */ }
+    }
     const errMessage = err instanceof Error ? err.message : String(err);
     logger.error({
       err,
       errMessage,
       userId,
-      vin: normalizedVin,
-      couponCode: appliedCoupon?.code ?? null,
-      finalPrice,
-      currency,
+      vin: normalizedVin || null,
+      couponCode: couponCodeLog,
+      finalPrice: finalPriceLog,
+      currency: currencyLog,
     }, "POK order creation failed");
-    res.status(502).json({
-      error: "Failed to create card payment. Please try again.",
-      code: "POK_CREATE_FAILED",
-      detail: errMessage.slice(0, 240),
-    });
+    if (!res.headersSent) {
+      res.status(502).json({
+        error: "Failed to create card payment. Please try again.",
+        code: "POK_CREATE_FAILED",
+        detail: errMessage.slice(0, 240),
+      });
+    }
   }
 });
 

@@ -192,9 +192,8 @@ export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<Pok
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error(`POK_INVALID_AMOUNT:${input.amount}`);
   }
-  // POK CreateSdkOrderPayload: `amount` is a string; `products[].price` is a number.
-  // Prefer amount-only (empty products) — docs allow amount XOR products; sending both
-  // is unnecessary and has caused client/SDK edge cases with discounted totals.
+  // POK CreateSdkOrderPayload types `amount` as string; send a clean 2-decimal value.
+  // Omit `products` — amount alone is valid per docs and matches the path that works for full-price orders.
   const amountValue = amount.toFixed(2);
 
   const body = await pokFetch<PokEnvelope<{ sdkOrder?: PokSdkOrder; id?: string }>>(
@@ -210,7 +209,6 @@ export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<Pok
         description: input.description,
         merchantCustomReference: input.merchantCustomReference,
         expiresAfterMinutes: 60,
-        products: [],
         ...(input.webhookUrl ? { webhookUrl: input.webhookUrl } : {}),
       }),
     },
