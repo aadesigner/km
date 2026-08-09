@@ -121,11 +121,14 @@ const CASES: BrandCase[] = [
   { vin: "VF1RFK0A0H1234567", label: "Renault Captur", make: "Renault", modelContains: "Captur" },
   { vin: "VF1AG000012345678", label: "Renault Arkana", make: "Renault", modelContains: "Arkana" },
 
-  // ── Fiat ──────────────────────────────────────────────────────────────────
+  // ── Fiat (official type-approval VIN formats) ─────────────────────────────
   { vin: "ZFA31200000745586", label: "Fiat 500", make: "Fiat", modelContains: "500" },
+  { vin: "ZFA31200003974827", label: "Fiat Nuova Panda", make: "Fiat", modelContains: "Panda" },
   { vin: "ZFA16900001234567", label: "Fiat Panda", make: "Fiat", modelContains: "Panda" },
-  { vin: "ZFA35600001234567", label: "Fiat 500X", make: "Fiat", modelContains: "500X" },
-  { vin: "ZFA33400001234567", label: "Fiat Tipo", make: "Fiat", modelContains: "Tipo" },
+  { vin: "ZFA33400001234567", label: "Fiat 500X", make: "Fiat", modelContains: "500X" },
+  { vin: "ZFA35600001234567", label: "Fiat Tipo", make: "Fiat", modelContains: "Tipo" },
+  { vin: "ZFA19900005000000", label: "Fiat 500L", make: "Fiat", modelContains: "500L" },
+  { vin: "ZFA1990000P000000", label: "Fiat Punto", make: "Fiat", modelContains: "Punto" },
 
   // ── Peugeot / Citroën ─────────────────────────────────────────────────────
   { vin: "VF3MRHPYWR1234567", label: "Peugeot 3008", make: "Peugeot", modelContains: "3008" },

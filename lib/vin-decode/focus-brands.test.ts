@@ -87,9 +87,13 @@ describe("focus brands — Renault", () => {
 });
 
 describe("focus brands — Fiat", () => {
-  it("platform 312 / 500L / ZCG", () => {
+  it("official type-approval: 312 / 199 / ZCG", () => {
     expect(decodeVin("ZFA31200000745586").model).toBe("500");
-    expect(decodeVin(pad("ZFA330")).model).toBe("500L");
+    expect(decodeVin("ZFA31200003974827").model).toBe("Panda");
+    expect(decodeVin("ZFA19900005000000").model).toBe("500L");
+    expect(decodeVin(pad("ZFA199")).model).toBe("Punto");
+    expect(decodeVin(pad("ZFA334")).model).toBe("500X");
+    expect(decodeVin(pad("ZFA356")).model).toBe("Tipo");
     expect(decodeVin(pad("ZCG312")).make).toBe("Fiat");
     expect(decodeVin(pad("ZCG312")).model).toBe("500");
   });

@@ -136,41 +136,35 @@ function decodeRenaultModel(vin: string): string | null {
   return matchLongestPrefix(vin, RENAULT_PREFIX_RULES)?.model ?? null;
 }
 
-// ── Fiat — internal platform code at positions 4–6 (indices 3–5) ─────────────
+// ── Fiat — EU type-approval VIN formats (Fiat Technical Information, Apr 2024)
+// https://www.technicalinformation.fiat.com/tech-info-web/web/pageLarge.do?id=467
+// Platform at positions 4–6; some lines share a platform and split on position 11.
+
+/** Unambiguous platform → model (official table only). */
 const FIAT_PLATFORM_456: Record<string, string> = {
-  "312": "500",
   "169": "Panda",
-  "199": "Punto",
-  "356": "500X",
-  "334": "Tipo",
-  "359": "Tipo",
+  "198": "Bravo",
+  "225": "Qubo / Fiorino",
   "250": "Ducato",
-  "176": "Punto",
-  "225": "Panda",
-  "350": "Idea",
-  "220": "Scudo",
   "263": "Doblo",
-  "270": "Fiorino",
-  "280": "Ducato",
-  "290": "Ducato",
-  "330": "500L",
-  "357": "500L",
+  "270": "Scudo",
+  "278": "Strada",
+  "334": "500X",
+  "350": "Idea",
+  "356": "Tipo",
 };
 
+/** Longer fixed prefixes from the same official VIN-format table. */
 const FIAT_PREFIX_RULES = compilePrefixRules([
-  { prefix: "ZFA312", model: "500" },
-  { prefix: "ZFA169", model: "Panda" },
-  { prefix: "ZFA199", model: "Punto" },
-  { prefix: "ZFA356", model: "500X" },
-  { prefix: "ZFA334", model: "Tipo" },
-  { prefix: "ZFA359", model: "Tipo" },
-  { prefix: "ZFA330", model: "500L" },
-  { prefix: "ZFA357", model: "500L" },
-  { prefix: "ZFA270", model: "Fiorino" },
-  { prefix: "ZFA263", model: "Doblo" },
-  { prefix: "ZFB312", model: "500" },
-  { prefix: "ZFC312", model: "500" },
-  { prefix: "ZCG312", model: "500" },
+  { prefix: "ZFA0FA", model: "500e" },
+  { prefix: "ZFB0FA", model: "500e" },
+  { prefix: "ZFANF6", model: "124 Spider" },
+  { prefix: "ZFAFLJ", model: "Talento" },
+  { prefix: "ZFAFFL", model: "Talento" },
+  // ZFABF1… = 500 / Abarth 500; ZFABF5… / ZFABF6… = Nuova Panda
+  { prefix: "ZFABF1", model: "500" },
+  { prefix: "ZFABF5", model: "Panda" },
+  { prefix: "ZFABF6", model: "Panda" },
 ]);
 
 function isFiatWmi(wmi: string): boolean {
@@ -182,12 +176,32 @@ function isFiatWmi(wmi: string): boolean {
   );
 }
 
+/**
+ * Position 11 (index 10) discriminators from Fiat type-approval masks:
+ * - 312 + "3" → Nuova Panda; otherwise 312 → 500 (mask …0000 vs …00003…)
+ * - 199 + "5"|"Z" → 500L; otherwise 199 → Punto / Grande Punto (…00005… / …0000Z… vs …0000 / …0000P…)
+ */
+function decodeFiatSharedPlatform(vin: string): string | null {
+  const platform = vin.slice(3, 6);
+  const plantOrLine = vin[10];
+  if (platform === "312") {
+    return plantOrLine === "3" ? "Panda" : "500";
+  }
+  if (platform === "199") {
+    if (plantOrLine === "5" || plantOrLine === "Z") return "500L";
+    return "Punto";
+  }
+  return null;
+}
+
 function decodeFiatModel(vin: string): string | null {
   const wmi = vin.slice(0, 3);
   if (!isFiatWmi(wmi)) return null;
   const prefixHit = matchLongestPrefix(vin, FIAT_PREFIX_RULES);
   if (prefixHit) return prefixHit.model;
-  if (vin.length < 6) return null;
+  if (vin.length < 11) return null;
+  const shared = decodeFiatSharedPlatform(vin);
+  if (shared) return shared;
   return FIAT_PLATFORM_456[vin.slice(3, 6)] ?? null;
 }
 

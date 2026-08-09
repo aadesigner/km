@@ -433,13 +433,7 @@ export default function Checkout({ params }: Props) {
     return () => { cancelled = true; };
   }, [pubSettings?.paypalEnableCards, pubSettings?.paypalClientId, cardEligible]);
 
-  // Default to Card once when POK is available (users were hitting PayPal by default with coupons).
-  const pokCardDefaultedRef = useRef(false);
-  useEffect(() => {
-    if (!pubSettings?.pokEnabled || pokCardDefaultedRef.current) return;
-    pokCardDefaultedRef.current = true;
-    setPayMethod("card");
-  }, [pubSettings?.pokEnabled]);
+  // Default payment tab is PayPal (`useState` above). Card remains available when POK/hosted fields are configured.
 
   // Auto-switch back to PayPal when confirmed ineligible (unless POK cards are available)
   useEffect(() => {
@@ -2131,7 +2125,7 @@ export default function Checkout({ params }: Props) {
 
                   {/* Payment method tabs — stay visible after PayPal/Card is opened */}
                   {showPaymentMethodTabs && (
-                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mt-3 mb-2">
+                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mt-4 mb-2">
                       <button
                         type="button"
                         className={cn(
@@ -2294,7 +2288,7 @@ export default function Checkout({ params }: Props) {
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
-                      className="w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
+                      className="mt-2.5 w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
                       onClick={(!isFreeCoupon && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!isFreeCoupon && payMethod === "card" && !pubSettings?.pokEnabled && (!hostedFieldsReady || cardEligible === "no"))}
                     >

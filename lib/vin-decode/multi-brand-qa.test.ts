@@ -47,17 +47,20 @@ function assertCase(c: Case): void {
 }
 
 const FIAT: Case[] = [
-  { vin: pad("ZFA312", "K"), label: "Fiat 500 platform 312", make: "Fiat", modelContains: "500", year: 2019, modelExcludes: ["500X", "500L"] },
-  { vin: pad("ZFA169", "L"), label: "Fiat Panda", make: "Fiat", modelContains: "Panda", year: 2020 },
-  { vin: pad("ZFA199", "J"), label: "Fiat Punto", make: "Fiat", modelContains: "Punto", year: 2018 },
-  { vin: pad("ZFA356", "N"), label: "Fiat 500X", make: "Fiat", modelContains: "500X", year: 2022, modelExcludes: ["500L"] },
-  { vin: pad("ZFA330", "M"), label: "Fiat 500L", make: "Fiat", modelContains: "500L", year: 2021, modelExcludes: ["500X"] },
-  { vin: pad("ZFA334", "N"), label: "Fiat Tipo 334", make: "Fiat", modelContains: "Tipo", year: 2022 },
-  { vin: pad("ZFA359", "P"), label: "Fiat Tipo 359", make: "Fiat", modelContains: "Tipo", year: 2023 },
-  { vin: pad("ZFA270", "K"), label: "Fiat Fiorino", make: "Fiat", modelContains: "Fiorino", year: 2019 },
+  // Official Fiat type-approval formats — platform 312 splits 500 vs Nuova Panda on pos.11
+  { vin: pad("ZFA312", "K"), label: "Fiat 500 (312, pos.11≠3)", make: "Fiat", modelContains: "500", year: 2019, modelExcludes: ["500X", "500L", "Panda"] },
+  { vin: "ZFA312000L3974827", label: "Fiat Nuova Panda (312 + pos.11=3)", make: "Fiat", modelContains: "Panda", year: 2020, modelExcludes: ["500"] },
+  { vin: pad("ZFA169", "L"), label: "Fiat Panda (169)", make: "Fiat", modelContains: "Panda", year: 2020 },
+  { vin: pad("ZFA199", "J"), label: "Fiat Punto (199, pos.11≠5/Z)", make: "Fiat", modelContains: "Punto", year: 2018, modelExcludes: ["500L"] },
+  { vin: "ZFA199000M5000000", label: "Fiat 500L (199 + pos.11=5)", make: "Fiat", modelContains: "500L", year: 2021, modelExcludes: ["500X", "Punto"] },
+  { vin: pad("ZFA334", "N"), label: "Fiat 500X (334)", make: "Fiat", modelContains: "500X", year: 2022, modelExcludes: ["500L", "Tipo"] },
+  { vin: pad("ZFA356", "N"), label: "Fiat Tipo (356)", make: "Fiat", modelContains: "Tipo", year: 2022, modelExcludes: ["500X"] },
+  { vin: pad("ZFA270", "K"), label: "Fiat Scudo (270)", make: "Fiat", modelContains: "Scudo", year: 2019 },
+  { vin: pad("ZFA225", "K"), label: "Fiat Qubo/Fiorino (225)", make: "Fiat", modelContains: "Qubo", year: 2019 },
   { vin: pad("ZFA263", "K"), label: "Fiat Doblo", make: "Fiat", modelContains: "Doblo", year: 2019 },
   { vin: pad("ZFA250", "L"), label: "Fiat Ducato 250", make: "Fiat", modelContains: "Ducato", year: 2020 },
-  { vin: pad("ZCG312", "N"), label: "Fiat 500 ZCG", make: "Fiat", modelContains: "500", year: 2022, modelExcludes: ["500X"] },
+  { vin: pad("ZFA0FA", "N"), label: "Fiat 500e", make: "Fiat", modelContains: "500e", year: 2022 },
+  { vin: pad("ZCG312", "N"), label: "Fiat 500 ZCG", make: "Fiat", modelContains: "500", year: 2022, modelExcludes: ["500X", "Panda"] },
 ];
 
 const FERRARI: Case[] = [
