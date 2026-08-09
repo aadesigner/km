@@ -91,7 +91,6 @@ const COMPANY_LINKS = [
   { path: "how-it-works", labelKey: "nav_how_it_works" },
   { path: "pricing", labelKey: "pricing" },
   { path: "faq", labelKey: "nav_faq" },
-  { path: "free-vin-decoder", labelKey: "free_decoder_nav_link" },
   { path: "api-b2b", labelKey: "footer_api_b2b" },
 ] as const;
 
