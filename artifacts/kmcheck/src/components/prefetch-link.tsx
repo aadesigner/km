@@ -11,10 +11,11 @@ type Props = {
   className?: string;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   role?: string;
+  "aria-label"?: string;
 };
 
 /** wouter Link that prefetches the target page chunk (and VIN data when applicable) on hover/focus. */
-export function PrefetchLink({ to, href, children, className, onClick, role }: Props) {
+export function PrefetchLink({ to, href, children, className, onClick, role, "aria-label": ariaLabel }: Props) {
   const { isSignedIn } = useAuth();
   const path = to ?? href ?? "";
 
@@ -38,6 +39,7 @@ export function PrefetchLink({ to, href, children, className, onClick, role }: P
       to={path}
       className={className}
       role={role}
+      aria-label={ariaLabel}
       onMouseEnter={scheduleWarmHref}
       onFocus={scheduleWarmHref}
       onClick={onClick}

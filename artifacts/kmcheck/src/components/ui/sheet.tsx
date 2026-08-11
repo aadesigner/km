@@ -23,7 +23,7 @@ const SheetOverlay = React.forwardRef<
     className={cn(
       "fixed inset-0 z-50 bg-black/80",
       fast
-        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-200 data-[state=open]:duration-280"
+        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-100 data-[state=open]:duration-140"
         : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
@@ -48,10 +48,10 @@ const sheetVariants = cva(
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         ),
-        // Mobile nav: slide + light fade (~280ms in / ~220ms out)
+        // Mobile nav: short slide + fade (keep paint cheap — no scale)
         fast: cn(
-          "transition-[transform,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[transform,opacity]",
-          "data-[state=closed]:duration-[220ms] data-[state=open]:duration-[280ms]",
+          "transition-[transform,opacity] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+          "data-[state=closed]:duration-120 data-[state=open]:duration-160",
           "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
           "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
         ),
@@ -110,7 +110,6 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   overlayClassName?: string
-  forceMount?: true
 }
 
 const SheetContent = React.forwardRef<
@@ -123,7 +122,7 @@ const SheetContent = React.forwardRef<
     <SheetPortal>
       <SheetOverlay
         fast={isFast}
-        className={cn(isFast && "bg-black/45", overlayClassName)}
+        className={cn(isFast && "bg-black/40", overlayClassName)}
       />
       <SheetPrimitive.Content
         ref={ref}

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Moon, Sun, User, Shield, LogOut, X,
-  ChevronRight, ChevronDown, Check,
+  ChevronRight, ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
@@ -26,6 +26,7 @@ import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
 import { NavAssetWarmup } from "@/components/nav-asset-warmup";
 import { prefetchNavMenuAssets } from "@/lib/nav-assets";
+import { prefetchCountryPages, prefetchAuthAreaRoutes, prefetchRoute, prefetchCommonRoutes } from "@/lib/prefetch-route";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -120,19 +121,19 @@ function CountryNavMenuGroups({
             {group.items.map(({ slug, img, labelKey }) => {
               const active = isActive(slug);
               return (
-                <PrefetchLink
+                <Link
                   key={slug}
                   href={`/${language}/cars/${slug}`}
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-75",
-                    active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06]",
+                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation",
+                    active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06] active:bg-primary/10",
                   )}
                 >
                   <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" alt={formatImageFlagAlt(t(labelKey), t)} />
                   <span className="flex-1">{t(labelKey)}</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                </PrefetchLink>
+                </Link>
               );
             })}
           </div>
@@ -142,60 +143,44 @@ function CountryNavMenuGroups({
   }
 
   return (
-    <div className="py-1" role="menu">
-      {groups.map((group, groupIndex) => (
-        <div
-          key={group.continent}
-          className={cn(groupIndex > 0 && "mt-1 border-t border-border/45")}
-        >
-          <p className="px-2.5 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/75">
-            {t(CONTINENT_LABEL_KEY[group.continent])}
-          </p>
-          <ul className="pb-0.5">
-            {group.items.map(({ slug, img, nameKey, countKey }) => {
-              const active = isActive(slug);
-              return (
-                <li key={slug} role="none">
-                  <PrefetchLink
-                    href={`/${language}/cars/${slug}`}
-                    role="menuitem"
-                    onClick={onNavigate}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors duration-75",
-                      active
-                        ? "bg-primary/[0.08] ring-1 ring-primary/15"
-                        : "hover:bg-muted/60 dark:hover:bg-white/[0.05]",
-                    )}
-                  >
-                    <FlagImg code={img} size={22} className="shrink-0 rounded-[3px] shadow-sm" alt={formatImageFlagAlt(t(nameKey), t)} />
-                    <span className="min-w-0 flex-1">
-                      <span
-                        className={cn(
-                          "block text-[13px] font-medium leading-tight",
-                          active ? "text-primary" : "text-foreground",
-                        )}
-                      >
-                        {t(nameKey)}
-                      </span>
-                      <span className="mt-0.5 block truncate text-[11px] leading-tight text-muted-foreground">
-                        {t(countKey)}
-                      </span>
-                    </span>
-                    {active ? (
-                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-                    ) : (
-                      <ChevronRight
-                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity duration-100 group-hover:opacity-100"
-                        aria-hidden
-                      />
-                    )}
-                  </PrefetchLink>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+    <div role="menu" className="px-2 pb-2 pt-3">
+      <p className="px-2 pb-2.5 text-center text-sm font-semibold tracking-tight text-foreground">
+        {t("nav_search_by_country")}
+      </p>
+      <ul className="grid grid-cols-2 gap-0.5">
+        {COUNTRY_LINKS.map(({ slug, img, labelKey }, index) => {
+          const active = isActive(slug);
+          const label = t(labelKey);
+          const aloneOnLastRow =
+            index === COUNTRY_LINKS.length - 1 && COUNTRY_LINKS.length % 2 === 1;
+          return (
+            <li key={slug} role="none" className={aloneOnLastRow ? "col-span-2" : undefined}>
+              <Link
+                href={`/${language}/cars/${slug}`}
+                role="menuitem"
+                onClick={onNavigate}
+                className={cn(
+                  "flex h-full flex-col items-center justify-center gap-2 rounded-xl px-1.5 py-3.5 text-center",
+                  active
+                    ? "bg-primary/[0.08] text-primary"
+                    : "text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.05]",
+                )}
+              >
+                <FlagImg
+                  code={img}
+                  size={28}
+                  priority
+                  className="h-[1.125rem] w-[1.6875rem] shrink-0 rounded-[2px] object-cover"
+                  alt={formatImageFlagAlt(label, t)}
+                />
+                <span className="text-[13px] font-medium leading-snug tracking-tight">
+                  {label}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -252,6 +237,18 @@ MobileMenuToggle.displayName = "MobileMenuToggle";
 
 const NAV_DROPDOWN_PANEL = cn(
   "min-w-[9.5rem] rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10",
+  "overflow-hidden",
+);
+
+/** Country mega panel — solid fill, no blur (blur makes wide panels feel laggy on open). */
+const NAV_COUNTRY_MEGA_PANEL = cn(
+  "rounded-2xl border border-border/80 bg-background shadow-xl shadow-black/10",
+  "overflow-hidden",
+);
+
+/** User menu — solid fill for snappy open (same idea as country mega). */
+const NAV_USER_MENU_PANEL = cn(
+  "rounded-2xl border border-border/80 bg-background shadow-xl shadow-black/10",
   "overflow-hidden",
 );
 
@@ -518,6 +515,33 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   }, []);
 
   useEffect(() => {
+    if (!countryOpen) return;
+    prefetchCountryPages();
+  }, [countryOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    // Don't compete with the open animation — warm routes after the frame settles.
+    const run = () => {
+      prefetchCommonRoutes();
+      prefetchCountryPages();
+    };
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(run, { timeout: 1200 });
+    } else {
+      timeoutId = setTimeout(run, 280);
+    }
+    return () => {
+      if (idleId != null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
     let ticking = false;
     const handler = () => {
       if (ticking) return;
@@ -599,6 +623,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       || ((isAuthNavPage || isMarketingTransparentNav) && !scrolled)
     );
 
+  useEffect(() => {
+    if (!userOpen) return;
+    prefetchAuthAreaRoutes();
+    if (isAdmin) prefetchRoute("adminx");
+  }, [userOpen, isAdmin]);
+
   const currentLang  = LANGS.find(l => l.code === language);
   const displayName  = user?.name ?? user?.email?.split("@")[0] ?? "";
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
@@ -674,7 +704,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               {t("nav_country")}
               <ChevronDown
                 className={cn(
-                  "h-3 w-3 transition-transform duration-100",
+                  "h-3 w-3",
                   isDarkNav ? "text-white/40" : "text-muted-foreground",
                   countryOpen && "rotate-180",
                 )}
@@ -682,22 +712,22 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
             </button>
 
-            <AnimatePresence>
-              {countryOpen && (
-                <motion.div
-                  {...NAV_DROPDOWN_MOTION}
-                  className={cn(NAV_DROPDOWN_ANCHOR, "left-0")}
-                >
-                  <div className={cn(dropdownCls, "w-[19.5rem] p-1.5")}>
-                    <CountryNavMenuGroups
-                      language={language}
-                      isActive={(slug) => isOnPage(`cars/${slug}`)}
-                      onNavigate={() => setCountryOpen(false)}
-                    />
-                  </div>
-                </motion.div>
+            <div
+              className={cn(
+                NAV_DROPDOWN_ANCHOR,
+                "left-1/2 -translate-x-1/2",
+                countryOpen ? "visible" : "invisible pointer-events-none",
               )}
-            </AnimatePresence>
+              aria-hidden={!countryOpen}
+            >
+              <div className={cn(NAV_COUNTRY_MEGA_PANEL, "w-[22rem] max-w-[calc(100vw-1.5rem)] p-0")}>
+                <CountryNavMenuGroups
+                  language={language}
+                  isActive={(slug) => isOnPage(`cars/${slug}`)}
+                  onNavigate={() => setCountryOpen(false)}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Primary nav — desktop, beside Country */}
@@ -810,18 +840,18 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 <button
                   {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors duration-50 ease-out outline-none",
+                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full outline-none",
                     isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
                   )}
                 >
-                  <Avatar className={cn("transition-all duration-300", scrolled ? "h-7 w-7" : "h-8 w-8")}>
+                  <Avatar className={cn(scrolled ? "h-7 w-7" : "h-8 w-8")}>
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
                     <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                       {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
                   <span className={cn(
-                    "font-medium max-w-[100px] truncate hidden lg:block transition-colors",
+                    "font-medium max-w-[100px] truncate hidden lg:block",
                     scrolled ? "text-[13px]" : "text-[14px]",
                     isDarkNav ? "text-white/80" : "text-foreground",
                   )}>
@@ -829,56 +859,55 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 transition-transform duration-75",
+                      "h-3.5 w-3.5",
                       isDarkNav ? "text-white/40" : "text-muted-foreground",
                       userOpen && "rotate-180",
                     )}
                   />
                 </button>
 
-                <AnimatePresence>
-                  {userOpen && (
-                    <motion.div
-                      {...NAV_DROPDOWN_MOTION}
-                      style={{ transformOrigin: "top right" }}
-                      className={cn(NAV_DROPDOWN_ANCHOR, "right-0")}
-                    >
-                      <div className={cn(dropdownCls, "w-56 py-1.5")}>
-                      <div className="px-4 py-3 border-b border-border/60 mb-1">
-                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                      <PrefetchLink
-                        href={`/${language}/dashboard`}
-                        onClick={() => setUserOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors duration-75 rounded-lg mx-1.5"
-                      >
-                        <User className="h-3.5 w-3.5 text-muted-foreground" />
-                        {t("my_reports")}
-                      </PrefetchLink>
-                      {isAdmin && (
-                        <PrefetchLink
-                          href="/adminx"
-                          onClick={closeMenus}
-                          className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] transition-colors duration-75 rounded-lg mx-1.5"
-                        >
-                          <Shield className="h-3.5 w-3.5 text-muted-foreground" />
-                          {t("admin")}
-                        </PrefetchLink>
-                      )}
-                      <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 transition-colors duration-75 rounded-lg"
-                        >
-                          <LogOut className="h-3.5 w-3.5" />
-                          {t("logout")}
-                        </button>
-                      </div>
-                      </div>
-                    </motion.div>
+                <div
+                  className={cn(
+                    NAV_DROPDOWN_ANCHOR,
+                    "right-0",
+                    userOpen ? "visible" : "invisible pointer-events-none",
                   )}
-                </AnimatePresence>
+                  aria-hidden={!userOpen}
+                >
+                  <div className={cn(NAV_USER_MENU_PANEL, "w-56 py-1.5")}>
+                    <div className="px-4 py-3 border-b border-border/60 mb-1">
+                      {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
+                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </div>
+                    <Link
+                      href={`/${language}/dashboard`}
+                      onClick={() => setUserOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] rounded-lg mx-1.5"
+                    >
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      {t("my_reports")}
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/adminx"
+                        onClick={closeMenus}
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] rounded-lg mx-1.5"
+                      >
+                        <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                        {t("admin")}
+                      </Link>
+                    )}
+                    <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 rounded-lg"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        {t("logout")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
@@ -949,25 +978,25 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               </SheetTrigger>
 
             <SheetContent
-              forceMount
               side="right"
               speed="fast"
-              overlayClassName="z-[110] touch-none"
-              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-2xl shadow-black/25 dark:shadow-black/40"
+              overlayClassName="z-[110]"
+              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-xl shadow-black/20 dark:shadow-black/35"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               {/* Mobile header */}
+              <div className="flex h-full flex-col">
               <div className="flex items-center justify-between px-5 h-16 border-b shrink-0">
-                <PrefetchLink
+                <Link
                   href={`/${language}`}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center -translate-y-px"
                 >
-                  <KmcheckLogo className="h-8" />
-                </PrefetchLink>
+                  <KmcheckLogo className="h-8" syncDecode />
+                </Link>
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] active:scale-95 transition-all duration-150"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] active:scale-95"
                   aria-label={t("nav_close_menu")}
                 >
                   <X className="h-4 w-4" />
@@ -976,39 +1005,39 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
               {/* Mobile nav links */}
               <nav className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-3 py-3 space-y-0.5 [-webkit-overflow-scrolling:touch] touch-pan-y">
-                <PrefetchLink
+                <Link
                   href={`/${language}/how-it-works`}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors touch-manipulation active:bg-primary/10",
-                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
+                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "text-foreground/75",
                   )}
                 >
                   {t("nav_how_it_works")}
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </PrefetchLink>
-                <PrefetchLink
+                </Link>
+                <Link
                   href={`/${language}/pricing`}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
+                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "text-foreground/75",
                   )}
                 >
                   {t("pricing")}
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </PrefetchLink>
-                <PrefetchLink
+                </Link>
+                <Link
                   href={`/${language}/faq`}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                    isOnPage("faq") ? "bg-primary/8 text-primary" : "text-foreground/75 hover:bg-primary/[0.06]",
+                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
+                    isOnPage("faq") ? "bg-primary/8 text-primary" : "text-foreground/75",
                   )}
                 >
                   {t("nav_faq")}
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </PrefetchLink>
+                </Link>
 
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 pt-3 pb-1">
                   {t("footer_countries")}
@@ -1037,7 +1066,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                         asChild
                         onClick={() => setMobileOpen(false)}
                       >
-                        <PrefetchLink href={`/${language}/dashboard`}>{t("my_reports")}</PrefetchLink>
+                        <Link href={`/${language}/dashboard`}>{t("my_reports")}</Link>
                       </Button>
                       {isAdmin ? (
                         <Button
@@ -1047,7 +1076,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           asChild
                           onClick={() => setMobileOpen(false)}
                         >
-                          <PrefetchLink href="/adminx" onClick={closeMenus}>{t("admin")}</PrefetchLink>
+                          <Link href="/adminx" onClick={closeMenus}>{t("admin")}</Link>
                         </Button>
                       ) : (
                         <div />
@@ -1079,13 +1108,14 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 ) : (
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1 h-10 rounded-xl" asChild onClick={() => setMobileOpen(false)}>
-                      <PrefetchLink href={`/${language}/sign-in`}>{t("sign_in")}</PrefetchLink>
+                      <Link href={`/${language}/sign-in`}>{t("sign_in")}</Link>
                     </Button>
                     <Button className="flex-1 h-10 rounded-xl font-bold" asChild onClick={() => setMobileOpen(false)}>
-                      <PrefetchLink href={`/${language}/sign-up`}>{t("sign_up")}</PrefetchLink>
+                      <Link href={`/${language}/sign-up`}>{t("sign_up")}</Link>
                     </Button>
                   </div>
                 )}
+              </div>
               </div>
             </SheetContent>
           </Sheet>

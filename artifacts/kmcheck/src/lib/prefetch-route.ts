@@ -61,6 +61,11 @@ export function prefetchCommonRoutes(): void {
   ["pricing", "how-it-works", "faq"].forEach((r) => prefetchRoute(r));
 }
 
+/** Warm the shared country page chunk (all /cars/:country routes). */
+export function prefetchCountryPages(): void {
+  ["usa", "korea", "canada", "china", "uae"].forEach((r) => prefetchRoute(r));
+}
+
 /** Signed-in client area — warm chunks during idle time. */
 export function prefetchAuthAreaRoutes(): void {
   ["dashboard", "purchases", "checkout"].forEach((r) => prefetchRoute(r, { isSignedIn: true }));

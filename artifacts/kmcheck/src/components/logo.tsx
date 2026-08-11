@@ -33,10 +33,13 @@ export type KmcheckLogoVariant = "light" | "dark";
 export function KmcheckLogo({
   variant,
   className,
+  syncDecode = false,
 }: {
   /** `dark` = dark background → white wordmark; `light` = light background → gray wordmark. */
   variant?: KmcheckLogoVariant;
   className?: string;
+  /** Prefer for menus that remount — avoids a blank flash while the PNG decodes. */
+  syncDecode?: boolean;
 }) {
   const { resolvedTheme } = useTheme();
   const resolved = variant ?? (resolvedTheme === "dark" ? "dark" : "light");
@@ -50,7 +53,7 @@ export function KmcheckLogo({
       height={40}
       fetchPriority="high"
       className={cn("h-auto w-auto max-w-none object-contain", className)}
-      decoding="async"
+      decoding={syncDecode ? "sync" : "async"}
     />
   );
 }

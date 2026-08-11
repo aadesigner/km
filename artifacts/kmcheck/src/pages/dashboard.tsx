@@ -527,16 +527,22 @@ export default function Dashboard() {
   };
 
   const pendingBanner = showPendingBanner && pendingVin ? (
-    <div className="bg-muted/40 dark:bg-muted/20 border-b border-border px-4 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2.5 text-sm text-foreground">
-          <AlertCircle className="h-4 w-4 text-primary shrink-0" />
-          <span className="text-foreground/90">
-            {t("pending_vin_banner")}{" "}
-            <strong className="font-mono tracking-wider">{pendingVin}</strong>
+    <div className="border-b border-primary/15 bg-primary/[0.07] dark:bg-primary/[0.1] px-4 py-3.5 sm:py-3">
+      <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 flex-col items-center gap-2 text-center sm:flex-row sm:items-center sm:gap-2.5 sm:text-left">
+          <p className="flex items-center justify-center gap-2 text-sm font-medium text-foreground sm:justify-start">
+            <AlertCircle className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+            <span>{t("pending_vin_banner")}</span>
+          </p>
+          <span className="inline-flex max-w-full items-center truncate rounded-lg border border-border/70 bg-background/90 px-2.5 py-1.5 font-mono text-[12px] tracking-wider text-foreground shadow-sm dark:bg-background/50 sm:py-1 sm:text-xs">
+            {pendingVin}
           </span>
         </div>
-        <Button size="sm" className="h-8 shrink-0 rounded-full gap-1.5" onClick={handlePendingVinCheckout}>
+        <Button
+          size="sm"
+          className="h-10 w-full shrink-0 rounded-full gap-1.5 sm:h-8 sm:w-auto"
+          onClick={handlePendingVinCheckout}
+        >
           <Zap className="h-3.5 w-3.5" />
           {t("complete_purchase")}
         </Button>
