@@ -1,10 +1,12 @@
-import type { VinPageSeo, VinSeoLang } from "@workspace/vin-page-seo";
+import type { VinPageSeo, VinSeoLang, VinSeoVehicle } from "@workspace/vin-page-seo";
 import {
   VIN_SEO_LANGS,
   buildVinOnlyPageDescription,
   buildVinOnlyPageTitle,
   buildVinPageSeo,
+  buildVinSsrBodyContent,
   normalizeVin,
+  vehicleHasIdentity,
 } from "@workspace/vin-page-seo";
 
 const OG_LOCALE_MAP: Record<VinSeoLang, string> = {
@@ -56,7 +58,63 @@ function removeGeneratedSeoTags(html: string): string {
     .replace(/\n?\s*<link rel="canonical"[^>]*>/g, "")
     .replace(/\n?\s*<link rel="alternate" hreflang="[^"]+"[^>]*>/g, "")
     .replace(/\n?\s*<meta property="og:locale:alternate"[^>]*>/g, "")
-    .replace(/\n?\s*<script id="kmcheck-json-ld"[^>]*>[\s\S]*?<\/script>/g, "");
+    .replace(/\n?\s*<script id="kmcheck-json-ld"[^>]*>[\s\S]*?<\/script>/g, "")
+    .replace(/\n?\s*<style id="kmcheck-vin-ssr-style"[^>]*>[\s\S]*?<\/style>/g, "")
+    .replace(/\n?\s*<main id="kmcheck-vin-ssr"[\s\S]*?<\/main>/g, "");
+}
+
+function buildVinSsrStyleBlock(): string {
+  return `<style id="kmcheck-vin-ssr-style">
+      .kmcheck-vin-ssr{max-width:48rem;margin:2rem auto;padding:0 1rem;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;color:#0f172a}
+      .kmcheck-vin-ssr h1{margin:0 0 .5rem;font-size:1.5rem;line-height:1.25}
+      .kmcheck-vin-ssr p{margin:.75rem 0}
+      .kmcheck-vin-ssr dl{display:grid;grid-template-columns:minmax(6rem,max-content) 1fr;gap:.35rem .75rem;margin:1rem 0 0}
+      .kmcheck-vin-ssr dt{font-weight:600;color:#334155}
+      .kmcheck-vin-ssr dd{margin:0}
+      .dark .kmcheck-vin-ssr{color:#f8fafc}
+      .dark .kmcheck-vin-ssr dt{color:#cbd5e1}
+    </style>`;
+}
+
+function buildVinSsrBodyBlock(lang: VinSeoLang, vehicle: VinSeoVehicle): string | null {
+  const content = buildVinSsrBodyContent(lang, vehicle);
+  if (!content) return null;
+
+  const specRows = content.specs
+    .map(
+      (row) =>
+        `          <dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd>`,
+    )
+    .join("\n");
+
+  return `<main id="kmcheck-vin-ssr" class="kmcheck-vin-ssr">
+      <article>
+        <h1>${escapeHtml(content.heading)}</h1>
+        <p><strong>${escapeHtml(content.vinLabel)}:</strong> ${escapeHtml(content.vin)}</p>
+        <p>${escapeHtml(content.intro)}</p>
+        <dl>
+${specRows}
+        </dl>
+        <p>${escapeHtml(content.cta)}</p>
+      </article>
+    </main>`;
+}
+
+function injectVinSsrBody(html: string, lang: VinSeoLang, vehicle: VinSeoVehicle): string {
+  if (!vehicleHasIdentity(vehicle)) return html;
+  const bodyBlock = buildVinSsrBodyBlock(lang, vehicle);
+  if (!bodyBlock) return html;
+
+  let out = html.replace(
+    /<div id="root">[\s\S]*?<\/div>\s*(?=<script type="module")/i,
+    `<div id="root">\n    ${bodyBlock}\n    </div>\n    `,
+  );
+
+  if (!out.includes('id="kmcheck-vin-ssr-style"')) {
+    out = out.replace(/<\/head>/i, `${buildVinSsrStyleBlock()}\n  </head>`);
+  }
+
+  return out;
 }
 
 function buildSeoHeadBlock(seo: VinPageSeo, lang: VinSeoLang, origin: string): string {
@@ -118,6 +176,7 @@ export function injectVinPageSeoIntoHtml(
   seo: VinPageSeo,
   lang: VinSeoLang,
   origin: string,
+  vehicle?: VinSeoVehicle | null,
 ): string {
   const dir = lang === "ar" ? "rtl" : "ltr";
   let out = removeGeneratedSeoTags(html);
@@ -136,6 +195,10 @@ export function injectVinPageSeoIntoHtml(
 
   const seoBlock = buildSeoHeadBlock(seo, lang, origin);
   out = out.replace(/<\/title>/i, `</title>${seoBlock}`);
+
+  if (!seo.noIndex && vehicle && vehicleHasIdentity(vehicle)) {
+    out = injectVinSsrBody(out, lang, vehicle);
+  }
 
   return out;
 }

@@ -405,7 +405,7 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
         style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
       >
         <div className="bg-black/60 text-white text-xs font-mono px-3 py-1 rounded-full">
-          {index + 1} / {photos.length}
+          {index + 1}/{photos.length}
         </div>
       </div>
 

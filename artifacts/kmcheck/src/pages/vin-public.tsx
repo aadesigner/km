@@ -13,9 +13,10 @@ import {
   Wrench, Palette, MapPin, Calendar,
   ShieldCheck, ShieldAlert, ChevronRight, AlertTriangle,
   Zap, Settings2, TrendingUp, DollarSign, Fuel, Box,
-  X, ChevronLeft, ChevronDown,
+  X, ChevronLeft, ChevronDown, FileText, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isKoreanCountry } from "@/lib/korean-currency";
 import { translateDamageLabel } from "@/lib/translate-damage-label";
 import { translateTitleStatus } from "@/lib/translate-title-status";
 import { translateLotStatus } from "@/lib/translate-lot-status";
@@ -79,13 +80,14 @@ import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
 import { ReportHistoryTimeline } from "@/components/report-history-timeline";
-import { collectReportTimelineEvents } from "@/lib/report-history-timeline";
+import { collectReportTimelineEvents, shouldShowReportTimeline } from "@/lib/report-history-timeline";
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
 import {
   VinLockedHeroStat,
   VinLockedSectionCard,
+  VinLockedTimelinePreview,
 } from "@/components/vin-locked-preview";
 import {
   cleanDisplayStr,
@@ -816,7 +818,7 @@ export default function VinPublic({ params }: Props) {
           trim={data.trim}
           photos={heroPhotos}
           locked={!data.isUnlocked}
-          lockedLabel={t("vin_public_locked_hint")}
+          lockedLabel={data.isUnlocked ? undefined : t("vin_public_gallery_locked")}
           unlockedLabel={data.isUnlocked ? t("vin_public_unlocked_badge") : undefined}
           scoreData={scoreData}
           summaryItems={heroSummary}
@@ -858,7 +860,7 @@ export default function VinPublic({ params }: Props) {
           )}
         </VinReportHero>
 
-        {data.isUnlocked && timelineEvents.length > 0 ? (
+        {data.isUnlocked && shouldShowReportTimeline(timelineEvents) ? (
           <ReportHistoryTimeline
             events={timelineEvents}
             t={t}
@@ -867,6 +869,12 @@ export default function VinPublic({ params }: Props) {
             vehicleCountry={data.country}
             krwPerUsd={krwPerUsd}
           />
+        ) : !data.isUnlocked ? (
+          <VinLockedTimelinePreview
+            t={t}
+            priceLabel={priceStr}
+            onUnlock={handleUnlock}
+          />
         ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start print-two-col min-w-0">
@@ -874,32 +882,40 @@ export default function VinPublic({ params }: Props) {
           {/* RIGHT COLUMN — accidents, safety, mileage, owners */}
           <div className="space-y-4 sm:space-y-6 min-w-0 order-2 lg:order-2 print:order-2">
             {!data.isUnlocked ? (
-              <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 <VinLockedSectionCard
                   title={t("vin_public_accidents_section")}
                   icon={AlertTriangle}
-                  delay={0.15}
+                  delay={0.12}
                   hint={lockedHint}
+                  variant="rows"
+                  accent="bg-orange-500/10 text-orange-600 dark:text-orange-400"
                 />
                 <VinLockedSectionCard
                   title={t("vin_public_safety_section")}
                   icon={ShieldCheck}
-                  delay={0.18}
+                  delay={0.15}
                   hint={lockedHint}
+                  variant="stats"
+                  accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 />
                 <VinLockedSectionCard
                   title={t("vin_public_mileage_section")}
                   icon={Gauge}
-                  delay={0.2}
+                  delay={0.18}
                   hint={lockedHint}
+                  variant="timeline"
+                  accent="bg-sky-500/10 text-sky-600 dark:text-sky-400"
                 />
                 <VinLockedSectionCard
                   title={t("vin_result_owners_title")}
                   icon={Users}
-                  delay={0.22}
+                  delay={0.21}
                   hint={lockedHint}
+                  variant="rows"
+                  accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
                 />
-              </>
+              </div>
             ) : (
               <>
 
@@ -1230,6 +1246,37 @@ export default function VinPublic({ params }: Props) {
               </VehicleSpecsGrid>
             </motion.div>
 
+            {!data.isUnlocked ? (
+              <div className="space-y-4">
+                <VinLockedSectionCard
+                  title={t("report_insurance_claims")}
+                  icon={FileText}
+                  delay={0.12}
+                  hint={lockedHint}
+                  variant="rows"
+                  accent="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                />
+                {isKoreanCountry(data.country) ? (
+                  <VinLockedSectionCard
+                    title={t("report_registry_history")}
+                    icon={ClipboardList}
+                    delay={0.15}
+                    hint={lockedHint}
+                    variant="rows"
+                    accent="bg-teal-500/10 text-teal-600 dark:text-teal-400"
+                  />
+                ) : null}
+                <VinLockedSectionCard
+                  title={t("report_market_data")}
+                  icon={TrendingUp}
+                  delay={0.18}
+                  hint={lockedHint}
+                  variant="stats"
+                  accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                />
+              </div>
+            ) : null}
+
             {data.isUnlocked && (
               <>
             <InsuranceClaimsSection
@@ -1359,16 +1406,16 @@ export default function VinPublic({ params }: Props) {
           className="fixed bottom-0 inset-x-0 z-50 print:hidden"
           style={{ background: "linear-gradient(135deg, #0f1923 0%, #1a2f20 100%)", borderTop: "1px solid rgba(31,163,84,0.25)" }}
         >
-          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
+          <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm text-white">{t("vin_public_unlock_title")}</p>
-              <p className="text-xs text-white/50 truncate hidden sm:block">
+              <p className="text-xs text-white/55 truncate hidden sm:block">
                 {t("vin_public_unlock_desc")}
               </p>
             </div>
             <Button
-              className="shrink-0 gap-1.5 rounded-full px-5 font-bold shadow-lg"
-              style={{ boxShadow: "0 0 16px rgba(31,163,84,0.35)" }}
+              className="shrink-0 gap-1.5 rounded-full px-5 h-10 font-bold shadow-lg"
+              style={{ boxShadow: "0 0 20px rgba(31,163,84,0.4)" }}
               onClick={handleUnlock}
             >
               <Lock className="h-3.5 w-3.5" />

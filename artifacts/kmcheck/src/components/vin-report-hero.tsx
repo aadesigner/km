@@ -388,11 +388,14 @@ function HeroPhotoGallery({
         )}
 
         {lockedLabel && (
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-background/95 border shadow-sm px-2.5 py-1 print:hidden z-10">
-            <Lock className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] font-medium text-muted-foreground">{lockedLabel}</span>
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-background/95 border border-border/80 shadow-md px-2.5 py-1 print:hidden z-10">
+            <Lock className="h-3 w-3 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/80">{lockedLabel}</span>
           </div>
         )}
+        <div className="absolute inset-x-0 bottom-0 z-[3] pointer-events-none bg-gradient-to-t from-black/45 via-black/10 to-transparent px-3 pb-3 pt-10 print:hidden">
+          <p className="text-[11px] font-medium text-white/90 drop-shadow-sm">{lockedLabel}</p>
+        </div>
       </div>
     );
   }
@@ -455,15 +458,10 @@ function HeroPhotoGallery({
       )}
 
       {photos.length > 0 && (
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none z-10 print:hidden">
+        <div className="absolute top-2.5 left-2.5 pointer-events-none z-10 print:hidden">
           <div className="rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-medium text-white/95 tabular-nums">
-            {showNav ? `${photoIdx + 1} / ${photos.length}` : `1 / 1`}
+            {`${photoIdx + 1}/${photos.length}`}
           </div>
-          {showNav && (
-            <div className="rounded-full bg-black/40 backdrop-blur-sm px-2 py-0.5 text-[9px] text-white/80 w-fit">
-              {photos.length} {t("photos_count_suffix")}
-            </div>
-          )}
         </div>
       )}
 
@@ -623,18 +621,20 @@ export function VinReportHero({
                 ) : null}
               </div>
               {(scoreData || accidentCount > 0) && (
-                <div className="flex items-start gap-2 shrink-0">
+                <div className="flex items-stretch gap-2 shrink-0">
                   {accidentCount > 0 ? (
                     <div
                       className={cn(
-                        "rounded-xl border px-2.5 py-2 text-center min-w-[4.25rem]",
+                        "flex h-full flex-col shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
                         "bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-800/60",
                       )}
                     >
-                      <p className="text-xl sm:text-2xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
-                        {accidentCount}
-                      </p>
-                      <p className="text-[9px] font-semibold mt-0.5 leading-tight max-w-[4.25rem] text-orange-700 dark:text-orange-400">
+                      <div className="flex flex-1 flex-col items-center justify-center">
+                        <p className="text-xl sm:text-2xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
+                          {accidentCount}
+                        </p>
+                      </div>
+                      <p className="text-[9px] font-semibold leading-tight max-w-[4rem] text-orange-700 dark:text-orange-400">
                         {t(accidentCount === 1 ? "accident_count_one" : "accidents_count")
                           .replace("{count}", "")
                           .trim()}
@@ -644,7 +644,7 @@ export function VinReportHero({
                   {scoreData ? (
                 <div
                   className={cn(
-                    "shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
+                    "flex h-full flex-col justify-center shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
                     scoreData.bgColor,
                     scoreData.borderColor,
                   )}

@@ -3,9 +3,18 @@ import {
   buildVinPageDescription,
   buildVinPageTitle,
   buildVinPageSeo,
+  buildVinSsrBodyContent,
   isIndexableVinRest,
   normalizeVin,
 } from "@workspace/vin-page-seo";
+import { injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
+import { catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
+
+const SAMPLE_HTML = `<!DOCTYPE html>
+<html><head><title>kmcheck.com</title></head><body>
+<div id="root"><div class="app-boot-shell"></div></div>
+<script type="module" src="/src/main.tsx"></script>
+</body></html>`;
 
 describe("vin-page-seo", () => {
   it("indexes catalog VIN paths but not processing", () => {
@@ -33,7 +42,7 @@ describe("vin-page-seo", () => {
       make: "BMW",
       model: "3 Series",
       engine: "2.0L",
-    });
+    }, { locked: false });
     expect(desc).toContain(vin);
     expect(desc).toContain("mileage");
     expect(desc).toContain("accidents");
@@ -51,7 +60,7 @@ describe("vin-page-seo", () => {
     });
     expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
 
-    const desc = buildVinPageDescription("pl", { vin, year: 2015, make: "BMW", model: "3 Series" });
+    const desc = buildVinPageDescription("pl", { vin, year: 2015, make: "BMW", model: "3 Series" }, { locked: false });
     expect(desc).toContain(vin);
     expect(desc).toContain("przebieg");
     expect(desc).toContain("wypadki");
@@ -63,7 +72,7 @@ describe("vin-page-seo", () => {
     const seo = buildVinPageSeo("pl", { vin }, "https://kmcheck.com");
     expect(seo.title).toContain("raport historii pojazdu");
     expect(seo.title).toContain(vin);
-    expect(seo.description).toContain("Sprawdź VIN");
+    expect(seo.description).toContain("Podgląd VIN");
     expect(seo.canonicalPath).toBe("/pl/vin/1HGBH41JXMN109186");
   });
 
@@ -77,7 +86,7 @@ describe("vin-page-seo", () => {
     });
     expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
 
-    const desc = buildVinPageDescription("ro", { vin, year: 2015, make: "BMW", model: "3 Series" });
+    const desc = buildVinPageDescription("ro", { vin, year: 2015, make: "BMW", model: "3 Series" }, { locked: false });
     expect(desc).toContain(vin);
     expect(desc).toContain("kilometraj");
     expect(desc).toContain("accidente");
@@ -89,7 +98,7 @@ describe("vin-page-seo", () => {
     const seo = buildVinPageSeo("ro", { vin }, "https://kmcheck.com");
     expect(seo.title).toContain("raport istoric vehicul");
     expect(seo.title).toContain(vin);
-    expect(seo.description).toContain("Verificați VIN");
+    expect(seo.description).toContain("Previzualizare VIN");
     expect(seo.canonicalPath).toBe("/ro/vin/1HGBH41JXMN109186");
   });
 
@@ -113,8 +122,69 @@ describe("vin-page-seo", () => {
     const vin = "1HGBH41JXMN109186";
     const seo = buildVinPageSeo("de", { vin }, "https://kmcheck.com");
     expect(seo.title).toContain("Fahrzeughistorienbericht");
-    expect(seo.description).toContain("Kilometerstand");
+    expect(seo.description).toContain("Vorschau");
     expect(seo.canonicalPath).toBe("/de/vin/1HGBH41JXMN109186");
+  });
+
+  it("uses locked preview descriptions by default for catalog pages", () => {
+    const vin = "WBA3V7106FJ995387";
+    const locked = buildVinPageDescription("en", {
+      vin,
+      year: 2015,
+      make: "BMW",
+      model: "3 Series",
+    });
+    expect(locked).toContain("Preview");
+    expect(locked).toContain("unlock");
+
+    const unlocked = buildVinPageSeo(
+      "en",
+      { vin, year: 2015, make: "BMW", model: "3 Series" },
+      "https://kmcheck.com",
+      { isUnlocked: true },
+    );
+    expect(unlocked.description).toContain("Check");
+    expect(unlocked.description).toContain("mileage");
+  });
+
+  it("builds SSR body content from public catalog fields only", () => {
+    const body = buildVinSsrBodyContent("en", {
+      vin: "WBA3V7106FJ995387",
+      year: 2015,
+      make: "BMW",
+      model: "3 Series",
+      engine: "2.0L",
+      transmission: "Automatic",
+      color: "Black",
+      country: "KR",
+    });
+    expect(body?.heading).toBe("2015 BMW 3 Series");
+    expect(body?.vin).toBe("WBA3V7106FJ995387");
+    expect(body?.specs.map((s) => s.label)).toEqual(
+      expect.arrayContaining(["Make", "Model", "Year", "Engine"]),
+    );
+    expect(body?.intro).toContain("2015 BMW 3 Series");
+    expect(body?.cta).toContain("kmcheck.com");
+  });
+
+  it("injects SSR body and locked meta for catalog VIN HTML", () => {
+    const vin = "WBA3V7106FJ995387";
+    const vehicle = catalogDataToVinSeoVehicle(vin, {
+      year: 2015,
+      make: "BMW",
+      model: "3 Series",
+      engine: "2.0L",
+      country: "KR",
+    });
+    const seo = buildVinPageSeo("en", vehicle, "https://kmcheck.com", { isUnlocked: false });
+    const html = injectVinPageSeoIntoHtml(SAMPLE_HTML, seo, "en", "https://kmcheck.com", vehicle);
+
+    expect(html).toContain('id="kmcheck-vin-ssr"');
+    expect(html).toContain("<h1>2015 BMW 3 Series</h1>");
+    expect(html).toContain("WBA3V7106FJ995387");
+    expect(html).toContain('content="index, follow"');
+    expect(html).toContain("Preview 2015 BMW 3 Series");
+    expect(html).not.toContain("app-boot-shell");
   });
 
   it("emits WebPage + Vehicle JSON-LD", () => {

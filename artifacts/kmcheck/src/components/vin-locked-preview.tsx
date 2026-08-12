@@ -1,34 +1,120 @@
 import type { ElementType } from "react";
-import { Lock, Gauge, AlertTriangle, ShieldCheck, Users, TrendingUp, FileText, Shield } from "lucide-react";
+import {
+  Lock,
+  Gauge,
+  AlertTriangle,
+  ShieldCheck,
+  Users,
+  TrendingUp,
+  FileText,
+  Shield,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /** Blurred placeholder body shown inside locked report sections. */
-export function VinLockedSectionBody({ hint }: { hint: string }) {
+export function VinLockedSectionBody({
+  hint,
+  variant = "rows",
+}: {
+  hint: string;
+  variant?: "rows" | "stats" | "timeline";
+}) {
   return (
-    <div className="relative min-h-[88px] overflow-hidden">
-      <div className="px-6 py-5">
-        <div className="space-y-2.5 blur-sm select-none pointer-events-none" aria-hidden>
-          <div className="h-3 bg-muted rounded-full w-3/4" />
-          <div className="h-3 bg-muted rounded-full w-1/2" />
-          <div className="h-3 bg-muted rounded-full w-2/3" />
-          <div className="h-3 bg-muted rounded-full w-5/6" />
+    <div className="relative min-h-[112px] overflow-hidden">
+      <div className="px-5 py-4 sm:px-6 sm:py-5">
+        <div className="select-none pointer-events-none blur-[3.5px] opacity-80" aria-hidden>
+          {variant === "stats" ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border bg-muted/40 p-3 space-y-2">
+                <div className="h-2 w-14 rounded-full bg-muted-foreground/25" />
+                <div className="h-5 w-20 rounded-md bg-muted-foreground/20" />
+              </div>
+              <div className="rounded-xl border bg-muted/40 p-3 space-y-2">
+                <div className="h-2 w-16 rounded-full bg-muted-foreground/25" />
+                <div className="h-5 w-16 rounded-md bg-muted-foreground/20" />
+              </div>
+              <div className="col-span-2 rounded-xl border bg-muted/30 p-3 space-y-2">
+                <div className="h-2 w-24 rounded-full bg-muted-foreground/20" />
+                <div className="h-2 w-full rounded-full bg-muted-foreground/15" />
+                <div className="h-2 w-2/3 rounded-full bg-muted-foreground/15" />
+              </div>
+            </div>
+          ) : variant === "timeline" ? (
+            <LockedTimelineSketch className="h-28 w-full" />
+          ) : (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <div className="mt-1 h-2.5 w-2.5 rounded-full bg-muted-foreground/30 shrink-0" />
+                  <div className="flex-1 space-y-1.5 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="h-2.5 rounded-full bg-muted-foreground/25" style={{ width: `${55 - i * 8}%` }} />
+                      <div className="h-2 w-12 rounded-full bg-muted-foreground/20 shrink-0" />
+                    </div>
+                    <div className="h-2 rounded-full bg-muted-foreground/15" style={{ width: `${78 - i * 12}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]"
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-4 bg-gradient-to-b from-background/25 via-background/70 to-background/90"
         style={{
-          background:
-            "repeating-linear-gradient(45deg,transparent,transparent 7px,rgba(0,0,0,0.035) 7px,rgba(0,0,0,0.035) 9px)",
+          backgroundImage:
+            "repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(0,0,0,0.03) 8px, rgba(0,0,0,0.03) 10px)",
         }}
       >
-        <div className="bg-background/90 border shadow-sm rounded-xl px-3.5 py-2 flex items-center gap-2">
-          <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <p className="text-xs text-muted-foreground font-medium">{hint}</p>
+        <div className="bg-background/95 border shadow-md rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 max-w-[92%]">
+          <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+            <Lock className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <p className="text-xs font-semibold text-foreground/85 leading-snug">{hint}</p>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Decorative mileage curve used under blur on locked pages (no real VIN data). */
+function LockedTimelineSketch({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 400 120" className={cn("overflow-visible", className)} aria-hidden preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="locked-tl-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      {[30, 60, 90].map((y) => (
+        <line key={y} x1="8" x2="392" y1={y} y2={y} className="stroke-border/70" strokeWidth="1" strokeDasharray="4 6" />
+      ))}
+      <path
+        d="M 12 98 C 70 92, 90 70, 130 62 S 190 55, 220 48 S 280 40, 310 28 S 360 22, 388 18"
+        fill="none"
+        className="stroke-primary"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 12 98 C 70 92, 90 70, 130 62 S 190 55, 220 48 S 280 40, 310 28 S 360 22, 388 18 L 388 110 L 12 110 Z"
+        fill="url(#locked-tl-fill)"
+      />
+      {[
+        { x: 12, y: 98, c: "fill-slate-400" },
+        { x: 130, y: 62, c: "fill-red-500" },
+        { x: 220, y: 48, c: "fill-amber-500" },
+        { x: 310, y: 28, c: "fill-sky-500" },
+        { x: 388, y: 18, c: "fill-primary" },
+      ].map((p) => (
+        <circle key={p.x} cx={p.x} cy={p.y} r="4.5" className={cn(p.c, "stroke-background")} strokeWidth="2" />
+      ))}
+    </svg>
   );
 }
 
@@ -37,6 +123,8 @@ type LockedSectionCardProps = {
   icon?: ElementType;
   delay?: number;
   hint: string;
+  variant?: "rows" | "stats" | "timeline";
+  accent?: string;
   className?: string;
 };
 
@@ -45,24 +133,30 @@ export function VinLockedSectionCard({
   icon: Icon,
   delay = 0,
   hint,
+  variant = "rows",
+  accent = "bg-muted text-muted-foreground",
   className,
 }: LockedSectionCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className={cn("rounded-2xl border bg-card overflow-hidden", className)}
+      transition={{ delay, duration: 0.35 }}
+      className={cn(
+        "rounded-2xl border bg-card overflow-hidden shadow-sm ring-1 ring-black/[0.03] dark:ring-white/[0.04]",
+        className,
+      )}
     >
-      <div className="px-6 py-4 border-b flex items-center gap-2.5">
+      <div className="px-5 py-3.5 sm:px-6 sm:py-4 border-b flex items-center gap-2.5 bg-muted/25">
         {Icon && (
-          <div className="h-7 w-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
-            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0", accent)}>
+            <Icon className="h-3.5 w-3.5" />
           </div>
         )}
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h2>
+        <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
       </div>
-      <VinLockedSectionBody hint={hint} />
+      <VinLockedSectionBody hint={hint} variant={variant} />
     </motion.div>
   );
 }
@@ -73,6 +167,85 @@ export function VinLockedHeroStat({ label }: { label: string }) {
       <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
       <span className="text-[10px] font-medium text-muted-foreground truncate">{label}</span>
     </div>
+  );
+}
+
+type VinLockedTimelinePreviewProps = {
+  t: (key: string) => string;
+  priceLabel?: string | null;
+  onUnlock?: () => void;
+};
+
+/** Full-width locked history graph teaser (decorative, no real report data). */
+export function VinLockedTimelinePreview({ t, priceLabel, onUnlock }: VinLockedTimelinePreviewProps) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.08, duration: 0.35 }}
+      className="print:hidden relative rounded-2xl border bg-background overflow-hidden shadow-sm"
+    >
+      <div className="flex items-center justify-between gap-3 px-3 pt-3 sm:px-5 sm:pt-4">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">
+          {t("report_timeline_title")}
+        </h2>
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-muted/50 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+          <Lock className="h-3 w-3" />
+          {t("vin_public_timeline_locked")}
+        </div>
+      </div>
+
+      <div className="relative mt-1 px-2 pb-3 sm:px-3">
+        <div className="select-none pointer-events-none blur-[4px] opacity-75 scale-[1.01]" aria-hidden>
+          <LockedTimelineSketch className="h-[11.5rem] w-full sm:h-[14rem]" />
+          <div className="mt-1 flex justify-between px-6 text-[10px] tabular-nums text-muted-foreground">
+            <span>’18</span>
+            <span>’20</span>
+            <span>’22</span>
+            <span>’24</span>
+            <span>’26</span>
+          </div>
+          <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border/60 px-2 pt-2.5">
+            {[
+              t("report_timeline_accident"),
+              t("report_timeline_insurance"),
+              t("report_timeline_auction"),
+              t("report_timeline_owner"),
+            ].map((label) => (
+              <li key={label} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-background/20 via-background/65 to-background/90 px-4">
+          <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center shadow-sm">
+            <Lock className="h-5 w-5 text-primary" />
+          </div>
+          <div className="text-center max-w-sm">
+            <p className="text-sm font-semibold text-foreground">{t("vin_public_timeline_locked_title")}</p>
+            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              {t("vin_public_timeline_locked_desc")}
+            </p>
+          </div>
+          {onUnlock ? (
+            <Button
+              type="button"
+              size="sm"
+              className="font-bold rounded-full h-9 px-5 text-xs shadow-md shadow-primary/20 gap-1"
+              onClick={onUnlock}
+            >
+              {priceLabel
+                ? `${t("vin_public_check_cta")} — ${priceLabel}`
+                : t("vin_public_check_cta")}
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </motion.section>
   );
 }
 
@@ -89,9 +262,16 @@ type VinLockedTeaserPanelProps = {
   t: (key: string) => string;
   priceLabel: string | null;
   onUnlock: () => void;
+  /** When false, hide Korean-registry teaser (non-KR vehicles). Default true for backward compat. */
+  showKoreanRegistry?: boolean;
 };
 
-export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTeaserPanelProps) {
+export function VinLockedTeaserPanel({
+  t,
+  priceLabel,
+  onUnlock,
+  showKoreanRegistry = true,
+}: VinLockedTeaserPanelProps) {
   const cards: TeaserCard[] = [
     {
       icon: AlertTriangle,
@@ -99,7 +279,7 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
       sample: t("free_decoder_teaser_accidents_sample"),
       color: "text-orange-500",
       bg: "bg-orange-500/10",
-      border: "border-orange-200 dark:border-orange-900/40",
+      border: "border-orange-200/80 dark:border-orange-900/40",
     },
     {
       icon: Gauge,
@@ -107,15 +287,15 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
       sample: t("free_decoder_teaser_mileage_sample"),
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      border: "border-blue-200 dark:border-blue-900/40",
+      border: "border-blue-200/80 dark:border-blue-900/40",
     },
     {
       icon: ShieldCheck,
       title: t("vin_public_safety_section"),
       sample: t("free_decoder_teaser_salvage_sample"),
-      color: "text-green-500",
-      bg: "bg-green-500/10",
-      border: "border-green-200 dark:border-green-900/40",
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-200/80 dark:border-emerald-900/40",
     },
     {
       icon: Users,
@@ -123,13 +303,15 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
       sample: t("vin_public_owners_label"),
       color: "text-violet-500",
       bg: "bg-violet-500/10",
-      border: "border-violet-200 dark:border-violet-900/40",
+      border: "border-violet-200/80 dark:border-violet-900/40",
     },
   ];
 
   const extraSections = [
     { icon: FileText, label: t("report_insurance_claims") },
-    { icon: Shield, label: t("report_registry_history") },
+    ...(showKoreanRegistry
+      ? [{ icon: Shield, label: t("report_registry_history") }]
+      : []),
     { icon: TrendingUp, label: t("report_market_data") },
   ];
 
@@ -144,9 +326,15 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {cards.map(({ icon: Icon, title, sample, color, bg, border }) => (
-          <div key={title} className={cn("relative rounded-2xl border bg-card overflow-hidden", border)}>
+          <div
+            key={title}
+            className={cn(
+              "relative rounded-2xl border bg-card overflow-hidden shadow-sm",
+              border,
+            )}
+          >
             <div className="p-5 space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", bg)}>
@@ -182,7 +370,7 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {extraSections.map(({ icon: Icon, label }) => (
           <div
             key={label}
@@ -202,5 +390,45 @@ export function VinLockedTeaserPanel({ t, priceLabel, onUnlock }: VinLockedTease
         ))}
       </div>
     </div>
+  );
+}
+
+type VinLockedIntroBannerProps = {
+  t: (key: string) => string;
+  priceLabel?: string | null;
+  onUnlock: () => void;
+};
+
+export function VinLockedIntroBanner({ t, priceLabel, onUnlock }: VinLockedIntroBannerProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="print:hidden relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card px-4 py-4 sm:px-5 sm:py-4"
+    >
+      <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+      <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="h-10 w-10 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+          <Sparkles className="h-5 w-5 text-primary" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-foreground">{t("vin_public_unlock_title")}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+            {t("vin_public_unlock_desc")}
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          className="shrink-0 font-bold rounded-full h-9 px-4 text-xs gap-1 shadow-md shadow-primary/15"
+          onClick={onUnlock}
+        >
+          {priceLabel
+            ? `${t("vin_public_check_cta")} — ${priceLabel}`
+            : t("vin_public_check_cta")}
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </motion.div>
   );
 }

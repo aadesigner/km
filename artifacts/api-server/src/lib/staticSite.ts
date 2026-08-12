@@ -4,7 +4,7 @@ import path from "node:path";
 import { parseVinPagePath } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
 import { vinHasReportData } from "./vinService.js";
-import { buildVinSeoFromCatalogData } from "./vinPageSeo.js";
+import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
 import { isKnownSpaPath } from "./spaKnownPaths.js";
@@ -120,11 +120,13 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
       ? buildImageProxyUrl(photos[0], { mediaVersion: report.mediaVersion })
       : null;
 
+    const vehicle = catalogDataToVinSeoVehicle(parsed.vin, d, thumbnailUrl);
     const seo = buildVinSeoFromCatalogData(parsed.lang, parsed.vin, d, {
       thumbnailUrl,
       origin,
+      isUnlocked: false,
     });
-    return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin);
+    return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin, vehicle);
   } catch (err) {
     logger.warn({ err, path: reqPath }, "VIN SEO HTML inject failed");
     return html;

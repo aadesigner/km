@@ -102,6 +102,241 @@ const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
   sq: (vin) => `VIN ${vin} — raport historiku automjeti | kmcheck`,
 };
 
+const LOCKED_DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
+  en: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Preview ${vehicle} (VIN ${vin}). Basic specs are free — unlock the full report for mileage, accidents, ownership, insurance and auction history.${specsPart} kmcheck.com.`;
+  },
+  de: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Vorschau ${vehicle} (VIN ${vin}). Basisdaten gratis — Vollbericht für Kilometerstand, Unfälle, Halter, Versicherung und Auktionen freischalten.${specsPart} kmcheck.com.`;
+  },
+  es: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Vista previa de ${vehicle} (VIN ${vin}). Especificaciones básicas gratis — desbloquee el informe completo de kilometraje, accidentes, propietarios, seguro y subastas.${specsPart} kmcheck.com.`;
+  },
+  fr: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Aperçu de ${vehicle} (VIN ${vin}). Spécifications de base gratuites — débloquez le rapport complet : kilométrage, accidents, propriétaires, assurance et enchères.${specsPart} kmcheck.com.`;
+  },
+  ar: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `معاينة ${vehicle} (VIN ${vin}). المواصفات الأساسية مجانية — افتح التقرير الكامل للمسافة المقطوعة والحوادث والملكية والتأمين والمزادات.${specsPart} kmcheck.com.`;
+  },
+  uk: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Попередній перегляд ${vehicle} (VIN ${vin}). Базові дані безкоштовно — відкрийте повний звіт про пробіг, ДТП, власників, страхування та аукціони.${specsPart} kmcheck.com.`;
+  },
+  ru: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Предпросмотр ${vehicle} (VIN ${vin}). Базовые данные бесплатно — откройте полный отчёт о пробеге, ДТП, владельцах, страховании и аукционах.${specsPart} kmcheck.com.`;
+  },
+  ro: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Previzualizare ${vehicle} (VIN ${vin}). Specificații de bază gratuite — deblocați raportul complet pentru kilometraj, accidente, proprietari, asigurare și licitații.${specsPart} kmcheck.com.`;
+  },
+  pl: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Podgląd ${vehicle} (VIN ${vin}). Podstawowe dane gratis — odblokuj pełny raport przebiegu, wypadków, właścicieli, ubezpieczenia i aukcji.${specsPart} kmcheck.com.`;
+  },
+  ka: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `\u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 ${vehicle} (VIN ${vin}). \u10E1\u10D0\u10D1\u10D6\u10D8\u10E1 \u10DB\u10DD\u10DC\u10D0\u10EA\u10D4\u10DB\u10DA\u10DD\u10D1\u10D0 \u10E3\u10D0\u10D1\u10DA\u10DD \u2014 \u10D2\u10D0\u10E0\u10D1\u10D4\u10D6\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D3\u10D0 \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D8\u10E1\u10D7\u10DD\u10E0\u10D8\u10D8\u10E1 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8\u10E1 \u10D2\u10D0\u10E0\u10EB\u10DB\u10DD\u10D5\u10D7.${specsPart} kmcheck.com.`;
+  },
+  bg: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Преглед на ${vehicle} (VIN ${vin}). Основни данни безплатно — отключете пълния отчет за пробег, катастрофи, собственици, застраховка и търгове.${specsPart} kmcheck.com.`;
+  },
+  sq: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `Parapamje e ${vehicle} (VIN ${vin}). Specifikimet bazë falas — zhbllokoni raportin e plotë për kilometrazhin, aksidentet, pronarët, sigurimin dhe ankandet.${specsPart} kmcheck.com.`;
+  },
+};
+
+const LOCKED_VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> = {
+  en: (vin) => `Preview VIN ${vin} on kmcheck.com — unlock the full vehicle history report.`,
+  de: (vin) => `VIN ${vin} Vorschau auf kmcheck.com — Vollbericht zur Fahrzeughistorie freischalten.`,
+  es: (vin) => `Vista previa del VIN ${vin} en kmcheck.com — desbloquee el informe completo del vehículo.`,
+  fr: (vin) => `Aperçu du VIN ${vin} sur kmcheck.com — débloquez le rapport historique complet.`,
+  ar: (vin) => `معاينة VIN ${vin} على kmcheck.com — افتح تقرير تاريخ المركبة الكامل.`,
+  uk: (vin) => `Попередній перегляд VIN ${vin} на kmcheck.com — відкрийте повний звіт історії авто.`,
+  ru: (vin) => `Предпросмотр VIN ${vin} на kmcheck.com — откройте полный отчёт по истории авто.`,
+  ro: (vin) => `Previzualizare VIN ${vin} pe kmcheck.com — deblocați raportul complet al vehiculului.`,
+  pl: (vin) => `Podgląd VIN ${vin} na kmcheck.com — odblokuj pełny raport historii pojazdu.`,
+  ka: (vin) => `VIN ${vin} \u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 kmcheck.com-\u10D6\u10D4 \u2014 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8\u10E1 \u10D2\u10D0\u10E0\u10EB\u10DB\u10DD\u10D5\u10D7.`,
+  bg: (vin) => `Преглед на VIN ${vin} в kmcheck.com — отключете пълния отчет за историята на автомобила.`,
+  sq: (vin) => `Parapamje VIN ${vin} në kmcheck.com — zhbllokoni raportin e plotë të historikut.`,
+};
+
+type SsrLabels = {
+  vin: string;
+  make: string;
+  model: string;
+  year: string;
+  engine: string;
+  transmission: string;
+  color: string;
+  country: string;
+  intro: string;
+  cta: string;
+};
+
+const SSR_LABELS: Record<VinSeoLang, SsrLabels> = {
+  en: {
+    vin: "VIN",
+    make: "Make",
+    model: "Model",
+    year: "Year",
+    engine: "Engine",
+    transmission: "Transmission",
+    color: "Color",
+    country: "Country",
+    intro: "Free preview of {vehicle} with basic specifications. Unlock the full report for mileage, accidents, ownership changes, insurance claims, and auction records.",
+    cta: "Unlock the full vehicle history report on kmcheck.com.",
+  },
+  de: {
+    vin: "FIN",
+    make: "Marke",
+    model: "Modell",
+    year: "Baujahr",
+    engine: "Motor",
+    transmission: "Getriebe",
+    color: "Farbe",
+    country: "Land",
+    intro: "Kostenlose Vorschau von {vehicle} mit Basisdaten. Vollbericht für Kilometerstand, Unfälle, Halterwechsel, Versicherung und Auktionen freischalten.",
+    cta: "Vollständigen Fahrzeughistorienbericht auf kmcheck.com freischalten.",
+  },
+  es: {
+    vin: "VIN",
+    make: "Marca",
+    model: "Modelo",
+    year: "Año",
+    engine: "Motor",
+    transmission: "Transmisión",
+    color: "Color",
+    country: "País",
+    intro: "Vista previa gratuita de {vehicle} con especificaciones básicas. Desbloquee el informe completo de kilometraje, accidentes, propietarios, seguros y subastas.",
+    cta: "Desbloquee el informe completo del historial del vehículo en kmcheck.com.",
+  },
+  fr: {
+    vin: "VIN",
+    make: "Marque",
+    model: "Modèle",
+    year: "Année",
+    engine: "Moteur",
+    transmission: "Transmission",
+    color: "Couleur",
+    country: "Pays",
+    intro: "Aperçu gratuit de {vehicle} avec les spécifications de base. Débloquez le rapport complet : kilométrage, accidents, propriétaires, assurance et enchères.",
+    cta: "Débloquez le rapport historique complet sur kmcheck.com.",
+  },
+  ar: {
+    vin: "VIN",
+    make: "الشركة",
+    model: "الطراز",
+    year: "السنة",
+    engine: "المحرك",
+    transmission: "ناقل الحركة",
+    color: "اللون",
+    country: "البلد",
+    intro: "معاينة مجانية لـ {vehicle} مع المواصفات الأساسية. افتح التقرير الكامل للمسافة المقطوعة والحوادث وتغييرات الملكية ومطالبات التأمين وسجلات المزادات.",
+    cta: "افتح تقرير تاريخ المركبة الكامل على kmcheck.com.",
+  },
+  uk: {
+    vin: "VIN",
+    make: "Марка",
+    model: "Модель",
+    year: "Рік",
+    engine: "Двигун",
+    transmission: "КПП",
+    color: "Колір",
+    country: "Країна",
+    intro: "Безкоштовний перегляд {vehicle} з базовими даними. Відкрийте повний звіт про пробіг, ДТП, зміни власників, страхування та аукціони.",
+    cta: "Відкрийте повний звіт історії авто на kmcheck.com.",
+  },
+  ru: {
+    vin: "VIN",
+    make: "Марка",
+    model: "Модель",
+    year: "Год",
+    engine: "Двигатель",
+    transmission: "КПП",
+    color: "Цвет",
+    country: "Страна",
+    intro: "Бесплатный предпросмотр {vehicle} с базовыми данными. Откройте полный отчёт о пробеге, ДТП, смене владельцев, страховании и аукционах.",
+    cta: "Откройте полный отчёт по истории авто на kmcheck.com.",
+  },
+  ro: {
+    vin: "VIN",
+    make: "Marcă",
+    model: "Model",
+    year: "An",
+    engine: "Motor",
+    transmission: "Transmisie",
+    color: "Culoare",
+    country: "Țară",
+    intro: "Previzualizare gratuită pentru {vehicle} cu specificații de bază. Deblocați raportul complet pentru kilometraj, accidente, schimbări de proprietar, asigurări și licitații.",
+    cta: "Deblocați raportul complet al istoricului vehiculului pe kmcheck.com.",
+  },
+  pl: {
+    vin: "VIN",
+    make: "Marka",
+    model: "Model",
+    year: "Rok",
+    engine: "Silnik",
+    transmission: "Skrzynia",
+    color: "Kolor",
+    country: "Kraj",
+    intro: "Bezpłatny podgląd {vehicle} z podstawowymi danymi. Odblokuj pełny raport przebiegu, wypadków, zmian właściciela, ubezpieczeń i aukcji.",
+    cta: "Odblokuj pełny raport historii pojazdu na kmcheck.com.",
+  },
+  ka: {
+    vin: "VIN",
+    make: "\u10DB\u10D0\u10E0\u10D9\u10D0",
+    model: "\u10DB\u10DD\u10D3\u10D4\u10DA\u10D8",
+    year: "\u10EC\u10DA\u10D8",
+    engine: "\u10D0\u10D2\u10E0\u10D4\u10D2\u10D0\u10E2\u10D8",
+    transmission: "\u10E2\u10E0\u10D0\u10DC\u10E1\u10DB\u10D8\u10E1\u10D8\u10D0",
+    color: "\u10E4\u10D4\u10E0\u10D8",
+    country: "\u10E9\u10D4\u10D5\u10D4\u10D1\u10D4\u10D1\u10D8",
+    intro: "{vehicle}-\u10D8\u10E1 \u10E3\u10D0\u10D1\u10DA\u10DD \u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 \u10DC\u10D0\u10EE\u10D5\u10D0 \u10E1\u10D0\u10D1\u10D6\u10D8\u10E1 \u10DB\u10DD\u10DC\u10D0\u10EA\u10D4\u10DB\u10DA\u10DD\u10D1\u10D8\u10D7. \u10D2\u10D0\u10E0\u10EB\u10D8\u10D7 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 \u10D2\u10D0\u10E0\u10D4\u10D1\u10D4\u10D6\u10D8\u10E1\u10D7\u10D5\u10D8\u10E1, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8\u10E1, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10E9\u10D0\u10D7\u10D4\u10D5\u10D8\u10E1, \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D3\u10D0 \u10D0\u10E3\u10E5\u10EA\u10D8\u10DD\u10DC\u10D4\u10D1\u10D8\u10E1\u10D7\u10D5\u10D8\u10E1.",
+    cta: "\u10D2\u10D0\u10E0\u10EB\u10D8\u10D7 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 kmcheck.com-\u10D6\u10D4.",
+  },
+  bg: {
+    vin: "VIN",
+    make: "Марка",
+    model: "Модел",
+    year: "Година",
+    engine: "Двигател",
+    transmission: "Скоростна кутия",
+    color: "Цвят",
+    country: "Държава",
+    intro: "Безплатен преглед на {vehicle} с основни данни. Отключете пълния отчет за пробег, катастрофи, смяна на собственици, застраховки и търгове.",
+    cta: "Отключете пълния отчет за историята на автомобила на kmcheck.com.",
+  },
+  sq: {
+    vin: "VIN",
+    make: "Marka",
+    model: "Modeli",
+    year: "Viti",
+    engine: "Motori",
+    transmission: "Transmisioni",
+    color: "Ngjyra",
+    country: "Shteti",
+    intro: "Parapamje falas e {vehicle} me specifikime bazë. Zhbllokoni raportin e plotë për kilometrazhin, aksidentet, ndryshimet e pronarit, sigurimin dhe ankandet.",
+    cta: "Zhbllokoni raportin e plotë të historikut të automjetit në kmcheck.com.",
+  },
+};
+
+export type VinSsrBodyContent = {
+  heading: string;
+  vin: string;
+  vinLabel: string;
+  intro: string;
+  specs: Array<{ label: string; value: string }>;
+  cta: string;
+};
+
 const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
@@ -187,13 +422,54 @@ export function buildVinPageTitle(lang: VinSeoLang, vehicle: VinSeoVehicle): str
   return fn(buildVehicleTitle(vehicle), vin);
 }
 
-export function buildVinPageDescription(lang: VinSeoLang, vehicle: VinSeoVehicle): string {
+export function buildVinPageDescription(
+  lang: VinSeoLang,
+  vehicle: VinSeoVehicle,
+  opts?: { locked?: boolean },
+): string {
   const vin = normalizeVin(vehicle.vin);
+  const locked = opts?.locked !== false;
+
   if (!vehicleHasIdentity(vehicle)) {
+    if (locked) {
+      const fn = LOCKED_VIN_ONLY_DESCRIPTIONS[lang] ?? LOCKED_VIN_ONLY_DESCRIPTIONS.en;
+      return fn(vin);
+    }
     return buildVinOnlyPageDescription(lang, vin);
   }
+
+  if (locked) {
+    const fn = LOCKED_DESCRIPTIONS[lang] ?? LOCKED_DESCRIPTIONS.en;
+    return fn(buildVehicleTitle(vehicle), vin, specSnippet(vehicle));
+  }
+
   const fn = DESCRIPTIONS[lang] ?? DESCRIPTIONS.en;
   return fn(buildVehicleTitle(vehicle), vin, specSnippet(vehicle));
+}
+
+export function buildVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle): VinSsrBodyContent | null {
+  if (!vehicleHasIdentity(vehicle)) return null;
+
+  const labels = SSR_LABELS[lang] ?? SSR_LABELS.en;
+  const heading = buildVehicleTitle(vehicle);
+  const specs: Array<{ label: string; value: string }> = [];
+
+  if (vehicle.make) specs.push({ label: labels.make, value: vehicle.make });
+  if (vehicle.model) specs.push({ label: labels.model, value: vehicle.model });
+  if (vehicle.year != null) specs.push({ label: labels.year, value: String(vehicle.year) });
+  if (vehicle.engine) specs.push({ label: labels.engine, value: vehicle.engine });
+  if (vehicle.transmission) specs.push({ label: labels.transmission, value: vehicle.transmission });
+  if (vehicle.color) specs.push({ label: labels.color, value: vehicle.color });
+  if (vehicle.country) specs.push({ label: labels.country, value: vehicle.country });
+
+  return {
+    heading,
+    vin: normalizeVin(vehicle.vin),
+    vinLabel: labels.vin,
+    intro: labels.intro.replace("{vehicle}", heading),
+    specs,
+    cta: labels.cta,
+  };
 }
 
 /** Resolve relative API image paths to absolute URLs for Open Graph / Twitter cards. */
@@ -229,6 +505,9 @@ export function buildVinPageSeo(
   const pageUrl = `${siteOrigin}${canonicalPath}`;
   const absoluteImage = resolveAbsoluteAssetUrl(siteOrigin, vehicle.thumbnailUrl);
 
+  const isUnlocked = opts?.isUnlocked === true;
+  const pageDescription = buildVinPageDescription(lang, vehicle, { locked: !isUnlocked });
+
   const vehicleLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Vehicle",
@@ -258,7 +537,7 @@ export function buildVinPageSeo(
     "@id": `${pageUrl}#webpage`,
     url: pageUrl,
     name: buildVinPageTitle(lang, vehicle),
-    description: buildVinPageDescription(lang, vehicle),
+    description: pageDescription,
     inLanguage: lang,
     isPartOf: { "@type": "WebSite", name: "kmcheck.com", url: siteOrigin },
     about: { "@id": `${pageUrl}#vehicle` },
@@ -267,7 +546,7 @@ export function buildVinPageSeo(
 
   return {
     title: buildVinPageTitle(lang, vehicle),
-    description: buildVinPageDescription(lang, vehicle),
+    description: pageDescription,
     canonicalPath,
     noIndex: false,
     jsonLd: [webPageLd, vehicleLd],

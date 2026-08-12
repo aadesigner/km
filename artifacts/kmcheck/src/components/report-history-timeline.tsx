@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -48,8 +48,8 @@ const TYPE_DOT: Record<TimelineEventType, string> = {
 
 const VIEW_W = 1000;
 const VIEW_H = 240;
-/** Tight plot inset — enough for end markers, chart fills most of the card. */
-const PAD = { l: 14, r: 22, t: 28, b: 16 };
+/** Tight plot inset — left room for in-chart mileage labels. */
+const PAD = { l: 44, r: 18, t: 28, b: 16 };
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 6;
 const ZOOM_FACTOR = 1.25;
@@ -77,6 +77,300 @@ function touchDistance(a: Touch, b: Touch): number {
 
 function touchMidpoint(a: Touch, b: Touch): { x: number; y: number } {
   return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+}
+
+function useChartZoom(enabled: boolean) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<ChartZoom>({ scale: 1, x: 0, y: 0 });
+  const pinchRef = useRef<{
+    distance: number;
+    scale: number;
+    contentX: number;
+    contentY: number;
+  } | null>(null);
+  const panRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const panActiveRef = useRef(false);
+  const lastTapRef = useRef(0);
+  const [zoom, setZoom] = useState<ChartZoom>({ scale: 1, x: 0, y: 0 });
+  const [gesturing, setGesturing] = useState(false);
+
+  const resetZoom = useCallback(() => {
+    zoomRef.current = { scale: 1, x: 0, y: 0 };
+    setZoom({ scale: 1, x: 0, y: 0 });
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) resetZoom();
+  }, [enabled, resetZoom]);
+
+  const applyZoom = useCallback((next: ChartZoom, origin?: { x: number; y: number }) => {
+    const viewport = viewportRef.current;
+    const vw = viewport?.clientWidth ?? 0;
+    const vh = viewport?.clientHeight ?? 0;
+    const scale = clampZoom(next.scale);
+    let x = next.x;
+    let y = next.y;
+    if (origin && vw > 0) {
+      const current = zoomRef.current;
+      const cx = (origin.x - current.x) / current.scale;
+      const cy = (origin.y - current.y) / current.scale;
+      x = origin.x - cx * scale;
+      y = origin.y - cy * scale;
+    }
+    const clamped = scale <= 1.001
+      ? { scale: 1, x: 0, y: 0 }
+      : { scale, ...clampPan(x, y, scale, vw, vh) };
+    zoomRef.current = clamped;
+    setZoom(clamped);
+  }, []);
+
+  const zoomAtCenter = useCallback((factor: number) => {
+    const viewport = viewportRef.current;
+    if (!viewport) {
+      applyZoom({ ...zoomRef.current, scale: zoomRef.current.scale * factor });
+      return;
+    }
+    const rect = viewport.getBoundingClientRect();
+    applyZoom(
+      { ...zoomRef.current, scale: zoomRef.current.scale * factor },
+      { x: rect.width / 2, y: rect.height / 2 },
+    );
+  }, [applyZoom]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const localPoint = (clientX: number, clientY: number) => {
+      const rect = viewport.getBoundingClientRect();
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      const zoomingIn = e.deltaY < 0;
+      const scale = zoomRef.current.scale;
+      if ((zoomingIn && scale >= MAX_ZOOM - 0.001) || (!zoomingIn && scale <= MIN_ZOOM + 0.001)) {
+        return;
+      }
+      e.preventDefault();
+      const factor = zoomingIn ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+      applyZoom(
+        { ...zoomRef.current, scale: zoomRef.current.scale * factor },
+        localPoint(e.clientX, e.clientY),
+      );
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("button")) return;
+
+      if (e.touches.length === 2) {
+        const a = e.touches[0]!;
+        const b = e.touches[1]!;
+        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
+        const z = zoomRef.current;
+        const dist = touchDistance(a, b);
+        if (dist < 1) return;
+        pinchRef.current = {
+          distance: dist,
+          scale: z.scale,
+          contentX: (mid.x - z.x) / z.scale,
+          contentY: (mid.y - z.y) / z.scale,
+        };
+        panRef.current = null;
+        setGesturing(true);
+        return;
+      }
+
+      if (e.touches.length === 1 && zoomRef.current.scale > 1.02) {
+        const t = e.touches[0]!;
+        panRef.current = {
+          x: t.clientX,
+          y: t.clientY,
+          tx: zoomRef.current.x,
+          ty: zoomRef.current.y,
+        };
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchRef.current) {
+        e.preventDefault();
+        const a = e.touches[0]!;
+        const b = e.touches[1]!;
+        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
+        const dist = touchDistance(a, b);
+        const p = pinchRef.current;
+        const scale = clampZoom(p.scale * (dist / p.distance));
+        applyZoom(
+          {
+            scale,
+            x: mid.x - p.contentX * scale,
+            y: mid.y - p.contentY * scale,
+          },
+        );
+        return;
+      }
+
+      if (e.touches.length === 1 && panRef.current && zoomRef.current.scale > 1.02) {
+        const t = e.touches[0]!;
+        const dx = t.clientX - panRef.current.x;
+        const dy = t.clientY - panRef.current.y;
+        if (!panActiveRef.current && Math.hypot(dx, dy) < 8) return;
+        e.preventDefault();
+        if (!panActiveRef.current) {
+          panActiveRef.current = true;
+          setGesturing(true);
+        }
+        applyZoom({
+          scale: zoomRef.current.scale,
+          x: panRef.current.tx + dx,
+          y: panRef.current.ty + dy,
+        });
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const didPan = panActiveRef.current;
+      pinchRef.current = null;
+      panRef.current = null;
+      panActiveRef.current = false;
+      setGesturing(false);
+
+      if (e.touches.length > 0 || didPan) return;
+      const now = Date.now();
+      if (now - lastTapRef.current < 320) {
+        if (zoomRef.current.scale > 1.05) resetZoom();
+        else {
+          const t = e.changedTouches[0];
+          if (t) {
+            const pt = localPoint(t.clientX, t.clientY);
+            applyZoom(
+              { ...zoomRef.current, scale: DOUBLE_TAP_ZOOM },
+              pt,
+            );
+          }
+        }
+        lastTapRef.current = 0;
+      } else {
+        lastTapRef.current = now;
+      }
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0 || zoomRef.current.scale <= 1.02) return;
+      e.preventDefault();
+      panRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        tx: zoomRef.current.x,
+        ty: zoomRef.current.y,
+      };
+      panActiveRef.current = false;
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!panRef.current || zoomRef.current.scale <= 1.02) return;
+      const dx = e.clientX - panRef.current.x;
+      const dy = e.clientY - panRef.current.y;
+      if (!panActiveRef.current && Math.hypot(dx, dy) < 6) return;
+      e.preventDefault();
+      if (!panActiveRef.current) {
+        panActiveRef.current = true;
+        setGesturing(true);
+      }
+      applyZoom({
+        scale: zoomRef.current.scale,
+        x: panRef.current.tx + dx,
+        y: panRef.current.ty + dy,
+      });
+    };
+
+    const onMouseUp = () => {
+      panRef.current = null;
+      panActiveRef.current = false;
+      setGesturing(false);
+    };
+
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    viewport.addEventListener("touchstart", onTouchStart, { passive: true });
+    viewport.addEventListener("touchmove", onTouchMove, { passive: false });
+    viewport.addEventListener("touchend", onTouchEnd, { passive: true });
+    viewport.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      viewport.removeEventListener("wheel", onWheel);
+      viewport.removeEventListener("touchstart", onTouchStart);
+      viewport.removeEventListener("touchmove", onTouchMove);
+      viewport.removeEventListener("touchend", onTouchEnd);
+      viewport.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [enabled, applyZoom, resetZoom]);
+
+  return {
+    viewportRef,
+    zoom,
+    gesturing,
+    zoomAtCenter,
+    resetZoom,
+    zoomed: zoom.scale > 1.02,
+  };
+}
+
+function ChartZoomControls({
+  t,
+  zoom,
+  zoomed,
+  onZoomIn,
+  onZoomOut,
+  onReset,
+}: {
+  t: (key: string) => string;
+  zoom: ChartZoom;
+  zoomed: boolean;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <div className="inline-flex items-center overflow-hidden rounded-lg border border-border/80 bg-muted/30 shadow-sm">
+      <button
+        type="button"
+        className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        aria-label={t("report_timeline_zoom_out")}
+        disabled={zoom.scale <= MIN_ZOOM}
+        onClick={onZoomOut}
+      >
+        <Minus className="h-3.5 w-3.5" />
+      </button>
+      <span className="min-w-[2.5rem] border-x border-border/60 px-1 text-center text-[11px] font-semibold tabular-nums text-foreground/80">
+        {`${Number.isInteger(zoom.scale) ? zoom.scale.toFixed(0) : zoom.scale.toFixed(1)}×`}
+      </span>
+      <button
+        type="button"
+        className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        aria-label={t("report_timeline_zoom_in")}
+        disabled={zoom.scale >= MAX_ZOOM}
+        onClick={onZoomIn}
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </button>
+      <button
+        type="button"
+        className="flex h-8 w-8 items-center justify-center border-l border-border/60 text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        aria-label={t("report_timeline_zoom_reset")}
+        disabled={!zoomed}
+        onClick={onReset}
+      >
+        <RotateCcw className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
 }
 
 function pickYears(startYear: number, endYear: number, maxTicks: number): number[] {
@@ -112,8 +406,25 @@ function niceMax(n: number): number {
 }
 
 function formatKmAxis(km: number): string {
+  if (km >= 1_000_000) {
+    const m = km / 1_000_000;
+    return `${Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1)}M`;
+  }
   if (km >= 1000) return `${Math.round(km / 1000)}k`;
   return String(Math.round(km));
+}
+
+/** Keep axis labels inside the column (avoid top/bottom crop from -50% translate). */
+function yAxisLabelStyle(topPct: number, index: number, total: number): CSSProperties {
+  if (index === total - 1) {
+    // max km — top of chart
+    return { top: `${Math.max(topPct, 0)}%`, transform: "translateY(0)" };
+  }
+  if (index === 0) {
+    // 0 km — baseline
+    return { top: `${Math.min(topPct, 100)}%`, transform: "translateY(-100%)" };
+  }
+  return { top: `${topPct}%`, transform: "translateY(-50%)" };
 }
 
 function xOf(sortKey: number, min: number, span: number): number {
@@ -126,27 +437,13 @@ function yOf(km: number, maxKm: number): number {
   return PAD.t + (1 - t) * (VIEW_H - PAD.t - PAD.b);
 }
 
+/** Straight segments between mileage points. */
 function smoothLinePath(pts: { x: number; y: number }[]): string {
   if (pts.length === 0) return "";
   if (pts.length === 1) return `M ${pts[0]!.x.toFixed(1)} ${pts[0]!.y.toFixed(1)}`;
-  if (pts.length === 2) {
-    return `M ${pts[0]!.x.toFixed(1)} ${pts[0]!.y.toFixed(1)} L ${pts[1]!.x.toFixed(1)} ${pts[1]!.y.toFixed(1)}`;
-  }
-  const d = [`M ${pts[0]!.x.toFixed(1)} ${pts[0]!.y.toFixed(1)}`];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] ?? pts[i]!;
-    const p1 = pts[i]!;
-    const p2 = pts[i + 1]!;
-    const p3 = pts[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d.push(
-      `C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`,
-    );
-  }
-  return d.join(" ");
+  return pts
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(" ");
 }
 
 function interpolateKm(sortKey: number, series: MileagePoint[]): number {
@@ -215,6 +512,62 @@ function clusterTimelineEvents(events: TimelineEvent[]): TimelineEvent[][] {
         a.id.localeCompare(b.id),
     ),
   );
+}
+
+/**
+ * Merge day-markers only when their dates sit almost on top of each other on the
+ * time axis (visual overlap at default zoom). Zooming in shrinks the gap so they split.
+ */
+const PROXIMITY_X_THRESHOLD = 18;
+
+type PlotMarker = {
+  id: string;
+  events: TimelineEvent[];
+  leftPct: number;
+  topPct: number;
+  x: number;
+  y: number;
+};
+
+function mergeMarkersByProximity(markers: PlotMarker[], zoomScale: number): PlotMarker[] {
+  if (markers.length <= 1) return markers;
+  const threshold = PROXIMITY_X_THRESHOLD / Math.max(zoomScale, 0.01);
+  const sorted = [...markers].sort((a, b) => a.x - b.x || a.y - b.y || a.id.localeCompare(b.id));
+  const groups: PlotMarker[][] = [[sorted[0]!]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const marker = sorted[i]!;
+    const group = groups[groups.length - 1]!;
+    const prev = group[group.length - 1]!;
+    if (marker.x - prev.x < threshold) group.push(marker);
+    else groups.push([marker]);
+  }
+
+  return groups.map((group) => {
+    if (group.length === 1) return group[0]!;
+
+    const events = group
+      .flatMap((g) => g.events)
+      .sort(
+        (a, b) =>
+          a.sortKey - b.sortKey ||
+          MARKER_TYPE_ORDER.indexOf(a.type) - MARKER_TYPE_ORDER.indexOf(b.type) ||
+          a.id.localeCompare(b.id),
+      );
+    const x = group.reduce((sum, g) => sum + g.x, 0) / group.length;
+    const y = group.reduce((sum, g) => sum + g.y, 0) / group.length;
+    return {
+      id: group
+        .map((g) => g.id)
+        .sort()
+        .join("~"),
+      events,
+      x,
+      y,
+      leftPct: (x / VIEW_W) * 100,
+      topPct: (y / VIEW_H) * 100,
+    };
+  });
 }
 
 function clusterTypes(events: TimelineEvent[]): TimelineEventType[] {
@@ -414,7 +767,7 @@ function TimelineMarker({
   vehicleCountry,
   krwPerUsd,
   interactive,
-  zoomScale,
+  zoomScale = 1,
 }: {
   events: TimelineEvent[];
   leftPct: number;
@@ -425,7 +778,7 @@ function TimelineMarker({
   vehicleCountry?: string | null;
   krwPerUsd?: number | null;
   interactive: boolean;
-  zoomScale: number;
+  zoomScale?: number;
 }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -445,35 +798,68 @@ function TimelineMarker({
     closeTimer.current = setTimeout(() => setOpen(false), 140);
   };
 
+  const dayGroups = (() => {
+    const map = new Map<string, TimelineEvent[]>();
+    for (const event of events) {
+      const list = map.get(event.dayKey);
+      if (list) list.push(event);
+      else map.set(event.dayKey, [event]);
+    }
+    return [...map.entries()]
+      .map(([dayKey, dayEvents]) => ({
+        dayKey,
+        events: dayEvents,
+        sortKey: Math.min(...dayEvents.map((e) => e.sortKey)),
+      }))
+      .sort((a, b) => a.sortKey - b.sortKey);
+  })();
+
   const types = clusterTypes(events);
-  const clustered = types.length > 1;
+  const multiDay = dayGroups.length > 1;
+  const clustered = multiDay || types.length > 1;
+  const bubbleCount = multiDay ? dayGroups.length : types.length;
   const recordedKm = clusterRecordedKm(events);
   const kmFact = recordedKm > 0 ? formatKmFact(recordedKm, t) : null;
-  const dateLabel =
-    primary.type === "production" && primary.productionYear
-      ? String(primary.productionYear)
-      : localizeProviderDate(primary.date, language, vehicleYear, vehicleCountry) ?? primary.dayKey;
+
+  const formatDayLabel = (dayEvents: TimelineEvent[]) => {
+    const lead = dayEvents[0]!;
+    if (lead.type === "production" && lead.productionYear) return String(lead.productionYear);
+    return localizeProviderDate(lead.date, language, vehicleYear, vehicleCountry) ?? lead.dayKey;
+  };
+
+  const dateLabel = multiDay
+    ? t("registry_events_count").replace("{count}", String(dayGroups.length))
+    : formatDayLabel(dayGroups[0]?.events ?? events);
+
   const typeLabels = types.map((type) => t(TYPE_LABEL_KEY[type]));
-  const seenFacts = new Set<string>();
-  const sections = types.flatMap((type) => {
-    if (clustered && type === "mileage") return [];
-    const group = events.filter((e) => e.type === type);
-    let facts = [...new Set(group.flatMap((e) => eventFacts(e, t, language, vehicleCountry, krwPerUsd)))];
-    if (kmFact) facts = facts.filter((fact) => fact !== kmFact);
-    if (type !== "owner") {
-      facts = facts.filter((fact) => {
-        if (seenFacts.has(fact)) return false;
-        seenFacts.add(fact);
-        return true;
-      });
-    }
-    facts = facts.slice(0, 8);
-    if (clustered && facts.length === 0) return [];
-    return [{ type, label: t(TYPE_LABEL_KEY[type]), facts }];
-  });
+
+  const buildSections = (dayEvents: TimelineEvent[], hideMileageType: boolean) => {
+    const dayTypes = clusterTypes(dayEvents);
+    const seenFacts = new Set<string>();
+    const dayKm = clusterRecordedKm(dayEvents);
+    const dayKmFact = dayKm > 0 ? formatKmFact(dayKm, t) : null;
+    return dayTypes.flatMap((type) => {
+      if (hideMileageType && type === "mileage") return [];
+      const group = dayEvents.filter((e) => e.type === type);
+      let facts = [...new Set(group.flatMap((e) => eventFacts(e, t, language, vehicleCountry, krwPerUsd)))];
+      if (dayKmFact) facts = facts.filter((fact) => fact !== dayKmFact);
+      if (type !== "owner") {
+        facts = facts.filter((fact) => {
+          if (seenFacts.has(fact)) return false;
+          seenFacts.add(fact);
+          return true;
+        });
+      }
+      facts = facts.slice(0, 8);
+      if (hideMileageType && facts.length === 0) return [];
+      return [{ type, label: t(TYPE_LABEL_KEY[type]), facts }];
+    });
+  };
+
+  const singleDaySections = !multiDay ? buildSections(events, clustered) : [];
   const markerType = types[0] ?? primary.type;
-  const inverse = 1 / Math.max(zoomScale, 0.01);
   const accident = !clustered && types.includes("accident");
+  const inverse = 1 / Math.max(zoomScale, 0.01);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -482,8 +868,7 @@ function TimelineMarker({
           type="button"
           aria-label={`${typeLabels.join(", ")}, ${dateLabel}`}
           className={cn(
-            // Large invisible hit target on mobile; visual dot stays small inside.
-            "absolute z-[1] group flex h-11 w-11 items-center justify-center rounded-full sm:h-9 sm:w-9",
+            "absolute z-[1] group flex h-12 w-12 items-center justify-center rounded-full sm:h-10 sm:w-10",
             "touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1",
             open && "z-[5]",
             !interactive && "pointer-events-none",
@@ -494,7 +879,6 @@ function TimelineMarker({
             transform: `translate(-50%, -50%) scale(${inverse})`,
           }}
           onPointerDown={(e) => {
-            // Keep chart pan/pinch from stealing the tap.
             e.stopPropagation();
           }}
           onPointerEnter={(e) => {
@@ -510,14 +894,14 @@ function TimelineMarker({
               "ring-2 ring-background transition-transform duration-150 sm:ring-[2.5px]",
               open ? "scale-110" : "group-hover:scale-105",
               // Compact dots — especially on mobile where dense markers overlap.
-              accident || clustered ? "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" : "h-2 w-2 sm:h-3 sm:w-3",
-              markerType === "production" && !clustered && "h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 ring-slate-400/80 dark:ring-slate-500",
+              accident || clustered ? "h-3 w-3 sm:h-4 sm:w-4" : "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5",
+              markerType === "production" && !clustered && "h-2 w-2 sm:h-3 sm:w-3 ring-slate-400/80 dark:ring-slate-500",
               clustered ? "bg-primary" : TYPE_DOT[markerType],
             )}
           />
           {clustered ? (
-            <span className="absolute right-1.5 top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-foreground px-0.5 text-[7px] font-bold leading-none text-background shadow-sm sm:right-0.5 sm:top-0.5 sm:h-3.5 sm:min-w-3.5 sm:text-[8px]">
-              {types.length}
+            <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-foreground px-0.5 text-[8px] font-bold leading-none text-background shadow-sm sm:right-0.5 sm:top-0.5 sm:h-4 sm:min-w-4 sm:text-[9px]">
+              {bubbleCount}
             </span>
           ) : null}
         </button>
@@ -527,7 +911,7 @@ function TimelineMarker({
         align="center"
         sideOffset={10}
         collisionPadding={16}
-        className="w-[min(17rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto rounded-xl p-0 shadow-lg"
+        className="z-[80] w-[min(17rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto rounded-xl p-0 shadow-lg"
         onPointerEnter={(e) => {
           if (e.pointerType === "mouse") openNow();
         }}
@@ -537,30 +921,65 @@ function TimelineMarker({
       >
         <div className="border-b border-border/60 px-3 py-2">
           <p className="text-sm font-semibold leading-tight text-foreground">{dateLabel}</p>
-          {kmFact ? (
+          {kmFact && !multiDay ? (
             <p className="mt-0.5 text-[12px] tabular-nums text-muted-foreground">{kmFact}</p>
           ) : null}
           {clustered ? (
             <p className="mt-0.5 text-[11px] text-muted-foreground">{typeLabels.join(" · ")}</p>
           ) : null}
         </div>
-        <div className={cn("px-3 py-2", sections.length > 1 ? "space-y-2.5" : "")}>
-          {sections.map((section) => (
-            <div key={section.type}>
-              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[section.type])} />
-                {section.label}
-              </p>
-              {section.facts.length > 0 ? (
-                <ul className="mt-1 space-y-0.5 text-[13px] leading-snug text-foreground/80">
-                  {section.facts.map((fact) => (
-                    <li key={fact}>{fact}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ))}
-        </div>
+        {multiDay ? (
+          <div className="space-y-3 px-3 py-2">
+            {dayGroups.map((day) => {
+              const sections = buildSections(day.events, true);
+              const dayKm = clusterRecordedKm(day.events);
+              const dayKmFact = dayKm > 0 ? formatKmFact(dayKm, t) : null;
+              return (
+                <div key={day.dayKey} className="border-b border-border/40 pb-2.5 last:border-b-0 last:pb-0">
+                  <p className="text-[12px] font-semibold text-foreground">{formatDayLabel(day.events)}</p>
+                  {dayKmFact ? (
+                    <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{dayKmFact}</p>
+                  ) : null}
+                  <div className={cn("mt-1.5", sections.length > 1 ? "space-y-2" : "")}>
+                    {sections.map((section) => (
+                      <div key={`${day.dayKey}-${section.type}`}>
+                        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[section.type])} />
+                          {section.label}
+                        </p>
+                        {section.facts.length > 0 ? (
+                          <ul className="mt-1 space-y-0.5 text-[13px] leading-snug text-foreground/80">
+                            {section.facts.map((fact) => (
+                              <li key={fact}>{fact}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className={cn("px-3 py-2", singleDaySections.length > 1 ? "space-y-2.5" : "")}>
+            {singleDaySections.map((section) => (
+              <div key={section.type}>
+                <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[section.type])} />
+                  {section.label}
+                </p>
+                {section.facts.length > 0 ? (
+                  <ul className="mt-1 space-y-0.5 text-[13px] leading-snug text-foreground/80">
+                    {section.facts.map((fact) => (
+                      <li key={fact}>{fact}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -576,230 +995,8 @@ export function ReportHistoryTimeline({
   className,
 }: Props) {
   const fillId = useId().replace(/:/g, "");
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const zoomRef = useRef<ChartZoom>({ scale: 1, x: 0, y: 0 });
-  const pinchRef = useRef<{
-    distance: number;
-    scale: number;
-    contentX: number;
-    contentY: number;
-  } | null>(null);
-  const panRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
-  const panActiveRef = useRef(false);
-  const lastTapRef = useRef(0);
-  const [zoom, setZoom] = useState<ChartZoom>({ scale: 1, x: 0, y: 0 });
-  const [gesturing, setGesturing] = useState(false);
-
-  const applyZoom = useCallback((next: ChartZoom, origin?: { x: number; y: number }) => {
-    const viewport = viewportRef.current;
-    const vw = viewport?.clientWidth ?? 0;
-    const vh = viewport?.clientHeight ?? 0;
-    const scale = clampZoom(next.scale);
-    let x = next.x;
-    let y = next.y;
-    if (origin && vw > 0) {
-      const current = zoomRef.current;
-      const cx = (origin.x - current.x) / current.scale;
-      const cy = (origin.y - current.y) / current.scale;
-      x = origin.x - cx * scale;
-      y = origin.y - cy * scale;
-    }
-    const clamped = scale <= 1.001
-      ? { scale: 1, x: 0, y: 0 }
-      : { scale, ...clampPan(x, y, scale, vw, vh) };
-    zoomRef.current = clamped;
-    setZoom(clamped);
-  }, []);
-
-  const zoomAtCenter = useCallback((factor: number) => {
-    const viewport = viewportRef.current;
-    if (!viewport) {
-      applyZoom({ ...zoomRef.current, scale: zoomRef.current.scale * factor });
-      return;
-    }
-    const rect = viewport.getBoundingClientRect();
-    applyZoom(
-      { ...zoomRef.current, scale: zoomRef.current.scale * factor },
-      { x: rect.width / 2, y: rect.height / 2 },
-    );
-  }, [applyZoom]);
-
-  const resetZoom = useCallback(() => {
-    zoomRef.current = { scale: 1, x: 0, y: 0 };
-    setZoom({ scale: 1, x: 0, y: 0 });
-  }, []);
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-
-    const localPoint = (clientX: number, clientY: number) => {
-      const rect = viewport.getBoundingClientRect();
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      const zoomingIn = e.deltaY < 0;
-      const scale = zoomRef.current.scale;
-      if ((zoomingIn && scale >= MAX_ZOOM - 0.001) || (!zoomingIn && scale <= MIN_ZOOM + 0.001)) {
-        return;
-      }
-      e.preventDefault();
-      const factor = zoomingIn ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
-      applyZoom(
-        { ...zoomRef.current, scale: zoomRef.current.scale * factor },
-        localPoint(e.clientX, e.clientY),
-      );
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("button")) return;
-
-      if (e.touches.length === 2) {
-        const a = e.touches[0]!;
-        const b = e.touches[1]!;
-        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
-        const z = zoomRef.current;
-        const dist = touchDistance(a, b);
-        if (dist < 1) return;
-        pinchRef.current = {
-          distance: dist,
-          scale: z.scale,
-          contentX: (mid.x - z.x) / z.scale,
-          contentY: (mid.y - z.y) / z.scale,
-        };
-        panRef.current = null;
-        setGesturing(true);
-        return;
-      }
-      if (e.touches.length === 1 && zoomRef.current.scale > 1.02) {
-        const t = e.touches[0]!;
-        panRef.current = {
-          x: t.clientX,
-          y: t.clientY,
-          tx: zoomRef.current.x,
-          ty: zoomRef.current.y,
-        };
-        pinchRef.current = null;
-        // Defer gesturing until real movement so marker taps still fire.
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && pinchRef.current) {
-        e.preventDefault();
-        const a = e.touches[0]!;
-        const b = e.touches[1]!;
-        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
-        const scale = pinchRef.current.scale * (touchDistance(a, b) / pinchRef.current.distance);
-        applyZoom({
-          scale,
-          x: mid.x - pinchRef.current.contentX * scale,
-          y: mid.y - pinchRef.current.contentY * scale,
-        });
-        return;
-      }
-      if (e.touches.length === 1 && panRef.current && zoomRef.current.scale > 1.02) {
-        const t = e.touches[0]!;
-        const dx = t.clientX - panRef.current.x;
-        const dy = t.clientY - panRef.current.y;
-        if (!panActiveRef.current && Math.hypot(dx, dy) < 8) return;
-        e.preventDefault();
-        if (!panActiveRef.current) {
-          panActiveRef.current = true;
-          setGesturing(true);
-        }
-        applyZoom({
-          scale: zoomRef.current.scale,
-          x: panRef.current.tx + dx,
-          y: panRef.current.ty + dy,
-        });
-      }
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length > 0) return;
-      const wasPinch = Boolean(pinchRef.current);
-      const didPan = panActiveRef.current;
-      pinchRef.current = null;
-      panRef.current = null;
-      panActiveRef.current = false;
-      setGesturing(false);
-
-      if (wasPinch || didPan) return;
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("button")) return;
-      const touch = e.changedTouches[0];
-      if (!touch) return;
-      const now = Date.now();
-      if (now - lastTapRef.current < 280) {
-        lastTapRef.current = 0;
-        if (zoomRef.current.scale > 1.05) resetZoom();
-        else {
-          applyZoom(
-            { ...zoomRef.current, scale: DOUBLE_TAP_ZOOM },
-            localPoint(touch.clientX, touch.clientY),
-          );
-        }
-        return;
-      }
-      lastTapRef.current = now;
-    };
-
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0 || zoomRef.current.scale <= 1.02) return;
-      if ((e.target as HTMLElement).closest("button")) return;
-      panRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-        tx: zoomRef.current.x,
-        ty: zoomRef.current.y,
-      };
-      panActiveRef.current = false;
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!panRef.current || zoomRef.current.scale <= 1.02) return;
-      const dx = e.clientX - panRef.current.x;
-      const dy = e.clientY - panRef.current.y;
-      if (!panActiveRef.current && Math.hypot(dx, dy) < 6) return;
-      e.preventDefault();
-      if (!panActiveRef.current) {
-        panActiveRef.current = true;
-        setGesturing(true);
-      }
-      applyZoom({
-        scale: zoomRef.current.scale,
-        x: panRef.current.tx + dx,
-        y: panRef.current.ty + dy,
-      });
-    };
-
-    const onMouseUp = () => {
-      panRef.current = null;
-      panActiveRef.current = false;
-      setGesturing(false);
-    };
-
-    viewport.addEventListener("wheel", onWheel, { passive: false });
-    viewport.addEventListener("touchstart", onTouchStart, { passive: true });
-    viewport.addEventListener("touchmove", onTouchMove, { passive: false });
-    viewport.addEventListener("touchend", onTouchEnd, { passive: true });
-    viewport.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-
-    return () => {
-      viewport.removeEventListener("wheel", onWheel);
-      viewport.removeEventListener("touchstart", onTouchStart);
-      viewport.removeEventListener("touchmove", onTouchMove);
-      viewport.removeEventListener("touchend", onTouchEnd);
-      viewport.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [applyZoom, resetZoom, events.length]);
+  const chartZoom = useChartZoom(true);
+  const { resetZoom, ...chartZoomUi } = chartZoom;
 
   const layout = useMemo(() => {
     if (events.length === 0) return null;
@@ -838,7 +1035,7 @@ export function ReportHistoryTimeline({
         ? `${lineD} L ${linePts[linePts.length - 1]!.x.toFixed(1)} ${baselineY} L ${linePts[0]!.x.toFixed(1)} ${baselineY} Z`
         : "";
 
-    const markers = clusterTimelineEvents(events)
+    const markers: PlotMarker[] = clusterTimelineEvents(events)
       .filter((group) => clusterTypes(group).some((type) => type !== "mileage"))
       .map((group) => {
         const lead = group[0]!;
@@ -850,16 +1047,14 @@ export function ReportHistoryTimeline({
         return {
           id: group.map((e) => e.id).join("+"),
           events: group,
+          x,
+          y,
           leftPct: (x / VIEW_W) * 100,
           topPct: (y / VIEW_H) * 100,
         };
       });
 
-    const last = linePts[linePts.length - 1];
-
     return {
-      min,
-      span,
       maxKm,
       years,
       yTicks,
@@ -867,221 +1062,236 @@ export function ReportHistoryTimeline({
       lineD,
       areaD,
       markers,
-      last,
     };
   }, [events]);
+
+  const displayMarkers = useMemo(
+    () => (layout ? mergeMarkersByProximity(layout.markers, chartZoomUi.zoom.scale) : []),
+    [layout, chartZoomUi.zoom.scale],
+  );
 
   if (!layout || events.length === 0) return null;
 
   const presentTypes = TIMELINE_EVENT_TYPES.filter(
-    (type) => type !== "mileage" && events.some((e) => e.type === type),
+    (type) => type !== "mileage" && type !== "production" && events.some((e) => e.type === type),
   );
-  const zoomed = zoom.scale > 1.02;
 
-  return (
-    <section
-      className={cn(
-        "print:hidden max-w-full min-w-0 overflow-x-hidden rounded-2xl border bg-background",
-        className,
-      )}
-    >
-      <div className="flex items-center justify-between gap-3 px-3 pt-3 sm:px-5 sm:pt-4">
-        <h2 className="text-sm font-semibold tracking-tight text-foreground">
-          {t("report_timeline_title")}
-        </h2>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <div className="inline-flex items-center rounded-md border border-border/70 bg-muted/40">
-            <button
-              type="button"
-              className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-              aria-label={t("report_timeline_zoom_out")}
-              disabled={zoom.scale <= MIN_ZOOM}
-              onClick={() => zoomAtCenter(1 / ZOOM_FACTOR)}
-            >
-              <Minus className="h-3.5 w-3.5" />
-            </button>
-            <span className="min-w-[2.25rem] px-0.5 text-center text-[10px] font-medium tabular-nums text-muted-foreground">
-              {`${Number.isInteger(zoom.scale) ? zoom.scale.toFixed(0) : zoom.scale.toFixed(1)}×`}
-            </span>
-            <button
-              type="button"
-              className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-              aria-label={t("report_timeline_zoom_in")}
-              disabled={zoom.scale >= MAX_ZOOM}
-              onClick={() => zoomAtCenter(ZOOM_FACTOR)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-              aria-label={t("report_timeline_zoom_reset")}
-              disabled={!zoomed}
-              onClick={resetZoom}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
+  const renderChart = (opts: {
+    gradientId: string;
+    heightClass: string;
+    labelClass?: string;
+    fillHeight?: boolean;
+    zoom?: {
+      viewportRef: RefObject<HTMLDivElement | null>;
+      zoom: ChartZoom;
+      gesturing: boolean;
+      interactive: boolean;
+    };
+  }) => {
+    const zoomScale = opts.zoom?.zoom.scale ?? 1;
+    const chartBody = (
+      <>
+        <div className={cn("relative min-w-0 w-full overflow-visible", opts.fillHeight && "h-full min-h-0")}>
+          <svg
+            viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+            className={cn("block w-full max-w-full", opts.heightClass)}
+            preserveAspectRatio="none"
+            role="img"
+            aria-hidden
+          >
+            <defs>
+              <linearGradient id={opts.gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+              </linearGradient>
+            </defs>
+            {layout.yTicks.map((tick, i) => (
+              <line
+                key={tick.km}
+                x1={PAD.l}
+                x2={VIEW_W - PAD.r}
+                y1={(tick.topPct / 100) * VIEW_H}
+                y2={(tick.topPct / 100) * VIEW_H}
+                className="stroke-border/80"
+                strokeWidth="1"
+                strokeDasharray={i === 0 || i === layout.yTicks.length - 1 ? undefined : "4 6"}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
 
-      <div className="mt-1 w-full min-w-0 px-1 pb-1 sm:px-2 lg:px-3">
-      <div
-        ref={viewportRef}
-        className={cn(
-          "overflow-hidden overscroll-contain select-none",
-          zoomed ? "touch-none cursor-grab" : "touch-pan-y",
-          gesturing && zoomed && "cursor-grabbing",
-        )}
-      >
-        <div
-          className="origin-top-left will-change-transform"
-          style={{
-            transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`,
-            transition: gesturing ? "none" : "transform 140ms ease-out",
-          }}
-        >
-        <div className="flex min-w-0 items-stretch">
-          <div className="relative w-6 shrink-0 sm:w-7">
-            {layout.yTicks.map((tick) => (
+            <line
+              x1={PAD.l}
+              x2={VIEW_W - PAD.r}
+              y1={layout.baselineY}
+              y2={layout.baselineY}
+              className="stroke-foreground/25"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+
+            {layout.years.map(({ year, leftPct }) => {
+              const x = (leftPct / 100) * VIEW_W;
+              return (
+                <line
+                  key={year}
+                  x1={x}
+                  x2={x}
+                  y1={layout.baselineY}
+                  y2={layout.baselineY + 7}
+                  className="stroke-foreground/30"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+              );
+            })}
+
+            {layout.areaD ? <path d={layout.areaD} fill={`url(#${opts.gradientId})`} /> : null}
+            {layout.lineD ? (
+              <path
+                d={layout.lineD}
+                className="stroke-primary"
+                fill="none"
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
+          </svg>
+
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            {layout.yTicks.map((tick, i) => (
               <span
                 key={tick.km}
-                className="absolute right-0.5 -translate-y-1/2 text-[10px] tabular-nums leading-none text-muted-foreground sm:right-1 sm:text-[11px]"
-                style={{ top: `${tick.topPct}%` }}
+                className={cn(
+                  "absolute left-1 rounded-sm bg-background/85 px-1 py-0.5 text-[10px] font-semibold tabular-nums leading-none tracking-tight text-foreground/80 shadow-sm backdrop-blur-[2px] sm:left-2 sm:px-1.5 sm:text-xs sm:text-foreground/85",
+                  opts.labelClass,
+                )}
+                style={yAxisLabelStyle(tick.topPct, i, layout.yTicks.length)}
               >
                 {formatKmAxis(tick.km)}
               </span>
             ))}
           </div>
 
-          <div className="relative min-w-0 flex-1 overflow-visible">
-            <svg
-              viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-              className="block h-[11.5rem] w-full max-w-full sm:h-[14.5rem] lg:h-[16.5rem]"
-              preserveAspectRatio="none"
-              role="img"
-              aria-hidden
-            >
-              <defs>
-                <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
-                </linearGradient>
-              </defs>
-              {layout.yTicks.map((tick, i) => (
-                <line
-                  key={tick.km}
-                  x1={PAD.l}
-                  x2={VIEW_W - PAD.r}
-                  y1={(tick.topPct / 100) * VIEW_H}
-                  y2={(tick.topPct / 100) * VIEW_H}
-                  className="stroke-border/70"
-                  strokeWidth="1"
-                  strokeDasharray={i === 0 || i === layout.yTicks.length - 1 ? undefined : "4 6"}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-
-              <line
-                x1={PAD.l}
-                x2={VIEW_W - PAD.r}
-                y1={layout.baselineY}
-                y2={layout.baselineY}
-                className="stroke-foreground/20"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-
-              {layout.years.map(({ year, leftPct }) => {
-                const x = (leftPct / 100) * VIEW_W;
-                return (
-                  <line
-                    key={year}
-                    x1={x}
-                    x2={x}
-                    y1={layout.baselineY}
-                    y2={layout.baselineY + 7}
-                    className="stroke-foreground/25"
-                    strokeWidth="1"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                );
-              })}
-
-              {layout.areaD ? (
-                <path d={layout.areaD} fill={`url(#${fillId})`} />
-              ) : null}
-              {layout.lineD ? (
-                <path
-                  d={layout.lineD}
-                  className="stroke-primary"
-                  fill="none"
-                  strokeWidth="2.5"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-              ) : null}
-            </svg>
-
-            {layout.markers.map((m) => (
-              <TimelineMarker
-                key={m.id}
-                events={m.events}
-                leftPct={m.leftPct}
-                topPct={m.topPct}
-                t={t}
-                language={language}
-                vehicleYear={vehicleYear}
-                vehicleCountry={vehicleCountry}
-                krwPerUsd={krwPerUsd}
-                interactive={!gesturing}
-                zoomScale={zoom.scale}
-              />
-            ))}
-          </div>
-
-          {/* Tiny gutter so the last marker isn’t clipped */}
-          <div className="w-2 shrink-0 sm:w-1.5" aria-hidden />
+          {displayMarkers.map((m) => (
+            <TimelineMarker
+              key={m.id}
+              events={m.events}
+              leftPct={m.leftPct}
+              topPct={m.topPct}
+              t={t}
+              language={language}
+              vehicleYear={vehicleYear}
+              vehicleCountry={vehicleCountry}
+              krwPerUsd={krwPerUsd}
+              interactive={opts.zoom?.interactive ?? true}
+              zoomScale={zoomScale}
+            />
+          ))}
         </div>
 
-        <div className="flex min-w-0">
-          <div className="w-6 shrink-0 sm:w-7" />
-          <div className="relative h-5 min-w-0 flex-1 overflow-hidden sm:h-6">
-            {layout.years.map(({ year, leftPct }, i) => {
-              const align =
-                i === 0 ? "translate-x-0" : i === layout.years.length - 1 ? "-translate-x-full" : "-translate-x-1/2";
-              return (
-                <span
-                  key={year}
-                  className={cn(
-                    "absolute top-0.5 text-[10px] tabular-nums leading-none text-muted-foreground sm:text-[11px]",
-                    align,
-                  )}
-                  style={{ left: `${leftPct}%` }}
-                >
-                  <span className="sm:hidden">{String(year).slice(2)}</span>
-                  <span className="hidden sm:inline">{year}</span>
-                </span>
-              );
-            })}
-          </div>
-          <div className="w-2 shrink-0 sm:w-1.5" aria-hidden />
+        <div className="relative h-6 min-w-0 w-full shrink-0 overflow-visible sm:h-6">
+          {layout.years.map(({ year, leftPct }, i) => {
+            const align =
+              i === 0
+                ? "translate-x-0"
+                : i === layout.years.length - 1
+                  ? "-translate-x-full"
+                  : "-translate-x-1/2";
+            return (
+              <span
+                key={year}
+                className={cn(
+                  "absolute top-1 text-[10px] font-medium tabular-nums leading-none text-foreground/65 sm:text-xs",
+                  align,
+                )}
+                style={{ left: `${leftPct}%` }}
+              >
+                {year}
+              </span>
+            );
+          })}
         </div>
+      </>
+    );
+
+    if (!opts.zoom) return chartBody;
+
+    const zoomed = opts.zoom.zoom.scale > 1.02;
+    return (
+      <div
+        ref={opts.zoom.viewportRef}
+        className={cn(
+          "min-h-0 overflow-hidden overscroll-contain select-none rounded-md",
+          opts.fillHeight ? "h-full flex-1" : "",
+          opts.zoom.gesturing || zoomed ? "touch-none" : "touch-pan-y",
+          zoomed && "cursor-grab",
+          opts.zoom.gesturing && zoomed && "cursor-grabbing",
+        )}
+      >
+        <div
+          className={cn("origin-top-left will-change-transform", opts.fillHeight && "h-full min-h-0 flex flex-col")}
+          style={{
+            transform: `translate(${opts.zoom.zoom.x}px, ${opts.zoom.zoom.y}px) scale(${opts.zoom.zoom.scale})`,
+            transition: opts.zoom.gesturing ? "none" : "transform 140ms ease-out",
+          }}
+        >
+          {chartBody}
         </div>
       </div>
+    );
+  };
+
+  const legend = presentTypes.length > 0 ? (
+    <ul className="flex flex-wrap gap-x-3.5 gap-y-2 border-t border-border/60 bg-muted/20 px-3 py-2.5 sm:gap-x-5 sm:px-5 sm:py-3">
+      {presentTypes.map((type) => (
+        <li
+          key={type}
+          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70 sm:text-xs"
+        >
+          <span className={cn("h-2 w-2 shrink-0 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[type])} />
+          {t(TYPE_LABEL_KEY[type])}
+        </li>
+      ))}
+    </ul>
+  ) : null;
+
+  return (
+    <section
+      className={cn(
+        "print:hidden max-w-full min-w-0 overflow-x-hidden rounded-2xl border border-border/80 bg-background shadow-sm",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2.5 sm:px-5 sm:py-3">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">
+          {t("report_timeline_title")}
+        </h2>
+        <ChartZoomControls
+          t={t}
+          zoom={chartZoomUi.zoom}
+          zoomed={chartZoomUi.zoomed}
+          onZoomIn={() => chartZoomUi.zoomAtCenter(ZOOM_FACTOR)}
+          onZoomOut={() => chartZoomUi.zoomAtCenter(1 / ZOOM_FACTOR)}
+          onReset={resetZoom}
+        />
       </div>
 
-      {presentTypes.length > 0 ? (
-      <ul className="flex flex-wrap gap-x-3 gap-y-1.5 border-t border-border/60 px-3 py-2.5 sm:gap-x-4 sm:px-5 sm:py-3">
-        {presentTypes.map((type) => (
-          <li key={type} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground sm:text-[11px]">
-            <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[type])} />
-            {t(TYPE_LABEL_KEY[type])}
-          </li>
-        ))}
-      </ul>
-      ) : null}
+      <div className="w-full min-w-0 px-1.5 pb-2 pt-2 sm:px-3 sm:pb-3 sm:pt-3">
+        {renderChart({
+          gradientId: fillId,
+          heightClass: "h-[14rem] sm:h-[17rem] lg:h-[19rem]",
+          zoom: {
+            viewportRef: chartZoomUi.viewportRef,
+            zoom: chartZoomUi.zoom,
+            gesturing: chartZoomUi.gesturing,
+            interactive: !chartZoomUi.gesturing,
+          },
+        })}
+      </div>
+
+      {legend}
     </section>
   );
 }

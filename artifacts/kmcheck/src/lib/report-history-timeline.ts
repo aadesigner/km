@@ -325,3 +325,17 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
   out.sort((a, b) => a.sortKey - b.sortKey || a.type.localeCompare(b.type) || a.id.localeCompare(b.id));
   return out;
 }
+
+/** Graph-worthy history — production year alone is not enough. */
+const TIMELINE_GRAPH_EVENT_TYPES = new Set<TimelineEventType>([
+  "accident",
+  "insurance",
+  "mileage",
+  "owner",
+  "auction",
+  "registry",
+]);
+
+export function shouldShowReportTimeline(events: TimelineEvent[]): boolean {
+  return events.some((event) => TIMELINE_GRAPH_EVENT_TYPES.has(event.type));
+}

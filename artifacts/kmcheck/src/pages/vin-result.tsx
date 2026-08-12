@@ -83,7 +83,7 @@ import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
 import { ReportHistoryTimeline } from "@/components/report-history-timeline";
-import { collectReportTimelineEvents } from "@/lib/report-history-timeline";
+import { collectReportTimelineEvents, shouldShowReportTimeline } from "@/lib/report-history-timeline";
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
@@ -877,7 +877,7 @@ export default function VinResult({ params }: Props) {
         <PendingVinSearchPanel />
       ) : null}
 
-      {!isPendingManual && timelineEvents.length > 0 ? (
+      {!isPendingManual && shouldShowReportTimeline(timelineEvents) ? (
         <ReportHistoryTimeline
           events={timelineEvents}
           t={t}
