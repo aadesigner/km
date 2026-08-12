@@ -816,7 +816,7 @@ function TimelineMarker({
   const clustered = multiDay || types.length > 1;
   const bubbleCount = multiDay ? dayGroups.length : types.length;
   const recordedKm = clusterRecordedKm(events);
-  const kmFact = recordedKm > 0 ? formatKmFact(recordedKm, t) : null;
+  const markerType = types[0] ?? primary.type;
 
   const formatDayLabel = (dayEvents: TimelineEvent[]) => {
     const lead = dayEvents[0]!;
@@ -824,21 +824,27 @@ function TimelineMarker({
     return localizeProviderDate(lead.date, language, vehicleYear, vehicleCountry) ?? lead.dayKey;
   };
 
-  const dateLabel = multiDay
-    ? t("registry_events_count").replace("{count}", String(dayGroups.length))
-    : formatDayLabel(dayGroups[0]?.events ?? events);
-
-  const mileageTitleLabel = (() => {
-    if (multiDay) return null;
-    for (const event of events) {
+  const resolveMileageTitle = (dayEvents: TimelineEvent[]): string | null => {
+    for (const event of dayEvents) {
       if (event.type !== "mileage") continue;
       const raw = event.titleStatus?.trim() || event.title?.trim();
       if (!raw) continue;
       return translateTitleStatus(t, raw) ?? raw;
     }
     return null;
-  })();
+  };
 
+  const dateLabel = multiDay
+    ? t("registry_events_count").replace("{count}", String(dayGroups.length))
+    : formatDayLabel(dayGroups[0]?.events ?? events);
+
+  const mileageTitleLabel = multiDay ? null : resolveMileageTitle(events);
+  const headline =
+    mileageTitleLabel
+    || (!multiDay && !clustered ? t(TYPE_LABEL_KEY[markerType]) : null)
+    || (!multiDay && types.length === 1 ? t(TYPE_LABEL_KEY[types[0]!]) : null);
+
+  const kmShort = recordedKm > 0 ? `${recordedKm.toLocaleString()} km` : null;
   const typeLabels = types.map((type) => t(TYPE_LABEL_KEY[type]));
 
   const buildSections = (dayEvents: TimelineEvent[], hideMileageType: boolean) => {
@@ -846,11 +852,17 @@ function TimelineMarker({
     const seenFacts = new Set<string>();
     const dayKm = clusterRecordedKm(dayEvents);
     const dayKmFact = dayKm > 0 ? formatKmFact(dayKm, t) : null;
+    const dayTitle = resolveMileageTitle(dayEvents);
     return dayTypes.flatMap((type) => {
       if (hideMileageType && type === "mileage") return [];
       const group = dayEvents.filter((e) => e.type === type);
       let facts = [...new Set(group.flatMap((e) => eventFacts(e, t, language, vehicleCountry, krwPerUsd)))];
       if (dayKmFact) facts = facts.filter((fact) => fact !== dayKmFact);
+      if (dayKm > 0) {
+        const prefix = `${dayKm.toLocaleString()} km`;
+        facts = facts.filter((fact) => fact !== prefix && !fact.startsWith(`${prefix} `));
+      }
+      if (dayTitle) facts = facts.filter((fact) => fact !== dayTitle);
       if (type !== "owner") {
         facts = facts.filter((fact) => {
           if (seenFacts.has(fact)) return false;
@@ -864,8 +876,22 @@ function TimelineMarker({
     });
   };
 
-  const singleDaySections = !multiDay ? buildSections(events, clustered) : [];
-  const markerType = types[0] ?? primary.type;
+  const singleDaySections = !multiDay ? buildSections(events, false) : [];
+  const showSectionLabels = multiDay || singleDaySections.length > 1;
+  const bodySections = !multiDay
+    ? singleDaySections
+        .map((section) => {
+          if (section.type === "mileage" && mileageTitleLabel) {
+            return {
+              ...section,
+              facts: section.facts.filter((fact) => fact !== mileageTitleLabel),
+            };
+          }
+          return section;
+        })
+        .filter((section) => section.facts.length > 0 || (showSectionLabels && section.type !== "mileage"))
+    : [];
+
   const accident = !clustered && types.includes("accident");
   const inverse = 1 / Math.max(zoomScale, 0.01);
 
@@ -874,7 +900,7 @@ function TimelineMarker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`${typeLabels.join(", ")}, ${dateLabel}`}
+          aria-label={[headline, dateLabel, kmShort].filter(Boolean).join(", ")}
           className={cn(
             "absolute z-[1] group flex h-12 w-12 items-center justify-center rounded-full sm:h-10 sm:w-10",
             "touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1",
@@ -898,20 +924,25 @@ function TimelineMarker({
         >
           <span
             className={cn(
-              "relative block rounded-full shadow-[0_1px_2px_rgba(15,23,42,0.2)]",
+              "relative flex items-center justify-center rounded-full shadow-[0_1px_2px_rgba(15,23,42,0.2)]",
               "ring-2 ring-background transition-transform duration-150 sm:ring-[2.5px]",
               open ? "scale-110" : "group-hover:scale-105",
-              // Compact dots — especially on mobile where dense markers overlap.
-              accident || clustered ? "h-3 w-3 sm:h-4 sm:w-4" : "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5",
-              markerType === "production" && !clustered && "h-2 w-2 sm:h-3 sm:w-3 ring-slate-400/80 dark:ring-slate-500",
-              clustered ? "bg-primary" : TYPE_DOT[markerType],
+              clustered
+                ? "h-5 w-5 sm:h-6 sm:w-6 bg-primary"
+                : accident
+                  ? "h-3 w-3 sm:h-4 sm:w-4"
+                  : markerType === "production"
+                    ? "h-2 w-2 sm:h-3 sm:w-3 ring-slate-400/80 dark:ring-slate-500"
+                    : "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5",
+              !clustered && TYPE_DOT[markerType],
             )}
-          />
-          {clustered ? (
-            <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-foreground px-0.5 text-[8px] font-bold leading-none text-background shadow-sm sm:right-0.5 sm:top-0.5 sm:h-4 sm:min-w-4 sm:text-[9px]">
-              {bubbleCount}
-            </span>
-          ) : null}
+          >
+            {clustered ? (
+              <span className="text-[9px] font-bold leading-none tabular-nums text-primary-foreground sm:text-[10px]">
+                {bubbleCount}
+              </span>
+            ) : null}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -919,7 +950,7 @@ function TimelineMarker({
         align="center"
         sideOffset={10}
         collisionPadding={16}
-        className="z-[80] w-[min(17rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto rounded-xl p-0 shadow-lg"
+        className="z-[80] w-[min(20rem,calc(100vw-1.25rem))] max-h-[min(22rem,72vh)] overflow-y-auto rounded-xl border border-border/70 p-0 pb-1 shadow-lg"
         onPointerEnter={(e) => {
           if (e.pointerType === "mouse") openNow();
         }}
@@ -927,73 +958,91 @@ function TimelineMarker({
           if (e.pointerType === "mouse") closeSoon();
         }}
       >
-        <div className="border-b border-border/60 px-3 py-2">
-          <p className="text-sm font-semibold leading-tight text-foreground">{dateLabel}</p>
-          {mileageTitleLabel ? (
-            <p className="mt-0.5 text-[13px] font-medium leading-snug text-foreground/90">{mileageTitleLabel}</p>
+        <div className="space-y-2.5 border-b border-border/50 bg-muted/25 px-4 py-3.5">
+          <span className="inline-flex items-center rounded-full bg-background px-2.5 py-0.5 text-[11px] font-semibold tabular-nums tracking-wide text-foreground/80 shadow-sm ring-1 ring-border/70">
+            {dateLabel}
+          </span>
+          {headline ? (
+            <p className="text-[15px] font-semibold leading-snug text-foreground">{headline}</p>
+          ) : clustered ? (
+            <p className="text-[13px] font-medium leading-snug text-foreground/85">{typeLabels.join(" · ")}</p>
           ) : null}
-          {kmFact && !multiDay ? (
-            <p className="mt-0.5 text-[12px] tabular-nums text-muted-foreground">{kmFact}</p>
-          ) : null}
-          {clustered ? (
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{typeLabels.join(" · ")}</p>
+          {kmShort && !multiDay ? (
+            <p className="inline-flex items-center rounded-md bg-background/90 px-2 py-0.5 text-[12px] font-semibold tabular-nums text-foreground shadow-sm ring-1 ring-border/60">
+              {kmShort}
+            </p>
           ) : null}
         </div>
+
         {multiDay ? (
-          <div className="space-y-3 px-3 py-2">
+          <div className="divide-y divide-border/50 pb-2">
             {dayGroups.map((day) => {
-              const sections = buildSections(day.events, true);
+              const sections = buildSections(day.events, false)
+                .map((section) => {
+                  const dayTitle = resolveMileageTitle(day.events);
+                  if (section.type === "mileage" && dayTitle) {
+                    return { ...section, facts: section.facts.filter((fact) => fact !== dayTitle) };
+                  }
+                  return section;
+                })
+                .filter((section) => section.facts.length > 0 || section.type !== "mileage");
               const dayKm = clusterRecordedKm(day.events);
-              const dayKmFact = dayKm > 0 ? formatKmFact(dayKm, t) : null;
-              const dayTitle = (() => {
-                for (const event of day.events) {
-                  if (event.type !== "mileage") continue;
-                  const raw = event.titleStatus?.trim() || event.title?.trim();
-                  if (!raw) continue;
-                  return translateTitleStatus(t, raw) ?? raw;
-                }
-                return null;
-              })();
+              const dayKmShort = dayKm > 0 ? `${dayKm.toLocaleString()} km` : null;
+              const dayTitle = resolveMileageTitle(day.events);
+              const dayHeadline = dayTitle
+                || (sections.length === 1 ? sections[0]!.label : null);
               return (
-                <div key={day.dayKey} className="border-b border-border/40 pb-2.5 last:border-b-0 last:pb-0">
-                  <p className="text-[12px] font-semibold text-foreground">{formatDayLabel(day.events)}</p>
-                  {dayTitle ? (
-                    <p className="mt-0.5 text-[12px] font-medium leading-snug text-foreground/90">{dayTitle}</p>
-                  ) : null}
-                  {dayKmFact ? (
-                    <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{dayKmFact}</p>
-                  ) : null}
-                  <div className={cn("mt-1.5", sections.length > 1 ? "space-y-2" : "")}>
-                    {sections.map((section) => (
-                      <div key={`${day.dayKey}-${section.type}`}>
-                        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[section.type])} />
-                          {section.label}
-                        </p>
-                        {section.facts.length > 0 ? (
-                          <ul className="mt-1 space-y-0.5 text-[13px] leading-snug text-foreground/80">
-                            {section.facts.map((fact) => (
-                              <li key={fact}>{fact}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </div>
-                    ))}
+                <div key={day.dayKey} className="space-y-2.5 px-4 py-3.5 last:pb-5">
+                  <div className="space-y-1.5">
+                    <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums tracking-wide text-foreground/80 ring-1 ring-border/60">
+                      {formatDayLabel(day.events)}
+                    </span>
+                    {dayHeadline ? (
+                      <p className="text-[13px] font-semibold leading-snug text-foreground">{dayHeadline}</p>
+                    ) : null}
+                    {dayKmShort ? (
+                      <p className="inline-flex rounded-md bg-muted/60 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-foreground/90">
+                        {dayKmShort}
+                      </p>
+                    ) : null}
                   </div>
+                  {sections.length > 0 ? (
+                    <div className={cn(sections.length > 1 ? "space-y-2.5" : "")}>
+                      {sections.map((section) => (
+                        <div key={`${day.dayKey}-${section.type}`}>
+                          {(sections.length > 1 || !dayHeadline) ? (
+                            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+                              <span className={cn("h-1.5 w-1.5 rounded-full", TYPE_DOT[section.type])} />
+                              {section.label}
+                            </p>
+                          ) : null}
+                          {section.facts.length > 0 ? (
+                            <ul className={cn("space-y-1 text-[13px] leading-snug text-foreground/85", (sections.length > 1 || !dayHeadline) && "mt-1")}>
+                              {section.facts.map((fact) => (
+                                <li key={fact}>{fact}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
           </div>
-        ) : (
-          <div className={cn("px-3 py-2", singleDaySections.length > 1 ? "space-y-2.5" : "")}>
-            {singleDaySections.map((section) => (
+        ) : bodySections.length > 0 ? (
+          <div className={cn("px-4 pt-3.5 pb-5", bodySections.length > 1 ? "space-y-3" : "")}>
+            {bodySections.map((section) => (
               <div key={section.type}>
-                <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span className={cn("h-2 w-2 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[section.type])} />
-                  {section.label}
-                </p>
+                {showSectionLabels ? (
+                  <p className="mb-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+                    <span className={cn("h-1.5 w-1.5 rounded-full", TYPE_DOT[section.type])} />
+                    {section.label}
+                  </p>
+                ) : null}
                 {section.facts.length > 0 ? (
-                  <ul className="mt-1 space-y-0.5 text-[13px] leading-snug text-foreground/80">
+                  <ul className="space-y-1 text-[13px] leading-snug text-foreground/85">
                     {section.facts.map((fact) => (
                       <li key={fact}>{fact}</li>
                     ))}
@@ -1002,6 +1051,8 @@ function TimelineMarker({
               </div>
             ))}
           </div>
+        ) : (
+          <div className="pb-3" aria-hidden />
         )}
       </PopoverContent>
     </Popover>
