@@ -722,7 +722,6 @@ export default function VinResult({ params }: Props) {
 
   const heroSummary = buildVinHeroSummaryItems({
     t,
-    accidentsCount: accidentSignals,
     odometer,
     hasMileage: odometer != null && !!odoCol,
     hasSalvageData,
@@ -859,7 +858,7 @@ export default function VinResult({ params }: Props) {
         {!isPendingManual && (
           <>
         {showAccidentsSection ? (
-          <div className="hidden print:flex w-full justify-center">
+          <div className="!hidden print:!flex w-full justify-center">
             <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
           </div>
         ) : null}

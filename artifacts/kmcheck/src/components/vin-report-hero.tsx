@@ -627,11 +627,11 @@ export function VinReportHero({
                   {accidentCount > 0 ? (
                     <div
                       className={cn(
-                        "sm:hidden rounded-xl border px-2.5 py-2 text-center min-w-[4.25rem]",
+                        "rounded-xl border px-2.5 py-2 text-center min-w-[4.25rem]",
                         "bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-800/60",
                       )}
                     >
-                      <p className="text-xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
+                      <p className="text-xl sm:text-2xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
                         {accidentCount}
                       </p>
                       <p className="text-[9px] font-semibold mt-0.5 leading-tight max-w-[4.25rem] text-orange-700 dark:text-orange-400">

@@ -1,10 +1,8 @@
 import type { VinHeroSummaryItem } from "@/components/vin-report-hero";
-import { formatAccidentCount } from "@/lib/format-accident-count";
 
 type BuildOpts = {
   t: (key: string) => string;
   locked?: boolean;
-  accidentsCount: number;
   odometer?: number | null;
   hasMileage: boolean;
   hasSalvageData: boolean;
@@ -24,13 +22,7 @@ export function buildVinHeroSummaryItems(opts: BuildOpts): VinHeroSummaryItem[] 
 
   const items: VinHeroSummaryItem[] = [];
 
-  if (opts.accidentsCount > 0) {
-    items.push({
-      kind: "accidents",
-      label: formatAccidentCount(t, opts.accidentsCount),
-      tone: "negative",
-    });
-  }
+  // Accidents are shown next to the rating badge in the hero — not in this summary list.
 
   if (opts.hasMileage && opts.odometer != null) {
     items.push({

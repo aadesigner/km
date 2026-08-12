@@ -48,9 +48,10 @@ const TYPE_DOT: Record<TimelineEventType, string> = {
 
 const VIEW_W = 1000;
 const VIEW_H = 240;
-const PAD = { l: 22, r: 22, t: 30, b: 16 };
+/** Tight plot inset — enough for end markers, chart fills most of the card. */
+const PAD = { l: 14, r: 22, t: 28, b: 16 };
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 5;
+const MAX_ZOOM = 6;
 const ZOOM_FACTOR = 1.25;
 const DOUBLE_TAP_ZOOM = 2;
 
@@ -481,14 +482,20 @@ function TimelineMarker({
           type="button"
           aria-label={`${typeLabels.join(", ")}, ${dateLabel}`}
           className={cn(
-            "absolute z-[1] group flex h-9 w-9 items-center justify-center rounded-full",
-            "outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1",
+            // Large invisible hit target on mobile; visual dot stays small inside.
+            "absolute z-[1] group flex h-11 w-11 items-center justify-center rounded-full sm:h-9 sm:w-9",
+            "touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1",
+            open && "z-[5]",
             !interactive && "pointer-events-none",
           )}
           style={{
             left: `${leftPct}%`,
             top: `${topPct}%`,
             transform: `translate(-50%, -50%) scale(${inverse})`,
+          }}
+          onPointerDown={(e) => {
+            // Keep chart pan/pinch from stealing the tap.
+            e.stopPropagation();
           }}
           onPointerEnter={(e) => {
             if (e.pointerType === "mouse") openNow();
@@ -499,16 +506,17 @@ function TimelineMarker({
         >
           <span
             className={cn(
-              "relative block rounded-full shadow-[0_1px_3px_rgba(15,23,42,0.22)]",
-              "ring-[2.5px] ring-background transition-transform duration-150",
+              "relative block rounded-full shadow-[0_1px_2px_rgba(15,23,42,0.2)]",
+              "ring-2 ring-background transition-transform duration-150 sm:ring-[2.5px]",
               open ? "scale-110" : "group-hover:scale-105",
-              accident || clustered ? "h-4 w-4" : "h-3.5 w-3.5",
-              markerType === "production" && !clustered && "h-3 w-3 ring-slate-400/80 dark:ring-slate-500",
+              // Compact dots — especially on mobile where dense markers overlap.
+              accident || clustered ? "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" : "h-2 w-2 sm:h-3 sm:w-3",
+              markerType === "production" && !clustered && "h-1.5 w-1.5 sm:h-2.5 sm:w-2.5 ring-slate-400/80 dark:ring-slate-500",
               clustered ? "bg-primary" : TYPE_DOT[markerType],
             )}
           />
           {clustered ? (
-            <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-foreground px-0.5 text-[8px] font-bold leading-none text-background shadow-sm">
+            <span className="absolute right-1.5 top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-foreground px-0.5 text-[7px] font-bold leading-none text-background shadow-sm sm:right-0.5 sm:top-0.5 sm:h-3.5 sm:min-w-3.5 sm:text-[8px]">
               {types.length}
             </span>
           ) : null}
@@ -577,6 +585,7 @@ export function ReportHistoryTimeline({
     contentY: number;
   } | null>(null);
   const panRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const panActiveRef = useRef(false);
   const lastTapRef = useRef(0);
   const [zoom, setZoom] = useState<ChartZoom>({ scale: 1, x: 0, y: 0 });
   const [gesturing, setGesturing] = useState(false);
@@ -644,6 +653,9 @@ export function ReportHistoryTimeline({
     };
 
     const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("button")) return;
+
       if (e.touches.length === 2) {
         const a = e.touches[0]!;
         const b = e.touches[1]!;
@@ -670,7 +682,7 @@ export function ReportHistoryTimeline({
           ty: zoomRef.current.y,
         };
         pinchRef.current = null;
-        setGesturing(true);
+        // Defer gesturing until real movement so marker taps still fire.
       }
     };
 
@@ -689,12 +701,19 @@ export function ReportHistoryTimeline({
         return;
       }
       if (e.touches.length === 1 && panRef.current && zoomRef.current.scale > 1.02) {
-        e.preventDefault();
         const t = e.touches[0]!;
+        const dx = t.clientX - panRef.current.x;
+        const dy = t.clientY - panRef.current.y;
+        if (!panActiveRef.current && Math.hypot(dx, dy) < 8) return;
+        e.preventDefault();
+        if (!panActiveRef.current) {
+          panActiveRef.current = true;
+          setGesturing(true);
+        }
         applyZoom({
           scale: zoomRef.current.scale,
-          x: panRef.current.tx + (t.clientX - panRef.current.x),
-          y: panRef.current.ty + (t.clientY - panRef.current.y),
+          x: panRef.current.tx + dx,
+          y: panRef.current.ty + dy,
         });
       }
     };
@@ -702,11 +721,13 @@ export function ReportHistoryTimeline({
     const onTouchEnd = (e: TouchEvent) => {
       if (e.touches.length > 0) return;
       const wasPinch = Boolean(pinchRef.current);
+      const didPan = panActiveRef.current;
       pinchRef.current = null;
       panRef.current = null;
+      panActiveRef.current = false;
       setGesturing(false);
 
-      if (wasPinch) return;
+      if (wasPinch || didPan) return;
       const target = e.target as HTMLElement | null;
       if (target?.closest("button")) return;
       const touch = e.changedTouches[0];
@@ -735,21 +756,29 @@ export function ReportHistoryTimeline({
         tx: zoomRef.current.x,
         ty: zoomRef.current.y,
       };
-      setGesturing(true);
+      panActiveRef.current = false;
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!panRef.current || zoomRef.current.scale <= 1.02) return;
+      const dx = e.clientX - panRef.current.x;
+      const dy = e.clientY - panRef.current.y;
+      if (!panActiveRef.current && Math.hypot(dx, dy) < 6) return;
       e.preventDefault();
+      if (!panActiveRef.current) {
+        panActiveRef.current = true;
+        setGesturing(true);
+      }
       applyZoom({
         scale: zoomRef.current.scale,
-        x: panRef.current.tx + (e.clientX - panRef.current.x),
-        y: panRef.current.ty + (e.clientY - panRef.current.y),
+        x: panRef.current.tx + dx,
+        y: panRef.current.ty + dy,
       });
     };
 
     const onMouseUp = () => {
       panRef.current = null;
+      panActiveRef.current = false;
       setGesturing(false);
     };
 
@@ -785,10 +814,7 @@ export function ReportHistoryTimeline({
     const endYear = Number(events[events.length - 1]!.dayKey.slice(0, 4));
     const years = pickYears(startYear, endYear, 5).map((year) => ({
       year,
-      leftPct: Math.min(
-        98,
-        Math.max(2, (xOf(historyDateSortKey(`${year}-01-01`), min, span) / VIEW_W) * 100),
-      ),
+      leftPct: (xOf(historyDateSortKey(`${year}-01-01`), min, span) / VIEW_W) * 100,
     }));
 
     const yTicks = [0, maxKm / 2, maxKm].map((km) => ({
@@ -899,7 +925,7 @@ export function ReportHistoryTimeline({
         </div>
       </div>
 
-      <div className="mt-1 w-full min-w-0 px-2 pb-1 sm:px-3">
+      <div className="mt-1 w-full min-w-0 px-1 pb-1 sm:px-2 lg:px-3">
       <div
         ref={viewportRef}
         className={cn(
@@ -916,11 +942,11 @@ export function ReportHistoryTimeline({
           }}
         >
         <div className="flex min-w-0 items-stretch">
-          <div className="relative w-7 shrink-0 sm:w-8">
+          <div className="relative w-6 shrink-0 sm:w-7">
             {layout.yTicks.map((tick) => (
               <span
                 key={tick.km}
-                className="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums leading-none text-muted-foreground sm:text-[11px]"
+                className="absolute right-0.5 -translate-y-1/2 text-[10px] tabular-nums leading-none text-muted-foreground sm:right-1 sm:text-[11px]"
                 style={{ top: `${tick.topPct}%` }}
               >
                 {formatKmAxis(tick.km)}
@@ -928,10 +954,10 @@ export function ReportHistoryTimeline({
             ))}
           </div>
 
-          <div className="relative min-w-0 flex-1 overflow-hidden">
+          <div className="relative min-w-0 flex-1 overflow-visible">
             <svg
               viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-              className="block h-[10.5rem] w-full max-w-full sm:h-[13.5rem] lg:h-[15.5rem]"
+              className="block h-[11.5rem] w-full max-w-full sm:h-[14.5rem] lg:h-[16.5rem]"
               preserveAspectRatio="none"
               role="img"
               aria-hidden
@@ -1014,10 +1040,13 @@ export function ReportHistoryTimeline({
               />
             ))}
           </div>
+
+          {/* Tiny gutter so the last marker isn’t clipped */}
+          <div className="w-2 shrink-0 sm:w-1.5" aria-hidden />
         </div>
 
         <div className="flex min-w-0">
-          <div className="w-7 shrink-0 sm:w-8" />
+          <div className="w-6 shrink-0 sm:w-7" />
           <div className="relative h-5 min-w-0 flex-1 overflow-hidden sm:h-6">
             {layout.years.map(({ year, leftPct }, i) => {
               const align =
@@ -1037,6 +1066,7 @@ export function ReportHistoryTimeline({
               );
             })}
           </div>
+          <div className="w-2 shrink-0 sm:w-1.5" aria-hidden />
         </div>
         </div>
       </div>
