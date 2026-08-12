@@ -21,6 +21,7 @@ import {
   TIMELINE_EVENT_TYPES,
   type TimelineEvent,
   type TimelineEventType,
+  shouldShowTimelineMarkerGroup,
 } from "@/lib/report-history-timeline";
 import { historyDateSortKey } from "@/lib/history-sort";
 
@@ -397,21 +398,17 @@ type Props = {
 
 type MileagePoint = { sortKey: number; km: number };
 
-function niceMax(n: number): number {
-  if (n <= 0) return 10_000;
-  const exp = 10 ** Math.floor(Math.log10(n));
-  const f = n / exp;
-  const nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
-  return nice * exp;
-}
-
 function formatKmAxis(km: number): string {
+  if (km <= 0) return "0 km";
   if (km >= 1_000_000) {
     const m = km / 1_000_000;
-    return `${Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1)}M`;
+    const value = Number.isInteger(m) ? `${m}M` : `${m.toFixed(1)}M`;
+    return `${value} km`;
   }
-  if (km >= 1000) return `${Math.round(km / 1000)}k`;
-  return String(Math.round(km));
+  // Only use "Nk" when the value is an exact thousand — never invent a higher ceiling.
+  if (km >= 1000 && km % 1000 === 0) return `${km / 1000}k km`;
+  if (km >= 1000) return `${Math.round(km).toLocaleString()} km`;
+  return `${Math.round(km)} km`;
 }
 
 /** Keep axis labels inside the column (avoid top/bottom crop from -50% translate). */
@@ -1004,8 +1001,8 @@ export function ReportHistoryTimeline({
     const max = events[events.length - 1]!.sortKey;
     const span = Math.max(0, max - min);
     const series = buildMileageSeries(events);
-    const rawMax = Math.max(0, ...series.map((p) => p.km), ...events.map((e) => e.mileage ?? 0));
-    const maxKm = niceMax(rawMax);
+    const maxKm = Math.max(0, ...series.map((p) => p.km), ...events.map((e) => e.mileage ?? 0));
+    const axisMax = maxKm > 0 ? maxKm : 1;
 
     const startYear = Number(events[0]!.dayKey.slice(0, 4));
     const endYear = Number(events[events.length - 1]!.dayKey.slice(0, 4));
@@ -1014,20 +1011,17 @@ export function ReportHistoryTimeline({
       leftPct: (xOf(historyDateSortKey(`${year}-01-01`), min, span) / VIEW_W) * 100,
     }));
 
-    const yTicks = [0, maxKm / 2, maxKm].map((km) => ({
+    const yTicks = [0, axisMax / 2, axisMax].map((km) => ({
       km,
-      topPct: (yOf(km, maxKm) / VIEW_H) * 100,
+      topPct: (yOf(km, axisMax) / VIEW_H) * 100,
     }));
-    const baselineY = yOf(0, maxKm);
+    const baselineY = yOf(0, axisMax);
 
     const linePts = series.map((p) => ({
       x: xOf(p.sortKey, min, span),
-      y: yOf(p.km, maxKm),
+      y: yOf(p.km, axisMax),
       km: p.km,
     }));
-    if (linePts.length === 1) {
-      linePts.push({ x: xOf(max, min, span), y: linePts[0]!.y, km: linePts[0]!.km });
-    }
 
     const lineD = smoothLinePath(linePts);
     const areaD =
@@ -1036,14 +1030,14 @@ export function ReportHistoryTimeline({
         : "";
 
     const markers: PlotMarker[] = clusterTimelineEvents(events)
-      .filter((group) => clusterTypes(group).some((type) => type !== "mileage"))
+      .filter(shouldShowTimelineMarkerGroup)
       .map((group) => {
         const lead = group[0]!;
         const km =
           Math.max(0, ...group.map((e) => (e.mileage != null && e.mileage > 0 ? e.mileage : 0)))
           || interpolateKm(lead.sortKey, series);
         const x = Math.min(VIEW_W - PAD.r, Math.max(PAD.l, xOf(lead.sortKey, min, span)));
-        const y = yOf(km, maxKm);
+        const y = yOf(km, axisMax);
         return {
           id: group.map((e) => e.id).join("+"),
           events: group,
@@ -1055,7 +1049,7 @@ export function ReportHistoryTimeline({
       });
 
     return {
-      maxKm,
+      maxKm: axisMax,
       years,
       yTicks,
       baselineY,

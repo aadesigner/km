@@ -391,7 +391,7 @@ function MileageTimeline({
                   )}
                   {titleLabel && (
                     <span className="text-xs bg-amber-500/10 text-amber-800 dark:text-amber-300 rounded-md px-2 py-0.5">
-                      {t("title_status")}: {titleLabel}
+                      {t("mileage_title")}: {titleLabel}
                     </span>
                   )}
                   {status && (
@@ -403,7 +403,7 @@ function MileageTimeline({
               )}
               {servicesNote && (
                 <p className="text-sm text-muted-foreground mt-1.5 leading-snug">
-                  <span className="font-medium text-foreground/80">{t("mileage_services")}: </span>
+                  <span className="font-medium text-foreground/80">{t("mileage_description")}: </span>
                   {servicesNote}
                 </p>
               )}
@@ -621,7 +621,9 @@ export default function VinResult({ params }: Props) {
   // Do not useMemo here — this runs after early returns; conditional hooks crash the page
   // when loading → pending_manual/complete (e.g. right after PayPal redirect).
   const { photos, photosHd } = resolveReportPhotoSets(data);
-  const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data?.mileageHistory, data?.year));
+  const mileageHistory = sortHistoryNewestFirst(
+    sanitizeMileageHistory(repairDatedRecords(data?.mileageHistory, data?.year), data?.year),
+  );
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data?.ownerHistory, data?.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data?.auctionHistory, data?.year));
   const registryHistory = sortHistoryNewestFirst(

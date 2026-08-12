@@ -363,7 +363,7 @@ function MileageTimeline({
                   )}
                   {titleLabel && (
                     <span className="text-xs bg-amber-500/10 text-amber-800 dark:text-amber-300 rounded-md px-2 py-0.5">
-                      {t("title_status")}: {titleLabel}
+                      {t("mileage_title")}: {titleLabel}
                     </span>
                   )}
                   {status && (
@@ -375,7 +375,7 @@ function MileageTimeline({
               )}
               {servicesNote && (
                 <p className="text-sm text-muted-foreground mt-1.5 leading-snug">
-                  <span className="font-medium text-foreground/80">{t("mileage_services")}: </span>
+                  <span className="font-medium text-foreground/80">{t("mileage_description")}: </span>
                   {servicesNote}
                 </p>
               )}
@@ -608,7 +608,9 @@ export default function VinPublic({ params }: Props) {
   const { photos, photosHd } = resolveReportPhotoSets(data);
   const heroPhotos = data.isUnlocked ? photos : photos.slice(0, 1);
   const lightboxPhotos = data.isUnlocked ? photosHd : photosHd.slice(0, 1);
-  const mileageHistory = sortHistoryNewestFirst(sanitizeMileageHistory(data.mileageHistory, data.year));
+  const mileageHistory = sortHistoryNewestFirst(
+    sanitizeMileageHistory(repairDatedRecords(data.mileageHistory, data.year), data.year),
+  );
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data.ownerHistory, data.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data.auctionHistory, data.year));
   const marketData = data.marketData ?? null;

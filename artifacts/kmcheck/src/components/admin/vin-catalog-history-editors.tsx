@@ -714,12 +714,12 @@ export function VinCatalogHistorySections({
             <Field label="Primary damage" value={item.primaryDamage} onChange={(v) => update({ primaryDamage: v })} compact={compact} />
             <Field label="Secondary damage" value={item.secondaryDamage} onChange={(v) => update({ secondaryDamage: v })} compact={compact} />
             <Field label="Auction price" value={item.auctionPrice} onChange={(v) => update({ auctionPrice: v })} type="number" compact={compact} />
-            <Field label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
+            <Field label="Title" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
             <Field label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
             <Field label="Location (manual)" value={item.location} onChange={(v) => update({ location: v })} compact={compact} />
             <div className="sm:col-span-2 lg:col-span-3">
               <Field
-                label="Description / services (manual)"
+                label="Description"
                 value={item.description}
                 onChange={(v) => update({ description: v })}
                 compact={compact}

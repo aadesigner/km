@@ -326,16 +326,49 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
   return out;
 }
 
-/** Graph-worthy history — production year alone is not enough. */
-const TIMELINE_GRAPH_EVENT_TYPES = new Set<TimelineEventType>([
+/**
+ * Graph-worthy history — production year alone is not enough.
+ * A single bare odometer reading is not enough either. Show when there is
+ * service / accident / insurance / owner / auction / registry, annotated
+ * mileage (manual location or notes), or 2+ dated mileage days.
+ */
+const TIMELINE_GRAPH_NON_MILEAGE_TYPES = new Set<TimelineEventType>([
   "accident",
   "insurance",
-  "mileage",
+  "service",
   "owner",
   "auction",
   "registry",
 ]);
 
+/** Admin-entered mileage notes (location, services text, condition, damage). */
+export function hasManualMileageDetail(event: TimelineEvent): boolean {
+  if (event.type !== "mileage") return false;
+  return Boolean(
+    event.location?.trim()
+    || event.description?.trim()
+    || event.condition?.trim()
+    || event.damage?.trim()
+    || event.primaryDamage?.trim()
+    || event.secondaryDamage?.trim(),
+  );
+}
+
+export function shouldShowTimelineMarkerGroup(events: TimelineEvent[]): boolean {
+  return events.some((event) => event.type !== "mileage" || hasManualMileageDetail(event));
+}
+
 export function shouldShowReportTimeline(events: TimelineEvent[]): boolean {
-  return events.some((event) => TIMELINE_GRAPH_EVENT_TYPES.has(event.type));
+  if (events.some((event) => TIMELINE_GRAPH_NON_MILEAGE_TYPES.has(event.type))) {
+    return true;
+  }
+
+  if (events.some((event) => event.type === "mileage" && hasManualMileageDetail(event))) {
+    return true;
+  }
+
+  const mileageDays = new Set(
+    events.filter((event) => event.type === "mileage").map((event) => event.dayKey),
+  );
+  return mileageDays.size >= 2;
 }
