@@ -66,6 +66,18 @@ describe("Ford Europe QA — XX layout regression", () => {
     expect(r.year).not.toBe(2011);
   });
 
+  it("Galaxy with year letter W does not invent 2028 while calendar is still 2026", () => {
+    // pos.10 = W → ISO candidates 1998 / 2028; both invalid for Mk3+ Galaxy in 2026
+    const vin = "WF0LXXGCBWBT76866";
+    expect(fordEuXxUsesIsoYearAtPos10(vin)).toBe(true);
+    expect(decodeFordEuXxYear(vin)).toBeNull();
+    const r = decodeVin(vin);
+    expect(r.make).toBe("Ford");
+    expect(r.model).toMatch(/Galaxy/i);
+    expect(r.year).toBeNull();
+    expect(r.year).not.toBe(2028);
+  });
+
   it.each([
     ["WF0KXXWPCKLB71430", 2020],
     ["WF0KXXWPCKMJ44715", 2021],

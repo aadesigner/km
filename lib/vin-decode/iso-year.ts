@@ -29,8 +29,12 @@ export function isoModelYearCandidates(code: string): number[] {
   return out;
 }
 
+/**
+ * Model years can run slightly ahead of the calendar (e.g. MY2027 cars sold late in 2026).
+ * Cap at now+1 so ISO 30-year reuse cannot invent years like 2028 while we are still in 2026.
+ */
 function maxPlausibleModelYear(now = new Date().getFullYear()): number {
-  return now + 2;
+  return now + 1;
 }
 
 /**
@@ -38,7 +42,7 @@ function maxPlausibleModelYear(now = new Date().getFullYear()): number {
  * Returns null when zero candidates remain.
  * When multiple candidates remain:
  * - default: null (no cycle guessing)
- * - preferRecentIfAmbiguous: pick the newest candidate ≤ now+2 (known-make fallback only)
+ * - preferRecentIfAmbiguous: pick the newest candidate ≤ now+1 (known-make fallback only)
  */
 export function resolveIsoModelYear(
   code: string,
@@ -47,11 +51,24 @@ export function resolveIsoModelYear(
 ): number | null {
   const now = opts?.now ?? new Date().getFullYear();
   const maxY = maxPlausibleModelYear(now);
-  let cands = isoModelYearCandidates(code).filter((y) => y >= 1980 && y <= maxY);
+  const raw = isoModelYearCandidates(code).filter((y) => y >= 1980);
+  const droppedAsFuture = raw.filter((y) => y > maxY);
+  let cands = raw.filter((y) => y <= maxY);
   if (window) {
     cands = cands.filter((y) => y >= window.from && y <= window.to);
   }
-  if (cands.length === 1) return cands[0]!;
+  if (cands.length === 1) {
+    const only = cands[0]!;
+    // Without a production window, do not collapse letter codes to the old ISO cycle
+    // just because the newer twin is still beyond now+1 (e.g. W → 1998/2028 in 2026).
+    // Digit codes (2001–2009 vs 2031–2039) still uniquely resolve to 200x until 203x is plausible.
+    const upper = code.toUpperCase();
+    const isDigitCode = upper >= "1" && upper <= "9";
+    if (!window && !isDigitCode && droppedAsFuture.length > 0 && only === Math.min(...raw)) {
+      return null;
+    }
+    return only;
+  }
   if (cands.length === 0) return null;
   // A production window that spans both ISO cycles still uniquely prefers the
   // newest in-window year (the generation was still in production).

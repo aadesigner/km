@@ -186,7 +186,9 @@ export function decodeFordEuXxYear(vin: string): number | null {
 
   if (fordEuXxUsesIsoYearAtPos10(vin)) {
     // Galaxy XX prefixes (WF0LXX/MXX/WXX…): ISO pos.10 — Mk3+ era only.
-    return resolveIsoModelYear(u[9] ?? "", { from: 2015, to: 2099 });
+    // Cap at now+1 so letter W cannot resolve to 2028 while we are still in 2026.
+    const currentYear = new Date().getFullYear();
+    return resolveIsoModelYear(u[9] ?? "", { from: 2015, to: currentYear + 1 });
   }
 
   const code = u[10];
@@ -194,7 +196,7 @@ export function decodeFordEuXxYear(vin: string): number | null {
   const year = FORD_XX_YEAR_AT_11[code];
   if (year == null) return null;
   const currentYear = new Date().getFullYear();
-  return year <= currentYear + 2 ? year : null;
+  return year <= currentYear + 1 ? year : null;
 }
 
 export function decodeFordEuModel(vin: string): string | null {
