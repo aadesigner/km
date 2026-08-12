@@ -52,6 +52,7 @@ export const LookupVinResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -126,6 +127,7 @@ export const GetVinLookupResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -219,6 +221,7 @@ export const GetVinPublicReportResponse = zod.object({
   "ownerCount": zod.number().nullish(),
   "salvage": zod.boolean().nullish(),
   "stolen": zod.boolean().nullish(),
+  "taxi": zod.boolean().nullish(),
   "titleStatus": zod.string().nullish(),
   "photos": zod.array(zod.string()).optional()
 })
@@ -331,6 +334,7 @@ export const GetUserHistoryResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -468,6 +472,7 @@ export const GetUserStatsResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -777,6 +782,7 @@ export const AdminGetUserHistoryResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -925,6 +931,7 @@ export const AdminGetVinLookupsResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -1030,6 +1037,7 @@ export const AdminRefreshVinResponse = zod.object({
   "cylinders": zod.number().nullish(),
   "isSalvage": zod.boolean().nullish(),
   "isStolen": zod.boolean().nullish(),
+  "isTaxi": zod.boolean().nullish(),
   "photos": zod.array(zod.string()).optional(),
   "accidents": zod.array(zod.object({
   "date": zod.string().nullish(),
@@ -1138,6 +1146,7 @@ export const AdminCreateVinCatalogBody = zod.object({
   "titleStatus": zod.string().nullish(),
   "isSalvage": zod.boolean().optional(),
   "isStolen": zod.boolean().optional(),
+  "isTaxi": zod.boolean().optional(),
   "country": zod.string().nullish(),
   "photos": zod.array(zod.string()).nullish(),
   "accidents": zod.unknown().nullish(),
@@ -1248,6 +1257,7 @@ export const AdminUpdateVinCatalogByVinBody = zod.object({
   "titleStatus": zod.string().nullish(),
   "isSalvage": zod.boolean().optional(),
   "isStolen": zod.boolean().optional(),
+  "isTaxi": zod.boolean().optional(),
   "country": zod.string().nullish(),
   "photos": zod.array(zod.string()).nullish(),
   "accidents": zod.unknown().nullish(),

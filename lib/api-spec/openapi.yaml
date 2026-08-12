@@ -1598,6 +1598,8 @@ components:
           type: ["boolean", "null"]
         stolen:
           type: ["boolean", "null"]
+        taxi:
+          type: ["boolean", "null"]
         titleStatus:
           type: ["string", "null"]
         photos:
@@ -1658,6 +1660,8 @@ components:
         isSalvage:
           type: ["boolean", "null"]
         isStolen:
+          type: ["boolean", "null"]
+        isTaxi:
           type: ["boolean", "null"]
         photos:
           type: array
@@ -2549,6 +2553,8 @@ components:
         isSalvage:
           type: boolean
         isStolen:
+          type: boolean
+        isTaxi:
           type: boolean
         country:
           type: string

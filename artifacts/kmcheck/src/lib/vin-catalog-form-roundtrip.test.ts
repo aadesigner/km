@@ -156,6 +156,7 @@ describe("vin catalog form save round-trip", () => {
     expect(restored.titleStatus).toBe("clean");
     expect(restored.isSalvage).toBe(false);
     expect(restored.isStolen).toBe(true);
+    expect(restored.isTaxi).toBe(false);
     expect(restored.photos).toEqual(form.photos);
 
     expect(payload.mileageHistory).toEqual([expect.objectContaining({

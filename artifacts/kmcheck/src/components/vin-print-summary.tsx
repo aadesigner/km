@@ -45,6 +45,7 @@ type VinPrintSummaryProps = {
   ownerCount?: number | null;
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
+  isTaxi?: boolean | null;
   hasSalvageData: boolean;
   hasTheftData: boolean;
   marketValue?: string | null;
@@ -226,6 +227,7 @@ export function VinPrintSummary({
   ownerCount,
   isSalvage,
   isStolen,
+  isTaxi,
   hasSalvageData,
   hasTheftData,
   marketValue,
@@ -322,6 +324,12 @@ export function VinPrintSummary({
         tone={isStolen ? "negative" : "positive"}
       />
     ) : null,
+    <FindingBadge
+      key="taxi"
+      label={t("report_taxi")}
+      value={isTaxi ? t("taxi_flagged") : t("report_not_taxi")}
+      tone={isTaxi ? "negative" : "positive"}
+    />,
     marketValue ? (
       <FindingBadge key="market" label={t("report_estimated_value")} value={marketValue} />
     ) : null,

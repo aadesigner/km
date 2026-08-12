@@ -11,9 +11,10 @@ type BuildOpts = {
   isSalvage?: boolean | null;
   hasTheftData: boolean;
   isStolen?: boolean | null;
+  isTaxi?: boolean | null;
 };
 
-/** Only includes summary chips when the provider returned real data for that field. */
+/** Salvage/theft chips only when the provider returned data; taxi is always shown (admin-set). */
 export function buildVinHeroSummaryItems(opts: BuildOpts): VinHeroSummaryItem[] {
   const { t, locked } = opts;
 
@@ -54,6 +55,12 @@ export function buildVinHeroSummaryItems(opts: BuildOpts): VinHeroSummaryItem[] 
       tone: opts.isStolen ? "negative" : "positive",
     });
   }
+
+  items.push({
+    kind: "taxi",
+    label: opts.isTaxi ? t("taxi_flagged") : t("report_not_taxi"),
+    tone: opts.isTaxi ? "negative" : "positive",
+  });
 
   return items;
 }

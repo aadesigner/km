@@ -171,7 +171,7 @@ router.get("/payments/public-settings", async (req, res) => {
       linkedinEnabled,
       freeVinDecoderEnabled: settings?.freeVinDecoderEnabled ?? true,
       freeVinDecoderRequireSignIn: settings?.freeVinDecoderRequireSignIn ?? false,
-      krwPerUsd: settings?.krwPerUsd && settings.krwPerUsd > 0 ? settings.krwPerUsd : 1537,
+      krwPerUsd: settings?.krwPerUsd && settings.krwPerUsd > 0 ? settings.krwPerUsd : 1415,
       analyticsGtmEnabled: !!(settings?.analyticsGtmEnabled && settings.analyticsGtmContainerId?.trim()),
       analyticsGtmContainerId: settings?.analyticsGtmContainerId?.trim() || null,
       analyticsGaEnabled: !!(settings?.analyticsGaEnabled && settings.analyticsGaMeasurementId?.trim()),

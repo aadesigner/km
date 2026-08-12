@@ -70,6 +70,7 @@ describe("admin catalog save integration", () => {
       titleStatus: "clean",
       isSalvage: false,
       isStolen: false,
+      isTaxi: false,
       photos: ["https://cdn.example.com/car.jpg"],
       accidents: [{ date: "2020-01-01", type: "collision", primaryDamage: "front" }],
       insuranceClaims: [{ date: "2020-02-01", type: "collision", lossAmount: 1200 }],
@@ -123,6 +124,7 @@ describe("admin catalog save integration", () => {
     expect(out.titleStatus).toBe("clean");
     expect(out.isSalvage).toBe(false);
     expect(out.isStolen).toBe(false);
+    expect(out.isTaxi).toBe(false);
     expect(out.photos).toEqual(["https://cdn.example.com/car.jpg"]);
     expect(out.accidents).toEqual([expect.objectContaining({ primaryDamage: "front" })]);
     expect(out.insuranceClaims).toEqual([expect.objectContaining({ lossAmount: 1200 })]);

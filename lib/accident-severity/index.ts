@@ -2,7 +2,7 @@
 export const ACCIDENT_SEVERITY_USD_MINOR_MAX = 1300;
 export const ACCIDENT_SEVERITY_USD_MODERATE_MAX = 3000;
 
-export const DEFAULT_KRW_PER_USD_FOR_SEVERITY = 1537;
+export const DEFAULT_KRW_PER_USD_FOR_SEVERITY = 1415;
 
 export type AccidentSeverityTier = "minor" | "moderate" | "major" | "total_loss";
 

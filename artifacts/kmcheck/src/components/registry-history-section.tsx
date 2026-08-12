@@ -44,6 +44,8 @@ type Props = {
   t: (key: string) => string;
   language: Language;
   variant?: "report" | "public";
+  /** Registry timeline vs dedicated recalls section. */
+  kind?: "registry" | "recall";
   className?: string;
   delay?: number;
 };
@@ -296,6 +298,7 @@ export function RegistryHistorySection({
   t,
   language,
   variant = "report",
+  kind = "registry",
   className,
   delay = 0.1,
 }: Props) {
@@ -305,6 +308,11 @@ export function RegistryHistorySection({
 
   const sortedEvents = sortHistoryNewestFirst(events);
   const visibleEvents = sliceForHistoryPreview(sortedEvents, expanded);
+  const isRecall = kind === "recall";
+  const HeaderIcon = isRecall ? FileWarning : ClipboardList;
+  const headerIconClass = isRecall ? "bg-red-500/10 text-red-500" : "bg-violet-500/10 text-violet-500";
+  const titleKey = isRecall ? "report_recall_history" : "report_registry_history";
+  const noteKey = isRecall ? "report_recall_history_note" : "report_registry_history_note";
 
   const shellClass = variant === "public"
     ? "rounded-2xl border bg-card overflow-hidden"
@@ -318,16 +326,16 @@ export function RegistryHistorySection({
     <>
       <div className={headerClass}>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="h-6 w-6 rounded-md bg-violet-500/10 flex items-center justify-center shrink-0">
-            <ClipboardList className="h-3.5 w-3.5 text-violet-500" />
+          <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shrink-0", headerIconClass)}>
+            <HeaderIcon className="h-3.5 w-3.5" />
           </div>
           <div className="min-w-0">
             <h2 className={variant === "public" ? "text-xs font-bold uppercase tracking-widest text-muted-foreground" : "font-bold text-sm leading-tight"}>
-              {t("report_registry_history")}
+              {t(titleKey)}
             </h2>
             {variant === "report" && (
               <p className="text-[10px] text-muted-foreground leading-tight truncate sm:whitespace-normal">
-                {t("report_registry_history_note")}
+                {t(noteKey)}
               </p>
             )}
           </div>
@@ -338,7 +346,7 @@ export function RegistryHistorySection({
       </div>
       <div className="px-4 py-3">
         {variant === "public" && (
-          <p className="text-[11px] text-muted-foreground mb-2.5 leading-snug">{t("report_registry_history_note")}</p>
+          <p className="text-[11px] text-muted-foreground mb-2.5 leading-snug">{t(noteKey)}</p>
         )}
         <div className="space-y-0">
           {visibleEvents.map((event, i) => (

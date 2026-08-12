@@ -73,6 +73,7 @@ export type VinCatalogData = {
   titleStatus?: string | null;
   isSalvage?: boolean;
   isStolen?: boolean;
+  isTaxi?: boolean;
   photos?: string[] | null;
   accidents?: unknown;
   insuranceClaims?: unknown;
@@ -103,6 +104,7 @@ export type VinCatalogFormState = {
   titleStatus: string;
   isSalvage: boolean;
   isStolen: boolean;
+  isTaxi: boolean;
   photos: string[];
   accidents: CatalogAccidentForm[];
   insuranceClaims: CatalogInsuranceClaimForm[];
@@ -133,6 +135,7 @@ export const EMPTY_VIN_CATALOG_FORM: VinCatalogFormState = {
   titleStatus: "",
   isSalvage: false,
   isStolen: false,
+  isTaxi: false,
   photos: [],
   accidents: [],
   insuranceClaims: [],
@@ -165,6 +168,7 @@ export function vinCatalogFormFromData(data: VinCatalogData | null | undefined):
     titleStatus: String(d.titleStatus ?? ""),
     isSalvage: Boolean(d.isSalvage),
     isStolen: Boolean(d.isStolen),
+    isTaxi: Boolean(d.isTaxi),
     photos: Array.isArray(d.photos) ? d.photos.filter(Boolean) : [],
     accidents: normalizeAccidents(d.accidents),
     insuranceClaims: normalizeInsuranceClaims(d.insuranceClaims),
@@ -204,6 +208,7 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     titleStatus: form.titleStatus.trim() || null,
     isSalvage: form.isSalvage,
     isStolen: form.isStolen,
+    isTaxi: form.isTaxi,
     photos: form.photos,
     accidents: accidentsToPayload(form.accidents),
     insuranceClaims: insuranceClaimsToPayload(form.insuranceClaims),
@@ -496,6 +501,12 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
           hint="Flags the vehicle as stolen in reports"
           checked={form.isStolen}
           onChange={(v) => set("isStolen", v)}
+        />
+        <AdminCheckField
+          label="Used as a taxi"
+          hint="Shown as a warning on reports when this vehicle was used as a taxi"
+          checked={form.isTaxi}
+          onChange={(v) => set("isTaxi", v)}
         />
       </div>
     </div>

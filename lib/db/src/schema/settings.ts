@@ -115,7 +115,7 @@ export const systemSettingsTable = pgTable("system_settings", {
   // Failed transaction auto-removal (days, 0 = disabled)
   failedTxnRetentionDays: integer("failed_txn_retention_days").notNull().default(0),
   /** KRW per 1 USD — used to show Korean insurance claim amounts in USD */
-  krwPerUsd: real("krw_per_usd").notNull().default(1537),
+  krwPerUsd: real("krw_per_usd").notNull().default(1415),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

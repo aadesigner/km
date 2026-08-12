@@ -984,8 +984,9 @@ export function translateInsuranceClaimDescription(
   const laborLabel = tr(t, "insurance_desc_labor");
   const paintLabel = tr(t, "insurance_desc_paint");
 
-  return description
-    .replace(/^parts\s+/i, partsLabel ? `${partsLabel} ` : "parts ")
-    .replace(/,\s*labor\s+/i, laborLabel ? `, ${laborLabel} ` : ", labor ")
-    .replace(/,\s*paint\s+/i, paintLabel ? `, ${paintLabel} ` : ", paint ");
+  let out = description;
+  if (partsLabel) out = out.replace(/\bparts\b/gi, partsLabel);
+  if (laborLabel) out = out.replace(/\blabor\b/gi, laborLabel);
+  if (paintLabel) out = out.replace(/\bpaint\b/gi, paintLabel);
+  return out;
 }

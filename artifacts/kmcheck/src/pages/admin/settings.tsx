@@ -306,7 +306,7 @@ export default function AdminSettings() {
     rateLimit: 100, rateLimitWindow: 60, maxVinsPerDay: 0,
     abuseDetectionEnabled: true,
     logRetentionDays: 4, failedTxnRetentionDays: 0,
-    krwPerUsd: 1537,
+    krwPerUsd: 1415,
   });
 
   const [smtpTestEmail, setSmtpTestEmail] = useState("");
@@ -386,7 +386,7 @@ export default function AdminSettings() {
       abuseDetectionEnabled: settings.abuseDetectionEnabled,
       logRetentionDays: (s.logRetentionDays as number) ?? 4,
       failedTxnRetentionDays: (s.failedTxnRetentionDays as number) ?? 0,
-      krwPerUsd: (s.krwPerUsd as number) ?? 1537,
+      krwPerUsd: (s.krwPerUsd as number) ?? 1415,
     });
   }, [settings]);
 
@@ -1463,15 +1463,16 @@ export default function AdminSettings() {
               <div className="space-y-1.5">
                 <Label>Korean won per 1 USD</Label>
                 <p className="text-xs text-muted-foreground">
-                  Applies to newly added Korean reports only. Existing reports keep the rate stored when they were created.
-                  Example: at 1,537 — ₩7,060,220 displays as $4,594 (₩7,060,220)
+                  Used for every Korean won amount on VIN reports (insurance, registry, accidents). Shown as USD with original won in parentheses.
+                  Existing reports use this live rate too — they no longer keep an old frozen conversion.
+                  Example: at 1,415 — ₩7,060,220 displays as $4,990 (₩7,060,220)
                 </p>
                 <Input
                   type="number"
                   min={1}
                   step={1}
                   value={system.krwPerUsd}
-                  onChange={(e) => setSystem((f) => ({ ...f, krwPerUsd: Number(e.target.value) || 1537 }))}
+                  onChange={(e) => setSystem((f) => ({ ...f, krwPerUsd: Number(e.target.value) || 1415 }))}
                   className="max-w-[200px]"
                 />
               </div>

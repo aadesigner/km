@@ -15,6 +15,7 @@ import {
   sanitizeCatalogPayload,
   catalogHasDeliverableReport,
   catalogDeliverableFromHint,
+  preserveAdminTaxiFlag,
   type CatalogDeliverableHint,
 } from "./vinCatalogImport.js";
 import { mediaVersionFromUpdatedAt, extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
@@ -88,6 +89,7 @@ export interface NormalizedVinData {
   cylinders?: number | null;
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
+  isTaxi?: boolean | null;
   /** Mid-size gallery for hero / thumbs (prefer normal over big when available). */
   photos?: string[];
   /** Full-resolution gallery for lightbox; falls back to photos when absent. */
@@ -183,6 +185,17 @@ export interface NormalizedVinData {
     location?: string | null;
     details?: Array<{ label: string; value: string }>;
   }>;
+  /** Korean manufacturer recalls — extracted separately from registry timeline. */
+  recallHistory?: Array<{
+    date?: string | null;
+    type?: string | null;
+    title?: string | null;
+    subtitle?: string | null;
+    mileage?: number | null;
+    amount?: string | null;
+    location?: string | null;
+    details?: Array<{ label: string; value: string }>;
+  }>;
 }
 
 export async function getCatalogVin(vin: string): Promise<VinCatalog | null> {
@@ -222,7 +235,10 @@ export async function upsertVinCatalog(
     );
   }
 
-  const stamped = applyFrozenKrwPerUsd(cleaned, { existingRate, currentRate });
+  const stamped = applyFrozenKrwPerUsd(
+    preserveAdminTaxiFlag(cleaned, existingData),
+    { existingRate, currentRate },
+  );
 
   await db
     .insert(vinCatalogTable)
@@ -446,6 +462,7 @@ export function mergeVinReportBodies(
     accidents: concatUniqueArrays(...valid.map((b) => b.accidents)),
     insuranceClaims: concatUniqueArrays(...valid.map((b) => b.insuranceClaims)),
     registryHistory: concatUniqueArrays(...valid.map((b) => b.registryHistory)),
+    recallHistory: concatUniqueArrays(...valid.map((b) => b.recallHistory)),
     auctionHistory: concatUniqueArrays(...valid.map((b) => b.auctionHistory)),
     ...(photos.length > 0 ? { photos } : {}),
     ...(photosHd.length > 0 && photosHd.join("\0") !== photos.join("\0")
@@ -2747,6 +2764,26 @@ export function extractRegistryHistoryFromLots(
   return sortHistoryNewestFirst(dedupeRegistryHistoryEvents(events));
 }
 
+/** Korean manufacturer recalls from details.history — kept out of registry timeline. */
+export function extractRecallHistoryFromLots(
+  lots: Array<Record<string, unknown>>,
+): RegistryHistoryEvent[] {
+  const events: RegistryHistoryEvent[] = [];
+  for (const group of pickLotHistoryBlocks(lots)) {
+    const groupDate = strField(group, "date");
+    const content = Array.isArray(group.content) ? group.content as Array<Record<string, unknown>> : [];
+    for (const item of content) {
+      if (!isKoreanRecallRegistryItem(item)) continue;
+      const mapped = mapKoreanRegistryContentItem(item, groupDate);
+      const recallEvent = { ...mapped, type: "recall" };
+      const sanitized = sanitizeRegistryHistoryEvent(recallEvent);
+      if (sanitized) events.push({ ...sanitized, type: "recall" });
+    }
+  }
+
+  return sortHistoryNewestFirst(dedupeRegistryHistoryEvents(events));
+}
+
 /** Pick the richest insurance_v2 block across all lots (any source domain). */
 export function extractInsuranceV2FromLots(lots: Array<Record<string, unknown>>): Record<string, unknown> {
   let best: Record<string, unknown> = {};
@@ -2854,10 +2891,6 @@ export function resolveVinAccidents(input: {
     accidents = dedupeAccidents([...inspectionAccidents, ...koreanSupplemental]);
   } else if (koreanSupplemental.length > 0) {
     accidents = koreanSupplemental;
-  } else if (!usesKoreanClaimModel && auctionAccidents.length > 0) {
-    accidents = auctionAccidents;
-  } else if (!usesKoreanClaimModel && auctionAccidents.length === 0 && rawRecords.length > 0) {
-    accidents = rawRecords.map((r) => mapStandardInsuranceAccident(r, country, totalLoss));
   } else if (!usesKoreanClaimModel) {
     accidents = auctionAccidents;
   }
@@ -2962,11 +2995,12 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     const locCity = str(loc.city ?? loc.city_name);
     const locState = str(loc.state ?? loc.state_name ?? loc.region);
 
-    if (isNorthAmericanAuctionLot(l) && (primaryDamage || secondaryDamage || lotTitle)) {
+    const salvage = isSalvageTitle(lotTitle);
+    if (isNorthAmericanAuctionLot(l) && (primaryDamage || secondaryDamage || salvage)) {
       auctionAccidents.push({
         date: saleD,
-        severity: isSalvageTitle(lotTitle) ? "total_loss" : null,
-        description: lotTitle,
+        severity: salvage ? "total_loss" : null,
+        description: salvage ? lotTitle : (damage ?? lotTitle),
         country: locName,
         type: "auction",
         primaryDamage,
@@ -3055,6 +3089,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   const registryHistory = lotsHaveRegistryTimeline(lots)
     ? extractRegistryHistoryFromLots(lots)
     : [];
+  const recallHistory = lotsHaveRegistryTimeline(lots)
+    ? extractRecallHistoryFromLots(lots)
+    : [];
 
   const { accidents, insuranceClaims, accidentCount: resolvedAccidentCount } = resolveVinAccidents({
     country,
@@ -3079,6 +3116,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   const sortedRegistryHistory = registryHistory.length > 0
     ? sortHistoryNewestFirst(registryHistory)
     : undefined;
+  const sortedRecallHistory = recallHistory.length > 0
+    ? sortHistoryNewestFirst(recallHistory)
+    : undefined;
   const sortedAuctionHistory = auctionHistory.length > 0
     ? sortHistoryNewestFirst(dedupeAuctionHistory(auctionHistory, vehicleYear))
     : undefined;
@@ -3100,6 +3140,10 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   );
   const repairedRegistry = dedupeRegistryHistory(
     applyEncarDateRepairs(sortedRegistryHistory, vehicleYear) ?? sortedRegistryHistory ?? [],
+    vehicleYear,
+  );
+  const repairedRecalls = dedupeRegistryHistory(
+    applyEncarDateRepairs(sortedRecallHistory, vehicleYear) ?? sortedRecallHistory ?? [],
     vehicleYear,
   );
   const repairedMileage = applyEncarDateRepairs(sortedMileageHistory, vehicleYear) ?? sortedMileageHistory;
@@ -3133,6 +3177,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     accidents: sortHistoryNewestFirst(repairedAccidents),
     insuranceClaims: repairedClaims.length > 0 ? repairedClaims : undefined,
     registryHistory: repairedRegistry,
+    ...(repairedRecalls.length > 0 ? { recallHistory: repairedRecalls } : {}),
     mileageHistory: repairedMileage,
     ownerHistory: repairedOwners,
     auctionHistory: repairedAuction,

@@ -23,6 +23,7 @@ import {
   mergeCatalogData,
   normalizeJsonImportRecord,
   sanitizeCatalogPayload,
+  preserveAdminTaxiFlag,
   dedupeCatalogImportRows,
   stampCatalogImportData,
   type JsonImportRecord,
@@ -1854,7 +1855,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       linkedinLoginEnabled: updates.linkedinLoginEnabled ?? true,
       linkedinClientId: updates.linkedinClientId ?? null,
       linkedinClientSecret: updates.linkedinClientSecret ?? null,
-      krwPerUsd: updates.krwPerUsd ?? 1537,
+      krwPerUsd: updates.krwPerUsd ?? 1415,
       ...patch,
     }).returning();
     await logAdminAction(req.userId!, "admin_update_settings", "system", { fields: Object.keys(updates) });
@@ -3112,10 +3113,13 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
     const data = await fetchFromProvider(vin, provider.baseUrl, provider.apiKey, { force: true });
     const payload = sanitizeCatalogPayload(data as unknown as Record<string, unknown>);
     const currentRate = await getCurrentKrwPerUsd();
-    const stampedCatalog = stampCatalogImportData(payload, {
-      existingRate: existingCatalogRate,
-      currentRate,
-    });
+    const stampedCatalog = preserveAdminTaxiFlag(
+      stampCatalogImportData(payload, {
+        existingRate: existingCatalogRate,
+        currentRate,
+      }),
+      existingData,
+    );
     const lookups = await db.select().from(vinLookupsTable).where(eq(vinLookupsTable.vin, vin));
     await db.transaction(async (tx) => {
       await tx.insert(vinCatalogTable)
@@ -3127,10 +3131,13 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
       await Promise.all(lookups.map((lookup) => {
         const lookupData = (lookup.data ?? {}) as Record<string, unknown>;
         const lookupRate = readFrozenKrwPerUsd(lookupData);
-        const lookupPayload = stampCatalogImportData(payload, {
-          existingRate: lookupRate ?? existingCatalogRate,
-          currentRate,
-        });
+        const lookupPayload = preserveAdminTaxiFlag(
+          stampCatalogImportData(payload, {
+            existingRate: lookupRate ?? existingCatalogRate,
+            currentRate,
+          }),
+          lookupData,
+        );
         return tx.update(vinLookupsTable)
           .set({ data: lookupPayload, updatedAt: new Date() })
           .where(eq(vinLookupsTable.id, lookup.id));

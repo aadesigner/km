@@ -78,6 +78,8 @@ import { ServiceHistorySection } from "@/components/service-history-section";
 import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
+import { ReportHistoryTimeline } from "@/components/report-history-timeline";
+import { collectReportTimelineEvents } from "@/lib/report-history-timeline";
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
@@ -99,6 +101,7 @@ import {
   sanitizeServiceHistory,
   enrichRegistryHistoryDates,
   sanitizeRegistryHistory,
+  sanitizeRecallHistory,
 } from "@/lib/report-display";
 
 type Accident = {
@@ -178,6 +181,7 @@ type VinPublicReport = {
   ownerCount?: number | null;
   salvage?: boolean | null;
   stolen?: boolean | null;
+  taxi?: boolean | null;
   titleStatus?: string | null;
   photos?: string[] | null;
   hp?: number | null;
@@ -194,6 +198,7 @@ type VinPublicReport = {
   } | null;
   insuranceClaims?: InsuranceClaimEntry[] | null;
   registryHistory?: RegistryHistoryEntry[] | null;
+  recallHistory?: RegistryHistoryEntry[] | null;
   serviceHistory?: ServiceHistoryEntry[] | null;
   auctionHistory?: AuctionEntry[] | null;
   krwPerUsd?: number | null;
@@ -616,9 +621,22 @@ export default function VinPublic({ params }: Props) {
       { listingOdometer: data.odometer },
     ),
   );
+  const recallHistory = sortHistoryNewestFirst(
+    sanitizeRecallHistory(repairDatedRecords(data.recallHistory, data.year), data.year),
+  );
   const serviceHistory = sortHistoryNewestFirst(
     sanitizeServiceHistory(repairDatedRecords(data.serviceHistory, data.year), data.year),
   );
+  const timelineEvents = collectReportTimelineEvents({
+    year: data.year,
+    accidents,
+    insuranceClaims,
+    mileageHistory,
+    serviceHistory,
+    auctionHistory,
+    ownerHistory,
+    registryHistory,
+  });
   const mileageSourceInput = {
     odometer: data.odometer,
     odometerLocked: data.odometerLocked === true,
@@ -638,6 +656,7 @@ export default function VinPublic({ params }: Props) {
   const showOwnershipSection = data.isUnlocked && hasOwnershipData(ownerHistory, data.ownerCount);
   const showAuctionSection = data.isUnlocked && auctionHistory.length > 0;
   const showSafetySection = data.isUnlocked && hasSafetyData(data.salvage, data.stolen);
+  const showRecallSection = data.isUnlocked && recallHistory.length > 0;
   const showMarketDataSection = data.isUnlocked && hasMeaningfulMarketData(marketData);
 
   const odoMax = 300000;
@@ -672,6 +691,7 @@ export default function VinPublic({ params }: Props) {
     isSalvage: data.salvage,
     hasTheftData: data.stolen != null,
     isStolen: data.stolen,
+    isTaxi: data.taxi === true,
   });
 
   const lockedHint = t("vin_public_locked_hint");
@@ -780,6 +800,7 @@ export default function VinPublic({ params }: Props) {
             ownerCount={data.ownerCount}
             isSalvage={data.salvage}
             isStolen={data.stolen}
+            isTaxi={data.taxi === true}
             hasSalvageData={data.salvage != null}
             hasTheftData={data.stolen != null}
             marketValue={printMarketValue}
@@ -800,6 +821,7 @@ export default function VinPublic({ params }: Props) {
           unlockedLabel={data.isUnlocked ? t("vin_public_unlocked_badge") : undefined}
           scoreData={scoreData}
           summaryItems={heroSummary}
+          accidentCount={data.isUnlocked ? accidentSignals : 0}
           onPhotoClick={data.isUnlocked && heroPhotos.length > 0 ? (i) => openLightbox(i) : undefined}
         >
           {!data.isUnlocked ? (
@@ -812,7 +834,9 @@ export default function VinPublic({ params }: Props) {
           ) : (
             <>
           {showAccidentsSection && (
-            <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidentCount)} />
+            <div className="hidden print:flex w-full justify-center">
+              <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidentCount)} />
+            </div>
           )}
           {data.isUnlocked && odometer != null && odoCol ? (
             <div className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-2 py-0.5 sm:px-2.5 sm:py-1 w-full justify-center shadow-sm">
@@ -828,9 +852,23 @@ export default function VinPublic({ params }: Props) {
           {data.isUnlocked && data.stolen != null ? (
             <PassPill ok={data.stolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
           ) : null}
+          {data.isUnlocked ? (
+            <PassPill ok={data.taxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
+          ) : null}
             </>
           )}
         </VinReportHero>
+
+        {data.isUnlocked && timelineEvents.length > 0 ? (
+          <ReportHistoryTimeline
+            events={timelineEvents}
+            t={t}
+            language={language}
+            vehicleYear={data.year}
+            vehicleCountry={data.country}
+            krwPerUsd={krwPerUsd}
+          />
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start print-two-col min-w-0">
 
@@ -1062,6 +1100,21 @@ export default function VinPublic({ params }: Props) {
                 )}
               </div>
             </motion.div>
+            )}
+
+            {/* Recalls — Korean manufacturer recalls */}
+            {showRecallSection && (
+              <RegistryHistorySection
+                events={recallHistory}
+                country={data.country}
+                vehicleYear={data.year}
+                krwPerUsd={krwPerUsd}
+                t={t}
+                language={language}
+                variant="public"
+                kind="recall"
+                delay={0.185}
+              />
             )}
 
             {/* Auction History */}

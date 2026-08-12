@@ -134,6 +134,8 @@ export interface VinData {
   isSalvage?: boolean | null;
   /** @nullable */
   isStolen?: boolean | null;
+  /** @nullable */
+  isTaxi?: boolean | null;
   photos?: string[];
   accidents?: AccidentRecord[];
   mileageHistory?: MileageRecord[];
@@ -201,6 +203,8 @@ export interface VinPublicReport {
   salvage?: boolean | null;
   /** @nullable */
   stolen?: boolean | null;
+  /** @nullable */
+  taxi?: boolean | null;
   /** @nullable */
   titleStatus?: string | null;
   photos?: string[];
@@ -742,6 +746,7 @@ export interface VinDataPatch {
   titleStatus?: string | null;
   isSalvage?: boolean;
   isStolen?: boolean;
+  isTaxi?: boolean;
   country?: string | null;
   photos?: string[] | null;
   accidents?: unknown | null;

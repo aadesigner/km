@@ -12,6 +12,7 @@ import {
   dedupeOwnerHistory,
   dedupeRegistryHistoryEvents,
   extractRegistryHistoryFromLots,
+  extractRecallHistoryFromLots,
   isKoreanInsuranceClaimRecord,
   isSalvageTitle,
   normalizeCarstatResponse,
@@ -233,6 +234,76 @@ describe("normalizeCarstatResponse", () => {
     expect(normalized.accidents?.[0]?.primaryDamage).toBe("Front End");
     expect(normalized.accidents?.[0]?.secondaryDamage).toBe("Side");
     expect(normalized.accidents?.[0]?.type).toBe("auction");
+    expect(normalized.accidents?.[0]?.description).toBe("Ab - Bos - Salvage");
+    expect(normalized.accidents?.[0]?.severity).toBe("total_loss");
+    expect(normalized.accidentCount).toBe(1);
+  });
+
+  it("does not treat clean-title auction listings as accidents when there is no damage", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2016,
+      vin: "WBA7G6104GG509390",
+      manufacturer: { name: "BMW" },
+      model: { name: "7 Series" },
+      lots: [
+        {
+          sale_date: "2022-03-01",
+          title: { name: "Clean Title" },
+          domain: { name: "copart_com" },
+          location: { country: { iso: "us", name: "United States" } },
+          odometer: { mi: 42_000 },
+          status: { name: "sold" },
+        },
+        {
+          sale_date: "2023-06-12",
+          title: { name: "Clean Title" },
+          detailed_title: { name: "CA - Clean Title" },
+          domain: { name: "iaai_com" },
+          location: { country: { iso: "us", name: "United States" } },
+          odometer: { mi: 58_000 },
+          status: { name: "sold" },
+        },
+        {
+          sale_date: "2024-01-20",
+          title: { name: "Clean Title" },
+          damage: { main: { name: "Front End" }, second: null },
+          domain: { name: "copart_com" },
+          location: { country: { iso: "us", name: "United States" } },
+          odometer: { mi: 61_000 },
+          status: { name: "sold" },
+        },
+      ],
+    });
+
+    expect(normalized.accidents).toHaveLength(1);
+    expect(normalized.accidents?.[0]?.primaryDamage).toBe("Front End");
+    expect(normalized.accidents?.[0]?.type).toBe("auction");
+    expect(normalized.accidentCount).toBe(1);
+    expect(normalized.auctionHistory?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("keeps salvage-title auction lots in the accident list with the title text", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2016,
+      vin: "WBA7G6104GG509390",
+      manufacturer: { name: "BMW" },
+      model: { name: "7 Series" },
+      lots: [{
+        sale_date: "2024-02-11",
+        title: { name: "CA - Salvage Title" },
+        detailed_title: { name: "CA - Salvage Title" },
+        domain: { name: "copart_com" },
+        location: { country: { iso: "us", name: "United States" } },
+        odometer: { mi: 61_000 },
+        status: { name: "sold" },
+      }],
+    });
+
+    expect(normalized.isSalvage).toBe(true);
+    expect(normalized.accidents).toHaveLength(1);
+    expect(normalized.accidents?.[0]?.type).toBe("auction");
+    expect(normalized.accidents?.[0]?.description).toBe("CA - Salvage Title");
+    expect(normalized.accidents?.[0]?.severity).toBe("total_loss");
     expect(normalized.accidentCount).toBe(1);
   });
 
@@ -1319,6 +1390,30 @@ describe("extractRegistryHistoryFromLots — WBA3V7106FJ995387 shape", () => {
     expect(byType.no_insurance?.date).toBe("2019-04-01");
     expect(byType.inspection?.date).toBe("2019-04-10");
     expect(byType.owner_change?.date).toBe("2019-04-16");
+  });
+
+  it("extracts recalls into a separate timeline", () => {
+    const recalls = extractRecallHistoryFromLots([{
+      domain: { name: "encar_com" },
+      details: {
+        history: [{
+          date: "February 19",
+          content: [{
+            title: "[Ride and indoor devices] Included in the recall target",
+            sub: "Recall completion",
+            flag: "Recall completion",
+            "Recall date": "February 13, 2019",
+            Target: "Produced vehicles between (January 03, 2014 and June 30, 2017)",
+            Correction: "Driver's seat airbag inflator replacement",
+          }],
+        }],
+      },
+    }]);
+
+    expect(recalls).toHaveLength(1);
+    expect(recalls[0]?.type).toBe("recall");
+    expect(recalls[0]?.date).toBe("2019-02-13");
+    expect(recalls[0]?.details?.some((d) => /correction/i.test(d.label))).toBe(true);
   });
 
   it("deduplicates identical registry rows across relisted Encar lots", () => {

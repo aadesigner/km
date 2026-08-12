@@ -82,6 +82,8 @@ import { ServiceHistorySection } from "@/components/service-history-section";
 import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
+import { ReportHistoryTimeline } from "@/components/report-history-timeline";
+import { collectReportTimelineEvents } from "@/lib/report-history-timeline";
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
@@ -99,6 +101,7 @@ import {
   sanitizeServiceHistory,
   enrichRegistryHistoryDates,
   sanitizeRegistryHistory,
+  sanitizeRecallHistory,
 } from "@/lib/report-display";
 
 function useAntiScrape(enabled: boolean) {
@@ -210,6 +213,7 @@ type LookupData = {
   cylinders?: number | null;
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
+  isTaxi?: boolean | null;
   accidentCount?: number | null;
   titleStatus?: string;
   photos?: string[];
@@ -224,6 +228,7 @@ type LookupData = {
   auctionHistory?: AuctionEntry[];
   insuranceClaims?: InsuranceClaimEntry[];
   registryHistory?: RegistryHistoryEntry[];
+  recallHistory?: RegistryHistoryEntry[];
   serviceHistory?: ServiceHistoryEntry[];
   krwPerUsd?: number | null;
   fulfillmentPending?: boolean;
@@ -630,9 +635,22 @@ export default function VinResult({ params }: Props) {
       { listingOdometer: data?.odometer },
     ),
   );
+  const recallHistory = sortHistoryNewestFirst(
+    sanitizeRecallHistory(repairDatedRecords(data?.recallHistory, data?.year), data?.year),
+  );
   const serviceHistory = sortHistoryNewestFirst(
     sanitizeServiceHistory(repairDatedRecords(data?.serviceHistory, data?.year), data?.year),
   );
+  const timelineEvents = collectReportTimelineEvents({
+    year: data?.year,
+    accidents,
+    insuranceClaims,
+    mileageHistory,
+    serviceHistory,
+    auctionHistory,
+    ownerHistory,
+    registryHistory,
+  });
   const mileageSourceInput = {
     odometer: data?.odometer,
     odometerLocked: data?.odometerLocked === true,
@@ -688,6 +706,7 @@ export default function VinResult({ params }: Props) {
   const showOwnershipSection = hasOwnershipData(ownerHistory, data?.ownerCount);
   const showAuctionSection = auctionHistory.length > 0;
   const showSafetySection = hasSafetyData(data?.isSalvage, data?.isStolen);
+  const showRecallSection = recallHistory.length > 0;
   const showMarketDataSection = hasMeaningfulMarketData(marketData);
 
   const countryLabels = countryLabelsFromT(t);
@@ -710,6 +729,7 @@ export default function VinResult({ params }: Props) {
     isSalvage: data?.isSalvage,
     hasTheftData,
     isStolen: data?.isStolen,
+    isTaxi: data?.isTaxi === true,
   });
 
   const displayScoreData = isPendingManual ? null : scoreData;
@@ -797,6 +817,7 @@ export default function VinResult({ params }: Props) {
         ownerCount={data?.ownerCount}
         isSalvage={data?.isSalvage}
         isStolen={data?.isStolen}
+        isTaxi={data?.isTaxi === true}
         hasSalvageData={hasSalvageData}
         hasTheftData={hasTheftData}
         marketValue={printMarketValue}
@@ -818,6 +839,7 @@ export default function VinResult({ params }: Props) {
         photos={isPendingManual ? [] : photos}
         scoreData={displayScoreData}
         summaryItems={displayHeroSummary}
+        accidentCount={isPendingManual ? 0 : accidentSignals}
         photoPlaceholderLabel={isPendingManual ? t("pending_photos_searching") : undefined}
         pendingPhotoScan={isPendingManual}
         unlockedLabel={isPendingManual ? t("pending_report_badge") : undefined}
@@ -837,7 +859,9 @@ export default function VinResult({ params }: Props) {
         {!isPendingManual && (
           <>
         {showAccidentsSection ? (
-          <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
+          <div className="hidden print:flex w-full justify-center">
+            <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
+          </div>
         ) : null}
         {hasSalvageData
           ? <PassPill ok={data!.isSalvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
@@ -845,12 +869,24 @@ export default function VinResult({ params }: Props) {
         {hasTheftData
           ? <PassPill ok={data!.isStolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
           : null}
+        <PassPill ok={data?.isTaxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
           </>
         )}
       </VinReportHero>
 
       {isPendingManual ? (
         <PendingVinSearchPanel />
+      ) : null}
+
+      {!isPendingManual && timelineEvents.length > 0 ? (
+        <ReportHistoryTimeline
+          events={timelineEvents}
+          t={t}
+          language={language}
+          vehicleYear={data?.year}
+          vehicleCountry={data?.country}
+          krwPerUsd={krwPerUsd}
+        />
       ) : null}
 
       {/* ── 2-Column Content Grid ── */}
@@ -1167,6 +1203,20 @@ export default function VinResult({ params }: Props) {
             )}
           </div>
         </motion.div>
+        )}
+
+        {/* Recalls — Korean manufacturer recalls (separate from registry timeline) */}
+        {!isPendingManual && showRecallSection && (
+          <RegistryHistorySection
+            events={recallHistory}
+            country={data?.country}
+            vehicleYear={data?.year}
+            krwPerUsd={krwPerUsd}
+            t={t}
+            language={language}
+            kind="recall"
+            delay={0.17}
+          />
         )}
 
         {/* Auction History */}

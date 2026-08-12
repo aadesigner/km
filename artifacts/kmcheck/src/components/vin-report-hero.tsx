@@ -27,7 +27,7 @@ export type VinHeroScore = {
 };
 
 export type VinHeroSummaryItem = {
-  kind: "accidents" | "mileage" | "salvage" | "theft";
+  kind: "accidents" | "mileage" | "salvage" | "theft" | "taxi";
   label: string;
   tone: "positive" | "negative" | "neutral" | "muted";
 };
@@ -45,6 +45,8 @@ type VinReportHeroProps = {
   unlockedLabel?: string;
   scoreData?: VinHeroScore | null;
   summaryItems?: VinHeroSummaryItem[];
+  /** Shown as a rating-style badge to the left of the score on mobile. */
+  accidentCount?: number;
   onPhotoClick?: (index: number) => void;
   photoPlaceholderLabel?: string;
   /** Animated radar placeholder while a manual report is being compiled. */
@@ -60,6 +62,7 @@ const SUMMARY_ICON: Record<VinHeroSummaryItem["kind"], typeof CheckCircle2> = {
   mileage: Gauge,
   salvage: ShieldCheck,
   theft: ShieldAlert,
+  taxi: Car,
 };
 
 function summaryToneClasses(tone: VinHeroSummaryItem["tone"], kind: VinHeroSummaryItem["kind"]) {
@@ -71,6 +74,13 @@ function summaryToneClasses(tone: VinHeroSummaryItem["tone"], kind: VinHeroSumma
     };
   }
   if (tone === "negative") {
+    if (kind === "accidents") {
+      return {
+        row: "text-orange-700 dark:text-orange-400",
+        icon: "text-orange-600 dark:text-orange-500",
+        Icon: XCircle,
+      };
+    }
     return {
       row: "text-red-700 dark:text-red-400",
       icon: "text-red-600 dark:text-red-500",
@@ -509,6 +519,7 @@ export function VinReportHero({
   unlockedLabel,
   scoreData,
   summaryItems,
+  accidentCount = 0,
   onPhotoClick,
   photoPlaceholderLabel,
   pendingPhotoScan = false,
@@ -611,7 +622,26 @@ export function VinReportHero({
                   </div>
                 ) : null}
               </div>
-              {scoreData && (
+              {(scoreData || accidentCount > 0) && (
+                <div className="flex items-start gap-2 shrink-0">
+                  {accidentCount > 0 ? (
+                    <div
+                      className={cn(
+                        "sm:hidden rounded-xl border px-2.5 py-2 text-center min-w-[4.25rem]",
+                        "bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-800/60",
+                      )}
+                    >
+                      <p className="text-xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
+                        {accidentCount}
+                      </p>
+                      <p className="text-[9px] font-semibold mt-0.5 leading-tight max-w-[4.25rem] text-orange-700 dark:text-orange-400">
+                        {t(accidentCount === 1 ? "accident_count_one" : "accidents_count")
+                          .replace("{count}", "")
+                          .trim()}
+                      </p>
+                    </div>
+                  ) : null}
+                  {scoreData ? (
                 <div
                   className={cn(
                     "shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
@@ -626,6 +656,8 @@ export function VinReportHero({
                   <p className={cn("text-[9px] font-semibold mt-0.5 leading-tight max-w-[4rem]", scoreData.textColor)}>
                     {scoreData.label}
                   </p>
+                </div>
+                  ) : null}
                 </div>
               )}
             </div>

@@ -100,6 +100,8 @@ interface VinData {
   odometer?: number;
   accidentCount?: number;
   isSalvage?: boolean;
+  isStolen?: boolean;
+  isTaxi?: boolean;
   photos?: string[];
   ownerCount?: number;
 }
@@ -661,6 +663,11 @@ export default function AdminVinCatalog() {
                             {d.isSalvage && (
                               <Badge variant="outline" className="text-[10px] py-0 h-4 w-fit border-orange-400 text-orange-600">
                                 Salvage
+                              </Badge>
+                            )}
+                            {d.isTaxi && (
+                              <Badge variant="outline" className="text-[10px] py-0 h-4 w-fit border-amber-400 text-amber-700">
+                                Taxi
                               </Badge>
                             )}
                             {!(d.accidentCount ?? 0) && !d.isSalvage && (

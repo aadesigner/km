@@ -89,8 +89,15 @@ export const CATALOG_SCALAR_KEYS = [
   "titleStatus",
   "isSalvage",
   "isStolen",
+  "isTaxi",
   "krwPerUsd",
 ] as const;
+
+const CATALOG_BOOL_KEYS = ["isSalvage", "isStolen", "isTaxi"] as const;
+
+function isCatalogBoolKey(key: string): boolean {
+  return (CATALOG_BOOL_KEYS as readonly string[]).includes(key);
+}
 
 /** Nested JSON blobs on catalog `data`. */
 export const CATALOG_JSON_KEYS = [
@@ -101,6 +108,7 @@ export const CATALOG_JSON_KEYS = [
   "ownerHistory",
   "auctionHistory",
   "registryHistory",
+  "recallHistory",
   "serviceHistory",
   "marketData",
 ] as const;
@@ -126,6 +134,7 @@ export const CATALOG_CSV_COLUMNS = [
   "title_status",
   "is_salvage",
   "is_stolen",
+  "is_taxi",
   "photos",
   "accidents_json",
   "insurance_claims_json",
@@ -171,6 +180,7 @@ export type CatalogCsvRowInput = {
   titleStatus: string | null;
   isSalvage: boolean;
   isStolen: boolean;
+  isTaxi: boolean;
   photos: string[];
   accidents?: unknown;
   insuranceClaims?: unknown;
@@ -204,6 +214,18 @@ function parseOptionalNumber(raw: unknown): number | null {
 export function parseCsvBool(raw: unknown): boolean {
   const s = String(raw ?? "").trim().toLowerCase();
   return s === "1" || s === "true" || s === "yes";
+}
+
+/** Keep admin-set taxi flag when a provider fetch does not include it. */
+export function preserveAdminTaxiFlag(
+  incoming: Record<string, unknown>,
+  existing: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  if (!existing) return incoming;
+  if (typeof incoming.isTaxi !== "boolean" && typeof existing.isTaxi === "boolean") {
+    return { ...incoming, isTaxi: existing.isTaxi };
+  }
+  return incoming;
 }
 
 export function parseCsvJsonField(raw: unknown): unknown | undefined {
@@ -271,7 +293,7 @@ export function sanitizeCatalogPayload(input: Record<string, unknown>): Record<s
 
   for (const key of CATALOG_SCALAR_KEYS) {
     const value = input[key];
-    if (key === "isSalvage" || key === "isStolen") {
+    if (isCatalogBoolKey(key)) {
       if (typeof value === "boolean") out[key] = value;
       continue;
     }
@@ -323,7 +345,7 @@ export function mergeCatalogData(
   for (const key of CATALOG_SCALAR_KEYS) {
     if (!(key in incoming)) continue;
     const value = incoming[key];
-    if (key === "isSalvage" || key === "isStolen") {
+    if (isCatalogBoolKey(key)) {
       if (typeof value === "boolean") merged[key] = value;
       continue;
     }
@@ -365,7 +387,7 @@ export function applyCatalogAdminPatch(
   for (const key of CATALOG_SCALAR_KEYS) {
     if (!(key in rawBody)) continue;
     const raw = rawBody[key];
-    if (key === "isSalvage" || key === "isStolen") {
+    if (isCatalogBoolKey(key)) {
       if (typeof raw === "boolean") merged[key] = raw;
       continue;
     }
@@ -472,6 +494,7 @@ export function catalogDataFromCsvRow(row: CatalogCsvRowInput): Record<string, u
     titleStatus: row.titleStatus,
     isSalvage: row.isSalvage,
     isStolen: row.isStolen,
+    isTaxi: row.isTaxi,
     photos: row.photos,
     accidents: row.accidents,
     insuranceClaims: row.insuranceClaims,
@@ -518,6 +541,7 @@ export function catalogDataFromCsvRecord(record: Record<string, unknown>): Catal
     titleStatus: String(record.title_status ?? "").trim() || null,
     isSalvage: parseCsvBool(record.is_salvage),
     isStolen: parseCsvBool(record.is_stolen),
+    isTaxi: parseCsvBool(record.is_taxi),
     photos: photosRaw ? photosRaw.split("|").map((u) => u.trim()).filter(Boolean) : [],
     accidents,
     insuranceClaims,
@@ -568,6 +592,7 @@ export function catalogDataToCsvCells(
     csvEscape(data.titleStatus),
     data.isSalvage ? "1" : "0",
     data.isStolen ? "1" : "0",
+    data.isTaxi ? "1" : "0",
     csvEscape(photos.join("|")),
     csvEscape(jsonCell(data.accidents)),
     csvEscape(jsonCell(data.insuranceClaims)),

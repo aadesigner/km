@@ -22,7 +22,7 @@ describe("korean-currency", () => {
   it("uses default rate when admin rate is invalid", () => {
     expect(resolveKrwPerUsd(0)).toBe(DEFAULT_KRW_PER_USD);
     expect(resolveKrwPerUsd(null)).toBe(DEFAULT_KRW_PER_USD);
-    expect(DEFAULT_KRW_PER_USD).toBe(1537);
+    expect(DEFAULT_KRW_PER_USD).toBe(1415);
   });
 
   it("parses won from provider text", () => {

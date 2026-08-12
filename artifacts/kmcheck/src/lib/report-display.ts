@@ -155,6 +155,20 @@ export function sanitizeRegistryHistory<T extends RegistryHistoryLike>(
   );
 }
 
+/** Korean recalls stored separately from the registry timeline. */
+export function sanitizeRecallHistory<T extends RegistryHistoryLike>(
+  events: T[] | null | undefined,
+  vehicleYear?: number | null,
+): T[] {
+  return dedupeRegistryHistory(
+    (events ?? [])
+      .filter((event) => isRecallRegistryEvent(event))
+      .map((event) => sanitizeRegistryHistoryEvent({ ...event, type: "recall" }))
+      .filter((event): event is T => event != null),
+    vehicleYear,
+  );
+}
+
 /** Fill missing registry dates when another timeline has the same mileage reading. */
 export function enrichRegistryHistoryDates<T extends RegistryHistoryLike>(
   events: T[],
@@ -305,18 +319,7 @@ export function sanitizeAuctionHistory<T extends AuctionHistoryLike>(
 }
 
 export function isMeaningfulAccidentEntry(entry: AccidentLike): boolean {
-  return Boolean(
-    cleanDisplayText(entry.date)
-    || cleanDisplayText(entry.severity)
-    || cleanDisplayText(entry.type)
-    || cleanDisplayText(entry.country)
-    || cleanDisplayText(entry.primaryDamage)
-    || cleanDisplayText(entry.secondaryDamage)
-    || entry.lossAmount != null
-    || entry.odometerAtLoss != null
-    || entry.airbagDeployed != null
-    || cleanDisplayText(entry.description),
-  );
+  return Boolean(cleanDisplayText(entry.date));
 }
 
 export function sanitizeAccidents<T extends AccidentLike>(

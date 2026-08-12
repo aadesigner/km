@@ -88,20 +88,28 @@ function supplementalAccidentsFromRegistry(
     }));
 }
 
+function accidentHasDate(accident: AccidentSignal): boolean {
+  return Boolean(accident.date?.trim());
+}
+
 /** Unified accident list for scoring — uses accidents[] when present, else derives from claims/registry. */
 export function accidentsForScoring(input: AccidentSignalInput): AccidentSignal[] {
-  const direct = input.accidents ?? [];
-  if (direct.length > 0) return dedupeAccidentsForScoring(direct);
+  const provided = input.accidents ?? [];
+  const dated = dedupeAccidentsForScoring(provided.filter(accidentHasDate));
+  if (dated.length > 0) return dated;
+  if (provided.length > 0) return [];
 
   const count = input.accidentCount ?? 0;
   if (count > 0) {
     return Array.from({ length: count }, () => ({ severity: "unknown" }));
   }
 
-  const fromClaims = supplementalAccidentsFromClaims(input.insuranceClaims ?? []);
+  const fromClaims = supplementalAccidentsFromClaims(input.insuranceClaims ?? []).filter(accidentHasDate);
   if (fromClaims.length > 0) return dedupeAccidentsForScoring(fromClaims);
 
-  return dedupeAccidentsForScoring(supplementalAccidentsFromRegistry(input.registryHistory ?? []));
+  return dedupeAccidentsForScoring(
+    supplementalAccidentsFromRegistry(input.registryHistory ?? []).filter(accidentHasDate),
+  );
 }
 
 export function countAccidentSignals(input: AccidentSignalInput): number {

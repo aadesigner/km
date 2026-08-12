@@ -115,6 +115,12 @@ const TABLE_PATCHES = [
   `CREATE INDEX IF NOT EXISTS email_logs_recipient_idx ON email_logs (recipient)`,
 ];
 
+/** Bump the shipped KRW/USD default from 1537 → 1415 (Aug 2026 market). Custom admin rates are left alone. */
+const KRW_RATE_PATCHES = [
+  `ALTER TABLE system_settings ALTER COLUMN krw_per_usd SET DEFAULT 1415`,
+  `UPDATE system_settings SET krw_per_usd = 1415 WHERE ABS(krw_per_usd - 1537) < 0.51`,
+];
+
 /**
  * The payment-confirmation and report-ready emails were merged into a single
  * `vinready` template with a single `email_send_vin_ready` trigger. Carry the
@@ -148,6 +154,7 @@ export async function patchSystemSettingsSchema(): Promise<void> {
   for (const statement of [
     ...SYSTEM_SETTINGS_PATCHES,
     ...TABLE_PATCHES,
+    ...KRW_RATE_PATCHES,
     ...EMAIL_MERGE_PATCHES,
     ...PRICING_DATA_PATCHES,
   ]) {

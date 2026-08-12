@@ -18,6 +18,7 @@ import {
   normalizeJsonImportRecord,
   parseCsvBool,
   sanitizeCatalogPayload,
+  preserveAdminTaxiFlag,
   stampCatalogImportData,
 } from "./vinCatalogImport";
 
@@ -134,15 +135,17 @@ describe("parseCsvBool", () => {
 });
 
 describe("sanitizeCatalogPayload", () => {
-  it("keeps explicit false salvage/stolen flags", () => {
+  it("keeps explicit false salvage/stolen/taxi flags", () => {
     const data = sanitizeCatalogPayload({
       make: "BMW",
       isSalvage: false,
       isStolen: false,
+      isTaxi: false,
       accidents: [],
     });
     expect(data.isSalvage).toBe(false);
     expect(data.isStolen).toBe(false);
+    expect(data.isTaxi).toBe(false);
     expect(data.accidents).toEqual([]);
   });
 
@@ -168,6 +171,18 @@ describe("sanitizeCatalogPayload", () => {
       "https://cdn.example.com/b.jpg",
     ]);
     expect(data.auctionHistory).toHaveLength(1);
+  });
+});
+
+describe("preserveAdminTaxiFlag", () => {
+  it("keeps an admin taxi flag when the provider payload omits it", () => {
+    const preserved = preserveAdminTaxiFlag({ make: "Kia" }, { isTaxi: true, make: "Kia" });
+    expect(preserved.isTaxi).toBe(true);
+  });
+
+  it("does not override an incoming taxi flag", () => {
+    const preserved = preserveAdminTaxiFlag({ isTaxi: false }, { isTaxi: true });
+    expect(preserved.isTaxi).toBe(false);
   });
 });
 
@@ -229,7 +244,7 @@ describe("catalogDataFromCsvRow", () => {
       trim: null, engine: null, transmission: null, fuelType: null, bodyType: null,
       color: null, country: null, odometer: null, ownerCount: null, accidentCount: null,
       hp: null, cylinders: null, titleStatus: null,
-      isSalvage: false, isStolen: false, photos: [],
+      isSalvage: false, isStolen: false, isTaxi: false, photos: [],
       provider: null,
     });
     expect(data.isSalvage).toBe(false);
@@ -257,6 +272,7 @@ describe("CSV round-trip", () => {
     titleStatus: "clean",
     isSalvage: false,
     isStolen: false,
+    isTaxi: false,
     photos: ["https://cdn.example.com/a.jpg", "https://cdn.example.com/b.jpg"],
     accidents: [{ severity: "minor", date: "2018-06-01" }],
     insuranceClaims: [{ amount: 1200, date: "2018-06-15" }],
@@ -298,6 +314,7 @@ describe("CSV round-trip", () => {
       title_status: fullData.titleStatus,
       is_salvage: "0",
       is_stolen: "0",
+      is_taxi: "0",
       photos: fullData.photos.join("|"),
       accidents_json: JSON.stringify(fullData.accidents),
       insurance_claims_json: JSON.stringify(fullData.insuranceClaims),

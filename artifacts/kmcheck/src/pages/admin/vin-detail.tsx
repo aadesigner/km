@@ -225,6 +225,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {data.isSalvage && <Badge variant="outline" className="border-orange-400 text-orange-600">Salvage</Badge>}
+            {data.isTaxi && <Badge variant="outline" className="border-amber-400 text-amber-700">Taxi</Badge>}
             {hasAccidents && <Badge variant="destructive">{data.accidentCount} accident{(data.accidentCount ?? 0) > 1 ? "s" : ""}</Badge>}
             {!hasAccidents && !data.isSalvage && <Badge variant="outline" className="border-green-500 text-green-600"><ShieldCheck className="h-3 w-3 mr-1" />Clean</Badge>}
             <Button

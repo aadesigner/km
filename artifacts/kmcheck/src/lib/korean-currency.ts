@@ -1,5 +1,5 @@
-/** Default KRW per 1 USD when admin rate is unset */
-export const DEFAULT_KRW_PER_USD = 1537;
+/** Default KRW per 1 USD when admin rate is unset (USD/KRW ~1,415 as of Aug 2026) */
+export const DEFAULT_KRW_PER_USD = 1415;
 
 export function isKoreanCountry(country?: string | null): boolean {
   return country?.toLowerCase() === "kr";

@@ -1,7 +1,7 @@
 import { db, systemSettingsTable } from "@workspace/db";
 import { desc } from "drizzle-orm";
 
-export const DEFAULT_KRW_PER_USD = 1537;
+export const DEFAULT_KRW_PER_USD = 1415;
 
 export function isKoreanReportData(data: Record<string, unknown> | null | undefined): boolean {
   return String(data?.country ?? "").toLowerCase() === "kr";

@@ -11,6 +11,7 @@ import {
   localizeProviderDate,
   formatDayMonthYearNumeric,
   formatNumericDateAsDayMonthYear,
+  translateInsuranceClaimDescription,
 } from "./korean-provider-text";
 
 const ENGLISH_MONTH =
@@ -28,6 +29,9 @@ const t = (key: string) => {
     provider_million_won_unit: "million KRW",
     registry_type_inspection: "Inspection completed",
     provider_change_registration: "Registration change",
+    insurance_desc_parts: "Pièces",
+    insurance_desc_labor: "Main-d'œuvre",
+    insurance_desc_paint: "Peinture",
   };
   return dict[key] ?? key;
 };
@@ -248,6 +252,15 @@ describe("translateProviderMultiline", () => {
     const tr = (key: string) => (dict as Record<string, string>)[key] ?? key;
     expect(translateProviderMultiline(tr, "sq", "Comprehensive examination 86,730 km of mileage"))
       .toContain("86,730");
+  });
+});
+
+describe("translateInsuranceClaimDescription", () => {
+  it("translates parts, labor, and paint even when labor is the first token", () => {
+    expect(translateInsuranceClaimDescription(t, "labor ₩300,000"))
+      .toBe("Main-d'œuvre ₩300,000");
+    expect(translateInsuranceClaimDescription(t, "parts ₩800,000, labor ₩300,000, paint ₩50,000"))
+      .toBe("Pièces ₩800,000, Main-d'œuvre ₩300,000, Peinture ₩50,000");
   });
 });
 
