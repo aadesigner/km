@@ -216,7 +216,7 @@ export function computeVinConditionScore(
   score -= accidentsPenalty(input);
   score -= mileagePenalty(km, input.year ?? null);
   score -= ownersPenalty(input.ownerCount);
-  if (input.isSalvage === true) score -= 5.5;
+  if (input.isSalvage === true) score -= 6;
   if (input.isStolen === true) score -= 3.5;
   if (rollback) score -= 2.5;
 
