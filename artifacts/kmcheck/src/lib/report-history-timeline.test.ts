@@ -82,6 +82,21 @@ describe("shouldShowReportTimeline", () => {
     expect(shouldShowTimelineMarkerGroup([mileage])).toBe(true);
   });
 
+  it("includes manual mileage title and treats it as graph-worthy", () => {
+    const events = collectReportTimelineEvents({
+      year: 2018,
+      mileageHistory: [{
+        odometer: 42_000,
+        date: "2024-06-01",
+        titleStatus: "Oil service visit",
+      }],
+    });
+    const mileage = events.find((e) => e.type === "mileage")!;
+    expect(mileage.titleStatus).toBe("Oil service visit");
+    expect(hasManualMileageDetail(mileage)).toBe(true);
+    expect(shouldShowReportTimeline(events)).toBe(true);
+  });
+
   it("hides bare mileage markers but keeps them on the line", () => {
     const events = collectReportTimelineEvents({
       year: 2018,

@@ -828,6 +828,17 @@ function TimelineMarker({
     ? t("registry_events_count").replace("{count}", String(dayGroups.length))
     : formatDayLabel(dayGroups[0]?.events ?? events);
 
+  const mileageTitleLabel = (() => {
+    if (multiDay) return null;
+    for (const event of events) {
+      if (event.type !== "mileage") continue;
+      const raw = event.titleStatus?.trim() || event.title?.trim();
+      if (!raw) continue;
+      return translateTitleStatus(t, raw) ?? raw;
+    }
+    return null;
+  })();
+
   const typeLabels = types.map((type) => t(TYPE_LABEL_KEY[type]));
 
   const buildSections = (dayEvents: TimelineEvent[], hideMileageType: boolean) => {
@@ -918,6 +929,9 @@ function TimelineMarker({
       >
         <div className="border-b border-border/60 px-3 py-2">
           <p className="text-sm font-semibold leading-tight text-foreground">{dateLabel}</p>
+          {mileageTitleLabel ? (
+            <p className="mt-0.5 text-[13px] font-medium leading-snug text-foreground/90">{mileageTitleLabel}</p>
+          ) : null}
           {kmFact && !multiDay ? (
             <p className="mt-0.5 text-[12px] tabular-nums text-muted-foreground">{kmFact}</p>
           ) : null}
@@ -931,9 +945,21 @@ function TimelineMarker({
               const sections = buildSections(day.events, true);
               const dayKm = clusterRecordedKm(day.events);
               const dayKmFact = dayKm > 0 ? formatKmFact(dayKm, t) : null;
+              const dayTitle = (() => {
+                for (const event of day.events) {
+                  if (event.type !== "mileage") continue;
+                  const raw = event.titleStatus?.trim() || event.title?.trim();
+                  if (!raw) continue;
+                  return translateTitleStatus(t, raw) ?? raw;
+                }
+                return null;
+              })();
               return (
                 <div key={day.dayKey} className="border-b border-border/40 pb-2.5 last:border-b-0 last:pb-0">
                   <p className="text-[12px] font-semibold text-foreground">{formatDayLabel(day.events)}</p>
+                  {dayTitle ? (
+                    <p className="mt-0.5 text-[12px] font-medium leading-snug text-foreground/90">{dayTitle}</p>
+                  ) : null}
                   {dayKmFact ? (
                     <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{dayKmFact}</p>
                   ) : null}

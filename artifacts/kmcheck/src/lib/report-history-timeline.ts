@@ -35,6 +35,8 @@ export type TimelineEvent = {
   auctionPrice?: number | null;
   finalPrice?: number | null;
   lotStatus?: string | null;
+  /** Manual mileage title (admin titleStatus field). */
+  titleStatus?: string | null;
   productionYear?: number;
 };
 
@@ -62,6 +64,8 @@ export type CollectTimelineInput = {
     location?: string | null;
     auctionPrice?: number | null;
     lotStatus?: string | null;
+    titleStatus?: string | null;
+    title?: string | null;
   }>;
   serviceHistory?: Array<Dated & {
     mileage?: number | null;
@@ -295,6 +299,7 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
       location: row.location,
       auctionPrice: row.auctionPrice,
       lotStatus: row.lotStatus,
+      titleStatus: firstText(row.titleStatus, row.title),
     });
   });
 
@@ -341,12 +346,14 @@ const TIMELINE_GRAPH_NON_MILEAGE_TYPES = new Set<TimelineEventType>([
   "registry",
 ]);
 
-/** Admin-entered mileage notes (location, services text, condition, damage). */
+/** Admin-entered mileage notes (location, title, services text, condition, damage). */
 export function hasManualMileageDetail(event: TimelineEvent): boolean {
   if (event.type !== "mileage") return false;
   return Boolean(
     event.location?.trim()
     || event.description?.trim()
+    || event.titleStatus?.trim()
+    || event.title?.trim()
     || event.condition?.trim()
     || event.damage?.trim()
     || event.primaryDamage?.trim()
