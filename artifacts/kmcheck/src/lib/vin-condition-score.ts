@@ -104,11 +104,11 @@ function isCleanBase(input: VinScoreInput): boolean {
 
 function singleAccidentPenalty(severity?: string | null): number {
   const s = (severity ?? "").toLowerCase();
-  if (s.includes("total")) return 2.0;
-  if (s.includes("major") || s.includes("severe")) return 1.2;
-  if (s.includes("moderate")) return 0.5;
-  if (s.includes("minor") || s.includes("light")) return 0.2;
-  return 0.35;
+  if (s.includes("total")) return 1.4;
+  if (s.includes("major") || s.includes("severe")) return 0.65;
+  if (s.includes("moderate")) return 0.28;
+  if (s.includes("minor") || s.includes("light")) return 0.1;
+  return 0.18;
 }
 
 const ACCIDENT_DIMINISH = [1, 0.75, 0.55, 0.4, 0.3, 0.25];
@@ -125,7 +125,7 @@ function accidentsPenalty(input: VinScoreInput): number {
   for (let i = 0; i < penalties.length; i++) {
     sum += penalties[i]! * (ACCIDENT_DIMINISH[i] ?? 0.2);
   }
-  return Math.min(sum, 3.5);
+  return Math.min(sum, 2.6);
 }
 
 /** Higher km under 130k shaves points; very low km for age may indicate rollback risk. */
