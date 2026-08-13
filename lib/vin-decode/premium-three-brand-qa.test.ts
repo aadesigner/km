@@ -144,11 +144,11 @@ const AUDI: Case[] = [
   { vin: "WAUZZZTRAN1234567", label: "Audi TT TR", make: "Audi", modelContains: "TT" },
   { vin: "WVGZZZF7BN1234567", label: "Audi Q7 Bratislava", make: "Audi", modelContains: "Q7" },
   // US WA1
-  { vin: "WA1LFAFP5HA123456", label: "Audi Q5 US", make: "Audi", modelContains: "Q5" },
-  { vin: "WA1AAAFV5KA123456", label: "Audi Q3 US", make: "Audi", modelContains: "Q3" },
-  { vin: "WA1BAAF75HD123456", label: "Audi Q7 US", make: "Audi", modelContains: "Q7" },
-  { vin: "WA1MFAFP5HA123456", label: "Audi Q8 US", make: "Audi", modelContains: "Q8" },
-  { vin: "WA1FFAFP5HA123456", label: "Audi Q5 Sportback US", make: "Audi", modelContains: "Q5" },
+  { vin: "WA1LFAFP5HA123456", label: "Audi Q5 US FP", make: "Audi", modelContains: "Q5", modelExcludes: ["Q8", "Sportback"] },
+  { vin: "WA1AVAF31L1123456", label: "Audi Q3 US F3", make: "Audi", modelContains: "Q3", year: 2020 },
+  { vin: "WA1BVAF75HD123456", label: "Audi Q7 US F7", make: "Audi", modelContains: "Q7", modelExcludes: ["Q8"] },
+  { vin: "WA1FVAF18KD034551", label: "Audi Q8 real WA1F+F1", make: "Audi", modelContains: "Q8", modelExcludes: ["Q5"], year: 2019 },
+  { vin: "WA1AAAFY8M2123456", label: "Audi Q5 US FY", make: "Audi", modelContains: "Q5", modelExcludes: ["Q8"], year: 2021 },
 ];
 
 const BMW: Case[] = [

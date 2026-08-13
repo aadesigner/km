@@ -555,8 +555,7 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Audi ──────────────────────────────────────────────────────────────────
   "WAUC": "A4/A5",      "WAUE": "A6/A7",      "WAUA": "A8",
   "WAUJ": "A3",         "WAUM": "Q8",         "WAUS": "S/RS Series",
-  "WA1L": "Q5",         "WA1B": "Q7",         "WA1A": "Q3",
-  "WA1C": "Q5",         "WA1F": "Q5 Sportback", "WA1M": "Q8",
+  // WA1* SUV lines: do NOT map by pos.4 (A/B/C/F are trim). Use pos.7–8 via premium/modern.
   // ── Volkswagen ────────────────────────────────────────────────────────────
   // Do not map WVWZ/1VWZ — position 4 is ZZZ filler on EU VINs, not a model line.
   "WVWA": "Jetta",      "WVWB": "Polo",

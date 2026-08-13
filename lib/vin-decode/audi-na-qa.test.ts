@@ -60,6 +60,22 @@ describe("Audi NA QA — NHTSA platform families", () => {
     expect(decodeVin(vin).model).toMatch(modelRe);
     expect(decodeVin(vin).year).toBe(2008);
   });
+  it("WA1FVAF18KD034551 is Q8 2019, never Q5 Sportback", () => {
+    const r = decodeVin("WA1FVAF18KD034551");
+    expect(r.make).toBe("Audi");
+    expect(r.model).toMatch(/Q8/i);
+    expect(r.model).not.toMatch(/Q5/i);
+    expect(r.year).toBe(2019);
+  });
+
+  it("WA1 pos.4 is trim, not model — F1=Q8, FY=Q5, F7=Q7, F3=Q3", () => {
+    expect(decodeVin("WA1AVAF17KD123456").model).toMatch(/Q8/i);
+    expect(decodeVin("WA1FVAF17KD123456").model).toMatch(/Q8/i);
+    expect(decodeVin("WA1AAAFY8M2123456").model).toMatch(/Q5/i);
+    expect(decodeVin("WA1FAAFY8M2123456").model).toMatch(/Q5/i);
+    expect(decodeVin("WA1BVAF75HD123456").model).toMatch(/Q7/i);
+    expect(decodeVin("WA1AVAF31L1123456").model).toMatch(/Q3/i);
+  });
 });
 
 describe("Audi EU QA — ZZZ / modern still green", () => {

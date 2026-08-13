@@ -199,7 +199,7 @@ const AUDI_TYPE_78: Record<string, StaticHit> = {
   FY: { model: "Q5 / SQ5", chassis: "FY" },
   FP: { model: "Q5 / SQ5", chassis: "8R/FP" },
   F7: { model: "Q7 / SQ7", chassis: "4M/F7" },
-  F1: { model: "Q8 / SQ8 / RS Q8", chassis: "4M/F1" },
+  F1: { model: "Q8", chassis: "4M/F1" },
   FS: { model: "Q3", chassis: "8U/FS" },
   F3: { model: "Q3", chassis: "F3" },
   F4: { model: "A4 / S4 / RS4", chassis: "B9/8W" },
@@ -240,6 +240,32 @@ function resolveAudiA6A7ByPos4(vin: string, type78: string): VagModernHit | null
     return null;
   }
   return null;
+}
+
+/**
+ * WA1 is Audi’s NA SUV WMI. Model comes from positions 7–8 only.
+ * Do not apply passenger-car platforms (A3/A4/TT/R8/…) that can collide on the same letters.
+ */
+const WA1_SUV_TYPE_78 = new Set([
+  // Q3
+  "8U", "F3", "FJ", "FS", "GS",
+  // Q5 / SQ5 (Sportback is not reliably separable from VIN alone)
+  "8R", "FY", "FP", "GU",
+  // Q7 / SQ7
+  "4L", "F7", "FE",
+  // Q8 / SQ8 / RS Q8
+  "F1",
+  // Shared MLB Evo SUV family — keep ambiguous label
+  "4M",
+  // Q2 (rare on WA1; safe if present)
+  "GA",
+  // Electrified SUV / crossover lines sold under WA1
+  "GE", "GF", "GH", "FZ", "GB", "FW",
+]);
+
+function resolveWa1SuvPlatform(type78: string): StaticHit | null {
+  if (!WA1_SUV_TYPE_78.has(type78)) return null;
+  return AUDI_TYPE_78[type78] ?? AUDI_PLATFORM_78[type78] ?? null;
 }
 
 const AUDI_PLATFORM_78: Record<string, StaticHit> = {
@@ -297,7 +323,7 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   "4M": { model: "Q7 / Q8", chassis: "4M" },
   F7: { model: "Q7 / SQ7", chassis: "4M/F7" },
   FE: { model: "Q7", chassis: "4L" },
-  F1: { model: "Q8 / SQ8 / RS Q8", chassis: "4M/F1" },
+  F1: { model: "Q8", chassis: "4M/F1" },
   // TT / R8 / e-tron
   "8N": { model: "TT", chassis: "8N" },
   "8J": { model: "TT", chassis: "8J" },
@@ -335,17 +361,15 @@ export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagMode
   }
 
   // North-American / non-ZZZ passenger (WAU/WUA/TRU): positions 7–8 = platform.
-  // WA1 SUVs encode the line at position 4 (WA1A=Q3, WA1M=Q8, …) — do not steal
-  // those with overlapping passenger platform codes (FV/FP). Only verified
-  // modern WA1 type codes resolve here; otherwise premium falls to AUDI_US_RULES.
+  // WA1 SUV WMI: model is also at positions 7–8 (NHTSA). Position 4 is trim tier
+  // (A/B/C/F ≈ Premium / Plus / Prestige / S line) — never the model line.
+  // Example: WA1FVAF1… = Q8 (F1), not “Q5 Sportback” from letter F.
   if (!isEuZzz) {
     if (type78 === "F2" || type78 === "FC") {
       return resolveAudiA6A7ByPos4(u, type78);
     }
     if (u.startsWith("WA1")) {
-      const currentWa1Codes = new Set(["GF", "GH", "GU", "FZ", "FW", "GE"]);
-      if (!currentWa1Codes.has(type78)) return null;
-      return materialize(AUDI_TYPE_78[type78] ?? AUDI_PLATFORM_78[type78]);
+      return materialize(resolveWa1SuvPlatform(type78));
     }
     return materialize(AUDI_PLATFORM_78[type78] ?? AUDI_TYPE_78[type78]);
   }

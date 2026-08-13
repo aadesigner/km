@@ -221,6 +221,23 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "B8": { from: 2014, to: 2023 },
   // Passat B9 only — never bare "B9" (collides with Audi A4 B9).
   "B9/CJ": { from: 2023, to: 2099 },
+  // Audi SUV platforms (NA pos.7–8) — keys must match chassis strings on WA1 hits
+  "4M/F1": { from: 2019, to: 2099 },
+  "4M/F7": { from: 2016, to: 2099 },
+  "FY": { from: 2018, to: 2099 },
+  "8R/FP": { from: 2009, to: 2017 },
+  "8R": { from: 2009, to: 2017 },
+  "GU": { from: 2022, to: 2099 },
+  "F3": { from: 2019, to: 2099 },
+  "8U/FS": { from: 2012, to: 2018 },
+  "8U": { from: 2012, to: 2018 },
+  "4L": { from: 2006, to: 2015 },
+  "4M": { from: 2015, to: 2099 },
+  "4N/F8": { from: 2018, to: 2099 },
+  "B9/8W": { from: 2016, to: 2099 },
+  "8Y": { from: 2020, to: 2099 },
+  "GA": { from: 2017, to: 2099 },
+  "MEB": { from: 2021, to: 2099 },
   // Land Rover / Range Rover / Jaguar platforms
   "L316": { from: 1983, to: 2016 },
   "L318": { from: 1990, to: 2004 },
@@ -704,14 +721,12 @@ function mercedesSuvFromLetterVds(
   }
 }
 
-const AUDI_US_RULES = compilePrefixRules([
-  { prefix: "WA1L", model: "Q5" },
-  { prefix: "WA1C", model: "Q5" },
-  { prefix: "WA1F", model: "Q5 Sportback" },
-  { prefix: "WA1A", model: "Q3" },
-  { prefix: "WA1B", model: "Q7" },
-  { prefix: "WA1M", model: "Q8" },
-]);
+/**
+ * Legacy WA1 pos.4 fallbacks removed: on NA Audi SUVs position 4 is trim tier
+ * (Premium / Prestige / S line), not the model. Model is positions 7–8 via
+ * decodeAudiModern (F1=Q8, FY=Q5, F7=Q7, F3=Q3, …).
+ */
+const AUDI_US_RULES = compilePrefixRules([]);
 
 const AUDI_RULES = compilePrefixRules([
   { prefix: "WAUZZZ8V", model: "A3" },
