@@ -861,7 +861,7 @@ export default function Dashboard() {
               className="space-y-6"
             >
               <Accordion type="single" collapsible className="space-y-2">
-                {([1, 2, 3, 4, 5, 6] as const).map((n) => (
+                {(["1", "2", "credits", "3", "4", "5", "6"] as const).map((n) => (
                   <AccordionItem key={n} value={`faq-${n}`} className="border rounded-xl px-4 bg-background shadow-sm">
                     <AccordionTrigger className="text-sm font-semibold hover:no-underline text-left py-4">
                       {t(`help_faq_${n}_q`)}
@@ -880,7 +880,7 @@ export default function Dashboard() {
                 <div>
                   <p className="font-semibold text-sm">{t("help_contact_title")}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{t("help_contact_desc")}</p>
-                  <ObfuscatedEmailLink className="text-xs font-medium mt-2 inline-block" />
+                  <ObfuscatedEmailLink asText className="text-xs font-bold mt-2 inline-block" />
                 </div>
               </div>
             </motion.div>

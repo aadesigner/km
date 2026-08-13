@@ -4,10 +4,12 @@ import { getSupportEmail } from "@/lib/support-email";
 
 type Props = {
   className?: string;
+  /** Plain text only — no mailto / click handler (still obfuscated until mount). */
+  asText?: boolean;
 };
 
-/** Renders support email only after mount; mailto opens on click (not in static HTML). */
-export function ObfuscatedEmailLink({ className }: Props) {
+/** Renders support email only after mount; mailto opens on click unless `asText`. */
+export function ObfuscatedEmailLink({ className, asText = false }: Props) {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,6 +18,10 @@ export function ObfuscatedEmailLink({ className }: Props) {
 
   if (!email) {
     return <span className={cn("inline-block min-w-[8ch]", className)} aria-hidden />;
+  }
+
+  if (asText) {
+    return <span className={className}>{email}</span>;
   }
 
   return (
