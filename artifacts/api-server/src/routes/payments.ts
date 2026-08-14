@@ -28,6 +28,7 @@ import {
 import { paypalOrderCreateLimiter, paypalCaptureLimiter, pokOrderCreateLimiter, pokConfirmLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
 import { completeCreditPackPayment } from "../lib/creditRedemption.js";
+import { vinReportPaymentLabel } from "../lib/vinReportPaymentLabel.js";
 import {
   POK_ORDER_ID_RE,
   createPokSdkOrder,
@@ -487,6 +488,7 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
   try {
     const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
     const userEmail = user[0]?.email ?? "";
+    const reportLabel = vinReportPaymentLabel(normalizedVin);
 
     const orderResp = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",
@@ -507,9 +509,9 @@ router.post("/payments/create-paypal-order", paypalOrderCreateLimiter, requireAu
               item_total: { currency_code: currency, value: finalPrice.toFixed(2) },
             },
           },
-          description: `VIN Report — ${normalizedVin}`,
+          description: reportLabel,
           items: [{
-            name: `VIN Report — ${normalizedVin}`,
+            name: reportLabel,
             quantity: "1",
             category: "DIGITAL_GOODS",
             unit_amount: { currency_code: currency, value: finalPrice.toFixed(2) },
@@ -1284,7 +1286,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
     const order = await createPokSdkOrder({
       amount: chargeAmount,
       currencyCode: currency,
-      description: `VIN Report - ${normalizedVin}`,
+      description: vinReportPaymentLabel(normalizedVin),
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
       config: pokConfig,
     });
