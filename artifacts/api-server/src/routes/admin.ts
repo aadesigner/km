@@ -2495,11 +2495,13 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
     conditions.push(recordedTransactionWhere());
   }
   if (search) {
+    const q = `%${search}%`;
     conditions.push(or(
       like(paymentsTable.vin, `%${search.toUpperCase()}%`),
-      like(paymentsTable.paypalOrderId, `%${search}%`),
-      like(paymentsTable.pokOrderId, `%${search}%`),
-      like(usersTable.email, `%${search}%`),
+      ilike(paymentsTable.paypalOrderId, q),
+      ilike(paymentsTable.pokOrderId, q),
+      ilike(usersTable.email, q),
+      ilike(usersTable.name, q),
     )!);
   }
 
@@ -2510,6 +2512,7 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
       id: paymentsTable.id,
       userId: paymentsTable.userId,
       userEmail: usersTable.email,
+      userName: usersTable.name,
       vin: paymentsTable.vin,
       amount: paymentsTable.amount,
       currency: paymentsTable.currency,

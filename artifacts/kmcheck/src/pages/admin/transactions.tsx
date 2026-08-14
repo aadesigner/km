@@ -24,6 +24,7 @@ type AdminTransaction = {
   id: number;
   userId: string;
   userEmail: string | null;
+  userName?: string | null;
   vin: string | null;
   amount: number;
   currency: string;
@@ -318,7 +319,7 @@ export default function AdminTransactions() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
-                  placeholder="Search email, VIN, PayPal or POK order ID…"
+                  placeholder="Search name, email, VIN, PayPal or POK order ID…"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                 />
@@ -385,8 +386,15 @@ export default function AdminTransactions() {
                           hour: "2-digit", minute: "2-digit",
                         })}
                       </TableCell>
-                      <TableCell className="text-xs max-w-[160px] truncate">
-                        {tx.userEmail ?? tx.userId}
+                      <TableCell className="text-xs max-w-[180px]">
+                        {tx.userName ? (
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{tx.userName}</p>
+                            <p className="truncate text-muted-foreground">{tx.userEmail ?? tx.userId}</p>
+                          </div>
+                        ) : (
+                          <span className="truncate block">{tx.userEmail ?? tx.userId}</span>
+                        )}
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         {tx.vin ?? "—"}
