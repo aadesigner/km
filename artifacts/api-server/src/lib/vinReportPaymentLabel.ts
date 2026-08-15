@@ -2,14 +2,14 @@ import { decodeVin, isPlausibleMake } from "@workspace/vin-decode";
 
 const PAYPAL_ITEM_NAME_MAX = 127;
 
-/** Last 5 VIN characters (letters and numbers — VIN serial is not digits-only). */
+/** Last 5 VIN characters (letters and numbers). */
 function vinTail5(vin: string): string {
   const nvin = vin.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (nvin.length >= 5) return nvin.slice(-5);
   return nvin || "VIN";
 }
 
-/** ASCII-only brand for PayPal/POK descriptors (accents/slashes can fail some processors). */
+/** ASCII-only brand. Keep the same character set as the old "VIN Report - {VIN}" labels. */
 function safeMake(raw: string | null | undefined, vin: string): string | null {
   if (!raw || !isPlausibleMake(raw, vin)) return null;
   const cleaned = raw
@@ -27,15 +27,18 @@ function clipLabel(label: string): string {
   return label.slice(0, PAYPAL_ITEM_NAME_MAX).trimEnd();
 }
 
-/** PayPal / POK checkout line only. Never throws — order create must not depend on decode. */
+/**
+ * PayPal / POK checkout line only.
+ * Format: `VIN - Make *TAIL` (no parentheses). Never throws.
+ */
 export function vinReportPaymentLabel(vin: string): string {
   const nvin = vin.trim().toUpperCase();
   const tail = vinTail5(nvin);
-  const fallback = clipLabel(`VIN Report - *(${tail})`);
+  const fallback = clipLabel(`VIN - *${tail}`);
   try {
     const make = safeMake(decodeVin(nvin).make, nvin);
     if (!make) return fallback;
-    return clipLabel(`VIN Report - ${make} *(${tail})`);
+    return clipLabel(`VIN - ${make} *${tail}`);
   } catch {
     return fallback;
   }
