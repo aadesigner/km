@@ -85,6 +85,7 @@ import { normalizeMaintenanceRestrictions, normalizeMaintenanceMessage } from ".
 import {
   recordedTransactionWhere,
   paymentHasFulfilledLookup,
+  sumCollectedRevenue,
 } from "../lib/recordedPayments.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
@@ -199,68 +200,32 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
         (SELECT COUNT(*) FROM users)::int AS total_users,
         (SELECT COUNT(*) FROM vin_lookups)::int AS total_vin_checks,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS total_revenue,
+         WHERE p.status IN ('completed', 'revoked')) AS total_revenue,
         (SELECT COUNT(*)::int FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS qualifying_payment_count,
+         WHERE p.status IN ('completed', 'revoked')) AS qualifying_payment_count,
         (SELECT COALESCE(AVG(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND p.amount > 0
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS avg_paid_order_value,
+           AND p.amount > 0) AS avg_paid_order_value,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_this_week,
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_this_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
            AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
-           AND (p.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_last_week,
+           AND (p.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_last_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_this_month,
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_this_month,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
            AND (p.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
-           AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_last_month,
+           AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_last_month,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_today,
+           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date) AS revenue_today,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE p.status IN ('completed', 'revoked')
-           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day'
-           AND EXISTS (
-             SELECT 1 FROM vin_lookups vl
-             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-           )) AS revenue_yesterday,
+           AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day') AS revenue_yesterday,
         (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_this_week,
         (SELECT COUNT(*)::int FROM users u
@@ -307,16 +272,12 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       GROUP BY (created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
-    // 90-day series for revenue
+    // 90-day series for revenue (completed + revoked — pending credit/remove must not deduct)
     db.execute(sql`
       SELECT (p.created_at AT TIME ZONE 'UTC')::date as date, COALESCE(SUM(p.amount), 0)::float as revenue
       FROM payments p
       WHERE p.status IN ('completed', 'revoked')
         AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
-        AND EXISTS (
-          SELECT 1 FROM vin_lookups vl
-          WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-        )
       GROUP BY (p.created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
@@ -333,10 +294,6 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       FROM payments p
       LEFT JOIN users u ON p.user_id = u.id
       WHERE p.status IN ('completed', 'revoked')
-        AND EXISTS (
-          SELECT 1 FROM vin_lookups vl
-          WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-        )
       ORDER BY p.created_at DESC
       LIMIT 10
     `),
@@ -378,16 +335,9 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
         COUNT(*)::int AS count
       FROM payments p
       LEFT JOIN users u ON u.id = p.user_id
-      WHERE p.status = 'completed'
+      WHERE p.status IN ('completed', 'revoked')
         AND p.amount > 0
         AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
-        AND (
-          p.kind = 'credit_pack'
-          OR EXISTS (
-            SELECT 1 FROM vin_lookups vl
-            WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-          )
-        )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
@@ -406,14 +356,6 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
       FROM payments p
       WHERE p.status IN ('completed', 'revoked')
         AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
-        AND (
-          p.kind IN ('credit_redemption', 'credit_pack')
-          OR COALESCE(p.amount, 0) = 0
-          OR EXISTS (
-            SELECT 1 FROM vin_lookups vl
-            WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')
-          )
-        )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
@@ -2590,11 +2532,11 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
 
   const statusRows = summaryResult.rows as Array<{ status: string; cnt: number; rev: number }>;
   const counts: Record<string, number> = {};
-  let totalRevenue = 0;
   for (const row of statusRows) {
     counts[row.status] = Number(row.cnt);
-    if (row.status === "completed") totalRevenue = Number(row.rev);
   }
+  // Keep revoked amounts in revenue (pending credit/remove must not deduct).
+  const totalRevenue = sumCollectedRevenue(statusRows);
 
   res.json({
     items,

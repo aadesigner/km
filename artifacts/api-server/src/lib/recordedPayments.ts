@@ -48,6 +48,25 @@ export function recordedTransactionWhere(extra?: SQL): SQL {
   return extra ? and(base, extra)! : base;
 }
 
+/**
+ * Money we kept: completed sales and revoked access after pending credit/remove.
+ * Refunded/voided/failed are excluded — revoking must not deduct revenue.
+ */
+export function isCollectedRevenueStatus(status: string): boolean {
+  return status === "completed" || status === "revoked";
+}
+
+export function sumCollectedRevenue(
+  rows: Array<{ status: string; rev?: number | null; revenue?: number | null }>,
+): number {
+  let total = 0;
+  for (const row of rows) {
+    if (!isCollectedRevenueStatus(row.status)) continue;
+    total += Number(row.rev ?? row.revenue ?? 0);
+  }
+  return total;
+}
+
 /** Mark payment completed and link to the lookup that unlocked the report. */
 export async function finalizePaymentOnFulfillment(
   paymentId: number | null | undefined,
