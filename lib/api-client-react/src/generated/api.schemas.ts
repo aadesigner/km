@@ -793,6 +793,8 @@ export interface SystemSettings {
   emailSendAbandonedCart?: boolean;
   /** Customer email when admin closes a pending VIN with no data and grants 1 credit */
   emailSendNoinfo?: boolean;
+  /** Customer email when admin removes pending VIN and marks payment refunded */
+  emailSendNoinforefund?: boolean;
   /** Admin alert when a customer pays for a manual-pending VIN (off by default) */
   emailSendAdminPendingVin?: boolean;
   /** Auto-delete email logs older than 7 days */
@@ -840,6 +842,8 @@ export interface SystemSettingsUpdate {
   emailSendAbandonedCart?: boolean;
   /** Customer email when admin closes a pending VIN with no data and grants 1 credit */
   emailSendNoinfo?: boolean;
+  /** Customer email when admin removes pending VIN and marks payment refunded */
+  emailSendNoinforefund?: boolean;
   /** Admin alert when a customer pays for a manual-pending VIN (off by default) */
   emailSendAdminPendingVin?: boolean;
   /** Auto-delete email logs older than 7 days */

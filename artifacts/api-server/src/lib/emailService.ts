@@ -345,6 +345,32 @@ export function buildNoinfoCreditEmail(
   );
 }
 
+export interface NoinfoRefundEmailData {
+  name: string;
+  vin: string;
+  checkoutUrl: string;
+  siteUrl?: string;
+}
+
+/** Admin closes pending VIN with no data and marks payment refunded. */
+export function buildNoinfoRefundEmail(
+  data: NoinfoRefundEmailData,
+  override?: EmailTemplateOverride,
+): { subject: string; html: string } {
+  const base = (data.siteUrl ?? "https://kmcheck.com").replace(/\/$/, "");
+  return renderEmailTemplate(
+    "noinforefund",
+    {
+      name: data.name || "there",
+      vin: data.vin,
+      checkoutUrl: data.checkoutUrl,
+      siteUrl: base,
+    },
+    override,
+    base,
+  );
+}
+
 export function buildPasswordResetEmail(
   resetUrl: string,
   siteUrl?: string,

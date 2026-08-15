@@ -8,6 +8,7 @@ import {
 } from "@workspace/db";
 import { eq, and, desc, inArray, count } from "drizzle-orm";
 import { fireNoinfoCreditEmail } from "./noinfoCreditEmail.js";
+import { fireNoinfoRefundEmail } from "./noinfoRefundEmail.js";
 import {
   getCatalogVin,
   upsertVinCatalog,
@@ -598,12 +599,18 @@ export async function importPendingVinDraftsFromJson(payload: unknown) {
   return { updated, skipped, errors: errors.slice(0, 20) };
 }
 
-/** Remove an open pending VIN check, delete linked client lookups, and revoke their payments. */
+/** Remove an open pending VIN check, delete linked client lookups, and close their payments. */
 export async function removePendingVinCheck(opts: {
   pendingId: number;
   adminId?: string;
   /** When set, grant this many credits to each unique requesting user before removal. */
   creditPerUser?: number;
+  /**
+   * How to close completed payments for this VIN.
+   * - revoked (default): keep in revenue (credit / remove pending)
+   * - refunded: deduct from sales (manual refund outside the app)
+   */
+  paymentOutcome?: "revoked" | "refunded";
 }) {
   const row = await getPendingVinCheckById(opts.pendingId);
   if (!row || row.status !== "open") {
@@ -615,11 +622,12 @@ export async function removePendingVinCheck(opts: {
   const userIds = [...new Set(row.requests.map((r) => r.userId))];
   const vin = row.vin.toUpperCase();
   const now = new Date();
-  const revokedPaymentIds = new Set<number>();
+  const closedPaymentIds = new Set<number>();
   const creditedUsers: { userId: string; previousBalance: number; creditBalance: number }[] = [];
   const creditPerUser = opts.creditPerUser != null && opts.creditPerUser > 0
     ? Math.floor(opts.creditPerUser)
     : 0;
+  const paymentOutcome = opts.paymentOutcome === "refunded" ? "refunded" : "revoked";
 
   await db.transaction(async (tx) => {
     if (creditPerUser > 0) {
@@ -647,26 +655,26 @@ export async function removePendingVinCheck(opts: {
     }
 
     if (paymentIds.length > 0) {
-      const revokedById = await tx.update(paymentsTable)
-        .set({ status: "revoked", updatedAt: now })
+      const closedById = await tx.update(paymentsTable)
+        .set({ status: paymentOutcome, updatedAt: now })
         .where(and(
           inArray(paymentsTable.id, paymentIds),
           eq(paymentsTable.status, "completed"),
         ))
         .returning({ id: paymentsTable.id });
-      for (const payment of revokedById) revokedPaymentIds.add(payment.id);
+      for (const payment of closedById) closedPaymentIds.add(payment.id);
     }
 
     for (const userId of userIds) {
-      const revokedByUser = await tx.update(paymentsTable)
-        .set({ status: "revoked", updatedAt: now })
+      const closedByUser = await tx.update(paymentsTable)
+        .set({ status: paymentOutcome, updatedAt: now })
         .where(and(
           eq(paymentsTable.userId, userId),
           eq(paymentsTable.vin, vin),
           eq(paymentsTable.status, "completed"),
         ))
         .returning({ id: paymentsTable.id });
-      for (const payment of revokedByUser) revokedPaymentIds.add(payment.id);
+      for (const payment of closedByUser) closedPaymentIds.add(payment.id);
     }
 
     await tx.delete(pendingVinCheckRequestsTable)
@@ -675,12 +683,17 @@ export async function removePendingVinCheck(opts: {
   });
 
   logger.info({
-    msg: creditPerUser > 0 ? "pending_vin_credited_and_removed" : "pending_vin_removed",
+    msg: paymentOutcome === "refunded"
+      ? "pending_vin_removed_refunded"
+      : creditPerUser > 0
+        ? "pending_vin_credited_and_removed"
+        : "pending_vin_removed",
     pendingId: opts.pendingId,
     vin,
     adminId: opts.adminId,
     removedLookupIds: lookupIds,
-    revokedPaymentIds: [...revokedPaymentIds],
+    paymentOutcome,
+    closedPaymentIds: [...closedPaymentIds],
     creditedUsers: creditedUsers.map((u) => u.userId),
     creditPerUser: creditPerUser || undefined,
   });
@@ -688,8 +701,61 @@ export async function removePendingVinCheck(opts: {
   return {
     vin,
     removedLookupIds: lookupIds,
-    paymentsRevoked: revokedPaymentIds.size,
+    paymentOutcome,
+    paymentsRevoked: paymentOutcome === "revoked" ? closedPaymentIds.size : 0,
+    paymentsRefunded: paymentOutcome === "refunded" ? closedPaymentIds.size : 0,
     creditedUsers,
+  };
+}
+
+/**
+ * Remove pending check and mark linked payments refunded (sales deduct).
+ * Does not call PayPal/POK — admin refunds manually.
+ * Emails each requester (Admin → Emails → No info / refund).
+ */
+export async function removePendingVinCheckAsRefunded(opts: {
+  pendingId: number;
+  adminId?: string;
+}) {
+  const row = await getPendingVinCheckById(opts.pendingId);
+  if (!row || row.status !== "open") {
+    throw Object.assign(new Error("Pending VIN check not found"), { code: "NOT_FOUND" });
+  }
+
+  const recipientsByUser = new Map<string, { userId: string; email: string | null; name: string | null }>();
+  for (const req of row.requests) {
+    if (!recipientsByUser.has(req.userId)) {
+      recipientsByUser.set(req.userId, {
+        userId: req.userId,
+        email: req.email,
+        name: req.name,
+      });
+    }
+  }
+  const recipients = [...recipientsByUser.values()];
+
+  const result = await removePendingVinCheck({
+    pendingId: opts.pendingId,
+    adminId: opts.adminId,
+    paymentOutcome: "refunded",
+  });
+
+  let emailsSent = 0;
+  const emailResults: { userId: string; email: string | null; sent: boolean }[] = [];
+  for (const user of recipients) {
+    const sent = await fireNoinfoRefundEmail({
+      vin: result.vin,
+      user: { name: user.name, email: user.email },
+    });
+    if (sent) emailsSent++;
+    emailResults.push({ userId: user.userId, email: user.email, sent });
+  }
+
+  return {
+    ...result,
+    emailsSent,
+    emailResults,
+    recipients: recipients.length,
   };
 }
 

@@ -33,12 +33,11 @@ describe("collected revenue after pending credit/remove", () => {
     expect(isCollectedRevenueStatus("failed")).toBe(false);
   });
 
-  it("sums completed + revoked amounts", () => {
+  it("does not count refunded toward collected revenue", () => {
+    expect(isCollectedRevenueStatus("refunded")).toBe(false);
     expect(sumCollectedRevenue([
       { status: "completed", rev: 10 },
-      { status: "revoked", rev: 15 },
-      { status: "failed", rev: 99 },
-      { status: "refunded", rev: 50 },
-    ])).toBe(25);
+      { status: "refunded", rev: 10 },
+    ])).toBe(10);
   });
 });

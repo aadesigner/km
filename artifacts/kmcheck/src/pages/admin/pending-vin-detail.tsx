@@ -4,7 +4,7 @@ import { Link, useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2, Rocket, Gift } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2, Rocket, Gift, Banknote } from "lucide-react";
 import { AdminVinSaveBar } from "@/components/admin/admin-vin-save-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,6 +52,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const [publishing, setPublishing] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [crediting, setCrediting] = useState(false);
+  const [refunding, setRefunding] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const exportLinkRef = useRef<HTMLAnchorElement>(null);
   const lastHydratedAtRef = useRef<string | null>(null);
@@ -252,11 +253,49 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       invalidateVinReportCaches(queryClient, detail.vin);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
       queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/transactions"] });
       setLocation("/adminx/pending-vin-checks");
     } catch {
       alert("Credit & notify failed — network error");
     } finally {
       setCrediting(false);
+    }
+  };
+
+  const handleRemoveAndRefund = async () => {
+    if (!detail) return;
+    if (!confirm(
+      `Remove pending + mark refunded for ${detail.vin}?\n\n` +
+      `• Remove pending check and client report access\n` +
+      `• Mark linked payments as refunded (deducts from sales)\n` +
+      `• Email customers (Admin → Emails → No info / refund)\n` +
+      `• Does NOT refund PayPal/POK — do that manually\n\n` +
+      `This cannot be undone.`,
+    )) return;
+    setRefunding(true);
+    try {
+      const r = await fetch(`${basePath}/api/admin/pending-vin-checks/${pendingId}/remove-and-refund`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = await r.json().catch(() => ({})) as { error?: string; paymentsRefunded?: number };
+      if (!r.ok) {
+        alert(body.error ?? "Remove + refunded failed");
+        return;
+      }
+      for (const req of detail.requests) {
+        invalidateVinReportCaches(queryClient, detail.vin, req.lookupId);
+      }
+      invalidateVinReportCaches(queryClient, detail.vin);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-vin-checks"] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_PENDING_COUNT_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      setLocation("/adminx/pending-vin-checks");
+    } catch {
+      alert("Remove + refunded failed — network error");
+    } finally {
+      setRefunding(false);
     }
   };
 
@@ -304,7 +343,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={handleExportJson} disabled={exportLoading || saving || publishing || removing || crediting}>
+          <Button variant="outline" size="sm" onClick={handleExportJson} disabled={exportLoading || saving || publishing || removing || crediting || refunding}>
             {exportLoading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Download className="h-4 w-4 mr-1.5" />}
             Download JSON
           </Button>
@@ -312,7 +351,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             variant="outline"
             className="border-amber-300 text-amber-800 hover:bg-amber-50"
             onClick={handleCreditAndNotify}
-            disabled={saving || publishing || removing || crediting || (detail.requests ?? []).length === 0}
+            disabled={saving || publishing || removing || crediting || refunding || (detail.requests ?? []).length === 0}
             title="Adds 1 credit per user, emails them, and removes this pending check"
           >
             {crediting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Gift className="h-4 w-4 mr-1.5" />}
@@ -320,9 +359,19 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           </Button>
           <Button
             variant="outline"
+            className="border-orange-300 text-orange-800 hover:bg-orange-50"
+            onClick={handleRemoveAndRefund}
+            disabled={saving || publishing || removing || crediting || refunding}
+            title="Removes pending, marks payments refunded (deducts sales), emails customer. Refund PayPal/POK yourself."
+          >
+            {refunding ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Banknote className="h-4 w-4 mr-1.5" />}
+            Remove pending + refunded
+          </Button>
+          <Button
+            variant="outline"
             className="text-destructive border-destructive/30 hover:bg-destructive/10"
             onClick={handleRemove}
-            disabled={saving || publishing || removing || crediting}
+            disabled={saving || publishing || removing || crediting || refunding}
           >
             {removing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
             Remove pending
@@ -383,9 +432,9 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             saveLabel="Save draft"
             saveMsg={saveMsg}
             hint="Ctrl+S to save draft · publish adds this VIN to the catalog"
-            disabled={publishing || removing || crediting}
+            disabled={publishing || removing || crediting || refunding}
             extra={(
-              <Button onClick={handlePublish} disabled={saving || publishing || removing || crediting} className="gap-1.5">
+              <Button onClick={handlePublish} disabled={saving || publishing || removing || crediting || refunding} className="gap-1.5">
                 {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
                 {publishing ? "Publishing…" : "Publish"}
               </Button>

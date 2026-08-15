@@ -7,6 +7,7 @@ export const EMAIL_LOG_TYPES = [
   "reset",
   "abandoned",
   "noinfo",
+  "noinforefund",
   "admin_pending",
   "test",
   "promo",

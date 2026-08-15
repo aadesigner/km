@@ -34,6 +34,7 @@ export function paymentIsCompletedNonLookupKind(): SQL {
  * Rows that belong in admin/client transaction history.
  * - Completed/revoked VIN payments with a fulfilled lookup
  * - Revoked payments even after lookups were removed (pending VIN credit/remove)
+ * - Refunded payments after pending remove+refund (sales deducted, history kept)
  * - Completed credit packs / redemptions
  */
 export function recordedTransactionWhere(extra?: SQL): SQL {
@@ -43,6 +44,7 @@ export function recordedTransactionWhere(extra?: SQL): SQL {
       or(eq(paymentsTable.status, "completed"), eq(paymentsTable.status, "revoked")),
     ),
     eq(paymentsTable.status, "revoked"),
+    eq(paymentsTable.status, "refunded"),
     paymentIsCompletedNonLookupKind(),
   )!;
   return extra ? and(base, extra)! : base;

@@ -14,7 +14,7 @@ export const pricingTable = pgTable("pricing", {
  * `confirm` is retained only so previously stored overrides stay readable; it is
  * no longer rendered or editable.
  */
-export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned" | "noinfo";
+export type EmailTemplateKey = "welcome" | "vinready" | "reset" | "abandoned" | "noinfo" | "noinforefund";
 export type LegacyEmailTemplateKey = "confirm";
 export type EmailTemplateOverride = { subject?: string; contentHtml?: string };
 export type EmailTemplatesConfig =
@@ -96,6 +96,8 @@ export const systemSettingsTable = pgTable("system_settings", {
   emailSendAbandonedCart: boolean("email_send_abandoned_cart").notNull().default(false),
   /** Customer email when admin closes a pending VIN with no data and grants 1 credit. */
   emailSendNoinfo: boolean("email_send_noinfo").notNull().default(true),
+  /** Customer email when admin removes pending VIN and marks payment refunded. */
+  emailSendNoinforefund: boolean("email_send_noinforefund").notNull().default(true),
   /** Admin alert when a customer pays for a manual-pending VIN. Off by default. */
   emailSendAdminPendingVin: boolean("email_send_admin_pending_vin").notNull().default(false),
   emailTemplates: jsonb("email_templates").$type<EmailTemplatesConfig>(),
