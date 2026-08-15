@@ -226,7 +226,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
     if (!detail) return;
     const uniqueUsers = new Set(detail.requests.map((r) => r.userId)).size;
     if (!confirm(
-      `Credit user & send email for ${detail.vin}?\n\n` +
+      `Credit user for ${detail.vin}?\n\n` +
       `• Add 1 free report credit to ${uniqueUsers} user(s)\n` +
       `• Email them that no information was found (Admin → Emails → No info / credit)\n` +
       `• Remove this pending check (same as Remove pending)\n\n` +
@@ -343,10 +343,6 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={handleExportJson} disabled={exportLoading || saving || publishing || removing || crediting || refunding}>
-            {exportLoading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Download className="h-4 w-4 mr-1.5" />}
-            Download JSON
-          </Button>
           <Button
             variant="outline"
             className="border-amber-300 text-amber-800 hover:bg-amber-50"
@@ -355,7 +351,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             title="Adds 1 credit per user, emails them, and removes this pending check"
           >
             {crediting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Gift className="h-4 w-4 mr-1.5" />}
-            Credit user &amp; send email
+            Credit user
           </Button>
           <Button
             variant="outline"
@@ -442,6 +438,18 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
           />
         </CardContent>
       </Card>
+
+      <p className="text-sm text-muted-foreground -mt-2">
+        <button
+          type="button"
+          onClick={handleExportJson}
+          disabled={exportLoading || saving || publishing || removing || crediting || refunding}
+          className="inline-flex items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50 disabled:no-underline"
+        >
+          {exportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          Download JSON
+        </button>
+      </p>
 
       <div className="h-4" aria-hidden />
     </div>

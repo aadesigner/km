@@ -85,7 +85,7 @@ const EMAIL_TYPES: {
     triggerKey: "emailSendNoinfo",
     label: "No info / free credit",
     description: "Tells the customer we found no data for their VIN and credited 1 free report check.",
-    trigger: "Sent from Pending VIN detail → Credit user & send email.",
+    trigger: "Sent from Pending VIN detail → Credit user.",
     icon: Gift,
   },
   {
