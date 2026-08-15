@@ -4,6 +4,9 @@ import { and, eq, exists, inArray, or, type SQL } from "drizzle-orm";
 /** Lookup outcomes that count as a real delivered (or queued) report for the customer. */
 export const FULFILLED_LOOKUP_STATUSES = ["complete", "pending_manual"] as const;
 
+/** Payment kinds that are real money/history without a VIN lookup row. */
+export const NON_LOOKUP_PAYMENT_KINDS = ["credit_pack", "credit_redemption"] as const;
+
 /** Payment is linked to a fulfilled VIN report (unlock or manual pending queue). */
 export function paymentHasFulfilledLookup(): SQL {
   return exists(
@@ -19,16 +22,30 @@ export function paymentHasFulfilledLookup(): SQL {
   );
 }
 
+/** Completed credit pack / redemption (no VIN lookup required). */
+export function paymentIsCompletedNonLookupKind(): SQL {
+  return and(
+    eq(paymentsTable.status, "completed"),
+    inArray(paymentsTable.kind, [...NON_LOOKUP_PAYMENT_KINDS]),
+  )!;
+}
+
 /**
- * Rows that belong in admin/client transaction history:
- * completed or revoked payment tied to a fulfilled lookup only.
+ * Rows that belong in admin/client transaction history.
+ * - Completed/revoked VIN payments with a fulfilled lookup
+ * - Revoked payments even after lookups were removed (pending VIN credit/remove)
+ * - Completed credit packs / redemptions
  */
 export function recordedTransactionWhere(extra?: SQL): SQL {
-  const base = and(
-    paymentHasFulfilledLookup(),
-    or(eq(paymentsTable.status, "completed"), eq(paymentsTable.status, "revoked")),
-  );
-  return extra ? and(base, extra)! : base!;
+  const base = or(
+    and(
+      paymentHasFulfilledLookup(),
+      or(eq(paymentsTable.status, "completed"), eq(paymentsTable.status, "revoked")),
+    ),
+    eq(paymentsTable.status, "revoked"),
+    paymentIsCompletedNonLookupKind(),
+  )!;
+  return extra ? and(base, extra)! : base;
 }
 
 /** Mark payment completed and link to the lookup that unlocked the report. */

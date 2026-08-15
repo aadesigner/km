@@ -82,7 +82,10 @@ import {
   removeUserBanIpBlocks,
 } from "../lib/accessBlocks.js";
 import { normalizeMaintenanceRestrictions, normalizeMaintenanceMessage } from "../lib/maintenancePolicy.js";
-import { recordedTransactionWhere, paymentHasFulfilledLookup } from "../lib/recordedPayments.js";
+import {
+  recordedTransactionWhere,
+  paymentHasFulfilledLookup,
+} from "../lib/recordedPayments.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
 import rateLimit from "express-rate-limit";
@@ -1284,6 +1287,8 @@ router.get("/admin/users/:userId/transactions", requireAdmin, async (req, res) =
       kind: paymentsTable.kind,
       credits: paymentsTable.credits,
       couponCode: paymentsTable.couponCode,
+      paypalOrderId: paymentsTable.paypalOrderId,
+      pokOrderId: paymentsTable.pokOrderId,
       createdAt: paymentsTable.createdAt,
     })
       .from(paymentsTable)
@@ -1294,7 +1299,15 @@ router.get("/admin/users/:userId/transactions", requireAdmin, async (req, res) =
     db.select({ total: count() }).from(paymentsTable).where(where),
   ]);
 
-  res.json({ items, total, page, limit });
+  res.json({
+    items: items.map((row) => ({
+      ...row,
+      providerOrderId: row.pokOrderId ?? row.paypalOrderId ?? null,
+    })),
+    total,
+    page,
+    limit,
+  });
 });
 
 // ── VIN LOOKUPS ───────────────────────────────────────────────────────────────
@@ -2484,13 +2497,18 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
   const search = req.query.search ? String(req.query.search).trim() : undefined;
 
   const conditions = [];
-  if (status === "failed" || status === "pending") {
+  if (status === "failed" || status === "pending" || status === "voided" || status === "revoked" || status === "refunded") {
+    // Keep history rows even when linked lookups were removed (credit / remove pending).
     conditions.push(eq(paymentsTable.status, status));
+  } else if (status === "completed") {
+    conditions.push(eq(paymentsTable.status, "completed"));
+    conditions.push(or(
+      paymentHasFulfilledLookup(),
+      inArray(paymentsTable.kind, ["credit_pack", "credit_redemption"]),
+    )!);
   } else if (status) {
     conditions.push(eq(paymentsTable.status, status));
-    if (status !== "voided") {
-      conditions.push(paymentHasFulfilledLookup());
-    }
+    conditions.push(paymentHasFulfilledLookup());
   } else {
     conditions.push(recordedTransactionWhere());
   }
@@ -2542,7 +2560,8 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
       FROM payments p
       WHERE status <> 'voided'
         AND (
-          status IN ('failed', 'pending')
+          status IN ('failed', 'pending', 'revoked', 'refunded')
+          OR (status = 'completed' AND p.kind IN ('credit_pack', 'credit_redemption'))
           OR EXISTS (
             SELECT 1 FROM vin_lookups vl
             WHERE vl.payment_id = p.id AND vl.status IN ('complete', 'pending_manual')

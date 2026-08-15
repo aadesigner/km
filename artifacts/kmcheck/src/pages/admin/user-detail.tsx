@@ -82,6 +82,9 @@ type UserPaymentRow = {
   kind?: string | null;
   credits?: number | null;
   couponCode?: string | null;
+  paypalOrderId?: string | null;
+  pokOrderId?: string | null;
+  providerOrderId?: string | null;
   createdAt: string;
 };
 
@@ -715,7 +718,11 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
           </Panel>
 
           <Panel className="overflow-hidden">
-            <SectionLabel icon={ReceiptText} title="Transaction history" hint="All payments for this user (VIN reports, packs, redemptions)." />
+            <SectionLabel
+              icon={ReceiptText}
+              title="Transaction history"
+              hint="All payments for this user (VIN reports, packs, redemptions). Kept after pending credit/remove."
+            />
             <div className="p-2 md:p-3">
               {(userTransactions?.items?.length ?? 0) === 0 ? (
                 <p className="text-xs md:text-sm text-muted-foreground text-center py-6">No transactions yet</p>
@@ -724,44 +731,67 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   <table className="w-full text-xs md:text-sm">
                     <thead>
                       <tr className="border-b border-border/40 bg-muted/30 text-left text-muted-foreground">
+                        <th className="px-3 py-2 font-medium">ID</th>
                         <th className="px-3 py-2 font-medium">Date</th>
                         <th className="px-3 py-2 font-medium">Type</th>
                         <th className="px-3 py-2 font-medium">VIN</th>
                         <th className="px-3 py-2 font-medium">Amount</th>
+                        <th className="px-3 py-2 font-medium">Order ID</th>
                         <th className="px-3 py-2 font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
-                      {userTransactions!.items.map((row) => (
-                        <tr key={row.id}>
-                          <td className="px-3 py-2 tabular-nums whitespace-nowrap">
-                            {new Date(row.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                          </td>
-                          <td className="px-3 py-2">
-                            <span className="text-foreground">{kindLabel(row.kind)}</span>
-                            {row.credits != null && row.kind === "credit_pack" && (
-                              <span className="text-muted-foreground"> · {row.credits} cr</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 font-mono text-[11px]">
-                            {row.vin ? (
-                              <Link href={`/adminx/vin/${row.vin}`}>
-                                <span className="hover:text-primary transition-colors">{row.vin}</span>
-                              </Link>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 tabular-nums whitespace-nowrap">
-                            €{Number(row.amount).toFixed(2)}
-                          </td>
-                          <td className="px-3 py-2">
-                            <Badge variant={row.status === "completed" ? "default" : "secondary"} className="text-[10px]">
-                              {row.status}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
+                      {userTransactions!.items.map((row) => {
+                        const orderId = row.providerOrderId ?? row.pokOrderId ?? row.paypalOrderId ?? null;
+                        return (
+                          <tr key={row.id}>
+                            <td className="px-3 py-2 font-mono tabular-nums text-muted-foreground">
+                              #{row.id}
+                            </td>
+                            <td className="px-3 py-2 tabular-nums whitespace-nowrap">
+                              {new Date(row.createdAt).toLocaleString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className="text-foreground">{kindLabel(row.kind)}</span>
+                              {row.credits != null && row.kind === "credit_pack" && (
+                                <span className="text-muted-foreground"> · {row.credits} cr</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 font-mono text-[11px]">
+                              {row.vin ? (
+                                <Link href={`/adminx/vin/${row.vin}`}>
+                                  <span className="hover:text-primary transition-colors">{row.vin}</span>
+                                </Link>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 tabular-nums whitespace-nowrap">
+                              {row.currency} {Number(row.amount).toFixed(2)}
+                            </td>
+                            <td
+                              className="px-3 py-2 font-mono text-[11px] max-w-[140px] truncate text-muted-foreground"
+                              title={orderId ?? undefined}
+                            >
+                              {orderId ?? "—"}
+                            </td>
+                            <td className="px-3 py-2">
+                              <Badge
+                                variant={row.status === "completed" ? "default" : "secondary"}
+                                className="text-[10px]"
+                              >
+                                {row.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
