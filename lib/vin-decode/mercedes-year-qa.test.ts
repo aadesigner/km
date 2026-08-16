@@ -21,6 +21,7 @@ describe("Mercedes Euro Baumuster year encoding", () => {
     "WDB2201751A432136",
     "WDD2130421A123456",
     "WDD4632761A123456",
+    "WDD2452071J281870", // real B 180 CDI W245 — NHTSA invents MY2001 from steering "1"
   ];
 
   const isoYear = [
@@ -82,8 +83,21 @@ describe("Mercedes generation year range (exact year not in VIN)", () => {
   it.each([
     ["WDB2030081A880979", "2000\u20132007 (W203)"], // W203 C-Class
     ["WDD2220871A123456", "2013\u20132020 (W222)"], // W222 S-Class
+    ["WDD2452071J281870", "2005\u20132011 (W245)"], // W245 B-Class
   ])("range for %s → %s", (vin, range) => {
     expect(decodeVinLocalFree(vin)!.modelYearRange).toBe(range);
+  });
+
+  it("W245 Baumuster is B-Class with Rastatt plant, no invented year", () => {
+    const r = decodeVinLocalFree("WDD2452071J281870");
+    expect(r).not.toBeNull();
+    expect(isMercedesEuroBaumusterVin("WDD2452071J281870")).toBe(true);
+    expect(r!.make).toBe("Mercedes-Benz");
+    expect(r!.model).toMatch(/B-Class/i);
+    expect(r!.series).toBe("W245");
+    expect(r!.year).toBeNull();
+    expect(r!.modelYearRange).toBe("2005\u20132011 (W245)");
+    expect(r!.plantCity).toBe("Rastatt");
   });
 
   it("open-ended generations render as 'from–present'", () => {

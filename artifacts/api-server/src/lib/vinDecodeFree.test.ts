@@ -207,4 +207,92 @@ describe("mergeFreeDecode", () => {
     expect(merged.model).toBe("Civic");
     expect(merged.year).toBe(2021);
   });
+
+  it("ignores NHTSA invented year on Mercedes Euro Baumuster (pos.10 is steering)", () => {
+    const vin = "WDD2452071J281870";
+    const local = decodeVin(vin);
+    expect(local.year).toBeNull();
+    expect(local.model).toMatch(/B-Class/i);
+
+    const merged = mergeFreeDecode(vin, local, {
+      errorCode: 8,
+      make: "MERCEDES-BENZ",
+      model: null,
+      series: null,
+      trim: null,
+      manufacturer: "MERCEDES-BENZ CARS",
+      vehicleType: "PASSENGER CAR",
+      bodyStyle: null,
+      doors: null,
+      // NHTSA maps steering digit "1" → ISO MY2001 — must not leak into our result.
+      year: 2001,
+      engineCylinders: null,
+      engineDisplacementL: null,
+      engineModel: null,
+      engineHp: null,
+      engineKw: null,
+      fuelType: null,
+      fuelTypeSecondary: null,
+      driveType: null,
+      transmissionStyle: null,
+      transmissionSpeeds: null,
+      turbo: null,
+      electrificationLevel: null,
+      gvwr: null,
+      vehicleDescriptor: "WDD24520*1J",
+      plantCountry: null,
+      plantCity: null,
+      abs: null,
+      esc: null,
+      tpms: null,
+      seatBeltType: null,
+      airbagLocations: null,
+    }, true);
+
+    expect(merged.year).toBeNull();
+    expect(merged.model).toMatch(/B-Class/i);
+    expect(merged.series).toBe("W245");
+    expect(merged.modelYearRange).toBe("2005\u20132011 (W245)");
+    expect(merged.make).toBe("Mercedes-Benz");
+  });
+
+  it("still uses NHTSA/ISO year for US letter-VDS Mercedes", () => {
+    const vin = "WDDGF8HB6LA123456";
+    const local = decodeVin(vin);
+    expect(local.year).toBe(2020);
+    const merged = mergeFreeDecode(vin, local, {
+      errorCode: 0,
+      make: "MERCEDES-BENZ",
+      model: "C-Class",
+      series: null,
+      trim: null,
+      manufacturer: "MERCEDES-BENZ CARS",
+      vehicleType: "PASSENGER CAR",
+      bodyStyle: null,
+      doors: null,
+      year: 2020,
+      engineCylinders: null,
+      engineDisplacementL: null,
+      engineModel: null,
+      engineHp: null,
+      engineKw: null,
+      fuelType: null,
+      fuelTypeSecondary: null,
+      driveType: null,
+      transmissionStyle: null,
+      transmissionSpeeds: null,
+      turbo: null,
+      electrificationLevel: null,
+      gvwr: null,
+      vehicleDescriptor: null,
+      plantCountry: null,
+      plantCity: null,
+      abs: null,
+      esc: null,
+      tpms: null,
+      seatBeltType: null,
+      airbagLocations: null,
+    }, true);
+    expect(merged.year).toBe(2020);
+  });
 });

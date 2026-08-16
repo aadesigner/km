@@ -145,12 +145,18 @@ function plausibleModelYear(year: number | null | undefined): year is number {
   return year >= 1980 && year <= max;
 }
 
-/** Prefer position-10 local year when NHTSA only partially decoded the VIN. */
+/** Prefer local year; never take NHTSA year when the VIN omits ISO year (MB Baumuster / BMW ETK). */
 function pickYear(
+  vin: string,
   nhtsaYear: number | null,
   localYear: number | null,
   nhtsaErrorCode: number,
 ): number | null {
+  // Pos.10 is steering (MB) or non-year (BMW ETK) — NHTSA still invents ISO years like 2001 from "1".
+  if (isMercedesEuroBaumusterVin(vin) || bmwEtkOmitsIsoYear(vin)) {
+    return plausibleModelYear(localYear) ? localYear : null;
+  }
+
   const localOk = plausibleModelYear(localYear);
   const nhtsaOk = plausibleModelYear(nhtsaYear);
 
@@ -510,7 +516,7 @@ export function mergeFreeDecode(
   const usedNhtsaCore = !!nhtsa!.make && (nhtsa!.model === model || !usedLocalModel);
   const localTrim = decodeLocalTrim(vin, model);
   const extended = nhtsaExtendedFields(nhtsa!);
-  const year = pickYear(nhtsa!.year, local.year, nhtsa!.errorCode);
+  const year = pickYear(vin, nhtsa!.year, local.year, nhtsa!.errorCode);
   const series = pickSeries(nhtsa!.series, vin, model);
 
   return {

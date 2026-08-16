@@ -38,7 +38,8 @@ const MERCEDES: Case[] = [
   { vin: "WDD177087KA123456", label: "MB A-Class W177", make: "Mercedes-Benz", modelContains: "A-Class", year: 2019 },
   { vin: "WDD118087KA123456", label: "MB CLA C118", make: "Mercedes-Benz", modelContains: "CLA", year: 2019 },
   { vin: "WDD246087JA123456", label: "MB B-Class W246", make: "Mercedes-Benz", modelContains: "B-Class", year: 2018 },
-  { vin: "WDD2450879A123456", label: "MB B-Class W245", make: "Mercedes-Benz", modelContains: "B-Class", year: 2009 },
+  // Real Euro Baumuster FIN — pos.10 is LHD (1), NOT model year (NHTSA wrongly maps 1→2001).
+  { vin: "WDD2452071J281870", label: "MB B 180 CDI W245 Baumuster", make: "Mercedes-Benz", modelContains: "B-Class", year: null },
   { vin: "WDD2020491A123456", label: "MB C-Class W202 Baumuster", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
   { vin: "WDD2030491A123456", label: "MB C-Class W203 Baumuster", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
   { vin: "WDB2030081A880979", label: "MB C 220 CDI real W203", make: "Mercedes-Benz", modelContains: "C-Class", year: null },
