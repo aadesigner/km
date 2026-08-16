@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RefreshCw, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Search, RefreshCw, Trash2, AlertTriangle, CheckCircle2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +24,7 @@ type EmailLog = {
   error: string | null;
   meta: Record<string, unknown> | null;
   createdAt: string;
+  resendable?: boolean;
 };
 
 type LogsResponse = {
@@ -91,6 +92,7 @@ export default function AdminEmailLogs({
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [clearing, setClearing] = useState(false);
+  const [resendingId, setResendingId] = useState<number | null>(null);
 
   const debouncedSearch = useDebounced(search);
 
@@ -150,6 +152,35 @@ export default function AdminEmailLogs({
       toast({ variant: "destructive", title: "Could not clear logs" });
     } finally {
       setClearing(false);
+    }
+  }
+
+  async function handleResend(log: EmailLog) {
+    setResendingId(log.id);
+    try {
+      const resp = await fetch(`${basePath}/api/admin/email/logs/${log.id}/resend`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = (await resp.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        hint?: string;
+      };
+      if (!resp.ok || body.ok === false) {
+        throw new Error(body.error || "Resend failed");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["admin-email-logs"] });
+      toast({ title: "Email resent", description: `Sent to ${log.recipient}` });
+    } catch (err) {
+      await queryClient.invalidateQueries({ queryKey: ["admin-email-logs"] });
+      toast({
+        variant: "destructive",
+        title: "Could not resend email",
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setResendingId(null);
     }
   }
 
@@ -276,6 +307,18 @@ export default function AdminEmailLogs({
                       <p className="text-xs text-destructive mt-1 break-words">{log.error}</p>
                     )}
                   </div>
+                  {log.status === "failed" && log.resendable && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 h-8 gap-1.5"
+                      disabled={resendingId === log.id}
+                      onClick={() => void handleResend(log)}
+                    >
+                      <Send className={cn("h-3.5 w-3.5", resendingId === log.id && "animate-pulse")} />
+                      {resendingId === log.id ? "Sending…" : "Resend"}
+                    </Button>
+                  )}
                   <time className="text-xs text-muted-foreground shrink-0 tabular-nums mt-0.5">
                     {new Date(log.createdAt).toLocaleString()}
                   </time>

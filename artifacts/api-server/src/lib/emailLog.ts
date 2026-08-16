@@ -1,9 +1,14 @@
 import { db, emailLogsTable, EMAIL_LOG_TYPES } from "@workspace/db";
 import type { EmailLogType, EmailLogStatus } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { logger } from "./logger.js";
 
 /** Logs older than this are removed when auto-cleanup is enabled. */
 export const EMAIL_LOG_RETENTION_DAYS = 7;
+
+/** Stored on log meta for Admin → Logs → Resend; stripped from list API responses. */
+export const EMAIL_LOG_HTML_META_KEY = "_html";
+export const EMAIL_LOG_TEXT_META_KEY = "_text";
 
 const VALID_TYPES = new Set<string>(EMAIL_LOG_TYPES);
 
@@ -24,6 +29,35 @@ export type RecordEmailLogInput = {
   error?: string | null;
   meta?: Record<string, unknown> | null;
 };
+
+export function getStoredEmailBody(meta: Record<string, unknown> | null | undefined): {
+  html: string | null;
+  text: string | null;
+} {
+  if (!meta || typeof meta !== "object") return { html: null, text: null };
+  const html = typeof meta[EMAIL_LOG_HTML_META_KEY] === "string" ? meta[EMAIL_LOG_HTML_META_KEY] : null;
+  const text = typeof meta[EMAIL_LOG_TEXT_META_KEY] === "string" ? meta[EMAIL_LOG_TEXT_META_KEY] : null;
+  return { html, text };
+}
+
+/** Drop message body fields so list payloads stay small. */
+export function sanitizeEmailLogMetaForApi(
+  meta: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null {
+  if (!meta || typeof meta !== "object") return null;
+  const next = { ...meta };
+  delete next[EMAIL_LOG_HTML_META_KEY];
+  delete next[EMAIL_LOG_TEXT_META_KEY];
+  return Object.keys(next).length > 0 ? next : null;
+}
+
+export function emailLogIsResendable(
+  status: EmailLogStatus | string,
+  meta: Record<string, unknown> | null | undefined,
+): boolean {
+  if (status !== "failed") return false;
+  return Boolean(getStoredEmailBody(meta).html);
+}
 
 /**
  * Never throws and never blocks the caller — a logging failure must not stop an
@@ -46,4 +80,18 @@ export function recordEmailLog(input: RecordEmailLogInput): void {
     .catch((err) => {
       logger.warn({ err }, "email log insert failed");
     });
+}
+
+export async function markEmailLogSent(id: number): Promise<void> {
+  await db
+    .update(emailLogsTable)
+    .set({ status: "sent", error: null })
+    .where(eq(emailLogsTable.id, id));
+}
+
+export async function markEmailLogFailed(id: number, error: string): Promise<void> {
+  await db
+    .update(emailLogsTable)
+    .set({ status: "failed", error: String(error).slice(0, MAX_ERROR) })
+    .where(eq(emailLogsTable.id, id));
 }

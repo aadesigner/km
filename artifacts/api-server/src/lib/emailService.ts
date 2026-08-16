@@ -7,7 +7,11 @@ import {
   varsFromReportReady,
   getSampleTemplateVars,
 } from "./emailTemplates.js";
-import { recordEmailLog } from "./emailLog.js";
+import {
+  EMAIL_LOG_HTML_META_KEY,
+  EMAIL_LOG_TEXT_META_KEY,
+  recordEmailLog,
+} from "./emailLog.js";
 import type { EmailLogType } from "@workspace/db";
 import {
   normalizeSmtpSecurity,
@@ -41,12 +45,35 @@ export type SendEmailResult = {
 /** Cap how long callers (e.g. admin SMTP test) wait before a friendly timeout. */
 export const SMTP_SEND_DEADLINE_MS = 22_000;
 
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+  /** Category recorded in Admin → Emails → Logs. Omit to skip logging. */
+  logType?: EmailLogType;
+  /** Extra context stored alongside the log row (vin, lookupId, userId, …). */
+  logMeta?: Record<string, unknown>;
+  /** When true, do not insert a new email_logs row (used by admin resend). */
+  skipLog?: boolean;
+}
+
+function buildEmailLogMeta(opts: EmailOptions): Record<string, unknown> {
+  const meta: Record<string, unknown> = { ...(opts.logMeta ?? {}) };
+  meta[EMAIL_LOG_HTML_META_KEY] = opts.html;
+  if (opts.text) meta[EMAIL_LOG_TEXT_META_KEY] = opts.text;
+  return meta;
+}
+
 export async function sendEmailWithDeadline(
   opts: EmailOptions,
   smtpOverride?: SmtpOverride,
   deadlineMs = SMTP_SEND_DEADLINE_MS,
 ): Promise<SendEmailResult> {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  // Inner send skips logging so a deadline timeout can still create a failed log
+  // (with message body) for Admin → Emails → Logs → Resend.
+  const sendPromise = sendEmail({ ...opts, skipLog: true }, smtpOverride);
   const deadline = new Promise<SendEmailResult>((resolve) => {
     timer = setTimeout(() => {
       resolve({
@@ -59,20 +86,21 @@ export async function sendEmailWithDeadline(
     }, deadlineMs);
   });
 
-  const result = await Promise.race([sendEmail(opts, smtpOverride), deadline]);
+  const result = await Promise.race([sendPromise, deadline]);
   if (timer) clearTimeout(timer);
-  return result;
-}
 
-interface EmailOptions {
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-  /** Category recorded in Admin → Emails → Logs. Omit to skip logging. */
-  logType?: EmailLogType;
-  /** Extra context stored alongside the log row (vin, lookupId, userId, …). */
-  logMeta?: Record<string, unknown>;
+  if (!opts.skipLog && opts.logType) {
+    recordEmailLog({
+      type: opts.logType,
+      recipient: opts.to,
+      subject: opts.subject,
+      status: result.ok ? "sent" : "failed",
+      error: result.ok ? undefined : result.error,
+      meta: buildEmailLogMeta(opts),
+    });
+  }
+
+  return result;
 }
 
 type ResolvedSmtp = {
@@ -190,14 +218,14 @@ export async function sendEmail(
 ): Promise<SendEmailResult> {
   let smtpHost: string | undefined;
   const log = (status: "sent" | "failed", error?: string) => {
-    if (!opts.logType) return;
+    if (opts.skipLog || !opts.logType) return;
     recordEmailLog({
       type: opts.logType,
       recipient: opts.to,
       subject: opts.subject,
       status,
       error,
-      meta: opts.logMeta ?? null,
+      meta: buildEmailLogMeta(opts),
     });
   };
 
