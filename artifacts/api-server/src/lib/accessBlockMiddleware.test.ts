@@ -4,11 +4,13 @@ import type { Request, Response, NextFunction } from "express";
 const checkAccessBlock = vi.fn();
 const resolveBlockIpFromRequest = vi.fn();
 const resolveBlockCountryFromRequest = vi.fn();
+const resolveBlockDeviceFromRequest = vi.fn();
 
 vi.mock("./accessBlocks.js", () => ({
   checkAccessBlock: (...args: unknown[]) => checkAccessBlock(...args),
   resolveBlockIpFromRequest: (...args: unknown[]) => resolveBlockIpFromRequest(...args),
   resolveBlockCountryFromRequest: (...args: unknown[]) => resolveBlockCountryFromRequest(...args),
+  resolveBlockDeviceFromRequest: (...args: unknown[]) => resolveBlockDeviceFromRequest(...args),
 }));
 
 const { accessBlockMiddleware } = await import("./accessBlockMiddleware.js");
@@ -26,6 +28,7 @@ describe("accessBlockMiddleware", () => {
     vi.clearAllMocks();
     resolveBlockIpFromRequest.mockReturnValue("203.0.113.1");
     resolveBlockCountryFromRequest.mockReturnValue("US");
+    resolveBlockDeviceFromRequest.mockReturnValue(null);
     checkAccessBlock.mockResolvedValue({ blocked: false });
   });
 
@@ -36,10 +39,11 @@ describe("accessBlockMiddleware", () => {
     expect(checkAccessBlock).not.toHaveBeenCalled();
   });
 
-  it("checks IP/country blocks for non-admin requests", async () => {
+  it("checks IP/country/device blocks for non-admin requests", async () => {
     const next = vi.fn() as NextFunction;
     await accessBlockMiddleware(mockReq({ isAdmin: false }), mockRes(), next);
     expect(checkAccessBlock).toHaveBeenCalledOnce();
+    expect(checkAccessBlock).toHaveBeenCalledWith("203.0.113.1", "US", null);
     expect(next).toHaveBeenCalledOnce();
   });
 

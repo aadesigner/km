@@ -1,12 +1,21 @@
-import { db, accessBlocksTable, loginAttemptsTable } from "@workspace/db";
+import { db, accessBlocksTable, userDevicesTable, usersTable } from "@workspace/db";
 import { and, desc, eq } from "drizzle-orm";
 import { resolveRequestCountryCode } from "./geoCountry.js";
 import { clientIpKey } from "./trustedClient.js";
-import { normalizeBlockedCountry, normalizeBlockedIp } from "./accessBlockNormalize.js";
+import {
+  normalizeBlockedCountry,
+  normalizeBlockedDevice,
+  normalizeBlockedIp,
+} from "./accessBlockNormalize.js";
+import { resolveDeviceHashFromRequest } from "./deviceIdentity.js";
 
-export type AccessBlockType = "ip" | "country";
+export type AccessBlockType = "ip" | "country" | "device";
 
-export { normalizeBlockedCountry, normalizeBlockedIp } from "./accessBlockNormalize.js";
+export {
+  normalizeBlockedCountry,
+  normalizeBlockedDevice,
+  normalizeBlockedIp,
+} from "./accessBlockNormalize.js";
 
 export type AccessBlockRow = {
   id: number;
@@ -23,6 +32,7 @@ export type AccessBlockRow = {
 type BlockCache = {
   ips: Set<string>;
   countries: Set<string>;
+  devices: Set<string>;
   loadedAt: number;
 };
 
@@ -48,13 +58,15 @@ async function loadCache(): Promise<BlockCache> {
 
   const ips = new Set<string>();
   const countries = new Set<string>();
+  const devices = new Set<string>();
   for (const row of rows) {
     if (!isActive(row.expiresAt)) continue;
     if (row.blockType === "ip") ips.add(row.blockValue);
     if (row.blockType === "country") countries.add(row.blockValue);
+    if (row.blockType === "device") devices.add(row.blockValue);
   }
 
-  cache = { ips, countries, loadedAt: now };
+  cache = { ips, countries, devices, loadedAt: now };
   return cache;
 }
 
@@ -75,16 +87,25 @@ export async function isCountryBlocked(countryCode: string | null): Promise<bool
   return countries.has(countryCode);
 }
 
+export async function isDeviceBlocked(deviceHash: string | null): Promise<boolean> {
+  const normalized = deviceHash ? normalizeBlockedDevice(deviceHash) : null;
+  if (!normalized) return false;
+  const { devices } = await loadCache();
+  return devices.has(normalized);
+}
+
 export type AccessBlockCheck = {
   blocked: boolean;
-  reason?: "ip" | "country";
+  reason?: "ip" | "country" | "device";
 };
 
 export async function checkAccessBlock(
   ip: string,
   countryCode: string | null,
+  deviceHash?: string | null,
 ): Promise<AccessBlockCheck> {
   if (await isIpBlocked(ip)) return { blocked: true, reason: "ip" };
+  if (await isDeviceBlocked(deviceHash ?? null)) return { blocked: true, reason: "device" };
   if (await isCountryBlocked(countryCode)) return { blocked: true, reason: "country" };
   return { blocked: false };
 }
@@ -146,6 +167,42 @@ export async function addIpBlock(opts: {
   return { ok: true };
 }
 
+export async function addDeviceBlock(opts: {
+  deviceHash: string;
+  reason?: string | null;
+  source?: string;
+  userId?: string | null;
+  createdBy?: string | null;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const normalized = normalizeBlockedDevice(opts.deviceHash);
+  if (!normalized) return { ok: false, error: "Invalid device id" };
+
+  await db
+    .insert(accessBlocksTable)
+    .values({
+      blockType: "device",
+      blockValue: normalized,
+      reason: opts.reason ?? null,
+      source: opts.source ?? "manual",
+      userId: opts.userId ?? null,
+      createdBy: opts.createdBy ?? null,
+    })
+    .onConflictDoUpdate({
+      target: [accessBlocksTable.blockType, accessBlocksTable.blockValue],
+      set: {
+        reason: opts.reason ?? null,
+        source: opts.source ?? "manual",
+        userId: opts.userId ?? null,
+        createdBy: opts.createdBy ?? null,
+        createdAt: new Date(),
+        expiresAt: null,
+      },
+    });
+
+  invalidateAccessBlockCache();
+  return { ok: true };
+}
+
 export async function addCountryBlock(opts: {
   countryCode: string;
   reason?: string | null;
@@ -181,9 +238,12 @@ export async function removeAccessBlock(
   blockType: AccessBlockType,
   blockValue: string,
 ): Promise<boolean> {
-  const value = blockType === "ip"
-    ? normalizeBlockedIp(blockValue)
-    : normalizeBlockedCountry(blockValue);
+  const value =
+    blockType === "ip"
+      ? normalizeBlockedIp(blockValue)
+      : blockType === "device"
+        ? normalizeBlockedDevice(blockValue)
+        : normalizeBlockedCountry(blockValue);
   if (!value) return false;
 
   const result = await db
@@ -194,6 +254,7 @@ export async function removeAccessBlock(
   return (result.rowCount ?? 0) > 0;
 }
 
+/** Removes device (and any legacy) blocks created by a user ban (manual IP/country blocks stay). */
 export async function removeUserBanIpBlocks(userId: string): Promise<number> {
   const result = await db
     .delete(accessBlocksTable)
@@ -203,51 +264,76 @@ export async function removeUserBanIpBlocks(userId: string): Promise<number> {
   return result.rowCount ?? 0;
 }
 
-export async function getRecentIpsForEmail(email: string, max = 3): Promise<string[]> {
-  const normalized = email.trim().toLowerCase();
-  const rows = await db
-    .select({ ip: loginAttemptsTable.ip })
-    .from(loginAttemptsTable)
-    .where(eq(loginAttemptsTable.email, normalized))
-    .orderBy(desc(loginAttemptsTable.attemptedAt))
-    .limit(25);
-
-  const seen = new Set<string>();
-  const ips: string[] = [];
-  for (const row of rows) {
-    const ip = normalizeBlockedIp(row.ip);
-    if (!ip || seen.has(ip)) continue;
-    seen.add(ip);
-    ips.push(ip);
-    if (ips.length >= max) break;
-  }
-  return ips;
+async function listDeviceHashesForBan(userId: string): Promise<string[]> {
+  const deviceRows = await db
+    .select({ deviceHash: userDevicesTable.deviceHash })
+    .from(userDevicesTable)
+    .where(eq(userDevicesTable.userId, userId));
+  return deviceRows.map((r) => r.deviceHash).filter(Boolean);
 }
 
-export async function blockIpsForBannedUser(
+/**
+ * Ban hardening: block remembered devices for this account only.
+ * IPs stay as forensic records on the user (signup / last login) and are
+ * never auto-blocked — use Security → Block IP for manual network bans.
+ */
+export async function blockDevicesForBannedUser(
   userId: string,
-  email: string,
   adminId: string,
   reason?: string | null,
-  lastLoginIp?: string | null,
-): Promise<string[]> {
-  const ipSet = new Set<string>();
-  const fromLast = lastLoginIp ? normalizeBlockedIp(lastLoginIp) : null;
-  if (fromLast) ipSet.add(fromLast);
-  for (const ip of await getRecentIpsForEmail(email)) ipSet.add(ip);
-
-  const blocked: string[] = [];
-  for (const ip of ipSet) {
-    const result = await addIpBlock({
-      ip,
-      reason: reason ?? "Auto-blocked when user account was banned",
+): Promise<{ blockedDevices: string[] }> {
+  const banReason = reason ?? "Auto-blocked when user account was banned";
+  const blockedDevices: string[] = [];
+  for (const deviceHash of await listDeviceHashesForBan(userId)) {
+    const result = await addDeviceBlock({
+      deviceHash,
+      reason: banReason,
       source: "user_ban",
       userId,
       createdBy: adminId,
     });
-    if (result.ok) blocked.push(ip);
+    if (result.ok) blockedDevices.push(deviceHash);
   }
-  return blocked;
+  return { blockedDevices };
+}
+
+/** Remove legacy auto IP blocks created by older user-ban logic (manual IP blocks stay). */
+export async function purgeLegacyUserBanIpBlocks(): Promise<number> {
+  const result = await db
+    .delete(accessBlocksTable)
+    .where(and(eq(accessBlocksTable.source, "user_ban"), eq(accessBlocksTable.blockType, "ip")));
+  invalidateAccessBlockCache();
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Ensure every currently banned account has device rows in access_blocks.
+ * Does not create IP blocks. Clears legacy user_ban IP rows.
+ */
+export async function syncAccessBlocksForBannedUsers(
+  createdBy = "system",
+): Promise<{ users: number; devices: number; purgedLegacyIps: number }> {
+  try {
+    const purgedLegacyIps = await purgeLegacyUserBanIpBlocks();
+    const banned = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.isBanned, true))
+      .limit(500);
+
+    let devices = 0;
+    for (const user of banned) {
+      const result = await blockDevicesForBannedUser(
+        user.id,
+        createdBy,
+        "Synced from banned account",
+      );
+      devices += result.blockedDevices.length;
+    }
+    return { users: banned.length, devices, purgedLegacyIps };
+  } catch {
+    return { users: 0, devices: 0, purgedLegacyIps: 0 };
+  }
 }
 
 export function resolveBlockCountryFromRequest(req: import("express").Request): string | null {
@@ -256,4 +342,8 @@ export function resolveBlockCountryFromRequest(req: import("express").Request): 
 
 export function resolveBlockIpFromRequest(req: import("express").Request): string {
   return clientIpKey(req);
+}
+
+export function resolveBlockDeviceFromRequest(req: import("express").Request): string | null {
+  return resolveDeviceHashFromRequest(req);
 }

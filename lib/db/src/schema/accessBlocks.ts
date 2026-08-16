@@ -2,7 +2,7 @@ import { pgTable, serial, text, timestamp, index, uniqueIndex } from "drizzle-or
 
 export const accessBlocksTable = pgTable("access_blocks", {
   id: serial("id").primaryKey(),
-  blockType: text("block_type").notNull(), // ip | country
+  blockType: text("block_type").notNull(), // ip | country | device
   blockValue: text("block_value").notNull(),
   reason: text("reason"),
   source: text("source").notNull().default("manual"), // manual | user_ban

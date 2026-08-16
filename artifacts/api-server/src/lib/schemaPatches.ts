@@ -27,6 +27,7 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS plugin_settings jsonb`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS smtp_security text NOT NULL DEFAULT 'starttls'`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_ip text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_ip text`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at timestamp`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_path text`,
   `CREATE INDEX IF NOT EXISTS users_last_seen_at_idx ON users (last_seen_at)`,
@@ -114,6 +115,19 @@ const TABLE_PATCHES = [
   `CREATE INDEX IF NOT EXISTS email_logs_type_created_at_idx ON email_logs (type, created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS email_logs_status_idx ON email_logs (status)`,
   `CREATE INDEX IF NOT EXISTS email_logs_recipient_idx ON email_logs (recipient)`,
+  `CREATE TABLE IF NOT EXISTS user_devices (
+    id serial PRIMARY KEY,
+    user_id text NOT NULL,
+    device_hash text NOT NULL,
+    user_agent text,
+    last_ip text,
+    created_at timestamp NOT NULL DEFAULT now(),
+    last_seen_at timestamp NOT NULL DEFAULT now()
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS user_devices_user_hash_idx ON user_devices (user_id, device_hash)`,
+  `CREATE INDEX IF NOT EXISTS user_devices_user_id_idx ON user_devices (user_id)`,
+  `CREATE INDEX IF NOT EXISTS user_devices_device_hash_idx ON user_devices (device_hash)`,
+  `CREATE INDEX IF NOT EXISTS user_devices_last_seen_at_idx ON user_devices (last_seen_at)`,
 ];
 
 /** Bump the shipped KRW/USD default from 1537 → 1415 (Aug 2026 market). Custom admin rates are left alone. */

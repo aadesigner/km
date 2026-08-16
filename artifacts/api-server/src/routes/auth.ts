@@ -20,6 +20,7 @@ import {
   getLinkedInOAuthCredentials,
 } from "../lib/oauthSettings.js";
 import { touchUserPresence } from "../lib/userPresence.js";
+import { trackUserSessionAccess } from "../lib/userAccessTracking.js";
 import {
   authSessionUserSelect,
   oauthUserSelect,
@@ -332,6 +333,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
   const isAdmin = await shouldBootstrapAdmin(normalizedEmail);
   const passwordHash = await hashPassword(password);
   const id = crypto.randomUUID();
+  const signupIp = clientIpKey(req);
 
   const [user] = await db.insert(usersTable).values({
     id,
@@ -341,6 +343,8 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     isAdmin,
     countryCode,
     lastLoginAt: new Date(),
+    lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
+    signupIp: signupIp !== "unknown" ? signupIp : undefined,
   }).returning(authSessionUserSelect);
 
   if (!user) {
@@ -357,6 +361,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
 
   const token = await signJwt(user.id, regSessionDays);
   setAuthCookie(res, token, regSessionDays);
+  await trackUserSessionAccess(req, res, user.id, { isNewAccount: true });
 
   logger.info({ msg: "auth_register", userId: user.id, email: normalizedEmail, isAdmin });
 
@@ -405,7 +410,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const clientIp = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ?? req.socket.remoteAddress ?? "unknown";
+  const clientIp = clientIpKey(req);
 
   // Determine if this is an admin login attempt (separate lockout bucket)
   const adminEnvEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
@@ -490,12 +495,6 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     and(eq(loginAttemptsTable.email, normalizedEmail), eq(loginAttemptsTable.context, loginContext)),
   );
 
-  await db.update(usersTable).set({
-    lastLoginAt: new Date(),
-    lastLoginIp: clientIp,
-    updatedAt: new Date(),
-  }).where(eq(usersTable.id, user.id));
-
   let token: string;
   try {
     token = await signJwt(user.id, sessionDays);
@@ -505,6 +504,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     return;
   }
   setAuthCookie(res, token, sessionDays);
+  await trackUserSessionAccess(req, res, user.id);
 
   logger.info({ msg: "auth_login", userId: user.id, email: normalizedEmail });
 
@@ -873,12 +873,14 @@ router.get("/auth/facebook/callback", async (req, res) => {
     logger.info({ msg: "facebook_oauth_login_no_email", userId: user.id, facebookId });
     const token = await signJwt(user.id, sessionDays);
     setAuthCookie(res, token, sessionDays);
+    await trackUserSessionAccess(req, res, user.id);
     res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
     return;
   }
 
   const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
+  let oauthIsNewAccount = false;
 
   // Find or create user
   let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.facebookId, facebookId)).limit(1);
@@ -915,8 +917,11 @@ router.get("/auth/facebook/callback", async (req, res) => {
         isAdmin,
         // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
+        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
       }).returning(authSessionUserSelect);
       user = created;
+      oauthIsNewAccount = true;
       logger.info({ msg: "facebook_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
@@ -945,6 +950,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
 
   const token = await signJwt(user.id, sessionDays);
   setAuthCookie(res, token, sessionDays);
+  await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
   res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
 });
@@ -1101,6 +1107,7 @@ router.get("/auth/google/callback", async (req, res) => {
 
   const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
+  let oauthIsNewAccount = false;
 
   // Find or create user
   let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.googleId, googleSub)).limit(1);
@@ -1139,8 +1146,11 @@ router.get("/auth/google/callback", async (req, res) => {
         isAdmin,
         // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
+        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
       }).returning(authSessionUserSelect);
       user = created;
+      oauthIsNewAccount = true;
       logger.info({ msg: "google_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
@@ -1169,6 +1179,7 @@ router.get("/auth/google/callback", async (req, res) => {
 
   const token = await signJwt(user.id, sessionDays);
   setAuthCookie(res, token, sessionDays);
+  await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
   res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
 });
@@ -1330,6 +1341,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
 
   const sessionDays = clampSessionDays(settings.sessionDays);
   const oauthIp = clientIpKey(req);
+  let oauthIsNewAccount = false;
 
   let [user] = await db.select(oauthUserSelect).from(usersTable).where(eq(usersTable.linkedinId, linkedinId)).limit(1);
 
@@ -1365,9 +1377,11 @@ router.get("/auth/linkedin/callback", async (req, res) => {
         isAdmin,
         // Country left unset — user picks it on Account (offers / coupons emails).
         lastLoginAt: new Date(),
-        lastLoginIp: oauthIp,
+        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
       }).returning(authSessionUserSelect);
       user = created;
+      oauthIsNewAccount = true;
       logger.info({ msg: "linkedin_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
@@ -1396,6 +1410,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
 
   const token = await signJwt(user.id, sessionDays);
   setAuthCookie(res, token, sessionDays);
+  await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
   res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
 });

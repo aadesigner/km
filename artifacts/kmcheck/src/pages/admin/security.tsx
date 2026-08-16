@@ -40,11 +40,12 @@ type LockoutsData = { lockedOut: LockoutEntry[]; topIps: TopIp[]; total24h: numb
 
 type AccessBlockItem = {
   id: number;
-  blockType: "ip" | "country";
+  blockType: "ip" | "country" | "device";
   blockValue: string;
   reason: string | null;
   source: string;
   userId: string | null;
+  userEmail?: string | null;
   createdAt: string;
 };
 
@@ -52,6 +53,7 @@ type BlocksData = {
   items: AccessBlockItem[];
   ips: AccessBlockItem[];
   countries: AccessBlockItem[];
+  devices: AccessBlockItem[];
 };
 
 const DEFAULTS: SecuritySettings = {
@@ -310,6 +312,19 @@ export default function AdminSecurity() {
     }
   };
 
+  const removeDeviceBlock = async (deviceHash: string) => {
+    setBlockSaving(true);
+    try {
+      await fetch(`${basePath}/api/admin/security/blocks/device/${encodeURIComponent(deviceHash)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      await fetchBlocks();
+    } finally {
+      setBlockSaving(false);
+    }
+  };
+
   const handleClearLockouts = async () => {
     setClearing(true);
     try {
@@ -479,8 +494,9 @@ export default function AdminSecurity() {
         {/* ── IP & COUNTRY BLOCKS ───────────────────────────────────────────── */}
         <TabsContent value="blocks" className="space-y-4 mt-4">
           <p className="text-sm text-muted-foreground rounded-lg border bg-muted/30 px-3 py-2.5">
-            Banning a user also blocks up to 3 recent login IPs from that email. Unban removes auto-added IP blocks only.
-            Admins are never blocked. Country blocks use CDN headers or GeoIP on the client IP.
+            Manual IP and country blocks live here. Banning a user blocks their account and remembered
+            devices only — not their IP. Device bans appear under Blocked devices (source &quot;User ban&quot;).
+            Signup / last-login IPs stay on the user profile as records.
           </p>
           {blockActionError && (
             <p className="text-sm text-destructive font-medium">{blockActionError}</p>
@@ -536,6 +552,7 @@ export default function AdminSecurity() {
                       <TableRow>
                         <TableHead>IP</TableHead>
                         <TableHead>Source</TableHead>
+                        <TableHead>User</TableHead>
                         <TableHead>Reason</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
@@ -548,6 +565,9 @@ export default function AdminSecurity() {
                             <Badge variant={row.source === "user_ban" ? "destructive" : "outline"} className="text-xs">
                               {row.source === "user_ban" ? "User ban" : "Manual"}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">
+                            {row.userEmail ?? (row.userId ? row.userId.slice(0, 8) : "—")}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                             {row.reason ?? "—"}
@@ -635,6 +655,68 @@ export default function AdminSecurity() {
                       </Button>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                Blocked devices
+                {blocksData && (blocksData.devices?.length ?? 0) > 0 && (
+                  <Badge variant="secondary">{blocksData.devices.length}</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Browser identities blocked when a user is banned (httpOnly device cookie). Unban removes these.
+                IPs are not auto-blocked — use Block IP above for that.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {blocksLoading ? (
+                <Skeleton className="h-16" />
+              ) : !(blocksData?.devices?.length) ? (
+                <p className="text-sm text-muted-foreground py-2">No blocked devices</p>
+              ) : (
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Device id</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {blocksData.devices.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="font-mono text-xs truncate max-w-[280px]" title={row.blockValue}>
+                            {row.blockValue.slice(0, 16)}…
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={row.source === "user_ban" ? "destructive" : "outline"} className="text-xs">
+                              {row.source === "user_ban" ? "User ban" : "Manual"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">
+                            {row.userEmail ?? (row.userId ? row.userId.slice(0, 8) : "—")}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={blockSaving}
+                              onClick={() => void removeDeviceBlock(row.blockValue)}
+                            >
+                              Unblock
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>

@@ -17,6 +17,8 @@ export const usersTable = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   lastLoginAt: timestamp("last_login_at"),
   lastLoginIp: text("last_login_ip"),
+  /** Client IP at account creation (register / OAuth). Set once, never overwritten. */
+  signupIp: text("signup_ip"),
   /** ISO 3166-1 alpha-2 profile country (informational). XK stored as AL (Albania / Kosovo). */
   countryCode: text("country_code"),
   /** UTC calendar day (YYYY-MM-DD) for country change rate limit. */

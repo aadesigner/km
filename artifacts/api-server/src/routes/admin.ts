@@ -79,8 +79,9 @@ import {
   addIpBlock,
   addCountryBlock,
   removeAccessBlock,
-  blockIpsForBannedUser,
+  blockDevicesForBannedUser,
   removeUserBanIpBlocks,
+  syncAccessBlocksForBannedUsers,
 } from "../lib/accessBlocks.js";
 import { normalizeMaintenanceRestrictions, normalizeMaintenanceMessage } from "../lib/maintenancePolicy.js";
 import {
@@ -856,7 +857,6 @@ router.post("/admin/users/:userId/ban", requireAdmin, async (req, res) => {
   const [target] = await db.select({
     isAdmin: usersTable.isAdmin,
     email: usersTable.email,
-    lastLoginIp: usersTable.lastLoginIp,
   }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
   if (target.isAdmin) { res.status(400).json({ error: "Admin accounts cannot be banned" }); return; }
@@ -867,9 +867,15 @@ router.post("/admin/users/:userId/ban", requireAdmin, async (req, res) => {
     .returning();
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
-  const blockedIps = await blockIpsForBannedUser(userId, target.email, req.userId!, reason, target.lastLoginIp);
-  await logAdminAction(req.userId!, "admin_ban_user", userId, { reason, blockedIps });
-  res.json({ ...toAdminUser(user), blockedIps });
+  let blockedDevices: string[] = [];
+  try {
+    const blocked = await blockDevicesForBannedUser(userId, req.userId!, reason);
+    blockedDevices = blocked.blockedDevices;
+  } catch (err) {
+    logger.warn({ err, userId }, "ban_access_blocks_failed");
+  }
+  await logAdminAction(req.userId!, "admin_ban_user", userId, { reason, blockedDevices });
+  res.json({ ...toAdminUser(user), blockedDevices });
 });
 
 router.post("/admin/users/:userId/unban", requireAdmin, async (req, res) => {
@@ -880,7 +886,7 @@ router.post("/admin/users/:userId/unban", requireAdmin, async (req, res) => {
     .returning();
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const removedIpBlocks = await removeUserBanIpBlocks(userId);
-  await logAdminAction(req.userId!, "admin_unban_user", userId, { removedIpBlocks });
+  await logAdminAction(req.userId!, "admin_unban_user", userId, { removedBlocks: removedIpBlocks });
   res.json({ ...toAdminUser(user), removedIpBlocks });
 });
 
@@ -3510,16 +3516,36 @@ router.delete("/admin/security/lockouts", requireAdmin, async (req, res) => {
 
 // ── Security — IP & country access blocks ────────────────────────────────────
 
-router.get("/admin/security/blocks", requireAdmin, async (_req, res) => {
+router.get("/admin/security/blocks", requireAdmin, async (req, res) => {
+  try {
+    // Keep Blocked IPs in sync with currently banned accounts (idempotent upsert).
+    await syncAccessBlocksForBannedUsers(req.userId ?? "system");
+  } catch (err) {
+    logger.warn({ err }, "sync_banned_access_blocks_failed");
+  }
+
   const items = await listAccessBlocks();
+  const userIds = [...new Set(items.map((b) => b.userId).filter((id): id is string => Boolean(id)))];
+  const emailByUserId = new Map<string, string>();
+  if (userIds.length > 0) {
+    const users = await db
+      .select({ id: usersTable.id, email: usersTable.email })
+      .from(usersTable)
+      .where(inArray(usersTable.id, userIds));
+    for (const u of users) emailByUserId.set(u.id, u.email);
+  }
+
+  const mapped = items.map((b) => ({
+    ...b,
+    userEmail: b.userId ? (emailByUserId.get(b.userId) ?? null) : null,
+    createdAt: b.createdAt.toISOString(),
+    expiresAt: b.expiresAt?.toISOString() ?? null,
+  }));
   res.json({
-    items: items.map((b) => ({
-      ...b,
-      createdAt: b.createdAt.toISOString(),
-      expiresAt: b.expiresAt?.toISOString() ?? null,
-    })),
-    ips: items.filter((b) => b.blockType === "ip"),
-    countries: items.filter((b) => b.blockType === "country"),
+    items: mapped,
+    ips: mapped.filter((b) => b.blockType === "ip"),
+    countries: mapped.filter((b) => b.blockType === "country"),
+    devices: mapped.filter((b) => b.blockType === "device"),
   });
 });
 
@@ -3581,6 +3607,17 @@ router.delete("/admin/security/blocks/country/:code", requireAdmin, async (req, 
     return;
   }
   await logAdminAction(req.userId!, "admin_unblock_country", code.toUpperCase());
+  res.json({ ok: true });
+});
+
+router.delete("/admin/security/blocks/device/:hash", requireAdmin, async (req, res) => {
+  const hash = decodeURIComponent(String(req.params.hash ?? ""));
+  const removed = await removeAccessBlock("device", hash);
+  if (!removed) {
+    res.status(404).json({ error: "Device block not found" });
+    return;
+  }
+  await logAdminAction(req.userId!, "admin_unblock_device", hash.slice(0, 16));
   res.json({ ok: true });
 });
 

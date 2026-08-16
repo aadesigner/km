@@ -11,5 +11,6 @@ export * from "./coupons";
 export * from "./passwordResetTokens";
 export * from "./loginAttempts";
 export * from "./accessBlocks";
+export * from "./userDevices";
 export * from "./revokedTokens";
 export * from "../pricingDefaults";

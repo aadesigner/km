@@ -46,6 +46,8 @@ export interface UserRow {
   phonePrefix?: string | null;
   phoneNational?: string | null;
   lastLoginAt: string | null;
+  lastLoginIp?: string | null;
+  signupIp?: string | null;
   createdAt: string;
   totalChecks?: number;
   totalSpent?: number;
@@ -575,6 +577,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
           <p className="text-sm md:text-base font-semibold tabular-nums">
             {new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </p>
+          <p className="text-[11px] text-muted-foreground font-mono mt-1 truncate" title={user.signupIp ?? undefined}>
+            {user.signupIp || "IP unknown"}
+          </p>
         </Panel>
         <Panel className="px-3.5 py-3 md:px-4 md:py-4 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between gap-2 mb-2">
@@ -585,6 +590,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             {user.lastLoginAt
               ? new Date(user.lastLoginAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
               : "Never"}
+          </p>
+          <p className="text-[11px] text-muted-foreground font-mono mt-1 truncate" title={user.lastLoginIp ?? undefined}>
+            {user.lastLoginIp || (user.lastLoginAt ? "IP unknown" : "—")}
           </p>
         </Panel>
       </div>
@@ -963,7 +971,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                     Account status
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    {user.isBanned ? "This account is currently banned from the platform." : "This account is active and in good standing."}
+                    {user.isBanned
+                      ? "This account is banned. Remembered browsers/devices for this user are also blocked."
+                      : "Active. Ban suspends the account and blocks remembered browsers/devices (not IPs)."}
                   </p>
                 </div>
                 {user.isBanned ? (
@@ -981,7 +991,11 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                     size="sm"
                     variant="destructive"
                     className="shrink-0"
-                    onClick={() => { banUser.mutate({ userId: user.id, data: { reason: "Admin action" } }); void refetchUser(); }}
+                    onClick={() => {
+                      if (!confirm("Ban this user and block their remembered devices?")) return;
+                      banUser.mutate({ userId: user.id, data: { reason: "Admin action" } });
+                      void refetchUser();
+                    }}
                     disabled={banUser.isPending}
                   >
                     <Ban className="h-3.5 w-3.5 mr-1.5" />
