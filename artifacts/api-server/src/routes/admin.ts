@@ -2327,61 +2327,76 @@ router.get("/admin/email/logs", requireAdmin, async (req, res) => {
 });
 
 router.post("/admin/email/logs/:id/resend", requireAdmin, async (req, res) => {
-  const id = parseInt(String(req.params.id), 10);
-  if (!Number.isFinite(id) || id < 1) {
-    res.status(400).json({ ok: false, error: "Invalid email log id." });
-    return;
-  }
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    if (!Number.isFinite(id) || id < 1) {
+      res.status(400).json({ ok: false, error: "Invalid email log id." });
+      return;
+    }
 
-  const [row] = await db.select().from(emailLogsTable).where(eq(emailLogsTable.id, id)).limit(1);
-  if (!row) {
-    res.status(404).json({ ok: false, error: "Email log not found." });
-    return;
-  }
-  if (row.status !== "failed") {
-    res.status(400).json({ ok: false, error: "Only failed emails can be resent." });
-    return;
-  }
+    const [row] = await db.select().from(emailLogsTable).where(eq(emailLogsTable.id, id)).limit(1);
+    if (!row) {
+      res.status(404).json({ ok: false, error: "Email log not found." });
+      return;
+    }
+    if (row.status !== "failed") {
+      res.status(400).json({ ok: false, error: "Only failed emails can be resent." });
+      return;
+    }
 
-  const meta = (row.meta ?? null) as Record<string, unknown> | null;
-  const { getStoredEmailBody, markEmailLogSent, markEmailLogFailed } = await import("../lib/emailLog.js");
-  const { html, text } = getStoredEmailBody(meta);
-  if (!html) {
-    res.status(400).json({
+    const meta = (row.meta ?? null) as Record<string, unknown> | null;
+    const { getStoredEmailBody, markEmailLogSent, markEmailLogFailed } = await import("../lib/emailLog.js");
+    const { html, text } = getStoredEmailBody(meta);
+    if (!html) {
+      res.status(400).json({
+        ok: false,
+        error:
+          "Original message body was not stored for this log. New failed emails can be resent from here.",
+      });
+      return;
+    }
+
+    const { sendEmailWithDeadline } = await import("../lib/emailService.js");
+    const result = await sendEmailWithDeadline({
+      to: row.recipient,
+      subject: row.subject || "(no subject)",
+      html,
+      text: text ?? undefined,
+      skipLog: true,
+    });
+
+    if (result.ok) {
+      await markEmailLogSent(id);
+      try {
+        await logAdminAction(req.userId!, "admin_resend_email", String(id), {
+          recipient: row.recipient,
+          type: row.type,
+          subject: row.subject,
+        });
+      } catch {
+        // Email already sent — audit log failure must not fail the response.
+      }
+      res.json({ ok: true });
+      return;
+    }
+
+    await markEmailLogFailed(id, result.error ?? "Resend failed");
+    res.status(502).json({
       ok: false,
-      error:
-        "Original message body was not stored for this log. New failed emails can be resent from here.",
+      error: result.error ?? "Failed to resend email.",
+      hint: result.hint,
+      code: result.code,
     });
-    return;
-  }
-
-  const { sendEmailWithDeadline } = await import("../lib/emailService.js");
-  const result = await sendEmailWithDeadline({
-    to: row.recipient,
-    subject: row.subject || "(no subject)",
-    html,
-    text: text ?? undefined,
-    skipLog: true,
-  });
-
-  if (result.ok) {
-    await markEmailLogSent(id);
-    await logAdminAction(req.userId!, "admin_resend_email", String(id), {
-      recipient: row.recipient,
-      type: row.type,
-      subject: row.subject,
+  } catch (err) {
+    const { formatSmtpTransportError } = await import("../lib/smtpErrors.js");
+    const detail = formatSmtpTransportError(err);
+    res.status(500).json({
+      ok: false,
+      error: detail.error ?? "Could not resend email.",
+      hint: detail.hint,
+      code: detail.code ?? "EMAIL_RESEND_FAILED",
     });
-    res.json({ ok: true });
-    return;
   }
-
-  await markEmailLogFailed(id, result.error ?? "Resend failed");
-  res.status(502).json({
-    ok: false,
-    error: result.error ?? "Failed to resend email.",
-    hint: result.hint,
-    code: result.code,
-  });
 });
 
 router.delete("/admin/email/logs", requireAdmin, async (req, res) => {

@@ -82,16 +82,28 @@ export function recordEmailLog(input: RecordEmailLogInput): void {
     });
 }
 
-export async function markEmailLogSent(id: number): Promise<void> {
-  await db
-    .update(emailLogsTable)
-    .set({ status: "sent", error: null })
-    .where(eq(emailLogsTable.id, id));
+export async function markEmailLogSent(id: number): Promise<boolean> {
+  try {
+    await db
+      .update(emailLogsTable)
+      .set({ status: "sent", error: null })
+      .where(eq(emailLogsTable.id, id));
+    return true;
+  } catch (err) {
+    logger.warn({ err, id }, "email log mark sent failed");
+    return false;
+  }
 }
 
-export async function markEmailLogFailed(id: number, error: string): Promise<void> {
-  await db
-    .update(emailLogsTable)
-    .set({ status: "failed", error: String(error).slice(0, MAX_ERROR) })
-    .where(eq(emailLogsTable.id, id));
+export async function markEmailLogFailed(id: number, error: string): Promise<boolean> {
+  try {
+    await db
+      .update(emailLogsTable)
+      .set({ status: "failed", error: String(error).slice(0, MAX_ERROR) })
+      .where(eq(emailLogsTable.id, id));
+    return true;
+  } catch (err) {
+    logger.warn({ err, id }, "email log mark failed update failed");
+    return false;
+  }
 }
