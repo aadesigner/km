@@ -139,20 +139,18 @@ function mileagePenalty(km: number | null | undefined, year: number | null | und
     else if (km >= 80_000) penalty += 0.25;
     else if (km >= 50_000) penalty += 0.15;
   } else if (km >= 400_000) {
-    // 400k+: heavy wear — steep penalty, worsens further above 400k
-    penalty += 5.5 + ((km - 400_000) / 100_000) * 0.9;
+    // 400k+: still high wear, but less steep than before
+    penalty += 4.45 + ((km - 400_000) / 100_000) * 0.75;
   } else if (km >= 350_000) {
-    // 350k–400k: high wear band
-    penalty += 4.2 + ((km - 350_000) / 50_000) * 1.3;
+    penalty += 3.45 + ((km - 350_000) / 50_000) * 1.0;
   } else if (km >= 300_000) {
-    // 300k–350k: elevated wear — steeper than pre-300k ramp
-    penalty += 3.5 + ((km - 300_000) / 50_000) * 0.7;
+    penalty += 2.85 + ((km - 300_000) / 50_000) * 0.6;
   } else if (km >= 280_000) {
-    penalty += 2.4 + ((km - 280_000) / 20_000) * 0.8;
+    penalty += 2.15 + ((km - 280_000) / 20_000) * 0.7;
   } else if (km >= 250_000) {
-    penalty += 1.5 + ((km - 250_000) / 30_000) * 0.9;
+    penalty += 1.35 + ((km - 250_000) / 30_000) * 0.8;
   } else if (km >= 200_000) {
-    penalty += 0.75 + ((km - 200_000) / 50_000) * 0.75;
+    penalty += 0.75 + ((km - 200_000) / 50_000) * 0.6;
   } else {
     penalty += 0.35 + ((km - PERFECT_MAX_KM) / 70_000) * 0.4;
   }
