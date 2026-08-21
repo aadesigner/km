@@ -22,6 +22,7 @@ const OG_LOCALE_MAP: Record<VinSeoLang, string> = {
   ar: "ar_SA",
   uk: "uk_UA",
   ru: "ru_RU",
+  zh: "zh_CN",
 };
 
 const HREFLANG_MAP: Record<VinSeoLang, string> = {
@@ -37,6 +38,7 @@ const HREFLANG_MAP: Record<VinSeoLang, string> = {
   ar: "ar",
   uk: "uk-UA",
   ru: "ru",
+  zh: "zh-Hans",
 };
 
 const SEO_LANGS: readonly VinSeoLang[] = VIN_SEO_LANGS;

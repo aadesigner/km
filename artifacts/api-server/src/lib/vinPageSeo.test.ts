@@ -6,6 +6,7 @@ import {
   buildVinSsrBodyContent,
   isIndexableVinRest,
   normalizeVin,
+  parseVinPagePath,
 } from "@workspace/vin-page-seo";
 import { injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
 import { catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
@@ -34,7 +35,7 @@ describe("vin-page-seo", () => {
       country: "KR",
     });
     expect(title).toContain("2015 BMW 3 Series");
-    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
+    expect(title).toBe(`2015 BMW 3 Series — ${vin}`);
 
     const desc = buildVinPageDescription("en", {
       vin,
@@ -50,6 +51,23 @@ describe("vin-page-seo", () => {
     expect(desc).toContain("2.0L");
   });
 
+  it("builds Chinese VIN page title and parses zh path", () => {
+    const vin = "WBA3V7106FJ995387";
+    expect(parseVinPagePath(`/zh/vin/${vin}`)).toEqual({
+      lang: "zh",
+      vin,
+      rest: `/vin/${vin}`,
+    });
+    const title = buildVinPageTitle("zh", {
+      vin,
+      year: 2015,
+      make: "BMW",
+      model: "3 Series",
+    });
+    expect(title).toBe(`2015 BMW 3 Series — ${vin}`);
+    expect(title).not.toContain("(");
+  });
+
   it("builds Polish VIN page title and description", () => {
     const vin = "WBA3V7106FJ995387";
     const title = buildVinPageTitle("pl", {
@@ -58,7 +76,7 @@ describe("vin-page-seo", () => {
       make: "BMW",
       model: "3 Series",
     });
-    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
+    expect(title).toBe(`2015 BMW 3 Series — ${vin}`);
 
     const desc = buildVinPageDescription("pl", { vin, year: 2015, make: "BMW", model: "3 Series" }, { locked: false });
     expect(desc).toContain(vin);
@@ -84,7 +102,7 @@ describe("vin-page-seo", () => {
       make: "BMW",
       model: "3 Series",
     });
-    expect(title).toBe(`2015 BMW 3 Series — (${vin})`);
+    expect(title).toBe(`2015 BMW 3 Series — ${vin}`);
 
     const desc = buildVinPageDescription("ro", { vin, year: 2015, make: "BMW", model: "3 Series" }, { locked: false });
     expect(desc).toContain(vin);

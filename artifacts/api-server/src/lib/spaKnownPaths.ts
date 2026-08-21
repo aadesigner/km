@@ -6,7 +6,7 @@
  */
 
 const LANG_ALT =
-  "en|de|es|fr|sq|pl|ro|bg|ar|uk|ru|zh";
+  "en|de|es|fr|sq|pl|ro|bg|ka|ar|uk|ru|zh";
 
 /** Exact rest segments under /:lang (no leading slash on empty home). */
 const KNOWN_LANG_RESTS = new Set([

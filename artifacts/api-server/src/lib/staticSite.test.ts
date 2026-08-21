@@ -33,6 +33,11 @@ describe("staticSite asset fallback", () => {
   it("disables express.static trailing-slash redirects for sitemap URL parity", () => {
     expect(src).toMatch(/redirect:\s*false/);
   });
+
+  it("301-redirects crawlers from / to /en to avoid soft-duplicate English home", () => {
+    expect(src).toContain("isCrawlerUserAgent");
+    expect(src).toMatch(/req\.path === \"\/\"[\s\S]*isCrawlerUserAgent[\s\S]*redirect\(301,\s*`\/en/);
+  });
 });
 
 describe("trailing-slash sitemap parity (express.static + dir index)", () => {

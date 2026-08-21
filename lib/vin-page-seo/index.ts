@@ -2,7 +2,7 @@
 
 export const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
 
-export const VIN_SEO_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru"] as const;
+export const VIN_SEO_LANGS = ["en", "de", "es", "fr", "sq", "pl", "ro", "bg", "ka", "ar", "uk", "ru", "zh"] as const;
 export type VinSeoLang = (typeof VIN_SEO_LANGS)[number];
 
 export type VinSeoVehicle = {
@@ -39,7 +39,7 @@ export function isIndexableVinRest(rest: string): boolean {
 
 export function parseVinPagePath(pathname: string): { lang: VinSeoLang; vin: string; rest: string } | null {
   const path = pathname.split("?")[0]!.replace(/\/$/, "") || "/";
-  const m = path.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ka|ar|uk|ru)(\/vin\/([A-HJ-NPR-Z0-9]{17}))$/i);
+  const m = path.match(/^\/(en|de|es|fr|sq|pl|ro|bg|ka|ar|uk|ru|zh)(\/vin\/([A-HJ-NPR-Z0-9]{17}))$/i);
   if (!m?.[3]) return null;
   const vin = normalizeVin(m[3]);
   if (!isValidVin(vin)) return null;
@@ -73,18 +73,19 @@ type TitleFn = (vehicle: string, vin: string) => string;
 type DescFn = (vehicle: string, vin: string, specs: string) => string;
 
 const TITLES: Record<VinSeoLang, TitleFn> = {
-  en: (vehicle, vin) => `${vehicle} — (${vin})`,
-  de: (vehicle, vin) => `${vehicle} — (${vin})`,
-  es: (vehicle, vin) => `${vehicle} — (${vin})`,
-  fr: (vehicle, vin) => `${vehicle} — (${vin})`,
-  ar: (vehicle, vin) => `${vehicle} — (${vin})`,
-  uk: (vehicle, vin) => `${vehicle} — (${vin})`,
-  ru: (vehicle, vin) => `${vehicle} — (${vin})`,
-  ro: (vehicle, vin) => `${vehicle} — (${vin})`,
-  pl: (vehicle, vin) => `${vehicle} — (${vin})`,
-  ka: (vehicle, vin) => `${vehicle} — (${vin})`,
-  bg: (vehicle, vin) => `${vehicle} — (${vin})`,
-  sq: (vehicle, vin) => `${vehicle} — (${vin})`,
+  en: (vehicle, vin) => `${vehicle} — ${vin}`,
+  de: (vehicle, vin) => `${vehicle} — ${vin}`,
+  es: (vehicle, vin) => `${vehicle} — ${vin}`,
+  fr: (vehicle, vin) => `${vehicle} — ${vin}`,
+  ar: (vehicle, vin) => `${vehicle} — ${vin}`,
+  uk: (vehicle, vin) => `${vehicle} — ${vin}`,
+  ru: (vehicle, vin) => `${vehicle} — ${vin}`,
+  ro: (vehicle, vin) => `${vehicle} — ${vin}`,
+  pl: (vehicle, vin) => `${vehicle} — ${vin}`,
+  ka: (vehicle, vin) => `${vehicle} — ${vin}`,
+  bg: (vehicle, vin) => `${vehicle} — ${vin}`,
+  sq: (vehicle, vin) => `${vehicle} — ${vin}`,
+  zh: (vehicle, vin) => `${vehicle} — ${vin}`,
 };
 
 const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
@@ -100,56 +101,61 @@ const VIN_ONLY_TITLES: Record<VinSeoLang, (vin: string) => string> = {
   ka: (vin) => `VIN ${vin} — \u10D0\u10D5\u10E2\u10DD\u10DB\u10DD\u10D1\u10D8\u10DA\u10D8\u10E1 \u10D8\u10E1\u10E2\u10DD\u10E0\u10D8\u10D8\u10E1 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 | kmcheck`,
   bg: (vin) => `VIN ${vin} — отчет за история на автомобил | kmcheck`,
   sq: (vin) => `VIN ${vin} — raport historiku automjeti | kmcheck`,
+  zh: (vin) => `VIN ${vin} — 车辆历史报告 | kmcheck`,
 };
 
 const LOCKED_DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Preview ${vehicle} (VIN ${vin}). Basic specs are free — unlock the full report for mileage, accidents, ownership, insurance and auction history.${specsPart} kmcheck.com.`;
+    return `Preview ${vehicle} VIN ${vin}. Basic specs are free — unlock the full report for mileage, accidents, ownership, insurance and auction history.${specsPart} kmcheck.com.`;
   },
   de: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Vorschau ${vehicle} (VIN ${vin}). Basisdaten gratis — Vollbericht für Kilometerstand, Unfälle, Halter, Versicherung und Auktionen freischalten.${specsPart} kmcheck.com.`;
+    return `Vorschau ${vehicle} VIN ${vin}. Basisdaten gratis — Vollbericht für Kilometerstand, Unfälle, Halter, Versicherung und Auktionen freischalten.${specsPart} kmcheck.com.`;
   },
   es: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Vista previa de ${vehicle} (VIN ${vin}). Especificaciones básicas gratis — desbloquee el informe completo de kilometraje, accidentes, propietarios, seguro y subastas.${specsPart} kmcheck.com.`;
+    return `Vista previa de ${vehicle} VIN ${vin}. Especificaciones básicas gratis — desbloquee el informe completo de kilometraje, accidentes, propietarios, seguro y subastas.${specsPart} kmcheck.com.`;
   },
   fr: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Aperçu de ${vehicle} (VIN ${vin}). Spécifications de base gratuites — débloquez le rapport complet : kilométrage, accidents, propriétaires, assurance et enchères.${specsPart} kmcheck.com.`;
+    return `Aperçu de ${vehicle} VIN ${vin}. Spécifications de base gratuites — débloquez le rapport complet : kilométrage, accidents, propriétaires, assurance et enchères.${specsPart} kmcheck.com.`;
   },
   ar: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `معاينة ${vehicle} (VIN ${vin}). المواصفات الأساسية مجانية — افتح التقرير الكامل للمسافة المقطوعة والحوادث والملكية والتأمين والمزادات.${specsPart} kmcheck.com.`;
+    return `معاينة ${vehicle} VIN ${vin}. المواصفات الأساسية مجانية — افتح التقرير الكامل للمسافة المقطوعة والحوادث والملكية والتأمين والمزادات.${specsPart} kmcheck.com.`;
   },
   uk: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Попередній перегляд ${vehicle} (VIN ${vin}). Базові дані безкоштовно — відкрийте повний звіт про пробіг, ДТП, власників, страхування та аукціони.${specsPart} kmcheck.com.`;
+    return `Попередній перегляд ${vehicle} VIN ${vin}. Базові дані безкоштовно — відкрийте повний звіт про пробіг, ДТП, власників, страхування та аукціони.${specsPart} kmcheck.com.`;
   },
   ru: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Предпросмотр ${vehicle} (VIN ${vin}). Базовые данные бесплатно — откройте полный отчёт о пробеге, ДТП, владельцах, страховании и аукционах.${specsPart} kmcheck.com.`;
+    return `Предпросмотр ${vehicle} VIN ${vin}. Базовые данные бесплатно — откройте полный отчёт о пробеге, ДТП, владельцах, страховании и аукционах.${specsPart} kmcheck.com.`;
   },
   ro: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Previzualizare ${vehicle} (VIN ${vin}). Specificații de bază gratuite — deblocați raportul complet pentru kilometraj, accidente, proprietari, asigurare și licitații.${specsPart} kmcheck.com.`;
+    return `Previzualizare ${vehicle} VIN ${vin}. Specificații de bază gratuite — deblocați raportul complet pentru kilometraj, accidente, proprietari, asigurare și licitații.${specsPart} kmcheck.com.`;
   },
   pl: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Podgląd ${vehicle} (VIN ${vin}). Podstawowe dane gratis — odblokuj pełny raport przebiegu, wypadków, właścicieli, ubezpieczenia i aukcji.${specsPart} kmcheck.com.`;
+    return `Podgląd ${vehicle} VIN ${vin}. Podstawowe dane gratis — odblokuj pełny raport przebiegu, wypadków, właścicieli, ubezpieczenia i aukcji.${specsPart} kmcheck.com.`;
   },
   ka: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `\u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 ${vehicle} (VIN ${vin}). \u10E1\u10D0\u10D1\u10D6\u10D8\u10E1 \u10DB\u10DD\u10DC\u10D0\u10EA\u10D4\u10DB\u10DA\u10DD\u10D1\u10D0 \u10E3\u10D0\u10D1\u10DA\u10DD \u2014 \u10D2\u10D0\u10E0\u10D1\u10D4\u10D6\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D3\u10D0 \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D8\u10E1\u10D7\u10DD\u10E0\u10D8\u10D8\u10E1 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8\u10E1 \u10D2\u10D0\u10E0\u10EB\u10DB\u10DD\u10D5\u10D7.${specsPart} kmcheck.com.`;
+    return `\u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 ${vehicle} VIN ${vin}. \u10E1\u10D0\u10D1\u10D6\u10D8\u10E1 \u10DB\u10DD\u10DC\u10D0\u10EA\u10D4\u10DB\u10DA\u10DD\u10D1\u10D0 \u10E3\u10D0\u10D1\u10DA\u10DD \u2014 \u10D2\u10D0\u10E0\u10D1\u10D4\u10D6\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D3\u10D0 \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D8\u10E1\u10D7\u10DD\u10E0\u10D8\u10D8\u10E1 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8\u10E1 \u10D2\u10D0\u10E0\u10EB\u10DB\u10DD\u10D5\u10D7.${specsPart} kmcheck.com.`;
   },
   bg: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Преглед на ${vehicle} (VIN ${vin}). Основни данни безплатно — отключете пълния отчет за пробег, катастрофи, собственици, застраховка и търгове.${specsPart} kmcheck.com.`;
+    return `Преглед на ${vehicle} VIN ${vin}. Основни данни безплатно — отключете пълния отчет за пробег, катастрофи, собственици, застраховка и търгове.${specsPart} kmcheck.com.`;
   },
   sq: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Parapamje e ${vehicle} (VIN ${vin}). Specifikimet bazë falas — zhbllokoni raportin e plotë për kilometrazhin, aksidentet, pronarët, sigurimin dhe ankandet.${specsPart} kmcheck.com.`;
+    return `Parapamje e ${vehicle} VIN ${vin}. Specifikimet bazë falas — zhbllokoni raportin e plotë për kilometrazhin, aksidentet, pronarët, sigurimin dhe ankandet.${specsPart} kmcheck.com.`;
+  },
+  zh: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `预览 ${vehicle} VIN ${vin}。基础信息免费 — 解锁完整报告可查看里程、事故、车主、保险与拍卖记录。${specsPart} kmcheck.com.`;
   },
 };
 
@@ -166,6 +172,7 @@ const LOCKED_VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> 
   ka: (vin) => `VIN ${vin} \u10EC\u10D8\u10DC\u10D0\u10E1\u10EC\u10D0\u10E0\u10D8 kmcheck.com-\u10D6\u10D4 \u2014 \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8\u10E1 \u10D2\u10D0\u10E0\u10EB\u10DB\u10DD\u10D5\u10D7.`,
   bg: (vin) => `Преглед на VIN ${vin} в kmcheck.com — отключете пълния отчет за историята на автомобила.`,
   sq: (vin) => `Parapamje VIN ${vin} në kmcheck.com — zhbllokoni raportin e plotë të historikut.`,
+  zh: (vin) => `在 kmcheck.com 预览 VIN ${vin} — 解锁完整车辆历史报告。`,
 };
 
 type SsrLabels = {
@@ -326,6 +333,18 @@ const SSR_LABELS: Record<VinSeoLang, SsrLabels> = {
     intro: "Parapamje falas e {vehicle} me specifikime bazë. Zhbllokoni raportin e plotë për kilometrazhin, aksidentet, ndryshimet e pronarit, sigurimin dhe ankandet.",
     cta: "Zhbllokoni raportin e plotë të historikut të automjetit në kmcheck.com.",
   },
+  zh: {
+    vin: "VIN",
+    make: "品牌",
+    model: "车型",
+    year: "年份",
+    engine: "发动机",
+    transmission: "变速箱",
+    color: "颜色",
+    country: "国家",
+    intro: "{vehicle} 免费预览含基础规格。解锁完整报告可查看里程、事故、过户、保险索赔与拍卖记录。",
+    cta: "在 kmcheck.com 解锁完整车辆历史报告。",
+  },
 };
 
 export type VinSsrBodyContent = {
@@ -340,51 +359,55 @@ export type VinSsrBodyContent = {
 const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Check ${vehicle} (VIN ${vin}): mileage, accidents, ownership history, insurance & auction records.${specsPart} Instant full report on kmcheck.com.`;
+    return `Check ${vehicle} VIN ${vin}: mileage, accidents, ownership history, insurance & auction records.${specsPart} Instant full report on kmcheck.com.`;
   },
   de: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Prüfen Sie ${vehicle} (VIN ${vin}): Kilometerstand, Unfälle, Halterhistorie, Versicherung und Auktionen.${specsPart} Sofortiger Vollbericht auf kmcheck.com.`;
+    return `Prüfen Sie ${vehicle} VIN ${vin}: Kilometerstand, Unfälle, Halterhistorie, Versicherung und Auktionen.${specsPart} Sofortiger Vollbericht auf kmcheck.com.`;
   },
   es: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Verifique ${vehicle} (VIN ${vin}): kilometraje, accidentes, historial de propietarios, seguro y subastas.${specsPart} Informe completo al instante en kmcheck.com.`;
+    return `Verifique ${vehicle} VIN ${vin}: kilometraje, accidentes, historial de propietarios, seguro y subastas.${specsPart} Informe completo al instante en kmcheck.com.`;
   },
   fr: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Vérifiez ${vehicle} (VIN ${vin}) : kilométrage, accidents, historique des propriétaires, assurance et enchères.${specsPart} Rapport complet instantané sur kmcheck.com.`;
+    return `Vérifiez ${vehicle} VIN ${vin} : kilométrage, accidents, historique des propriétaires, assurance et enchères.${specsPart} Rapport complet instantané sur kmcheck.com.`;
   },
   ar: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `تحقق من ${vehicle} (VIN ${vin}): الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع.${specsPart} تقرير فوري على kmcheck.com.`;
+    return `تحقق من ${vehicle} VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع.${specsPart} تقرير فوري على kmcheck.com.`;
   },
   uk: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Перевірте ${vehicle} (VIN ${vin}): пробіг, ДТП, історія власників, страхування та аукціони.${specsPart} Миттєвий звіт на kmcheck.com.`;
+    return `Перевірте ${vehicle} VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони.${specsPart} Миттєвий звіт на kmcheck.com.`;
   },
   ru: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Проверьте ${vehicle} (VIN ${vin}): пробег, ДТП, история владельцев, страхование и аукционы.${specsPart} Мгновенный отчёт на kmcheck.com.`;
+    return `Проверьте ${vehicle} VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы.${specsPart} Мгновенный отчёт на kmcheck.com.`;
   },
   ro: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Verificați ${vehicle} (VIN ${vin}): kilometraj, accidente, istoric proprietari, asigurare și licitații.${specsPart} Raport complet instant pe kmcheck.com.`;
+    return `Verificați ${vehicle} VIN ${vin}: kilometraj, accidente, istoric proprietari, asigurare și licitații.${specsPart} Raport complet instant pe kmcheck.com.`;
   },
   pl: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Sprawdź ${vehicle} (VIN ${vin}): przebieg, wypadki, historia właścicieli, ubezpieczenie i aukcje.${specsPart} Pełny raport natychmiast na kmcheck.com.`;
+    return `Sprawdź ${vehicle} VIN ${vin}: przebieg, wypadki, historia właścicieli, ubezpieczenie i aukcje.${specsPart} Pełny raport natychmiast na kmcheck.com.`;
   },
   ka: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `\u10E8\u10D4\u10D0\u10DB\u10DD\u10EC\u10DB\u10D4\u10D7 ${vehicle} (VIN ${vin}): \u10D2\u10D0\u10E0\u10D1\u10D4\u10DC\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D8\u10E1\u10E2\u10DD\u10E0\u10D8\u10D0, \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D3\u10D0 \u10D0\u10E3\u10E5\u10EA\u10D8\u10DD\u10DC\u10D4\u10D1\u10D8.${specsPart} \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 \u10DB\u10D0\u10E8\u10D8\u10DC\u10D5\u10D4 kmcheck.com-\u10D6\u10D4.`;
+    return `\u10E8\u10D4\u10D0\u10DB\u10DD\u10EC\u10DB\u10D4\u10D7 ${vehicle} VIN ${vin}: \u10D2\u10D0\u10E0\u10D1\u10D4\u10DC\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D8\u10E1\u10E2\u10DD\u10E0\u10D8\u10D0, \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D3\u10D0 \u10D0\u10E3\u10E5\u10EA\u10D8\u10DD\u10DC\u10D4\u10D1\u10D8.${specsPart} \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 \u10DB\u10D0\u10E8\u10D8\u10DC\u10D5\u10D4 kmcheck.com-\u10D6\u10D4.`;
   },
   bg: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Проверете ${vehicle} (VIN ${vin}): пробег, катастрофи, история на собственици, застраховка и търгове.${specsPart} Пълен отчет мигновено на kmcheck.com.`;
+    return `Проверете ${vehicle} VIN ${vin}: пробег, катастрофи, история на собственици, застраховка и търгове.${specsPart} Пълен отчет мигновено на kmcheck.com.`;
   },
   sq: (vehicle, vin, specs) => {
     const specsPart = specs ? ` ${specs}.` : "";
-    return `Kontrollo ${vehicle} (VIN ${vin}): kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet.${specsPart} Raport i menjëhershëm në kmcheck.com.`;
+    return `Kontrollo ${vehicle} VIN ${vin}: kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet.${specsPart} Raport i menjëhershëm në kmcheck.com.`;
+  },
+  zh: (vehicle, vin, specs) => {
+    const specsPart = specs ? ` ${specs}.` : "";
+    return `查询 ${vehicle} VIN ${vin}：里程、事故、车主历史、保险与拍卖记录。${specsPart} 在 kmcheck.com 即时获取完整报告。`;
   },
 };
 
@@ -401,6 +424,7 @@ const VIN_ONLY_DESCRIPTIONS: Record<VinSeoLang, (vin: string) => string> = {
   ka: (vin) => `\u10E8\u10D4\u10D0\u10DB\u10DD\u10EC\u10DB\u10D4\u10D7 VIN ${vin}: \u10D2\u10D0\u10E0\u10D1\u10D4\u10DC\u10D8, \u10D0\u10D5\u10D0\u10E0\u10D8\u10D4\u10D1\u10D8, \u10DB\u10E4\u10DA\u10DD\u10D1\u10D4\u10DA\u10D7\u10D0 \u10D8\u10E1\u10E2\u10DD\u10E0\u10D8\u10D0, \u10D3\u10D0\u10D6\u10E6\u10D5\u10D4\u10D5\u10D0 \u10D3\u10D0 \u10D0\u10E3\u10E5\u10EA\u10D8\u10DD\u10DC\u10D4\u10D1\u10D8. \u10E1\u10E0\u10E3\u10DA\u10D8 \u10D0\u10DC\u10D2\u10D0\u10E0\u10D8\u10E8\u10D8 \u10DB\u10D0\u10E8\u10D8\u10DC\u10D5\u10D4 kmcheck.com-\u10D6\u10D4.`,
   bg: (vin) => `Проверете VIN ${vin}: пробег, катастрофи, история на собственици, застраховка и търгове. Пълен отчет мигновено на kmcheck.com.`,
   sq: (vin) => `Kontrollo VIN ${vin}: kilometrat, aksidentet, historinë e pronarëve, sigurimin dhe ankandet. Raport i menjëhershëm në kmcheck.com.`,
+  zh: (vin) => `查询 VIN ${vin}：里程、事故、车主历史、保险与拍卖记录。在 kmcheck.com 即时获取完整报告。`,
 };
 
 export function buildVinOnlyPageTitle(lang: VinSeoLang, vin: string): string {

@@ -29,6 +29,9 @@ describe("isKnownSpaPath", () => {
     expect(isKnownSpaPath("/en/vin/1HGBH41JXMN109186")).toBe(true);
     expect(isKnownSpaPath("/en/vin/processing")).toBe(true);
     expect(isKnownSpaPath("/en/vin/42")).toBe(true);
+    expect(isKnownSpaPath("/ka")).toBe(true);
+    expect(isKnownSpaPath("/ka/pricing")).toBe(true);
+    expect(isKnownSpaPath("/ka/vin/1HGBH41JXMN109186")).toBe(true);
   });
 
   it("rejects unknown soft-404 paths", () => {

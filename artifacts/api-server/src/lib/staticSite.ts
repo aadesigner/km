@@ -8,6 +8,7 @@ import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPag
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
 import { isKnownSpaPath } from "./spaKnownPaths.js";
+import { isCrawlerUserAgent } from "./crawlerDetection.js";
 
 const ONE_YEAR_SEC = 31_536_000;
 const ONE_DAY_SEC = 86_400;
@@ -263,6 +264,16 @@ export function mountStaticSite(app: Express): string | null {
   app.get(/^(?!\/api\/).*/, async (req: Request, res: Response) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.status(405).end();
+      return;
+    }
+    // Soft-duplicate fix: `/` and `/en` both served English home (200 + canonical /en).
+    // Crawlers get a stable 301 → /en. Real visitors keep SPA RootLangRedirect (geo/cookie).
+    if (
+      (req.path === "/" || req.path === "/index.html")
+      && isCrawlerUserAgent(req.get("user-agent"))
+    ) {
+      const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+      res.redirect(301, `/en${q}`);
       return;
     }
     const urlPath = req.path === "/" ? "/index.html" : req.path;

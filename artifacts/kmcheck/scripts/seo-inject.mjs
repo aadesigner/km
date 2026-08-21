@@ -23,6 +23,12 @@ import { SUPPORTED_LANGS, HREFLANG_MAP as LANG_HREFLANG, OG_LOCALE_MAP as LANG_O
 
 export const SEO_LANGS = SUPPORTED_LANGS;
 
+const b2bSeoData = JSON.parse(
+  readFileSync(join(__dir, "b2b-seo-data.json"), "utf8"),
+);
+
+export const B2B_PRERENDER_PATHS = Object.keys(b2bSeoData);
+
 export const PATH_TO_SEO_KEY = {
   "": "home",
   "/pricing": "pricing",
@@ -82,9 +88,9 @@ export function resolvePageKey(rest) {
   const exact = PATH_TO_SEO_KEY[rest];
   if (exact) return exact;
 
-  // Match React seo-pages: B2B marketing paths are indexable (not soft-404 / noindex).
+  // B2B marketing is indexable; titles come from b2b-seo-data.json (not SEO_DATA home).
   if (rest === "/api-b2b" || rest.startsWith("/api-b2b/")) {
-    return "home";
+    return "api_b2b";
   }
 
   if (rest.startsWith("/cars/")) {
@@ -106,6 +112,7 @@ export function resolvePageKey(rest) {
 
 export function isNoIndexPath(rest, pageKey) {
   if (pageKey === "not_found") return true;
+  if (pageKey === "api_b2b") return false;
   // VIN report URLs: default noindex in static bootstrap. Catalog pages that should
   // rank get index/follow from server inject + React when report data exists.
   if (isIndexableVinRest(rest)) return true;
@@ -143,8 +150,14 @@ export function resolveSeoForPath(pathname, basePath = "") {
   const rest = (m?.[2] ?? "").replace(/\/$/, "") || "";
   const vinSeo = isIndexableVinRest(rest) ? vinSeoFromRest(rest, lang) : null;
   const pageKey = resolvePageKey(rest);
-  const page = seoData[pageKey] ?? seoData.not_found ?? seoData.home;
-  const seo = vinSeo ?? (page[lang] ?? page.en ?? seoData.home.en);
+  const b2bPage = b2bSeoData[rest] ?? null;
+  const b2bSeo = b2bPage ? (b2bPage[lang] ?? b2bPage.en ?? null) : null;
+  const page = pageKey === "api_b2b"
+    ? null
+    : (seoData[pageKey] ?? seoData.not_found ?? seoData.home);
+  const seo = vinSeo
+    ?? b2bSeo
+    ?? (page ? (page[lang] ?? page.en ?? seoData.home.en) : seoData.home.en);
   const noIndex = isNoIndexPath(rest, pageKey);
   const canonicalPath = rest ? `/${lang}${rest}` : `/${lang}`;
   const dir = lang === "ar" ? "rtl" : "ltr";
@@ -313,7 +326,7 @@ export function injectSeoIntoHtml(html, pathname, basePath = "") {
 
 /** Paths to prerender as static HTML (lang prefix added separately). */
 export function getPrerenderPaths() {
-  return Object.keys(PATH_TO_SEO_KEY);
+  return [...Object.keys(PATH_TO_SEO_KEY), ...B2B_PRERENDER_PATHS];
 }
 
-export { seoData };
+export { seoData, b2bSeoData };

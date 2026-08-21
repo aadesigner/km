@@ -10,6 +10,7 @@ import {
   OG_LOCALE_MAP,
   HREFLANG_MAP,
   seoData,
+  b2bSeoData,
 } from "./seo-inject.mjs";
 import { LANG_PATH_ALT } from "./languages.mjs";
 import { vinSeoBootstrapSnippet } from "./vin-seo-templates.mjs";
@@ -49,6 +50,7 @@ const countryPageFavicons = Object.fromEntries(
 const js = `/* auto-generated — do not edit */
 (function () {
   var SEO = ${JSON.stringify(seoData)};
+  var B2B_SEO = ${JSON.stringify(b2bSeoData)};
   var PATH_MAP = ${JSON.stringify(PATH_TO_SEO_KEY)};
   var OG_LOCALE = ${JSON.stringify(OG_LOCALE_MAP)};
   var SEO_LANGS = ${JSON.stringify(SEO_LANGS)};
@@ -65,8 +67,7 @@ const js = `/* auto-generated — do not edit */
 
   function resolvePageKey(rest) {
     if (PATH_MAP[rest]) return PATH_MAP[rest];
-    // Match React seo-pages: B2B URLs are indexable (titles applied by RouteSEO).
-    if (rest === "/api-b2b" || rest.indexOf("/api-b2b/") === 0) return "home";
+    if (rest === "/api-b2b" || rest.indexOf("/api-b2b/") === 0) return "api_b2b";
     if (rest.indexOf("/cars/") === 0) {
       var parts = rest.split("/").filter(Boolean);
       var slug = parts[1] ? parts[1].toLowerCase() : "";
@@ -85,6 +86,7 @@ const js = `/* auto-generated — do not edit */
 
   function isNoIndexPath(rest, pageKey) {
     if (pageKey === "not_found") return true;
+    if (pageKey === "api_b2b") return false;
     // VIN URLs: safe default noindex (server/React set index only when catalog report exists).
     if (VIN_INDEX_RE.test(rest)) return true;
     if (NOINDEX.indexOf(rest) !== -1) return true;
@@ -94,6 +96,12 @@ const js = `/* auto-generated — do not edit */
     }
     if (rest === "/vin/processing" || rest.indexOf("/vin/processing/") === 0) return true;
     return rest.indexOf("/vin/") === 0;
+  }
+
+  function resolveB2bSeo(rest, lang) {
+    var page = B2B_SEO[rest];
+    if (!page) return null;
+    return page[lang] || page.en || null;
   }
 
   function stripBase(pathname) {
@@ -182,12 +190,10 @@ const js = `/* auto-generated — do not edit */
     // Server-side VIN SEO inject owns robots/index for /vin/{17}. Do not overwrite
     // catalog pages with thin fallbacks (or vice versa) in the browser bootstrap.
     if (VIN_INDEX_RE.test(rest)) return;
-    // B2B marketing titles come from React RouteSEO (copy.ts). Bootstrap must not
-    // overwrite them — especially on same-route nav clicks where React won't re-run.
-    if (rest === "/api-b2b" || rest.indexOf("/api-b2b/") === 0) return;
     var pageKey = resolvePageKey(rest);
+    var b2b = resolveB2bSeo(rest, lang);
     var page = SEO[pageKey] || SEO.not_found || SEO.home;
-    var seo = (page && page[lang]) || (page && page.en) || SEO.home.en;
+    var seo = b2b || (page && page[lang]) || (page && page.en) || SEO.home.en;
     var noIndex = isNoIndexPath(rest, pageKey);
 
     document.documentElement.lang = lang;
@@ -205,7 +211,7 @@ const js = `/* auto-generated — do not edit */
     upsertMeta("twitter:description", seo.description);
 
     removeOgImages();
-    var ogImageRel = resolveOgImage(pageKey, lang);
+    var ogImageRel = resolveOgImage(pageKey === "api_b2b" ? "home" : pageKey, lang);
     if (ogImageRel) {
       var absoluteOg = ORIGIN + ogImageRel;
       upsertMeta("og:image", absoluteOg, "property");
@@ -232,7 +238,7 @@ const js = `/* auto-generated — do not edit */
       });
     }
 
-    applyFavicons(pageKey);
+    applyFavicons(pageKey === "api_b2b" ? "home" : pageKey);
   }
 
   applySeoFromUrl();

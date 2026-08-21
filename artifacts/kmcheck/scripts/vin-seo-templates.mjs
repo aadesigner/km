@@ -14,6 +14,7 @@ export function vinSeoTemplates(vin, lang) {
     ar: `VIN ${vin} — تقرير تاريخ المركبة | kmcheck`,
     uk: `VIN ${vin} — звіт історії авто | kmcheck`,
     ru: `VIN ${vin} — отчёт по истории авто | kmcheck`,
+    zh: `VIN ${vin} — 车辆历史报告 | kmcheck`,
   };
   const descriptions = {
     en: `Check VIN ${vin}: mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.`,
@@ -28,6 +29,7 @@ export function vinSeoTemplates(vin, lang) {
     ar: `تحقق من VIN ${vin}: الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.`,
     uk: `Перевірте VIN ${vin}: пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.`,
     ru: `Проверьте VIN ${vin}: пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.`,
+    zh: `查询 VIN ${vin}：里程、事故、车主历史、保险与拍卖记录。在 kmcheck.com 即时获取完整报告。`,
   };
   return {
     title: titles[lang] ?? titles.en,
@@ -54,7 +56,8 @@ export function vinSeoBootstrapSnippet() {
       bg: "VIN " + vin + " — отчет за история на автомобил | kmcheck",
       ar: "VIN " + vin + " — تقرير تاريخ المركبة | kmcheck",
       uk: "VIN " + vin + " — звіт історії авто | kmcheck",
-      ru: "VIN " + vin + " — отчёт по истории авто | kmcheck"
+      ru: "VIN " + vin + " — отчёт по истории авто | kmcheck",
+      zh: "VIN " + vin + " — 车辆历史报告 | kmcheck"
     };
     var descriptions = {
       en: "Check VIN " + vin + ": mileage, accidents, ownership history, insurance & auction records. Instant full report on kmcheck.com.",
@@ -68,7 +71,8 @@ export function vinSeoBootstrapSnippet() {
       bg: "Проверете VIN " + vin + ": пробег, катастрофи, история на собственици, застраховка и търгове. Пълен отчет мигновено на kmcheck.com.",
       ar: "تحقق من VIN " + vin + ": الكيلومترات، الحوادث، سجل الملكية، التأمين ومزادات البيع. تقرير فوري على kmcheck.com.",
       uk: "Перевірте VIN " + vin + ": пробіг, ДТП, історія власників, страхування та аукціони. Миттєвий звіт на kmcheck.com.",
-      ru: "Проверьте VIN " + vin + ": пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com."
+      ru: "Проверьте VIN " + vin + ": пробег, ДТП, история владельцев, страхование и аукционы. Мгновенный отчёт на kmcheck.com.",
+      zh: "查询 VIN " + vin + "：里程、事故、车主历史、保险与拍卖记录。在 kmcheck.com 即时获取完整报告。"
     };
     return {
       title: titles[lang] || titles.en,
