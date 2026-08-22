@@ -59,8 +59,11 @@ function listVinShards() {
     });
 }
 
-function pathPriority(path) {
-  if (path === "") return "1.0";
+function pathPriority(path, lang) {
+  if (path === "") {
+    if (lang === "en" || lang === "sq") return "1.0";
+    return "0.95";
+  }
   if (path.startsWith("/api-b2b")) return "0.4";
   if (path.startsWith("/cars")) return "0.85";
   return "0.8";
@@ -73,7 +76,7 @@ const urls = PATHS.flatMap((path) =>
         `    <xhtml:link rel="alternate" hreflang="${HREFLANG[l]}" href="${loc(l, path)}" />`,
     ).join("\n");
     const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc("en", path)}" />`;
-    const priority = pathPriority(path);
+    const priority = pathPriority(path, lang);
     const changefreq = path === "" ? "weekly" : "monthly";
     return `  <url>
     <loc>${loc(lang, path)}</loc>

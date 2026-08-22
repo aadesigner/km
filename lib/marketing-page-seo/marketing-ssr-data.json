@@ -1,0 +1,2445 @@
+{
+  "home": {
+    "en": {
+      "h1": "Check mileage, accidents & salvage.",
+      "lead": "Instant VIN check — verify real km readings, uncover full accident history & salvage records for any car.",
+      "bullets": [
+        "hidden accidents",
+        "salvage titles",
+        "mileage rollbacks",
+        "theft records"
+      ],
+      "sections": [
+        {
+          "title": "What We Check",
+          "body": "Four checks in every report"
+        },
+        {
+          "title": "How it works",
+          "body": "Three simple steps to check mileage, accidents, theft, and full vehicle history before you buy."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Kilometerstand prüfen, Unfälle & Totalschaden.",
+      "lead": "VIN-Check in Sekunden — Kilometerstand, Unfälle und Totalschaden prüfen.",
+      "bullets": [
+        "Unfälle",
+        "Totalschaden",
+        "Tachobetrug",
+        "Diebstahl"
+      ],
+      "sections": [
+        {
+          "title": "Was wir prüfen",
+          "body": "Vier Prüfungen in jedem Bericht"
+        },
+        {
+          "title": "So funktioniert's",
+          "body": "In 3 Schritten Kilometerstand, Unfälle und Historie prüfen — vor dem Kauf."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique el kilometraje, accidentes y siniestros totales.",
+      "lead": "Informe VIN al instante: verifique el kilometraje real, descubra accidentes ocultos y registros de siniestro total de cualquier coche.",
+      "bullets": [
+        "accidentes ocultos",
+        "títulos de siniestro total",
+        "manipulaciones de kilometraje",
+        "registros de robo"
+      ],
+      "sections": [
+        {
+          "title": "Qué comprobamos",
+          "body": "Cuatro comprobaciones en cada informe"
+        },
+        {
+          "title": "Cómo funciona",
+          "body": "Tres pasos sencillos para comprobar kilometraje, accidentes, robos e historial del vehículo antes de comprar."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage, les accidents et le salvage.",
+      "lead": "Contrôle VIN instantané — vérifiez le kilométrage réel, découvrez l'historique complet des accidents et les enregistrements salvage de tout véhicule.",
+      "bullets": [
+        "accidents cachés",
+        "titres salvage",
+        "retours de compteur",
+        "registres de vol"
+      ],
+      "sections": [
+        {
+          "title": "Ce que nous vérifions",
+          "body": "Quatre contrôles dans chaque rapport"
+        },
+        {
+          "title": "Comment ça marche",
+          "body": "Trois étapes simples pour vérifier le kilométrage, les accidents, les vols et l'historique du véhicule avant d'acheter."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtim total.",
+      "lead": "Kontroll kilometrash me SHASI — verifikoni kilometrat (km) origjinale, aksidentet dhe historinë e makinës tuaj.",
+      "bullets": [
+        "aksidentesh",
+        "dëmtim total",
+        "km origjinale",
+        "vjedhjesh"
+      ],
+      "sections": [
+        {
+          "title": "Çfarë kontrollojmë",
+          "body": "Katër kontrolle në çdo raport"
+        },
+        {
+          "title": "Si funksionon",
+          "body": "Tre hapa të thjeshtë për të kontrolluar kilometrat, aksidentet, vjedhjet dhe historinë e makinës para blerjes."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg, wypadki i szkody całkowite.",
+      "lead": "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i rejestry szkód całkowitych dowolnego samochodu.",
+      "bullets": [
+        "ukryte wypadki",
+        "tytuły salvage",
+        "skręcone liczniki",
+        "rejestry kradzieży"
+      ],
+      "sections": [
+        {
+          "title": "Co sprawdzamy",
+          "body": "Cztery kontrole w każdym raporcie"
+        },
+        {
+          "title": "Jak to działa",
+          "body": "Trzy proste kroki do sprawdzenia przebiegu, wypadków, kradzieży i historii pojazdu przed zakupem."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verifică kilometrajul, accidentele și salvajul.",
+      "lead": "Verificare VIN instantanee — confirmați kilometrajul real, descoperiți istoricul complet al accidentelor și înregistrările de salvaj pentru orice mașină.",
+      "bullets": [
+        "accidente ascunse",
+        "titluri de salvaj",
+        "manipulări kilometraj",
+        "înregistrări de furt"
+      ],
+      "sections": [
+        {
+          "title": "Ce verificăm",
+          "body": "Patru verificări în fiecare raport"
+        },
+        {
+          "title": "Cum funcționează",
+          "body": "Trei pași simpli pentru verificarea kilometrajului, accidentelor, furturilor și istoricului vehiculului înainte de cumpărare."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега, катастрофи и salvage.",
+      "lead": "Моментална VIN проверка — потвърдете реалния пробег в км, разкрийте пълната история на катастрофи и salvage записи за всеки автомобил.",
+      "bullets": [
+        "скрити катастрофи",
+        "salvage талони",
+        "манипулации на пробега",
+        "записи за кражби"
+      ],
+      "sections": [
+        {
+          "title": "Какво проверяваме",
+          "body": "Четири проверки във всеки отчет"
+        },
+        {
+          "title": "Как работи",
+          "body": "Три прости стъпки за проверка на пробег, катастрофи, кражби и история на автомобила преди покупка."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმე გარბენი, ავარიები და სალვაჟი.",
+      "lead": "მყისიერი VIN შემოწმება — რეალური გარბენი, ავარიების ისტორია და სალვაჟის ჩანაწერები ნებისმიერ მანქანაზე.",
+      "bullets": [
+        "დამალული ავარიები",
+        "სალვაჟის ტიტულები",
+        "გარბენის უკან გადახვევა",
+        "ქურდობის ჩანაწერები"
+      ],
+      "sections": [
+        {
+          "title": "რასაც ჩვენ ვამოწმებთ",
+          "body": "ოთხი შემოწმება თითოეულ ანგარიშში"
+        },
+        {
+          "title": "როგორ მუშაობს",
+          "body": "სამი მარტივი ნაბიჯი გარბენის, ავარიების, ქურდობისა და მანქანის სრული ისტორიის შესამოწმებლად, სანამ ყიდულობთ."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات، الحوادث والمصدومات.",
+      "lead": "فحص VIN فوري — تحقق من قراءات الكيلومتر الحقيقية، واكشف تاريخ الحوادث الكامل وسجلات الإتلاف لأي سيارة.",
+      "bullets": [
+        "حوادث مخفية",
+        "سجلات الخردة",
+        "تلاعب بالكيلومتر",
+        "سجلات السرقة"
+      ],
+      "sections": [
+        {
+          "title": "ما الذي نفحصه",
+          "body": "أربعة فحوصات في كل تقرير"
+        },
+        {
+          "title": "كيف يعمل",
+          "body": "ثلاث خطوات بسيطة للتحقق من الكيلومترات والحوادث والسرقة وتاريخ السيارة قبل الشراء."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг, аварії та тоталі.",
+      "lead": "Миттєва перевірка VIN — перевірте реальні показники пробігу (км), розкрийте повну історію ДТП та записи про утилізацію для будь-якого авто.",
+      "bullets": [
+        "приховані аварії",
+        "тотальні авто",
+        "скручений пробіг",
+        "реєстри угону"
+      ],
+      "sections": [
+        {
+          "title": "Що ми перевіряємо",
+          "body": "Чотири перевірки в кожному звіті"
+        },
+        {
+          "title": "Як це працює",
+          "body": "Три прості кроки для перевірки пробігу, аварій, викрадень та історії авто перед покупкою."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег, аварии и тоталы.",
+      "lead": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля.",
+      "bullets": [
+        "скрытые аварии",
+        "тотальные авто",
+        "скрученный пробег",
+        "реестры угонов"
+      ],
+      "sections": [
+        {
+          "title": "Что мы проверяем",
+          "body": "Четыре проверки в каждом отчёте"
+        },
+        {
+          "title": "Как это работает",
+          "body": "Три простых шага для проверки пробега, аварий, угонов и истории автомобиля перед покупкой."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查 事故与报废。",
+      "lead": "即时 VIN 查询 — 核实真实公里数，揭露任何车辆的完整事故历史与报废记录。",
+      "bullets": [
+        "隐藏事故",
+        "报废产权",
+        "里程回拨",
+        "盗抢记录"
+      ],
+      "sections": [
+        {
+          "title": "我们检查什么",
+          "body": "每份报告四项核查"
+        },
+        {
+          "title": "如何运作",
+          "body": "三个简单步骤，购车前查清里程、事故、盗抢与完整车辆历史。"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "en": {
+      "h1": "One payment. Get vehicle history.",
+      "lead": "Know the full story before you buy — mileage, accidents, title status, and more in one check.",
+      "bullets": [
+        "Accident records",
+        "Instant digital delivery",
+        "Buy with confidence"
+      ],
+      "sections": [
+        {
+          "title": "What's included in your VIN history report",
+          "body": "One flat price per vehicle — no monthly fees and no hidden upsells. Pay once and get mileage, accident records, title status, and more before you buy."
+        },
+        {
+          "title": "Buy with confidence",
+          "body": "If we can't find data for your VIN, you get a full refund. No questions asked."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Eine Zahlung. Fahrzeughistorie abrufen.",
+      "lead": "Kennen Sie die ganze Geschichte vor dem Kauf — Kilometerstand, Unfälle, Titelstatus und mehr in einer Prüfung.",
+      "bullets": [
+        "Unfallnachweise",
+        "Sofortige digitale Lieferung",
+        "Mit Vertrauen kaufen"
+      ],
+      "sections": [
+        {
+          "title": "Was in Ihrem VIN-Historiebericht enthalten ist",
+          "body": "Ein Pauschalpreis pro Fahrzeug — keine Monatsgebühren und keine versteckten Zusatzkosten. Einmal zahlen und Kilometerstand, Unfallnachweise, Titelstatus und mehr vor dem Kauf erhalten."
+        },
+        {
+          "title": "Mit Vertrauen kaufen",
+          "body": "Wenn wir keine Daten zu Ihrer VIN finden, erhalten Sie eine volle Rückerstattung. Ohne Fragen."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Un solo pago. Obtén el historial del vehículo.",
+      "lead": "Conozca toda la historia antes de comprar — kilometraje, accidentes, estado del título y más en una sola consulta.",
+      "bullets": [
+        "Registros de accidentes",
+        "Entrega digital al instante",
+        "Compre con confianza"
+      ],
+      "sections": [
+        {
+          "title": "Qué incluye su informe de historial VIN",
+          "body": "Un precio fijo por vehículo — sin cuotas mensuales ni ventas adicionales. Pague una vez y obtenga kilometraje, accidentes, estado del título y más antes de comprar."
+        },
+        {
+          "title": "Compre con confianza",
+          "body": "Si no encontramos datos para su VIN, recibe un reembolso completo. Sin preguntas."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Un seul paiement. Obtenez l'historique du véhicule.",
+      "lead": "Connaissez toute l'historique avant d'acheter — kilométrage, accidents, statut du titre et plus en une seule vérification.",
+      "bullets": [
+        "Dossiers d'accidents",
+        "Livraison numérique instantanée",
+        "Achetez en confiance"
+      ],
+      "sections": [
+        {
+          "title": "Ce que comprend votre rapport d'historique VIN",
+          "body": "Un prix fixe par véhicule — pas de frais mensuels ni de ventes additionnelles. Payez une fois et obtenez le kilométrage, les accidents, le statut du titre et plus avant d'acheter."
+        },
+        {
+          "title": "Achetez en confiance",
+          "body": "Si nous ne trouvons pas de données pour votre VIN, remboursement intégral. Sans questions."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Një pagesë. Zbulon historinë e automjetit.",
+      "lead": "Mësoni historinë e plotë para blerjes — kilometrat, aksidentet, statusi i titullit dhe më shumë në një kontroll.",
+      "bullets": [
+        "Regjistrat e aksidenteve",
+        "Dorëzim dixhital i menjëhershëm",
+        "Bli me besim"
+      ],
+      "sections": [
+        {
+          "title": "Çfarë përfshin raporti juaj i makinës",
+          "body": "Një çmim fiks për automjet — pa tarifa mujore dhe pa kosto të fshehura. Paguani një herë dhe merrni kilometrat, aksidentet, statusin e titullit dhe më shumë para se të bleni një makinë."
+        },
+        {
+          "title": "Bli me besim",
+          "body": "Nëse nuk gjejmë të dhëna për VIN-in tuaj, merrni rimbursim të plotë. Pa pyetje."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Jedna płatność. Pobierz historię pojazdu.",
+      "lead": "Poznaj pełną historię przed zakupem — przebieg, wypadki, status tytułu i więcej w jednym sprawdzeniu.",
+      "bullets": [
+        "Rejestry wypadków",
+        "Natychmiastowa dostawa cyfrowa",
+        "Kupuj z pewnością"
+      ],
+      "sections": [
+        {
+          "title": "Co zawiera raport historii VIN",
+          "body": "Jedna stała cena za pojazd — bez opłat miesięcznych i ukrytych dopłat. Zapłać raz i otrzymaj przebieg, wypadki, status tytułu i więcej przed zakupem."
+        },
+        {
+          "title": "Kupuj z pewnością",
+          "body": "Jeśli nie znajdziemy danych dla Twojego VIN, otrzymujesz pełny zwrot. Bez pytań."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "O singură plată. Obține istoricul vehiculului.",
+      "lead": "Aflați povestea completă înainte de cumpărare — kilometraj, accidente, statut titlu și multe altele într-o singură verificare.",
+      "bullets": [
+        "Înregistrări accidente",
+        "Livrare digitală instantanee",
+        "Cumpărați cu încredere"
+      ],
+      "sections": [
+        {
+          "title": "Ce include raportul dvs. de istoric VIN",
+          "body": "Un preț fix per vehicul — fără taxe lunare și fără costuri ascunse. Plătiți o dată și obțineți kilometraj, accidente, status titlu și multe altele înainte de cumpărare."
+        },
+        {
+          "title": "Cumpărați cu încredere",
+          "body": "Dacă nu găsim date pentru VIN-ul dvs., primiți rambursare completă. Fără întrebări."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Едно плащане. Получете историята на автомобила.",
+      "lead": "Научете цялата история преди покупка — пробег, катастрофи, статус на титул и още в една проверка.",
+      "bullets": [
+        "Записи за катастрофи",
+        "Мигновена дигитална доставка",
+        "Купувайте с увереност"
+      ],
+      "sections": [
+        {
+          "title": "Какво включва вашият VIN отчет за история",
+          "body": "Една фиксирана цена на автомобил — без месечни такси и скрити доплащания. Платете веднъж и получете пробег, катастрофи, статус на титла и още преди покупка."
+        },
+        {
+          "title": "Купувайте с увереност",
+          "body": "Ако не намерим данни за вашия VIN, получавате пълно възстановяване. Без въпроси."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "ერთი გადახდა. მიიღე მანქანის ისტორია.",
+      "lead": "შეიტყვეთ სრული ამბავი ყიდვამდე - გარბენი, ავარიები, ტიტულის სტატუსი და სხვა ერთი შემოწმებით.",
+      "bullets": [
+        "ავარიის ჩანაწერები",
+        "მყისიერი ციფრული მიწოდება",
+        "იყიდეთ თავდაჯერებულად"
+      ],
+      "sections": [
+        {
+          "title": "რა შედის თქვენი VIN ისტორიის ანგარიშში",
+          "body": "ერთი უცვლელი ფასი თითო მანქანაზე - ყოველთვიური გადასახადის გარეშე და ფარული გაყიდვების გარეშე. გადაიხადეთ ერთხელ და მიიღეთ გარბენი, ავარიის ჩანაწერები, ტიტულის სტატუსი და სხვა, სანამ იყიდით."
+        },
+        {
+          "title": "იყიდეთ თავდაჯერებულად",
+          "body": "თუ ჩვენ ვერ ვიპოვით მონაცემებს თქვენი VIN-ისთვის, თანხის სრულ დაბრუნებას მიიღებთ. კითხვები არ დასმულა."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "دفعة واحدة. احصل على تاريخ السيارة.",
+      "lead": "اعرف القصة كاملة قبل الشراء — الكيلومترات والحوادث وحالة الملكية والمزيد في فحص واحد.",
+      "bullets": [
+        "سجلات الحوادث",
+        "تسليم رقمي فوري",
+        "اشترِ بثقة"
+      ],
+      "sections": [
+        {
+          "title": "ما الذي يتضمنه تقرير تاريخ VIN الخاص بك",
+          "body": "سعر ثابت لكل مركبة — بدون رسوم شهرية أو تكاليف مخفية. ادفع مرة واحدة واحصل على الكيلومترات وسجلات الحوادث وحالة العنوان والمزيد قبل الشراء."
+        },
+        {
+          "title": "اشترِ بثقة",
+          "body": "إذا لم نجد بيانات لرقم VIN الخاص بك، تحصل على استرداد كامل. بدون أسئلة."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Один платіж. Отримайте історію автомобіля.",
+      "lead": "Дізнайтеся всю історію перед покупкою — пробіг, ДТП, статус title та багато іншого в одній перевірці.",
+      "bullets": [
+        "Записи про ДТП",
+        "Миттєва цифрова доставка",
+        "Купуйте впевнено"
+      ],
+      "sections": [
+        {
+          "title": "Що входить до звіту історії VIN",
+          "body": "Одна фіксована ціна за авто — без щомісячних платежів і прихованих доплат. Заплатіть один раз і отримайте пробіг, ДТП, статус титула та інше перед покупкою."
+        },
+        {
+          "title": "Купуйте впевнено",
+          "body": "Якщо ми не знайдемо дані для вашого VIN, повне повернення коштів. Без питань."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Один платёж. Получите историю автомобиля.",
+      "lead": "Узнайте всю историю до покупки — пробег, ДТП, статус title и многое другое в одной проверке.",
+      "bullets": [
+        "Записи о ДТП",
+        "Мгновенная цифровая доставка",
+        "Покупайте уверенно"
+      ],
+      "sections": [
+        {
+          "title": "Что входит в отчёт об истории VIN",
+          "body": "Одна фиксированная цена за автомобиль — без ежемесячных платежей и скрытых доплат. Заплатите один раз и получите пробег, ДТП, статус титула и другое до покупки."
+        },
+        {
+          "title": "Покупайте уверенно",
+          "body": "Если мы не найдём данные по вашему VIN, полный возврат. Без вопросов."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "一次付款。 获取车辆历史。",
+      "lead": "购车前了解完整故事 — 里程、事故、产权状态等，一次查询全掌握。",
+      "bullets": [
+        "事故记录",
+        "即时数字交付",
+        "放心购买"
+      ],
+      "sections": [
+        {
+          "title": "VIN 历史报告包含什么",
+          "body": "每辆车统一价格 — 无月费、无隐藏加价。付一次款，购车前即可了解里程、事故记录、产权状态等。"
+        },
+        {
+          "title": "放心购买",
+          "body": "若找不到您 VIN 的数据，全额退款。无需解释。"
+        }
+      ]
+    }
+  },
+  "how_it_works": {
+    "en": {
+      "h1": "How it works",
+      "lead": "Three simple steps to check mileage, accidents, theft, and full vehicle history before you buy.",
+      "bullets": [
+        "Enter the VIN",
+        "Secure Payment",
+        "Get Your Check"
+      ]
+    },
+    "de": {
+      "h1": "So funktioniert's",
+      "lead": "In 3 Schritten Kilometerstand, Unfälle und Historie prüfen — vor dem Kauf.",
+      "bullets": [
+        "VIN eingeben",
+        "Sichere Zahlung",
+        "Prüfung erhalten"
+      ]
+    },
+    "es": {
+      "h1": "Cómo funciona",
+      "lead": "Tres pasos sencillos para comprobar kilometraje, accidentes, robos e historial del vehículo antes de comprar.",
+      "bullets": [
+        "Introduzca el VIN",
+        "Pago seguro",
+        "Reciba su informe"
+      ]
+    },
+    "fr": {
+      "h1": "Comment ça marche",
+      "lead": "Trois étapes simples pour vérifier le kilométrage, les accidents, les vols et l'historique du véhicule avant d'acheter.",
+      "bullets": [
+        "Saisissez le VIN",
+        "Paiement sécurisé",
+        "Recevez votre contrôle"
+      ]
+    },
+    "sq": {
+      "h1": "Si funksionon",
+      "lead": "Tre hapa të thjeshtë për të kontrolluar kilometrat, aksidentet, vjedhjet dhe historinë e makinës para blerjes.",
+      "bullets": [
+        "Shkruani VIN-in",
+        "Pagesa e sigurt",
+        "Merrni raportin tuaj"
+      ]
+    },
+    "pl": {
+      "h1": "Jak to działa",
+      "lead": "Trzy proste kroki do sprawdzenia przebiegu, wypadków, kradzieży i historii pojazdu przed zakupem.",
+      "bullets": [
+        "Wpisz numer VIN",
+        "Bezpieczna płatność",
+        "Odbierz sprawdzenie"
+      ]
+    },
+    "ro": {
+      "h1": "Cum funcționează",
+      "lead": "Trei pași simpli pentru verificarea kilometrajului, accidentelor, furturilor și istoricului vehiculului înainte de cumpărare.",
+      "bullets": [
+        "Introduceți VIN-ul",
+        "Plată securizată",
+        "Primiți verificarea"
+      ]
+    },
+    "bg": {
+      "h1": "Как работи",
+      "lead": "Три прости стъпки за проверка на пробег, катастрофи, кражби и история на автомобила преди покупка.",
+      "bullets": [
+        "Въведете VIN",
+        "Сигурно плащане",
+        "Получете проверката"
+      ]
+    },
+    "ka": {
+      "h1": "როგორ მუშაობს",
+      "lead": "სამი მარტივი ნაბიჯი გარბენის, ავარიების, ქურდობისა და მანქანის სრული ისტორიის შესამოწმებლად, სანამ ყიდულობთ.",
+      "bullets": [
+        "შეიყვანეთ VIN",
+        "უსაფრთხო გადახდა",
+        "მიიღეთ თქვენი ჩეკი"
+      ]
+    },
+    "ar": {
+      "h1": "كيف يعمل",
+      "lead": "ثلاث خطوات بسيطة للتحقق من الكيلومترات والحوادث والسرقة وتاريخ السيارة قبل الشراء.",
+      "bullets": [
+        "أدخل رقم الشاسيه",
+        "الدفع الآمن",
+        "احصل على فحصك"
+      ]
+    },
+    "uk": {
+      "h1": "Як це працює",
+      "lead": "Три прості кроки для перевірки пробігу, аварій, викрадень та історії авто перед покупкою.",
+      "bullets": [
+        "Введіть VIN",
+        "Безпечна оплата",
+        "Отримайте перевірку"
+      ]
+    },
+    "ru": {
+      "h1": "Как это работает",
+      "lead": "Три простых шага для проверки пробега, аварий, угонов и истории автомобиля перед покупкой.",
+      "bullets": [
+        "Введите VIN",
+        "Безопасная оплата",
+        "Получите проверку"
+      ]
+    },
+    "zh": {
+      "h1": "如何运作",
+      "lead": "三个简单步骤，购车前查清里程、事故、盗抢与完整车辆历史。",
+      "bullets": [
+        "输入 VIN",
+        "安全支付",
+        "获取查询结果"
+      ]
+    }
+  },
+  "faq": {
+    "en": {
+      "h1": "Frequently Asked Questions",
+      "lead": "Clear answers on coverage, delivery, and what shows up in your report — before you pay.",
+      "bullets": [
+        "What is a VIN number?",
+        "How long does a report take?",
+        "What countries are supported?"
+      ],
+      "sections": [
+        {
+          "title": "What is a VIN number?",
+          "body": "A Vehicle Identification Number (VIN) is a 17-character code that uniquely identifies your vehicle. You can find it on the dashboard or door frame."
+        },
+        {
+          "title": "How long does a report take?",
+          "body": "Most reports are delivered within seconds. In rare cases, while our system is still checking available databases, delivery may take longer — we'll email you when your report is ready."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Häufig gestellte Fragen",
+      "lead": "Klare Antworten zu Abdeckung, Lieferung und Berichtsinhalt — bevor Sie bezahlen.",
+      "bullets": [
+        "Was ist eine VIN-Nummer?",
+        "Wie lange dauert ein Bericht?",
+        "Welche Länder werden unterstützt?"
+      ],
+      "sections": [
+        {
+          "title": "Was ist eine VIN-Nummer?",
+          "body": "Die Vehicle Identification Number (VIN) ist ein 17-stelliger Code, der Ihr Fahrzeug eindeutig identifiziert. Sie finden sie am Armaturenbrett oder am Türrahmen."
+        },
+        {
+          "title": "Wie lange dauert ein Bericht?",
+          "body": "Die meisten Berichte werden innerhalb von Sekunden geliefert. In seltenen Fällen, wenn unser System noch verfügbare Datenbanken prüft, kann die Lieferung länger dauern — wir senden Ihnen eine E-Mail, sobald Ihr Bericht fertig ist."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Preguntas frecuentes",
+      "lead": "Respuestas claras sobre cobertura, entrega y qué puede aparecer en su informe — antes de pagar.",
+      "bullets": [
+        "¿Qué es un número VIN?",
+        "¿Cuánto tarda un informe?",
+        "¿Qué países están cubiertos?"
+      ],
+      "sections": [
+        {
+          "title": "¿Qué es un número VIN?",
+          "body": "El Número de Identificación del Vehículo (VIN) es un código de 17 caracteres que identifica de forma única su vehículo. Puede encontrarlo en el salpicadero o en el marco de la puerta."
+        },
+        {
+          "title": "¿Cuánto tarda un informe?",
+          "body": "La mayoría de los informes llegan en segundos. En casos puntuales, mientras seguimos buscando en las bases de datos disponibles, puede tardar un poco más; le avisamos por correo cuando esté listo."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Questions fréquentes",
+      "lead": "Réponses claires sur la couverture, la livraison et le contenu de votre rapport — avant de payer.",
+      "bullets": [
+        "Qu'est-ce qu'un numéro VIN ?",
+        "Combien de temps faut-il pour obtenir un rapport ?",
+        "Quels pays sont couverts ?"
+      ],
+      "sections": [
+        {
+          "title": "Qu'est-ce qu'un numéro VIN ?",
+          "body": "Le numéro d'identification du véhicule (VIN) est un code de 17 caractères qui identifie de façon unique votre véhicule. Vous le trouverez sur le tableau de bord ou sur le montant de la porte."
+        },
+        {
+          "title": "Combien de temps faut-il pour obtenir un rapport ?",
+          "body": "La plupart des rapports sont livrés en quelques secondes. Dans de rares cas, tant que notre système consulte encore les bases de données disponibles, la livraison peut prendre plus de temps — nous vous enverrons un e-mail lorsque votre rapport sera prêt."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Pyetje të shpeshta",
+      "lead": "Përgjigje të qarta për mbulimin, dorëzimin dhe çfarë mund të shfaqet në raport — para pagesës.",
+      "bullets": [
+        "Çfarë është numri VIN?",
+        "Sa kohë zgjat një raport?",
+        "Cilat vende mbështeten?"
+      ],
+      "sections": [
+        {
+          "title": "Çfarë është numri VIN?",
+          "body": "Numri i identifikimit të mjetit (VIN) është një kod 17-karakterësh që identifikon mjetin tuaj në mënyrë unike. Mund ta gjeni në panelin e instrumenteve ose kuadrin e derës."
+        },
+        {
+          "title": "Sa kohë zgjat një raport?",
+          "body": "Shumica e raporteve dorëzohen brenda sekondave. Në raste të rralla, kur sistemi ynë ende po kontrollon bazat e të dhënave të disponueshme, dorëzimi mund të zgjasë më shumë — do t'ju dërgojmë email kur raporti të jetë gati."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Najczęściej zadawane pytania",
+      "lead": "Jasne odpowiedzi o zasięgu, dostawie i tym, co może pojawić się w raporcie — zanim zapłacisz.",
+      "bullets": [
+        "Czym jest numer VIN?",
+        "Ile trwa przygotowanie raportu?",
+        "Jakie kraje są obsługiwane?"
+      ],
+      "sections": [
+        {
+          "title": "Czym jest numer VIN?",
+          "body": "Numer identyfikacyjny pojazdu (VIN) to 17-znakowy kod, który jednoznacznie identyfikuje Twój pojazd. Znajdziesz go na desce rozdzielczej lub na framudze drzwi."
+        },
+        {
+          "title": "Ile trwa przygotowanie raportu?",
+          "body": "Większość raportów jest dostarczana w ciągu kilku sekund. W rzadkich przypadkach, gdy nasz system wciąż sprawdza dostępne bazy danych, dostawa może potrwać dłużej — wyślemy Ci e-mail, gdy raport będzie gotowy."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Întrebări frecvente",
+      "lead": "Răspunsuri clare despre acoperire, livrare și ce poate apărea în raport — înainte de plată.",
+      "bullets": [
+        "Ce este un număr VIN?",
+        "Cât durează un raport?",
+        "Ce țări sunt acceptate?"
+      ],
+      "sections": [
+        {
+          "title": "Ce este un număr VIN?",
+          "body": "Numărul de Identificare al Vehiculului (VIN) este un cod de 17 caractere care identifică în mod unic vehiculul dumneavoastră. Îl găsiți pe bord sau pe cadrul ușii."
+        },
+        {
+          "title": "Cât durează un raport?",
+          "body": "Majoritatea rapoartelor sunt livrate în câteva secunde. În cazuri rare, cât timp sistemul nostru verifică încă bazele de date disponibile, livrarea poate dura mai mult — vă vom trimite un e-mail când raportul este gata."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Често задавани въпроси",
+      "lead": "Ясни отговори за покритие, доставка и какво се показва в отчета ви — преди да платите.",
+      "bullets": [
+        "Какво е VIN номер?",
+        "Колко време отнема отчетът?",
+        "Кои държави се поддържат?"
+      ],
+      "sections": [
+        {
+          "title": "Какво е VIN номер?",
+          "body": "Идентификационният номер на превозното средство (VIN) е 17-знаков код, който уникално идентифицира вашия автомобил. Можете да го намерите на таблото или на рамата на вратата."
+        },
+        {
+          "title": "Колко време отнема отчетът?",
+          "body": "Повечето отчети се доставят за секунди. В редки случаи, докато системата ни все още проверява наличните бази данни, доставката може да отнеме повече време — ще ви изпратим имейл, когато отчетът е готов."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "ხშირად დასმული კითხვები",
+      "lead": "მკაფიო პასუხები გაშუქებაზე, მიწოდებაზე და რა ჩანს თქვენს ანგარიშში — სანამ გადაიხდით.",
+      "bullets": [
+        "რა არის VIN ნომერი?",
+        "რამდენი დრო სჭირდება ანგარიშს?",
+        "რომელი ქვეყნებია მხარდაჭერილი?"
+      ],
+      "sections": [
+        {
+          "title": "რა არის VIN ნომერი?",
+          "body": "ავტომობილის საიდენტიფიკაციო ნომერი (VIN) არის 17-სიმბოლოიანი კოდი, რომელიც ცალსახად განსაზღვრავს თქვენს მანქანას. შეგიძლიათ იპოვოთ ის დაფაზე ან კარის ჩარჩოზე."
+        },
+        {
+          "title": "რამდენი დრო სჭირდება ანგარიშს?",
+          "body": "ანგარიშების უმეტესობა მიწოდებულია წამებში. იშვიათ შემთხვევებში, სანამ ჩვენი სისტემა ჯერ კიდევ ამოწმებს ხელმისაწვდომ მონაცემთა ბაზებს, მიწოდებას შეიძლება მეტი დრო დასჭირდეს — ელფოსტით გამოგიგზავნით, როდესაც თქვენი ანგარიში მზად იქნება."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "الأسئلة الشائعة",
+      "lead": "إجابات واضحة عن التغطية والتسليم وما قد يظهر في تقريرك — قبل الدفع.",
+      "bullets": [
+        "ما هو رقم الشاسيه؟",
+        "كم يستغرق التقرير؟",
+        "ما الدول المدعومة؟"
+      ],
+      "sections": [
+        {
+          "title": "ما هو رقم الشاسيه؟",
+          "body": "رقم تعريف المركبة (VIN) هو رمز مكوّن من 17 حرفاً يعرّف مركبتك بشكل فريد. يمكنك العثور عليه على لوحة القيادة أو إطار الباب."
+        },
+        {
+          "title": "كم يستغرق التقرير؟",
+          "body": "يُسلَّم معظم التقارير في غضون ثوانٍ. في حالات نادرة، بينما لا يزال نظامنا يفحص قواعد البيانات المتاحة، قد يستغرق التسليم وقتاً أطول — سنرسل إليك بريداً إلكترونياً عند جاهزية التقرير."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Часті питання",
+      "lead": "Чіткі відповіді про покриття, доставку та те, що може з’явитися у звіті — до оплати.",
+      "bullets": [
+        "Що таке VIN номер?",
+        "Як довго готується звіт?",
+        "Які країни підтримуються?"
+      ],
+      "sections": [
+        {
+          "title": "Що таке VIN номер?",
+          "body": "VIN — це 17-символьний код, що унікально ідентифікує ваш автомобіль. Знаходиться на приладовій панелі або рамці дверей."
+        },
+        {
+          "title": "Як довго готується звіт?",
+          "body": "Більшість звітів доставляються протягом секунд. У рідкісних випадках, поки наша система ще перевіряє доступні бази даних, доставка може зайняти більше часу — ми надішлемо email, коли звіт буде готовий."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Частые вопросы",
+      "lead": "Понятные ответы о покрытии, доставке и том, что может появиться в отчёте — до оплаты.",
+      "bullets": [
+        "Что такое VIN номер?",
+        "Сколько времени занимает отчёт?",
+        "Какие страны поддерживаются?"
+      ],
+      "sections": [
+        {
+          "title": "Что такое VIN номер?",
+          "body": "Идентификационный номер транспортного средства (VIN) — это 17-символьный код, уникально идентифицирующий ваш автомобиль. Его можно найти на приборной панели или рамке двери."
+        },
+        {
+          "title": "Сколько времени занимает отчёт?",
+          "body": "Большинство отчётов доставляется в течение секунд. В редких случаях, пока наша система ещё проверяет доступные базы данных, доставка может занять больше времени — мы отправим email, когда отчёт будет готов."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "常见问题",
+      "lead": "关于覆盖范围、交付与报告内容的清晰解答 — 付款前必读。",
+      "bullets": [
+        "什么是 VIN 号码？",
+        "报告需要多长时间？",
+        "支持哪些国家？"
+      ],
+      "sections": [
+        {
+          "title": "什么是 VIN 号码？",
+          "body": "车辆识别号码（VIN）是 17 位代码，唯一标识您的车辆。可在仪表盘或门框上找到。"
+        },
+        {
+          "title": "报告需要多长时间？",
+          "body": "大多数报告在数秒内交付。少数情况下，若系统仍在查询可用数据库，交付可能较慢 — 报告就绪后我们会通过邮件通知您。"
+        }
+      ]
+    }
+  },
+  "free_decoder": {
+    "en": {
+      "h1": "Free VIN Decoder",
+      "lead": "Decode any VIN instantly — get year, make, model, engine, and more. No account required.",
+      "bullets": [
+        "100% Free — No Registration"
+      ]
+    },
+    "de": {
+      "h1": "Kostenloser VIN-Decoder",
+      "lead": "Jede VIN sofort dekodieren — Baujahr, Marke, Modell, Motor und mehr. Kein Konto erforderlich.",
+      "bullets": [
+        "100 % kostenlos — keine Registrierung"
+      ]
+    },
+    "es": {
+      "h1": "Gratuito Decodificador VIN",
+      "lead": "Decodifique cualquier VIN al instante — obtenga año, marca, modelo, motor y más. No requiere cuenta.",
+      "bullets": [
+        "100 % gratuito — Sin registro"
+      ]
+    },
+    "fr": {
+      "h1": "Gratuit Décodeur VIN",
+      "lead": "Décodez n'importe quel VIN instantanément — année, marque, modèle, moteur et plus. Aucun compte requis.",
+      "bullets": [
+        "100 % gratuit — Sans inscription"
+      ]
+    },
+    "sq": {
+      "h1": "Dekodues VIN Falas",
+      "lead": "Dekodoni shasinë (VIN) falas — viti, marka, modeli. Për kontroll kilometrash dhe aksidentesh, zhbllokoni raportin e plotë.",
+      "bullets": [
+        "100% Falas — Pa Regjistrim"
+      ]
+    },
+    "pl": {
+      "h1": "Darmowy dekoder VIN",
+      "lead": "Zdekoduj dowolny VIN natychmiast — uzyskaj rok, markę, model, silnik i więcej. Konto nie jest wymagane.",
+      "bullets": [
+        "100% za darmo — bez rejestracji"
+      ]
+    },
+    "ro": {
+      "h1": "Gratuit Decodor VIN",
+      "lead": "Decodați orice VIN instantaneu — obțineți anul, marca, modelul, motorul și multe altele. Nu este necesar cont.",
+      "bullets": [
+        "100% gratuit — Fără înregistrare"
+      ]
+    },
+    "bg": {
+      "h1": "Безплатен VIN декодер",
+      "lead": "Декодирайте всеки VIN моментално — получете година, марка, модел, двигател и още. Не е нужен акаунт.",
+      "bullets": [
+        "100% безплатно — без регистрация"
+      ]
+    },
+    "ka": {
+      "h1": "უფასო VIN გაშიფვრა",
+      "lead": "მყისიერად გაშიფრეთ ნებისმიერი VIN - მიიღეთ წელი, მარკა, მოდელი, ძრავა და სხვა. ანგარიში არ არის საჭირო.",
+      "bullets": [
+        "100% უფასო - რეგისტრაცია არ არის"
+      ]
+    },
+    "ar": {
+      "h1": "فك تشفير VIN مجاناً",
+      "lead": "فك تشفير أي رقم VIN فوراً — احصل على السنة والماركة والموديل والمحرك والمزيد. لا يلزم حساب.",
+      "bullets": [
+        "مجاني 100% — بدون تسجيل"
+      ]
+    },
+    "uk": {
+      "h1": "Безкоштовний декодер VIN",
+      "lead": "Декодуйте будь-який VIN миттєво — рік, марку, модель, двигун і більше. Без реєстрації.",
+      "bullets": [
+        "100% безкоштовно — без реєстрації"
+      ]
+    },
+    "ru": {
+      "h1": "Бесплатный декодер VIN",
+      "lead": "Декодируйте любой VIN мгновенно — год, марка, модель, двигатель и многое другое. Без регистрации.",
+      "bullets": [
+        "100% бесплатно — без регистрации"
+      ]
+    },
+    "zh": {
+      "h1": "免费 VIN 解码器",
+      "lead": "即时解码任意 VIN — 获取年份、品牌、型号、发动机等信息。无需账户。",
+      "bullets": [
+        "100% 免费 — 无需注册"
+      ]
+    }
+  },
+  "country_usa": {
+    "en": {
+      "h1": "Check mileage of cars from theUSA",
+      "lead": "The US runs one of the world's largest used-car markets — millions of sales across 50 states. Sellers don't always share the full story. Verify before you buy.",
+      "bullets": [
+        "Auction & marketplace records across all 50 states",
+        "Flood, fire & hail damage records",
+        "Accident severity & airbag deployment"
+      ],
+      "sections": [
+        {
+          "title": "The most common red flags we find on US-market vehicles — before you commit to a purchase.",
+          "body": "Every report pulls from auction houses, insurance filings, and provider databases across all 50 states."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Prüfen Sie Kilometerstand von Autos ausUSA",
+      "lead": "Die USA haben einen der größten Gebrauchtwagenmärkte der Welt — Millionen Verkäufe in 50 Bundesstaaten. Verkäufer erzählen nicht immer die ganze Geschichte. Prüfen Sie vor dem Kauf.",
+      "bullets": [
+        "Auktions- & Marktplatzdaten aus allen 50 Bundesstaaten",
+        "Hochwasser-, Brand- & Hagelschadensnachweise",
+        "Unfallschwere & Airbag-Auslösung"
+      ],
+      "sections": [
+        {
+          "title": "Die häufigsten Warnsignale bei US-Fahrzeugen — bevor Sie den Kauf abschließen.",
+          "body": "Jeder Bericht zieht Daten aus Auktionshäusern, Versicherungsmeldungen und Anbieterdatenbanken in allen 50 Bundesstaaten."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique kilometraje de coches deUSA",
+      "lead": "EE. UU. tiene uno de los mayores mercados de coches usados del mundo: millones de ventas en 50 estados. Los vendedores no siempre cuentan toda la historia. Verifique antes de comprar.",
+      "bullets": [
+        "Registros de subastas y marketplaces en los 50 estados",
+        "Registros de daños por inundación, incendio y granizo",
+        "Gravedad del accidente y despliegue de airbags"
+      ],
+      "sections": [
+        {
+          "title": "Las señales de alerta más frecuentes que encontramos en vehículos del mercado estadounidense — antes de comprometerse con una compra.",
+          "body": "Cada informe extrae datos de casas de subastas, registros de seguros y bases de datos de proveedores en los 50 estados."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage des voituresUSA",
+      "lead": "Les États-Unis ont l'un des plus grands marchés de voitures d'occasion au monde — des millions de ventes dans 50 États. Les vendeurs ne racontent pas toujours toute l'histoire. Vérifiez avant d'acheter.",
+      "bullets": [
+        "Registres d'enchères et de marketplaces dans les 50 États",
+        "Registres de dommages par inondation, incendie et grêle",
+        "Gravité des accidents et déploiement des airbags"
+      ],
+      "sections": [
+        {
+          "title": "Les signaux d'alerte les plus fréquents que nous trouvons sur les véhicules du marché américain — avant de vous engager dans un achat.",
+          "body": "Chaque rapport puise dans les maisons de vente, les dossiers d'assurance et les bases de données des fournisseurs dans les 50 États."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash për makina ngaSHBA",
+      "lead": "Kontroll kilometrash makinash nga Amerika — verifikoni km, aksidentet, pronarët dhe vjedhjet përpara blerjes. Raport me shasi (VIN) për të 50 shtetet.",
+      "bullets": [
+        "Regjistra ankandesh dhe tregjesh në të 50 shtetet",
+        "Regjistrat e dëmeve nga përmbytjet, zjarri dhe breshëri",
+        "Ashpërsia e aksidentit dhe aktivizimi i airbag-ëve"
+      ],
+      "sections": [
+        {
+          "title": "Sinjalet më të zakonshme të rrezikut që gjejmë në makinat e tregut amerikan — para se të vendosni për blerje.",
+          "body": "Çdo raport mbledh të dhëna nga ankande, deklarata sigurimi dhe regjistrat qeveritarë në të 50 shtetet."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg samochodów zUSA",
+      "lead": "USA to jeden z największych rynków samochodów używanych na świecie — miliony transakcji w 50 stanach. Sprzedawcy nie zawsze podają pełną historię. Zweryfikuj przed zakupem.",
+      "bullets": [
+        "Rejestry aukcji i marketplace'ów we wszystkich 50 stanach",
+        "Rejestry uszkodzeń powodziowych, pożarowych i gradowych",
+        "Ciężkość wypadku i uruchomienie poduszek powietrznych"
+      ],
+      "sections": [
+        {
+          "title": "Najczęstsze czerwone flagi, które znajdujemy w pojazdach z rynku amerykańskiego — zanim podejmiesz decyzję o zakupie.",
+          "body": "Każdy raport pobiera dane z domów aukcyjnych, zgłoszeń ubezpieczeniowych i baz dostawców we wszystkich 50 stanach."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verifică kilometrajul mașinilor dinSUA",
+      "lead": "SUA are una dintre cele mai mari piețe de mașini second-hand din lume — milioane de vânzări în 50 de state. Vânzătorii nu împărtășesc întotdeauna povestea completă. Verificați înainte de a cumpăra.",
+      "bullets": [
+        "Înregistrări licitații și piețe în toate cele 50 de state",
+        "Înregistrări daune inundații, incendiu și grindină",
+        "Gravitate accident și declanșare airbag"
+      ],
+      "sections": [
+        {
+          "title": "Cele mai frecvente semnale de alarmă pe vehiculele de pe piața americană — înainte să vă angajați la o achiziție.",
+          "body": "Fiecare raport extrage date din case de licitații, dosare de asigurări și baze de date ale furnizorilor din toate cele 50 de state."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега на автомобили отСАЩ",
+      "lead": "САЩ имат един от най-големите пазари на употребявани автомобили в света — милиони продажби в 50 щата. Продавачите не винаги споделят цялата история. Проверете преди да купите.",
+      "bullets": [
+        "Записи от търгове и пазари във всички 50 щата",
+        "Записи за щети от наводнения, пожар и градушка",
+        "Тежест на катастрофата и активиране на въздушни възглавници"
+      ],
+      "sections": [
+        {
+          "title": "Най-честите червени флагове, които откриваме при автомобили от американския пазар — преди да се ангажирате с покупка.",
+          "body": "Всеки отчет извлича данни от търгови къщи, застрахователни документи и бази данни на доставчици във всички 50 щата."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმეთ გარბენი მანქანებიდანUSA",
+      "lead": "აშშ მართავს მსოფლიოში ერთ-ერთ ყველაზე დიდ მეორადი ავტომობილების ბაზარს - მილიონობით გაყიდვა 50 შტატში. გამყიდველები ყოველთვის არ იზიარებენ სრულ ამბავს. გადაამოწმეთ სანამ იყიდით.",
+      "bullets": [
+        "აუქციონისა და ბაზრის ჩანაწერები 50-ვე შტატში",
+        "წყალდიდობის, ხანძრის და სეტყვის დაზიანების ჩანაწერები",
+        "ავარიის სიმძიმე და აირბალიშის გაშლა"
+      ],
+      "sections": [
+        {
+          "title": "ყველაზე გავრცელებულ წითელ დროშებს, რომლებსაც ვპოულობთ აშშ-ს ბაზრის მანქანებზე - სანამ ყიდულობთ ვალდებულებას.",
+          "body": "ყველა ანგარიში ამოღებულია აუქციონის სახლებიდან, სადაზღვევო ფაილებიდან და პროვაიდერების მონაცემთა ბაზებიდან 50-ვე შტატში."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات سيارات منالولايات المتحدة",
+      "lead": "تمتلك الولايات المتحدة من أكبر أسواق السيارات المستعملة في العالم — ملايين المبيعات عبر 50 ولاية. لا يشارك البائعون دائماً القصة كاملة. تحقق قبل الشراء.",
+      "bullets": [
+        "سجلات المزادات والأسواق عبر جميع الولايات الخمسين",
+        "سجلات أضرار الفيضانات والحرائق والبَرَد",
+        "شدة الحوادث ونشر الوسائد الهوائية"
+      ],
+      "sections": [
+        {
+          "title": "أكثر الإشارات الحمراء شيوعاً في السيارات الأمريكية — قبل أن تلتزم بالشراء.",
+          "body": "كل تقرير يجمع بيانات من دور المزادات ووثائق التأمين والسجلات الحكومية في جميع الولايات."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг автомобілів зСША",
+      "lead": "У США один з найбільших ринків вживаних авто — мільйони угод у 50 штатах. Продавці не завжди розповідають повну історію. Перевірте перед покупкою.",
+      "bullets": [
+        "Дані аукціонів та маркетплейсів по всіх 50 штатах",
+        "Записи пошкоджень від повеней, пожеж та граду",
+        "Тяжкість аварії та спрацювання подушок безпеки"
+      ],
+      "sections": [
+        {
+          "title": "Найпоширеніші червоні прапорці в американських вживаних авто — перш ніж ви приймете рішення.",
+          "body": "Кожен звіт об'єднує дані аукціонів, страхових документів і державних реєстрів по всіх штатах."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег автомобилей изСША",
+      "lead": "В США один из крупнейших рынков подержанных авто — миллионы сделок в 50 штатах. Продавцы не всегда рассказывают всю историю. Проверьте перед покупкой.",
+      "bullets": [
+        "Данные аукционов и маркетплейсов по всем 50 штатам",
+        "Записи об ущербе от наводнений, пожаров и града",
+        "Тяжесть аварии и срабатывание подушек безопасности"
+      ],
+      "sections": [
+        {
+          "title": "Самые частые красные флаги в американских подержанных авто — до того, как вы примете решение.",
+          "body": "Каждый отчёт объединяет данные аукционов, страховых документов и государственных реестров по всем штатам."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查询 里程 来自美国",
+      "lead": "美国拥有全球最大的二手车市场之一 — 50 个州数百万笔交易。卖家未必透露全部真相。购买前请核实。",
+      "bullets": [
+        "覆盖 50 个州的拍卖与交易平台记录",
+        "洪水、火灾与冰雹损伤记录",
+        "事故严重程度与气囊弹出"
+      ],
+      "sections": [
+        {
+          "title": "美国市场车辆最常见的风险信号 — 付款前先查清。",
+          "body": "每份报告从全美拍卖行、保险备案与供应商数据库拉取数据。"
+        }
+      ]
+    }
+  },
+  "country_korea": {
+    "en": {
+      "h1": "Check mileage of cars fromSouth Korea",
+      "lead": "South Korea has 25M+ registered vehicles and a fast-moving used market. Hidden damage and undisclosed history are common. Check before you buy or import.",
+      "bullets": [
+        "Korean auction platform & marketplace records",
+        "Private insurance filings & accident records",
+        "Odometer history verification"
+      ],
+      "sections": [
+        {
+          "title": "Real risks in the Korean used-car market — especially for imports and private sales.",
+          "body": "Regional sources including Encar, insurance filings, and Korean marketplace listings."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Prüfen Sie Kilometerstand von Autos ausSüdkorea",
+      "lead": "Südkorea hat über 25 Mio. zugelassene Fahrzeuge und einen schnelllebigen Gebrauchtwagenmarkt. Versteckte Schäden und verschwiegene Historie sind häufig. Prüfen Sie vor Kauf oder Import.",
+      "bullets": [
+        "Koreanische Auktionsplattform- & Marktplatzdaten",
+        "Private Versicherungsmeldungen & Unfallnachweise",
+        "Kilometerstandshistorie-Verifizierung"
+      ],
+      "sections": [
+        {
+          "title": "Echte Risiken auf dem koreanischen Gebrauchtwagenmarkt — besonders bei Importen und Privatverkäufen.",
+          "body": "Regionale Quellen wie Encar, Versicherungsmeldungen und koreanische Marktplatz-Inserate."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique kilometraje de coches deCorea del Sur",
+      "lead": "Corea del Sur tiene más de 25 millones de vehículos matriculados y un mercado de usados muy dinámico. Los daños ocultos y el historial no declarado son frecuentes. Revise antes de comprar o importar.",
+      "bullets": [
+        "Registros de plataformas de subasta y marketplaces coreanos",
+        "Registros privados de seguros y accidentes",
+        "Verificación del historial de odómetro"
+      ],
+      "sections": [
+        {
+          "title": "Riesgos reales en el mercado coreano de coches usados — especialmente en importaciones y ventas privadas.",
+          "body": "Fuentes regionales incluyendo Encar, registros de seguros y anuncios en marketplaces coreanos."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage des voituresCorée du Sud",
+      "lead": "La Corée du Sud compte plus de 25 millions de véhicules immatriculés et un marché de l'occasion très dynamique. Les dommages cachés et l'historique non déclaré sont fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "bullets": [
+        "Registres des plateformes d'enchères et marketplaces coréennes",
+        "Dossiers d'assurance privés et registres d'accidents",
+        "Vérification de l'historique du compteur"
+      ],
+      "sections": [
+        {
+          "title": "Les risques réels sur le marché coréen de l'occasion — surtout pour les importations et les ventes entre particuliers.",
+          "body": "Sources régionales incluant Encar, dossiers d'assurance et annonces sur les marketplaces coréennes."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash për makina ngaKoreja e Jugut",
+      "lead": "Kontroll kilometrash makinash nga Koreja — dëme të fshehura, manipulim km dhe histori importi. Kontrollo me shasi (VIN) para blerjes ose importit.",
+      "bullets": [
+        "Regjistra të platformave të ankandeve dhe tregjeve koreane",
+        "Deklarata sigurimi dhe regjistrat e aksidenteve",
+        "Verifikimi i historisë së kilometrave"
+      ],
+      "sections": [
+        {
+          "title": "Rreziqe reale në tregun korean të makinave të përdorura — veçanërisht për importe dhe shitje private.",
+          "body": "Burime rajonale përfshirë Encar, deklarata sigurimi dhe listime të tregut korean."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg samochodów zKorea Południowa",
+      "lead": "Korea Południowa ma ponad 25 mln zarejestrowanych pojazdów i dynamiczny rynek używanych. Ukryte uszkodzenia i nieujawniona historia są powszechne. Sprawdź przed zakupem lub importem.",
+      "bullets": [
+        "Rejestry koreańskich platform aukcyjnych i marketplace'ów",
+        "Prywatne zgłoszenia ubezpieczeniowe i rejestry wypadków",
+        "Weryfikacja historii licznika"
+      ],
+      "sections": [
+        {
+          "title": "Rzeczywiste ryzyka na koreańskim rynku samochodów używanych — szczególnie przy imporcie i sprzedaży prywatnej.",
+          "body": "Źródła regionalne, w tym Encar, zgłoszenia ubezpieczeniowe i koreańskie ogłoszenia na marketplace'ach."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verifică kilometrajul mașinilor dinCoreea de Sud",
+      "lead": "Coreea de Sud are peste 25M de vehicule înmatriculate și o piață second-hand dinamică. Daunele ascunse și istoricul nedeclarat sunt frecvente. Verificați înainte de a cumpăra sau importa.",
+      "bullets": [
+        "Înregistrări platforme de licitații și piețe coreene",
+        "Dosare asigurări private și înregistrări accidente",
+        "Verificare istoric odometru"
+      ],
+      "sections": [
+        {
+          "title": "Riscuri reale pe piața second-hand coreeană — în special pentru importuri și vânzări private.",
+          "body": "Surse regionale inclusiv Encar, dosare de asigurări și anunțuri pe piețele coreene."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега на автомобили отЮжна Корея",
+      "lead": "Южна Корея има над 25 милиона регистрирани автомобили и бърз пазар на употребявани коли. Скрити щети и неразкрита история са чести. Проверете преди да купите или внесете.",
+      "bullets": [
+        "Записи от корейски търгови платформи и пазари",
+        "Частни застрахователни документи и записи за катастрофи",
+        "Верификация на историята на одометъра"
+      ],
+      "sections": [
+        {
+          "title": "Реални рискове на корейския пазар на употребявани автомобили — особено при внос и частни продажби.",
+          "body": "Регионални източници, включително Encar, застрахователни документи и корейски обяви."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმეთ გარბენი მანქანებიდანსამხრეთ კორეა",
+      "lead": "სამხრეთ კორეას აქვს 25 მილიონი+ რეგისტრირებული მანქანა და სწრაფად მოძრავი მეორადი ბაზარი. დამალული დაზიანება და გაურკვეველი ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
+      "bullets": [
+        "კორეის აუქციონის პლატფორმა და ბაზრის ჩანაწერები",
+        "პირადი დაზღვევის ჩანაწერები და ავარიების ჩანაწერები",
+        "ოდომეტრის ისტორიის შემოწმება"
+      ],
+      "sections": [
+        {
+          "title": "რეალური რისკები კორეის მეორადი მანქანების ბაზარზე - განსაკუთრებით იმპორტისა და კერძო გაყიდვებისთვის.",
+          "body": "რეგიონალური წყაროები, მათ შორის Encar, სადაზღვევო ფაილები და კორეული ბაზრის ჩამონათვალი."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات سيارات منكوريا الجنوبية",
+      "lead": "في كوريا الجنوبية أكثر من 25 مليون مركبة مسجّلة وسوق مستعمل نشط. الأضرار المخفية والتاريخ غير المُعلن شائعان. تحقق قبل الشراء أو الاستيراد.",
+      "bullets": [
+        "سجلات منصات المزادات والأسواق الكورية",
+        "وثائق التأمين الخاصة وسجلات الحوادث",
+        "التحقق من تاريخ العداد"
+      ],
+      "sections": [
+        {
+          "title": "مخاطر حقيقية في سوق السيارات المستعملة الكورية — خاصة للواردات والبيع الخاص.",
+          "body": "مصادر إقليمية تشمل Encar ووثائق التأمين وإعلانات السوق الكورية."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг автомобілів зПівденна Корея",
+      "lead": "У Південній Кореї зареєстровано 25M+ авто та активний ринок вживаних машин. Приховані пошкодження й нерозкрита історія — звична справа. Перевірте перед покупкою чи імпортом.",
+      "bullets": [
+        "Дані корейських аукціонних майданчиків та маркетплейсів",
+        "Приватні страхові документи та записи про аварії",
+        "Перевірка історії одометра"
+      ],
+      "sections": [
+        {
+          "title": "Реальні ризики на корейському ринку вживаних авто — особливо при імпорті та приватних продажах.",
+          "body": "Регіональні джерела: Encar, страхові документи та оголошення корейських маркетплейсів."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег автомобилей изЮжная Корея",
+      "lead": "В Южной Корее зарегистрировано 25M+ автомобилей и активный рынок подержанных авто. Скрытые повреждения и нераскрытая история — обычное дело. Проверьте перед покупкой или импортом.",
+      "bullets": [
+        "Данные корейских аукционных площадок и маркетплейсов",
+        "Частные страховые документы и записи об авариях",
+        "Проверка истории одометра"
+      ],
+      "sections": [
+        {
+          "title": "Реальные риски на корейском рынке подержанных авто — особенно при импорте и частных продажах.",
+          "body": "Региональные источники: Encar, страховые документы и объявления корейских маркетплейсов."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查询 里程 来自韩国",
+      "lead": "韩国有超过 2500 万辆注册车辆，二手车市场流转迅速。隐藏损伤与未披露历史很常见。购买或进口前请查询。",
+      "bullets": [
+        "韩国拍卖平台与交易平台记录",
+        "私人保险备案与事故记录",
+        "里程历史核实"
+      ],
+      "sections": [
+        {
+          "title": "韩国二手车市场的真实风险 — 尤其进口车与私人交易。",
+          "body": "区域来源包括 Encar、保险备案与韩国交易平台挂牌信息。"
+        }
+      ]
+    }
+  },
+  "country_canada": {
+    "en": {
+      "h1": "Check mileage of cars fromCanada",
+      "lead": "Canada has 30M+ registered vehicles and a busy used-car market from coast to coast. Branded titles, hidden insurance claims and cross-province transfers are common risks. Verify before you buy or import.",
+      "bullets": [
+        "Provincial registration & lien search indicators",
+        "Insurance claim & collision history",
+        "Auction and marketplace listing records"
+      ],
+      "sections": [
+        {
+          "title": "The most common red flags on Canadian used vehicles — before you hand over a deposit.",
+          "body": "Every report pulls auction data, insurance indicators and registration signals across Canadian provinces and territories."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Prüfen Sie Kilometerstand von Autos ausKanada",
+      "lead": "Kanada hat über 30 Mio. zugelassene Fahrzeuge und einen lebhaften Gebrauchtwagenmarkt von Küste zu Küste. Markierte Titel, versteckte Versicherungsansprüche und provinzübergreifende Ummeldungen sind häufige Risiken. Prüfen Sie vor Kauf oder Import.",
+      "bullets": [
+        "Provinzielle Zulassungs- & Pfandrechtsindikatoren",
+        "Versicherungsansprüche & Kollisionshistorie",
+        "Auktions- und Marktplatz-Inserate"
+      ],
+      "sections": [
+        {
+          "title": "Die häufigsten Warnsignale bei kanadischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
+          "body": "Jeder Bericht zieht Auktionsdaten, Versicherungsindikatoren und Zulassungssignale aus kanadischen Provinzen und Territorien."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique kilometraje de coches deCanadá",
+      "lead": "Canadá tiene más de 30 millones de vehículos matriculados y un mercado de usados activo de costa a costa. Los títulos marcados, las reclamaciones de seguro ocultas y las transferencias entre provincias son riesgos frecuentes. Verifique antes de comprar o importar.",
+      "bullets": [
+        "Indicadores de matriculación provincial y búsqueda de gravámenes",
+        "Historial de reclamaciones de seguro y colisiones",
+        "Registros de subastas y anuncios en marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Las señales de alerta más frecuentes en vehículos usados canadienses — antes de entregar un depósito.",
+          "body": "Cada informe extrae datos de subastas, indicadores de seguros y señales de matriculación en provincias y territorios canadienses."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage des voituresCanada",
+      "lead": "Le Canada compte plus de 30 millions de véhicules immatriculés et un marché de l'occasion actif d'un océan à l'autre. Les titres marqués, les sinistres dissimulés et les transferts interprovinciaux sont des risques fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "bullets": [
+        "Indicateurs d'immatriculation provinciale et de recherche de privilèges",
+        "Historique des sinistres et des collisions",
+        "Registres d'enchères et d'annonces sur marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion canadiens — avant de verser un acompte.",
+          "body": "Chaque rapport puise dans les données d'enchères, les indicateurs d'assurance et les signaux d'immatriculation dans les provinces et territoires canadiens."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash për makina ngaKanadaja",
+      "lead": "Kontroll kilometrash makinash nga Kanadaja — verifikoni km, aksidentet, pronarët dhe statusin e dëmtimit total përpara blerjes. Raport me shasi (VIN) për të gjitha provincat.",
+      "bullets": [
+        "Tregues regjistrimi dhe pengjesh provincial",
+        "Histori kërkesash sigurimi dhe përplasjesh",
+        "Regjistra ankandesh dhe tregjesh"
+      ],
+      "sections": [
+        {
+          "title": "Sinjalet më të zakonshme të rrezikut në tregun kanadez të makinave të përdorura — para se të jepni kapar.",
+          "body": "Çdo raport mbledh të dhëna ankandesh, tregues sigurimi dhe sinjale regjistrimi në të gjitha provincat dhe territoret kanadeze."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg samochodów zKanada",
+      "lead": "Kanada ma ponad 30 mln zarejestrowanych pojazdów i aktywny rynek samochodów używanych od wybrzeża do wybrzeża. Oznaczone tytuły, ukryte roszczenia ubezpieczeniowe i transfery między prowincjami to typowe ryzyka. Zweryfikuj przed zakupem lub importem.",
+      "bullets": [
+        "Wskaźniki rejestracji prowincjonalnej i wyszukiwania zastawów",
+        "Historia roszczeń ubezpieczeniowych i kolizji",
+        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+      ],
+      "sections": [
+        {
+          "title": "Najczęstsze czerwone flagi w kanadyjskich samochodach używanych — zanim wpłacisz zadatek.",
+          "body": "Każdy raport pobiera dane aukcyjne, wskaźniki ubezpieczeniowe i sygnały rejestracyjne z kanadyjskich prowincji i terytoriów."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verifică kilometrajul mașinilor dinCanada",
+      "lead": "Canada are peste 30M de vehicule înmatriculate și o piață second-hand activă de la coastă la coastă. Titlurile branded, cererile de daune ascunse și transferurile interprovinciale sunt riscuri frecvente. Verificați înainte de a cumpăra sau importa.",
+      "bullets": [
+        "Indicatori înmatriculare provincială și căutare gaj",
+        "Istoric cereri de daune și coliziuni",
+        "Înregistrări licitații și anunțuri pe piețe"
+      ],
+      "sections": [
+        {
+          "title": "Cele mai frecvente semnale de alarmă pe vehiculele second-hand canadiene — înainte să dați un avans.",
+          "body": "Fiecare raport extrage date de licitații, indicatori de asigurări și semnale de înmatriculare din provinciile și teritoriile canadiene."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега на автомобили отКанада",
+      "lead": "Канада има над 30 милиона регистрирани автомобили и оживен пазар на употребявани коли от край до край. Брандирани талони, скрити застрахователни претенции и трансфери между провинции са чести рискове. Проверете преди да купите или внесете.",
+      "bullets": [
+        "Провинциална регистрация и индикатори за търсене на залози",
+        "Застрахователни претенции и история на сблъсъци",
+        "Записи от търгове и пазарни обяви"
+      ],
+      "sections": [
+        {
+          "title": "Най-честите червени флагове при канадски употребявани автомобили — преди да платите капаро.",
+          "body": "Всеки отчет извлича данни от търгове, застрахователни индикатори и регистрационни сигнали в канадските провинции и територии."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმეთ გარბენი მანქანებიდანკანადა",
+      "lead": "კანადას აქვს 30 მილიონზე მეტი რეგისტრირებული მანქანა და მეორადი მანქანების დატვირთული ბაზარი სანაპიროდან სანაპირომდე. ბრენდირებული ტიტულები, ფარული სადაზღვევო პრეტენზიები და პროვინციების გადარიცხვები საერთო რისკებია. გადაამოწმეთ ყიდვამდე ან იმპორტამდე.",
+      "bullets": [
+        "პროვინციული რეგისტრაციისა და გირავნობის ძიების ინდიკატორები",
+        "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+      ],
+      "sections": [
+        {
+          "title": "ყველაზე გავრცელებული წითელი დროშები კანადის მეორად მანქანებზე - სანამ დეპოზიტს გადასცემთ.",
+          "body": "ყოველი ანგარიში იზიდავს აუქციონის მონაცემებს, დაზღვევის ინდიკატორებს და რეგისტრაციის სიგნალებს კანადის პროვინციებსა და ტერიტორიებზე."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات سيارات منكندا",
+      "lead": "في كندا أكثر من 30 مليون مركبة مسجلة وسوق مستعمل نشط من الساحل إلى الساحل. العناوين المصنفة والمطالبات المخفية والنقل بين المقاطعات مخاطر شائعة. تحقق قبل الشراء أو الاستيراد.",
+      "bullets": [
+        "مؤشرات التسجيل الإقليمي والرهن",
+        "تاريخ مطالبات التأمين والتصادم",
+        "سجلات المزادات والأسواق"
+      ],
+      "sections": [
+        {
+          "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة الكندي — قبل دفع العربون.",
+          "body": "كل تقرير يجمع بيانات المزادات ومؤشرات التأمين وإشارات التسجيل عبر المقاطعات والأقاليم الكندية."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг автомобілів зКанада",
+      "lead": "У Канаді зареєстровано 30M+ авто та активний ринок вживаних машин. Брендовані титули, приховані страхові випадки та міжпровінційні перепродажі — поширені ризики. Перевірте перед покупкою чи імпортом.",
+      "bullets": [
+        "Провінційні реєстраційні та заставні індикатори",
+        "Історія страхових випадків і зіткнень",
+        "Записи аукціонів і маркетплейсів"
+      ],
+      "sections": [
+        {
+          "title": "Найпоширеніші червоні прапорці на канадському ринку вживаних авто — до того, як ви внесете завдаток.",
+          "body": "Кожен звіт об'єднує аукціонні дані, страхові індикатори та реєстраційні сигнали по провінціях і територіях Канади."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег автомобилей изКанада",
+      "lead": "В Канаде зарегистрировано 30M+ автомобилей и активный рынок подержанных машин. Брендированные титулы, скрытые страховые случаи и межпровинциальные перепродажи — частые риски. Проверьте перед покупкой или импортом.",
+      "bullets": [
+        "Провинциальные регистрационные и залоговые индикаторы",
+        "История страховых случаев и столкновений",
+        "Записи аукционов и маркетплейсов"
+      ],
+      "sections": [
+        {
+          "title": "Самые частые красные флаги на канадском рынке подержанных авто — до того, как вы внесёте задаток.",
+          "body": "Каждый отчёт объединяет аукционные данные, страховые индикаторы и регистрационные сигналы по провинциям и территориям Канады."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查询 里程 来自加拿大",
+      "lead": "加拿大有超过 3000 万辆注册车辆，二手车市场遍布全国。品牌产权、隐藏保险理赔与跨省过户是常见风险。购买或进口前请核实。",
+      "bullets": [
+        "省级登记与留置权查询指标",
+        "保险理赔与碰撞历史",
+        "拍卖与交易平台挂牌记录"
+      ],
+      "sections": [
+        {
+          "title": "加拿大二手车最常见的风险信号 — 付定金前先查清。",
+          "body": "每份报告汇总加拿大各省与地区的拍卖数据、保险指标与登记信号。"
+        }
+      ]
+    }
+  },
+  "country_china": {
+    "en": {
+      "h1": "Check mileage of cars fromChina",
+      "lead": "China has 350M+ registered vehicles and the world's largest used-car market. Odometer fraud and hidden accident history are common. Check before you buy or import.",
+      "bullets": [
+        "National registration & ownership transfer indicators",
+        "Insurance claim & collision history",
+        "Auction and marketplace listing records"
+      ],
+      "sections": [
+        {
+          "title": "The most common red flags on Chinese used vehicles — before you hand over a deposit.",
+          "body": "Every report pulls registration signals, insurance indicators and marketplace data across China's major provinces and export channels."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Prüfen Sie Kilometerstand von Autos ausChina",
+      "lead": "China hat über 350 Mio. zugelassene Fahrzeuge und den weltweit größten Gebrauchtwagenmarkt. Tachomanipulation und versteckte Unfallhistorie sind häufig. Prüfen Sie vor Kauf oder Import.",
+      "bullets": [
+        "Nationale Zulassungs- & Eigentümerwechsel-Indikatoren",
+        "Versicherungsansprüche & Kollisionshistorie",
+        "Auktions- und Marktplatz-Inserate"
+      ],
+      "sections": [
+        {
+          "title": "Die häufigsten Warnsignale bei chinesischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
+          "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Marktplatzdaten aus Chinas wichtigsten Provinzen und Exportkanälen."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique kilometraje de coches deChina",
+      "lead": "China tiene más de 350 millones de vehículos matriculados y el mayor mercado de usados del mundo. El fraude del odómetro y el historial de accidentes oculto son frecuentes. Revise antes de comprar o importar.",
+      "bullets": [
+        "Indicadores de matriculación nacional y transferencia de propiedad",
+        "Historial de reclamaciones de seguro y colisiones",
+        "Registros de subastas y anuncios en marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Las señales de alerta más frecuentes en vehículos usados chinos — antes de pagar un depósito.",
+          "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de marketplaces en las principales provincias y canales de exportación de China."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage des voitures deChine",
+      "lead": "La Chine compte plus de 350 millions de véhicules immatriculés et le plus grand marché de l'occasion au monde. Fraude au compteur et historique d'accidents dissimulé sont fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "bullets": [
+        "Indicateurs d'immatriculation nationale et de changement de propriétaire",
+        "Historique des sinistres et des collisions",
+        "Registres d'enchères et d'annonces sur marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion chinois — avant de verser un acompte.",
+          "body": "Chaque rapport puise dans les signaux d'immatriculation, les indicateurs d'assurance et les données marketplaces des principales provinces et canaux d'export chinois."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash për makina ngaKina",
+      "lead": "Kontroll kilometrash makinash nga Kina — manipulim km, riparime të fshehura aksidentesh dhe humbje totale. Kontrollo me shasi (VIN) para blerjes ose importit.",
+      "bullets": [
+        "Shenja regjistrimi kombëtar dhe transferimi pronësie",
+        "Histori kërkesash sigurimi dhe përplasjesh",
+        "Regjistra ankesh dhe listimesh në tregje"
+      ],
+      "sections": [
+        {
+          "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura kineze — para se të paguani kapar.",
+          "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna tregu në provincat kryesore dhe kanalet e eksportit të Kinës."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg samochodów zChiny",
+      "lead": "Chiny mają ponad 350 mln zarejestrowanych pojazdów i największy na świecie rynek samochodów używanych. Fałszowanie licznika i ukryta historia wypadków są powszechne. Sprawdź przed zakupem lub importem.",
+      "bullets": [
+        "Wskaźniki rejestracji krajowej i zmiany właściciela",
+        "Historia roszczeń ubezpieczeniowych i kolizji",
+        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+      ],
+      "sections": [
+        {
+          "title": "Najczęstsze czerwone flagi w chińskich samochodach używanych — zanim wpłacisz zadatek.",
+          "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane z marketplace'ów z głównych prowincji i kanałów eksportowych Chin."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verificați kilometrajul mașinilor dinChina",
+      "lead": "China are peste 350 de milioane de vehicule înmatriculate și cea mai mare piață de mașini second-hand din lume. Frauda la odometru și istoricul ascuns de accidente sunt frecvente. Verificați înainte de cumpărare sau import.",
+      "bullets": [
+        "Indicatori de înmatriculare națională și transfer de proprietate",
+        "Istoric daune asigurare și coliziuni",
+        "Înregistrări licitații și anunțuri pe piețe"
+      ],
+      "sections": [
+        {
+          "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand chinezești — înainte să plătiți avansul.",
+          "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de piață din provinciile majore și canalele de export ale Chinei."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега на автомобили отКитай",
+      "lead": "Китай има над 350 милиона регистрирани автомобили и най-големия пазар на употребявани коли в света. Манипулация на одометъра и скрита история на катастрофи са чести. Проверете преди покупка или внос.",
+      "bullets": [
+        "Национални регистрационни индикатори и смяна на собственик",
+        "История на застрахователни претенции и сблъсъци",
+        "Записи от търгове и обяви на пазари"
+      ],
+      "sections": [
+        {
+          "title": "Най-честите червени флагове при китайски употребявани автомобили — преди да платите капаро.",
+          "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и пазарни данни от основните провинции и експортни канали на Китай."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმეთ გარბენი მანქანებიდანჩინეთი",
+      "lead": "ჩინეთს აქვს 350 მილიონზე მეტი რეგისტრირებული მანქანა და მსოფლიოში ყველაზე დიდი მეორადი ავტომობილების ბაზარი. ოდომეტრის გაყალბება და ფარული ავარიის ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
+      "bullets": [
+        "ეროვნული რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
+        "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+      ],
+      "sections": [
+        {
+          "title": "ყველაზე გავრცელებული წითელი დროშები ჩინურ მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
+          "body": "ყოველი ანგარიში იზიდავს რეგისტრაციის სიგნალებს, დაზღვევის ინდიკატორებს და ბაზრის მონაცემებს ჩინეთის მთავარ პროვინციებსა და საექსპორტო არხებზე."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات سيارات منالصين",
+      "lead": "في الصين أكثر من 350 مليون مركبة مسجلة وأكبر سوق سيارات مستعملة في العالم. تلاعب عداد المسافات والتاريخ المخفي للحوادث شائعان. تحقق قبل الشراء أو الاستيراد.",
+      "bullets": [
+        "مؤشرات التسجيل الوطني ونقل الملكية",
+        "تاريخ مطالبات التأمين والتصادم",
+        "سجلات المزادات والأسواق"
+      ],
+      "sections": [
+        {
+          "title": "أكثر علامات الخطر شيوعاً في السيارات المستعملة الصينية — قبل دفع العربون.",
+          "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الأسواق عبر المقاطعات الرئيسية وقنوات التصدير في الصين."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг автомобілів зКитай",
+      "lead": "У Китаї понад 350 млн зареєстрованих авто та найбільший у світі ринок вживаних машин. Шахрайство з одометром і прихована історія ДТП — поширені ризики. Перевірте перед покупкою чи імпортом.",
+      "bullets": [
+        "Національні реєстраційні індикатори та зміна власника",
+        "Історія страхових випадків і зіткнень",
+        "Записи аукціонів і маркетплейсів"
+      ],
+      "sections": [
+        {
+          "title": "Найпоширеніші червоні прапорці на китайському ринку вживаних авто — до внесення завдатку.",
+          "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані маркетплейсів з основних провінцій і експортних каналів Китаю."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег автомобилей изКитай",
+      "lead": "В Китае более 350 млн зарегистрированных авто и крупнейший в мире рынок подержанных машин. Скрутка одометра и скрытая история ДТП — частые риски. Проверьте перед покупкой или импортом.",
+      "bullets": [
+        "Национальные регистрационные индикаторы и смена владельца",
+        "История страховых случаев и столкновений",
+        "Записи аукционов и маркетплейсов"
+      ],
+      "sections": [
+        {
+          "title": "Самые частые красные флаги на китайском рынке подержанных авто — до внесения задатка.",
+          "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные маркетплейсов из основных провинций и экспортных каналов Китая."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查询 里程 来自中国",
+      "lead": "中国拥有超过3.5亿辆注册汽车，是全球最大的二手车市场。调表和隐瞒的事故历史很常见。购买或进口前请查询。",
+      "bullets": [
+        "全国登记与过户指标",
+        "保险理赔与碰撞历史",
+        "拍卖与交易平台挂牌记录"
+      ],
+      "sections": [
+        {
+          "title": "中国二手车最常见的风险信号——付定金之前先查清。",
+          "body": "每份报告汇总中国主要省份和出口渠道的登记信号、保险指标与平台数据。"
+        }
+      ]
+    }
+  },
+  "country_uae": {
+    "en": {
+      "h1": "Check mileage of cars fromUAE",
+      "lead": "The UAE has 3M+ registered vehicles and an import-heavy used market centred on Dubai. Flood imports, odometer rollbacks and GCC registration gaps are common. Check before you buy.",
+      "bullets": [
+        "GCC registration & ownership transfer indicators",
+        "Insurance claim & collision history",
+        "Auction and marketplace listing records"
+      ],
+      "sections": [
+        {
+          "title": "The most common red flags on UAE used vehicles — before you hand over a deposit.",
+          "body": "Every report pulls registration signals, insurance indicators and import data across Dubai, Abu Dhabi and the wider GCC."
+        }
+      ]
+    },
+    "de": {
+      "h1": "Prüfen Sie Kilometerstand von Autos ausVAE",
+      "lead": "Die VAE haben über 3 Mio. zugelassene Fahrzeuge und einen importstarken Gebrauchtwagenmarkt rund um Dubai. Hochwasser-Importe, Tachomanipulation und Lücken in GCC-Zulassungen sind häufig. Prüfen Sie vor dem Kauf.",
+      "bullets": [
+        "GCC-Zulassungs- & Eigentümerwechsel-Indikatoren",
+        "Versicherungsansprüche & Kollisionshistorie",
+        "Auktions- und Marktplatz-Inserate"
+      ],
+      "sections": [
+        {
+          "title": "Die häufigsten Warnsignale bei Gebrauchtwagen in den VAE — bevor Sie eine Anzahlung leisten.",
+          "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Importdaten aus Dubai, Abu Dhabi und der gesamten GCC."
+        }
+      ]
+    },
+    "es": {
+      "h1": "Verifique kilometraje de coches deEAU",
+      "lead": "Los EAU tienen más de 3 millones de vehículos matriculados y un mercado de usados muy dependiente de importaciones, centrado en Dubái. Importaciones inundadas, manipulación del odómetro y lagunas en el registro GCC son frecuentes. Verifique antes de comprar.",
+      "bullets": [
+        "Indicadores de matriculación GCC y transferencia de propiedad",
+        "Historial de reclamaciones de seguro y colisiones",
+        "Registros de subastas y anuncios en marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Las señales de alerta más frecuentes en vehículos usados de los EAU — antes de pagar un depósito.",
+          "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de importación en Dubái, Abu Dabi y el CCG."
+        }
+      ]
+    },
+    "fr": {
+      "h1": "Vérifiez le kilométrage des voitures desEAU",
+      "lead": "Les EAU comptent plus de 3 millions de véhicules immatriculés et un marché de l'occasion très tourné vers l'import, centré sur Dubaï. Imports inondés, retour de compteur et lacunes d'immatriculation GCC sont fréquents. Vérifiez avant d'acheter.",
+      "bullets": [
+        "Indicateurs d'immatriculation GCC et changement de propriétaire",
+        "Historique des sinistres et des collisions",
+        "Registres d'enchères et d'annonces sur marketplaces"
+      ],
+      "sections": [
+        {
+          "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion aux EAU — avant de verser un acompte.",
+          "body": "Chaque rapport puise dans les signaux d'immatriculation, indicateurs d'assurance et données d'import à Dubaï, Abou Dabi et dans le CCG."
+        }
+      ]
+    },
+    "sq": {
+      "h1": "Kontroll kilometrash për makina ngaEmiratet",
+      "lead": "Kontroll kilometrash makinash nga Emiratet dhe Dubai — importe të përmbytura, manipulim km dhe boshllëqe regjistrimi GCC. Kontrollo me shasi (VIN) para blerjes.",
+      "bullets": [
+        "Shenja regjistrimi GCC dhe transferimi pronësie",
+        "Histori kërkesash sigurimi dhe përplasjesh",
+        "Regjistra ankesh dhe listimesh në tregje"
+      ],
+      "sections": [
+        {
+          "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura në Emiratet — para se të paguani kapar.",
+          "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna importi në Dubai, Abu Dhabi dhe GCC."
+        }
+      ]
+    },
+    "pl": {
+      "h1": "Sprawdź przebieg samochodów zZEA",
+      "lead": "ZEA mają ponad 3 mln zarejestrowanych pojazdów i rynek używanych mocno oparty na imporcie, ze szczególnym naciskiem na Dubaj. Importy powodziowe, cofanie licznika i luki w rejestracji GCC są częste. Sprawdź przed zakupem.",
+      "bullets": [
+        "Wskaźniki rejestracji GCC i zmiany właściciela",
+        "Historia roszczeń ubezpieczeniowych i kolizji",
+        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+      ],
+      "sections": [
+        {
+          "title": "Najczęstsze czerwone flagi w samochodach używanych w ZEA — zanim wpłacisz zadatek.",
+          "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane importowe z Dubaju, Abu Zabi i całego GCC."
+        }
+      ]
+    },
+    "ro": {
+      "h1": "Verificați kilometrajul mașinilor dinEAU",
+      "lead": "EAU au peste 3 milioane de vehicule înmatriculate și o piață second-hand bazată pe import, centrată pe Dubai. Importuri inundate, rollback la odometru și lacune în înregistrarea GCC sunt frecvente. Verificați înainte de cumpărare.",
+      "bullets": [
+        "Indicatori înmatriculare GCC și transfer proprietate",
+        "Istoric daune asigurare și coliziuni",
+        "Înregistrări licitații și anunțuri pe piețe"
+      ],
+      "sections": [
+        {
+          "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand din EAU — înainte să plătiți avansul.",
+          "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de import din Dubai, Abu Dhabi și GCC."
+        }
+      ]
+    },
+    "bg": {
+      "h1": "Проверете пробега на автомобили отОАЕ",
+      "lead": "ОАЕ имат над 3 милиона регистрирани автомобили и пазар на употребявани коли, ориентиран към внос, с фокус върху Дубай. Внос след наводнения, манипулация на одометъра и пропуски в GCC регистрацията са чести. Проверете преди покупка.",
+      "bullets": [
+        "GCC регистрационни индикатори и смяна на собственик",
+        "История на застрахователни претенции и сблъсъци",
+        "Записи от търгове и обяви на пазари"
+      ],
+      "sections": [
+        {
+          "title": "Най-честите червени флагове при употребявани автомобили в ОАЕ — преди да платите капаро.",
+          "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и вносни данни от Дубай, Абу Даби и GCC."
+        }
+      ]
+    },
+    "ka": {
+      "h1": "შეამოწმეთ გარბენი მანქანებიდანUAE",
+      "lead": "არაბეთის გაერთიანებულ საემიროებს აქვს 3M+ რეგისტრირებული მანქანა და იმპორტისთვის მძიმე მეორადი ბაზარი, რომელიც ორიენტირებულია დუბაიზე. ხშირია წყალდიდობის იმპორტი, ოდომეტრის გადაბრუნება და GCC-ის რეგისტრაციის ხარვეზები. შეამოწმეთ სანამ იყიდით.",
+      "bullets": [
+        "GCC რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
+        "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+      ],
+      "sections": [
+        {
+          "title": "ყველაზე გავრცელებული წითელი დროშები არაბეთის გაერთიანებულ საემიროებში მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
+          "body": "ყოველი ანგარიში იზიდავს სარეგისტრაციო სიგნალებს, დაზღვევის ინდიკატორებს და იმპორტის მონაცემებს დუბაიში, აბუ დაბიში და უფრო ფართო GCC-ში."
+        }
+      ]
+    },
+    "ar": {
+      "h1": "تحقق من الكيلومترات سيارات منالإمارات",
+      "lead": "في الإمارات أكثر من 3 ملايين مركبة مسجلة وسوق مستعمل يعتمد بشدة على الاستيراد، ودبي في قلبه. واردات متضررة من الفيضانات وإرجاع العداد وفجوات تسجيل مجلس التعاون شائعة. تحقق قبل الشراء.",
+      "bullets": [
+        "مؤشرات تسجيل مجلس التعاون ونقل الملكية",
+        "تاريخ مطالبات التأمين والتصادم",
+        "سجلات المزادات والأسواق"
+      ],
+      "sections": [
+        {
+          "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة بالإمارات — قبل دفع العربون.",
+          "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الاستيراد في دبي وأبوظبي ومجلس التعاون."
+        }
+      ]
+    },
+    "uk": {
+      "h1": "Перевір пробіг автомобілів зОАЕ",
+      "lead": "В ОАЕ понад 3 млн зареєстрованих авто та ринок вживаних машин, орієнтований на імпорт, з центром у Дубаї. Імпорт після повені, скручування одометра та прогалини в реєстрації GCC — типові ризики. Перевірте перед покупкою.",
+      "bullets": [
+        "Індикатори реєстрації GCC та зміни власника",
+        "Історія страхових випадків і зіткнень",
+        "Записи аукціонів і маркетплейсів"
+      ],
+      "sections": [
+        {
+          "title": "Найпоширеніші червоні прапорці на ринку вживаних авто ОАЕ — до внесення завдатку.",
+          "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані імпорту з Дубаї, Абу-Дабі та GCC."
+        }
+      ]
+    },
+    "ru": {
+      "h1": "Проверь пробег автомобилей изОАЭ",
+      "lead": "В ОАЭ более 3 млн зарегистрированных авто и рынок подержанных машин с упором на импорт, с центром в Дубае. Импорт после наводнений, скрутка одометра и пробелы в регистрации GCC — частые риски. Проверьте перед покупкой.",
+      "bullets": [
+        "Индикаторы регистрации GCC и смены владельца",
+        "История страховых случаев и столкновений",
+        "Записи аукционов и маркетплейсов"
+      ],
+      "sections": [
+        {
+          "title": "Самые частые красные флаги на рынке подержанных авто ОАЭ — до внесения задатка.",
+          "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные импорта из Дубая, Абу-Даби и GCC."
+        }
+      ]
+    },
+    "zh": {
+      "h1": "查询 里程 来自阿联酋",
+      "lead": "阿联酋拥有超过300万辆注册汽车，迪拜是进口依赖型二手车市场的核心。水淹进口车、调表和海合会登记信息缺失很常见。购买前请核实。",
+      "bullets": [
+        "海合会登记与过户指标",
+        "保险理赔与碰撞历史",
+        "拍卖与交易平台挂牌记录"
+      ],
+      "sections": [
+        {
+          "title": "阿联酋二手车最常见的风险信号——付定金之前先查清。",
+          "body": "每份报告汇总迪拜、阿布扎比及整个海合会地区的登记信号、保险指标与进口数据。"
+        }
+      ]
+    }
+  },
+  "api_b2b": {
+    "en": {
+      "h1": "Sell Car History Reports & Mileage Records | kmcheck API B2B",
+      "lead": "Sell car history reports, mileage records and VIN checks on your website. White-label site or developer API. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles."
+    },
+    "de": {
+      "h1": "Fahrzeughistorie & Kilometerstände verkaufen | kmcheck API B2B",
+      "lead": "Verkaufen Sie Fahrzeughistorie, Kilometerstände und VIN-Checks auf Ihrer Website. White-Label oder API. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge."
+    },
+    "es": {
+      "h1": "Vende historial de coches y kilometraje | kmcheck API B2B",
+      "lead": "Vende informes de historial, kilometraje y comprobaciones VIN en tu web. Sitio white-label o API. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos."
+    },
+    "fr": {
+      "h1": "Vendre historique auto et kilométrage | kmcheck API B2B",
+      "lead": "Vendez historiques, relevés km et contrôles VIN sur votre site. White-label ou API. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules."
+    },
+    "sq": {
+      "h1": "Shitni historik makinash dhe kilometra | API B2B kmcheck",
+      "lead": "Shitni online raporte historiku makinash, kilometra dhe kontroll VIN. Sajt white-label ose API. Mbulim: SHBA, Kanada, Kore, Dubai, Kinë. Rreth 50 milionë makina."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię aut i przebiegi | kmcheck API B2B",
+      "lead": "Sprzedawaj raporty historii, przebiegi i kontrole VIN na swojej stronie. White-label lub API. USA, Kanada, Korea, Dubaj, Chiny. ~50 mln pojazdów."
+    },
+    "ro": {
+      "h1": "Vinde istoric auto și kilometraj | kmcheck API B2B",
+      "lead": "Vinde rapoarte de istoric, kilometraj și verificări VIN pe site. White-label sau API. SUA, Canada, Coreea, Dubai, China. ~50M vehicule."
+    },
+    "bg": {
+      "h1": "Продавайте автоистория и километри | kmcheck API B2B",
+      "lead": "Продавайте доклади за автоистория, километри и VIN проверки на сайта си. White-label или API. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила."
+    },
+    "ka": {
+      "h1": "გაყიდეთ მანქანის ისტორია და გარბენი | kmcheck API B2B",
+      "lead": "გაყიდეთ ისტორიის ანგარიშები, გარბენი და VIN შემოწმებები თქვენს საიტზე. White-label ან API. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50 მლნ ავტომობილი."
+    },
+    "ar": {
+      "h1": "بِع تاريخ السيارات وسجلات المسافة | واجهة kmcheck B2B",
+      "lead": "بِع تقارير تاريخ السيارات والمسافة وفحص VIN على موقعك. موقع بعلامتك أو واجهة برمجية. أمريكا، كندا، كوريا، دبي، الصين. ~50 مليون مركبة."
+    },
+    "uk": {
+      "h1": "Продавайте історію авто та пробіг | kmcheck API B2B",
+      "lead": "Продавайте звіти історії, пробіг і VIN-перевірки на сайті. White-label або API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+    },
+    "ru": {
+      "h1": "Продавайте историю авто и пробег | kmcheck API B2B",
+      "lead": "Продавайте отчёты истории, пробег и VIN-проверки на сайте. White-label или API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+    },
+    "zh": {
+      "h1": "销售车辆历史报告与里程记录 | kmcheck API B2B",
+      "lead": "在网站销售车史报告、里程记录与 VIN 查验。白标站点或开发者 API。覆盖美国、加拿大、韩国、迪拜、中国。约五千万辆车。"
+    }
+  },
+  "api_b2b_api-b2b_plans": {
+    "en": {
+      "h1": "Vehicle History API Pricing & Reseller Websites | kmcheck",
+      "lead": "Compare kmcheck plans: REST API for VIN history and mileage, or a managed white-label car history website."
+    },
+    "de": {
+      "h1": "API-Preise für Fahrzeughistorie & Reseller-Websites | kmcheck",
+      "lead": "kmcheck-Tarife vergleichen: REST-API für VIN-Historie und Kilometer oder betreute White-Label-Website."
+    },
+    "es": {
+      "h1": "Precios API de historial y sitios reseller | kmcheck",
+      "lead": "Compara planes kmcheck: API REST de historial VIN y kilometraje, o web white-label gestionada."
+    },
+    "fr": {
+      "h1": "Tarifs API historique auto et sites revendeur | kmcheck",
+      "lead": "Comparez les offres kmcheck : API REST historique VIN / km, ou site white-label géré."
+    },
+    "sq": {
+      "h1": "Çmime API historiku makinash dhe faqe rishitësi | kmcheck",
+      "lead": "Krahasoni planet kmcheck: API REST për historik VIN dhe kilometra, ose faqe white-label të menaxhuar."
+    },
+    "pl": {
+      "h1": "Cennik API historii pojazdów i stron reseller | kmcheck",
+      "lead": "Porównaj plany kmcheck: API REST historii VIN i przebiegu albo zarządzaną stronę white-label."
+    },
+    "ro": {
+      "h1": "Prețuri API istoric auto și site-uri reseller | kmcheck",
+      "lead": "Compară planurile kmcheck: API REST pentru istoric VIN și kilometraj, sau site white-label gestionat."
+    },
+    "bg": {
+      "h1": "Цени API автоистория и reseller сайтове | kmcheck",
+      "lead": "Сравнете плановете kmcheck: REST API за VIN история и километри или управляван white-label сайт."
+    },
+    "ka": {
+      "h1": "ავტომობილის ისტორიის API ფასები და reseller საიტები | kmcheck",
+      "lead": "შედარეტ kmcheck გეგმები: REST API VIN ისტორიისა და გარბენისთვის ან მარტული white-label საიტი."
+    },
+    "ar": {
+      "h1": "أسعار واجهة تاريخ المركبات ومواقع إعادة البيع | kmcheck",
+      "lead": "قارن خطط kmcheck: واجهة REST لتاريخ VIN والمسافة، أو موقع white-label مُدار."
+    },
+    "uk": {
+      "h1": "Ціни API історії авто та сайти реселера | kmcheck",
+      "lead": "Порівняйте плани kmcheck: REST API історії VIN і пробігу або керований white-label сайт."
+    },
+    "ru": {
+      "h1": "Цены API истории авто и сайты реселлера | kmcheck",
+      "lead": "Сравните тарифы kmcheck: REST API истории VIN и пробега или управляемый white-label сайт."
+    },
+    "zh": {
+      "h1": "车史 API 报价与经销网站 | kmcheck",
+      "lead": "对比 kmcheck 方案：VIN 历史与里程 REST API，或托管白标车史网站。"
+    }
+  },
+  "api_b2b_api-b2b_contact": {
+    "en": {
+      "h1": "Contact Sales | Sell Car History Reports with kmcheck",
+      "lead": "Talk to kmcheck about selling car history reports and mileage records via API or a managed reseller site. Email info@kmcheck.com."
+    },
+    "de": {
+      "h1": "Vertrieb kontaktieren | Fahrzeughistorie mit kmcheck verkaufen",
+      "lead": "Sprechen Sie mit kmcheck über den Verkauf von Fahrzeughistorie und Kilometerständen per API oder betreuter Reseller-Site. E-Mail info@kmcheck.com."
+    },
+    "es": {
+      "h1": "Contacto comercial | Vende historial de coches con kmcheck",
+      "lead": "Habla con kmcheck sobre vender historial y kilometraje por API o sitio reseller. Email info@kmcheck.com."
+    },
+    "fr": {
+      "h1": "Contact commercial | Vendre l’historique auto avec kmcheck",
+      "lead": "Parlez à kmcheck de la vente d’historiques et kilométrages via API ou site revendeur. E-mail info@kmcheck.com."
+    },
+    "sq": {
+      "h1": "Kontakt shitje | Shitni historik makinash me kmcheck",
+      "lead": "Flisni me kmcheck për shitjen e historikut të makinave dhe kilometrave me API ose faqe të menaxhuar. Email: info@kmcheck.com."
+    },
+    "pl": {
+      "h1": "Kontakt handlowy | Sprzedawaj historię aut z kmcheck",
+      "lead": "Porozmawiaj z kmcheck o sprzedaży historii i przebiegów przez API lub stronę reseller. E-mail info@kmcheck.com."
+    },
+    "ro": {
+      "h1": "Contact vânzări | Vinde istoric auto cu kmcheck",
+      "lead": "Vorbește cu kmcheck despre vânzarea de istoric și kilometraj prin API sau site reseller. Email info@kmcheck.com."
+    },
+    "bg": {
+      "h1": "Контакт продажби | Продавайте автоистория с kmcheck",
+      "lead": "Говорете с kmcheck за продажба на автоистория и километри чрез API или reseller сайт. Имейл info@kmcheck.com."
+    },
+    "ka": {
+      "h1": "გაყიდვების კონტაქტი | გაყიდეთ მანქანის ისტორია kmcheck-იტ",
+      "lead": "ესაუბრეტ kmcheck-ს ისტორიისა და გარბენის გაყიდვაზე API-ით ან reseller საიტით. ელფოსტა info@kmcheck.com."
+    },
+    "ar": {
+      "h1": "تواصل مع المبيعات | بِع تاريخ السيارات مع kmcheck",
+      "lead": "تحدث مع kmcheck عن بيع تاريخ السيارات والمسافة عبر الواجهة أو موقع إعادة البيع. البريد info@kmcheck.com."
+    },
+    "uk": {
+      "h1": "Контакт продажів | Продавайте історію авто з kmcheck",
+      "lead": "Поговоріть з kmcheck про продаж історії та пробігу через API або сайт реселера. Email info@kmcheck.com."
+    },
+    "ru": {
+      "h1": "Контакт продаж | Продавайте историю авто с kmcheck",
+      "lead": "Обсудите с kmcheck продажу истории и пробега через API или сайт реселлера. Email info@kmcheck.com."
+    },
+    "zh": {
+      "h1": "联系销售 | 使用 kmcheck 销售车史报告",
+      "lead": "咨询通过 API 或经销站点销售车史与里程。邮箱 info@kmcheck.com。"
+    }
+  },
+  "api_b2b_api-b2b_vin-decoder": {
+    "en": {
+      "h1": "VIN Decoder API — Makes, Models & Specs | kmcheck B2B",
+      "lead": "VIN decoder covering makes, models and detailed specs. Included with the kmcheck API and Reseller Website & Maintenance."
+    },
+    "de": {
+      "h1": "VIN-Decoder API — Marken, Modelle & Specs | kmcheck B2B",
+      "lead": "VIN-Decoder für Marken und Modelle mit detaillierten Specs. Enthalten in der kmcheck API sowie Reseller-Website & Wartung."
+    },
+    "es": {
+      "h1": "API decodificador VIN — marcas, modelos y specs | kmcheck",
+      "lead": "Decodificador VIN con specs detalladas. Incluido en la API kmcheck y en Sitio reseller y mantenimiento."
+    },
+    "fr": {
+      "h1": "API décodeur VIN — marques, modèles et specs | kmcheck",
+      "lead": "Décodeur VIN avec specs détaillées. Inclus dans l’API kmcheck et Site revendeur & maintenance."
+    },
+    "sq": {
+      "h1": "API Dekodues VIN — marka, modele dhe specifikime | kmcheck",
+      "lead": "Dekodues VIN për markat dhe modelet me specifikime të detajuara. I përfshirë në API kmcheck dhe te Faqe rishitësi & mirëmbajtje."
+    },
+    "pl": {
+      "h1": "API dekoder VIN — marki, modele i specs | kmcheck",
+      "lead": "Dekoder VIN ze szczegółowymi danymi. W API kmcheck oraz na Stronie resellera i utrzymaniu."
+    },
+    "ro": {
+      "h1": "API decoder VIN — mărci, modele și specs | kmcheck",
+      "lead": "Decoder VIN cu specs detaliate. Inclus în API kmcheck și Site reseller & mentenanță."
+    },
+    "bg": {
+      "h1": "VIN декодер API — марки, модели и specs | kmcheck",
+      "lead": "VIN декодер с подробни specs. Включен в kmcheck API и Reseller сайт и поддръжка."
+    },
+    "ka": {
+      "h1": "VIN გაშიფვრა API — მარკები, მოდელები და specs | kmcheck",
+      "lead": "VIN გაშიფვრა დეტალური მონაცემებიტ. kmcheck API-ში და Reseller საიტსა და მხარდაჭერაში."
+    },
+    "ar": {
+      "h1": "واجهة فك شفرة VIN — الماركات والموديلات والمواصفات | kmcheck",
+      "lead": "فك VIN بمواصفات مفصّلة. مشمول في واجهة kmcheck وفي موقع إعادة البيع والصيانة."
+    },
+    "uk": {
+      "h1": "API VIN-декодер — марки, моделі й specs | kmcheck",
+      "lead": "VIN-декодер з детальними specs. Входить до API kmcheck та Сайту реселера і підтримки."
+    },
+    "ru": {
+      "h1": "API VIN-декодер — марки, модели и specs | kmcheck",
+      "lead": "VIN-декодер с детальными specs. Входит в API kmcheck и Сайт реселлера и поддержку."
+    },
+    "zh": {
+      "h1": "VIN 解码 API — 全品牌车型与规格 | kmcheck B2B",
+      "lead": "各品牌车型 VIN 解码与详细规格。包含于 kmcheck API 以及经销网站与维护。"
+    }
+  },
+  "api_b2b_api-b2b_usa-cars": {
+    "en": {
+      "h1": "Sell American Cars History and Reports | kmcheck",
+      "lead": "Sell American cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "h1": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte | kmcheck",
+      "lead": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "h1": "Vende historial e informes de coches estadounidenses | kmcheck",
+      "lead": "Vende historial e informes de coches estadounidenses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "h1": "Vendez l'historique et les rapports de voitures américaines | kmcheck",
+      "lead": "Vendez l'historique et les rapports de voitures américaines, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "h1": "Shit raporte historiku makinash nga SHBA | kmcheck API",
+      "lead": "Shitni raporte historiku për SHBA, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię i raporty samochodów amerykańskich | kmcheck",
+      "lead": "Sprzedawaj historię i raporty samochodów amerykańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "h1": "Vinde istoricul și rapoartele mașinilor americane | kmcheck",
+      "lead": "Vinde istoricul și rapoartele mașinilor americane, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "h1": "Продавайте история и отчети за американски автомобили | kmcheck",
+      "lead": "Продавайте история и отчети за американски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "h1": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები | kmcheck",
+      "lead": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "h1": "بِع تاريخ وتقارير السيارات الأمريكية | kmcheck",
+      "lead": "بِع تاريخ وتقارير السيارات الأمريكية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "h1": "Продавайте історію та звіти американських автомобілів | kmcheck",
+      "lead": "Продавайте історію та звіти американських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "h1": "Продавайте историю и отчёты американских автомобилей | kmcheck",
+      "lead": "Продавайте историю и отчёты американских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "h1": "销售美国车辆历史与报告 | kmcheck",
+      "lead": "以您的品牌通过 kmcheck API 销售美国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "api_b2b_api-b2b_canada-cars": {
+    "en": {
+      "h1": "Sell Canadian Cars History and Reports | kmcheck",
+      "lead": "Sell Canadian cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "h1": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte | kmcheck",
+      "lead": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "h1": "Vende historial e informes de coches canadienses | kmcheck",
+      "lead": "Vende historial e informes de coches canadienses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "h1": "Vendez l'historique et les rapports de voitures canadiennes | kmcheck",
+      "lead": "Vendez l'historique et les rapports de voitures canadiennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "h1": "Shit raporte historiku makinash nga Kanadaja | kmcheck API",
+      "lead": "Shitni raporte historiku për Kanadaja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię i raporty samochodów kanadyjskich | kmcheck",
+      "lead": "Sprzedawaj historię i raporty samochodów kanadyjskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "h1": "Vinde istoricul și rapoartele mașinilor canadiene | kmcheck",
+      "lead": "Vinde istoricul și rapoartele mașinilor canadiene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "h1": "Продавайте история и отчети за канадски автомобили | kmcheck",
+      "lead": "Продавайте история и отчети за канадски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "h1": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები | kmcheck",
+      "lead": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "h1": "بِع تاريخ وتقارير السيارات الكندية | kmcheck",
+      "lead": "بِع تاريخ وتقارير السيارات الكندية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "h1": "Продавайте історію та звіти канадських автомобілів | kmcheck",
+      "lead": "Продавайте історію та звіти канадських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "h1": "Продавайте историю и отчёты канадских автомобилей | kmcheck",
+      "lead": "Продавайте историю и отчёты канадских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "h1": "销售加拿大车辆历史与报告 | kmcheck",
+      "lead": "以您的品牌通过 kmcheck API 销售加拿大车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "api_b2b_api-b2b_korea-cars": {
+    "en": {
+      "h1": "Sell Korean Cars History and Reports | kmcheck",
+      "lead": "Sell Korean cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "h1": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte | kmcheck",
+      "lead": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "h1": "Vende historial e informes de coches coreanos | kmcheck",
+      "lead": "Vende historial e informes de coches coreanos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "h1": "Vendez l'historique et les rapports de voitures coréennes | kmcheck",
+      "lead": "Vendez l'historique et les rapports de voitures coréennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "h1": "Shit raporte historiku makinash nga Koreja | kmcheck API",
+      "lead": "Shitni raporte historiku për Koreja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię i raporty samochodów koreańskich | kmcheck",
+      "lead": "Sprzedawaj historię i raporty samochodów koreańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "h1": "Vinde istoricul și rapoartele mașinilor coreene | kmcheck",
+      "lead": "Vinde istoricul și rapoartele mașinilor coreene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "h1": "Продавайте история и отчети за корейски автомобили | kmcheck",
+      "lead": "Продавайте история и отчети за корейски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "h1": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები | kmcheck",
+      "lead": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "h1": "بِع تاريخ وتقارير السيارات الكورية | kmcheck",
+      "lead": "بِع تاريخ وتقارير السيارات الكورية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "h1": "Продавайте історію та звіти корейських автомобілів | kmcheck",
+      "lead": "Продавайте історію та звіти корейських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "h1": "Продавайте историю и отчёты корейских автомобилей | kmcheck",
+      "lead": "Продавайте историю и отчёты корейских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "h1": "销售韩国车辆历史与报告 | kmcheck",
+      "lead": "以您的品牌通过 kmcheck API 销售韩国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "api_b2b_api-b2b_dubai-cars": {
+    "en": {
+      "h1": "Sell UAE Cars History and Reports | kmcheck",
+      "lead": "Sell UAE cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "h1": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte | kmcheck",
+      "lead": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "h1": "Vende historial e informes de coches de los EAU | kmcheck",
+      "lead": "Vende historial e informes de coches de los EAU, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "h1": "Vendez l'historique et les rapports de voitures des EAU | kmcheck",
+      "lead": "Vendez l'historique et les rapports de voitures des EAU, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "h1": "Shit raporte historiku makinash nga Dubai / Emiratet | kmcheck API",
+      "lead": "Shitni raporte historiku për Dubai / Emiratet, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię i raporty samochodów ze ZEA | kmcheck",
+      "lead": "Sprzedawaj historię i raporty samochodów ze ZEA, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "h1": "Vinde istoricul și rapoartele mașinilor din EAU | kmcheck",
+      "lead": "Vinde istoricul și rapoartele mașinilor din EAU, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "h1": "Продавайте история и отчети за от ОАЕ автомобили | kmcheck",
+      "lead": "Продавайте история и отчети за от ОАЕ автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "h1": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები | kmcheck",
+      "lead": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "h1": "بِع تاريخ وتقارير السيارات الإماراتية | kmcheck",
+      "lead": "بِع تاريخ وتقارير السيارات الإماراتية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "h1": "Продавайте історію та звіти ОАЕ автомобілів | kmcheck",
+      "lead": "Продавайте історію та звіти ОАЕ автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "h1": "Продавайте историю и отчёты ОАЭ автомобилей | kmcheck",
+      "lead": "Продавайте историю и отчёты ОАЭ автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "h1": "销售阿联酋车辆历史与报告 | kmcheck",
+      "lead": "以您的品牌通过 kmcheck API 销售阿联酋车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "api_b2b_api-b2b_china-cars": {
+    "en": {
+      "h1": "Sell Chinese Cars History and Reports | kmcheck",
+      "lead": "Sell Chinese cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "h1": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte | kmcheck",
+      "lead": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "h1": "Vende historial e informes de coches chinos | kmcheck",
+      "lead": "Vende historial e informes de coches chinos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "h1": "Vendez l'historique et les rapports de voitures chinoises | kmcheck",
+      "lead": "Vendez l'historique et les rapports de voitures chinoises, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "h1": "Shit raporte historiku makinash nga Kina | kmcheck API",
+      "lead": "Shitni raporte historiku për Kina, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "h1": "Sprzedawaj historię i raporty samochodów chińskich | kmcheck",
+      "lead": "Sprzedawaj historię i raporty samochodów chińskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "h1": "Vinde istoricul și rapoartele mașinilor chineze | kmcheck",
+      "lead": "Vinde istoricul și rapoartele mașinilor chineze, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "h1": "Продавайте история и отчети за китайски автомобили | kmcheck",
+      "lead": "Продавайте история и отчети за китайски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "h1": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები | kmcheck",
+      "lead": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "h1": "بِع تاريخ وتقارير السيارات الصينية | kmcheck",
+      "lead": "بِع تاريخ وتقارير السيارات الصينية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "h1": "Продавайте історію та звіти китайських автомобілів | kmcheck",
+      "lead": "Продавайте історію та звіти китайських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "h1": "Продавайте историю и отчёты китайских автомобилей | kmcheck",
+      "lead": "Продавайте историю и отчёты китайских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "h1": "销售中国车辆历史与报告 | kmcheck",
+      "lead": "以您的品牌通过 kmcheck API 销售中国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  }
+}

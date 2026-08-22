@@ -161,6 +161,9 @@ importers:
       '@workspace/korean-registry':
         specifier: workspace:*
         version: link:../../lib/korean-registry
+      '@workspace/marketing-page-seo':
+        specifier: workspace:*
+        version: link:../../lib/marketing-page-seo
       '@workspace/odometer-resolve':
         specifier: workspace:*
         version: link:../../lib/odometer-resolve
@@ -394,6 +397,9 @@ importers:
       '@workspace/korean-registry':
         specifier: workspace:*
         version: link:../../lib/korean-registry
+      '@workspace/marketing-page-seo':
+        specifier: workspace:*
+        version: link:../../lib/marketing-page-seo
       '@workspace/odometer-resolve':
         specifier: workspace:*
         version: link:../../lib/odometer-resolve
@@ -531,6 +537,8 @@ importers:
         version: 0.31.10
 
   lib/korean-registry: {}
+
+  lib/marketing-page-seo: {}
 
   lib/odometer-resolve: {}
 

@@ -13,6 +13,10 @@ import {
 import { isSeoOgPageKey, seoOgImagePath } from "./seo-og-config.mjs";
 import { vinSeoTemplates } from "./vin-seo-templates.mjs";
 import { buildCountryPageJsonLd, buildHomeOrganizationJsonLd, isCountrySeoPageKey } from "./country-page-json-ld.mjs";
+import {
+  injectMarketingSsrIntoHtml,
+  resolveMarketingSsrContent,
+} from "./marketing-ssr-inject.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
@@ -320,6 +324,13 @@ export function injectSeoIntoHtml(html, pathname, basePath = "") {
 
   const seoBlock = buildSeoHeadBlock(resolved);
   out = out.replace(/<\/title>/i, `</title>${seoBlock}`);
+
+  if (!resolved.noIndex) {
+    const ssrContent = resolveMarketingSsrContent(resolved.pageKey, resolved.rest, resolved.lang);
+    if (ssrContent) {
+      out = injectMarketingSsrIntoHtml(out, ssrContent);
+    }
+  }
 
   return out;
 }

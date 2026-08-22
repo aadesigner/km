@@ -336,3 +336,52 @@ if (existsSync(sqI18nPath)) {
 if (sqWarn === 0) {
   console.log("OK — Albanian title/H1 SEO alignment");
 }
+
+/** Marketing SSR body snapshots — crawlers need H1 + lead in first HTML */
+const marketingSsrPath = join(root, "src/lib/marketing-ssr-data.json");
+if (!existsSync(marketingSsrPath)) {
+  console.error("MISSING marketing-ssr-data.json — run build-marketing-ssr-data.ts");
+  errors++;
+} else {
+  const marketingSsr = JSON.parse(readFileSync(marketingSsrPath, "utf8"));
+  const ssrPages = [
+    "home",
+    "pricing",
+    "free_decoder",
+    "how_it_works",
+    "faq",
+    "country_usa",
+    "country_korea",
+    "country_canada",
+    "country_china",
+    "country_uae",
+  ];
+  for (const key of ssrPages) {
+    const page = marketingSsr[key];
+    if (!page) {
+      console.error(`MISSING marketing SSR page: ${key}`);
+      errors++;
+      continue;
+    }
+    for (const lang of langs) {
+      const entry = page[lang];
+      if (!entry?.h1?.trim() || !entry?.lead?.trim()) {
+        console.error(`MISSING marketing SSR ${key}.${lang}`);
+        errors++;
+      }
+    }
+  }
+  const enHomeH1 = marketingSsr.home?.en?.h1 ?? "";
+  const sqHomeH1 = marketingSsr.home?.sq?.h1 ?? "";
+  if (!enHomeH1.toLowerCase().includes("mileage") && !enHomeH1.toLowerCase().includes("accident")) {
+    console.error("marketing SSR en.home h1 missing core keywords");
+    errors++;
+  }
+  if (!sqHomeH1.toLowerCase().includes("kontroll")) {
+    console.error("marketing SSR sq.home h1 missing kontroll");
+    errors++;
+  }
+  if (errors === 0) {
+    console.log(`OK — marketing SSR body for ${ssrPages.length} pages × ${langs.length} languages`);
+  }
+}

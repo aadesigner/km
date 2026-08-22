@@ -7,6 +7,7 @@ import { vinHasReportData } from "./vinService.js";
 import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
+import { injectMarketingPageSsrFromPath } from "./marketingSeoHtmlInject.js";
 import { isKnownSpaPath } from "./spaKnownPaths.js";
 import { isCrawlerUserAgent } from "./crawlerDetection.js";
 
@@ -175,6 +176,7 @@ async function sendSpaFallback(publicDir: string, reqPath: string, req: Request,
   const origin = requestOrigin(req);
   let html = loadIndexHtml(publicDir);
   html = await injectVinCatalogSeo(html, req.path, origin);
+  html = injectMarketingPageSsrFromPath(html, req.path);
   res.type("html").send(html);
   return true;
 }

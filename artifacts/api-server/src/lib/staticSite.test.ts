@@ -38,6 +38,10 @@ describe("staticSite asset fallback", () => {
     expect(src).toContain("isCrawlerUserAgent");
     expect(src).toMatch(/req\.path === \"\/\"[\s\S]*isCrawlerUserAgent[\s\S]*redirect\(301,\s*`\/en/);
   });
+
+  it("injects marketing SSR body in SPA fallback for indexable pages", () => {
+    expect(src).toContain("injectMarketingPageSsrFromPath");
+  });
 });
 
 describe("trailing-slash sitemap parity (express.static + dir index)", () => {

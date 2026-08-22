@@ -109,7 +109,7 @@ function urlEntryForVin(vin, lastmod) {
     <loc>${ORIGIN}/en${path}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.5</priority>
 ${alternates}
 ${xDefault}
   </url>`;
