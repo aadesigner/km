@@ -12,11 +12,41 @@
       "sections": [
         {
           "title": "What We Check",
-          "body": "Four deep checks in every report — real stats, real cases, live data."
+          "body": "The same document layout you receive after checkout — built from live data for your VIN."
         },
         {
           "title": "How it works",
           "body": "Three simple steps to check mileage, accidents, theft, and full vehicle history before you buy."
+        }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
         }
       ]
     },
@@ -32,11 +62,41 @@
       "sections": [
         {
           "title": "Was wir prüfen",
-          "body": "Vier tiefe Prüfungen in jedem Bericht — echte Statistiken, echte Fälle, Live-Daten."
+          "body": "Dasselbe Dokumentlayout wie nach dem Kauf — mit Live-Daten zu Ihrer VIN."
         },
         {
           "title": "So funktioniert's",
           "body": "In 3 Schritten Kilometerstand, Unfälle und Historie prüfen — vor dem Kauf."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -52,11 +112,41 @@
       "sections": [
         {
           "title": "Qué comprobamos",
-          "body": "Cuatro comprobaciones profundas en cada informe — estadísticas reales, casos reales, datos en vivo."
+          "body": "El mismo diseño del informe entregado — con datos en vivo para su VIN."
         },
         {
           "title": "Cómo funciona",
           "body": "Tres pasos sencillos para comprobar kilometraje, accidentes, robos e historial del vehículo antes de comprar."
+        }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
         }
       ]
     },
@@ -72,11 +162,41 @@
       "sections": [
         {
           "title": "Ce que nous vérifions",
-          "body": "Quatre contrôles approfondis dans chaque rapport — statistiques réelles, cas réels, données en direct."
+          "body": "La même mise en page que votre rapport livré — avec des données en direct pour votre VIN."
         },
         {
           "title": "Comment ça marche",
           "body": "Trois étapes simples pour vérifier le kilométrage, les accidents, les vols et l'historique du véhicule avant d'acheter."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -92,11 +212,41 @@
       "sections": [
         {
           "title": "Çfarë kontrollojmë",
-          "body": "Katër kontrolle të thella në çdo raport — statistika reale, raste reale, të dhëna live."
+          "body": "I njëjti format dokumenti që merrni pas pagesës — me të dhëna reale për VIN-in tuaj."
         },
         {
           "title": "Si funksionon",
           "body": "Tre hapa të thjeshtë për të kontrolluar kilometrat, aksidentet, vjedhjet dhe historinë e makinës para blerjes."
+        }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
         }
       ]
     },
@@ -112,11 +262,41 @@
       "sections": [
         {
           "title": "Co sprawdzamy",
-          "body": "Cztery dogłębne kontrole w każdym raporcie — prawdziwe statystyki, prawdziwe przypadki, dane na żywo."
+          "body": "Ten sam układ dokumentu co po zakupie — z danymi na żywo dla Twojego VIN."
         },
         {
           "title": "Jak to działa",
           "body": "Trzy proste kroki do sprawdzenia przebiegu, wypadków, kradzieży i historii pojazdu przed zakupem."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -132,11 +312,41 @@
       "sections": [
         {
           "title": "Ce verificăm",
-          "body": "Patru verificări aprofundate în fiecare raport — statistici reale, cazuri reale, date live."
+          "body": "Aceeași structură ca raportul livrat — cu date live pentru VIN-ul tău."
         },
         {
           "title": "Cum funcționează",
           "body": "Trei pași simpli pentru verificarea kilometrajului, accidentelor, furturilor și istoricului vehiculului înainte de cumpărare."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
         }
       ]
     },
@@ -152,11 +362,41 @@
       "sections": [
         {
           "title": "Какво проверяваме",
-          "body": "Четири дълбоки проверки във всеки отчет — реални статистики, реални случаи, данни на живо."
+          "body": "Същото оформление като доставения отчет — с реални данни за вашия VIN."
         },
         {
           "title": "Как работи",
           "body": "Три прости стъпки за проверка на пробег, катастрофи, кражби и история на автомобила преди покупка."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -172,11 +412,41 @@
       "sections": [
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
-          "body": "ოთხი სიღრმისეული შემოწმება ყოველ ანგარიშში — რეალური სტატისტიკა, რეალური შემთხვევები, ცოცხალი მონაცემები."
+          "body": "იგივე დოკუმენტის განლაგება, რაც გადახდის შემდეგ — ცოცხალი მონაცემებით თქვენს VIN-ზე."
         },
         {
           "title": "როგორ მუშაობს",
           "body": "სამი მარტივი ნაბიჯი გარბენის, ავარიების, ქურდობისა და მანქანის სრული ისტორიის შესამოწმებლად, სანამ ყიდულობთ."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
         }
       ]
     },
@@ -192,11 +462,41 @@
       "sections": [
         {
           "title": "ما الذي نفحصه",
-          "body": "أربعة فحوصات عميقة في كل تقرير — إحصائيات حقيقية، حالات حقيقية، بيانات مباشرة."
+          "body": "نفس تخطيط المستند الذي تستلمه بعد الدفع — ببيانات مباشرة لرقم VIN."
         },
         {
           "title": "كيف يعمل",
           "body": "ثلاث خطوات بسيطة للتحقق من الكيلومترات والحوادث والسرقة وتاريخ السيارة قبل الشراء."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -212,11 +512,41 @@
       "sections": [
         {
           "title": "Що ми перевіряємо",
-          "body": "Чотири глибокі перевірки в кожному звіті — реальна статистика, реальні випадки, дані наживо."
+          "body": "Той самий макет документа, що після оплати — з актуальними даними для вашого VIN."
         },
         {
           "title": "Як це працює",
           "body": "Три прості кроки для перевірки пробігу, аварій, викрадень та історії авто перед покупкою."
+        }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
         }
       ]
     },
@@ -232,11 +562,41 @@
       "sections": [
         {
           "title": "Что мы проверяем",
-          "body": "Четыре глубокие проверки в каждом отчёте — реальная статистика, реальные случаи, живые данные."
+          "body": "Тот же формат документа, что после оплаты — с актуальными данными по вашему VIN."
         },
         {
           "title": "Как это работает",
           "body": "Три простых шага для проверки пробега, аварий, угонов и истории автомобиля перед покупкой."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
         }
       ]
     },
@@ -252,11 +612,41 @@
       "sections": [
         {
           "title": "我们检查什么",
-          "body": "每份报告四项深度检查——真实数据、真实案例、实时来源。"
+          "body": "与购买后交付的报告相同版式 — 基于您 VIN 的实时数据。"
         },
         {
           "title": "如何运作",
           "body": "三个简单步骤，购车前查清里程、事故、盗抢与完整车辆历史。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }
@@ -279,6 +669,36 @@
           "title": "Buy with confidence",
           "body": "If we can't find data for your VIN, you get a full refund. No questions asked."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -297,6 +717,36 @@
         {
           "title": "Mit Vertrauen kaufen",
           "body": "Wenn wir keine Daten zu Ihrer VIN finden, erhalten Sie eine volle Rückerstattung. Ohne Fragen."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -317,6 +767,36 @@
           "title": "Compre con confianza",
           "body": "Si no encontramos datos para su VIN, recibe un reembolso completo. Sin preguntas."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -335,6 +815,36 @@
         {
           "title": "Achetez en confiance",
           "body": "Si nous ne trouvons pas de données pour votre VIN, remboursement intégral. Sans questions."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -355,6 +865,36 @@
           "title": "Bli me besim",
           "body": "Nëse nuk gjejmë të dhëna për VIN-in tuaj, merrni rimbursim të plotë. Pa pyetje."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -373,6 +913,36 @@
         {
           "title": "Kupuj z pewnością",
           "body": "Jeśli nie znajdziemy danych dla Twojego VIN, otrzymujesz pełny zwrot. Bez pytań."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -393,6 +963,36 @@
           "title": "Cumpărați cu încredere",
           "body": "Dacă nu găsim date pentru VIN-ul dvs., primiți rambursare completă. Fără întrebări."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -411,6 +1011,36 @@
         {
           "title": "Купувайте с увереност",
           "body": "Ако не намерим данни за вашия VIN, получавате пълно възстановяване. Без въпроси."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -431,6 +1061,36 @@
           "title": "იყიდეთ თავდაჯერებულად",
           "body": "თუ ჩვენ ვერ ვიპოვით მონაცემებს თქვენი VIN-ისთვის, თანხის სრულ დაბრუნებას მიიღებთ. კითხვები არ დასმულა."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -449,6 +1109,36 @@
         {
           "title": "اشترِ بثقة",
           "body": "إذا لم نجد بيانات لرقم VIN الخاص بك، تحصل على استرداد كامل. بدون أسئلة."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -469,6 +1159,36 @@
           "title": "Купуйте впевнено",
           "body": "Якщо ми не знайдемо дані для вашого VIN, повне повернення коштів. Без питань."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -487,6 +1207,36 @@
         {
           "title": "Покупайте уверенно",
           "body": "Если мы не найдём данные по вашему VIN, полный возврат. Без вопросов."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
         }
       ]
     },
@@ -507,6 +1257,36 @@
           "title": "放心购买",
           "body": "若找不到您 VIN 的数据，全额退款。无需解释。"
         }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
+        }
       ]
     }
   },
@@ -518,6 +1298,36 @@
         "Enter the VIN",
         "Secure Payment",
         "Get Your Check"
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -527,6 +1337,36 @@
         "VIN eingeben",
         "Sichere Zahlung",
         "Prüfung erhalten"
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
+        }
       ]
     },
     "es": {
@@ -536,6 +1376,36 @@
         "Introduzca el VIN",
         "Pago seguro",
         "Reciba su informe"
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -545,6 +1415,36 @@
         "Saisissez le VIN",
         "Paiement sécurisé",
         "Recevez votre contrôle"
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
+        }
       ]
     },
     "sq": {
@@ -554,6 +1454,36 @@
         "Shkruani VIN-in",
         "Pagesa e sigurt",
         "Merrni raportin tuaj"
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -563,6 +1493,36 @@
         "Wpisz numer VIN",
         "Bezpieczna płatność",
         "Odbierz sprawdzenie"
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
+        }
       ]
     },
     "ro": {
@@ -572,6 +1532,36 @@
         "Introduceți VIN-ul",
         "Plată securizată",
         "Primiți verificarea"
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -581,6 +1571,36 @@
         "Въведете VIN",
         "Сигурно плащане",
         "Получете проверката"
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
+        }
       ]
     },
     "ka": {
@@ -590,6 +1610,36 @@
         "შეიყვანეთ VIN",
         "უსაფრთხო გადახდა",
         "მიიღეთ თქვენი ჩეკი"
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -599,6 +1649,36 @@
         "أدخل رقم الشاسيه",
         "الدفع الآمن",
         "احصل على فحصك"
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
+        }
       ]
     },
     "uk": {
@@ -608,6 +1688,36 @@
         "Введіть VIN",
         "Безпечна оплата",
         "Отримайте перевірку"
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -617,6 +1727,36 @@
         "Введите VIN",
         "Безопасная оплата",
         "Получите проверку"
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -626,6 +1766,36 @@
         "输入 VIN",
         "安全支付",
         "获取查询结果"
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
+        }
       ]
     }
   },
@@ -647,6 +1817,36 @@
           "title": "How long does a report take?",
           "body": "Most reports are delivered within seconds. In rare cases, while our system is still checking available databases, delivery may take longer — we'll email you when your report is ready."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -665,6 +1865,36 @@
         {
           "title": "Wie lange dauert ein Bericht?",
           "body": "Die meisten Berichte werden innerhalb von Sekunden geliefert. In seltenen Fällen, wenn unser System noch verfügbare Datenbanken prüft, kann die Lieferung länger dauern — wir senden Ihnen eine E-Mail, sobald Ihr Bericht fertig ist."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -685,6 +1915,36 @@
           "title": "¿Cuánto tarda un informe?",
           "body": "La mayoría de los informes llegan en segundos. En casos puntuales, mientras seguimos buscando en las bases de datos disponibles, puede tardar un poco más; le avisamos por correo cuando esté listo."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -703,6 +1963,36 @@
         {
           "title": "Combien de temps faut-il pour obtenir un rapport ?",
           "body": "La plupart des rapports sont livrés en quelques secondes. Dans de rares cas, tant que notre système consulte encore les bases de données disponibles, la livraison peut prendre plus de temps — nous vous enverrons un e-mail lorsque votre rapport sera prêt."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -723,6 +2013,36 @@
           "title": "Sa kohë zgjat një raport?",
           "body": "Shumica e raporteve dorëzohen brenda sekondave. Në raste të rralla, kur sistemi ynë ende po kontrollon bazat e të dhënave të disponueshme, dorëzimi mund të zgjasë më shumë — do t'ju dërgojmë email kur raporti të jetë gati."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -741,6 +2061,36 @@
         {
           "title": "Ile trwa przygotowanie raportu?",
           "body": "Większość raportów jest dostarczana w ciągu kilku sekund. W rzadkich przypadkach, gdy nasz system wciąż sprawdza dostępne bazy danych, dostawa może potrwać dłużej — wyślemy Ci e-mail, gdy raport będzie gotowy."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -761,6 +2111,36 @@
           "title": "Cât durează un raport?",
           "body": "Majoritatea rapoartelor sunt livrate în câteva secunde. În cazuri rare, cât timp sistemul nostru verifică încă bazele de date disponibile, livrarea poate dura mai mult — vă vom trimite un e-mail când raportul este gata."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -779,6 +2159,36 @@
         {
           "title": "Колко време отнема отчетът?",
           "body": "Повечето отчети се доставят за секунди. В редки случаи, докато системата ни все още проверява наличните бази данни, доставката може да отнеме повече време — ще ви изпратим имейл, когато отчетът е готов."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -799,6 +2209,36 @@
           "title": "რამდენი დრო სჭირდება ანგარიშს?",
           "body": "ანგარიშების უმეტესობა მიწოდებულია წამებში. იშვიათ შემთხვევებში, სანამ ჩვენი სისტემა ჯერ კიდევ ამოწმებს ხელმისაწვდომ მონაცემთა ბაზებს, მიწოდებას შეიძლება მეტი დრო დასჭირდეს — ელფოსტით გამოგიგზავნით, როდესაც თქვენი ანგარიში მზად იქნება."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -817,6 +2257,36 @@
         {
           "title": "كم يستغرق التقرير؟",
           "body": "يُسلَّم معظم التقارير في غضون ثوانٍ. في حالات نادرة، بينما لا يزال نظامنا يفحص قواعد البيانات المتاحة، قد يستغرق التسليم وقتاً أطول — سنرسل إليك بريداً إلكترونياً عند جاهزية التقرير."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -837,6 +2307,36 @@
           "title": "Як довго готується звіт?",
           "body": "Більшість звітів доставляються протягом секунд. У рідкісних випадках, поки наша система ще перевіряє доступні бази даних, доставка може зайняти більше часу — ми надішлемо email, коли звіт буде готовий."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -855,6 +2355,36 @@
         {
           "title": "Сколько времени занимает отчёт?",
           "body": "Большинство отчётов доставляется в течение секунд. В редких случаях, пока наша система ещё проверяет доступные базы данных, доставка может занять больше времени — мы отправим email, когда отчёт будет готов."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
         }
       ]
     },
@@ -875,6 +2405,36 @@
           "title": "报告需要多长时间？",
           "body": "大多数报告在数秒内交付。少数情况下，若系统仍在查询可用数据库，交付可能较慢 — 报告就绪后我们会通过邮件通知您。"
         }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
+        }
       ]
     }
   },
@@ -884,6 +2444,36 @@
       "lead": "Decode any VIN instantly — get year, make, model, engine, and more. No account required.",
       "bullets": [
         "100% Free — No Registration"
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -891,6 +2481,36 @@
       "lead": "Jede VIN sofort dekodieren — Baujahr, Marke, Modell, Motor und mehr. Kein Konto erforderlich.",
       "bullets": [
         "100 % kostenlos — keine Registrierung"
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
+        }
       ]
     },
     "es": {
@@ -898,6 +2518,36 @@
       "lead": "Decodifique cualquier VIN al instante — obtenga año, marca, modelo, motor y más. No requiere cuenta.",
       "bullets": [
         "100 % gratuito — Sin registro"
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -905,6 +2555,36 @@
       "lead": "Décodez n'importe quel VIN instantanément — année, marque, modèle, moteur et plus. Aucun compte requis.",
       "bullets": [
         "100 % gratuit — Sans inscription"
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
+        }
       ]
     },
     "sq": {
@@ -912,6 +2592,36 @@
       "lead": "Dekodoni shasinë (VIN) falas — viti, marka, modeli. Për kontroll kilometrash dhe aksidentesh, zhbllokoni raportin e plotë.",
       "bullets": [
         "100% Falas — Pa Regjistrim"
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -919,6 +2629,36 @@
       "lead": "Zdekoduj dowolny VIN natychmiast — uzyskaj rok, markę, model, silnik i więcej. Konto nie jest wymagane.",
       "bullets": [
         "100% za darmo — bez rejestracji"
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
+        }
       ]
     },
     "ro": {
@@ -926,6 +2666,36 @@
       "lead": "Decodați orice VIN instantaneu — obțineți anul, marca, modelul, motorul și multe altele. Nu este necesar cont.",
       "bullets": [
         "100% gratuit — Fără înregistrare"
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -933,6 +2703,36 @@
       "lead": "Декодирайте всеки VIN моментално — получете година, марка, модел, двигател и още. Не е нужен акаунт.",
       "bullets": [
         "100% безплатно — без регистрация"
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
+        }
       ]
     },
     "ka": {
@@ -940,6 +2740,36 @@
       "lead": "მყისიერად გაშიფრეთ ნებისმიერი VIN - მიიღეთ წელი, მარკა, მოდელი, ძრავა და სხვა. ანგარიში არ არის საჭირო.",
       "bullets": [
         "100% უფასო - რეგისტრაცია არ არის"
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -947,6 +2777,36 @@
       "lead": "فك تشفير أي رقم VIN فوراً — احصل على السنة والماركة والموديل والمحرك والمزيد. لا يلزم حساب.",
       "bullets": [
         "مجاني 100% — بدون تسجيل"
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
+        }
       ]
     },
     "uk": {
@@ -954,6 +2814,36 @@
       "lead": "Декодуйте будь-який VIN миттєво — рік, марку, модель, двигун і більше. Без реєстрації.",
       "bullets": [
         "100% безкоштовно — без реєстрації"
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -961,6 +2851,36 @@
       "lead": "Декодируйте любой VIN мгновенно — год, марка, модель, двигатель и многое другое. Без регистрации.",
       "bullets": [
         "100% бесплатно — без регистрации"
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -968,6 +2888,36 @@
       "lead": "即时解码任意 VIN — 获取年份、品牌、型号、发动机等信息。无需账户。",
       "bullets": [
         "100% 免费 — 无需注册"
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
+        }
       ]
     }
   },
@@ -985,6 +2935,36 @@
           "title": "The most common red flags we find on US-market vehicles — before you commit to a purchase.",
           "body": "Every report pulls from auction houses, insurance filings, and provider databases across all 50 states."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -999,6 +2979,36 @@
         {
           "title": "Die häufigsten Warnsignale bei US-Fahrzeugen — bevor Sie den Kauf abschließen.",
           "body": "Jeder Bericht zieht Daten aus Auktionshäusern, Versicherungsmeldungen und Anbieterdatenbanken in allen 50 Bundesstaaten."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -1015,6 +3025,36 @@
           "title": "Las señales de alerta más frecuentes que encontramos en vehículos del mercado estadounidense — antes de comprometerse con una compra.",
           "body": "Cada informe extrae datos de casas de subastas, registros de seguros y bases de datos de proveedores en los 50 estados."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -1029,6 +3069,36 @@
         {
           "title": "Les signaux d'alerte les plus fréquents que nous trouvons sur les véhicules du marché américain — avant de vous engager dans un achat.",
           "body": "Chaque rapport puise dans les maisons de vente, les dossiers d'assurance et les bases de données des fournisseurs dans les 50 États."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -1045,6 +3115,36 @@
           "title": "Sinjalet më të zakonshme të rrezikut që gjejmë në makinat e tregut amerikan — para se të vendosni për blerje.",
           "body": "Çdo raport mbledh të dhëna nga ankande, deklarata sigurimi dhe regjistrat qeveritarë në të 50 shtetet."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -1059,6 +3159,36 @@
         {
           "title": "Najczęstsze czerwone flagi, które znajdujemy w pojazdach z rynku amerykańskiego — zanim podejmiesz decyzję o zakupie.",
           "body": "Każdy raport pobiera dane z domów aukcyjnych, zgłoszeń ubezpieczeniowych i baz dostawców we wszystkich 50 stanach."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -1075,6 +3205,36 @@
           "title": "Cele mai frecvente semnale de alarmă pe vehiculele de pe piața americană — înainte să vă angajați la o achiziție.",
           "body": "Fiecare raport extrage date din case de licitații, dosare de asigurări și baze de date ale furnizorilor din toate cele 50 de state."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -1089,6 +3249,36 @@
         {
           "title": "Най-честите червени флагове, които откриваме при автомобили от американския пазар — преди да се ангажирате с покупка.",
           "body": "Всеки отчет извлича данни от търгови къщи, застрахователни документи и бази данни на доставчици във всички 50 щата."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -1105,6 +3295,36 @@
           "title": "ყველაზე გავრცელებულ წითელ დროშებს, რომლებსაც ვპოულობთ აშშ-ს ბაზრის მანქანებზე - სანამ ყიდულობთ ვალდებულებას.",
           "body": "ყველა ანგარიში ამოღებულია აუქციონის სახლებიდან, სადაზღვევო ფაილებიდან და პროვაიდერების მონაცემთა ბაზებიდან 50-ვე შტატში."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -1119,6 +3339,36 @@
         {
           "title": "أكثر الإشارات الحمراء شيوعاً في السيارات الأمريكية — قبل أن تلتزم بالشراء.",
           "body": "كل تقرير يجمع بيانات من دور المزادات ووثائق التأمين والسجلات الحكومية في جميع الولايات."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -1135,6 +3385,36 @@
           "title": "Найпоширеніші червоні прапорці в американських вживаних авто — перш ніж ви приймете рішення.",
           "body": "Кожен звіт об'єднує дані аукціонів, страхових документів і державних реєстрів по всіх штатах."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -1150,6 +3430,36 @@
           "title": "Самые частые красные флаги в американских подержанных авто — до того, как вы примете решение.",
           "body": "Каждый отчёт объединяет данные аукционов, страховых документов и государственных реестров по всем штатам."
         }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -1164,6 +3474,36 @@
         {
           "title": "美国市场车辆最常见的风险信号 — 付款前先查清。",
           "body": "每份报告从全美拍卖行、保险备案与供应商数据库拉取数据。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }
@@ -1182,6 +3522,36 @@
           "title": "Real risks in the Korean used-car market — especially for imports and private sales.",
           "body": "Regional sources including Encar, insurance filings, and Korean marketplace listings."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -1196,6 +3566,36 @@
         {
           "title": "Echte Risiken auf dem koreanischen Gebrauchtwagenmarkt — besonders bei Importen und Privatverkäufen.",
           "body": "Regionale Quellen wie Encar, Versicherungsmeldungen und koreanische Marktplatz-Inserate."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -1212,6 +3612,36 @@
           "title": "Riesgos reales en el mercado coreano de coches usados — especialmente en importaciones y ventas privadas.",
           "body": "Fuentes regionales incluyendo Encar, registros de seguros y anuncios en marketplaces coreanos."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -1226,6 +3656,36 @@
         {
           "title": "Les risques réels sur le marché coréen de l'occasion — surtout pour les importations et les ventes entre particuliers.",
           "body": "Sources régionales incluant Encar, dossiers d'assurance et annonces sur les marketplaces coréennes."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -1242,6 +3702,36 @@
           "title": "Rreziqe reale në tregun korean të makinave të përdorura — veçanërisht për importe dhe shitje private.",
           "body": "Burime rajonale përfshirë Encar, deklarata sigurimi dhe listime të tregut korean."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -1256,6 +3746,36 @@
         {
           "title": "Rzeczywiste ryzyka na koreańskim rynku samochodów używanych — szczególnie przy imporcie i sprzedaży prywatnej.",
           "body": "Źródła regionalne, w tym Encar, zgłoszenia ubezpieczeniowe i koreańskie ogłoszenia na marketplace'ach."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -1272,6 +3792,36 @@
           "title": "Riscuri reale pe piața second-hand coreeană — în special pentru importuri și vânzări private.",
           "body": "Surse regionale inclusiv Encar, dosare de asigurări și anunțuri pe piețele coreene."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -1286,6 +3836,36 @@
         {
           "title": "Реални рискове на корейския пазар на употребявани автомобили — особено при внос и частни продажби.",
           "body": "Регионални източници, включително Encar, застрахователни документи и корейски обяви."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -1302,6 +3882,36 @@
           "title": "რეალური რისკები კორეის მეორადი მანქანების ბაზარზე - განსაკუთრებით იმპორტისა და კერძო გაყიდვებისთვის.",
           "body": "რეგიონალური წყაროები, მათ შორის Encar, სადაზღვევო ფაილები და კორეული ბაზრის ჩამონათვალი."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -1316,6 +3926,36 @@
         {
           "title": "مخاطر حقيقية في سوق السيارات المستعملة الكورية — خاصة للواردات والبيع الخاص.",
           "body": "مصادر إقليمية تشمل Encar ووثائق التأمين وإعلانات السوق الكورية."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -1332,6 +3972,36 @@
           "title": "Реальні ризики на корейському ринку вживаних авто — особливо при імпорті та приватних продажах.",
           "body": "Регіональні джерела: Encar, страхові документи та оголошення корейських маркетплейсів."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -1347,6 +4017,36 @@
           "title": "Реальные риски на корейском рынке подержанных авто — особенно при импорте и частных продажах.",
           "body": "Региональные источники: Encar, страховые документы и объявления корейских маркетплейсов."
         }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -1361,6 +4061,36 @@
         {
           "title": "韩国二手车市场的真实风险 — 尤其进口车与私人交易。",
           "body": "区域来源包括 Encar、保险备案与韩国交易平台挂牌信息。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }
@@ -1379,6 +4109,36 @@
           "title": "The most common red flags on Canadian used vehicles — before you hand over a deposit.",
           "body": "Every report pulls auction data, insurance indicators and registration signals across Canadian provinces and territories."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -1393,6 +4153,36 @@
         {
           "title": "Die häufigsten Warnsignale bei kanadischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Auktionsdaten, Versicherungsindikatoren und Zulassungssignale aus kanadischen Provinzen und Territorien."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -1409,6 +4199,36 @@
           "title": "Las señales de alerta más frecuentes en vehículos usados canadienses — antes de entregar un depósito.",
           "body": "Cada informe extrae datos de subastas, indicadores de seguros y señales de matriculación en provincias y territorios canadienses."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -1423,6 +4243,36 @@
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion canadiens — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les données d'enchères, les indicateurs d'assurance et les signaux d'immatriculation dans les provinces et territoires canadiens."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -1439,6 +4289,36 @@
           "title": "Sinjalet më të zakonshme të rrezikut në tregun kanadez të makinave të përdorura — para se të jepni kapar.",
           "body": "Çdo raport mbledh të dhëna ankandesh, tregues sigurimi dhe sinjale regjistrimi në të gjitha provincat dhe territoret kanadeze."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -1453,6 +4333,36 @@
         {
           "title": "Najczęstsze czerwone flagi w kanadyjskich samochodach używanych — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera dane aukcyjne, wskaźniki ubezpieczeniowe i sygnały rejestracyjne z kanadyjskich prowincji i terytoriów."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -1469,6 +4379,36 @@
           "title": "Cele mai frecvente semnale de alarmă pe vehiculele second-hand canadiene — înainte să dați un avans.",
           "body": "Fiecare raport extrage date de licitații, indicatori de asigurări și semnale de înmatriculare din provinciile și teritoriile canadiene."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -1483,6 +4423,36 @@
         {
           "title": "Най-честите червени флагове при канадски употребявани автомобили — преди да платите капаро.",
           "body": "Всеки отчет извлича данни от търгове, застрахователни индикатори и регистрационни сигнали в канадските провинции и територии."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -1499,6 +4469,36 @@
           "title": "ყველაზე გავრცელებული წითელი დროშები კანადის მეორად მანქანებზე - სანამ დეპოზიტს გადასცემთ.",
           "body": "ყოველი ანგარიში იზიდავს აუქციონის მონაცემებს, დაზღვევის ინდიკატორებს და რეგისტრაციის სიგნალებს კანადის პროვინციებსა და ტერიტორიებზე."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -1513,6 +4513,36 @@
         {
           "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة الكندي — قبل دفع العربون.",
           "body": "كل تقرير يجمع بيانات المزادات ومؤشرات التأمين وإشارات التسجيل عبر المقاطعات والأقاليم الكندية."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -1529,6 +4559,36 @@
           "title": "Найпоширеніші червоні прапорці на канадському ринку вживаних авто — до того, як ви внесете завдаток.",
           "body": "Кожен звіт об'єднує аукціонні дані, страхові індикатори та реєстраційні сигнали по провінціях і територіях Канади."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -1544,6 +4604,36 @@
           "title": "Самые частые красные флаги на канадском рынке подержанных авто — до того, как вы внесёте задаток.",
           "body": "Каждый отчёт объединяет аукционные данные, страховые индикаторы и регистрационные сигналы по провинциям и территориям Канады."
         }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -1558,6 +4648,36 @@
         {
           "title": "加拿大二手车最常见的风险信号 — 付定金前先查清。",
           "body": "每份报告汇总加拿大各省与地区的拍卖数据、保险指标与登记信号。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }
@@ -1576,6 +4696,36 @@
           "title": "The most common red flags on Chinese used vehicles — before you hand over a deposit.",
           "body": "Every report pulls registration signals, insurance indicators and marketplace data across China's major provinces and export channels."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -1590,6 +4740,36 @@
         {
           "title": "Die häufigsten Warnsignale bei chinesischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Marktplatzdaten aus Chinas wichtigsten Provinzen und Exportkanälen."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -1606,6 +4786,36 @@
           "title": "Las señales de alerta más frecuentes en vehículos usados chinos — antes de pagar un depósito.",
           "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de marketplaces en las principales provincias y canales de exportación de China."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -1620,6 +4830,36 @@
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion chinois — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les signaux d'immatriculation, les indicateurs d'assurance et les données marketplaces des principales provinces et canaux d'export chinois."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -1636,6 +4876,36 @@
           "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura kineze — para se të paguani kapar.",
           "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna tregu në provincat kryesore dhe kanalet e eksportit të Kinës."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -1650,6 +4920,36 @@
         {
           "title": "Najczęstsze czerwone flagi w chińskich samochodach używanych — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane z marketplace'ów z głównych prowincji i kanałów eksportowych Chin."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -1666,6 +4966,36 @@
           "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand chinezești — înainte să plătiți avansul.",
           "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de piață din provinciile majore și canalele de export ale Chinei."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -1680,6 +5010,36 @@
         {
           "title": "Най-честите червени флагове при китайски употребявани автомобили — преди да платите капаро.",
           "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и пазарни данни от основните провинции и експортни канали на Китай."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -1696,6 +5056,36 @@
           "title": "ყველაზე გავრცელებული წითელი დროშები ჩინურ მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
           "body": "ყოველი ანგარიში იზიდავს რეგისტრაციის სიგნალებს, დაზღვევის ინდიკატორებს და ბაზრის მონაცემებს ჩინეთის მთავარ პროვინციებსა და საექსპორტო არხებზე."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -1710,6 +5100,36 @@
         {
           "title": "أكثر علامات الخطر شيوعاً في السيارات المستعملة الصينية — قبل دفع العربون.",
           "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الأسواق عبر المقاطعات الرئيسية وقنوات التصدير في الصين."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -1726,6 +5146,36 @@
           "title": "Найпоширеніші червоні прапорці на китайському ринку вживаних авто — до внесення завдатку.",
           "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані маркетплейсів з основних провінцій і експортних каналів Китаю."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -1741,6 +5191,36 @@
           "title": "Самые частые красные флаги на китайском рынке подержанных авто — до внесения задатка.",
           "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные маркетплейсов из основных провинций и экспортных каналов Китая."
         }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -1755,6 +5235,36 @@
         {
           "title": "中国二手车最常见的风险信号——付定金之前先查清。",
           "body": "每份报告汇总中国主要省份和出口渠道的登记信号、保险指标与平台数据。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }
@@ -1773,6 +5283,36 @@
           "title": "The most common red flags on UAE used vehicles — before you hand over a deposit.",
           "body": "Every report pulls registration signals, insurance indicators and import data across Dubai, Abu Dhabi and the wider GCC."
         }
+      ],
+      "links": [
+        {
+          "href": "/en",
+          "label": "Check VIN"
+        },
+        {
+          "href": "/en/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/en/how-it-works",
+          "label": "How it works"
+        },
+        {
+          "href": "/en/free-vin-decoder",
+          "label": "Free VIN Decoder"
+        },
+        {
+          "href": "/en/faq",
+          "label": "Frequently Asked Questions"
+        },
+        {
+          "href": "/en/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/en/cars/korea",
+          "label": "South Korea"
+        }
       ]
     },
     "de": {
@@ -1787,6 +5327,36 @@
         {
           "title": "Die häufigsten Warnsignale bei Gebrauchtwagen in den VAE — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Importdaten aus Dubai, Abu Dhabi und der gesamten GCC."
+        }
+      ],
+      "links": [
+        {
+          "href": "/de",
+          "label": "VIN prüfen"
+        },
+        {
+          "href": "/de/pricing",
+          "label": "Preise"
+        },
+        {
+          "href": "/de/how-it-works",
+          "label": "So funktioniert's"
+        },
+        {
+          "href": "/de/free-vin-decoder",
+          "label": "Kostenloser VIN-Decoder"
+        },
+        {
+          "href": "/de/faq",
+          "label": "Häufig gestellte Fragen"
+        },
+        {
+          "href": "/de/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/de/cars/korea",
+          "label": "Südkorea"
         }
       ]
     },
@@ -1803,6 +5373,36 @@
           "title": "Las señales de alerta más frecuentes en vehículos usados de los EAU — antes de pagar un depósito.",
           "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de importación en Dubái, Abu Dabi y el CCG."
         }
+      ],
+      "links": [
+        {
+          "href": "/es",
+          "label": "Comprobar VIN"
+        },
+        {
+          "href": "/es/pricing",
+          "label": "Precios"
+        },
+        {
+          "href": "/es/how-it-works",
+          "label": "Cómo funciona"
+        },
+        {
+          "href": "/es/free-vin-decoder",
+          "label": "Decodificador VIN gratuito"
+        },
+        {
+          "href": "/es/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/es/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/es/cars/korea",
+          "label": "Corea del Sur"
+        }
       ]
     },
     "fr": {
@@ -1817,6 +5417,36 @@
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion aux EAU — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les signaux d'immatriculation, indicateurs d'assurance et données d'import à Dubaï, Abou Dabi et dans le CCG."
+        }
+      ],
+      "links": [
+        {
+          "href": "/fr",
+          "label": "Vérifier le VIN"
+        },
+        {
+          "href": "/fr/pricing",
+          "label": "Tarifs"
+        },
+        {
+          "href": "/fr/how-it-works",
+          "label": "Comment ça marche"
+        },
+        {
+          "href": "/fr/free-vin-decoder",
+          "label": "Décodeur VIN gratuit"
+        },
+        {
+          "href": "/fr/faq",
+          "label": "Questions fréquentes"
+        },
+        {
+          "href": "/fr/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/fr/cars/korea",
+          "label": "Corée du Sud"
         }
       ]
     },
@@ -1833,6 +5463,36 @@
           "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura në Emiratet — para se të paguani kapar.",
           "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna importi në Dubai, Abu Dhabi dhe GCC."
         }
+      ],
+      "links": [
+        {
+          "href": "/sq",
+          "label": "Kontrollo SHASINË"
+        },
+        {
+          "href": "/sq/pricing",
+          "label": "Çmimet"
+        },
+        {
+          "href": "/sq/how-it-works",
+          "label": "Si funksionon"
+        },
+        {
+          "href": "/sq/free-vin-decoder",
+          "label": "Dekodues VIN Falas"
+        },
+        {
+          "href": "/sq/faq",
+          "label": "Pyetjet e shpeshta"
+        },
+        {
+          "href": "/sq/cars/usa",
+          "label": "SHBA"
+        },
+        {
+          "href": "/sq/cars/korea",
+          "label": "Koreja e Jugut"
+        }
       ]
     },
     "pl": {
@@ -1847,6 +5507,36 @@
         {
           "title": "Najczęstsze czerwone flagi w samochodach używanych w ZEA — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane importowe z Dubaju, Abu Zabi i całego GCC."
+        }
+      ],
+      "links": [
+        {
+          "href": "/pl",
+          "label": "Sprawdź VIN"
+        },
+        {
+          "href": "/pl/pricing",
+          "label": "Cennik"
+        },
+        {
+          "href": "/pl/how-it-works",
+          "label": "Jak to działa"
+        },
+        {
+          "href": "/pl/free-vin-decoder",
+          "label": "Darmowy dekoder VIN"
+        },
+        {
+          "href": "/pl/faq",
+          "label": "Najczęściej zadawane pytania"
+        },
+        {
+          "href": "/pl/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/pl/cars/korea",
+          "label": "Korea Południowa"
         }
       ]
     },
@@ -1863,6 +5553,36 @@
           "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand din EAU — înainte să plătiți avansul.",
           "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de import din Dubai, Abu Dhabi și GCC."
         }
+      ],
+      "links": [
+        {
+          "href": "/ro",
+          "label": "Verifică VIN"
+        },
+        {
+          "href": "/ro/pricing",
+          "label": "Prețuri"
+        },
+        {
+          "href": "/ro/how-it-works",
+          "label": "Cum funcționează"
+        },
+        {
+          "href": "/ro/free-vin-decoder",
+          "label": "Decodor VIN gratuit"
+        },
+        {
+          "href": "/ro/faq",
+          "label": "Întrebări frecvente"
+        },
+        {
+          "href": "/ro/cars/usa",
+          "label": "SUA"
+        },
+        {
+          "href": "/ro/cars/korea",
+          "label": "Coreea de Sud"
+        }
       ]
     },
     "bg": {
@@ -1877,6 +5597,36 @@
         {
           "title": "Най-честите червени флагове при употребявани автомобили в ОАЕ — преди да платите капаро.",
           "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и вносни данни от Дубай, Абу Даби и GCC."
+        }
+      ],
+      "links": [
+        {
+          "href": "/bg",
+          "label": "Проверка на VIN"
+        },
+        {
+          "href": "/bg/pricing",
+          "label": "Цени"
+        },
+        {
+          "href": "/bg/how-it-works",
+          "label": "Как работи"
+        },
+        {
+          "href": "/bg/free-vin-decoder",
+          "label": "Безплатен VIN декодер"
+        },
+        {
+          "href": "/bg/faq",
+          "label": "Често задавани въпроси"
+        },
+        {
+          "href": "/bg/cars/usa",
+          "label": "САЩ"
+        },
+        {
+          "href": "/bg/cars/korea",
+          "label": "Южна Корея"
         }
       ]
     },
@@ -1893,6 +5643,36 @@
           "title": "ყველაზე გავრცელებული წითელი დროშები არაბეთის გაერთიანებულ საემიროებში მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
           "body": "ყოველი ანგარიში იზიდავს სარეგისტრაციო სიგნალებს, დაზღვევის ინდიკატორებს და იმპორტის მონაცემებს დუბაიში, აბუ დაბიში და უფრო ფართო GCC-ში."
         }
+      ],
+      "links": [
+        {
+          "href": "/ka",
+          "label": "შეამოწმეთ VIN"
+        },
+        {
+          "href": "/ka/pricing",
+          "label": "ფასები"
+        },
+        {
+          "href": "/ka/how-it-works",
+          "label": "როგორ მუშაობს"
+        },
+        {
+          "href": "/ka/free-vin-decoder",
+          "label": "უფასო VIN გაშიფვრა"
+        },
+        {
+          "href": "/ka/faq",
+          "label": "ხშირად დასმული კითხვები"
+        },
+        {
+          "href": "/ka/cars/usa",
+          "label": "USA"
+        },
+        {
+          "href": "/ka/cars/korea",
+          "label": "სამხრეთ კორეა"
+        }
       ]
     },
     "ar": {
@@ -1907,6 +5687,36 @@
         {
           "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة بالإمارات — قبل دفع العربون.",
           "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الاستيراد في دبي وأبوظبي ومجلس التعاون."
+        }
+      ],
+      "links": [
+        {
+          "href": "/ar",
+          "label": "تحقق من رقم الشاسيه"
+        },
+        {
+          "href": "/ar/pricing",
+          "label": "الأسعار"
+        },
+        {
+          "href": "/ar/how-it-works",
+          "label": "كيف يعمل"
+        },
+        {
+          "href": "/ar/free-vin-decoder",
+          "label": "فك تشفير VIN مجاناً"
+        },
+        {
+          "href": "/ar/faq",
+          "label": "الأسئلة الشائعة"
+        },
+        {
+          "href": "/ar/cars/usa",
+          "label": "الولايات المتحدة"
+        },
+        {
+          "href": "/ar/cars/korea",
+          "label": "كوريا الجنوبية"
         }
       ]
     },
@@ -1923,6 +5733,36 @@
           "title": "Найпоширеніші червоні прапорці на ринку вживаних авто ОАЕ — до внесення завдатку.",
           "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані імпорту з Дубаї, Абу-Дабі та GCC."
         }
+      ],
+      "links": [
+        {
+          "href": "/uk",
+          "label": "Перевірити VIN"
+        },
+        {
+          "href": "/uk/pricing",
+          "label": "Ціни"
+        },
+        {
+          "href": "/uk/how-it-works",
+          "label": "Як це працює"
+        },
+        {
+          "href": "/uk/free-vin-decoder",
+          "label": "Безкоштовний декодер VIN"
+        },
+        {
+          "href": "/uk/faq",
+          "label": "Часті запитання"
+        },
+        {
+          "href": "/uk/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/uk/cars/korea",
+          "label": "Південна Корея"
+        }
       ]
     },
     "ru": {
@@ -1938,6 +5778,36 @@
           "title": "Самые частые красные флаги на рынке подержанных авто ОАЭ — до внесения задатка.",
           "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные импорта из Дубая, Абу-Даби и GCC."
         }
+      ],
+      "links": [
+        {
+          "href": "/ru",
+          "label": "Проверить VIN"
+        },
+        {
+          "href": "/ru/pricing",
+          "label": "Цены"
+        },
+        {
+          "href": "/ru/how-it-works",
+          "label": "Как это работает"
+        },
+        {
+          "href": "/ru/free-vin-decoder",
+          "label": "Бесплатный декодер VIN"
+        },
+        {
+          "href": "/ru/faq",
+          "label": "Частые вопросы"
+        },
+        {
+          "href": "/ru/cars/usa",
+          "label": "США"
+        },
+        {
+          "href": "/ru/cars/korea",
+          "label": "Южная Корея"
+        }
       ]
     },
     "zh": {
@@ -1952,6 +5822,36 @@
         {
           "title": "阿联酋二手车最常见的风险信号——付定金之前先查清。",
           "body": "每份报告汇总迪拜、阿布扎比及整个海合会地区的登记信号、保险指标与进口数据。"
+        }
+      ],
+      "links": [
+        {
+          "href": "/zh",
+          "label": "查询 VIN"
+        },
+        {
+          "href": "/zh/pricing",
+          "label": "价格"
+        },
+        {
+          "href": "/zh/how-it-works",
+          "label": "如何运作"
+        },
+        {
+          "href": "/zh/free-vin-decoder",
+          "label": "免费 VIN 解码器"
+        },
+        {
+          "href": "/zh/faq",
+          "label": "常见问题"
+        },
+        {
+          "href": "/zh/cars/usa",
+          "label": "美国"
+        },
+        {
+          "href": "/zh/cars/korea",
+          "label": "韩国"
         }
       ]
     }

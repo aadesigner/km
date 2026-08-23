@@ -44,34 +44,34 @@ function FeatureRow({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "relative w-full text-left rounded-xl border px-4 py-3 lg:px-5 lg:py-3.5 transition-colors duration-200",
+        "relative w-full text-left rounded-xl border px-3.5 py-2.5 lg:px-4 lg:py-3 transition-colors duration-200",
         active
           ? cn("shadow-sm ring-1 ring-black/[0.04] dark:ring-white/[0.06]", feature.calloutClass, "border-transparent")
           : "border-border/60 bg-card/50 hover:border-border hover:bg-muted/30",
       )}
       whileTap={{ scale: 0.995 }}
     >
-      <div className="flex items-start gap-3 lg:gap-3.5">
+      <div className="flex items-start gap-3">
         <div
           className={cn(
-            "h-9 w-9 lg:h-10 lg:w-10 shrink-0 rounded-lg flex items-center justify-center border transition-colors duration-200",
+            "h-8 w-8 lg:h-9 lg:w-9 shrink-0 rounded-lg flex items-center justify-center border transition-colors duration-200",
             active ? cn(feature.bgColor, "border-transparent") : "border-transparent bg-muted/50",
           )}
         >
-          <Icon className={cn("h-4 w-4 lg:h-[18px] lg:w-[18px]", active ? feature.iconColor : "text-muted-foreground")} />
+          <Icon className={cn("h-4 w-4", active ? feature.iconColor : "text-muted-foreground")} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <p className="text-sm lg:text-[15px] font-bold leading-snug">{title}</p>
-            <span className="text-[10px] lg:text-[11px] font-mono text-muted-foreground tabular-nums">
+            <p className="text-sm font-bold leading-snug">{title}</p>
+            <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
               {String(index + 1).padStart(2, "0")}
             </span>
           </div>
-          <p className="text-xs lg:text-[13px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{desc}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{desc}</p>
         </div>
         <ChevronRight
           className={cn(
-            "h-4 w-4 lg:h-[18px] lg:w-[18px] shrink-0 mt-0.5 transition-opacity duration-200",
+            "h-4 w-4 shrink-0 mt-0.5 transition-opacity duration-200",
             active ? "opacity-100 text-muted-foreground" : "opacity-0",
           )}
         />
@@ -79,7 +79,7 @@ function FeatureRow({
       {active && autoRotate && (
         <motion.div
           key={rotateKey}
-          className={cn("absolute left-4 right-4 lg:left-5 lg:right-5 bottom-1.5 h-0.5 rounded-full origin-left", feature.accentBg)}
+          className={cn("absolute left-3.5 right-3.5 lg:left-4 lg:right-4 bottom-1.5 h-0.5 rounded-full origin-left", feature.accentBg)}
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: ROTATE_MS / 1000, ease: "linear" }}
@@ -175,8 +175,8 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false, class
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] gap-4 lg:gap-3 xl:gap-4 items-center">
-          <div className="space-y-2 lg:space-y-2.5" role="tablist" aria-label={t("what_we_check_sections")}>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-center lg:gap-6 xl:gap-8">
+          <div className="space-y-2 w-full lg:w-[24rem] lg:shrink-0" role="tablist" aria-label={t("what_we_check_sections")}>
             {features.map((feat, i) => (
               <FeatureRow
                 key={feat.id}
@@ -190,7 +190,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false, class
             ))}
           </div>
 
-          <div role="tabpanel" className="lg:sticky lg:top-24 h-full flex items-center w-full">
+          <div role="tabpanel" className="w-full lg:w-[560px] xl:w-[580px] lg:shrink-0 lg:sticky lg:top-24 flex items-center justify-center">
             <WhatWeCheckReportPreview
               feature={activeFeature}
               market={market}

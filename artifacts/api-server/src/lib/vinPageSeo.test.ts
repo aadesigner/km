@@ -202,7 +202,9 @@ describe("vin-page-seo", () => {
     expect(html).toContain("WBA3V7106FJ995387");
     expect(html).toContain('content="index, follow"');
     expect(html).toContain("Preview 2015 BMW 3 Series");
-    expect(html).not.toContain("app-boot-shell");
+    expect(html).toContain('href="/en/pricing"');
+    expect(html).toContain("app-boot-shell");
+    expect(html.indexOf('id="kmcheck-vin-ssr"')).toBeGreaterThan(html.indexOf("</div>"));
   });
 
   it("emits WebPage + Vehicle JSON-LD", () => {

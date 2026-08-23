@@ -347,6 +347,8 @@ const SSR_LABELS: Record<VinSeoLang, SsrLabels> = {
   },
 };
 
+export type VinSsrLink = { href: string; label: string };
+
 export type VinSsrBodyContent = {
   heading: string;
   vin: string;
@@ -354,7 +356,44 @@ export type VinSsrBodyContent = {
   intro: string;
   specs: Array<{ label: string; value: string }>;
   cta: string;
+  links?: VinSsrLink[];
 };
+
+type SsrNavLabels = {
+  home: string;
+  pricing: string;
+  howItWorks: string;
+  freeDecoder: string;
+  faq: string;
+};
+
+const SSR_NAV: Record<VinSeoLang, SsrNavLabels> = {
+  en: { home: "Check VIN", pricing: "Pricing", howItWorks: "How it works", freeDecoder: "Free VIN Decoder", faq: "FAQ" },
+  de: { home: "VIN prüfen", pricing: "Preise", howItWorks: "So funktioniert's", freeDecoder: "Kostenloser VIN-Decoder", faq: "Häufig gestellte Fragen" },
+  es: { home: "Consultar VIN", pricing: "Precios", howItWorks: "Cómo funciona", freeDecoder: "Decodificador VIN gratis", faq: "Preguntas frecuentes" },
+  fr: { home: "Vérifier le VIN", pricing: "Tarifs", howItWorks: "Comment ça marche", freeDecoder: "Décodeur VIN gratuit", faq: "FAQ" },
+  sq: { home: "Kontrollo VIN", pricing: "Çmimet", howItWorks: "Si funksionon", freeDecoder: "Dekoder VIN falas", faq: "Pyetje të shpeshta" },
+  pl: { home: "Sprawdź VIN", pricing: "Cennik", howItWorks: "Jak to działa", freeDecoder: "Darmowy dekoder VIN", faq: "FAQ" },
+  ro: { home: "Verifică VIN", pricing: "Prețuri", howItWorks: "Cum funcționează", freeDecoder: "Decoder VIN gratuit", faq: "Întrebări frecvente" },
+  bg: { home: "Провери VIN", pricing: "Цени", howItWorks: "Как работи", freeDecoder: "Безплатен VIN декодер", faq: "ЧЗВ" },
+  ka: { home: "VIN შემოწმება", pricing: "ფასები", howItWorks: "როგორ მუშაობს", freeDecoder: "უფასო VIN დეკoderi", faq: "FAQ" },
+  ar: { home: "تحقق من VIN", pricing: "الأسعار", howItWorks: "كيف يعمل", freeDecoder: "فك تشفير VIN مجاني", faq: "الأسئلة الشائعة" },
+  uk: { home: "Перевірити VIN", pricing: "Ціни", howItWorks: "Як це працює", freeDecoder: "Безкоштовний VIN-декодер", faq: "FAQ" },
+  ru: { home: "Проверить VIN", pricing: "Цены", howItWorks: "Как это работает", freeDecoder: "Бесплатный VIN-декодер", faq: "FAQ" },
+  zh: { home: "查询 VIN", pricing: "价格", howItWorks: "如何运作", freeDecoder: "免费 VIN 解码", faq: "常见问题" },
+};
+
+export function buildVinSsrNavLinks(lang: VinSeoLang): VinSsrLink[] {
+  const nav = SSR_NAV[lang] ?? SSR_NAV.en;
+  const base = `/${lang}`;
+  return [
+    { href: base, label: nav.home },
+    { href: `${base}/pricing`, label: nav.pricing },
+    { href: `${base}/how-it-works`, label: nav.howItWorks },
+    { href: `${base}/free-vin-decoder`, label: nav.freeDecoder },
+    { href: `${base}/faq`, label: nav.faq },
+  ];
+}
 
 const DESCRIPTIONS: Record<VinSeoLang, DescFn> = {
   en: (vehicle, vin, specs) => {
@@ -493,7 +532,29 @@ export function buildVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle)
     intro: labels.intro.replace("{vehicle}", heading),
     specs,
     cta: labels.cta,
+    links: buildVinSsrNavLinks(lang),
   };
+}
+
+export function buildVinOnlySsrBodyContent(lang: VinSeoLang, vin: string): VinSsrBodyContent {
+  const normalized = normalizeVin(vin);
+  const labels = SSR_LABELS[lang] ?? SSR_LABELS.en;
+  const titleFn = VIN_ONLY_TITLES[lang] ?? VIN_ONLY_TITLES.en;
+  const descFn = LOCKED_VIN_ONLY_DESCRIPTIONS[lang] ?? LOCKED_VIN_ONLY_DESCRIPTIONS.en;
+
+  return {
+    heading: titleFn(normalized).replace(/\s*\|\s*kmcheck\s*$/i, ""),
+    vin: normalized,
+    vinLabel: labels.vin,
+    intro: descFn(normalized),
+    specs: [],
+    cta: labels.cta,
+    links: buildVinSsrNavLinks(lang),
+  };
+}
+
+export function resolveVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle): VinSsrBodyContent {
+  return buildVinSsrBodyContent(lang, vehicle) ?? buildVinOnlySsrBodyContent(lang, vehicle.vin);
 }
 
 /** Resolve relative API image paths to absolute URLs for Open Graph / Twitter cards. */
@@ -577,4 +638,86 @@ export function buildVinPageSeo(
     ogImage: absoluteImage,
     ogImageAlt: vehicleTitle,
   };
+}
+
+export function escapeVinHtml(value: string): string {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+export function buildVinSsrStyleBlock(): string {
+  return `<style id="kmcheck-vin-ssr-style">
+      #root{position:relative;z-index:1;min-height:100vh}
+      #root .app-boot-shell{position:relative;z-index:1;min-height:100vh}
+      .kmcheck-vin-ssr{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    </style>`;
+}
+
+export function buildVinSsrBodyBlock(content: VinSsrBodyContent): string {
+  const specRows = content.specs
+    .map(
+      (row) =>
+        `          <dt>${escapeVinHtml(row.label)}</dt><dd>${escapeVinHtml(row.value)}</dd>`,
+    )
+    .join("\n");
+
+  const specBlock = specRows
+    ? `        <dl>
+${specRows}
+        </dl>`
+    : "";
+
+  const navLinks = (content.links ?? [])
+    .filter((link) => link.href?.trim() && link.label?.trim())
+    .map(
+      (link) =>
+        `          <li><a href="${escapeVinHtml(link.href)}">${escapeVinHtml(link.label)}</a></li>`,
+    )
+    .join("\n");
+
+  const navBlock = navLinks
+    ? `        <nav aria-label="Site navigation">
+          <ul>
+${navLinks}
+          </ul>
+        </nav>`
+    : "";
+
+  return `<main id="kmcheck-vin-ssr" class="kmcheck-vin-ssr">
+      <article>
+        <h1>${escapeVinHtml(content.heading)}</h1>
+        <p><strong>${escapeVinHtml(content.vinLabel)}:</strong> ${escapeVinHtml(content.vin)}</p>
+        <p class="lead">${escapeVinHtml(content.intro)}</p>
+${navBlock}
+${specBlock}
+        <p>${escapeVinHtml(content.cta)}</p>
+      </article>
+    </main>`;
+}
+
+export function removeVinSsrFromHtml(html: string): string {
+  return html
+    .replace(/\n?\s*<style id="kmcheck-vin-ssr-style"[^>]*>[\s\S]*?<\/style>/g, "")
+    .replace(/\n?\s*<main id="kmcheck-vin-ssr"[\s\S]*?<\/main>/g, "");
+}
+
+export function injectVinSsrIntoHtml(html: string, content: VinSsrBodyContent | null | undefined): string {
+  if (!content?.heading?.trim() || !content.intro?.trim()) return html;
+
+  let out = removeVinSsrFromHtml(html);
+  const bodyBlock = buildVinSsrBodyBlock(content);
+
+  out = out.replace(
+    /(<div id="root">[\s\S]*?<\/div>)(\s*<script type="module")/i,
+    `$1\n    ${bodyBlock}$2`,
+  );
+
+  if (!out.includes('id="kmcheck-vin-ssr-style"')) {
+    out = out.replace(/<\/head>/i, `${buildVinSsrStyleBlock()}\n  </head>`);
+  }
+
+  return out;
 }

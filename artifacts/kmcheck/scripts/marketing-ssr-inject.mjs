@@ -48,9 +48,9 @@ export function resolveMarketingSsrContent(pageKey, rest, lang) {
 
 function buildMarketingSsrStyleBlock() {
   return `<style id="kmcheck-page-ssr-style">
-      #root{position:relative;min-height:100vh}
+      #root{position:relative;z-index:1;min-height:100vh}
       #root .app-boot-shell{position:relative;z-index:1;min-height:100vh}
-      .kmcheck-page-ssr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+      .kmcheck-page-ssr{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
     </style>`;
 }
 
@@ -74,10 +74,27 @@ function buildMarketingSsrBodyBlock(content) {
     )
     .join("\n");
 
-  return `<main id="kmcheck-page-ssr" class="kmcheck-page-ssr" aria-hidden="true">
+  const navLinks = (content.links ?? [])
+    .filter((link) => link.href?.trim() && link.label?.trim())
+    .map(
+      (link) =>
+        `          <li><a href="${escapeMarketingHtml(link.href)}">${escapeMarketingHtml(link.label)}</a></li>`,
+    )
+    .join("\n");
+
+  const navBlock = navLinks
+    ? `        <nav aria-label="Site navigation">
+          <ul>
+${navLinks}
+          </ul>
+        </nav>`
+    : "";
+
+  return `<main id="kmcheck-page-ssr" class="kmcheck-page-ssr">
       <article>
         <h1>${escapeMarketingHtml(content.h1)}</h1>
         <p class="lead">${escapeMarketingHtml(content.lead)}</p>
+${navBlock}
 ${bulletBlock}
 ${sections}
       </article>
@@ -97,8 +114,8 @@ export function injectMarketingSsrIntoHtml(html, content) {
   const bodyBlock = buildMarketingSsrBodyBlock(content);
 
   out = out.replace(
-    /(<div id="root">)([\s\S]*?)(<\/div>\s*(?=<script type="module"))/i,
-    `$1$2\n    ${bodyBlock}\n  $3`,
+    /(<div id="root">[\s\S]*?<\/div>)(\s*<script type="module")/i,
+    `$1\n    ${bodyBlock}$2`,
   );
 
   if (!out.includes('id="kmcheck-page-ssr-style"')) {

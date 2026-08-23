@@ -26,6 +26,16 @@ function formatReportGeneratedDate(language: Language): string {
   const iso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   return localizeProviderDate(iso, language) ?? iso;
 }
+
+/** Newest first for timeline tables. Unknown/"—" dates stay at the bottom. */
+function sortHistoryNewestFirst<T extends { date: string }>(rows: readonly T[]): T[] {
+  return [...rows].sort((a, b) => {
+    if (a.date === "—" && b.date === "—") return 0;
+    if (a.date === "—") return 1;
+    if (b.date === "—") return -1;
+    return b.date.localeCompare(a.date);
+  });
+}
 const TILT_MAX_X = 9;
 const TILT_MAX_Y = 11;
 
@@ -82,6 +92,10 @@ function ReportTiltShell({
     },
     [tiltEnabled],
   );
+
+  if (!tiltEnabled) {
+    return <div className="relative w-full">{children}</div>;
+  }
 
   return (
     <div
@@ -195,10 +209,11 @@ function ScoreBadge({
 function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabel: string }) {
   const reduced = useReducedMotion();
   const chartW = 100;
-  const chartH = 44;
+  const chartH = 50;
   const padX = 6;
-  const padY = 8;
-  const labelH = 11;
+  const padY = 9;
+  const labelH = 13;
+  const viewH = chartH + labelH;
   const minKm = 35_000;
   const maxKm = 145_000;
 
@@ -207,8 +222,8 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
 
   const readings = [
     { x: padX, km: 42_100, label: "2019" },
-    { x: 32, km: 89_200, label: "2021" },
-    { x: 58, km: 64_500, label: "2022", rollback: true },
+    { x: 30, km: 89_200, label: "2021" },
+    { x: 56, km: 64_500, label: "2022", rollback: true },
     { x: chartW - padX, km: 138_600, label: "2023" },
   ];
 
@@ -235,8 +250,8 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
         </motion.span>
       </div>
       <svg
-        viewBox={`0 0 ${chartW} ${chartH + labelH}`}
-        className="w-full h-[4rem]"
+        viewBox={`0 0 ${chartW} ${viewH}`}
+        className="w-full h-[5rem] sm:h-[5.5rem]"
         aria-hidden
         preserveAspectRatio="xMidYMid meet"
       >
@@ -303,7 +318,7 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
               x={p.x}
               y={p.y - (p.rollback ? 6 : 5)}
               textAnchor="middle"
-              fontSize="5.5"
+              fontSize="6"
               fill={p.rollback ? "#c2410c" : "currentColor"}
               fillOpacity={p.rollback ? 1 : 0.55}
               fontWeight="700"
@@ -312,9 +327,9 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
             </text>
             <text
               x={p.x}
-              y={chartH + 7}
+              y={chartH + 8}
               textAnchor="middle"
-              fontSize="6"
+              fontSize="6.25"
               fill="currentColor"
               fillOpacity="0.45"
               fontWeight="600"
@@ -355,7 +370,7 @@ function AccidentDemo({ t }: { t: (k: string) => string }) {
       <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground mb-2">
         {t("wwc_demo_accident_map")}
       </p>
-      <svg viewBox="0 0 100 132" className="w-full h-[5.25rem] text-foreground" aria-hidden>
+      <svg viewBox="0 0 100 132" className="w-full h-[6.5rem] sm:h-[7rem] text-foreground" aria-hidden preserveAspectRatio="xMidYMid meet">
         {/* Ground shadow */}
         <ellipse cx="50" cy="124" rx="26" ry="3.5" fill="currentColor" fillOpacity="0.07" />
 
@@ -523,7 +538,7 @@ function DocTable({
       <tbody>
         {rows.map((row, i) => (
           <motion.tr
-            key={`${row.date}-${row.primary}`}
+            key={`${row.date}-${row.primary}-${i}`}
             className="border-b border-border/25 last:border-0"
             initial={reduced ? false : { opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
@@ -533,7 +548,7 @@ function DocTable({
               {row.date}
             </td>
             <td className="py-1.5 text-foreground align-top leading-snug line-clamp-2">
-              <span className="font-semibold">{row.primary}</span>
+              <span className="font-semibold">{row.primary || "—"}</span>
               {row.detail ? <span className="text-muted-foreground"> · {row.detail}</span> : null}
             </td>
           </motion.tr>
@@ -578,7 +593,7 @@ export function WhatWeCheckReportPreview({
           ? [{ date: "—", primary: t(demo.findings.salvage.valueKey), detailKey: "wwc_demo_salvage_note" }]
           : [{ date: "—", primary: t(demo.findings.theft.valueKey), detailKey: "wwc_demo_theft_note" }];
 
-  const tableRows = historyRows.slice(0, 2).map((row) => ({
+  const tableRows = sortHistoryNewestFirst(historyRows).slice(0, 2).map((row) => ({
     date: formatWwcDemoDate(row.date, language),
     primary: row.primaryKey ? t(row.primaryKey) : row.primary,
     detail: t(row.detailKey),
@@ -594,14 +609,14 @@ export function WhatWeCheckReportPreview({
   return (
     <motion.div
       className="relative h-full w-full flex flex-col justify-center"
-      initial={reduced ? false : { opacity: 0, y: 12 }}
+      initial={reduced ? false : { opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.45, ease: EASE }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ duration: 0.35, ease: EASE }}
     >
-      <div className="relative mx-auto w-full max-w-[468px] lg:max-w-[500px]">
+      <div className="relative mx-auto w-full max-w-[500px] lg:mx-0 lg:w-[560px] lg:max-w-none xl:w-[580px]">
         <ReportTiltShell reduced={reduced}>
-        <article className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-shadow duration-300 lg:hover:shadow-lg">
+        <article className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-md sm:shadow-sm transition-shadow duration-300 lg:hover:shadow-lg">
           {/* Score accent — fixed for this car, does not change when switching sections */}
           <div
             className={cn(
@@ -627,7 +642,7 @@ export function WhatWeCheckReportPreview({
               </div>
             </div>
 
-            <div className="grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)] gap-3.5 items-start">
+            <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] sm:grid-cols-[8rem_minmax(0,1fr)] gap-3.5 sm:gap-4 items-start">
               <motion.div
                 key={demo.photoUrl}
                 className="rounded-xl border border-border/50 overflow-hidden aspect-[4/3] bg-muted/40 shadow-sm"
@@ -664,7 +679,7 @@ export function WhatWeCheckReportPreview({
             </div>
           </header>
 
-          <div className="relative px-4 py-3 border-b border-border/50 bg-muted/15">
+          <div className="relative px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/15">
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground mb-2">
               {t("print_summary_findings")}
             </p>
@@ -711,7 +726,7 @@ export function WhatWeCheckReportPreview({
               animate={{ opacity: 1, y: 0 }}
               exit={reduced ? undefined : { opacity: 0, y: -4 }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="relative px-4 py-3 border-b border-border/50"
+              className="relative px-4 sm:px-5 py-3 border-b border-border/50"
             >
               <div className="flex items-center gap-2 mb-2.5">
                 <span className={cn("h-3.5 w-0.5 rounded-full shrink-0 bg-gradient-to-b", theme.bar)} />
@@ -721,11 +736,11 @@ export function WhatWeCheckReportPreview({
             </motion.div>
           </AnimatePresence>
 
-          <div className="px-4 py-3">
+          <div className="px-4 sm:px-5 py-3">
             <DocTable columns={tableColumns} rows={tableRows} />
           </div>
 
-          <footer className="px-4 py-2 border-t border-border/40 bg-muted/10">
+          <footer className="px-4 sm:px-5 py-2 border-t border-border/40 bg-muted/10">
             <p className="text-[9px] text-muted-foreground text-center leading-snug line-clamp-2">
               {t("what_we_check_disclaimer")}
             </p>

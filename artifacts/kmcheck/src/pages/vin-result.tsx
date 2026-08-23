@@ -35,7 +35,6 @@ import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
 import { PendingVinSearchPanel, PendingVinTopNotice } from "@/components/pending-vin-search-panel";
-import { PendingVinCoffeeDialog } from "@/components/pending-vin-coffee-dialog";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
 import {
@@ -840,7 +839,6 @@ export default function VinResult({ params }: Props) {
       {isPendingManual ? (
         <PendingVinTopNotice vin={lookup.vin} />
       ) : null}
-      {isPendingManual ? <PendingVinCoffeeDialog /> : null}
       <VinReportHero
         vehicleTitle={displayVehicleTitle}
         vin={lookup.vin}

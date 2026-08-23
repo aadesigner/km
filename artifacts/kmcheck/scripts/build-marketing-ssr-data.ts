@@ -38,12 +38,29 @@ function section(t: Dict, titleKey: string, bodyKey: string) {
   return { title, body };
 }
 
+function marketingNavLinks(t: Dict, lang: Language): MarketingSsrContent["links"] {
+  const base = `/${lang}`;
+  return [
+    { href: base, label: pick(t, "footer_check_vin") },
+    { href: `${base}/pricing`, label: pick(t, "pricing") },
+    { href: `${base}/how-it-works`, label: pick(t, "how_it_works") },
+    { href: `${base}/free-vin-decoder`, label: pick(t, "free_decoder_nav_link") },
+    { href: `${base}/faq`, label: pick(t, "faq") },
+    { href: `${base}/cars/usa`, label: pick(t, "country_usa_name") },
+    { href: `${base}/cars/korea`, label: pick(t, "country_korea_name") },
+  ].filter((link) => link.label);
+}
+
+function withNavLinks(t: Dict, lang: Language, content: MarketingSsrContent): MarketingSsrContent {
+  return { ...content, links: marketingNavLinks(t, lang) };
+}
+
 function homeContent(t: Dict, lang: Language): MarketingSsrContent {
   const h1 = lang === "sq"
     ? `${pick(t, "hero_headline_1")}, ${pick(t, "hero_headline_2")}`
     : `${pick(t, "hero_headline_1")} ${pick(t, "hero_headline_2")}`.replace(/\s+/g, " ").trim();
 
-  return {
+  return withNavLinks(t, lang, {
     h1,
     lead: pick(t, "hero_subtext"),
     bullets: bullets(t, [
@@ -56,11 +73,11 @@ function homeContent(t: Dict, lang: Language): MarketingSsrContent {
       section(t, "what_we_check", "what_we_check_sub"),
       section(t, "how_it_works", "how_it_works_desc"),
     ].filter((row): row is { title: string; body: string } => row != null),
-  };
+  });
 }
 
-function pricingContent(t: Dict): MarketingSsrContent {
-  return {
+function pricingContent(t: Dict, lang: Language): MarketingSsrContent {
+  return withNavLinks(t, lang, {
     h1: `${pick(t, "pricing_hero_title_1")} ${pick(t, "pricing_hero_title_2")}`.trim(),
     lead: pick(t, "pricing_hero_lead"),
     bullets: bullets(t, [
@@ -72,19 +89,19 @@ function pricingContent(t: Dict): MarketingSsrContent {
       section(t, "pricing_seo_title", "pricing_seo_sub"),
       section(t, "pricing_guarantee_band_title", "pricing_guarantee_band_sub"),
     ].filter((row): row is { title: string; body: string } => row != null),
-  };
+  });
 }
 
-function howItWorksContent(t: Dict): MarketingSsrContent {
-  return {
+function howItWorksContent(t: Dict, lang: Language): MarketingSsrContent {
+  return withNavLinks(t, lang, {
     h1: pick(t, "how_it_works"),
     lead: pick(t, "how_it_works_desc"),
     bullets: bullets(t, ["step_1_title", "step_2_title", "step_3_title"]),
-  };
+  });
 }
 
-function faqContent(t: Dict): MarketingSsrContent {
-  return {
+function faqContent(t: Dict, lang: Language): MarketingSsrContent {
+  return withNavLinks(t, lang, {
     h1: pick(t, "faq_title"),
     lead: pick(t, "faq_subtitle"),
     bullets: bullets(t, ["faq_1_q", "faq_2_q", "faq_3_q"]),
@@ -92,24 +109,24 @@ function faqContent(t: Dict): MarketingSsrContent {
       section(t, "faq_1_q", "faq_1_a"),
       section(t, "faq_2_q", "faq_2_a"),
     ].filter((row): row is { title: string; body: string } => row != null),
-  };
+  });
 }
 
-function freeDecoderContent(t: Dict): MarketingSsrContent {
-  return {
+function freeDecoderContent(t: Dict, lang: Language): MarketingSsrContent {
+  return withNavLinks(t, lang, {
     h1: `${pick(t, "free_decoder_title_lead")} ${pick(t, "free_decoder_title_highlight")}`.trim(),
     lead: pick(t, "free_decoder_subtitle"),
     bullets: bullets(t, ["free_decoder_badge"]),
-  };
+  });
 }
 
-function countryContent(t: Dict, prefix: string): MarketingSsrContent {
+function countryContent(t: Dict, lang: Language, prefix: string): MarketingSsrContent {
   const origin = pick(t, `${prefix}_headline_origin`);
   const originPrefix = pick(t, `${prefix}_headline_origin_prefix`);
   const originWord = pick(t, `${prefix}_name`) || origin.replace(originPrefix, "").trim();
   const h1 = `${pick(t, `${prefix}_headline_verb`)} ${pick(t, `${prefix}_cycling_0`)} ${originPrefix}${originWord}`.replace(/\s+/g, " ").trim();
 
-  return {
+  return withNavLinks(t, lang, {
     h1,
     lead: pick(t, `${prefix}_description`),
     bullets: bullets(t, [
@@ -120,7 +137,7 @@ function countryContent(t: Dict, prefix: string): MarketingSsrContent {
     sections: [
       section(t, `${prefix}_issues_sub`, `${prefix}_included_sub`),
     ].filter((row): row is { title: string; body: string } => row != null),
-  };
+  });
 }
 
 function b2bContent(lang: Language, rest: string): MarketingSsrContent {
@@ -151,15 +168,15 @@ function b2bContent(lang: Language, rest: string): MarketingSsrContent {
 
 const PAGE_BUILDERS: Record<string, (t: Dict, lang: Language) => MarketingSsrContent> = {
   home: homeContent,
-  pricing: (t) => pricingContent(t),
-  how_it_works: (t) => howItWorksContent(t),
-  faq: (t) => faqContent(t),
-  free_decoder: (t) => freeDecoderContent(t),
-  country_usa: (t) => countryContent(t, "country_usa"),
-  country_korea: (t) => countryContent(t, "country_korea"),
-  country_canada: (t) => countryContent(t, "country_canada"),
-  country_china: (t) => countryContent(t, "country_china"),
-  country_uae: (t) => countryContent(t, "country_uae"),
+  pricing: pricingContent,
+  how_it_works: howItWorksContent,
+  faq: faqContent,
+  free_decoder: freeDecoderContent,
+  country_usa: (t, lang) => countryContent(t, lang, "country_usa"),
+  country_korea: (t, lang) => countryContent(t, lang, "country_korea"),
+  country_canada: (t, lang) => countryContent(t, lang, "country_canada"),
+  country_china: (t, lang) => countryContent(t, lang, "country_china"),
+  country_uae: (t, lang) => countryContent(t, lang, "country_uae"),
 };
 
 const data: MarketingSsrData = {};

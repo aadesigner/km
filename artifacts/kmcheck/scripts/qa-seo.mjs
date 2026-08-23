@@ -369,6 +369,10 @@ if (!existsSync(marketingSsrPath)) {
         console.error(`MISSING marketing SSR ${key}.${lang}`);
         errors++;
       }
+      if (!entry?.links?.length) {
+        console.error(`MISSING marketing SSR links ${key}.${lang}`);
+        errors++;
+      }
     }
   }
   const enHomeH1 = marketingSsr.home?.en?.h1 ?? "";

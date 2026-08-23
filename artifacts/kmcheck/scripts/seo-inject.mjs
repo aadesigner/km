@@ -17,6 +17,10 @@ import {
   injectMarketingSsrIntoHtml,
   resolveMarketingSsrContent,
 } from "./marketing-ssr-inject.mjs";
+import {
+  injectVinSsrIntoHtml,
+  resolveVinSsrContent,
+} from "./vin-ssr-inject.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const seoData = JSON.parse(
@@ -329,6 +333,13 @@ export function injectSeoIntoHtml(html, pathname, basePath = "") {
     const ssrContent = resolveMarketingSsrContent(resolved.pageKey, resolved.rest, resolved.lang);
     if (ssrContent) {
       out = injectMarketingSsrIntoHtml(out, ssrContent);
+    }
+  }
+
+  if (isIndexableVinRest(resolved.rest)) {
+    const vinSsrContent = resolveVinSsrContent(resolved.rest, resolved.lang);
+    if (vinSsrContent) {
+      out = injectVinSsrIntoHtml(out, vinSsrContent);
     }
   }
 

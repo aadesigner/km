@@ -11,5 +11,5 @@ export default function HomepageTestimonials() {
   const { language } = useTranslation();
   const testimonials = useMemo(() => getTestimonials(language), [language]);
 
-  return <TestimonialsSlider testimonials={testimonials} />;
+  return <TestimonialsSlider testimonials={testimonials} className="pt-8 md:pt-10 pb-16 md:pb-24" />;
 }

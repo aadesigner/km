@@ -27,6 +27,14 @@ if (typeof window !== "undefined") {
 
 createRoot(document.getElementById("root")!).render(<App />);
 
+function removeMarketingSsrShell() {
+  document.getElementById("kmcheck-page-ssr")?.remove();
+  document.getElementById("kmcheck-page-ssr-style")?.remove();
+  document.getElementById("kmcheck-vin-ssr")?.remove();
+  document.getElementById("kmcheck-vin-ssr-style")?.remove();
+}
+
 requestAnimationFrame(() => {
+  removeMarketingSsrShell();
   document.documentElement.classList.add("kmcheck-hydrated");
 });
