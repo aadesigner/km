@@ -39,9 +39,9 @@ import {
 } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
-import Home from "@/pages/home";
 import AdminNotFound from "@/pages/admin/not-found";
 // Lazy-loaded
+const Home              = lazyWithRetry(() => import("@/pages/home"));
 const AdminLayout     = lazyWithRetry(() =>
   import("@/pages/admin/layout").then((m) => ({ default: m.AdminLayout })),
 );

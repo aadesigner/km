@@ -39,6 +39,7 @@ import {
   type JsonImportRecord,
 } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger";
+import { makeTtlCache } from "../lib/ttlCache.js";
 import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
   buildPaymentsByMethodPeriods,
@@ -258,7 +259,9 @@ router.post("/admin/unlock/logout", requireAdminAuth, async (req, res) => {
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
 
-router.get("/admin/stats", requireAdmin, async (_req, res) => {
+const ADMIN_STATS_CACHE_MS = 90_000;
+
+async function loadAdminStatsPayload() {
   const [
     aggregatesRaw,
     cacheHitData,
@@ -500,7 +503,7 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     });
   })();
 
-  res.json({
+  return {
     totalUsers: Number(agg.total_users ?? 0),
     totalVinChecks: Number(agg.total_vin_checks ?? 0),
     totalRevenue,
@@ -550,7 +553,19 @@ router.get("/admin/stats", requireAdmin, async (_req, res) => {
     paymentsByMethod: buildPaymentsByMethodPeriods(
       paymentsByMethodRaw.rows as Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
     ),
-  });
+  };
+}
+
+const adminStatsCache = makeTtlCache<Awaited<ReturnType<typeof loadAdminStatsPayload>>>(ADMIN_STATS_CACHE_MS);
+
+export function invalidateAdminStatsCache(): void {
+  adminStatsCache.invalidate();
+}
+
+router.get("/admin/stats", requireAdmin, async (_req, res) => {
+  res.setHeader("Cache-Control", "private, no-store");
+  const payload = await adminStatsCache.getOrFetch(loadAdminStatsPayload);
+  res.json(payload);
 });
 
 router.get("/admin/presence-users", requireAdmin, async (req, res) => {
