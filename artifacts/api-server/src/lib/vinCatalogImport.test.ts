@@ -21,6 +21,7 @@ import {
   preserveAdminTaxiFlag,
   stampCatalogImportData,
 } from "./vinCatalogImport";
+import { normalizeCarstatResponse } from "./vinService";
 
 const SAMPLE_VIN = "WBA3V7106FJ995387";
 
@@ -171,6 +172,44 @@ describe("sanitizeCatalogPayload", () => {
       "https://cdn.example.com/b.jpg",
     ]);
     expect(data.auctionHistory).toHaveLength(1);
+  });
+
+  it("preserves photosHd and Copart/IAA 360 spin galleries", () => {
+    const exterior = Array.from({ length: 12 }, (_, i) => `https://cdn.example.com/ext-${i}.jpg`);
+    const interior = Array.from({ length: 10 }, (_, i) => `https://cdn.example.com/int-${i}.jpg`);
+    const data = sanitizeCatalogPayload({
+      make: "Mercedes-Benz",
+      photos: ["https://cdn.example.com/still.jpg"],
+      photosHd: ["https://cdn.example.com/still-hd.jpg"],
+      photos360Exterior: exterior,
+      photos360Interior: interior,
+    });
+    expect(data.photos).toEqual(["https://cdn.example.com/still.jpg"]);
+    expect(data.photosHd).toEqual(["https://cdn.example.com/still-hd.jpg"]);
+    expect(data.photos360Exterior).toEqual(exterior);
+    expect(data.photos360Interior).toEqual(interior);
+  });
+
+  it("keeps 360 fields through normalize → sanitize (admin provider refresh)", () => {
+    const exterior = Array.from({ length: 16 }, (_, i) => `https://cdn.example.com/ext-${i}.jpg`);
+    const interior = Array.from({ length: 12 }, (_, i) => `https://cdn.example.com/int-${i}.jpg`);
+    const normal = Array.from({ length: 8 }, (_, i) => `https://cdn.example.com/n-${i}.jpg`);
+    const big = Array.from({ length: 8 }, (_, i) => `https://cdn.example.com/b-${i}.jpg`);
+    const normalized = normalizeCarstatResponse({
+      year: 2014,
+      vin: "WDDLJ9BB6EA096494",
+      manufacturer: { name: "Mercedes-Benz" },
+      model: { name: "CLA" },
+      lots: [{
+        domain: { name: "copart_com" },
+        images: { normal, big, exterior, interior },
+      }],
+    });
+    const saved = sanitizeCatalogPayload(normalized as unknown as Record<string, unknown>);
+    expect(saved.photos360Exterior).toEqual(exterior);
+    expect(saved.photos360Interior).toEqual(interior);
+    expect(saved.photos).toEqual(normal);
+    expect(saved.photosHd).toEqual(big);
   });
 });
 

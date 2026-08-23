@@ -102,6 +102,9 @@ function isCatalogBoolKey(key: string): boolean {
 /** Nested JSON blobs on catalog `data`. */
 export const CATALOG_JSON_KEYS = [
   "photos",
+  "photosHd",
+  "photos360Exterior",
+  "photos360Interior",
   "accidents",
   "insuranceClaims",
   "mileageHistory",
@@ -112,6 +115,17 @@ export const CATALOG_JSON_KEYS = [
   "serviceHistory",
   "marketData",
 ] as const;
+
+const CATALOG_PHOTO_LIST_KEYS = [
+  "photos",
+  "photosHd",
+  "photos360Exterior",
+  "photos360Interior",
+] as const;
+
+function isCatalogPhotoListKey(key: string): boolean {
+  return (CATALOG_PHOTO_LIST_KEYS as readonly string[]).includes(key);
+}
 
 export const CATALOG_CSV_COLUMNS = [
   "id",
@@ -312,12 +326,12 @@ export function sanitizeCatalogPayload(input: Record<string, unknown>): Record<s
 
   for (const key of CATALOG_JSON_KEYS) {
     const value = input[key];
-    if (key === "photos") {
+    if (isCatalogPhotoListKey(key)) {
       if (Array.isArray(value)) {
-        out.photos = normalizePhotos(value) ?? [];
+        out[key] = normalizePhotos(value) ?? [];
       } else {
         const photos = normalizePhotos(value);
-        if (photos && photos.length > 0) out.photos = photos;
+        if (photos && photos.length > 0) out[key] = photos;
       }
       continue;
     }
@@ -358,9 +372,8 @@ export function mergeCatalogData(
   for (const key of CATALOG_JSON_KEYS) {
     if (!(key in incoming)) continue;
     const value = incoming[key];
-    if (key === "photos") {
-      if (!(key in incoming)) continue;
-      merged.photos = normalizePhotos(value) ?? [];
+    if (isCatalogPhotoListKey(key)) {
+      merged[key] = normalizePhotos(value) ?? [];
       continue;
     }
     if (key === "marketData") {
@@ -399,8 +412,8 @@ export function applyCatalogAdminPatch(
   for (const key of CATALOG_JSON_KEYS) {
     if (!(key in rawBody)) continue;
     const raw = rawBody[key];
-    if (key === "photos") {
-      merged.photos = normalizePhotos(raw) ?? [];
+    if (isCatalogPhotoListKey(key)) {
+      merged[key] = normalizePhotos(raw) ?? [];
       continue;
     }
     if (key === "marketData") {

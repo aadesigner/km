@@ -178,6 +178,16 @@ export function extractVinPhotoUrls(data: unknown): string[] {
       if (typeof photo === "string" && photo) urls.add(photo);
     }
   }
+  if (Array.isArray(record.photos360Exterior)) {
+    for (const photo of record.photos360Exterior) {
+      if (typeof photo === "string" && photo) urls.add(photo);
+    }
+  }
+  if (Array.isArray(record.photos360Interior)) {
+    for (const photo of record.photos360Interior) {
+      if (typeof photo === "string" && photo) urls.add(photo);
+    }
+  }
   return [...urls];
 }
 
