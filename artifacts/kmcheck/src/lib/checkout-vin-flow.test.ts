@@ -22,6 +22,7 @@ import {
 describe("getPostAuthCheckoutPath", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    localStorage.clear();
   });
 
   it("redirects to checkout with VIN and marks prefill-only landing", () => {

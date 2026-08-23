@@ -25,19 +25,20 @@ import {
   fetchPaypalOrderCaptureAmount,
   paypalAmountsMatch,
 } from "../lib/paypalCapture.js";
-import { paypalOrderCreateLimiter, paypalCaptureLimiter, pokOrderCreateLimiter, pokConfirmLimiter } from "../lib/expensiveEndpointLimiter.js";
+import { paypalOrderCreateLimiter, paypalCaptureLimiter, pokOrderCreateLimiter, pokConfirmLimiter, pokWebhookLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
 import { completeCreditPackPayment } from "../lib/creditRedemption.js";
 import { vinReportPaymentLabel } from "../lib/vinReportPaymentLabel.js";
 import {
   POK_ORDER_ID_RE,
   createPokSdkOrder,
-  ensurePokOrderCompleted,
   getPokConfig,
   getPokEnv,
   resolvePokConfig,
-  pokAmountsMatch,
+  resolvePokWebhookUrl,
 } from "../lib/pokClient.js";
+import { confirmPokPaymentByOrderId } from "../lib/pokPaymentConfirm.js";
+import { handlePokWebhook } from "../lib/pokWebhook.js";
 
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -1289,6 +1290,7 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
       description: vinReportPaymentLabel(normalizedVin),
       merchantCustomReference: `vin|${userId}|${normalizedVin}|${Date.now()}`,
       config: pokConfig,
+      webhookUrl: (await resolvePokWebhookUrl()) ?? undefined,
     });
     if (responded) return;
 
@@ -1364,6 +1366,11 @@ router.post("/payments/create-pok-order", pokOrderCreateLimiter, requireAuth, as
   }
 });
 
+// POST /payments/webhook/pok — POK server notification (optional; always re-verifies via POK API)
+router.post("/payments/webhook/pok", pokWebhookLimiter, (req, res) => {
+  void handlePokWebhook(req, res);
+});
+
 // POST /payments/confirm-pok-order — after GuestCheckoutForm onSuccess
 router.post("/payments/confirm-pok-order", pokConfirmLimiter, requireAuth, async (req, res) => {
   const userId = req.userId!;
@@ -1373,95 +1380,33 @@ router.post("/payments/confirm-pok-order", pokConfirmLimiter, requireAuth, async
     return;
   }
 
-  const [payment] = await db.select().from(paymentsTable)
-    .where(eq(paymentsTable.pokOrderId, orderId))
-    .limit(1);
+  const result = await confirmPokPaymentByOrderId(orderId, {
+    userId,
+    source: "client",
+    expectedKind: "vin_report",
+  });
 
-  if (!payment || payment.userId !== userId) {
-    res.status(404).json({ error: "Payment not found", code: "PAYMENT_NOT_FOUND" });
+  if (result.ok) {
+    res.json({
+      success: true,
+      vin: result.payment.vin,
+      paymentId: result.payment.id,
+      alreadyCompleted: result.alreadyCompleted,
+      retryable: false,
+    });
     return;
   }
-  if ((payment.kind ?? "vin_report") === "credit_pack") {
+
+  if (result.code === "WRONG_PAYMENT_KIND") {
     res.status(400).json({ error: "Use credit-pack confirm for this order", code: "WRONG_CONFIRM_ENDPOINT" });
     return;
   }
 
-  if (payment.status === "completed") {
-    res.json({ success: true, vin: payment.vin, paymentId: payment.id });
-    return;
-  }
-
-  if (!(await resolvePokConfig())) {
-    res.status(503).json({ error: "Card payment is not configured.", code: "POK_NOT_CONFIGURED" });
-    return;
-  }
-
-  try {
-    const order = await ensurePokOrderCompleted(orderId);
-    if (!order.isCompleted) {
-      await db.update(paymentsTable)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(paymentsTable.pokOrderId, orderId));
-      await releaseCouponUseByCode(payment.couponCode);
-      logger.warn({ msg: "pok_confirm_not_completed", orderId, userId, vin: payment.vin });
-      res.status(402).json({
-        error: "Payment was not completed. Please try again.",
-        code: "PAYMENT_NOT_COMPLETED",
-      });
-      return;
-    }
-
-    if (!pokAmountsMatch(Number(payment.amount), payment.currency, order)) {
-      await db.update(paymentsTable)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(paymentsTable.pokOrderId, orderId));
-      await releaseCouponUseByCode(payment.couponCode);
-      logger.error({
-        msg: "pok_confirm_amount_mismatch",
-        orderId,
-        paymentId: payment.id,
-        expectedAmount: payment.amount,
-        expectedCurrency: payment.currency,
-        orderAmount: order.amount,
-        orderCurrency: order.currencyCode,
-      });
-      res.status(402).json({
-        error: "Payment amount verification failed. Please contact support.",
-        code: "PAYMENT_AMOUNT_MISMATCH",
-      });
-      return;
-    }
-
-    await db.update(paymentsTable)
-      .set({ status: "completed", updatedAt: new Date() })
-      .where(eq(paymentsTable.pokOrderId, orderId));
-
-    logger.info({
-      msg: "payment_confirmed",
-      type: "pok",
-      orderId,
-      paymentId: payment.id,
-      userId,
-      vin: payment.vin,
-      amount: payment.amount,
-      currency: payment.currency,
-    });
-
-    res.json({ success: true, vin: payment.vin, paymentId: payment.id });
-  } catch (err) {
-    logger.error({ err, orderId }, "POK confirm failed");
-    const [fresh] = await db.select().from(paymentsTable)
-      .where(eq(paymentsTable.pokOrderId, orderId))
-      .limit(1);
-    if (fresh?.status === "completed") {
-      res.json({ success: true, vin: fresh.vin, paymentId: fresh.id });
-      return;
-    }
-    res.status(503).json({
-      error: "Failed to confirm payment. Please try again.",
-      code: "PAYMENT_CONFIRM_FAILED",
-    });
-  }
+  res.status(result.httpStatus).json({
+    error: result.error,
+    code: result.code,
+    retryable: result.retryable,
+  });
 });
 
 // POST /payments/create-pok-credit-pack-order
@@ -1491,6 +1436,7 @@ router.post("/payments/create-pok-credit-pack-order", pokOrderCreateLimiter, req
       currencyCode: pack.currency,
       description: `Kmcheck credit pack — ${pack.credits} credits`,
       merchantCustomReference: `pack|${userId}|${pack.id}|${Date.now()}`,
+      webhookUrl: (await resolvePokWebhookUrl()) ?? undefined,
     });
 
     const [payment] = await db.insert(paymentsTable).values({
@@ -1539,112 +1485,29 @@ router.post("/payments/confirm-pok-credit-pack-order", pokConfirmLimiter, requir
     return;
   }
 
-  const [payment] = await db.select().from(paymentsTable)
-    .where(eq(paymentsTable.pokOrderId, orderId))
-    .limit(1);
+  const result = await confirmPokPaymentByOrderId(orderId, {
+    userId,
+    source: "client",
+    expectedKind: "credit_pack",
+  });
 
-  if (!payment || payment.userId !== userId) {
-    res.status(404).json({ error: "Payment not found", code: "PAYMENT_NOT_FOUND" });
-    return;
-  }
-  if (payment.kind !== "credit_pack") {
-    res.status(400).json({ error: "Not a credit pack order", code: "WRONG_PAYMENT_KIND" });
-    return;
-  }
-
-  const credits = Number(payment.credits ?? 0);
-  if (credits < 1) {
-    res.status(500).json({ error: "Invalid credit pack payment", code: "INVALID_CREDITS" });
-    return;
-  }
-
-  if (payment.status === "completed") {
-    const [user] = await db.select({ creditBalance: usersTable.creditBalance })
-      .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (result.ok) {
     res.json({
       success: true,
-      paymentId: payment.id,
-      creditsAdded: 0,
-      creditBalance: user?.creditBalance ?? 0,
-    });
-    return;
-  }
-
-  if (!(await resolvePokConfig())) {
-    res.status(503).json({ error: "Card payment is not configured.", code: "POK_NOT_CONFIGURED" });
-    return;
-  }
-
-  try {
-    const order = await ensurePokOrderCompleted(orderId);
-    if (!order.isCompleted) {
-      await db.update(paymentsTable)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(paymentsTable.pokOrderId, orderId));
-      logger.warn({ msg: "pok_pack_confirm_not_completed", orderId, userId });
-      res.status(402).json({
-        error: "Payment was not completed. Please try again.",
-        code: "PAYMENT_NOT_COMPLETED",
-      });
-      return;
-    }
-
-    if (!pokAmountsMatch(Number(payment.amount), payment.currency, order)) {
-      await db.update(paymentsTable)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(paymentsTable.pokOrderId, orderId));
-      logger.error({
-        msg: "pok_pack_confirm_amount_mismatch",
-        orderId,
-        paymentId: payment.id,
-        expectedAmount: payment.amount,
-        expectedCurrency: payment.currency,
-      });
-      res.status(402).json({
-        error: "Payment amount verification failed. Please contact support.",
-        code: "PAYMENT_AMOUNT_MISMATCH",
-      });
-      return;
-    }
-
-    const result = await completeCreditPackPayment(payment.id, userId, credits);
-    logger.info({
-      msg: "pok_credit_pack_confirmed",
-      orderId,
-      paymentId: payment.id,
-      userId,
-      creditsAdded: result.creditsAdded,
-      creditBalance: result.creditBalance,
+      paymentId: result.payment.id,
+      creditsAdded: result.creditsAdded ?? 0,
+      creditBalance: result.creditBalance ?? 0,
       alreadyCompleted: result.alreadyCompleted,
+      retryable: false,
     });
-
-    res.json({
-      success: true,
-      paymentId: payment.id,
-      creditsAdded: result.creditsAdded,
-      creditBalance: result.creditBalance,
-    });
-  } catch (err) {
-    logger.error({ err, orderId }, "POK credit-pack confirm failed");
-    const [fresh] = await db.select().from(paymentsTable)
-      .where(eq(paymentsTable.pokOrderId, orderId))
-      .limit(1);
-    if (fresh?.status === "completed") {
-      const [user] = await db.select({ creditBalance: usersTable.creditBalance })
-        .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-      res.json({
-        success: true,
-        paymentId: fresh.id,
-        creditsAdded: 0,
-        creditBalance: user?.creditBalance ?? 0,
-      });
-      return;
-    }
-    res.status(503).json({
-      error: "Failed to confirm payment. Please try again.",
-      code: "PAYMENT_CONFIRM_FAILED",
-    });
+    return;
   }
+
+  res.status(result.httpStatus).json({
+    error: result.error,
+    code: result.code,
+    retryable: result.retryable,
+  });
 });
 
 export default router;

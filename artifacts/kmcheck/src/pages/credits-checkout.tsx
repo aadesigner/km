@@ -10,6 +10,13 @@ import { AUTH_RETURN_PATH_KEY } from "@/lib/checkout-vin-flow";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { translateClientError } from "@/lib/translate-client-error";
+import {
+  clearPokCheckoutSession,
+  confirmPokOrderWithRetry,
+  markPokCheckoutAwaitingConfirm,
+  readPokCheckoutSession,
+  writePokCheckoutSession,
+} from "@/lib/pok-checkout-confirm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/seo";
@@ -84,6 +91,7 @@ export default function CreditsCheckout({ params }: Props) {
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
   const pokConfirmingRef = useRef(false);
+  const pokResumeAttemptedRef = useRef(false);
 
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<{ close: () => void } | null>(null);
@@ -160,22 +168,22 @@ export default function CreditsCheckout({ params }: Props) {
     setStatus("paying");
     setErrorMsg("");
     try {
-      const resp = await fetch(`${basePath}/api/payments/confirm-pok-credit-pack-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orderId }),
-      });
-      const data = await resp.json() as {
-        success?: boolean;
-        error?: string;
-        code?: string;
-      };
-      if (!resp.ok || !data.success) {
-        setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_capture"));
+      const outcome = await confirmPokOrderWithRetry(
+        () => fetch(`${basePath}/api/payments/confirm-pok-credit-pack-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ orderId }),
+        }),
+        { shouldContinue: () => activeRef.current },
+      );
+      if (!activeRef.current) return;
+      if (!outcome.ok) {
+        setErrorMsg(translateClientError(t, outcome.data.code, outcome.data.error) || t("checkout_error_capture"));
         setStatus("error");
         return;
       }
+      clearPokCheckoutSession();
       setStatus("success");
       void refreshUser();
     } catch {
@@ -263,6 +271,20 @@ export default function CreditsCheckout({ params }: Props) {
     await buttons.render(paypalContainerRef.current);
   }, [pubSettings?.paypalClientId, refetchPubSettings, resolvedTheme, t]);
 
+  useEffect(() => {
+    if (!pokEnabled || pokResumeAttemptedRef.current || pokConfirmingRef.current) return;
+    const session = readPokCheckoutSession();
+    if (!session || session.kind !== "credit_pack") return;
+    if (session.phase !== "confirm") return;
+    if (pokOrderId) return;
+
+    pokResumeAttemptedRef.current = true;
+    setPokOrderId(session.orderId);
+    setPayMethod("card");
+    setPaymentStarted(true);
+    void finalizePokCapture(session.orderId);
+  }, [pokEnabled, pokOrderId, finalizePokCapture]);
+
   const handleStartPayment = async () => {
     if (!pack) return;
     if (pubSettingsLoading) return;
@@ -286,6 +308,7 @@ export default function CreditsCheckout({ params }: Props) {
           return;
         }
         setPokOrderId(data.orderId);
+        writePokCheckoutSession({ orderId: data.orderId, kind: "credit_pack", phase: "created" });
         setStatus("idle");
       } catch {
         setErrorMsg(t("checkout_error_payment_create"));
@@ -588,7 +611,12 @@ export default function CreditsCheckout({ params }: Props) {
                       <PokGuestCheckout
                         orderId={pokOrderId}
                         pokEnv={pubSettings?.pokEnv === "staging" ? "staging" : "production"}
-                        onSuccess={() => { void finalizePokCapture(pokOrderId); }}
+                        onSuccess={() => {
+                          if (pokOrderId) {
+                            markPokCheckoutAwaitingConfirm({ orderId: pokOrderId, kind: "credit_pack" });
+                          }
+                          void finalizePokCapture(pokOrderId);
+                        }}
                         onError={(message) => {
                           setErrorMsg(message);
                           setStatus("error");

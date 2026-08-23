@@ -11,6 +11,7 @@
     "seo:add-de-fr-bg": "node scripts/add-de-fr-bg-seo-data.mjs",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "qa:payment": "node scripts/qa-payment-checkout.mjs",
     "qa:resilience": "node scripts/qa-resilience.mjs",
     "qa:seo": "node scripts/qa-seo.mjs",
     "qa:seo-keywords": "node scripts/qa-seo-keywords.mjs",

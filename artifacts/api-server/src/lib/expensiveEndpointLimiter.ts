@@ -69,6 +69,21 @@ export const pokConfirmLimiter = rateLimit({
   keyGenerator: userOrIpKey,
 });
 
+/** POK inbound webhooks — per IP, generous for provider retries. */
+export const pokWebhookLimiter = rateLimit({
+  windowMs: 60_000,
+  max: Number(process.env.POK_WEBHOOK_RATE_MAX ?? 120),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many webhook requests." },
+  keyGenerator: (req) => {
+    const raw = (String(req.headers["x-forwarded-for"] ?? "")).split(",")[0]?.trim()
+      || req.socket.remoteAddress
+      || "unknown";
+    return raw === "unknown" ? raw : `ip:${ipKeyGenerator(raw)}`;
+  },
+});
+
 /** Post-payment lookup — provider path is async but still bounded per user. */
 export const vinLookupUserLimiter = rateLimit({
   windowMs: 60_000,

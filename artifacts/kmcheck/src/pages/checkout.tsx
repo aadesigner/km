@@ -41,6 +41,13 @@ import {
   readPaypalCheckoutSession,
   shouldResumePaypalCapture,
 } from "@/lib/checkout-vin-flow";
+import {
+  clearPokCheckoutSession,
+  confirmPokOrderWithRetry,
+  markPokCheckoutAwaitingConfirm,
+  readPokCheckoutSession,
+  writePokCheckoutSession,
+} from "@/lib/pok-checkout-confirm";
 import { cn } from "@/lib/utils";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { CheckoutPaymentLogos, usePreloadCheckoutPaymentLogos } from "@/components/checkout-payment-logos";
@@ -199,6 +206,7 @@ export default function Checkout({ params }: Props) {
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
   const [pokPaymentId, setPokPaymentId] = useState<number | null>(null);
   const pokConfirmingRef = useRef(false);
+  const pokResumeAttemptedRef = useRef(false);
   /** Prevents overlapping create-pok-order calls (double-click / Strict Mode). */
   const pokCreatingRef = useRef(false);
   const pokCreateGenRef = useRef(0);
@@ -570,6 +578,7 @@ export default function Checkout({ params }: Props) {
     paypalFlowPhaseRef.current = "done";
     freeCouponPaymentIdRef.current = null;
     clearCheckoutPaymentResumeState();
+    clearPokCheckoutSession();
     goToVinReport(reportVin, lookupId, { refreshClientArea: true });
   };
 
@@ -1310,6 +1319,7 @@ export default function Checkout({ params }: Props) {
         if (orderId) {
           setPokOrderId(orderId);
           setPokPaymentId(Number.isFinite(paymentIdNum) ? paymentIdNum : null);
+          writePokCheckoutSession({ orderId, vin: nvin, kind: "vin_report", phase: "created" });
           setErrorMsg("");
           setStatus("idle");
           return;
@@ -1394,43 +1404,87 @@ export default function Checkout({ params }: Props) {
     }
   };
 
-  const handlePokSuccess = async () => {
+  const confirmPokAndDeliver = useCallback(async (orderId: string, nvin: string, paymentIdHint?: number | null) => {
     if (pokConfirmingRef.current) return;
-    const orderId = pokOrderId;
-    const nvin = validateVin() ?? vin.trim().toUpperCase();
-    if (!orderId || !nvin) return;
     pokConfirmingRef.current = true;
+    setPaymentStarted(true);
     setStatus("paying");
     setPayingPhase("payment");
     setErrorMsg("");
     try {
-      const resp = await fetch(`${basePath}/api/payments/confirm-pok-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orderId }),
-      });
-      const result = await resp.json() as {
-        success?: boolean;
-        error?: string;
-        code?: string;
-        vin?: string;
-        paymentId?: number;
-      };
-      if (!resp.ok || !result.success) {
-        setErrorMsg(translateClientError(t, result.code, result.error));
+      const outcome = await confirmPokOrderWithRetry(
+        () => fetch(`${basePath}/api/payments/confirm-pok-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ orderId }),
+        }),
+        { shouldContinue: () => checkoutActiveRef.current },
+      );
+      if (!checkoutActiveRef.current) return;
+      if (!outcome.ok) {
+        setErrorMsg(translateClientError(t, outcome.data.code, outcome.data.error));
         setStatus("error");
         return;
       }
+      clearPokCheckoutSession();
       setPayingPhase("report");
-      await submitVinLookup(result.vin ?? nvin, undefined, result.paymentId ?? pokPaymentId ?? undefined);
+      await submitVinLookupRef.current(
+        outcome.data.vin ?? nvin,
+        undefined,
+        outcome.data.paymentId ?? paymentIdHint ?? pokPaymentId ?? undefined,
+      );
     } catch {
+      if (!checkoutActiveRef.current) return;
       setErrorMsg(t("checkout_error_capture"));
       setStatus("error");
     } finally {
       pokConfirmingRef.current = false;
     }
+  }, [basePath, pokPaymentId, t]);
+
+  const handlePokSuccess = async () => {
+    const orderId = pokOrderId;
+    const nvin = validateVin() ?? vin.trim().toUpperCase();
+    if (!orderId || !nvin) return;
+    markPokCheckoutAwaitingConfirm({ orderId, vin: nvin, kind: "vin_report" });
+    await confirmPokAndDeliver(orderId, nvin, pokPaymentId);
   };
+
+  // Resume POK confirm after refresh / tab restore (webhook may have completed payment server-side).
+  useEffect(() => {
+    if (postAuthPrefillLandingRef.current) return;
+    if (!isLoaded || !isSignedIn || !vinIsValid || peekLoadingUi) return;
+    if (!pubSettings?.pokEnabled || pubSettingsLoading) return;
+    if (pokResumeAttemptedRef.current || pokConfirmingRef.current) return;
+    if (isFreeCoupon) return;
+    if (payMethod === "paypal" && !pokOrderId) return;
+
+    const session = readPokCheckoutSession();
+    if (!session || session.kind === "credit_pack") return;
+    if (session.phase !== "confirm") return;
+    if (session.vin && session.vin !== normalizedVin) return;
+    if (peekForVin?.alreadyUnlocked && peekForVin.lookupId) return;
+
+    pokResumeAttemptedRef.current = true;
+    setPokOrderId(session.orderId);
+    setPayMethod("card");
+    void confirmPokAndDeliver(session.orderId, normalizedVin);
+  }, [
+    isLoaded,
+    isSignedIn,
+    vinIsValid,
+    peekLoadingUi,
+    normalizedVin,
+    peekForVin?.alreadyUnlocked,
+    peekForVin?.lookupId,
+    pubSettings?.pokEnabled,
+    pubSettingsLoading,
+    isFreeCoupon,
+    payMethod,
+    pokOrderId,
+    confirmPokAndDeliver,
+  ]);
 
   const isBusy = status === "creating" || status === "paying";
   const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;

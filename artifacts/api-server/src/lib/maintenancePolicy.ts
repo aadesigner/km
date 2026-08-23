@@ -80,6 +80,7 @@ export function isExemptMaintenanceApiPath(path: string): boolean {
   if (p.startsWith("/admin/")) return true;
   if (p === "/payments/public-settings") return true;
   if (p === "/payments/current-pricing") return true;
+  if (p === "/payments/webhook/pok") return true;
   if (p === "/plugins/geo-language") return true;
   if (p.startsWith("/announcements")) return true;
   return false;

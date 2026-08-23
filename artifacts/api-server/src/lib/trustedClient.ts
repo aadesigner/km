@@ -12,6 +12,7 @@ const EXEMPT_PREFIXES = [
   "/auth/facebook",
   "/auth/linkedin",
   "/vin/image",
+  "/payments/webhook/pok",
 ];
 
 export function isExemptApiPath(path: string): boolean {

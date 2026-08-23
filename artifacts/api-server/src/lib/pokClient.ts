@@ -158,12 +158,15 @@ async function login(config: PokConfig): Promise<string> {
   return token;
 }
 
+export type PokFetchOptions = RequestInit & { retryAuth?: boolean; timeoutMs?: number };
+
 async function pokFetch<T>(
   config: PokConfig,
   path: string,
-  init?: RequestInit & { retryAuth?: boolean },
+  init?: PokFetchOptions,
 ): Promise<T> {
   const token = await login(config);
+  const timeoutMs = init?.timeoutMs ?? 5_000;
   const resp = await fetch(`${config.baseUrl}${path}`, {
     ...init,
     headers: {
@@ -171,7 +174,7 @@ async function pokFetch<T>(
       Authorization: `Bearer ${token}`,
       ...(init?.headers ?? {}),
     },
-    signal: init?.signal ?? AbortSignal.timeout(5_000),
+    signal: init?.signal ?? AbortSignal.timeout(timeoutMs),
   });
 
   if (resp.status === 401 && init?.retryAuth !== false) {
@@ -236,14 +239,14 @@ export async function createPokSdkOrder(input: CreatePokOrderInput): Promise<Pok
   return { ...order, id };
 }
 
-export async function getPokSdkOrder(orderId: string): Promise<PokSdkOrder> {
+export async function getPokSdkOrder(orderId: string, opts?: { timeoutMs?: number }): Promise<PokSdkOrder> {
   const config = await resolvePokConfig();
   if (!config) throw new Error("POK_NOT_CONFIGURED");
 
   const body = await pokFetch<PokEnvelope<{ sdkOrder?: PokSdkOrder } | PokSdkOrder>>(
     config,
     `/sdk-orders/${encodeURIComponent(orderId)}`,
-    { method: "GET" },
+    { method: "GET", timeoutMs: opts?.timeoutMs ?? 12_000 },
   );
 
   const data = body.data;
@@ -265,7 +268,7 @@ export async function guestConfirmPokOrder(orderId: string): Promise<PokSdkOrder
     const body = await pokFetch<PokEnvelope<{ sdkOrder?: PokSdkOrder }>>(
       config,
       `/sdk-orders/${encodeURIComponent(orderId)}/guest-confirm`,
-      { method: "POST", body: "{}" },
+      { method: "POST", body: "{}", timeoutMs: 15_000 },
     );
     return body.data?.sdkOrder ?? null;
   } catch (err) {
@@ -276,6 +279,53 @@ export async function guestConfirmPokOrder(orderId: string): Promise<PokSdkOrder
     });
     return null;
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Poll POK until isCompleted or delays exhausted (~15s after first read). */
+export async function waitForPokOrderCompleted(
+  orderId: string,
+): Promise<{ order: PokSdkOrder; completed: boolean; attempts: number }> {
+  const delaysMs = [0, 2_000, 5_000, 10_000, 15_000];
+  let guestConfirmAttempted = false;
+  let lastOrder: PokSdkOrder = { id: orderId, isCompleted: false };
+
+  for (let i = 0; i < delaysMs.length; i++) {
+    if (i > 0) await sleep(delaysMs[i]! - delaysMs[i - 1]!);
+
+    try {
+      lastOrder = await getPokSdkOrder(orderId, { timeoutMs: 12_000 });
+      if (lastOrder.isCompleted) {
+        return { order: lastOrder, completed: true, attempts: i + 1 };
+      }
+      if (!guestConfirmAttempted) {
+        guestConfirmAttempted = true;
+        const confirmed = await guestConfirmPokOrder(orderId);
+        if (confirmed?.isCompleted) {
+          return { order: confirmed, completed: true, attempts: i + 1 };
+        }
+        if (confirmed) lastOrder = confirmed;
+      }
+    } catch (err) {
+      logger.warn({
+        msg: "pok_poll_error",
+        orderId,
+        attempt: i + 1,
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  try {
+    lastOrder = await getPokSdkOrder(orderId, { timeoutMs: 12_000 });
+  } catch {
+    // keep last known snapshot
+  }
+
+  return { order: lastOrder, completed: !!lastOrder.isCompleted, attempts: delaysMs.length };
 }
 
 export function pokAmountsMatch(
@@ -294,12 +344,56 @@ export function pokAmountsMatch(
   return candidates.some((got) => Math.abs(got - expected) < 0.02 || Math.abs(got - expected * 100) < 1);
 }
 
-/** Ensure order is completed (guest-confirm if needed) and return fresh order. */
+/** Ensure order is completed (guest-confirm + poll if needed) and return fresh order. */
 export async function ensurePokOrderCompleted(orderId: string): Promise<PokSdkOrder> {
-  let order = await getPokSdkOrder(orderId);
-  if (order.isCompleted) return order;
-
-  await guestConfirmPokOrder(orderId);
-  order = await getPokSdkOrder(orderId);
+  const { order } = await waitForPokOrderCompleted(orderId);
   return order;
+}
+
+/** Public webhook URL registered on POK orders (server-side only). */
+export async function resolvePokWebhookUrl(): Promise<string | null> {
+  const settings = await getEffectiveSystemSettings();
+  const siteUrl = (
+    settings?.siteUrl?.trim()
+    || process.env.SITE_URL?.trim()
+    || "https://kmcheck.com"
+  ).replace(/\/$/, "");
+  if (!siteUrl.startsWith("http")) return null;
+  return `${siteUrl}/api/payments/webhook/pok`;
+}
+
+/** Shared secret for inbound POK webhooks (optional but recommended in production). */
+export function resolvePokWebhookSecret(config?: PokConfig | null): string | null {
+  const fromEnv = process.env.POK_WEBHOOK_SECRET?.trim();
+  if (fromEnv) return fromEnv;
+  const keySecret = config?.keySecret?.trim();
+  return keySecret || null;
+}
+
+/** Extract sdk order id from POK webhook JSON (shape varies). */
+export function extractPokOrderIdFromWebhook(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const root = body as Record<string, unknown>;
+  const data = root.data;
+  const candidates: unknown[] = [
+    root.sdkOrderId,
+    root.orderId,
+    root.id,
+  ];
+  if (data && typeof data === "object") {
+    const d = data as Record<string, unknown>;
+    candidates.push(d.sdkOrderId, d.orderId, d.id);
+    const sdkOrder = d.sdkOrder;
+    if (sdkOrder && typeof sdkOrder === "object") {
+      candidates.push((sdkOrder as Record<string, unknown>).id);
+    }
+  }
+  const sdkOrderRoot = root.sdkOrder;
+  if (sdkOrderRoot && typeof sdkOrderRoot === "object") {
+    candidates.push((sdkOrderRoot as Record<string, unknown>).id);
+  }
+  for (const c of candidates) {
+    if (typeof c === "string" && POK_ORDER_ID_RE.test(c)) return c;
+  }
+  return null;
 }

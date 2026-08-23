@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { pokAmountsMatch, POK_ORDER_ID_RE, getPokEnv } from "./pokClient.js";
+
+process.env.DATABASE_URL = process.env.DATABASE_URL ?? "postgresql://qa:qa@127.0.0.1:5432/qa";
+
+import { pokAmountsMatch, POK_ORDER_ID_RE, getPokEnv, extractPokOrderIdFromWebhook } from "./pokClient.js";
 
 describe("pokClient", () => {
   it("validates UUID order ids", () => {
@@ -29,5 +32,12 @@ describe("pokClient", () => {
     process.env.POK_ENV = "production";
     expect(getPokEnv({ pokEnv: "staging" })).toBe("staging");
     process.env.POK_ENV = prev;
+  });
+
+  it("extracts sdk order id from webhook payloads", () => {
+    const id = "8ee5193a-7592-464d-91ba-dc2206edd133";
+    expect(extractPokOrderIdFromWebhook({ data: { sdkOrder: { id } } })).toBe(id);
+    expect(extractPokOrderIdFromWebhook({ orderId: id })).toBe(id);
+    expect(extractPokOrderIdFromWebhook({ orderId: "bad" })).toBeNull();
   });
 });
