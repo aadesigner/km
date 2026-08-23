@@ -272,7 +272,7 @@ function CountryLang(props: { params: { lang: string; country: string } }) {
   );
 }
 
-/** Signed-in report route by numeric lookup ID (checkout redirects here while status is fulfilling). */
+/** Signed-in report route by numeric lookup ID (legacy; VinResult redirects to /vin/:VIN). */
 function VinLookupRoute(props: { params: { lang: string; id: string } }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [, setLocation] = useLocation();

@@ -80,7 +80,7 @@ async function canAccessVinShare(
   return userOwnsVinReport(userId, vin);
 }
 
-/** True when this user purchased or completed a lookup for the VIN (admin included). */
+/** True when this user purchased, is awaiting delivery, or completed a lookup for the VIN (admin included). */
 async function userOwnsVinReport(userId: string, vin: string): Promise<boolean> {
   const [userRow] = await db
     .select({ isAdmin: usersTable.isAdmin })
@@ -112,11 +112,27 @@ async function userOwnsVinReport(userId: string, vin: string): Promise<boolean> 
         or(
           eq(vinLookupsTable.status, "complete"),
           eq(vinLookupsTable.status, "pending_manual"),
+          eq(vinLookupsTable.status, VIN_FULFILLING_STATUS),
         ),
       ),
     )
     .limit(1);
-  return !!lookup;
+  if (lookup) return true;
+
+  const [pendingFreeCoupon] = await db
+    .select({ id: paymentsTable.id })
+    .from(paymentsTable)
+    .where(
+      and(
+        eq(paymentsTable.userId, userId),
+        eq(paymentsTable.vin, vin),
+        eq(paymentsTable.status, "pending"),
+        eq(paymentsTable.amount, 0),
+        sql`${paymentsTable.couponCode} IS NOT NULL`,
+      ),
+    )
+    .limit(1);
+  return !!pendingFreeCoupon;
 }
 
 // Public VIN report — rate limit untrusted direct API access only

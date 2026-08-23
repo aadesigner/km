@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { useTranslation } from "@/i18n/context";
-import { parseVinRouteParam } from "@/lib/vin-route";
+import { isVin17, parseVinRouteParam } from "@/lib/vin-route";
 import { VIN_REPORT_QUERY_OPTIONS, vinReportRefetchInterval } from "@/lib/vin-report-cache";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
@@ -476,6 +476,15 @@ export default function VinResult({ params }: Props) {
   const isLoadingInitial = !lookup && (isLoading || isFetching);
   useQueryRecovery(!!isFetchError && !!lookup, isFetching, refetchLookup);
   const [, setLocation] = useLocation();
+
+  // Legacy numeric URLs (/vin/138) redirect to the canonical VIN page once the row is loaded.
+  useEffect(() => {
+    if (route?.kind !== "lookupId") return;
+    const resolvedVin = lookup?.vin?.trim().toUpperCase() ?? "";
+    if (!isVin17(resolvedVin)) return;
+    setLocation(`/${language}/vin/${resolvedVin}`, { replace: true });
+  }, [route?.kind, lookup?.vin, language, setLocation]);
+
   const [expandedAccidents, setExpandedAccidents] = useState<Set<number>>(new Set());
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 

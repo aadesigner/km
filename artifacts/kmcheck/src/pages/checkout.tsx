@@ -528,9 +528,8 @@ export default function Checkout({ params }: Props) {
 
   const goToVinReport = (reportVin: string, lookupId?: number, opts?: { refreshClientArea?: boolean }) => {
     const target = normalizeCheckoutVin(reportVin);
-    const redirectKey = lookupId != null ? `id:${lookupId}` : target;
-    if (checkoutRedirectedRef.current === redirectKey) return;
-    checkoutRedirectedRef.current = redirectKey;
+    if (checkoutRedirectedRef.current === target) return;
+    checkoutRedirectedRef.current = target;
     sessionStorage.removeItem(PENDING_VIN_KEY);
     sessionStorage.removeItem(CHECKOUT_VIN_KEY);
     // Clear any stale 404 from a prior visit to this VIN route before delivery finished.
@@ -540,8 +539,7 @@ export default function Checkout({ params }: Props) {
     if (opts?.refreshClientArea) {
       refreshClientAreaAfterUnlock(queryClient);
     }
-    const pathSegment = lookupId != null ? String(lookupId) : target;
-    setLocation(`/${language}/vin/${pathSegment}`);
+    setLocation(`/${language}/vin/${target}`);
   };
 
   type VinDeliveryProbe = { status?: string; vin?: string };
