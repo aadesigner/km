@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Willkommen bei kmcheck",
   "check_vin": "VIN prüfen",
   "check_vin_short": "Prüfen",
@@ -396,7 +396,7 @@
   "toggle_theme": "Design wechseln",
   "limited_time": "Zeitlich begrenzt",
   "what_we_check": "Was wir prüfen",
-  "what_we_check_sub": "Vier Prüfungen in jedem Bericht",
+  "what_we_check_sub": "Vier tiefe Prüfungen in jedem Bericht — echte Statistiken, echte Fälle, Live-Daten.",
   "what_we_check_report_shows": "Was Ihr Bericht zeigt",
   "what_we_check_real_example": "Praxisbeispiel",
   "feature_mileage_desc": "Km-Angaben auf Rückdrehungen geprüft.",
@@ -1124,7 +1124,7 @@
   "auction_buy_now": "Sofort kaufen",
   "auction_final_price": "Verkauft für",
   "auction_no_records": "Keine Auktionsdaten verfügbar",
-  "home_badge_most_checked": "Am häufigsten geprüfte Risiken",
+  "home_badge_most_checked": "Jeder Bericht enthält",
   "home_badge_3_steps": "3 einfache Schritte",
   "feature_mileage_example": "140.000-km-Rückdrehung bei einem Toyota von 2018 entdeckt",
   "feature_mileage_stat_value": "41 %",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} VIN-Berichte",
   "checkout_credits_left": "{n} Credits verfügbar",
   "credits_checkout_credit_notice": "Nach erfolgreicher Zahlung schreiben wir {n} Credits Ihrem Konto gut. Sie können sie später auf der Checkout-Seite als Zahlungsmethode nutzen.",
-  "dashboard_stat_credits_tooltip": "Nutzen Sie Credits als Zahlungsmethode, wenn Sie einen VIN-Bericht freischalten."
+  "dashboard_stat_credits_tooltip": "Nutzen Sie Credits als Zahlungsmethode, wenn Sie einen VIN-Bericht freischalten.",
+  "what_we_check_sample_badge": "Beispielbericht",
+  "what_we_check_report_title": "Fahrzeughistorienbericht",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Zusammenfassung",
+  "what_we_check_disclaimer": "Illustrative Vorschau. Ihr Bericht nutzt Live-Daten für Ihre VIN.",
+  "wwc_preview_mileage_status": "Rollback markiert",
+  "wwc_preview_mileage_clear": "Verifiziert",
+  "wwc_preview_accidents_status": "2 Einträge",
+  "wwc_preview_accidents_clear": "0 Einträge",
+  "wwc_preview_salvage_status": "Nicht markiert",
+  "wwc_preview_theft_status": "Nicht gemeldet",
+  "what_we_check_sections": "Berichtsabschnitte"
 }

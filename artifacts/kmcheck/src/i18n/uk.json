@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Ласкаво просимо до kmcheck",
   "check_vin": "Перевірити VIN",
   "check_vin_short": "Перевірити",
@@ -396,7 +396,7 @@
   "toggle_theme": "Змінити тему",
   "limited_time": "Обмежена пропозиція",
   "what_we_check": "Що ми перевіряємо",
-  "what_we_check_sub": "Чотири перевірки в кожному звіті",
+  "what_we_check_sub": "Чотири глибокі перевірки в кожному звіті — реальна статистика, реальні випадки, дані наживо.",
   "what_we_check_report_shows": "Що показує звіт",
   "what_we_check_real_example": "Реальний приклад",
   "feature_mileage_desc": "Пробіг звіряється на предмет скручування.",
@@ -1097,7 +1097,7 @@
   "auction_buy_now": "Купити зараз",
   "auction_final_price": "Продано за",
   "auction_no_records": "Записів аукціону не знайдено",
-  "home_badge_most_checked": "Найчастіші ризики",
+  "home_badge_most_checked": "Кожен звіт містить",
   "home_badge_3_steps": "3 прості кроки",
   "feature_mileage_example": "Відмотку 140 000 км на Toyota 2018",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} VIN-звітів",
   "checkout_credits_left": "{n} кредитів доступно",
   "credits_checkout_credit_notice": "Після успішної оплати ми додамо {n} кредитів на ваш обліковий запис. Пізніше ви зможете використати їх як спосіб оплати на сторінці оформлення.",
-  "dashboard_stat_credits_tooltip": "Використовуйте кредити як спосіб оплати, щоб розблокувати VIN-звіт."
+  "dashboard_stat_credits_tooltip": "Використовуйте кредити як спосіб оплати, щоб розблокувати VIN-звіт.",
+  "what_we_check_sample_badge": "Зразок звіту",
+  "what_we_check_report_title": "Звіт історії авто",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Підсумок",
+  "what_we_check_disclaimer": "Ілюстративний перегляд. Звіт використовує живі дані для вашого VIN.",
+  "wwc_preview_mileage_status": "Rollback виявлено",
+  "wwc_preview_mileage_clear": "Підтверджено",
+  "wwc_preview_accidents_status": "2 записи",
+  "wwc_preview_accidents_clear": "0 записів",
+  "wwc_preview_salvage_status": "Без позначки",
+  "wwc_preview_theft_status": "Не зафіксовано",
+  "what_we_check_sections": "Розділи звіту"
 }

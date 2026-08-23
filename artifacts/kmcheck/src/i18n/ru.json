@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Добро пожаловать в kmcheck",
   "check_vin": "Проверить VIN",
   "check_vin_short": "Проверить",
@@ -396,7 +396,7 @@
   "toggle_theme": "Переключить тему",
   "limited_time": "Ограниченное предложение",
   "what_we_check": "Что мы проверяем",
-  "what_we_check_sub": "Четыре проверки в каждом отчёте",
+  "what_we_check_sub": "Четыре глубокие проверки в каждом отчёте — реальная статистика, реальные случаи, живые данные.",
   "what_we_check_report_shows": "Что показывает отчёт",
   "what_we_check_real_example": "Реальный пример",
   "feature_mileage_desc": "Пробег сверяется на предмет скрутки.",
@@ -1097,7 +1097,7 @@
   "auction_buy_now": "Купить сейчас",
   "auction_final_price": "Продано за",
   "auction_no_records": "Записей аукциона не найдено",
-  "home_badge_most_checked": "Самые частые риски",
+  "home_badge_most_checked": "Каждый отчёт включает",
   "home_badge_3_steps": "3 простых шага",
   "feature_mileage_example": "Откат 140 000 км на Toyota 2018",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} VIN-отчётов",
   "checkout_credits_left": "{n} кредитов доступно",
   "credits_checkout_credit_notice": "После успешной оплаты мы добавим {n} кредитов на ваш аккаунт. Позже вы сможете использовать их как способ оплаты на странице оформления заказа.",
-  "dashboard_stat_credits_tooltip": "Используйте кредиты как способ оплаты, чтобы открыть VIN-отчёт."
+  "dashboard_stat_credits_tooltip": "Используйте кредиты как способ оплаты, чтобы открыть VIN-отчёт.",
+  "what_we_check_sample_badge": "Пример отчёта",
+  "what_we_check_report_title": "Отчёт об истории авто",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Сводка",
+  "what_we_check_disclaimer": "Иллюстрация. Отчёт использует актуальные данные по вашему VIN.",
+  "wwc_preview_mileage_status": "Rollback обнаружен",
+  "wwc_preview_mileage_clear": "Подтверждено",
+  "wwc_preview_accidents_status": "2 записи",
+  "wwc_preview_accidents_clear": "0 записей",
+  "wwc_preview_salvage_status": "Без отметки",
+  "wwc_preview_theft_status": "Не зафиксировано",
+  "what_we_check_sections": "Разделы отчёта"
 }

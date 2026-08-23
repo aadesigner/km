@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Bun venit la kmcheck",
   "check_vin": "Verifică VIN",
   "check_vin_short": "Verifică",
@@ -396,7 +396,7 @@
   "toggle_theme": "Comută tema",
   "limited_time": "Timp limitat",
   "what_we_check": "Ce verificăm",
-  "what_we_check_sub": "Patru verificări în fiecare raport",
+  "what_we_check_sub": "Patru verificări aprofundate în fiecare raport — statistici reale, cazuri reale, date live.",
   "what_we_check_report_shows": "Ce arată raportul dumneavoastră",
   "what_we_check_real_example": "Exemplu din practică",
   "feature_mileage_desc": "Kilometraj verificat încrucișat pentru manipulări.",
@@ -1107,7 +1107,7 @@
   "auction_buy_now": "Cumpără acum",
   "auction_final_price": "Vândut pentru",
   "auction_no_records": "Nu există înregistrări de licitație",
-  "home_badge_most_checked": "Riscuri cele mai verificate",
+  "home_badge_most_checked": "Fiecare raport include",
   "home_badge_3_steps": "3 pași simpli",
   "feature_mileage_example": "Manipulare de 140.000 km detectată la un Toyota 2018",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} rapoarte VIN",
   "checkout_credits_left": "{n} credite disponibile",
   "credits_checkout_credit_notice": "După o plată reușită, adăugăm {n} credite în contul tău. Le poți folosi ulterior ca metodă de plată pe pagina de checkout.",
-  "dashboard_stat_credits_tooltip": "Folosește creditele ca metodă de plată pentru a debloca un raport VIN."
+  "dashboard_stat_credits_tooltip": "Folosește creditele ca metodă de plată pentru a debloca un raport VIN.",
+  "what_we_check_sample_badge": "Raport exemplu",
+  "what_we_check_report_title": "Raport istoric vehicul",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Rezumat",
+  "what_we_check_disclaimer": "Previzualizare ilustrativă. Raportul folosește date reale pentru VIN-ul dvs.",
+  "wwc_preview_mileage_status": "Rollback semnalat",
+  "wwc_preview_mileage_clear": "Verificat",
+  "wwc_preview_accidents_status": "2 înregistrări",
+  "wwc_preview_accidents_clear": "0 înregistrate",
+  "wwc_preview_salvage_status": "Neflagat",
+  "wwc_preview_theft_status": "Neraportat",
+  "what_we_check_sections": "Secțiuni raport"
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Добре дошли в kmcheck",
   "check_vin": "Проверка на VIN",
   "check_vin_short": "Проверка",
@@ -396,7 +396,7 @@
   "toggle_theme": "Смени темата",
   "limited_time": "Ограничено време",
   "what_we_check": "Какво проверяваме",
-  "what_we_check_sub": "Четири проверки във всеки отчет",
+  "what_we_check_sub": "Четири дълбоки проверки във всеки отчет — реални статистики, реални случаи, данни на живо.",
   "what_we_check_report_shows": "Какво показва вашият отчет",
   "what_we_check_real_example": "Реален пример",
   "feature_mileage_desc": "Показания в км, кръстосано проверени за манипулации.",
@@ -1124,7 +1124,7 @@
   "auction_buy_now": "Купи сега",
   "auction_final_price": "Продаден за",
   "auction_no_records": "Няма налични търгови записи",
-  "home_badge_most_checked": "Най-проверявани рискове",
+  "home_badge_most_checked": "Всеки отчет включва",
   "home_badge_3_steps": "3 прости стъпки",
   "feature_mileage_example": "Открита манипулация от 140 000 км при Toyota 2018",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} VIN доклада",
   "checkout_credits_left": "{n} кредита налични",
   "credits_checkout_credit_notice": "След успешно плащане ще добавим {n} кредита към акаунта ви. По-късно можете да ги използвате като метод на плащане в страницата за плащане.",
-  "dashboard_stat_credits_tooltip": "Използвайте кредитите като метод на плащане, за да отключите VIN доклад."
+  "dashboard_stat_credits_tooltip": "Използвайте кредитите като метод на плащане, за да отключите VIN доклад.",
+  "what_we_check_sample_badge": "Примерен отчет",
+  "what_we_check_report_title": "Отчет за история на превозното средство",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Обобщение",
+  "what_we_check_disclaimer": "Илюстративен преглед. Отчетът използва реални данни за вашия VIN.",
+  "wwc_preview_mileage_status": "Rollback отбелязан",
+  "wwc_preview_mileage_clear": "Потвърден",
+  "wwc_preview_accidents_status": "2 записа",
+  "wwc_preview_accidents_clear": "0 записани",
+  "wwc_preview_salvage_status": "Без флаг",
+  "wwc_preview_theft_status": "Без доклад",
+  "what_we_check_sections": "Секции на отчета"
 }

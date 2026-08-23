@@ -18,27 +18,16 @@ export function useDisplayPrice(): DisplayPriceResult {
     query: orvalQuery<PricingConfig>(STATIC_QUERY_OPTIONS),
   });
 
-  const active = pricing ?? (isLoading ? DEFAULT_PRICING : null);
+  // Match server: always show catalog defaults when `/api/payments/current-pricing` is slow or unreachable.
+  const active = pricing ?? DEFAULT_PRICING;
 
-  const currency = active?.currency ?? DEFAULT_PRICING.currency;
+  const currency = active.currency ?? DEFAULT_PRICING.currency;
   const currencySymbol =
     currency === "EUR" ? "€"
     : currency === "USD" ? "$"
     : currency;
 
   const fmtPrice = (amount: number): string => formatDisplayPrice(amount, currencySymbol);
-
-  if (!active) {
-    return {
-      displayPrice: null,
-      basePrice: null,
-      isDiscount: false,
-      loading: isLoading,
-      currencySymbol,
-      currency,
-      fmtPrice,
-    };
-  }
 
   const isDiscount = active.discountEnabled;
   const displayPrice = normalizeCatalogPrice(
@@ -51,7 +40,7 @@ export function useDisplayPrice(): DisplayPriceResult {
     displayPrice,
     basePrice,
     isDiscount,
-    loading: isLoading && !pricing,
+    loading: isLoading && pricing == null,
     currencySymbol,
     currency,
     fmtPrice,

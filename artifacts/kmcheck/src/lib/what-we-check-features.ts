@@ -7,6 +7,7 @@ export type WhatWeCheckMarket = "usa" | "korea" | "canada" | "china" | "uae";
 type FeatureId = "mileage" | "accidents" | "salvage" | "theft";
 
 export type WhatWeCheckFeature = {
+  id: FeatureId;
   icon: LucideIcon;
   title: string;
   desc: string;
@@ -142,7 +143,7 @@ function buildFeature(
   }[id];
 
   if (!market) {
-    return { ...base, includes: globalIncludes(t, id) };
+    return { id, ...base, includes: globalIncludes(t, id) };
   }
 
   const includes = COUNTRY_INCLUDE_INDICES[market][id].map((i) => countryIncluded(t, market, i));
@@ -159,7 +160,7 @@ function buildFeature(
     ? countryStatLabel
     : base.statLabel;
 
-  return { ...base, seo, includes, example, statLabel };
+  return { id, ...base, seo, includes, example, statLabel };
 }
 
 export function useWhatWeCheckFeatures(

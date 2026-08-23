@@ -125,7 +125,9 @@ export default function Pricing() {
   const [selectedPack, setSelectedPack] = useState<CreditPackId>("pack3");
 
   const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
-  const displayPrice = rawDisplayPrice ?? 0;
+  const displayPrice =
+    rawDisplayPrice ??
+    (discountEnabled ? DEFAULT_PRICING.discountPrice : DEFAULT_PRICING.basePrice);
   const savePct =
     discountEnabled && basePrice
       ? Math.round(((basePrice - displayPrice) / basePrice) * 100)

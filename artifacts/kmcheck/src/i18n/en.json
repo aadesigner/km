@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Welcome to kmcheck",
   "check_vin": "Check VIN",
   "check_vin_short": "Check",
@@ -474,7 +474,7 @@
   "toggle_theme": "Toggle theme",
   "limited_time": "Limited Time",
   "what_we_check": "What We Check",
-  "what_we_check_sub": "Four checks in every report",
+  "what_we_check_sub": "Four deep checks in every report — real stats, real cases, live data.",
   "what_we_check_report_shows": "What your report shows",
   "what_we_check_real_example": "Real-world example",
   "feature_mileage_desc": "Km readings cross-checked for rollbacks.",
@@ -1209,7 +1209,7 @@
   "auction_buy_now": "Buy Now",
   "auction_final_price": "Sold For",
   "auction_no_records": "No auction records available",
-  "home_badge_most_checked": "Most checked risks",
+  "home_badge_most_checked": "Every report includes",
   "home_badge_3_steps": "3 simple steps",
   "feature_mileage_example": "140,000 km rollback caught on a 2018 Toyota",
   "feature_mileage_stat_value": "41%",
@@ -1677,5 +1677,17 @@
   "credits_checkout_pack_title": "{n} VIN Reports",
   "checkout_credits_left": "{n} credits available",
   "credits_checkout_credit_notice": "After a successful payment, we will add {n} credits to your account. You can use them later as a payment method on the checkout page.",
-  "dashboard_stat_credits_tooltip": "Use credits as a payment method when paying for a VIN report to unlock it."
+  "dashboard_stat_credits_tooltip": "Use credits as a payment method when paying for a VIN report to unlock it.",
+  "what_we_check_sample_badge": "Sample report",
+  "what_we_check_report_title": "Vehicle history report",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Summary",
+  "what_we_check_disclaimer": "Illustrative preview. Your report uses live data for your VIN.",
+  "wwc_preview_mileage_status": "Rollback flagged",
+  "wwc_preview_mileage_clear": "Verified",
+  "wwc_preview_accidents_status": "2 records found",
+  "wwc_preview_accidents_clear": "0 recorded",
+  "wwc_preview_salvage_status": "Not flagged",
+  "wwc_preview_theft_status": "Not reported",
+  "what_we_check_sections": "Report sections"
 }

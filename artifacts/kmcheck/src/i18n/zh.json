@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "欢迎使用 kmcheck",
   "check_vin": "查询 VIN",
   "check_vin_short": "查询",
@@ -417,7 +417,7 @@
   "toggle_theme": "切换主题",
   "limited_time": "限时",
   "what_we_check": "我们检查什么",
-  "what_we_check_sub": "每份报告四项核查",
+  "what_we_check_sub": "每份报告四项深度检查——真实数据、真实案例、实时来源。",
   "what_we_check_report_shows": "报告显示什么",
   "what_we_check_real_example": "真实案例",
   "feature_mileage_desc": "交叉核对公里数，发现回拨。",
@@ -1148,7 +1148,7 @@
   "auction_buy_now": "一口价",
   "auction_final_price": "成交价",
   "auction_no_records": "无拍卖记录",
-  "home_badge_most_checked": "最常查风险",
+  "home_badge_most_checked": "每份报告包含",
   "home_badge_3_steps": "3 个简单步骤",
   "feature_mileage_example": "2018 款丰田发现 14 万公里回拨",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} 份 VIN 报告",
   "checkout_credits_left": "可用额度 {n}",
   "credits_checkout_credit_notice": "付款成功后，我们将向您的账户添加 {n} 个积分。之后可在结账页将其用作支付方式。",
-  "dashboard_stat_credits_tooltip": "使用额度作为支付方式即可解锁 VIN 报告。"
+  "dashboard_stat_credits_tooltip": "使用额度作为支付方式即可解锁 VIN 报告。",
+  "what_we_check_sample_badge": "示例报告",
+  "what_we_check_report_title": "车辆历史报告",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "摘要",
+  "what_we_check_disclaimer": "仅为示意预览。您的报告将使用您 VIN 的实时数据。",
+  "wwc_preview_mileage_status": "发现回表",
+  "wwc_preview_mileage_clear": "已核实",
+  "wwc_preview_accidents_status": "2 条记录",
+  "wwc_preview_accidents_clear": "0 条记录",
+  "wwc_preview_salvage_status": "未标记",
+  "wwc_preview_theft_status": "未报告",
+  "what_we_check_sections": "报告章节"
 }

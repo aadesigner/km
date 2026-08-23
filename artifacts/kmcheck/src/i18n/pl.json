@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Witamy w kmcheck",
   "check_vin": "Sprawdź VIN",
   "check_vin_short": "Sprawdź",
@@ -396,7 +396,7 @@
   "toggle_theme": "Przełącz motyw",
   "limited_time": "Ograniczony czas",
   "what_we_check": "Co sprawdzamy",
-  "what_we_check_sub": "Cztery kontrole w każdym raporcie",
+  "what_we_check_sub": "Cztery dogłębne kontrole w każdym raporcie — prawdziwe statystyki, prawdziwe przypadki, dane na żywo.",
   "what_we_check_report_shows": "Co pokazuje Twój raport",
   "what_we_check_real_example": "Przykład z życia",
   "feature_mileage_desc": "Odczyty km krzyżowo weryfikowane pod kątem cofania.",
@@ -1107,7 +1107,7 @@
   "auction_buy_now": "Kup teraz",
   "auction_final_price": "Sprzedano za",
   "auction_no_records": "Brak rekordów aukcyjnych",
-  "home_badge_most_checked": "Najczęściej sprawdzane ryzyka",
+  "home_badge_most_checked": "Każdy raport zawiera",
   "home_badge_3_steps": "3 proste kroki",
   "feature_mileage_example": "Cofnięty przebieg 140 000 km wykryty w Toyocie z 2018 r.",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} raportów VIN",
   "checkout_credits_left": "{n} kredytów dostępnych",
   "credits_checkout_credit_notice": "Po udanej płatności dodamy {n} kredytów do Twojego konta. Możesz ich później użyć jako metody płatności na stronie płatności.",
-  "dashboard_stat_credits_tooltip": "Użyj kredytów jako metody płatności, aby odblokować raport VIN."
+  "dashboard_stat_credits_tooltip": "Użyj kredytów jako metody płatności, aby odblokować raport VIN.",
+  "what_we_check_sample_badge": "Przykładowy raport",
+  "what_we_check_report_title": "Raport historii pojazdu",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Podsumowanie",
+  "what_we_check_disclaimer": "Podgląd poglądowy. Raport używa rzeczywistych danych dla Twojego VIN.",
+  "wwc_preview_mileage_status": "Rollback wykryty",
+  "wwc_preview_mileage_clear": "Zweryfikowany",
+  "wwc_preview_accidents_status": "2 wpisy",
+  "wwc_preview_accidents_clear": "0 wpisów",
+  "wwc_preview_salvage_status": "Bez flagi",
+  "wwc_preview_theft_status": "Bez zgłoszenia",
+  "what_we_check_sections": "Sekcje raportu"
 }

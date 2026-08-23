@@ -5,6 +5,7 @@ import { useTranslation } from "@/i18n/context";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
+import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -258,8 +259,8 @@ export default function CountryPage({ params }: Props) {
     displayPrice: rawDisplay, basePrice: rawBase,
     isDiscount, loading: priceLoading, currencySymbol, fmtPrice,
   } = useDisplayPrice();
-  const displayPrice = rawDisplay ?? 0;
-  const basePrice    = rawBase    ?? 0;
+  const displayPrice = rawDisplay ?? DEFAULT_PRICING.discountPrice;
+  const basePrice = rawBase ?? DEFAULT_PRICING.basePrice;
 
   const heroPriceLine = (
     <div className="px-1 flex items-center justify-center gap-2 text-sm text-muted-foreground text-center w-full mx-auto">

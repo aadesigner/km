@@ -26,3 +26,7 @@ if (typeof window !== "undefined") {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+requestAnimationFrame(() => {
+  document.documentElement.classList.add("kmcheck-hydrated");
+});

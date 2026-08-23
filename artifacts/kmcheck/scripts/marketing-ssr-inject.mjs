@@ -48,16 +48,9 @@ export function resolveMarketingSsrContent(pageKey, rest, lang) {
 
 function buildMarketingSsrStyleBlock() {
   return `<style id="kmcheck-page-ssr-style">
-      .kmcheck-page-ssr{max-width:48rem;margin:1.5rem auto 2rem;padding:0 1rem;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#0f172a}
-      .kmcheck-page-ssr h1{margin:0 0 .75rem;font-size:1.75rem;line-height:1.2;font-weight:800}
-      .kmcheck-page-ssr .lead{margin:.75rem 0 1rem;font-size:1.05rem;color:#334155}
-      .kmcheck-page-ssr ul{margin:.75rem 0 1.25rem;padding-left:1.25rem}
-      .kmcheck-page-ssr li{margin:.35rem 0}
-      .kmcheck-page-ssr section{margin-top:1.25rem}
-      .kmcheck-page-ssr h2{margin:0 0 .35rem;font-size:1.1rem;line-height:1.3;font-weight:700}
-      .kmcheck-page-ssr p{margin:.5rem 0}
-      .dark .kmcheck-page-ssr{color:#f8fafc}
-      .dark .kmcheck-page-ssr .lead{color:#cbd5e1}
+      #root{position:relative;min-height:100vh}
+      #root .app-boot-shell{position:relative;z-index:1;min-height:100vh}
+      .kmcheck-page-ssr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
     </style>`;
 }
 
@@ -81,7 +74,7 @@ function buildMarketingSsrBodyBlock(content) {
     )
     .join("\n");
 
-  return `<main id="kmcheck-page-ssr" class="kmcheck-page-ssr">
+  return `<main id="kmcheck-page-ssr" class="kmcheck-page-ssr" aria-hidden="true">
       <article>
         <h1>${escapeMarketingHtml(content.h1)}</h1>
         <p class="lead">${escapeMarketingHtml(content.lead)}</p>
@@ -104,8 +97,8 @@ export function injectMarketingSsrIntoHtml(html, content) {
   const bodyBlock = buildMarketingSsrBodyBlock(content);
 
   out = out.replace(
-    /<div id="root">[\s\S]*?<\/div>\s*(?=<script type="module")/i,
-    `<div id="root">\n    ${bodyBlock}\n    </div>\n    `,
+    /(<div id="root">)([\s\S]*?)(<\/div>\s*(?=<script type="module"))/i,
+    `$1$2\n    ${bodyBlock}\n  $3`,
   );
 
   if (!out.includes('id="kmcheck-page-ssr-style"')) {

@@ -40,8 +40,8 @@ import {
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
 
 import AdminNotFound from "@/pages/admin/not-found";
+import Home from "@/pages/home";
 // Lazy-loaded
-const Home              = lazyWithRetry(() => import("@/pages/home"));
 const AdminLayout     = lazyWithRetry(() =>
   import("@/pages/admin/layout").then((m) => ({ default: m.AdminLayout })),
 );

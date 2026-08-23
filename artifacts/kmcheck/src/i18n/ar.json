@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "مرحباً بك في kmcheck",
   "check_vin": "تحقق من رقم الشاسيه",
   "check_vin_short": "تحقق",
@@ -396,7 +396,7 @@
   "toggle_theme": "تبديل المظهر",
   "limited_time": "عرض محدود",
   "what_we_check": "ما الذي نفحصه",
-  "what_we_check_sub": "أربعة فحوصات في كل تقرير",
+  "what_we_check_sub": "أربعة فحوصات عميقة في كل تقرير — إحصائيات حقيقية، حالات حقيقية، بيانات مباشرة.",
   "what_we_check_report_shows": "ما يظهره تقريرك",
   "what_we_check_real_example": "مثال واقعي",
   "feature_mileage_desc": "مقارنة الكيلومترات لكشف التلاعب.",
@@ -1097,7 +1097,7 @@
   "auction_buy_now": "اشتري الآن",
   "auction_final_price": "تم البيع بـ",
   "auction_no_records": "لا توجد سجلات مزاد",
-  "home_badge_most_checked": "أكثر المخاطر فحصاً",
+  "home_badge_most_checked": "كل تقرير يتضمن",
   "home_badge_3_steps": "3 خطوات بسيطة",
   "feature_mileage_example": "تراجع 140,000 كم على تويوتا 2018",
   "feature_mileage_stat_value": "41%",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} تقارير VIN",
   "checkout_credits_left": "{n} أرصدة متاحة",
   "credits_checkout_credit_notice": "بعد الدفع الناجح سنضيف {n} أرصدة إلى حسابك. يمكنك استخدامها لاحقاً كطريقة دفع في صفحة الدفع.",
-  "dashboard_stat_credits_tooltip": "استخدم الرصيد كطريقة دفع لفتح تقرير VIN."
+  "dashboard_stat_credits_tooltip": "استخدم الرصيد كطريقة دفع لفتح تقرير VIN.",
+  "what_we_check_sample_badge": "تقرير نموذجي",
+  "what_we_check_report_title": "تقرير تاريخ المركبة",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "الملخص",
+  "what_we_check_disclaimer": "معاينة توضيحية. تقريرك يستخدم بيانات حية لرقم VIN الخاص بك.",
+  "wwc_preview_mileage_status": "تم رصد rollback",
+  "wwc_preview_mileage_clear": "تم التحقق",
+  "wwc_preview_accidents_status": "سجلّان",
+  "wwc_preview_accidents_clear": "0 مسجّل",
+  "wwc_preview_salvage_status": "غير مُعلَّم",
+  "wwc_preview_theft_status": "غير مُبلَّغ",
+  "what_we_check_sections": "أقسام التقرير"
 }

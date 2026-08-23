@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Mirësevini në kmcheck",
   "check_vin": "Kontrollo VIN",
   "check_vin_short": "Kontrollo",
@@ -399,7 +399,7 @@
   "toggle_theme": "Ndrysho temën",
   "limited_time": "Ofertë e limituar",
   "what_we_check": "Çfarë kontrollojmë",
-  "what_we_check_sub": "Katër kontrolle në çdo raport",
+  "what_we_check_sub": "Katër kontrolle të thella në çdo raport — statistika reale, raste reale, të dhëna live.",
   "what_we_check_report_shows": "Çfarë tregon raporti juaj",
   "what_we_check_real_example": "Shembull real",
   "feature_mileage_desc": "Km krahasohen për manipulime.",
@@ -1101,7 +1101,7 @@
   "auction_buy_now": "Bli tani",
   "auction_final_price": "Shitur për",
   "auction_no_records": "Nuk ka të dhëna ankandi",
-  "home_badge_most_checked": "Rreziqet më të kontrolluara",
+  "home_badge_most_checked": "Çdo raport përfshin",
   "home_badge_3_steps": "3 hapa të thjeshtë",
   "feature_mileage_example": "140,000 km të manipuluara në Toyota 2018",
   "feature_mileage_stat_value": "41%",
@@ -1677,5 +1677,17 @@
   "credits_checkout_pack_title": "{n} Raporte makine",
   "checkout_credits_left": "{n} kredite në dispozicion",
   "credits_checkout_credit_notice": "Pas pagesës së suksesshme, do t’ju shtojmë {n} kredite në llogari. Mund t’i përdorni më vonë si metodë pagese në faqen e pagesës.",
-  "dashboard_stat_credits_tooltip": "Përdorni kreditët si metodë pagese kur blini një raport VIN për ta zhbllokuar."
+  "dashboard_stat_credits_tooltip": "Përdorni kreditët si metodë pagese kur blini një raport VIN për ta zhbllokuar.",
+  "what_we_check_sample_badge": "Raport shembull",
+  "what_we_check_report_title": "Raport historiku i automjetit",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Përmbledhje",
+  "what_we_check_disclaimer": "Parapamje ilustruese. Raporti juaj përdor të dhëna reale për VIN-in tuaj.",
+  "wwc_preview_mileage_status": "Rollback i flaguar",
+  "wwc_preview_mileage_clear": "I verifikuar",
+  "wwc_preview_accidents_status": "2 regjistrime",
+  "wwc_preview_accidents_clear": "0 të regjistruara",
+  "wwc_preview_salvage_status": "Pa flag",
+  "wwc_preview_theft_status": "Pa raportim",
+  "what_we_check_sections": "Seksionet e raportit"
 }

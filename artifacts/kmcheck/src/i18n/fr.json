@@ -1,4 +1,4 @@
-﻿{
+{
   "welcome": "Bienvenue sur kmcheck",
   "check_vin": "Vérifier le VIN",
   "check_vin_short": "Vérifier",
@@ -396,7 +396,7 @@
   "toggle_theme": "Changer de thème",
   "limited_time": "Offre limitée",
   "what_we_check": "Ce que nous vérifions",
-  "what_we_check_sub": "Quatre contrôles dans chaque rapport",
+  "what_we_check_sub": "Quatre contrôles approfondis dans chaque rapport — statistiques réelles, cas réels, données en direct.",
   "what_we_check_report_shows": "Ce que montre votre rapport",
   "what_we_check_real_example": "Exemple concret",
   "feature_mileage_desc": "Relevés km recoupés pour détecter les retours de compteur.",
@@ -1124,7 +1124,7 @@
   "auction_buy_now": "Achat immédiat",
   "auction_final_price": "Vendu pour",
   "auction_no_records": "Aucun registre d'enchère disponible",
-  "home_badge_most_checked": "Risques les plus vérifiés",
+  "home_badge_most_checked": "Chaque rapport inclut",
   "home_badge_3_steps": "3 étapes simples",
   "feature_mileage_example": "Retour de compteur à 140 000 km détecté sur une Toyota 2018",
   "feature_mileage_stat_value": "41 %",
@@ -1674,5 +1674,17 @@
   "credits_checkout_pack_title": "{n} rapports VIN",
   "checkout_credits_left": "{n} crédits disponibles",
   "credits_checkout_credit_notice": "Après un paiement réussi, nous ajouterons {n} crédits à votre compte. Vous pourrez les utiliser plus tard comme moyen de paiement sur la page de paiement.",
-  "dashboard_stat_credits_tooltip": "Utilisez vos crédits comme moyen de paiement pour débloquer un rapport VIN."
+  "dashboard_stat_credits_tooltip": "Utilisez vos crédits comme moyen de paiement pour débloquer un rapport VIN.",
+  "what_we_check_sample_badge": "Rapport exemple",
+  "what_we_check_report_title": "Rapport d'historique véhicule",
+  "what_we_check_vin_label": "VIN",
+  "what_we_check_summary": "Résumé",
+  "what_we_check_disclaimer": "Aperçu illustratif. Votre rapport utilise des données en direct pour votre VIN.",
+  "wwc_preview_mileage_status": "Rollback signalé",
+  "wwc_preview_mileage_clear": "Vérifié",
+  "wwc_preview_accidents_status": "2 entrées",
+  "wwc_preview_accidents_clear": "0 enregistré",
+  "wwc_preview_salvage_status": "Non signalé",
+  "wwc_preview_theft_status": "Non déclaré",
+  "what_we_check_sections": "Sections du rapport"
 }
