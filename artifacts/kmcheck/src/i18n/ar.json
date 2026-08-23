@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "أسطول",
   "wwc_demo_owner_dealer": "وكيل",
   "wwc_demo_accident_map": "مناطق الضرر",
-  "wwc_demo_row_rollback": "انخفاض المسافة المقطوعة عن السجل السابق"
+  "wwc_demo_row_rollback": "انخفاض المسافة المقطوعة عن السجل السابق",
+  "vin_360_title": "عرض المركبة بـ 360°",
+  "vin_360_exterior": "الخارج",
+  "vin_360_interior": "الداخل",
+  "vin_360_hint": "اسحب للتدوير"
 }

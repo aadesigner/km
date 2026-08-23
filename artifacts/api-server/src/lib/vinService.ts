@@ -94,6 +94,10 @@ export interface NormalizedVinData {
   photos?: string[];
   /** Full-resolution gallery for lightbox; falls back to photos when absent. */
   photosHd?: string[];
+  /** Copart/IAAI 360° exterior frames (ordered spin). */
+  photos360Exterior?: string[];
+  /** Copart/IAAI 360° interior frames (ordered spin). */
+  photos360Interior?: string[];
   accidents?: Array<{
     date?: string | null;
     severity?: string | null;
@@ -307,9 +311,18 @@ export function vinReportDataRichnessScore(data: Record<string, unknown> | null 
 }
 
 export const MAX_VIN_PHOTOS = 24;
+/** Copart/IAAI 360° spin frames (exterior / interior) — higher than still gallery. */
+export const MAX_VIN_SPIN_PHOTOS = 72;
 
 /** Merge unique photo URLs from multiple report payloads (catalog vs lookup). */
 export function mergeVinPhotoLists(
+  ...sources: Array<unknown[] | null | undefined>
+): string[] {
+  return mergeVinPhotoListsWithCap(MAX_VIN_PHOTOS, ...sources);
+}
+
+export function mergeVinPhotoListsWithCap(
+  max: number,
   ...sources: Array<unknown[] | null | undefined>
 ): string[] {
   const sorted = [...sources].sort((a, b) => {
@@ -328,10 +341,27 @@ export function mergeVinPhotoLists(
       if (!url || seen.has(url)) continue;
       seen.add(url);
       out.push(url);
-      if (out.length >= MAX_VIN_PHOTOS) return out;
+      if (out.length >= max) return out;
     }
   }
   return out;
+}
+
+/** Drop 360° spin frame URLs from still galleries (legacy polluted catalog rows). */
+export function excludeSpinUrlsFromGallery(
+  photos: string[] | null | undefined,
+  ...spinSets: Array<string[] | null | undefined>
+): string[] {
+  if (!Array.isArray(photos) || photos.length === 0) return [];
+  const blocked = new Set<string>();
+  for (const set of spinSets) {
+    if (!Array.isArray(set)) continue;
+    for (const url of set) {
+      if (typeof url === "string" && url.trim()) blocked.add(url.trim());
+    }
+  }
+  if (blocked.size === 0) return photos.map((p) => p.trim()).filter(Boolean);
+  return photos.map((p) => p.trim()).filter((p) => p && !blocked.has(p));
 }
 
 /**
@@ -442,12 +472,22 @@ export function mergeVinReportBodies(
     ? readOdometerScalar(lockedBody)
     : [...odometers].reverse().find((n) => n != null) ?? null;
 
-  const photos = mergeVinPhotoLists(
+  const photosRaw = mergeVinPhotoLists(
     ...valid.map((b) => b.photos as string[] | undefined),
   );
-  const photosHd = mergeVinPhotoLists(
+  const photosHdRaw = mergeVinPhotoLists(
     ...valid.map((b) => b.photosHd as string[] | undefined),
   );
+  const photos360Exterior = mergeVinPhotoListsWithCap(
+    MAX_VIN_SPIN_PHOTOS,
+    ...valid.map((b) => b.photos360Exterior as string[] | undefined),
+  );
+  const photos360Interior = mergeVinPhotoListsWithCap(
+    MAX_VIN_SPIN_PHOTOS,
+    ...valid.map((b) => b.photos360Interior as string[] | undefined),
+  );
+  const photos = excludeSpinUrlsFromGallery(photosRaw, photos360Exterior, photos360Interior);
+  const photosHd = excludeSpinUrlsFromGallery(photosHdRaw, photos360Exterior, photos360Interior);
 
   const frozenRate =
     valid.map((b) => readFrozenKrwPerUsd(b)).find((r) => r != null)
@@ -468,6 +508,8 @@ export function mergeVinReportBodies(
     ...(photosHd.length > 0 && photosHd.join("\0") !== photos.join("\0")
       ? { photosHd }
       : {}),
+    ...(photos360Exterior.length > 0 ? { photos360Exterior } : {}),
+    ...(photos360Interior.length > 0 ? { photos360Interior } : {}),
     ...(frozenRate != null ? { krwPerUsd: frozenRate } : {}),
   };
 }
@@ -485,13 +527,33 @@ export function pickRicherVinReportData(
     ? (lookupScore > catalogScore ? lookupData : catalogData)
     : catalogData;
 
-  const mergedPhotos = mergeVinPhotoLists(
+  const mergedPhotosRaw = mergeVinPhotoLists(
     lookupData.photos as string[] | undefined,
     catalogData.photos as string[] | undefined,
   );
-  const mergedPhotosHd = mergeVinPhotoLists(
+  const mergedPhotosHdRaw = mergeVinPhotoLists(
     lookupData.photosHd as string[] | undefined,
     catalogData.photosHd as string[] | undefined,
+  );
+  const merged360Exterior = mergeVinPhotoListsWithCap(
+    MAX_VIN_SPIN_PHOTOS,
+    lookupData.photos360Exterior as string[] | undefined,
+    catalogData.photos360Exterior as string[] | undefined,
+  );
+  const merged360Interior = mergeVinPhotoListsWithCap(
+    MAX_VIN_SPIN_PHOTOS,
+    lookupData.photos360Interior as string[] | undefined,
+    catalogData.photos360Interior as string[] | undefined,
+  );
+  const mergedPhotos = excludeSpinUrlsFromGallery(
+    mergedPhotosRaw,
+    merged360Exterior,
+    merged360Interior,
+  );
+  const mergedPhotosHd = excludeSpinUrlsFromGallery(
+    mergedPhotosHdRaw,
+    merged360Exterior,
+    merged360Interior,
   );
 
   const frozenRate =
@@ -505,6 +567,8 @@ export function pickRicherVinReportData(
     ...(mergedPhotosHd.length > 0 && mergedPhotosHd.join("\0") !== mergedPhotos.join("\0")
       ? { photosHd: mergedPhotosHd }
       : {}),
+    ...(merged360Exterior.length > 0 ? { photos360Exterior: merged360Exterior } : {}),
+    ...(merged360Interior.length > 0 ? { photos360Interior: merged360Interior } : {}),
     ...(frozenRate != null && readFrozenKrwPerUsd(picked) == null ? { krwPerUsd: frozenRate } : {}),
   };
 
@@ -1679,8 +1743,8 @@ function str(v: unknown): string | null {
   return s.length > 0 ? s : null;
 }
 
-const LOT_IMAGE_TIERS = [
-  "big", "large", "full", "original", "high", "normal", "exterior", "interior", "downloaded", "gallery", "thumbnail", "small",
+const LOT_GALLERY_IMAGE_TIERS = [
+  "big", "large", "full", "original", "high", "normal", "downloaded", "gallery", "thumbnail", "small",
 ] as const;
 
 /** Prefer largest available tier when counts tie (lightbox / zoom). */
@@ -1691,8 +1755,6 @@ const HD_TIER_QUALITY_RANK: Record<string, number> = {
   original: 54,
   high: 50,
   normal: 40,
-  exterior: 45,
-  interior: 44,
   downloaded: 20,
   gallery: 35,
   thumbnail: 10,
@@ -1703,8 +1765,6 @@ const HD_TIER_QUALITY_RANK: Record<string, number> = {
 const DISPLAY_TIER_QUALITY_RANK: Record<string, number> = {
   normal: 70,
   gallery: 65,
-  exterior: 64,
-  interior: 63,
   high: 55,
   downloaded: 45,
   big: 30,
@@ -1759,7 +1819,7 @@ function pickLotPhotoUrlsByRank(
   let best: string[] = [];
   let bestRank = -1;
 
-  for (const key of LOT_IMAGE_TIERS) {
+  for (const key of LOT_GALLERY_IMAGE_TIERS) {
     const urls = extractLotImageUrls(imgs[key]);
     if (urls.length === 0) continue;
 
@@ -1778,8 +1838,23 @@ function pickLotPhotoUrlsByRank(
 }
 
 /**
+ * Copart/IAAI 360° frame sets (exterior / interior). Kept separate from the main gallery —
+ * these tiers can have 40–70+ near-duplicate angles and must not replace normal/big photos.
+ */
+export function extractLotSpinPhotoSets(imgs: Record<string, unknown>): {
+  exterior: string[];
+  interior: string[];
+} {
+  return {
+    exterior: extractLotImageUrls(imgs.exterior).slice(0, MAX_VIN_SPIN_PHOTOS),
+    interior: extractLotImageUrls(imgs.interior).slice(0, MAX_VIN_SPIN_PHOTOS),
+  };
+}
+
+/**
  * Highest-resolution photo URL list for a single lot (one tier only).
  * Prefer the tier with the most URLs; on ties prefer big/normal over partial downloaded cache.
+ * Never selects exterior/interior 360° tiers.
  */
 export function pickBestLotPhotoUrls(imgs: Record<string, unknown>): string[] {
   return pickLotPhotoUrlsByRank(imgs, HD_TIER_QUALITY_RANK);
@@ -1797,15 +1872,33 @@ function collectPhotosFromLot(
   existingHd: string[],
 ): { display: string[]; hd: string[] } {
   const imgs = lotImagesRecord(lot);
-  let display = collectPhotoList(imgs, existingDisplay, pickDisplayLotPhotoUrls);
-  let hd = collectPhotoList(imgs, existingHd, pickBestLotPhotoUrls);
+  const spin = extractLotSpinPhotoSets(imgs);
+  const spinUrls = new Set([...spin.exterior, ...spin.interior]);
+
+  let display = collectPhotoList(imgs, existingDisplay, pickDisplayLotPhotoUrls)
+    .filter((url) => !spinUrls.has(url));
+  let hd = collectPhotoList(imgs, existingHd, pickBestLotPhotoUrls)
+    .filter((url) => !spinUrls.has(url));
   if (Array.isArray(lot.photos)) {
     for (const p of extractLotImageUrls(lot.photos)) {
+      if (spinUrls.has(p)) continue;
       if (!display.includes(p)) display.push(p);
       if (!hd.includes(p)) hd.push(p);
     }
   }
   return { display, hd };
+}
+
+function collectSpinPhotosFromLot(
+  lot: Record<string, unknown>,
+  existingExterior: string[],
+  existingInterior: string[],
+): { exterior: string[]; interior: string[] } {
+  const spin = extractLotSpinPhotoSets(lotImagesRecord(lot));
+  return {
+    exterior: mergeVinPhotoListsWithCap(MAX_VIN_SPIN_PHOTOS, existingExterior, spin.exterior),
+    interior: mergeVinPhotoListsWithCap(MAX_VIN_SPIN_PHOTOS, existingInterior, spin.interior),
+  };
 }
 
 function collectPhotoList(
@@ -2953,6 +3046,8 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   // --- Process ALL lots for richer history data ---
   let allPhotos: string[] = [];
   let allPhotosHd: string[] = [];
+  let allSpinExterior: string[] = [];
+  let allSpinInterior: string[] = [];
   const mileageHistory: NormalizedVinData["mileageHistory"] = [];
   const ownerHistory: NormalizedVinData["ownerHistory"] = [];
   const auctionHistory: NormalizedVinData["auctionHistory"] = [];
@@ -2966,6 +3061,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     const merged = collectPhotosFromLot(l, allPhotos, allPhotosHd);
     allPhotos = merged.display;
     allPhotosHd = merged.hd;
+    const spin = collectSpinPhotosFromLot(l, allSpinExterior, allSpinInterior);
+    allSpinExterior = spin.exterior;
+    allSpinInterior = spin.interior;
 
     if (isMarketplaceListingLot(l)) {
       const domain = lotDomainName(l);
@@ -3063,11 +3161,19 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
 
   const photos = allPhotos.slice(0, MAX_VIN_PHOTOS);
   const photosHdCandidate = allPhotosHd.slice(0, MAX_VIN_PHOTOS);
+  const photos360Exterior = allSpinExterior.slice(0, MAX_VIN_SPIN_PHOTOS);
+  const photos360Interior = allSpinInterior.slice(0, MAX_VIN_SPIN_PHOTOS);
+  const photosClean = excludeSpinUrlsFromGallery(photos, photos360Exterior, photos360Interior);
+  const photosHdClean = excludeSpinUrlsFromGallery(
+    photosHdCandidate,
+    photos360Exterior,
+    photos360Interior,
+  );
   /** Only emit photosHd when it differs from display (saves payload when tiers match). */
   const photosHd =
-    photosHdCandidate.length > 0
-    && photosHdCandidate.join("\0") !== photos.join("\0")
-      ? photosHdCandidate
+    photosHdClean.length > 0
+    && photosHdClean.join("\0") !== photosClean.join("\0")
+      ? photosHdClean
       : undefined;
 
   const country = resolveVehicleCountry(lots);
@@ -3172,8 +3278,10 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     isSalvage,
     isStolen,
     titleStatus,
-    photos,
+    photos: photosClean,
     ...(photosHd ? { photosHd } : {}),
+    ...(photos360Exterior.length > 0 ? { photos360Exterior } : {}),
+    ...(photos360Interior.length > 0 ? { photos360Interior } : {}),
     accidents: sortHistoryNewestFirst(repairedAccidents),
     insuranceClaims: repairedClaims.length > 0 ? repairedClaims : undefined,
     registryHistory: repairedRegistry,

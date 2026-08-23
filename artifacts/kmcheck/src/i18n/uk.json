@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Автопарк",
   "wwc_demo_owner_dealer": "Дилер",
   "wwc_demo_accident_map": "Зони пошкоджень",
-  "wwc_demo_row_rollback": "Зниження пробігу щодо попереднього запису"
+  "wwc_demo_row_rollback": "Зниження пробігу щодо попереднього запису",
+  "vin_360_title": "Огляд авто 360°",
+  "vin_360_exterior": "Екстерʼєр",
+  "vin_360_interior": "Інтерʼєр",
+  "vin_360_hint": "Перетягніть, щоб обернути"
 }

@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Флот",
   "wwc_demo_owner_dealer": "Дилър",
   "wwc_demo_accident_map": "Зони на щети",
-  "wwc_demo_row_rollback": "Намаление на пробега спрямо предишен запис"
+  "wwc_demo_row_rollback": "Намаление на пробега спрямо предишен запис",
+  "vin_360_title": "360° изглед на автомобила",
+  "vin_360_exterior": "Екстериор",
+  "vin_360_interior": "Интериор",
+  "vin_360_hint": "Плъзнете за завъртане"
 }

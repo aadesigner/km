@@ -1714,5 +1714,9 @@
   "wwc_demo_owner_fleet": "ფლოტი",
   "wwc_demo_owner_dealer": "დილერი",
   "wwc_demo_accident_map": "ზიანის ზონები",
-  "wwc_demo_row_rollback": "გარბენი შემცირდა წინა ჩანაწერთან შედარებით"
+  "wwc_demo_row_rollback": "გარბენი შემცირდა წინა ჩანაწერთან შედარებით",
+  "vin_360_title": "ავტომობილის 360° ხედი",
+  "vin_360_exterior": "ექსტერიერი",
+  "vin_360_interior": "ინტერიერი",
+  "vin_360_hint": "გადაათრიეთ მოსაბრუნებლად"
 }

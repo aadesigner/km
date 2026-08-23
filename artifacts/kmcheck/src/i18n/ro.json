@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Flotă",
   "wwc_demo_owner_dealer": "Dealer",
   "wwc_demo_accident_map": "Zone de daună",
-  "wwc_demo_row_rollback": "Kilometraj scăzut față de înregistrarea anterioară"
+  "wwc_demo_row_rollback": "Kilometraj scăzut față de înregistrarea anterioară",
+  "vin_360_title": "Vizualizare auto 360°",
+  "vin_360_exterior": "Exterior",
+  "vin_360_interior": "Interior",
+  "vin_360_hint": "Trageți pentru a roti"
 }

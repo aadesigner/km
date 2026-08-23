@@ -219,6 +219,7 @@ async function checkRecaptchaFreeDecoder(
 // ── Image proxy helpers ───────────────────────────────────────────────────────
 
 const MAX_VIN_PHOTOS = 24;
+const MAX_VIN_SPIN_PHOTOS = 72;
 
 function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   if (!data || typeof data !== "object" || Array.isArray(data)) return data;
@@ -229,6 +230,12 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   }
   if (Array.isArray(transformed.photosHd)) {
     transformed.photosHd = (transformed.photosHd as string[]).slice(0, MAX_VIN_PHOTOS);
+  }
+  if (Array.isArray(transformed.photos360Exterior)) {
+    transformed.photos360Exterior = (transformed.photos360Exterior as string[]).slice(0, MAX_VIN_SPIN_PHOTOS);
+  }
+  if (Array.isArray(transformed.photos360Interior)) {
+    transformed.photos360Interior = (transformed.photos360Interior as string[]).slice(0, MAX_VIN_SPIN_PHOTOS);
   }
   return transformed;
 }
@@ -885,6 +892,15 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   };
 
   if (isUnlocked) {
+    const catalogPhotosHd = Array.isArray(d.photosHd)
+      ? (d.photosHd as string[]).filter(Boolean)
+      : [];
+    const photos360Exterior = Array.isArray(d.photos360Exterior)
+      ? (d.photos360Exterior as string[]).filter(Boolean)
+      : [];
+    const photos360Interior = Array.isArray(d.photos360Interior)
+      ? (d.photos360Interior as string[]).filter(Boolean)
+      : [];
     Object.assign(response, {
       trim: (d.trim as string | null) ?? null,
       odometer: (d.odometer as number | null) ?? (d.mileage as number | null) ?? null,
@@ -899,6 +915,16 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
       taxi: (d.isTaxi as boolean | null) ?? (d.taxi as boolean | null) ?? null,
       titleStatus: (d.titleStatus as string | null) ?? null,
       photos: proxyPhotoUrls(catalogPhotos, mediaVersion),
+      ...(catalogPhotosHd.length > 0
+        && catalogPhotosHd.join("\0") !== catalogPhotos.join("\0")
+        ? { photosHd: proxyPhotoUrls(catalogPhotosHd, mediaVersion) }
+        : {}),
+      ...(photos360Exterior.length > 0
+        ? { photos360Exterior: proxyPhotoUrls(photos360Exterior, mediaVersion) }
+        : {}),
+      ...(photos360Interior.length > 0
+        ? { photos360Interior: proxyPhotoUrls(photos360Interior, mediaVersion) }
+        : {}),
       hp: (d.hp as number | null) ?? null,
       cylinders: (d.cylinders as number | null) ?? null,
       bodyType: (d.bodyType as string | null) ?? null,

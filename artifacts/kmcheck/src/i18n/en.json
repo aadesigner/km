@@ -1714,5 +1714,9 @@
   "wwc_demo_owner_fleet": "Fleet",
   "wwc_demo_owner_dealer": "Dealer",
   "wwc_demo_accident_map": "Damage zones",
-  "wwc_demo_row_rollback": "Odometer rolled back vs prior record"
+  "wwc_demo_row_rollback": "Odometer rolled back vs prior record",
+  "vin_360_title": "360° vehicle view",
+  "vin_360_exterior": "Exterior",
+  "vin_360_interior": "Interior",
+  "vin_360_hint": "Drag to rotate"
 }

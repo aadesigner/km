@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Автопарк",
   "wwc_demo_owner_dealer": "Дилер",
   "wwc_demo_accident_map": "Зоны повреждений",
-  "wwc_demo_row_rollback": "Снижение пробега относительно прошлой записи"
+  "wwc_demo_row_rollback": "Снижение пробега относительно прошлой записи",
+  "vin_360_title": "Обзор авто 360°",
+  "vin_360_exterior": "Экстерьер",
+  "vin_360_interior": "Интерьер",
+  "vin_360_hint": "Перетащите, чтобы вращать"
 }

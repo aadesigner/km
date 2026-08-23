@@ -872,6 +872,30 @@ describe("pickBestLotPhotoUrls", () => {
     expect(pickBestLotPhotoUrls({ normal, big })).toEqual(big);
   });
 
+  it("does not use Copart/IAA 360 exterior/interior frames as the main gallery", () => {
+    const normal = Array.from({ length: 12 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const big = Array.from({ length: 12 }, (_, i) => `https://cdn/b-${i}.jpg`);
+    const exterior = Array.from({ length: 64 }, (_, i) => `https://cdn/ext-${i}.jpg`);
+    const interior = Array.from({ length: 48 }, (_, i) => `https://cdn/int-${i}.jpg`);
+    expect(pickBestLotPhotoUrls({ normal, big, exterior, interior })).toEqual(big);
+    expect(pickDisplayLotPhotoUrls({ normal, big, exterior, interior })).toEqual(normal);
+
+    const normalized = normalizeCarstatResponse({
+      year: 2014,
+      vin: "WDDLJ9BB6EA096494",
+      manufacturer: { name: "Mercedes-Benz" },
+      model: { name: "CLA" },
+      lots: [{
+        domain: { name: "copart_com" },
+        images: { normal, big, exterior, interior },
+      }],
+    });
+    expect(normalized.photos).toEqual(normal);
+    expect(normalized.photosHd).toEqual(big);
+    expect(normalized.photos360Exterior).toEqual(exterior);
+    expect(normalized.photos360Interior).toEqual(interior);
+  });
+
   it("stores mid-size photos for display and HD for lightbox when both tiers exist", () => {
     const normal = Array.from({ length: 10 }, (_, i) => `https://cdn/n-${i}.jpg`);
     const big = Array.from({ length: 10 }, (_, i) => `https://cdn/b-${i}.jpg`);

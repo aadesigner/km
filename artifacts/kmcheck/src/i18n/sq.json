@@ -1714,5 +1714,9 @@
   "wwc_demo_owner_fleet": "Flotë",
   "wwc_demo_owner_dealer": "Dealer",
   "wwc_demo_accident_map": "Zonat e dëmtimit",
-  "wwc_demo_row_rollback": "Kilometrazh u ul krahasuar me regjistrin e mëparshëm"
+  "wwc_demo_row_rollback": "Kilometrazh u ul krahasuar me regjistrin e mëparshëm",
+  "vin_360_title": "Pamje 360° e automjetit",
+  "vin_360_exterior": "Jashtë",
+  "vin_360_interior": "Brenda",
+  "vin_360_hint": "Tërhiq për të rrotulluar"
 }

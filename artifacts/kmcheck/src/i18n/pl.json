@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Flota",
   "wwc_demo_owner_dealer": "Dealer",
   "wwc_demo_accident_map": "Strefy uszkodzeń",
-  "wwc_demo_row_rollback": "Spadek przebiegu względem wcześniejszego wpisu"
+  "wwc_demo_row_rollback": "Spadek przebiegu względem wcześniejszego wpisu",
+  "vin_360_title": "Widok pojazdu 360°",
+  "vin_360_exterior": "Zewnętrze",
+  "vin_360_interior": "Wnętrze",
+  "vin_360_hint": "Przeciągnij, aby obrócić"
 }

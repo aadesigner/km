@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Flotte",
   "wwc_demo_owner_dealer": "Concession",
   "wwc_demo_accident_map": "Zones endommagées",
-  "wwc_demo_row_rollback": "Baisse du kilométrage vs enregistrement précédent"
+  "wwc_demo_row_rollback": "Baisse du kilométrage vs enregistrement précédent",
+  "vin_360_title": "Vue véhicule 360°",
+  "vin_360_exterior": "Extérieur",
+  "vin_360_interior": "Intérieur",
+  "vin_360_hint": "Faites glisser pour tourner"
 }

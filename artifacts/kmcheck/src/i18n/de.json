@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Flotte",
   "wwc_demo_owner_dealer": "Händler",
   "wwc_demo_accident_map": "Schadenszonen",
-  "wwc_demo_row_rollback": "Kilometerstand gegenüber Vorherwert gesunken"
+  "wwc_demo_row_rollback": "Kilometerstand gegenüber Vorherwert gesunken",
+  "vin_360_title": "360°-Fahrzeugansicht",
+  "vin_360_exterior": "Außen",
+  "vin_360_interior": "Innen",
+  "vin_360_hint": "Ziehen zum Drehen"
 }

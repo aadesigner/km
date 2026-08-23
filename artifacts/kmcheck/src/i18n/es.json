@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "Flota",
   "wwc_demo_owner_dealer": "Concesionario",
   "wwc_demo_accident_map": "Zonas de daño",
-  "wwc_demo_row_rollback": "Kilometraje inferior al registro anterior"
+  "wwc_demo_row_rollback": "Kilometraje inferior al registro anterior",
+  "vin_360_title": "Vista 360° del vehículo",
+  "vin_360_exterior": "Exterior",
+  "vin_360_interior": "Interior",
+  "vin_360_hint": "Arrastra para girar"
 }

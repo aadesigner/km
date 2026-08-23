@@ -28,6 +28,7 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
+import { VinPhoto360Viewer } from "@/components/vin-photo-360-viewer";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
 import {
@@ -186,6 +187,9 @@ type VinPublicReport = {
   taxi?: boolean | null;
   titleStatus?: string | null;
   photos?: string[] | null;
+  photosHd?: string[] | null;
+  photos360Exterior?: string[] | null;
+  photos360Interior?: string[] | null;
   hp?: number | null;
   cylinders?: number | null;
   bodyType?: string | null;
@@ -861,6 +865,14 @@ export default function VinPublic({ params }: Props) {
             </>
           )}
         </VinReportHero>
+
+        {data.isUnlocked && (
+          <VinPhoto360Viewer
+            exterior={data.photos360Exterior}
+            interior={data.photos360Interior}
+            className="print:hidden"
+          />
+        )}
 
         {data.isUnlocked && shouldShowReportTimeline(timelineEvents) ? (
           <ReportHistoryTimeline

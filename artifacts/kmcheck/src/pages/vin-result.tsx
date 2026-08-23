@@ -34,6 +34,7 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
+import { VinPhoto360Viewer } from "@/components/vin-photo-360-viewer";
 import { PendingVinSearchPanel, PendingVinTopNotice } from "@/components/pending-vin-search-panel";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
@@ -216,6 +217,9 @@ type LookupData = {
   accidentCount?: number | null;
   titleStatus?: string;
   photos?: string[];
+  photosHd?: string[];
+  photos360Exterior?: string[];
+  photos360Interior?: string[];
   mileageHistory?: MileageEntry[];
   ownerHistory?: OwnerEntry[];
   marketData?: {
@@ -881,6 +885,14 @@ export default function VinResult({ params }: Props) {
           </>
         )}
       </VinReportHero>
+
+      {!isPendingManual && (
+        <VinPhoto360Viewer
+          exterior={data?.photos360Exterior}
+          interior={data?.photos360Interior}
+          className="print:hidden"
+        />
+      )}
 
       {isPendingManual ? (
         <PendingVinSearchPanel />

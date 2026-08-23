@@ -1711,5 +1711,9 @@
   "wwc_demo_owner_fleet": "车队",
   "wwc_demo_owner_dealer": "经销商",
   "wwc_demo_accident_map": "损伤区域",
-  "wwc_demo_row_rollback": "里程较上一记录下降"
+  "wwc_demo_row_rollback": "里程较上一记录下降",
+  "vin_360_title": "360° 车辆视图",
+  "vin_360_exterior": "外观",
+  "vin_360_interior": "内饰",
+  "vin_360_hint": "拖动旋转"
 }

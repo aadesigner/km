@@ -58,6 +58,12 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   if (Array.isArray(transformed.photosHd)) {
     transformed.photosHd = (transformed.photosHd as string[]).slice(0, MAX_VIN_PHOTOS);
   }
+  if (Array.isArray(transformed.photos360Exterior)) {
+    transformed.photos360Exterior = (transformed.photos360Exterior as string[]).slice(0, 72);
+  }
+  if (Array.isArray(transformed.photos360Interior)) {
+    transformed.photos360Interior = (transformed.photos360Interior as string[]).slice(0, 72);
+  }
   return transformed;
 }
 
