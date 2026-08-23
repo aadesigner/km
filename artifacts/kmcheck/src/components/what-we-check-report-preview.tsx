@@ -151,10 +151,10 @@ const FEATURE_THEME = {
   },
   theft: {
     icon: Lock,
-    accent: "text-violet-600 dark:text-violet-400",
-    bar: "from-violet-500 via-violet-400 to-purple-400",
-    ring: "ring-violet-500/35",
-    chipActive: "ring-violet-500/40 bg-violet-50/80 dark:bg-violet-950/30",
+    accent: "text-emerald-600 dark:text-emerald-400",
+    bar: "from-emerald-500 via-emerald-400 to-teal-400",
+    ring: "ring-emerald-500/35",
+    chipActive: "ring-emerald-500/40 bg-emerald-50/80 dark:bg-emerald-950/30",
   },
 } as const;
 
@@ -467,20 +467,14 @@ function SalvageDemo({ clearLabel, note }: { clearLabel: string; note: string })
 }
 
 function TheftDemo({ clearLabel, note }: { clearLabel: string; note: string }) {
-  const reduced = useReducedMotion();
   return (
-    <div className="rounded-xl border border-violet-200/60 dark:border-violet-900/40 bg-violet-50/40 dark:bg-violet-950/20 p-3 flex items-center gap-3 min-h-[4.5rem]">
-      <motion.div
-        className="shrink-0 w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"
-        initial={reduced ? false : { scale: 0.85, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 320, damping: 20 }}
-      >
-        <ShieldCheck className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-      </motion.div>
+    <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-3 flex items-center gap-3 min-h-[4.5rem]">
+      <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+      </div>
       <div className="min-w-0">
-        <p className="text-sm font-bold text-violet-900 dark:text-violet-100">{clearLabel}</p>
-        <p className="text-[10px] text-violet-800/75 dark:text-violet-300/70 mt-0.5 leading-snug">{note}</p>
+        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{clearLabel}</p>
+        <p className="text-[10px] text-emerald-800/75 dark:text-emerald-300/70 mt-0.5 leading-snug">{note}</p>
       </div>
     </div>
   );
