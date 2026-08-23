@@ -1845,9 +1845,24 @@ export function extractLotSpinPhotoSets(imgs: Record<string, unknown>): {
   exterior: string[];
   interior: string[];
 } {
+  const byLower = new Map<string, unknown>();
+  for (const [key, value] of Object.entries(imgs)) {
+    byLower.set(key.toLowerCase(), value);
+  }
+  const exteriorRaw =
+    byLower.get("exterior")
+    ?? byLower.get("exterior_360")
+    ?? byLower.get("exterior360")
+    ?? byLower.get("c360")
+    ?? byLower.get("spin");
+  const interiorRaw =
+    byLower.get("interior")
+    ?? byLower.get("interior_360")
+    ?? byLower.get("interior360")
+    ?? byLower.get("i360");
   return {
-    exterior: extractLotImageUrls(imgs.exterior).slice(0, MAX_VIN_SPIN_PHOTOS),
-    interior: extractLotImageUrls(imgs.interior).slice(0, MAX_VIN_SPIN_PHOTOS),
+    exterior: extractLotImageUrls(exteriorRaw).slice(0, MAX_VIN_SPIN_PHOTOS),
+    interior: extractLotImageUrls(interiorRaw).slice(0, MAX_VIN_SPIN_PHOTOS),
   };
 }
 

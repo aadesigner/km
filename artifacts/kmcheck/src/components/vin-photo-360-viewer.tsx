@@ -101,6 +101,8 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
 
   if (!hasExterior && !hasInterior) return null;
 
+  const showSwitcher = hasExterior && hasInterior;
+
   return (
     <section className={cn("rounded-2xl border bg-background overflow-hidden", className)}>
       <div className="px-4 sm:px-5 py-3 border-b bg-muted/30 flex flex-wrap items-center justify-between gap-2">
@@ -110,34 +112,34 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
           </div>
           <h2 className="font-bold text-sm truncate">{t("vin_360_title")}</h2>
         </div>
-        {(hasExterior || hasInterior) && (
+        {showSwitcher ? (
           <div className="inline-flex rounded-lg border border-border/70 bg-background p-0.5 text-xs font-semibold">
-            {hasExterior && (
-              <button
-                type="button"
-                onClick={() => setKind("exterior")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-colors",
-                  kind === "exterior" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {t("vin_360_exterior")}
-              </button>
-            )}
-            {hasInterior && (
-              <button
-                type="button"
-                onClick={() => setKind("interior")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-colors",
-                  kind === "interior" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {t("vin_360_interior")}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setKind("exterior")}
+              className={cn(
+                "rounded-md px-2.5 py-1 transition-colors",
+                kind === "exterior"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t("vin_360_exterior")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setKind("interior")}
+              className={cn(
+                "rounded-md px-2.5 py-1 transition-colors",
+                kind === "interior"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t("vin_360_interior")}
+            </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div
@@ -150,7 +152,7 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         role="img"
-        aria-label={t("vin_360_title")}
+        aria-label={kind === "exterior" ? t("vin_360_exterior") : t("vin_360_interior")}
       >
         {currentUrl ? (
           <img
