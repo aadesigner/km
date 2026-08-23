@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, View } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
-import { markVinImageLoaded, wasVinImageLoaded } from "@/lib/vin-image-cache";
+import { markVinImageSessionLoaded, isVinImageSessionLoaded } from "@/lib/vin-image-cache";
 
 const MIN_SPIN_FRAMES = 8;
 const PIXELS_PER_FRAME = 14;
@@ -63,7 +63,7 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
       setImgReady(false);
       return;
     }
-    setImgReady(wasVinImageLoaded(currentUrl));
+    setImgReady(isVinImageSessionLoaded(currentUrl));
   }, [currentUrl]);
 
   const scrubByDelta = useCallback(
@@ -163,7 +163,7 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
               imgReady ? "opacity-100" : "opacity-0",
             )}
             onLoad={() => {
-              markVinImageLoaded(currentUrl);
+              markVinImageSessionLoaded(currentUrl);
               setImgReady(true);
             }}
           />

@@ -285,8 +285,6 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "4K": { from: 2008, to: 2099 },
   "FD": { from: 2008, to: 2099 },
   "8W": { from: 2015, to: 2099 },
-  "5N": { from: 2007, to: 2024 },
-  "B9/CJ": { from: 2020, to: 2099 },
 };
 
 /** Chassis codes uniquely encoded in the VIN (Mercedes Baumuster / BMW E/F/G gens). */
