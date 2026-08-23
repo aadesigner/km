@@ -886,14 +886,6 @@ export default function VinResult({ params }: Props) {
         )}
       </VinReportHero>
 
-      {!isPendingManual && (
-        <VinPhoto360Viewer
-          exterior={data?.photos360Exterior}
-          interior={data?.photos360Interior}
-          className="print:hidden"
-        />
-      )}
-
       {isPendingManual ? (
         <PendingVinSearchPanel />
       ) : null}
@@ -1365,6 +1357,14 @@ export default function VinResult({ params }: Props) {
               </VehicleSpecsGrid>
             </div>
           </motion.div>
+          ) : null}
+
+          {!isPendingManual ? (
+            <VinPhoto360Viewer
+              exterior={data?.photos360Exterior}
+              interior={data?.photos360Interior}
+              className="print:hidden"
+            />
           ) : null}
 
           {!isPendingManual ? (

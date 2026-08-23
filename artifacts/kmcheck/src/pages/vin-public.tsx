@@ -866,14 +866,6 @@ export default function VinPublic({ params }: Props) {
           )}
         </VinReportHero>
 
-        {data.isUnlocked && (
-          <VinPhoto360Viewer
-            exterior={data.photos360Exterior}
-            interior={data.photos360Interior}
-            className="print:hidden"
-          />
-        )}
-
         {data.isUnlocked && shouldShowReportTimeline(timelineEvents) ? (
           <ReportHistoryTimeline
             events={timelineEvents}
@@ -1259,6 +1251,14 @@ export default function VinPublic({ params }: Props) {
                 ))}
               </VehicleSpecsGrid>
             </motion.div>
+
+            {data.isUnlocked ? (
+              <VinPhoto360Viewer
+                exterior={data.photos360Exterior}
+                interior={data.photos360Interior}
+                className="print:hidden"
+              />
+            ) : null}
 
             {!data.isUnlocked ? (
               <div className="space-y-4">
