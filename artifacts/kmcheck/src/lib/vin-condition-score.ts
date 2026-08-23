@@ -186,6 +186,12 @@ function finalize(raw: number, t: (key: string) => string): VinScoreResult {
   return { score: final.toFixed(1), ...labelForScore(final, t) };
 }
 
+/** Same tier colors as live VIN reports — for static/demo scores. */
+export function scoreStylesForDisplay(score: number, t: (key: string) => string): VinScoreResult {
+  const final = Math.min(MAX_SCORE, Math.max(MIN_SCORE, score));
+  return { score: final.toFixed(1), ...labelForScore(final, t) };
+}
+
 /** Condition score from report data (display max 9.5). Shared by full and public VIN report pages. */
 export function computeVinConditionScore(
   input: VinScoreInput | null | undefined,

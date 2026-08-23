@@ -89,22 +89,6 @@ export function VinCheckIncludesSection({
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-7 order-2 lg:order-1"
           >
-            <div className="space-y-4 max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-1 text-xs font-semibold text-primary">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                </span>
-                {t("pricing_report_desc")}
-              </div>
-              <h2 className="text-3xl md:text-[2.35rem] font-bold tracking-tight leading-[1.12]">
-                {t("sample_report_title")}
-              </h2>
-              <p className="text-muted-foreground text-base md:text-[17px] leading-relaxed">
-                {t("sample_report_desc")}
-              </p>
-            </div>
-
             <div className="rounded-2xl border border-border/70 bg-card/80 backdrop-blur-sm shadow-sm overflow-hidden divide-y divide-border/50">
               {reportItems.map(({ icon: Icon, label, color, bg, ring }, i) => (
                 <motion.div

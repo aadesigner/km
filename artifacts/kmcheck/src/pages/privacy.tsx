@@ -4,6 +4,19 @@ import { useLegalTranslation } from "@/i18n/useLegalTranslation";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TextWithObfuscatedEmail } from "@/components/obfuscated-email-link";
+import {
+  legalBodyClass,
+  legalCookieCardDescClass,
+  legalCookieCardTitleClass,
+  legalFooterLinkClass,
+  legalH1Class,
+  legalH2Class,
+  legalH3Class,
+  legalIntroClass,
+  legalPageRootClass,
+  legalProseClass,
+  legalUpdatedClass,
+} from "@/components/legal-page-styles";
 
 const COOKIE_TYPES = [
   { typeKey: "legal_cookie_essential_type", descKey: "legal_cookie_essential_desc", badge: "required" as const },
@@ -29,7 +42,7 @@ export default function Privacy() {
 
   if (!ready) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 space-y-4">
+      <div className="max-w-3xl mx-auto px-4 py-12 md:py-16 space-y-4">
         <Skeleton className="h-4 w-40" />
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-24 w-full" />
@@ -57,7 +70,7 @@ export default function Privacy() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16" dir={dir}>
+    <div className={legalPageRootClass} dir={dir}>
       <SEOHead
         title={seo.title}
         description={seo.description}
@@ -65,75 +78,75 @@ export default function Privacy() {
         canonicalPath={seo.canonicalPath}
         noIndex={seo.noIndex}
       />
-      <div className="mb-10">
-        <p className="text-sm text-muted-foreground mb-2">{t("legal_updated")}</p>
-        <h1 className="text-4xl font-extrabold tracking-tight mb-4">{t("legal_privacy_title")}</h1>
-        <p className="text-muted-foreground text-lg mb-3">{t("legal_operator_notice")}</p>
-        <p className="text-muted-foreground text-lg">{t("legal_privacy_intro")}</p>
+      <div className="mb-8 md:mb-10">
+        <p className={legalUpdatedClass}>{t("legal_updated")}</p>
+        <h1 className={legalH1Class}>{t("legal_privacy_title")}</h1>
+        <p className={`${legalIntroClass} mb-3`}>{t("legal_operator_notice")}</p>
+        <p className={legalIntroClass}>{t("legal_privacy_intro")}</p>
       </div>
 
-      <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
+      <div className={legalProseClass}>
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s1_title")}</h2>
+          <h2 className={legalH2Class}>{t("legal_privacy_s1_title")}</h2>
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-foreground mb-1">{t("legal_privacy_s1_account_title")}</h3>
-              <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s1_account_body")}</p>
+              <h3 className={legalH3Class}>{t("legal_privacy_s1_account_title")}</h3>
+              <p className={legalBodyClass}>{t("legal_privacy_s1_account_body")}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-1">{t("legal_privacy_s1_usage_title")}</h3>
-              <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s1_usage_body")}</p>
+              <h3 className={legalH3Class}>{t("legal_privacy_s1_usage_title")}</h3>
+              <p className={legalBodyClass}>{t("legal_privacy_s1_usage_body")}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-1">{t("legal_privacy_s1_technical_title")}</h3>
-              <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s1_technical_body")}</p>
+              <h3 className={legalH3Class}>{t("legal_privacy_s1_technical_title")}</h3>
+              <p className={legalBodyClass}>{t("legal_privacy_s1_technical_body")}</p>
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s2_title")}</h2>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+          <h2 className={legalH2Class}>{t("legal_privacy_s2_title")}</h2>
+          <ul className={`list-disc list-inside space-y-2 ${legalBodyClass}`}>
             {useItems.map((item) => <li key={item}>{item}</li>)}
           </ul>
-          <p className="text-muted-foreground leading-relaxed mt-3">{t("legal_privacy_s2_footer")}</p>
+          <p className={`${legalBodyClass} mt-3`}>{t("legal_privacy_s2_footer")}</p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s3_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_privacy_s3_intro")}</p>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+          <h2 className={legalH2Class}>{t("legal_privacy_s3_title")}</h2>
+          <p className={`${legalBodyClass} mb-3`}>{t("legal_privacy_s3_intro")}</p>
+          <ul className={`list-disc list-inside space-y-2 ${legalBodyClass}`}>
             {SHARE_KEYS.map((key) => (
               <li key={key}>{t(key)}</li>
             ))}
           </ul>
-          <p className="text-muted-foreground leading-relaxed mt-3">{t("legal_privacy_s3_footer")}</p>
+          <p className={`${legalBodyClass} mt-3`}>{t("legal_privacy_s3_footer")}</p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s4_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_privacy_s4_body1")}</p>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s4_body2")}</p>
+          <h2 className={legalH2Class}>{t("legal_privacy_s4_title")}</h2>
+          <p className={`${legalBodyClass} mb-3`}>{t("legal_privacy_s4_body1")}</p>
+          <p className={legalBodyClass}>{t("legal_privacy_s4_body2")}</p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s5_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">
+          <h2 className={legalH2Class}>{t("legal_privacy_s5_title")}</h2>
+          <p className={legalBodyClass}>
             <TextWithObfuscatedEmail text={t("legal_privacy_s5_body")} />
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s6_title")}</h2>
+          <h2 className={legalH2Class}>{t("legal_privacy_s6_title")}</h2>
           <div id="cookies" className="space-y-3">
-            <p className="text-muted-foreground leading-relaxed">
+            <p className={legalBodyClass}>
               {t("legal_privacy_cookies_intro_before")}{" "}
               <Link href={`/${language}/terms`} className="text-primary hover:underline">
                 {t("legal_link_terms")}
               </Link>
               {t("legal_privacy_cookies_intro_after")}
             </p>
-            <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_cookies_types")}</p>
+            <p className={legalBodyClass}>{t("legal_privacy_cookies_types")}</p>
             <div className="space-y-3">
               {COOKIE_TYPES.map(({ typeKey, descKey, badge }) => (
                 <div key={typeKey} className="flex items-start gap-3 p-4 rounded-xl border bg-muted/30">
@@ -147,8 +160,8 @@ export default function Privacy() {
                     {badge === "required" ? t("legal_cookie_required") : t("legal_cookie_when_enabled")}
                   </div>
                   <div>
-                    <p className="font-medium text-sm">{t(typeKey)}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{t(descKey)}</p>
+                    <p className={legalCookieCardTitleClass}>{t(typeKey)}</p>
+                    <p className={legalCookieCardDescClass}>{t(descKey)}</p>
                   </div>
                 </div>
               ))}
@@ -157,12 +170,12 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s7_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed mb-3">{t("legal_privacy_s7_intro")}</p>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+          <h2 className={legalH2Class}>{t("legal_privacy_s7_title")}</h2>
+          <p className={`${legalBodyClass} mb-3`}>{t("legal_privacy_s7_intro")}</p>
+          <ul className={`list-disc list-inside space-y-2 ${legalBodyClass}`}>
             {rightsItems.map((item) => <li key={item}>{item}</li>)}
           </ul>
-          <p className="text-muted-foreground leading-relaxed mt-3">
+          <p className={`${legalBodyClass} mt-3`}>
             <TextWithObfuscatedEmail text={t("legal_privacy_s7_footer_before")} />{" "}
             <Link href={`/${language}/terms`} className="text-primary hover:underline">
               {t("legal_link_terms")}
@@ -172,35 +185,35 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s8_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s8_body")}</p>
+          <h2 className={legalH2Class}>{t("legal_privacy_s8_title")}</h2>
+          <p className={legalBodyClass}>{t("legal_privacy_s8_body")}</p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s9_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">
+          <h2 className={legalH2Class}>{t("legal_privacy_s9_title")}</h2>
+          <p className={legalBodyClass}>
             <TextWithObfuscatedEmail text={t("legal_privacy_s9_body")} />
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s10_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("legal_privacy_s10_body")}</p>
+          <h2 className={legalH2Class}>{t("legal_privacy_s10_title")}</h2>
+          <p className={legalBodyClass}>{t("legal_privacy_s10_body")}</p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-3">{t("legal_privacy_s11_title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">
+          <h2 className={legalH2Class}>{t("legal_privacy_s11_title")}</h2>
+          <p className={legalBodyClass}>
             <TextWithObfuscatedEmail text={t("legal_privacy_s11_body")} />
           </p>
         </section>
       </div>
 
-      <div className="mt-12 pt-8 border-t flex gap-4 flex-wrap">
-        <Link href={`/${language}/terms`} className="text-sm text-primary hover:underline">
+      <div className="mt-10 md:mt-12 pt-6 md:pt-8 border-t flex gap-4 flex-wrap">
+        <Link href={`/${language}/terms`} className={`${legalFooterLinkClass} text-primary hover:underline`}>
           {t("legal_link_terms")} →
         </Link>
-        <Link href={`/${language}`} className="text-sm text-muted-foreground hover:text-foreground">
+        <Link href={`/${language}`} className={`${legalFooterLinkClass} text-muted-foreground hover:text-foreground`}>
           ← {t("legal_link_home")}
         </Link>
       </div>

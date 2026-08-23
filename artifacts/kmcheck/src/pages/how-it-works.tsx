@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { WhatWeCheckSection } from "@/components/what-we-check-section";
-import { VinCheckIncludesSection } from "@/components/vin-check-includes-section";
 import { useAuth } from "@/lib/auth-context";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
 import {
@@ -19,14 +18,6 @@ import { cn } from "@/lib/utils";
 
 const VIN_EXAMPLE = "WAUZZZ8K9NA123456";
 const DEMO_VEHICLE = "Audi A4 2022";
-
-const HIW_PREVIEW_ROWS = [
-  { key: "mileage", labelKey: "mock_label_mileage", value: "68,400 km", warn: false },
-  { key: "accidents", labelKey: "mock_label_accidents", valueKey: "demo_none_found", warn: false },
-  { key: "salvage", labelKey: "mock_label_salvage", valueKey: "report_clean", warn: false },
-  { key: "stolen", labelKey: "mock_label_stolen", valueKey: "mock_value_stolen", warn: false },
-  { key: "owners", labelKey: "mock_label_owners", ownersCount: 2, warn: false },
-] as const;
 
 type Step = {
   num: string;
@@ -235,17 +226,6 @@ export default function HowItWorks() {
       </section>
 
       <WhatWeCheckSection autoRotate />
-
-      <VinCheckIncludesSection
-        demoVin={VIN_EXAMPLE}
-        demoVehicle={DEMO_VEHICLE}
-        demoOriginKey="demo_card_origin_germany"
-        demoScore={9.1}
-        demoBadgeKey="report_clean"
-        demoBadgeClassName="border-green-500/35 bg-green-500/10 text-green-700 dark:text-green-400"
-        demoScoreClassName="text-green-600 dark:text-green-400"
-        previewRows={HIW_PREVIEW_ROWS}
-      />
 
       {/* Trust strip */}
       <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-12 md:py-16 px-4">

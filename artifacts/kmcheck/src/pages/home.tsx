@@ -6,20 +6,18 @@ import { useAuth } from "@/lib/auth-context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import {
   ShieldCheck, Search, FileText,
-  CheckCircle2,
-  Globe, ArrowRight, Zap, RotateCcw,
+  ArrowRight, Zap, RotateCcw,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
+import { HomeCountriesCoverageSection } from "@/components/home-countries-coverage-section";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout, persistVinForCheckout, clearStoredPendingVin } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { prefetchFlags } from "@/components/flag-img";
-import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
@@ -30,9 +28,6 @@ const CompareTable = lazyWithRetry(() =>
 );
 const WhatWeCheckSection = lazyWithRetry(() =>
   import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
-);
-const VinCheckIncludesSection = lazyWithRetry(() =>
-  import("@/components/vin-check-includes-section").then((m) => ({ default: m.VinCheckIncludesSection })),
 );
 const HomepageTestimonials = lazyWithRetry(() => import("@/components/homepage-testimonials"));
 const CoverageMapVisual = lazyWithRetry(() =>
@@ -53,41 +48,6 @@ function useHeroMapsEnabled() {
     return () => mql.removeEventListener("change", update);
   }, []);
   return enabled;
-}
-
-function useCountries(t: (k: string) => string) {
-  return [
-    {
-      slug: "usa", flagCode: "us", name: t("country_usa_name"), count: t("country_usa_count"),
-      accentFrom: "from-blue-600", accentTo: "to-red-500",
-      tint: "from-blue-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_usa_h0", "home_country_usa_h1", "home_country_usa_h2"] as const,
-    },
-    {
-      slug: "korea", flagCode: "kr", name: t("country_korea_name"), count: t("country_korea_count"),
-      accentFrom: "from-indigo-600", accentTo: "to-red-600",
-      tint: "from-indigo-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_korea_h0", "home_country_korea_h1", "home_country_korea_h2"] as const,
-    },
-    {
-      slug: "canada", flagCode: "ca", name: t("country_canada_name"), count: t("country_canada_count"),
-      accentFrom: "from-red-600", accentTo: "to-slate-600",
-      tint: "from-red-500/[0.07] via-transparent to-slate-500/[0.05]",
-      highlights: ["home_country_canada_h0", "home_country_canada_h1", "home_country_canada_h2"] as const,
-    },
-    {
-      slug: "china", flagCode: "cn", name: t("country_china_name"), count: t("country_china_count"),
-      accentFrom: "from-red-600", accentTo: "to-amber-600",
-      tint: "from-red-500/[0.07] via-transparent to-amber-500/[0.05]",
-      highlights: ["home_country_china_h0", "home_country_china_h1", "home_country_china_h2"] as const,
-    },
-    {
-      slug: "uae", flagCode: "ae", name: t("country_uae_name"), count: t("country_uae_count"),
-      accentFrom: "from-emerald-600", accentTo: "to-red-600",
-      tint: "from-emerald-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_uae_h0", "home_country_uae_h1", "home_country_uae_h2"] as const,
-    },
-  ];
 }
 
 function useSteps(t: (k: string) => string) {
@@ -167,7 +127,6 @@ export default function Home() {
   const { displayPrice, basePrice: pricingBase, isDiscount, fmtPrice } = useDisplayPrice();
 
   const STEPS = useSteps(t);
-  const COUNTRIES = useCountries(t);
 
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
   const heroMapsEnabled = useHeroMapsEnabled();
@@ -359,91 +318,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── COUNTRIES ── */}
-      <section className="py-16 md:py-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-10 md:mb-12 text-center space-y-3"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
-              <Globe className="h-3.5 w-3.5" />
-              {t("stats_countries_badge")}
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("countries_title")}</h2>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
-          </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {COUNTRIES.map((c, i) => (
-              <motion.div
-                key={c.slug}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <Link
-                  href={`/${language}/cars/${c.slug}`}
-                  className="group relative flex h-full flex-col rounded-2xl border border-border/70 bg-card overflow-hidden shadow-sm hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
-                >
-                  <div className={cn("h-1 bg-gradient-to-r", c.accentFrom, c.accentTo)} />
-                  <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", c.tint)} />
-                  <div className="relative z-10 flex flex-1 flex-col p-5 md:p-6">
-                    <div className="flex items-start justify-between gap-3 mb-5">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <img
-                            src={`https://flagcdn.com/${c.flagCode}.svg`}
-                            alt={formatImageFlagAlt(c.name, t)}
-                            width={43}
-                            height={32}
-                            loading="lazy"
-                            decoding="async"
-                            fetchPriority="low"
-                            className="h-8 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                          />
-                          <h3 className="text-xl font-bold tracking-tight">{c.name}</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {c.count} {t("country_registered_vehicles")}
-                        </p>
-                      </div>
-                      <div className={cn(
-                        "h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-sm",
-                        c.accentFrom, c.accentTo,
-                      )}>
-                        <Globe className="h-4 w-4 text-white" />
-                      </div>
-                    </div>
-
-                    <ul className="space-y-2.5 mb-6 flex-1">
-                      {c.highlights.map((key) => (
-                        <li key={key} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-snug">
-                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          <span>{t(key)}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-2.5 transition-[gap] duration-200">
-                      <span>{t("vin_check_for")} {c.name}</span>
-                      <ArrowRight className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <DeferredSection minHeight={360}>
-        <Suspense fallback={<SectionFallback minHeight={360} />}>
-          <VinCheckIncludesSection />
-        </Suspense>
-      </DeferredSection>
+      <HomeCountriesCoverageSection />
 
       {/* ── TESTIMONIALS ── */}
       <DeferredSection minHeight={420}>
