@@ -8,7 +8,17 @@ import { readFile } from "fs/promises";
 import { tmpdir } from "os";
 import { db, usersTable, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable, pricingTable, systemSettingsTable, systemLogsTable, emailLogsTable, EMAIL_LOG_TYPES, couponsTable, passwordResetTokensTable, loginAttemptsTable, announcementsTable, pendingVinChecksTable, pendingVinCheckRequestsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
 import { eq, desc, count, sum, sql, gte, like, ilike, lte, and, inArray, gt, or, lt, exists, not, ne, isNull } from "drizzle-orm";
-import { requireAdmin, hashPassword, clampSessionDays } from "../lib/auth";
+import { requireAdmin, requireAdminAuth, hashPassword, clampSessionDays } from "../lib/auth";
+import {
+  ADMIN_UNLOCK_DAYS,
+  attemptAdminAreaUnlock,
+  clearAdminUnlockCookie,
+  hasValidAdminUnlock,
+  isAdminAreaPinEnabled,
+  isAdminPinLockedOut,
+  setAdminUnlockCookie,
+} from "../lib/adminAreaUnlock.js";
+import { clientIpKey } from "../lib/trustedClient.js";
 import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins } from "../lib/vinService";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "../lib/vinImageCache.js";
 import {
@@ -176,6 +186,75 @@ async function propagateCatalogDataToLookups(
 }
 
 const router = Router();
+
+// ── Admin area PIN (second gate; unlock cookie lasts 7 days) ─────────────────
+
+router.get("/admin/unlock/status", requireAdminAuth, async (req, res) => {
+  const userId = req.userId!;
+  const ip = clientIpKey(req);
+  const pinRequired = isAdminAreaPinEnabled();
+  const unlocked = await hasValidAdminUnlock(req, userId);
+  const lockedOut = pinRequired ? await isAdminPinLockedOut(userId, ip) : false;
+  res.json({
+    pinRequired,
+    unlocked,
+    lockedOut,
+    unlockDays: ADMIN_UNLOCK_DAYS,
+  });
+});
+
+router.post("/admin/unlock", requireAdminAuth, async (req, res) => {
+  const userId = req.userId!;
+  const ip = clientIpKey(req);
+  const { pin } = req.body as { pin?: string };
+
+  if (!isAdminAreaPinEnabled()) {
+    const result = await attemptAdminAreaUnlock(userId, ip, "");
+    if (!result.ok) {
+      res.status(429).json({ error: "Too many failed attempts.", code: result.code });
+      return;
+    }
+    setAdminUnlockCookie(res, result.token);
+    res.json({ ok: true, unlocked: true, unlockDays: ADMIN_UNLOCK_DAYS });
+    return;
+  }
+
+  if (typeof pin !== "string" || !pin.trim()) {
+    res.status(400).json({ error: "PIN is required" });
+    return;
+  }
+
+  const result = await attemptAdminAreaUnlock(userId, ip, pin.trim());
+  if (result.ok) {
+    setAdminUnlockCookie(res, result.token);
+    logger.info({ msg: "admin_area_unlocked", userId, ip });
+    res.json({ ok: true, unlocked: true, unlockDays: ADMIN_UNLOCK_DAYS });
+    return;
+  }
+
+  if (result.code === "locked_out") {
+    logger.warn({ msg: "admin_pin_lockout", userId, ip });
+    res.status(429).json({
+      error: `Too many failed PIN attempts. Try again in ${result.retryAfterMinutes} minutes.`,
+      code: "locked_out",
+      retryAfterMinutes: result.retryAfterMinutes,
+    });
+    return;
+  }
+
+  logger.warn({ msg: "admin_pin_invalid", userId, ip, attemptsRemaining: result.attemptsRemaining });
+  res.status(401).json({
+    error: "Incorrect admin PIN.",
+    code: "invalid_pin",
+    attemptsRemaining: result.attemptsRemaining,
+  });
+});
+
+router.post("/admin/unlock/logout", requireAdminAuth, async (req, res) => {
+  clearAdminUnlockCookie(res);
+  logger.info({ msg: "admin_area_locked", userId: req.userId });
+  res.json({ ok: true, unlocked: false });
+});
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
 

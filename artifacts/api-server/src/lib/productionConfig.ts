@@ -7,6 +7,9 @@ export function assertProductionConfig(): void {
   if (!process.env.JWT_SECRET?.trim()) {
     throw new Error("JWT_SECRET is required in production");
   }
+  if (!process.env.ADMIN_AREA_PIN?.trim()) {
+    throw new Error("ADMIN_AREA_PIN is required in production");
+  }
 }
 
 export function exitOnProductionConfigFailure(): void {

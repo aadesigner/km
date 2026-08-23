@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { KmcheckLogo, KmcheckMark } from "@/components/logo";
 import { SEOHead } from "@/components/seo";
 import { useTheme } from "@/components/theme-provider";
+import { AdminPinGate } from "@/components/admin-pin-gate";
 
 const navGroups = [
   {
@@ -175,6 +176,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
+    <AdminPinGate>
     <>
       <SEOHead title="Admin — kmcheck.com" description="kmcheck administration panel" lang="en" noIndex />
     <div className="flex min-h-screen bg-muted/20">
@@ -261,5 +263,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
     </>
+    </AdminPinGate>
   );
 }

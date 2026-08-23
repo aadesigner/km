@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, usersTable, passwordResetTokensTable, systemSettingsTable, loginAttemptsTable } from "@workspace/db";
 import { eq, lt, desc, and, gte, count, or } from "drizzle-orm";
 import { signJwt, verifyJwt, setAuthCookie, clearAuthCookie, hashPassword, verifyPassword, revokeToken, isTokenRevoked, clampSessionDays, getConfiguredSessionDays, refreshSessionIfNeeded, COOKIE_NAME, requireAuth } from "../lib/auth.js";
+import { clearAdminUnlockCookie } from "../lib/adminAreaUnlock.js";
 import { validatePassword } from "../lib/passwordPolicy.js";
 import { logger } from "../lib/logger.js";
 import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
@@ -1470,6 +1471,7 @@ router.post("/auth/logout", async (req, res) => {
     }
   }
   clearAuthCookie(res);
+  clearAdminUnlockCookie(res);
   logger.info({ msg: "auth_logout" });
   res.json({ ok: true });
 });

@@ -7,6 +7,7 @@ import { logger } from "./logger.js";
 import crypto from "crypto";
 import { shouldBootstrapAdmin } from "./adminBootstrap.js";
 import { clampSessionDays, DEFAULT_SESSION_DAYS, MIN_SESSION_DAYS } from "./sessionPolicy.js";
+import { hasValidAdminUnlock, isAdminAreaPinEnabled } from "./adminAreaUnlock.js";
 
 export { clampSessionDays, DEFAULT_SESSION_DAYS, MIN_SESSION_DAYS } from "./sessionPolicy.js";
 
@@ -196,11 +197,34 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   next();
 }
 
+export async function requireAdminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const userId = await authenticateAdminRequest(req, res);
+  if (!userId) return;
+  req.userId = userId;
+  next();
+}
+
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const userId = await authenticateAdminRequest(req, res);
+  if (!userId) return;
+  req.userId = userId;
+
+  if (isAdminAreaPinEnabled() && !(await hasValidAdminUnlock(req, userId))) {
+    res.status(403).json({
+      error: "Admin area locked. Enter your admin PIN.",
+      code: "admin_unlock_required",
+    });
+    return;
+  }
+
+  next();
+}
+
+async function authenticateAdminRequest(req: Request, res: Response): Promise<string | null> {
   const token: string | undefined = req.cookies?.[COOKIE_NAME];
   if (!token) {
     res.status(401).json({ error: "Unauthorized" });
-    return;
+    return null;
   }
 
   let userId: string;
@@ -209,16 +233,15 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     const payload = await verifyJwt(token);
     userId = payload.sub;
     jti = payload.jti;
-    req.userId = userId;
   } catch {
     res.status(401).json({ error: "Unauthorized" });
-    return;
+    return null;
   }
 
   if (jti && await isTokenRevoked(jti)) {
     clearAuthCookie(res);
     res.status(401).json({ error: "Unauthorized" });
-    return;
+    return null;
   }
 
   const [user] = await db
@@ -230,11 +253,11 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
   if (!user?.isAdmin) {
     logger.warn({ msg: "admin_access_denied", userId, method: req.method, path: req.path });
     res.status(403).json({ error: "Forbidden" });
-    return;
+    return null;
   }
 
   logger.info({ msg: "admin_access", userId, method: req.method, path: req.path, granted: true });
-  next();
+  return userId;
 }
 
 export async function revokeToken(jti: string, expiresAt: Date): Promise<void> {

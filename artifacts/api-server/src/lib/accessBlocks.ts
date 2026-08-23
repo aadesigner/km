@@ -137,6 +137,7 @@ export async function addIpBlock(opts: {
   source?: string;
   userId?: string | null;
   createdBy?: string | null;
+  expiresAt?: Date | null;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const normalized = normalizeBlockedIp(opts.ip);
   if (!normalized) return { ok: false, error: "Invalid IP address" };
@@ -150,6 +151,7 @@ export async function addIpBlock(opts: {
       source: opts.source ?? "manual",
       userId: opts.userId ?? null,
       createdBy: opts.createdBy ?? null,
+      expiresAt: opts.expiresAt ?? null,
     })
     .onConflictDoUpdate({
       target: [accessBlocksTable.blockType, accessBlocksTable.blockValue],
@@ -159,7 +161,7 @@ export async function addIpBlock(opts: {
         userId: opts.userId ?? null,
         createdBy: opts.createdBy ?? null,
         createdAt: new Date(),
-        expiresAt: null,
+        expiresAt: opts.expiresAt ?? null,
       },
     });
 
