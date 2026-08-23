@@ -36,6 +36,28 @@ import { useAuth } from "@/lib/auth-context";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+function formatLastActive(iso: string): string {
+  const at = new Date(iso);
+  const secs = Math.max(0, Math.round((Date.now() - at.getTime()) / 1000));
+  if (secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return at.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function isOnlineNow(iso: string | null | undefined): boolean {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < 5 * 60 * 1000;
+}
+
 export interface UserRow {
   id: string;
   email: string;
@@ -47,6 +69,7 @@ export interface UserRow {
   phoneNational?: string | null;
   lastLoginAt: string | null;
   lastLoginIp?: string | null;
+  lastSeenAt?: string | null;
   signupIp?: string | null;
   createdAt: string;
   totalChecks?: number;
@@ -583,12 +606,29 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         </Panel>
         <Panel className="px-3.5 py-3 md:px-4 md:py-4 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">Last login</span>
+            <span className="text-[11px] md:text-xs text-muted-foreground uppercase tracking-wide">Last active</span>
             <Clock className="h-3.5 w-3.5 text-primary/60" />
           </div>
           <p className="text-sm md:text-base font-semibold tabular-nums">
+            {user.lastSeenAt
+              ? formatLastActive(user.lastSeenAt)
+              : user.lastLoginAt
+                ? formatLastActive(user.lastLoginAt)
+                : "Never"}
+          </p>
+          {isOnlineNow(user.lastSeenAt) && (
+            <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-1">Online now</p>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Last sign-in:{" "}
             {user.lastLoginAt
-              ? new Date(user.lastLoginAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+              ? new Date(user.lastLoginAt).toLocaleString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "Never"}
           </p>
           <p className="text-[11px] text-muted-foreground font-mono mt-1 truncate" title={user.lastLoginIp ?? undefined}>
