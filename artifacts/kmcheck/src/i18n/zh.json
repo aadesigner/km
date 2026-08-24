@@ -1715,5 +1715,8 @@
   "vin_360_title": "360° 车辆视图",
   "vin_360_exterior": "外观",
   "vin_360_interior": "内饰",
-  "vin_360_hint": "拖动旋转"
+  "vin_360_hint": "拖动旋转",
+  "salvage_meaning_title": "什么是报废 / 全损（salvage）？",
+  "salvage_meaning_learn": "什么是报废车？",
+  "salvage_meaning_body": "报废或全损产权（salvage / write-off）表示保险公司认定该车为全损——通常因严重事故、水灾、火灾或失窃追回后——修理费用超过车辆价值。车辆仍可能被修复并出售，但往往保费更高、可能无法通过部分检测，且通常比清洁产权车辆更便宜。购买前务必核对产权文件并进行全面检测。"
 }

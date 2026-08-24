@@ -1715,5 +1715,8 @@
   "vin_360_title": "Vizualizare auto 360°",
   "vin_360_exterior": "Exterior",
   "vin_360_interior": "Interior",
-  "vin_360_hint": "Trageți pentru a roti"
+  "vin_360_hint": "Trageți pentru a roti",
+  "salvage_meaning_title": "Ce înseamnă salvaj / casare totală?",
+  "salvage_meaning_learn": "Ce este salvajul?",
+  "salvage_meaning_body": "Un titlu de salvaj (sau casare totală) înseamnă că un asigurător a declarat vehiculul daună totală — de obicei după un accident grav, inundație, incendiu sau recuperare după furt — deoarece costul reparațiilor a depășit valoarea. Poate fi reconstruit și vândut, dar adesea costă mai mult de asigurat, poate pică unele inspecții și, în general, valorează mai puțin decât un vehicul cu titlu curat. Verificați întotdeauna actele și faceți o inspecție temeinică înainte de cumpărare."
 }

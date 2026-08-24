@@ -607,6 +607,13 @@
   animation: vin-hero-risk-pulse 4s ease-in-out infinite;
 }
 
+@media (max-width: 639px), (prefers-reduced-motion: reduce) {
+  .vin-hero-accent-risk {
+    animation: none;
+    box-shadow: none;
+  }
+}
+
 @keyframes vin-hero-risk-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.88; }
@@ -1285,6 +1292,85 @@
 
 /* Client area — slightly denser report UI on small screens */
 @layer components {
+  /*
+   * VIN report section chrome: hairline + soft corner wash via pseudo-elements
+   * (no extra DOM nodes per card). Disabled on print; hairline-only on small screens.
+   */
+  .vin-report-section--decorated {
+    --vr-accent: hsl(var(--primary));
+  }
+
+  .vin-report-section--decorated::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--vr-accent) 40%, transparent),
+      transparent
+    );
+  }
+
+  @media (min-width: 640px) {
+    .vin-report-section--decorated::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: radial-gradient(
+        ellipse 70% 50% at 100% 0%,
+        color-mix(in srgb, var(--vr-accent) 6%, transparent),
+        transparent 55%
+      );
+    }
+  }
+
+  @media print {
+    .vin-report-section--decorated::before,
+    .vin-report-section--decorated::after {
+      display: none !important;
+    }
+  }
+
+  /* Soft page field — desktop only; skip on mobile for paint cost. */
+  .vin-report-screen {
+    position: relative;
+  }
+
+  @media (min-width: 640px) {
+    .vin-report-screen::before {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: -1rem -0.5rem auto;
+      height: min(22rem, 45vh);
+      border-radius: 1.5rem;
+      background: radial-gradient(
+        ellipse 75% 65% at 50% 0%,
+        hsl(var(--primary) / 0.05),
+        transparent 60%
+      );
+      z-index: 0;
+    }
+
+    .vin-report-screen > * {
+      position: relative;
+      z-index: 1;
+    }
+  }
+
+  @media print {
+    .vin-report-screen::before {
+      display: none !important;
+    }
+  }
+
   @media (max-width: 639px) {
     .vin-report-screen .grid.gap-6 {
       gap: 1rem;

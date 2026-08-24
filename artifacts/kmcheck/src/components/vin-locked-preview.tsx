@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { VinReportSection, ACCENT_HEADER_WASH, type VinReportSectionAccent } from "@/components/vin-report-section";
 
 /** Blurred placeholder body shown inside locked report sections. */
 export function VinLockedSectionBody({
@@ -118,6 +119,17 @@ function LockedTimelineSketch({ className }: { className?: string }) {
   );
 }
 
+function sectionToneFromChip(accent: string): VinReportSectionAccent {
+  if (/\borange\b/.test(accent)) return "orange";
+  if (/\bemerald\b|\bteal\b/.test(accent)) return "emerald";
+  if (/\bsky\b/.test(accent)) return "sky";
+  if (/\bviolet\b|\bpurple\b/.test(accent)) return "purple";
+  if (/\brose\b|\bred\b/.test(accent)) return "rose";
+  if (/\bamber\b/.test(accent)) return "amber";
+  if (/\bslate\b/.test(accent)) return "slate";
+  return "primary";
+}
+
 type LockedSectionCardProps = {
   title: string;
   icon?: ElementType;
@@ -137,26 +149,31 @@ export function VinLockedSectionCard({
   accent = "bg-muted text-muted-foreground",
   className,
 }: LockedSectionCardProps) {
+  const tone = sectionToneFromChip(accent);
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
-      className={cn(
-        "rounded-2xl border bg-card overflow-hidden shadow-sm ring-1 ring-black/[0.03] dark:ring-white/[0.04]",
-        className,
-      )}
+      className={className}
     >
-      <div className="px-5 py-3.5 sm:px-6 sm:py-4 border-b flex items-center gap-2.5 bg-muted/25">
-        {Icon && (
-          <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0", accent)}>
-            <Icon className="h-3.5 w-3.5" />
-          </div>
-        )}
-        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h2>
-        <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
-      </div>
-      <VinLockedSectionBody hint={hint} variant={variant} />
+      <VinReportSection accent={tone}>
+        <div
+          className={cn(
+            "px-5 py-3.5 sm:px-6 sm:py-4 border-b border-border/60 flex items-center gap-2.5",
+            ACCENT_HEADER_WASH[tone],
+          )}
+        >
+          {Icon && (
+            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0", accent)}>
+              <Icon className="h-3.5 w-3.5" />
+            </div>
+          )}
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h2>
+          <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
+        </div>
+        <VinLockedSectionBody hint={hint} variant={variant} />
+      </VinReportSection>
     </motion.div>
   );
 }
@@ -183,8 +200,9 @@ export function VinLockedTimelinePreview({ t, priceLabel, onUnlock }: VinLockedT
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08, duration: 0.35 }}
-      className="print:hidden relative rounded-2xl border bg-background overflow-hidden shadow-sm"
+      className="print:hidden"
     >
+      <VinReportSection>
       <div className="flex items-center justify-between gap-3 px-3 pt-3 sm:px-5 sm:pt-4">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
           {t("report_timeline_title")}
@@ -245,6 +263,7 @@ export function VinLockedTimelinePreview({ t, priceLabel, onUnlock }: VinLockedT
           ) : null}
         </div>
       </div>
+      </VinReportSection>
     </motion.section>
   );
 }
@@ -328,12 +347,9 @@ export function VinLockedTeaserPanel({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {cards.map(({ icon: Icon, title, sample, color, bg, border }) => (
-          <div
+          <VinReportSection
             key={title}
-            className={cn(
-              "relative rounded-2xl border bg-card overflow-hidden shadow-sm",
-              border,
-            )}
+            className={cn(border)}
           >
             <div className="p-5 space-y-3">
               <div className="flex items-center gap-2.5">
@@ -366,7 +382,7 @@ export function VinLockedTeaserPanel({
                   : t("vin_public_check_cta")}
               </Button>
             </div>
-          </div>
+          </VinReportSection>
         ))}
       </div>
 

@@ -1715,5 +1715,8 @@
   "vin_360_title": "Vista 360° del vehículo",
   "vin_360_exterior": "Exterior",
   "vin_360_interior": "Interior",
-  "vin_360_hint": "Arrastra para girar"
+  "vin_360_hint": "Arrastra para girar",
+  "salvage_meaning_title": "¿Qué significa siniestro total / salvage?",
+  "salvage_meaning_learn": "¿Qué es el salvage?",
+  "salvage_meaning_body": "Un título de siniestro total (salvage o write-off) indica que una aseguradora declaró el vehículo pérdida total — normalmente tras un accidente grave, inundación, incendio o recuperación tras robo — porque repararlo costaba más que su valor. Puede reconstruirse y venderse, pero suele ser más caro de asegurar, puede no pasar algunas inspecciones y generalmente vale menos que un coche con título limpio. Compruebe siempre la documentación y haga una inspección completa antes de comprar."
 }

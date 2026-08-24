@@ -38,6 +38,8 @@ export type VinScoreResult = {
   /** Top accent bar on hero card (Tailwind gradient stops). */
   accentBar: string;
   accentGlow: string;
+  /** Soft bottom-right hero wash matching trust tier. */
+  cornerWash: string;
 };
 
 const PERFECT_MAX_KM = 130_000;
@@ -55,6 +57,9 @@ const GREEN = {
   trackColor: "#16a34a",
   accentBar: "from-emerald-400/55 via-primary/40 to-emerald-300/30",
   accentGlow: "from-emerald-500/10 via-primary/5 to-transparent",
+  /** Soft hero corner wash (bottom-right) — keep very low opacity. */
+  cornerWash:
+    "bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(16,185,129,0.045),transparent_68%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(52,211,153,0.05),transparent_68%)]",
 };
 
 const AMBER = {
@@ -64,6 +69,8 @@ const AMBER = {
   trackColor: "#d97706",
   accentBar: "from-amber-400/55 via-orange-300/40 to-amber-300/25",
   accentGlow: "from-amber-500/10 via-orange-400/5 to-transparent",
+  cornerWash:
+    "bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(245,158,11,0.04),transparent_68%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(251,191,36,0.045),transparent_68%)]",
 };
 
 const RED = {
@@ -73,6 +80,8 @@ const RED = {
   trackColor: "#dc2626",
   accentBar: "from-red-500/55 via-red-400/45 to-orange-400/30",
   accentGlow: "from-red-500/10 via-red-400/5 to-transparent",
+  cornerWash:
+    "bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(239,68,68,0.04),transparent_68%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(248,113,113,0.045),transparent_68%)]",
 };
 
 export function hasMileageRollback(history: VinScoreMileageEntry[]): boolean {
@@ -174,7 +183,7 @@ function ownersPenalty(ownerCount: number | null | undefined): number {
   return Math.min(0.45 + (ownerCount - 5) * 0.12, 0.85);
 }
 
-function labelForScore(final: number, t: (key: string) => string): Pick<VinScoreResult, "label" | "textColor" | "bgColor" | "borderColor" | "trackColor" | "accentBar" | "accentGlow"> {
+function labelForScore(final: number, t: (key: string) => string): Pick<VinScoreResult, "label" | "textColor" | "bgColor" | "borderColor" | "trackColor" | "accentBar" | "accentGlow" | "cornerWash"> {
   if (final >= 8) return { label: t("report_clean"), ...GREEN };
   if (final >= 6) return { label: t("report_caution"), ...AMBER };
   return { label: t("report_risk"), ...RED };

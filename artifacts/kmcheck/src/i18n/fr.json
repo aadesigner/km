@@ -1715,5 +1715,8 @@
   "vin_360_title": "Vue véhicule 360°",
   "vin_360_exterior": "Extérieur",
   "vin_360_interior": "Intérieur",
-  "vin_360_hint": "Faites glisser pour tourner"
+  "vin_360_hint": "Faites glisser pour tourner",
+  "salvage_meaning_title": "Que signifie « salvage » / perte totale ?",
+  "salvage_meaning_learn": "Qu’est-ce que le salvage ?",
+  "salvage_meaning_body": "Un titre salvage (ou perte totale) signifie qu’un assureur a déclaré le véhicule économiquement irréparable — souvent après un accident grave, une inondation, un incendie ou une récupération après vol — car le coût des réparations dépassait sa valeur. Il peut être reconstruit et revendu, mais il est souvent plus cher à assurer, peut échouer à certains contrôles, et vaut en général moins qu’un véhicule au titre propre. Vérifiez toujours les documents et faites inspecter le véhicule avant d’acheter."
 }

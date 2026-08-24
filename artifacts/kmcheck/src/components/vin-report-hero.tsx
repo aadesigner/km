@@ -22,6 +22,8 @@ export type VinHeroScore = {
   borderColor: string;
   accentBar?: string;
   accentGlow?: string;
+  /** Soft bottom-right wash matching trust tier (green / amber / red). */
+  cornerWash?: string;
   /** Numeric score for accent intensity (risk tier animation). */
   riskTier?: "clean" | "caution" | "risk";
 };
@@ -537,8 +539,14 @@ export function VinReportHero({
   const isRiskAccent = scoreData?.riskTier === "risk" || (scoreData && parseFloat(scoreData.score) < 6);
 
   return (
-    <div className="vin-report-hero rounded-2xl border bg-card overflow-hidden shadow-sm relative">
-      {showScoreAccent && (
+    <div
+      className={cn(
+        "vin-report-hero relative overflow-hidden rounded-2xl border border-border/70 bg-card",
+        "shadow-sm dark:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.4)]",
+        "print:shadow-none",
+      )}
+    >
+      {showScoreAccent ? (
         <>
           <div
             className={cn(
@@ -548,18 +556,34 @@ export function VinReportHero({
             )}
             aria-hidden
           />
+          {/* Soft top lightening — CSS gradient only (no blur / shadow / animation) */}
           <div
             className={cn(
-              "pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b",
+              "pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b print:hidden",
               scoreData.accentGlow,
             )}
             aria-hidden
           />
         </>
+      ) : (
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 z-20 h-px bg-gradient-to-r from-transparent via-border to-transparent print:hidden"
+        />
       )}
-      <div className="sm:grid sm:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] sm:items-stretch">
+      {/* Trust-tier corner wash — green / amber / red, kept very soft */}
+      {!locked && scoreData?.cornerWash ? (
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-0 z-[1] print:hidden",
+            scoreData.cornerWash,
+          )}
+        />
+      ) : null}
+      <div className="relative z-[2] sm:grid sm:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] sm:items-stretch">
         {/* Left — photo gallery */}
-        <div className="p-2.5 sm:p-5 bg-muted/30 sm:border-r border-border/60 print:p-2">
+        <div className="p-2.5 sm:p-5 bg-muted/25 sm:border-r border-border/50 print:p-2 print:bg-muted/20">
           <HeroPhotoGallery
             photos={photos}
             photoIdx={photoIdx}
@@ -582,7 +606,7 @@ export function VinReportHero({
                 {unlockedLabel && !locked && (
                   <Badge
                     variant="outline"
-                    className="mb-2 text-[10px] font-semibold border-primary/30 text-primary bg-primary/5 print:hidden"
+                    className="mb-2 text-[10px] font-semibold border-primary/25 text-primary bg-primary/[0.07] print:hidden"
                   >
                     {unlockedLabel}
                   </Badge>
@@ -601,7 +625,7 @@ export function VinReportHero({
                 <Badge
                   variant="outline"
                   className={cn(
-                    "font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/40 border-border/80 text-foreground/90 select-all w-fit",
+                    "font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/40 border-border/70 text-foreground/90 select-all w-fit",
                     trim ? "mt-3" : "mt-2",
                   )}
                 >
@@ -675,7 +699,7 @@ export function VinReportHero({
 
           {showStatsRow && (
           <div className={cn(
-            "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-0 grid gap-1.5 sm:gap-2.5 bg-muted/15 sm:bg-muted/10 border-t border-border/40 vin-hero-stats [&>*]:flex [&>*]:w-full [&>*]:justify-center print:grid-cols-4 print:gap-1 print:py-1.5 print:px-2",
+            "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-0 grid gap-1.5 sm:gap-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats [&>*]:flex [&>*]:w-full [&>*]:justify-center print:grid-cols-4 print:gap-1 print:py-1.5 print:px-2",
             locked ? "grid-cols-1" : "grid-cols-2",
             showDesktopSummary && !locked && "sm:hidden print:grid",
           )}>

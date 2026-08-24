@@ -1715,5 +1715,8 @@
   "vin_360_title": "360°-Fahrzeugansicht",
   "vin_360_exterior": "Außen",
   "vin_360_interior": "Innen",
-  "vin_360_hint": "Ziehen zum Drehen"
+  "vin_360_hint": "Ziehen zum Drehen",
+  "salvage_meaning_title": "Was bedeutet Salvage / Totalschaden?",
+  "salvage_meaning_learn": "Was ist Salvage?",
+  "salvage_meaning_body": "Ein Salvage- oder Totalschaden-Titel bedeutet, dass ein Versicherer das Fahrzeug als Totalschaden eingestuft hat — meist nach einem schweren Unfall, Hochwasser, Brand oder Diebstahlwiederauffinden — weil die Reparaturkosten den Wert überstiegen. Das Auto kann wiederaufgebaut und verkauft werden, ist aber oft teurer zu versichern, besteht manche Prüfungen nicht und ist in der Regel weniger wert als ein Fahrzeug mit sauberem Titel. Prüfen Sie immer die Papiere und lassen Sie das Fahrzeug gründlich untersuchen."
 }

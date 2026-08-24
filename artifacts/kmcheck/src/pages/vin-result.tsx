@@ -34,6 +34,12 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
+import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
+import {
+  SalvageMeaningHint,
+  ownershipSectionAccent,
+  safetySectionAccent,
+} from "@/components/salvage-meaning-hint";
 import { VinPhoto360Viewer } from "@/components/vin-photo-360-viewer";
 import { PendingVinSearchPanel, PendingVinTopNotice } from "@/components/pending-vin-search-panel";
 import { PhotoLightbox } from "@/components/photo-lightbox";
@@ -876,7 +882,12 @@ export default function VinResult({ params }: Props) {
           </div>
         ) : null}
         {hasSalvageData
-          ? <PassPill ok={data!.isSalvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
+          ? (
+            <div className="inline-flex items-center gap-1 w-full justify-center">
+              <PassPill ok={data!.isSalvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
+              {data!.isSalvage === true ? <SalvageMeaningHint className="shrink-0" /> : null}
+            </div>
+          )
           : null}
         {hasTheftData
           ? <PassPill ok={data!.isStolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
@@ -913,27 +924,24 @@ export default function VinResult({ params }: Props) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl border bg-background overflow-hidden"
         >
-          <div className="px-5 py-3.5 border-b flex items-center justify-between bg-muted/30">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-orange-500/10 flex items-center justify-center">
-                <Gauge className="h-3.5 w-3.5 text-orange-500" />
-              </div>
-              <h2 className="font-bold text-sm">
-                {mileageHistory.length > 1 ? t("mileage_history") : t("report_mileage")}
-              </h2>
-            </div>
-            {odometer && odoCol ? (
-                <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
-                  <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
-                  <AnimatedMileageBadge
-                    odometer={odometer}
-                    className="text-xs font-semibold tabular-nums"
-                  />
-                </div>
-              ) : null}
-          </div>
+          <VinReportSection accent="orange">
+            <VinReportSectionHeader
+              icon={Gauge}
+              accent="orange"
+              title={mileageHistory.length > 1 ? t("mileage_history") : t("report_mileage")}
+              trailing={
+                odometer && odoCol ? (
+                  <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 bg-primary text-primary-foreground shadow-sm">
+                    <div className="h-2 w-2 rounded-full shrink-0 bg-primary-foreground/90" />
+                    <AnimatedMileageBadge
+                      odometer={odometer}
+                      className="text-xs font-semibold tabular-nums"
+                    />
+                  </div>
+                ) : null
+              }
+            />
           <div className="px-6 py-5">
             {mileageHistory.length > 1 ? (
               <>
@@ -974,6 +982,7 @@ export default function VinResult({ params }: Props) {
               </>
             ) : null}
           </div>
+          </VinReportSection>
         </motion.div>
         ) : null}
 
@@ -983,17 +992,14 @@ export default function VinResult({ params }: Props) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.14 }}
-          className="rounded-2xl border bg-background overflow-hidden"
         >
-          <div className="px-5 py-3.5 border-b flex items-center justify-between bg-muted/30">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-red-500/10 flex items-center justify-center">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
-              </div>
-              <h2 className="font-bold text-sm">{t("accident_history")}</h2>
-            </div>
-            <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
-          </div>
+          <VinReportSection accent="rose">
+            <VinReportSectionHeader
+              icon={AlertTriangle}
+              accent="rose"
+              title={t("accident_history")}
+              trailing={<PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />}
+            />
           <div className="px-6 py-5">
               <div className="space-y-4">
                 {accidents.map((acc, i) => (
@@ -1119,6 +1125,7 @@ export default function VinResult({ params }: Props) {
                 ))}
               </div>
           </div>
+          </VinReportSection>
         </motion.div>
         )}
 
@@ -1129,23 +1136,25 @@ export default function VinResult({ params }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.35 }}
-          className="rounded-2xl border bg-background overflow-hidden"
         >
-          <div className="px-5 py-3.5 border-b flex items-center gap-2 bg-muted/30">
-            <div className="h-6 w-6 rounded-md bg-purple-500/10 flex items-center justify-center">
-              <ShieldCheck className="h-3.5 w-3.5 text-purple-500" />
-            </div>
-            <h2 className="font-bold text-sm">{t("safety_status")}</h2>
-            {(hasSalvageData || hasTheftData) && (
-              <div className="ml-auto">
-                <PassPill
-                  ok={(!hasSalvageData || data!.isSalvage === false) && (!hasTheftData || data!.isStolen === false)}
-                  labelOk={t("all_clear")}
-                  labelFail={t("issue_found")}
-                />
-              </div>
-            )}
-          </div>
+          <VinReportSection accent={safetySectionAccent(data?.isSalvage, data?.isStolen)}>
+            <VinReportSectionHeader
+              icon={ShieldCheck}
+              accent={safetySectionAccent(data?.isSalvage, data?.isStolen)}
+              title={t("safety_status")}
+              trailing={
+                (hasSalvageData || hasTheftData) ? (
+                  <div className="flex items-center gap-1.5">
+                    {data?.isSalvage === true ? <SalvageMeaningHint /> : null}
+                    <PassPill
+                      ok={(!hasSalvageData || data!.isSalvage === false) && (!hasTheftData || data!.isStolen === false)}
+                      labelOk={t("all_clear")}
+                      labelFail={t("issue_found")}
+                    />
+                  </div>
+                ) : null
+              }
+            />
           <div className="px-6 py-5 grid sm:grid-cols-2 gap-3">
             {/* Salvage box */}
             {hasSalvageData ? (
@@ -1163,7 +1172,10 @@ export default function VinResult({ params }: Props) {
                     : <ShieldCheck className="h-4 w-4 text-green-600" />}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("report_salvage")}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("report_salvage")}</p>
+                    {data!.isSalvage ? <SalvageMeaningHint /> : null}
+                  </div>
                   <p className={cn("text-sm font-bold mt-0.5", data!.isSalvage ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400")}>
                     {data!.isSalvage ? t("salvage_flagged") : t("mock_value_salvage")}
                   </p>
@@ -1214,6 +1226,7 @@ export default function VinResult({ params }: Props) {
               </div>
             )}
           </div>
+          </VinReportSection>
         </motion.div>
         )}
 
@@ -1238,20 +1251,24 @@ export default function VinResult({ params }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.35 }}
-          className="rounded-2xl border bg-background overflow-hidden"
         >
-          <div className="px-5 py-3 border-b flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
-            <h2 className="font-bold text-sm">{t("auction_history")}</h2>
-            {auctionHistory && auctionHistory.length > 0 && (
-              <Badge variant="secondary" className="ml-auto text-xs">
-                {auctionHistory.length}
-              </Badge>
-            )}
-          </div>
+          <VinReportSection accent="emerald">
+            <VinReportSectionHeader
+              icon={DollarSign}
+              accent="emerald"
+              title={t("auction_history")}
+              trailing={
+                auctionHistory && auctionHistory.length > 0 ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {auctionHistory.length}
+                  </Badge>
+                ) : null
+              }
+            />
           <div className="px-4 py-3">
             <AuctionHistoryTimeline history={auctionHistory} t={t} language={language} vehicleYear={data?.year} vehicleCountry={data?.country} />
           </div>
+          </VinReportSection>
         </motion.div>
         )}
 
@@ -1262,22 +1279,21 @@ export default function VinResult({ params }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.35 }}
-          className="rounded-2xl border bg-background overflow-hidden"
         >
-          <div className="px-5 py-3.5 border-b flex items-center gap-2 bg-muted/30">
-            <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center">
-              <Users className="h-3.5 w-3.5 text-blue-500" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-bold text-sm">{t("ownership_history")}</h2>
-              <p className="text-[10px] text-muted-foreground leading-tight">{t("owner_privacy_note")}</p>
-            </div>
-            {data?.ownerCount != null && (
-              <Badge variant="secondary" className="ml-auto text-xs shrink-0">
-                {data.ownerCount} {data.ownerCount === 1 ? t("owner_single") : t("owner_many_suffix")}
-              </Badge>
-            )}
-          </div>
+          <VinReportSection accent={ownershipSectionAccent(data?.ownerCount)}>
+            <VinReportSectionHeader
+              icon={Users}
+              accent={ownershipSectionAccent(data?.ownerCount)}
+              title={t("ownership_history")}
+              subtitle={t("owner_privacy_note")}
+              trailing={
+                data?.ownerCount != null ? (
+                  <Badge variant="secondary" className="text-xs shrink-0">
+                    {data.ownerCount} {data.ownerCount === 1 ? t("owner_single") : t("owner_many_suffix")}
+                  </Badge>
+                ) : null
+              }
+            />
           <div className="px-6 py-5">
             {ownerHistory && ownerHistory.length > 0 ? (
               <OwnerHistoryTimeline history={ownerHistory} t={t} language={language} vehicleYear={data?.year} vehicleCountry={data?.country} />
@@ -1285,13 +1301,23 @@ export default function VinResult({ params }: Props) {
               <div className="flex items-center gap-4">
                 <div className={cn(
                   "h-14 w-14 rounded-2xl border-2 flex items-center justify-center shrink-0",
-                  data.ownerCount <= 2
-                    ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/40"
-                    : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40"
+                  data.ownerCount > 8
+                    ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/40"
+                    : data.ownerCount > 5
+                      ? "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/40"
+                      : data.ownerCount <= 2
+                        ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/40"
+                        : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40"
                 )}>
                   <span className={cn(
                     "text-2xl font-black",
-                    data.ownerCount <= 2 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
+                    data.ownerCount > 8
+                      ? "text-red-700 dark:text-red-400"
+                      : data.ownerCount > 5
+                        ? "text-orange-600 dark:text-orange-400"
+                        : data.ownerCount <= 2
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-amber-600 dark:text-amber-400"
                   )}>
                     {data.ownerCount}
                   </span>
@@ -1307,6 +1333,7 @@ export default function VinResult({ params }: Props) {
               </div>
             ) : null}
           </div>
+          </VinReportSection>
         </motion.div>
         )}
 
@@ -1321,14 +1348,9 @@ export default function VinResult({ params }: Props) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="rounded-2xl border bg-background overflow-hidden"
           >
-            <div className="px-5 py-3.5 border-b flex items-center gap-2 bg-muted/30">
-              <div className="h-6 w-6 rounded-md bg-blue-500/10 flex items-center justify-center">
-                <Car className="h-3.5 w-3.5 text-blue-500" />
-              </div>
-              <h2 className="font-bold text-sm">{t("vehicle_info")}</h2>
-            </div>
+            <VinReportSection accent="sky">
+              <VinReportSectionHeader icon={Car} accent="sky" title={t("vehicle_info")} />
             <div className="px-5 py-4">
               <VehicleSpecsGrid>
                 {[
@@ -1356,6 +1378,7 @@ export default function VinResult({ params }: Props) {
                 ))}
               </VehicleSpecsGrid>
             </div>
+            </VinReportSection>
           </motion.div>
           ) : null}
 
@@ -1410,14 +1433,9 @@ export default function VinResult({ params }: Props) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35 }}
-              className="rounded-2xl border bg-background overflow-hidden"
             >
-              <div className="px-5 py-3.5 border-b flex items-center gap-2 bg-muted/30">
-                <div className="h-6 w-6 rounded-md bg-emerald-500/10 flex items-center justify-center">
-                  <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                </div>
-                <h2 className="font-bold text-sm">{t("market_data")}</h2>
-              </div>
+              <VinReportSection accent="emerald">
+                <VinReportSectionHeader icon={TrendingUp} accent="emerald" title={t("market_data")} />
               <div className="px-6 py-5">
                 <MarketValueChart
                   marketData={marketData}
@@ -1469,6 +1487,7 @@ export default function VinResult({ params }: Props) {
                   )}
                 </div>
               </div>
+              </VinReportSection>
             </motion.div>
           )}
 

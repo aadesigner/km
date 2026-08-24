@@ -1715,5 +1715,8 @@
   "vin_360_title": "Widok pojazdu 360°",
   "vin_360_exterior": "Zewnętrze",
   "vin_360_interior": "Wnętrze",
-  "vin_360_hint": "Przeciągnij, aby obrócić"
+  "vin_360_hint": "Przeciągnij, aby obrócić",
+  "salvage_meaning_title": "Co oznacza salvage / szkoda całkowita?",
+  "salvage_meaning_learn": "Czym jest salvage?",
+  "salvage_meaning_body": "Tytuł salvage (szkoda całkowita / odpis) oznacza, że ubezpieczyciel uznał pojazd za szkodę całkowitą — zwykle po poważnym wypadku, powodzi, pożarze lub odzyskaniu po kradzieży — bo koszt naprawy przekroczył wartość. Auto może zostać odbudowane i sprzedane, ale często jest droższe w ubezpieczeniu, może nie przejść niektórych przeglądów i zwykle jest warte mniej niż pojazd z czystym tytułem. Zawsze sprawdź dokumenty i zamów dokładną inspekcję przed zakupem."
 }

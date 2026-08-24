@@ -17,6 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
+import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { KoreanWonAmount, textContainsWon } from "@/components/korean-won-amount";
 import { isKoreanCountry } from "@/lib/korean-currency";
@@ -310,40 +311,24 @@ export function RegistryHistorySection({
   const visibleEvents = sliceForHistoryPreview(sortedEvents, expanded);
   const isRecall = kind === "recall";
   const HeaderIcon = isRecall ? FileWarning : ClipboardList;
-  const headerIconClass = isRecall ? "bg-red-500/10 text-red-500" : "bg-violet-500/10 text-violet-500";
+  const accent = isRecall ? "rose" as const : "purple" as const;
   const titleKey = isRecall ? "report_recall_history" : "report_registry_history";
   const noteKey = isRecall ? "report_recall_history_note" : "report_registry_history_note";
 
-  const shellClass = variant === "public"
-    ? "rounded-2xl border bg-card overflow-hidden"
-    : "rounded-2xl border bg-background overflow-hidden";
-
-  const headerClass = variant === "public"
-    ? "px-5 py-3 border-b flex items-center justify-between gap-2"
-    : "px-4 py-2.5 border-b flex items-center justify-between gap-2 bg-muted/30";
-
   const body = (
-    <>
-      <div className={headerClass}>
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shrink-0", headerIconClass)}>
-            <HeaderIcon className="h-3.5 w-3.5" />
-          </div>
-          <div className="min-w-0">
-            <h2 className={variant === "public" ? "text-xs font-bold uppercase tracking-widest text-muted-foreground" : "font-bold text-sm leading-tight"}>
-              {t(titleKey)}
-            </h2>
-            {variant === "report" && (
-              <p className="text-[10px] text-muted-foreground leading-tight truncate sm:whitespace-normal">
-                {t(noteKey)}
-              </p>
-            )}
-          </div>
-        </div>
-        <Badge variant="secondary" className="text-xs shrink-0">
-          {formatRegistryEventsCount(t, sortedEvents.length)}
-        </Badge>
-      </div>
+    <VinReportSection className={className} accent={accent}>
+      <VinReportSectionHeader
+        variant={variant === "public" ? "public" : "report"}
+        icon={HeaderIcon}
+        accent={accent}
+        title={t(titleKey)}
+        subtitle={variant === "report" ? t(noteKey) : undefined}
+        trailing={
+          <Badge variant="secondary" className="text-xs shrink-0">
+            {formatRegistryEventsCount(t, sortedEvents.length)}
+          </Badge>
+        }
+      />
       <div className="px-4 py-3">
         {variant === "public" && (
           <p className="text-[11px] text-muted-foreground mb-2.5 leading-snug">{t(noteKey)}</p>
@@ -372,7 +357,7 @@ export function RegistryHistorySection({
           className="mt-2"
         />
       </div>
-    </>
+    </VinReportSection>
   );
 
   if (variant === "public") {
@@ -381,7 +366,6 @@ export function RegistryHistorySection({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className={cn(shellClass, className)}
       >
         {body}
       </motion.div>
@@ -394,7 +378,6 @@ export function RegistryHistorySection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.35, delay }}
-      className={cn(shellClass, className)}
     >
       {body}
     </motion.div>

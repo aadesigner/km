@@ -1718,5 +1718,8 @@
   "vin_360_title": "360° vehicle view",
   "vin_360_exterior": "Exterior",
   "vin_360_interior": "Interior",
-  "vin_360_hint": "Drag to rotate"
+  "vin_360_hint": "Drag to rotate",
+  "salvage_meaning_title": "What does salvage mean?",
+  "salvage_meaning_learn": "What is salvage?",
+  "salvage_meaning_body": "A salvage (or write-off) title means an insurer declared the vehicle a total loss — usually after a serious accident, flood, fire, or theft recovery — because repair cost exceeded its value. It can still be rebuilt and sold, but it often costs more to insure, may fail some inspections, and is generally worth less than a clean-title car. Always verify the title paperwork and get a thorough inspection before buying."
 }

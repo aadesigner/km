@@ -1718,5 +1718,8 @@
   "vin_360_title": "Pamje 360° e automjetit",
   "vin_360_exterior": "Jashtë",
   "vin_360_interior": "Brenda",
-  "vin_360_hint": "Tërhiq për të rrotulluar"
+  "vin_360_hint": "Tërhiq për të rrotulluar",
+  "salvage_meaning_title": "Çfarë do të thotë dëmtim total?",
+  "salvage_meaning_learn": "Çfarë është dëmtimi total?",
+  "salvage_meaning_body": "Një titull dëmtimi total (salvage / write-off) do të thotë se siguruesi e ka shpallur automjetin humbje totale — zakonisht pas një aksidenti të rëndë, përmbytjeje, zjarri ose rikuperimi pas vjedhjeje — sepse kostoja e riparimit e kalonte vlerën. Mund të rindërtohet dhe të shitet, por shpesh kushton më shumë për t’u siguruar, mund të dështojë në disa kontrolle dhe zakonisht vlen më pak se një makinë me titull të pastër. Kontrolloni gjithmonë dokumentet dhe bëni një inspektim të plotë para blerjes."
 }

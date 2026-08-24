@@ -28,6 +28,12 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
+import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
+import {
+  SalvageMeaningHint,
+  ownershipSectionAccent,
+  safetySectionAccent,
+} from "@/components/salvage-meaning-hint";
 import { VinPhoto360Viewer } from "@/components/vin-photo-360-viewer";
 import { PhotoLightbox } from "@/components/photo-lightbox";
 import { mileageColor } from "@/lib/mileage-color";
@@ -854,7 +860,10 @@ export default function VinPublic({ params }: Props) {
             </div>
           ) : null}
           {data.isUnlocked && data.salvage != null ? (
-            <PassPill ok={data.salvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
+            <div className="inline-flex items-center gap-1 w-full justify-center">
+              <PassPill ok={data.salvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
+              {data.salvage === true ? <SalvageMeaningHint className="shrink-0" /> : null}
+            </div>
           ) : null}
           {data.isUnlocked && data.stolen != null ? (
             <PassPill ok={data.stolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
@@ -931,13 +940,14 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="rounded-2xl border bg-card overflow-hidden"
             >
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("vin_public_accidents_section")}
-                </h2>
-              </div>
+              <VinReportSection accent="rose">
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={AlertTriangle}
+                  accent="rose"
+                  title={t("vin_public_accidents_section")}
+                />
               <div className="px-6 py-5">
                 <div className="space-y-3">
                   {accidents.map((acc, i) => {
@@ -1058,6 +1068,7 @@ export default function VinPublic({ params }: Props) {
                       })}
                     </div>
               </div>
+              </VinReportSection>
             </motion.div>
             )}
 
@@ -1067,28 +1078,37 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.18 }}
-              className="rounded-2xl border bg-card overflow-hidden"
             >
-              <div className="px-6 py-4 border-b flex items-center justify-between gap-2">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("safety_status")}
-                </h2>
-                {data.isUnlocked && (data.salvage != null || data.stolen != null) && (
-                  <PassPill
-                    ok={data.salvage !== true && data.stolen !== true}
-                    labelOk={t("all_clear")}
-                    labelFail={t("issue_found")}
-                  />
-                )}
-              </div>
+              <VinReportSection accent={safetySectionAccent(data.salvage, data.stolen)}>
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={ShieldCheck}
+                  accent={safetySectionAccent(data.salvage, data.stolen)}
+                  title={t("safety_status")}
+                  trailing={
+                    data.isUnlocked && (data.salvage != null || data.stolen != null) ? (
+                      <div className="flex items-center gap-1.5">
+                        {data.salvage === true ? <SalvageMeaningHint /> : null}
+                        <PassPill
+                          ok={data.salvage !== true && data.stolen !== true}
+                          labelOk={t("all_clear")}
+                          labelFail={t("issue_found")}
+                        />
+                      </div>
+                    ) : null
+                  }
+                />
               <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {data.salvage != null && (
                 <div className="flex items-center gap-3">
                   {data.salvage === true
                     ? <ShieldAlert className="h-5 w-5 text-red-500 shrink-0" />
                     : <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />}
-                  <div>
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("report_salvage")}</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("report_salvage")}</p>
+                      {data.salvage === true ? <SalvageMeaningHint /> : null}
+                    </div>
                     <p className={cn("text-sm font-semibold", data.salvage === true ? "text-red-600 dark:text-red-400" : "text-green-700 dark:text-green-400")}>
                       {data.salvage === true ? t("report_salvage_flag") : t("report_clean_flag")}
                     </p>
@@ -1120,6 +1140,7 @@ export default function VinPublic({ params }: Props) {
                   </div>
                 )}
               </div>
+              </VinReportSection>
             </motion.div>
             )}
 
@@ -1144,20 +1165,23 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.19 }}
-              className="rounded-2xl border bg-card overflow-hidden"
             >
-              <div className="px-5 py-3 border-b flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("auction_history")}
-                </h2>
-                <Badge variant="secondary" className="ml-auto text-xs">
-                  {auctionHistory.length}
-                </Badge>
-              </div>
+              <VinReportSection accent="emerald">
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={DollarSign}
+                  accent="emerald"
+                  title={t("auction_history")}
+                  trailing={
+                    <Badge variant="secondary" className="text-xs">
+                      {auctionHistory.length}
+                    </Badge>
+                  }
+                />
               <div className="px-4 py-3">
                 <AuctionHistoryTimeline history={auctionHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
+              </VinReportSection>
             </motion.div>
             )}
 
@@ -1167,22 +1191,25 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="rounded-2xl border bg-card overflow-hidden"
             >
-              <div className="px-5 py-3 border-b flex items-center justify-between gap-2">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("vin_public_mileage_section")}
-                </h2>
-                {odometer != null && odoCol && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
-                    <Gauge className="h-3 w-3 shrink-0 opacity-90" />
-                    <AnimatedMileageBadge
-                      odometer={odometer}
-                      className="text-[11px] font-semibold tabular-nums"
-                    />
-                  </div>
-                )}
-              </div>
+              <VinReportSection accent="orange">
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={Gauge}
+                  accent="orange"
+                  title={t("vin_public_mileage_section")}
+                  trailing={
+                    odometer != null && odoCol ? (
+                      <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-primary text-primary-foreground shadow-sm shrink-0">
+                        <Gauge className="h-3 w-3 shrink-0 opacity-90" />
+                        <AnimatedMileageBadge
+                          odometer={odometer}
+                          className="text-[11px] font-semibold tabular-nums"
+                        />
+                      </div>
+                    ) : null
+                  }
+                />
               <div className="px-4 py-3">
                 {odometer != null && odoCol ? (
                   <VinMileageGauge
@@ -1197,6 +1224,7 @@ export default function VinPublic({ params }: Props) {
                 ) : null}
                 <MileageTimeline history={mileageHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
+              </VinReportSection>
             </motion.div>
             )}
 
@@ -1206,13 +1234,14 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.22 }}
-              className="rounded-2xl border bg-card overflow-hidden"
             >
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("vin_result_owners_title")}
-                </h2>
-              </div>
+              <VinReportSection accent={ownershipSectionAccent(data.ownerCount)}>
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={Users}
+                  accent={ownershipSectionAccent(data.ownerCount)}
+                  title={t("vin_result_owners_title")}
+                />
               {ownerHistory.length > 0 ? (
                 <div className="px-6 py-5">
                   <OwnerHistoryTimeline history={ownerHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
@@ -1224,6 +1253,7 @@ export default function VinPublic({ params }: Props) {
                   </p>
                 </div>
               ) : null}
+              </VinReportSection>
             </motion.div>
             )}
 
@@ -1240,16 +1270,22 @@ export default function VinPublic({ params }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-2xl border bg-card px-6 py-5"
             >
-              <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                {t("report_specs")}
-              </h2>
-              <VehicleSpecsGrid>
-                {vehicleSpecFields.map(({ icon, label, value }) => (
-                  <SpecRow key={label} icon={icon} label={label} value={value} />
-                ))}
-              </VehicleSpecsGrid>
+              <VinReportSection accent="sky">
+                <VinReportSectionHeader
+                  variant="public"
+                  icon={Car}
+                  accent="sky"
+                  title={t("report_specs")}
+                />
+                <div className="px-6 py-5">
+                  <VehicleSpecsGrid>
+                    {vehicleSpecFields.map(({ icon, label, value }) => (
+                      <SpecRow key={label} icon={icon} label={label} value={value} />
+                    ))}
+                  </VehicleSpecsGrid>
+                </div>
+              </VinReportSection>
             </motion.div>
 
             {data.isUnlocked ? (
@@ -1331,11 +1367,15 @@ export default function VinPublic({ params }: Props) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
-                className="rounded-2xl border bg-card px-6 py-5"
               >
-                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                  {t("report_market_data")}
-                </h2>
+                <VinReportSection accent="emerald">
+                  <VinReportSectionHeader
+                    variant="public"
+                    icon={TrendingUp}
+                    accent="emerald"
+                    title={t("report_market_data")}
+                  />
+                <div className="px-6 py-5">
                 <MarketValueChart
                   marketData={marketData}
                   auctionHistory={auctionHistory}
@@ -1385,6 +1425,8 @@ export default function VinPublic({ params }: Props) {
                     </div>
                   )}
                 </div>
+                </div>
+                </VinReportSection>
               </motion.div>
             )}
 

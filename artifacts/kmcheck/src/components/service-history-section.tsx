@@ -2,10 +2,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Wrench, Calendar, MapPin, Gauge } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
+import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
 import { localizeProviderDate } from "@/lib/korean-provider-text";
 import { cleanDisplayText } from "@/lib/report-display";
 import type { Language } from "@/i18n/context";
@@ -159,27 +159,32 @@ export function ServiceHistorySection({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className={cn("rounded-2xl border bg-card overflow-hidden", className)}
+        className={className}
       >
-        <div className="px-4 py-2.5 sm:px-5 sm:py-3 border-b flex items-center justify-between gap-2">
-          <h2 className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {t("report_service_history")}
-          </h2>
-          <Badge variant="secondary" className="text-[11px] sm:text-xs shrink-0">
-            {sorted.length}
-          </Badge>
-        </div>
-        <div className="px-4 py-2.5 sm:px-5 sm:py-3">
-          <ServicesList
-            events={sorted}
-            vehicleYear={vehicleYear}
-            vehicleCountry={vehicleCountry}
-            t={t}
-            language={language}
-            expanded={expanded}
-            onToggle={() => setExpanded((v) => !v)}
+        <VinReportSection accent="emerald">
+          <VinReportSectionHeader
+            variant="public"
+            icon={Wrench}
+            accent="emerald"
+            title={t("report_service_history")}
+            trailing={
+              <Badge variant="secondary" className="text-[11px] sm:text-xs shrink-0">
+                {sorted.length}
+              </Badge>
+            }
           />
-        </div>
+          <div className="px-4 py-2.5 sm:px-5 sm:py-3">
+            <ServicesList
+              events={sorted}
+              vehicleYear={vehicleYear}
+              vehicleCountry={vehicleCountry}
+              t={t}
+              language={language}
+              expanded={expanded}
+              onToggle={() => setExpanded((v) => !v)}
+            />
+          </div>
+        </VinReportSection>
       </motion.div>
     );
   }
@@ -190,30 +195,31 @@ export function ServiceHistorySection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.35, delay }}
-      className={cn("rounded-2xl border bg-background overflow-hidden", className)}
+      className={className}
     >
-      <div className="px-4 py-2.5 border-b flex items-center justify-between gap-2 bg-muted/30">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-5 w-5 rounded-md bg-teal-500/10 flex items-center justify-center shrink-0">
-            <Wrench className="h-3 w-3 text-teal-500" />
-          </div>
-          <h2 className="font-bold text-sm leading-tight">{t("report_service_history")}</h2>
-        </div>
-        <Badge variant="secondary" className="text-xs shrink-0">
-          {sorted.length}
-        </Badge>
-      </div>
-      <div className="px-4 py-3">
-        <ServicesList
-          events={sorted}
-          vehicleYear={vehicleYear}
-          vehicleCountry={vehicleCountry}
-          t={t}
-          language={language}
-          expanded={expanded}
-          onToggle={() => setExpanded((v) => !v)}
+      <VinReportSection accent="emerald">
+        <VinReportSectionHeader
+          icon={Wrench}
+          accent="emerald"
+          title={t("report_service_history")}
+          trailing={
+            <Badge variant="secondary" className="text-xs shrink-0">
+              {sorted.length}
+            </Badge>
+          }
         />
-      </div>
+        <div className="px-4 py-3">
+          <ServicesList
+            events={sorted}
+            vehicleYear={vehicleYear}
+            vehicleCountry={vehicleCountry}
+            t={t}
+            language={language}
+            expanded={expanded}
+            onToggle={() => setExpanded((v) => !v)}
+          />
+        </div>
+      </VinReportSection>
     </motion.div>
   );
 }
