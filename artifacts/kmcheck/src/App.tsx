@@ -81,6 +81,9 @@ const FreeVinDecoder  = lazyWithRetry(() => import("@/pages/free-vin-decoder"));
 const Purchases       = lazyWithRetry(() => import("@/pages/purchases"));
 const HowItWorks      = lazyWithRetry(() => import("@/pages/how-it-works"));
 const FAQ             = lazyWithRetry(() => import("@/pages/faq"));
+const MeaningHintsDev = import.meta.env.DEV
+  ? lazyWithRetry(() => import("@/pages/dev-meaning-hints"))
+  : null;
 const Maintenance     = lazyWithRetry(() => import("@/pages/maintenance"));
 const AuthFormLazy    = lazyWithRetry(() => import("@/pages/auth").then((m) => ({ default: m.AuthForm })));
 
@@ -185,6 +188,9 @@ const FreeVinDecoderLang  = withLang(FreeVinDecoder as React.ComponentType<{ par
 const PurchasesLang       = withLang(Purchases as React.ComponentType<{ params: { lang: string; [key: string]: string } }>, "purchases");
 const HowItWorksLang      = withLang(HowItWorks as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 const FAQLang             = withLang(FAQ as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
+const MeaningHintsDevLang = MeaningHintsDev
+  ? withLang(MeaningHintsDev as React.ComponentType<{ params: { lang: string; [key: string]: string } }>)
+  : null;
 const MaintenanceLang     = withLang(Maintenance as React.ComponentType<{ params: { lang: string; [key: string]: string } }>);
 
 const ApiB2bHomePage = lazyWithRetry(() => import("@/pages/api-b2b/home"));
@@ -734,6 +740,9 @@ function AppRouter() {
         <Route path="/:lang/how-it-works" component={HowItWorksLang} />
         <Route path="/:lang/faq" component={FAQLang} />
         <Route path="/:lang/maintenance" component={MaintenanceLang} />
+        {MeaningHintsDevLang ? (
+          <Route path="/:lang/dev/meaning-hints" component={MeaningHintsDevLang} />
+        ) : null}
 
         {/* B2B API marketing (separate shell from consumer site) */}
         <Route path="/:lang/api-b2b/plans" component={ApiB2bPlansLang} />

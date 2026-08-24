@@ -31,6 +31,11 @@ import { VinReportHero } from "@/components/vin-report-hero";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
 import {
   SalvageMeaningHint,
+  MileageRollbackHint,
+  TitleBrandHint,
+  HighOwnerCountHint,
+  titleBrandHintKind,
+  isHighOwnerCount,
   ownershipSectionAccent,
   safetySectionAccent,
 } from "@/components/salvage-meaning-hint";
@@ -68,7 +73,7 @@ import { buildUnlockCheckoutTarget } from "@/lib/checkout-vin-flow";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { repairDatedRecords } from "@/lib/encar-date-repair";
 import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
-import { computeVinConditionScore, scoreInputFromPublic } from "@/lib/vin-condition-score";
+import { computeVinConditionScore, hasMileageRollback, scoreInputFromPublic } from "@/lib/vin-condition-score";
 import { buildVinHeroSummaryItems } from "@/lib/vin-hero-summary";
 import { countAccidentSignals } from "@/lib/accident-signals";
 import { formatAccidentCount } from "@/lib/format-accident-count";
@@ -676,6 +681,9 @@ export default function VinPublic({ params }: Props) {
   const odoMax = 300000;
   const odoPct = odometer ? Math.min(100, (odometer / odoMax) * 100) : 0;
   const odoCol = odometer ? mileageColor(odometer) : null;
+  const mileageRollback = hasMileageRollback(mileageHistory);
+  const titleHintKind = titleBrandHintKind(data.titleStatus);
+  const showHighOwnerHint = isHighOwnerCount(data.ownerCount);
 
   const accidentSignals = countAccidentSignals({
     accidents,
@@ -1133,8 +1141,11 @@ export default function VinPublic({ params }: Props) {
                     <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("title_status")}</p>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("title_status")}</p>
+                        {titleHintKind ? <TitleBrandHint kind={titleHintKind} /> : null}
+                      </div>
                       <p className="text-sm font-semibold">{translateTitleStatus(t, data.titleStatus)}</p>
                     </div>
                   </div>
@@ -1222,6 +1233,17 @@ export default function VinPublic({ params }: Props) {
                     className={mileageHistory.length > 1 ? "mb-4 pb-3 border-b border-border/60" : "mb-4"}
                   />
                 ) : null}
+                {mileageRollback ? (
+                  <div className="flex items-start gap-2 p-3 rounded-xl mb-4 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/40">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                        {t("mileage_rollback_warning")}
+                      </p>
+                      <MileageRollbackHint className="shrink-0" />
+                    </div>
+                  </div>
+                ) : null}
                 <MileageTimeline history={mileageHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
               </VinReportSection>
@@ -1241,6 +1263,7 @@ export default function VinPublic({ params }: Props) {
                   icon={Users}
                   accent={ownershipSectionAccent(data.ownerCount)}
                   title={t("vin_result_owners_title")}
+                  trailing={showHighOwnerHint ? <HighOwnerCountHint /> : null}
                 />
               {ownerHistory.length > 0 ? (
                 <div className="px-6 py-5">
@@ -1248,9 +1271,12 @@ export default function VinPublic({ params }: Props) {
                 </div>
               ) : data.ownerCount != null ? (
                 <div className="px-6 py-5">
-                  <p className="text-sm font-semibold">
-                    {data.ownerCount === 1 ? t("owner_single") : `${data.ownerCount} ${t("owner_many_suffix")}`}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">
+                      {data.ownerCount === 1 ? t("owner_single") : `${data.ownerCount} ${t("owner_many_suffix")}`}
+                    </p>
+                    {showHighOwnerHint ? <HighOwnerCountHint /> : null}
+                  </div>
                 </div>
               ) : null}
               </VinReportSection>

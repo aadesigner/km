@@ -37,6 +37,11 @@ import { VinReportHero } from "@/components/vin-report-hero";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
 import {
   SalvageMeaningHint,
+  MileageRollbackHint,
+  TitleBrandHint,
+  HighOwnerCountHint,
+  titleBrandHintKind,
+  isHighOwnerCount,
   ownershipSectionAccent,
   safetySectionAccent,
 } from "@/components/salvage-meaning-hint";
@@ -703,6 +708,9 @@ export default function VinResult({ params }: Props) {
   const odoPct = odometer ? Math.min(100, (odometer / odoMax) * 100) : 0;
   const odoCol = odometer ? mileageColor(odometer) : null;
   const mileageStatus = odometer ? mileageStatusMessage(odometer, mileageHistory, t) : null;
+  const mileageRollback = hasMileageRollback(mileageHistory);
+  const titleHintKind = titleBrandHintKind(data?.titleStatus);
+  const showHighOwnerHint = isHighOwnerCount(data?.ownerCount);
 
   const vehicleTitle = data?.make
     ? [data.year ? String(data.year) : null, data.make, data.model ?? null].filter(Boolean).join(" ")
@@ -956,6 +964,19 @@ export default function VinResult({ params }: Props) {
                     className="mb-5 pb-4 border-b border-border/60"
                   />
                 ) : null}
+                {mileageRollback ? (
+                  <div className="flex items-start gap-2 p-3 rounded-xl mb-4 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/40">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                          {t("mileage_rollback_warning")}
+                        </p>
+                        <MileageRollbackHint className="shrink-0" />
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <MileageTimeline history={mileageHistory} t={t} language={language} vehicleYear={data?.year} vehicleCountry={data?.country} />
               </>
             ) : odometer && odoCol ? (
@@ -973,11 +994,12 @@ export default function VinResult({ params }: Props) {
                     <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                   )}
                   <p className={cn(
-                    "text-xs font-medium",
+                    "text-xs font-medium flex-1",
                     mileageStatus?.warn
                       ? "text-amber-700 dark:text-amber-400"
                       : "text-green-700 dark:text-green-400",
                   )}>{mileageStatus?.text}</p>
+                  {mileageStatus?.warn ? <MileageRollbackHint className="shrink-0" /> : null}
                 </div>
               </>
             ) : null}
@@ -1219,8 +1241,11 @@ export default function VinResult({ params }: Props) {
                 <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                   <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("title_status")}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("title_status")}</p>
+                    {titleHintKind ? <TitleBrandHint kind={titleHintKind} /> : null}
+                  </div>
                   <p className="text-sm font-semibold">{translateTitleStatus(t, data?.titleStatus)}</p>
                 </div>
               </div>
@@ -1288,9 +1313,12 @@ export default function VinResult({ params }: Props) {
               subtitle={t("owner_privacy_note")}
               trailing={
                 data?.ownerCount != null ? (
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {data.ownerCount} {data.ownerCount === 1 ? t("owner_single") : t("owner_many_suffix")}
-                  </Badge>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {showHighOwnerHint ? <HighOwnerCountHint /> : null}
+                    <Badge variant="secondary" className="text-xs">
+                      {data.ownerCount} {data.ownerCount === 1 ? t("owner_single") : t("owner_many_suffix")}
+                    </Badge>
+                  </div>
                 ) : null
               }
             />
@@ -1322,10 +1350,13 @@ export default function VinResult({ params }: Props) {
                     {data.ownerCount}
                   </span>
                 </div>
-                <div>
-                  <p className="font-bold text-sm">
-                    {data.ownerCount === 1 ? t("owner_single") : `${data.ownerCount} ${t("owner_many_suffix")}`}
-                  </p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-bold text-sm">
+                      {data.ownerCount === 1 ? t("owner_single") : `${data.ownerCount} ${t("owner_many_suffix")}`}
+                    </p>
+                    {showHighOwnerHint ? <HighOwnerCountHint /> : null}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {data.ownerCount <= 2 ? t("owner_low") : t("owner_many_suffix")}
                   </p>

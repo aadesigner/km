@@ -896,6 +896,46 @@ describe("pickBestLotPhotoUrls", () => {
     expect(normalized.photos360Interior).toEqual(interior);
   });
 
+  it("extracts interior spin from alternate keys and object maps", () => {
+    const normal = Array.from({ length: 8 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const exterior = Array.from({ length: 16 }, (_, i) => `https://cdn/ext/${i}.jpg`);
+    const interiorObj: Record<string, string> = {};
+    for (let i = 0; i < 12; i++) interiorObj[String(i)] = `https://cdn/int/${i}.jpg`;
+
+    const normalized = normalizeCarstatResponse({
+      year: 2014,
+      vin: "WDDLJ9BB6EA096494",
+      manufacturer: { name: "Mercedes-Benz" },
+      model: { name: "CLA" },
+      lots: [{
+        domain: { name: "iaai_com" },
+        images: { normal, Exterior_360: exterior, Interior360: interiorObj },
+      }],
+    });
+    expect(normalized.photos360Exterior).toEqual(exterior);
+    expect(normalized.photos360Interior).toHaveLength(12);
+  });
+
+  it("splits mixed exterior spin URLs into cabin vs body when interior tier is missing", () => {
+    const normal = Array.from({ length: 8 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const mixed = [
+      ...Array.from({ length: 20 }, (_, i) => `https://cdn/360/ext/frame-${i}.jpg`),
+      ...Array.from({ length: 16 }, (_, i) => `https://cdn/360/int/frame-${i}.jpg`),
+    ];
+    const normalized = normalizeCarstatResponse({
+      year: 2014,
+      vin: "WDDLJ9BB6EA096494",
+      manufacturer: { name: "Mercedes-Benz" },
+      model: { name: "CLA" },
+      lots: [{
+        domain: { name: "copart_com" },
+        images: { normal, exterior: mixed },
+      }],
+    });
+    expect(normalized.photos360Exterior?.length).toBeGreaterThanOrEqual(20);
+    expect(normalized.photos360Interior?.length).toBe(16);
+  });
+
   it("stores mid-size photos for display and HD for lightbox when both tiers exist", () => {
     const normal = Array.from({ length: 10 }, (_, i) => `https://cdn/n-${i}.jpg`);
     const big = Array.from({ length: 10 }, (_, i) => `https://cdn/b-${i}.jpg`);

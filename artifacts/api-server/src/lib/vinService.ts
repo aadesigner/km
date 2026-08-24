@@ -1777,6 +1777,11 @@ const DISPLAY_TIER_QUALITY_RANK: Record<string, number> = {
 
 /** Extract URL strings from Carstat image tier arrays (plain strings or { url } objects). */
 export function extractLotImageUrls(raw: unknown): string[] {
+  if (raw == null) return [];
+  // Some tiers arrive as { "0": "https://...", "1": "..." } instead of arrays.
+  if (typeof raw === "object" && !Array.isArray(raw)) {
+    return extractLotImageUrls(Object.values(raw as Record<string, unknown>));
+  }
   if (!Array.isArray(raw)) return [];
   const urls: string[] = [];
   for (const item of raw) {
@@ -1787,7 +1792,7 @@ export function extractLotImageUrls(raw: unknown): string[] {
     }
     if (item && typeof item === "object") {
       const obj = item as Record<string, unknown>;
-      for (const key of ["url", "src", "href", "link", "path", "image", "original"]) {
+      for (const key of ["url", "src", "href", "link", "path", "image", "original", "imageUrl", "fullUrl"]) {
         if (typeof obj[key] === "string") {
           const trimmed = (obj[key] as string).trim();
           if (trimmed.length > 0) {
@@ -1810,6 +1815,95 @@ function lotImagesRecord(lot: Record<string, unknown>): Record<string, unknown> 
     return { gallery: raw };
   }
   return {};
+}
+
+const INTERIOR_SPIN_KEY = /interior|i360|cabin|inside|in360|int360/;
+const EXTERIOR_SPIN_KEY = /exterior|c360|outside|spin|ext360|e360/;
+const INTERIOR_URL_HINT = /(?:^|[\/_\-.])(?:int(?:erior)?|i360|cabin|inside)(?:[\/_\-.]|$)/i;
+const EXTERIOR_URL_HINT = /(?:^|[\/_\-.])(?:ext(?:erior)?|c360|outside)(?:[\/_\-.]|$)/i;
+
+/** When a provider dumps both spins into one tier, split by URL path hints. */
+export function splitMixedSpinUrls(urls: string[]): { exterior: string[]; interior: string[] } {
+  const interior: string[] = [];
+  const exterior: string[] = [];
+  const unknown: string[] = [];
+  for (const url of urls) {
+    const isInt = INTERIOR_URL_HINT.test(url);
+    const isExt = EXTERIOR_URL_HINT.test(url);
+    if (isInt && !isExt) interior.push(url);
+    else if (isExt && !isInt) exterior.push(url);
+    else unknown.push(url);
+  }
+  // Only trust the split when both sides look like real spins; otherwise keep original as exterior.
+  if (interior.length >= 8 && (exterior.length + unknown.length) >= 8) {
+    return { exterior: [...exterior, ...unknown], interior };
+  }
+  return { exterior: urls, interior: [] };
+}
+
+/**
+ * Copart/IAAI 360° frame sets (exterior / interior). Kept separate from the main gallery —
+ * these tiers can have 40–70+ near-duplicate angles and must not replace normal/big photos.
+ */
+export function extractLotSpinPhotoSets(imgs: Record<string, unknown>): {
+  exterior: string[];
+  interior: string[];
+} {
+  let exterior: string[] = [];
+  let interior: string[] = [];
+
+  for (const [key, value] of Object.entries(imgs)) {
+    const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const urls = extractLotImageUrls(value);
+    if (urls.length === 0) continue;
+
+    if (INTERIOR_SPIN_KEY.test(normalized)) {
+      if (urls.length > interior.length) interior = urls;
+      continue;
+    }
+    if (EXTERIOR_SPIN_KEY.test(normalized)) {
+      if (urls.length > exterior.length) exterior = urls;
+    }
+  }
+
+  // Prefer explicit keys when present; fall back to legacy exact names.
+  if (exterior.length === 0 || interior.length === 0) {
+    const byLower = new Map<string, unknown>();
+    for (const [key, value] of Object.entries(imgs)) {
+      byLower.set(key.toLowerCase(), value);
+    }
+    if (exterior.length === 0) {
+      exterior = extractLotImageUrls(
+        byLower.get("exterior")
+        ?? byLower.get("exterior_360")
+        ?? byLower.get("exterior360")
+        ?? byLower.get("c360")
+        ?? byLower.get("spin"),
+      ).slice(0, MAX_VIN_SPIN_PHOTOS);
+    }
+    if (interior.length === 0) {
+      interior = extractLotImageUrls(
+        byLower.get("interior")
+        ?? byLower.get("interior_360")
+        ?? byLower.get("interior360")
+        ?? byLower.get("i360"),
+      ).slice(0, MAX_VIN_SPIN_PHOTOS);
+    }
+  }
+
+  // Some lots only expose one giant "exterior"/"spin" list that mixes cabin frames.
+  if (interior.length === 0 && exterior.length >= 16) {
+    const split = splitMixedSpinUrls(exterior);
+    if (split.interior.length >= 8) {
+      exterior = split.exterior;
+      interior = split.interior;
+    }
+  }
+
+  return {
+    exterior: exterior.slice(0, MAX_VIN_SPIN_PHOTOS),
+    interior: interior.slice(0, MAX_VIN_SPIN_PHOTOS),
+  };
 }
 
 function pickLotPhotoUrlsByRank(
@@ -1835,35 +1929,6 @@ function pickLotPhotoUrlsByRank(
   }
 
   return best;
-}
-
-/**
- * Copart/IAAI 360° frame sets (exterior / interior). Kept separate from the main gallery —
- * these tiers can have 40–70+ near-duplicate angles and must not replace normal/big photos.
- */
-export function extractLotSpinPhotoSets(imgs: Record<string, unknown>): {
-  exterior: string[];
-  interior: string[];
-} {
-  const byLower = new Map<string, unknown>();
-  for (const [key, value] of Object.entries(imgs)) {
-    byLower.set(key.toLowerCase(), value);
-  }
-  const exteriorRaw =
-    byLower.get("exterior")
-    ?? byLower.get("exterior_360")
-    ?? byLower.get("exterior360")
-    ?? byLower.get("c360")
-    ?? byLower.get("spin");
-  const interiorRaw =
-    byLower.get("interior")
-    ?? byLower.get("interior_360")
-    ?? byLower.get("interior360")
-    ?? byLower.get("i360");
-  return {
-    exterior: extractLotImageUrls(exteriorRaw).slice(0, MAX_VIN_SPIN_PHOTOS),
-    interior: extractLotImageUrls(interiorRaw).slice(0, MAX_VIN_SPIN_PHOTOS),
-  };
 }
 
 /**

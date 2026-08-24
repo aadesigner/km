@@ -110,41 +110,43 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
         icon={View}
         accent="sky"
         title={t("vin_360_title")}
-        trailing={
-          showSwitcher ? (
-            <div className="inline-flex rounded-lg border border-border/70 bg-background/80 p-0.5 text-xs font-semibold shadow-sm">
-              <button
-                type="button"
-                onClick={() => setKind("exterior")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-colors",
-                  kind === "exterior"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {t("vin_360_exterior")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setKind("interior")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-colors",
-                  kind === "interior"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {t("vin_360_interior")}
-              </button>
-            </div>
-          ) : null
-        }
       />
+
+      {/* Toggle lives under the header — header trailing was clipped by overflow-hidden on narrow screens */}
+      {showSwitcher ? (
+        <div className="relative z-[1] flex items-center gap-2 border-b border-border/50 bg-muted/20 px-3 py-2 sm:px-4">
+          <div className="inline-flex w-full rounded-lg border border-border/70 bg-background/90 p-0.5 text-xs font-semibold shadow-sm sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setKind("exterior")}
+              className={cn(
+                "flex-1 rounded-md px-3 py-1.5 transition-colors sm:flex-none",
+                kind === "exterior"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t("vin_360_exterior")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setKind("interior")}
+              className={cn(
+                "flex-1 rounded-md px-3 py-1.5 transition-colors sm:flex-none",
+                kind === "interior"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t("vin_360_interior")}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div
         className={cn(
-          "relative aspect-[16/10] bg-muted/40 select-none touch-none",
+          "relative z-[1] aspect-[16/10] bg-muted/40 select-none touch-none",
           frames.length > 1 && (dragging ? "cursor-grabbing" : "cursor-grab"),
         )}
         onPointerDown={onPointerDown}
@@ -183,6 +185,7 @@ export function VinPhoto360Viewer({ exterior, interior, className }: Props) {
           </span>
           <span className="rounded-md bg-black/45 px-2 py-1 text-[11px] font-semibold tabular-nums text-white/95">
             {index + 1}/{frames.length}
+            {showSwitcher ? ` · ${kind === "exterior" ? t("vin_360_exterior") : t("vin_360_interior")}` : ""}
           </span>
         </div>
       </div>
