@@ -618,8 +618,8 @@
   "checkout_error_payment_failed": "付款失败。请重试。",
   "checkout_already_unlocked": "您已拥有此报告的访问权限。",
   "checkout_error_card_not_ready": "银行卡字段未就绪。请重试。",
-  "checkout_error_card_declined": "银行卡被拒绝或无效。请检查信息后重试。",
-  "checkout_error_card_failed": "银行卡付款失败。请重试。",
+  "checkout_error_card_declined": "银行卡被拒绝。请换卡，或改用 PayPal 付款。",
+  "checkout_error_card_failed": "无法处理此银行卡。请重试，或改用 PayPal 付款。",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "银行卡",
   "checkout_payment_methods": "付款方式：",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "带标记的车证（水浸、冰雹、火灾、报废、仅供零件等）记录了车辆曾经历的严重事件。此类标记通常降低价值，并可能限制贷款或保险。请当面核实车证并检查相关损伤。",
   "owners_meaning_title": "为什么车主数量很重要？",
   "owners_meaning_learn": "关于车主数量",
-  "owners_meaning_body": "过往车主较多可能意味着磨损更大、持有周期较短，或保养不连贯。这本身不能证明有问题，但更需要在购车前仔细核对保养与检测记录。"
+  "owners_meaning_body": "过往车主较多可能意味着磨损更大、持有周期较短，或保养不连贯。这本身不能证明有问题，但更需要在购车前仔细核对保养与检测记录。",
+  "checkout_error_card_validation": "请核对卡号、有效期和安全码后重试。"
 }

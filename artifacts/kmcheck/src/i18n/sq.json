@@ -599,8 +599,8 @@
   "checkout_error_capture": "Kapja e pagesës dështoi. Provoni përsëri ose kontaktoni suportin.",
   "checkout_error_payment_failed": "Pagesa dështoi. Provoni përsëri.",
   "checkout_error_card_not_ready": "Fushat e kartës nuk janë gati. Provoni përsëri.",
-  "checkout_error_card_declined": "Karta u refuzua ose është e pavlefshme. Kontrolloni të dhënat dhe provoni përsëri.",
-  "checkout_error_card_failed": "Pagesa me kartë dështoi. Provoni përsëri.",
+  "checkout_error_card_declined": "Karta u refuzua. Provoni një kartë tjetër ose paguani me PayPal.",
+  "checkout_error_card_failed": "Nuk mundëm ta përpunonim këtë kartë. Provoni përsëri ose paguani me PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Kartë",
   "checkout_payment_methods": "Metodat e pagesës:",
@@ -1736,5 +1736,6 @@
   "branded_title_meaning_body": "Një titull i shënuar (përmbytje, breshër, zjarr, junk, vetëm pjesë etj.) regjistron një ngjarje serioze në dokumentet e automjetit. Këto shenja zakonisht ulin vlerën dhe mund të kufizojnë financimin ose sigurimin. Verifikoni gjithmonë titullin personalisht dhe inspektoni dëmtimet përkatëse.",
   "owners_meaning_title": "Pse ka rëndësi numri i pronarëve?",
   "owners_meaning_learn": "Rreth numrit të pronarëve",
-  "owners_meaning_body": "Shumë pronarë të mëparshëm mund të nënkuptojnë konsum më të lartë, periudha të shkurtra pronësie ose boshllëqe në mirëmbajtje. Nuk është prova e vetme e një problemi, por rrit nevojën për historik të plotë servisi dhe inspektim para blerjes."
+  "owners_meaning_body": "Shumë pronarë të mëparshëm mund të nënkuptojnë konsum më të lartë, periudha të shkurtra pronësie ose boshllëqe në mirëmbajtje. Nuk është prova e vetme e një problemi, por rrit nevojën për historik të plotë servisi dhe inspektim para blerjes.",
+  "checkout_error_card_validation": "Kontrolloni numrin e kartës, datën e skadimit dhe kodin e sigurisë, pastaj provoni përsëri."
 }

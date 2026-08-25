@@ -1,44 +1,15 @@
 /**
  * Lightweight US VDS prefix → model (+ optional generation) for common
- * Ford / GM / Stellantis / Honda / Toyota North America VINs.
+ * Stellantis / Honda / Toyota North America VINs.
+ * Ford NA → ford-na.ts; GM NA → gm-na.ts (MID + NHTSA).
  * Complements coarse MODEL_MAP_4; NHTSA still enriches trim when available.
  */
 
 import { compilePrefixRules, matchLongestPrefix, type PrefixRule } from "./prefix-match";
+import { decodeFordNaModel, matchFordNaRule } from "./ford-na";
+import { decodeGmNaModel, matchGmNaRule } from "./gm-na";
 
 const US_VDS_RULES = compilePrefixRules([
-  // Ford
-  { prefix: "1FTFW1", model: "F-150", chassis: "P702" },
-  { prefix: "1FTEW1", model: "F-150", chassis: "P702" },
-  { prefix: "1FTFW2", model: "F-150", chassis: "P702" },
-  { prefix: "1FTMF1", model: "F-150", chassis: "P415" },
-  { prefix: "1FMCU0", model: "Escape", chassis: "CX482" },
-  { prefix: "1FMCU9", model: "Escape" },
-  { prefix: "1FM5K8", model: "Explorer", chassis: "U625" },
-  { prefix: "1FMSK8", model: "Explorer", chassis: "U625" },
-  { prefix: "1FMHK7", model: "Edge" },
-  { prefix: "1FA6P8", model: "Mustang", chassis: "S550" },
-  { prefix: "1FA6P5", model: "Mustang", chassis: "S650" },
-  { prefix: "3FMTK1", model: "Mustang Mach-E" },
-  { prefix: "3FTTW8", model: "Maverick" },
-  { prefix: "1FMDE5", model: "Bronco Sport" },
-  { prefix: "1FMEE5", model: "Bronco" },
-  { prefix: "1FTYR2", model: "Transit" },
-  { prefix: "1FTBW2", model: "Transit" },
-  { prefix: "1FADP3", model: "Focus", chassis: "Mk3 US" },
-  { prefix: "3FA6P0", model: "Fusion" },
-  // GM — Chevrolet / GMC / Cadillac
-  { prefix: "1GCUY", model: "Silverado 1500" },
-  { prefix: "1GCUC", model: "Silverado 1500" },
-  { prefix: "1GTU9", model: "Sierra 1500" },
-  { prefix: "1GNSK", model: "Tahoe" },
-  { prefix: "1GNER", model: "Traverse" },
-  { prefix: "1G1FB", model: "Camaro" },
-  { prefix: "1G1ZE", model: "Malibu" },
-  { prefix: "2GNAX", model: "Equinox" },
-  { prefix: "3GNAX", model: "Equinox" },
-  { prefix: "1GYKN", model: "XT5" },
-  { prefix: "1GYS4", model: "Escalade" },
   // Stellantis — Jeep / Ram / Dodge / Chrysler
   { prefix: "1C4RJ", model: "Grand Cherokee" },
   { prefix: "1C4HJ", model: "Wrangler" },
@@ -103,11 +74,17 @@ const US_VDS_RULES = compilePrefixRules([
 export function matchUsVdsRule(vin: string): PrefixRule | null {
   const u = vin.toUpperCase().trim();
   if (u.length < 8) return null;
-  return matchLongestPrefix(u, US_VDS_RULES);
+  return matchFordNaRule(u) ?? matchGmNaRule(u) ?? matchLongestPrefix(u, US_VDS_RULES);
 }
 
 export function decodeUsVdsModel(vin: string): string | null {
-  return matchUsVdsRule(vin)?.model ?? null;
+  const u = vin.toUpperCase().trim();
+  return (
+    decodeFordNaModel(u) ??
+    decodeGmNaModel(u) ??
+    matchLongestPrefix(u, US_VDS_RULES)?.model ??
+    null
+  );
 }
 
 /** Stellantis 1C4 WMI is shared; badge Jeep when VDS maps to a Jeep line. */

@@ -597,8 +597,8 @@
   "checkout_error_payment_failed": "Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut.",
   "checkout_already_unlocked": "Sie haben bereits Zugriff auf diesen Bericht.",
   "checkout_error_card_not_ready": "Kartenfelder nicht bereit. Bitte versuchen Sie es erneut.",
-  "checkout_error_card_declined": "Karte abgelehnt oder ungültig. Bitte prüfen Sie Ihre Angaben und versuchen Sie es erneut.",
-  "checkout_error_card_failed": "Kartenzahlung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "checkout_error_card_declined": "Ihre Karte wurde abgelehnt. Bitte eine andere Karte verwenden oder mit PayPal bezahlen.",
+  "checkout_error_card_failed": "Diese Karte konnte nicht verarbeitet werden. Bitte erneut versuchen oder mit PayPal bezahlen.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Karte",
   "checkout_payment_methods": "Zahlungsmethoden:",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "Ein gebrandeter Titel (Hochwasser, Hagel, Brand, Junk usw.) dokumentiert ein schweres Ereignis. Wert sinkt oft; Finanzierung/Versicherung können eingeschränkt sein. Titel vor Ort prüfen und auf Schäden untersuchen.",
   "owners_meaning_title": "Warum zählt die Halterzahl?",
   "owners_meaning_learn": "Zur Halterzahl",
-  "owners_meaning_body": "Viele Vorbesitzer können mehr Verschleiß oder Lücken in der Pflege bedeuten. Allein kein Beweis für ein Problem — aber Grund für gründliche Service- und Inspektionsprüfung."
+  "owners_meaning_body": "Viele Vorbesitzer können mehr Verschleiß oder Lücken in der Pflege bedeuten. Allein kein Beweis für ein Problem — aber Grund für gründliche Service- und Inspektionsprüfung.",
+  "checkout_error_card_validation": "Bitte prüfen Sie Kartennummer, Ablaufdatum und Sicherheitscode und versuchen Sie es erneut."
 }

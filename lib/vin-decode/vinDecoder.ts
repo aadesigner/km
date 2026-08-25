@@ -17,6 +17,8 @@ import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } fro
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
 import { isVagWmi } from "./vag-wmi";
 import { isFordEuWmi, decodeFordEuModel, isFordEuXxLayout, decodeFordEuXxYear } from "./ford-eu";
+import { decodeFordNaModel, isFordNaVin } from "./ford-na";
+import { decodeGmNaModel, isGmNaVin } from "./gm-na";
 import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin, isOpelVauxhallVin, matchOpelVauxhallRule } from "./opel-vauxhall";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule } from "./asian-eu";
 import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
@@ -241,6 +243,8 @@ const WMI_MAP: Record<string, string> = {
   "1G1": "Chevrolet", "1G2": "Pontiac", "1G3": "Oldsmobile",
   "1G4": "Buick", "1G6": "Cadillac", "1GC": "Chevrolet",
   "1GD": "GMC", "1GE": "Chevrolet", "1GK": "GMC", "1GT": "GMC",
+  "1GN": "Chevrolet",
+  "1GY": "Cadillac",
   "1HG": "Honda", "1HJ": "Honda",
   "19X": "Honda",
   "2HG": "Honda", "2HH": "Honda", "2HK": "Honda", "2HM": "Hyundai",
@@ -255,10 +259,13 @@ const WMI_MAP: Record<string, string> = {
   "1ZV": "Mustang",
   "2C3": "Chrysler", "2C4": "Chrysler", "2C8": "Chrysler",
   "2D3": "Dodge", "2D4": "Dodge", "2D8": "Dodge",
-  "2FA": "Ford", "2FT": "Ford",
+  "2FA": "Ford", "2FM": "Ford", "2FT": "Ford",
   "2G1": "Chevrolet", "2G4": "Pontiac",
+  "2GN": "Chevrolet", "2GK": "GMC",
   "2T1": "Toyota", "2T2": "Lexus", "2T3": "Toyota",
   "3FA": "Ford", "3FE": "Ford", "3FM": "Ford", "3FT": "Ford",
+  "3GN": "Chevrolet", "3GK": "GMC", "3GC": "Chevrolet", "3GT": "GMC",
+  "3GY": "Cadillac",
   "3TM": "Toyota", "3MY": "Toyota",
   "3N1": "Nissan", "3N6": "Nissan",
   "3VW": "Volkswagen", "3VV": "Volkswagen",
@@ -455,7 +462,6 @@ const WMI_MAP: Record<string, string> = {
   "7G2": "Tesla",
   "1B3": "Dodge",
   "1D3": "Dodge",
-  "1GY": "Cadillac",
   // ── CZECH REPUBLIC (Škoda) ────────────────────────────────────────────────
   "TMB": "Škoda", "TM8": "Škoda", "TMP": "Škoda", "TMS": "Škoda",
   "TNL": "Škoda", "XW8": "Škoda", "XWW": "Škoda", "Y6U": "Škoda",
@@ -843,6 +849,15 @@ function decodeModel(vin: string, global?: GlobalBrandDecode): string | null {
   for (const len of [7, 6, 5]) {
     const hit = MODEL_OVERRIDES[upper.slice(0, len)];
     if (hit) return hit;
+  }
+  // Ford / GM NA — dedicated chassis+prefix decoders (before coarse US VDS).
+  if (isFordNaVin(upper)) {
+    const fordNa = decodeFordNaModel(upper);
+    if (fordNa) return fordNa;
+  }
+  if (isGmNaVin(upper)) {
+    const gmNa = decodeGmNaModel(upper);
+    if (gmNa) return gmNa;
   }
   const usVds = decodeUsVdsModel(upper);
   if (usVds) return usVds;

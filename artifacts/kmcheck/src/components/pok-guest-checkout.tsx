@@ -5,6 +5,7 @@ import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
+import { pokCardErrorI18nKey } from "@/lib/pok-card-error";
 
 export type PokEnv = "staging" | "production";
 
@@ -96,8 +97,9 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     onSuccessRef.current();
   }, []);
   const stableOnError = useMemo(
-    () => (_error: PaymentErrorResponse) => {
-      onErrorRef.current(t("checkout_error_card_declined"));
+    () => (error: PaymentErrorResponse) => {
+      // Safe canned copy only — never surface raw POK/partner messages.
+      onErrorRef.current(t(pokCardErrorI18nKey(error)));
     },
     [t],
   );

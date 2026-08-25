@@ -597,8 +597,8 @@
   "checkout_error_payment_failed": "Échec du paiement. Veuillez réessayer.",
   "checkout_already_unlocked": "Vous avez déjà accès à ce rapport.",
   "checkout_error_card_not_ready": "Champs carte non prêts. Veuillez réessayer.",
-  "checkout_error_card_declined": "Carte refusée ou invalide. Vérifiez vos informations et réessayez.",
-  "checkout_error_card_failed": "Échec du paiement par carte. Veuillez réessayer.",
+  "checkout_error_card_declined": "Votre carte a été refusée. Essayez une autre carte ou payez avec PayPal.",
+  "checkout_error_card_failed": "Nous n'avons pas pu traiter cette carte. Réessayez ou payez avec PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Carte",
   "checkout_payment_methods": "Moyens de paiement :",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "Un titre marqué (inondation, grêle, incendie, junk, etc.) consigne un événement grave. La valeur baisse souvent ; financement/assurance peuvent être limités. Vérifiez le titre et inspectez les dégâts.",
   "owners_meaning_title": "Pourquoi le nombre de propriétaires compte-t-il ?",
   "owners_meaning_learn": "Nombre de propriétaires",
-  "owners_meaning_body": "Beaucoup de propriétaires antérieurs peuvent indiquer plus d’usure ou des lacunes d’entretien. Ce n’est pas une preuve seule, mais une raison d’exiger un historique d’entretien et une inspection."
+  "owners_meaning_body": "Beaucoup de propriétaires antérieurs peuvent indiquer plus d’usure ou des lacunes d’entretien. Ce n’est pas une preuve seule, mais une raison d’exiger un historique d’entretien et une inspection.",
+  "checkout_error_card_validation": "Vérifiez le numéro de carte, la date d'expiration et le code de sécurité, puis réessayez."
 }

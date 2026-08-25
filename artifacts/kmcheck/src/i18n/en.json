@@ -679,8 +679,8 @@
   "checkout_error_payment_failed": "Payment failed. Please try again.",
   "checkout_already_unlocked": "You already have access to this report.",
   "checkout_error_card_not_ready": "Card fields not ready. Please try again.",
-  "checkout_error_card_declined": "Card declined or invalid. Please check your details and try again.",
-  "checkout_error_card_failed": "Card payment failed. Please try again.",
+  "checkout_error_card_declined": "Your card was declined. Please try another card, or pay with PayPal.",
+  "checkout_error_card_failed": "We could not process this card. Please try again, or pay with PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Card",
   "checkout_payment_methods": "Payment methods:",
@@ -1736,5 +1736,6 @@
   "branded_title_meaning_body": "A branded title (flood, hail, fire, junk, parts-only, etc.) records a serious past event on the vehicle’s legal paperwork. These brands usually reduce value and can limit financing or insurance. Always verify the title document in person and inspect for related damage.",
   "owners_meaning_title": "Why does owner count matter?",
   "owners_meaning_learn": "About owner count",
-  "owners_meaning_body": "Many prior owners can mean higher wear, short ownership periods, or gaps in care. It is not proof of a problem on its own, but it raises the need for a thorough service and inspection history before you buy."
+  "owners_meaning_body": "Many prior owners can mean higher wear, short ownership periods, or gaps in care. It is not proof of a problem on its own, but it raises the need for a thorough service and inspection history before you buy.",
+  "checkout_error_card_validation": "Please check the card number, expiry date, and security code, then try again."
 }

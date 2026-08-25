@@ -597,8 +597,8 @@
   "checkout_error_payment_failed": "El pago falló. Inténtelo de nuevo.",
   "checkout_already_unlocked": "Ya tiene acceso a este informe.",
   "checkout_error_card_not_ready": "Los campos de tarjeta no están listos. Inténtelo de nuevo.",
-  "checkout_error_card_declined": "Tarjeta rechazada o no válida. Compruebe sus datos e inténtelo de nuevo.",
-  "checkout_error_card_failed": "El pago con tarjeta falló. Inténtelo de nuevo.",
+  "checkout_error_card_declined": "Su tarjeta fue rechazada. Pruebe otra tarjeta o pague con PayPal.",
+  "checkout_error_card_failed": "No pudimos procesar esta tarjeta. Inténtelo de nuevo o pague con PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Tarjeta",
   "checkout_payment_methods": "Métodos de pago:",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "Un título marcado (inundación, granizo, fuego, junk, etc.) registra un evento grave. Suele bajar el valor y limitar financiación/seguro. Verifique el título en persona e inspeccione daños.",
   "owners_meaning_title": "¿Por qué importa el número de dueños?",
   "owners_meaning_learn": "Sobre los dueños",
-  "owners_meaning_body": "Muchos dueños previos pueden indicar más desgaste o lagunas de mantenimiento. No prueba un problema por sí solo, pero justifica una revisión a fondo del historial y del coche."
+  "owners_meaning_body": "Muchos dueños previos pueden indicar más desgaste o lagunas de mantenimiento. No prueba un problema por sí solo, pero justifica una revisión a fondo del historial y del coche.",
+  "checkout_error_card_validation": "Compruebe el número de tarjeta, la fecha de caducidad y el código de seguridad, e inténtelo de nuevo."
 }

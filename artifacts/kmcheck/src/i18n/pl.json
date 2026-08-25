@@ -597,8 +597,8 @@
   "checkout_error_payment_failed": "Płatność nie powiodła się. Spróbuj ponownie.",
   "checkout_already_unlocked": "Masz już dostęp do tego raportu.",
   "checkout_error_card_not_ready": "Pola karty nie są gotowe. Spróbuj ponownie.",
-  "checkout_error_card_declined": "Karta odrzucona lub nieprawidłowa. Sprawdź dane i spróbuj ponownie.",
-  "checkout_error_card_failed": "Płatność kartą nie powiodła się. Spróbuj ponownie.",
+  "checkout_error_card_declined": "Karta została odrzucona. Użyj innej karty lub zapłać przez PayPal.",
+  "checkout_error_card_failed": "Nie udało się przetworzyć tej karty. Spróbuj ponownie lub zapłać przez PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Karta",
   "checkout_payment_methods": "Metody płatności:",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "Oznaczony tytuł (powódź, grad, pożar, junk, tylko na części itd.) zapisuje poważne zdarzenie w dokumentach pojazdu. Takie marki zwykle obniżają wartość i mogą ograniczać finansowanie lub ubezpieczenie. Zawsze sprawdź dokument tytułu osobiście i obejrzyj auto pod kątem powiązanych uszkodzeń.",
   "owners_meaning_title": "Dlaczego liczba właścicieli ma znaczenie?",
   "owners_meaning_learn": "O liczbie właścicieli",
-  "owners_meaning_body": "Wielu poprzednich właścicieli może oznaczać większe zużycie, krótkie okresy posiadania lub luki w opiece serwisowej. To samo w sobie nie jest dowodem problemu, ale zwiększa potrzebę dokładnej historii serwisowej i oględzin przed zakupem."
+  "owners_meaning_body": "Wielu poprzednich właścicieli może oznaczać większe zużycie, krótkie okresy posiadania lub luki w opiece serwisowej. To samo w sobie nie jest dowodem problemu, ale zwiększa potrzebę dokładnej historii serwisowej i oględzin przed zakupem.",
+  "checkout_error_card_validation": "Sprawdź numer karty, datę ważności i kod zabezpieczający, a następnie spróbuj ponownie."
 }

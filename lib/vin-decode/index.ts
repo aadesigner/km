@@ -55,6 +55,8 @@ export {
   type IsoYearWindow,
 } from "./iso-year";
 export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
+export { decodeFordNaModel, matchFordNaRule, isFordNaVin } from "./ford-na";
+export { decodeGmNaModel, matchGmNaRule, isGmNaVin } from "./gm-na";
 export { decodeMazdaModel, matchMazdaRule, isMazdaVin } from "./mazda";
 export { decodeHyundaiModel, matchHyundaiRule, isHyundaiVin, decodeHyundaiEngine } from "./hyundai";
 export {

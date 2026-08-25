@@ -597,8 +597,8 @@
   "checkout_error_payment_failed": "Plata a eșuat. Încercați din nou.",
   "checkout_already_unlocked": "Aveți deja acces la acest raport.",
   "checkout_error_card_not_ready": "Câmpurile cardului nu sunt gata. Încercați din nou.",
-  "checkout_error_card_declined": "Card refuzat sau invalid. Verificați detaliile și încercați din nou.",
-  "checkout_error_card_failed": "Plata cu cardul a eșuat. Încercați din nou.",
+  "checkout_error_card_declined": "Cardul a fost refuzat. Încercați alt card sau plătiți cu PayPal.",
+  "checkout_error_card_failed": "Nu am putut procesa acest card. Încercați din nou sau plătiți cu PayPal.",
   "checkout_pay_method_paypal": "PayPal",
   "checkout_pay_method_card": "Card",
   "checkout_payment_methods": "Metode de plată:",
@@ -1733,5 +1733,6 @@
   "branded_title_meaning_body": "Un titlu marcat (inundație, grindină, incendiu, junk, doar piese etc.) consemnează un eveniment grav în actele vehiculului. Aceste mărci scad de obicei valoarea și pot limita finanțarea sau asigurarea. Verificați întotdeauna titlul personal și inspectați daunele aferente.",
   "owners_meaning_title": "De ce contează numărul de proprietari?",
   "owners_meaning_learn": "Despre numărul de proprietari",
-  "owners_meaning_body": "Mulți proprietari anteriori pot însemna uzură mai mare, perioade scurte de posesie sau goluri în întreținere. Nu este singur dovada unei probleme, dar crește nevoia unui istoric de service și a unei inspecții temeinice înainte de cumpărare."
+  "owners_meaning_body": "Mulți proprietari anteriori pot însemna uzură mai mare, perioade scurte de posesie sau goluri în întreținere. Nu este singur dovada unei probleme, dar crește nevoia unui istoric de service și a unei inspecții temeinice înainte de cumpărare.",
+  "checkout_error_card_validation": "Verificați numărul cardului, data expirării și codul de securitate, apoi încercați din nou."
 }
