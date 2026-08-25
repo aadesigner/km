@@ -88,7 +88,14 @@ async function userOwnsVinReport(userId: string, vin: string): Promise<boolean> 
     .where(eq(usersTable.id, userId))
     .limit(1);
   if (userRow?.isAdmin) return true;
+  return userHasVinPurchaseOrDelivery(userId, vin);
+}
 
+/**
+ * Real purchase / credit / coupon / lookup claim for this VIN.
+ * Excludes bare admin — used so missing VINs do not get a fake "fulfilling" unlock.
+ */
+async function userHasVinPurchaseOrDelivery(userId: string, vin: string): Promise<boolean> {
   const [payment] = await db
     .select({ id: paymentsTable.id })
     .from(paymentsTable)
@@ -849,7 +856,31 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     userId ? userOwnsVinReport(userId, vin) : Promise.resolve(false),
   ]);
 
+  // Paid / credit unlock can land here while provider fetch is still in flight and
+  // catalog data is not written yet. Do not 404 real buyers — gate needs isUnlocked so
+  // VinResult can show the retrieving state instead of "not in our database".
+  // Require a purchase/delivery claim (not bare admin) so random admin visits stay 404.
   if (!report) {
+    if (userId && (await userHasVinPurchaseOrDelivery(userId, vin))) {
+      res.setHeader("Cache-Control", "private, no-store");
+      res.json({
+        vin,
+        make: null,
+        model: null,
+        year: null,
+        engine: null,
+        transmission: null,
+        color: null,
+        country: null,
+        thumbnailUrl: null,
+        photos: [],
+        inCatalog: false,
+        isUnlocked: true,
+        status: VIN_FULFILLING_STATUS,
+        fulfilling: true,
+      });
+      return;
+    }
     res.status(404).json({ error: "Not found" });
     return;
   }
@@ -1118,6 +1149,24 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
         });
         return;
       }
+    }
+    // Real buyer/credit redeem waiting on provider — never hard 404 right after checkout.
+    // Bare admin (no payment/lookup) must still 404 for unknown VINs.
+    if (isVinString && (await userHasVinPurchaseOrDelivery(userId, rawId))) {
+      res.setHeader("Cache-Control", "private, no-store");
+      res.json({
+        id: 0,
+        vin: rawId,
+        userId,
+        status: VIN_FULFILLING_STATUS,
+        fulfilling: true,
+        data: null,
+        fromCache: false,
+        paymentId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      return;
     }
     res.status(404).json({ error: "VIN lookup not found" });
     return;

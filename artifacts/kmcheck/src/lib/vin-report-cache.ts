@@ -11,10 +11,14 @@ export const VIN_REPORT_QUERY_OPTIONS = {
 
 /** Poll while provider fetch is in progress — stops when status changes. */
 export function vinReportRefetchInterval(query: {
-  state: { data?: unknown };
+  state: { data?: unknown; error?: unknown; fetchFailureCount?: number };
 }): number | false {
   const status = (query.state.data as { status?: string } | undefined)?.status;
   if (status === "fulfilling") return 2_000;
+  const err = query.state.error as { notFound?: boolean; kind?: string } | null | undefined;
+  const failures = query.state.fetchFailureCount ?? 0;
+  // Brief post-unlock race: keep trying instead of sticking on a false 404.
+  if ((err?.notFound || err?.kind === "not_found") && failures < 45) return 2_000;
   return false;
 }
 
@@ -51,7 +55,11 @@ function queryKeyMatchesVinReport(
   return false;
 }
 
-/** Mark VIN report client caches stale so the next fetch loads fresh server data. */
+/**
+ * Drop VIN report client caches so the next mount fetches fresh server data.
+ * Uses remove (not only invalidate) so a pre-purchase public 404 / locked preview
+ * cannot flash "not in database" after credit or payment unlock.
+ */
 export function invalidateVinReportCaches(
   queryClient: QueryClient,
   vin: string,
@@ -66,6 +74,5 @@ export function invalidateVinReportCaches(
     return false;
   };
 
-  void queryClient.invalidateQueries({ predicate: (query) => matchesVinReport(query) });
-  void queryClient.refetchQueries({ predicate: (query) => matchesVinReport(query), type: "active" });
+  void queryClient.removeQueries({ predicate: (query) => matchesVinReport(query) });
 }

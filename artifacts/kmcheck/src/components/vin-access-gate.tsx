@@ -47,7 +47,9 @@ export function VinAccessGate({ params, vin }: VinAccessGateProps) {
 
   useQueryRecovery(isError && !!data, isFetching, refetch);
 
-  if (isLoading && !data) return <PageLoader />;
+  // Keep the shell while the first fetch (or post-unlock refetch) is in flight —
+  // never flash a cached 404 / "not in database" over a paid unlock.
+  if ((isLoading || isFetching) && !data) return <PageLoader />;
 
   if (isError && !data) {
     const kind = resolveVinReportErrorKind(error);

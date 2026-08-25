@@ -835,12 +835,13 @@ export default function Checkout({ params }: Props) {
             if (!checkoutActiveRef.current) return false;
             if (!pollResp.ok) continue;
             const pollData = await pollResp.json() as { status?: string; vin?: string; error?: string; code?: string };
-            if (
-              pollData.status === "complete"
-              || pollData.status === "pending_manual"
-              || pollData.status === "fulfilling"
-            ) {
+            if (pollData.status === "complete" || pollData.status === "pending_manual") {
               completeCheckoutDelivery(pollData.vin ?? nvin, data.id);
+              return true;
+            }
+            if (pollData.status === "fulfilling") {
+              // Instant handoff: report page shows retrieving UI (not "not in database").
+              redirectToFulfillingReport(pollData.vin ?? nvin, data.id);
               return true;
             }
             if (pollData.status === "error") {

@@ -464,12 +464,17 @@ export default function VinResult({ params }: Props) {
     enabled: isVinString,
     ...VIN_REPORT_QUERY_OPTIONS,
     refetchInterval: vinReportRefetchInterval,
-    retry: 1,
     queryFn: async ({ signal }) => {
       const r = await fetch(`${basePath}/api/vin/${encodeURIComponent(vinUpper)}`, { credentials: "include", signal });
       if (!r.ok) throw createVinReportFetchError(r.status);
       return r.json();
     },
+    retry: (failureCount, error) => {
+      if (resolveVinReportErrorKind(error) === "not_found") return failureCount < 45;
+      return failureCount < 1;
+    },
+    retryDelay: (_count, error) =>
+      (resolveVinReportErrorKind(error) === "not_found" ? 2_000 : 1_000),
   });
 
   const lookupRaw = isVinString ? lookupByVin : lookupById;
