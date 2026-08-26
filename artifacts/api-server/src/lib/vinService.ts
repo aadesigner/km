@@ -925,6 +925,12 @@ function reportLooksLikeNaAuction(data: Record<string, unknown>): boolean {
       return true;
     }
   }
+  // Photo hosts from IAAI/Copart catalogs even when history arrays were trimmed.
+  const photos = Array.isArray(data.photos) ? data.photos : [];
+  for (const p of photos) {
+    if (typeof p !== "string") continue;
+    if (/iaai\.com|copart\.com|\/iaai\/|\/copart\//i.test(p)) return true;
+  }
   return false;
 }
 
@@ -1911,8 +1917,10 @@ const AUCTION_PANORAMA_HOST_RE = /(?:^|\.)(?:iaai\.com|copart\.com)$/i;
  * Keep only https auction panorama viewers — never pass through arbitrary URLs.
  */
 export function sanitizeAuctionPanoramaUrl(raw: unknown): string | null {
-  if (typeof raw !== "string") return null;
-  const trimmed = raw.trim();
+  // Admin refresh once wrongly stored embed URLs as a 1-element photo array.
+  const candidate = Array.isArray(raw) && raw.length > 0 ? raw[0] : raw;
+  if (typeof candidate !== "string") return null;
+  const trimmed = candidate.trim();
   if (!trimmed) return null;
   try {
     const parsed = new URL(trimmed);

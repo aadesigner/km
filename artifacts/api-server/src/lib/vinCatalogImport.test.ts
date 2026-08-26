@@ -190,6 +190,31 @@ describe("sanitizeCatalogPayload", () => {
     expect(data.photos360Interior).toEqual(interior);
   });
 
+  it("keeps IAAI panorama embed URLs as strings (not photo arrays)", () => {
+    const embed =
+      "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-45976616~STP-1~INT-1&iframeview=true";
+    const data = sanitizeCatalogPayload({
+      make: "BMW",
+      photos: ["https://vis.iaai.com/resizer?x=1"],
+      photos360EmbedUrl: embed,
+      photos360EmbedExteriorUrl: "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-45976616~STP-1&iframeview=true",
+      photos360EmbedInteriorUrl: "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-45976616~INT-1&iframeview=true",
+    });
+    expect(data.photos360EmbedUrl).toBe(embed);
+    expect(typeof data.photos360EmbedUrl).toBe("string");
+    expect(data.photos360EmbedExteriorUrl).toContain("STP-1");
+    expect(data.photos360EmbedInteriorUrl).toContain("INT-1");
+  });
+
+  it("repairs legacy embed URLs wrongly stored as 1-element arrays", () => {
+    const embed =
+      "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-1~STP-1&iframeview=true";
+    const data = sanitizeCatalogPayload({
+      photos360EmbedUrl: [embed],
+    });
+    expect(data.photos360EmbedUrl).toBe(embed);
+  });
+
   it("keeps 360 fields through normalize → sanitize (admin provider refresh)", () => {
     const exterior = Array.from({ length: 16 }, (_, i) => `https://cdn.example.com/ext-${i}.jpg`);
     const interior = Array.from({ length: 12 }, (_, i) => `https://cdn.example.com/int-${i}.jpg`);

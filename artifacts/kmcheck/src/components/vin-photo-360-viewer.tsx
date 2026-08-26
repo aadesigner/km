@@ -14,9 +14,9 @@ type SpinKind = "exterior" | "interior";
 type Props = {
   exterior?: string[] | null;
   interior?: string[] | null;
-  embedUrl?: string | null;
-  embedExteriorUrl?: string | null;
-  embedInteriorUrl?: string | null;
+  embedUrl?: string | string[] | null;
+  embedExteriorUrl?: string | string[] | null;
+  embedInteriorUrl?: string | string[] | null;
   className?: string;
 };
 
@@ -25,10 +25,11 @@ function cleanFrames(urls: string[] | null | undefined): string[] {
   return urls.filter((u): u is string => typeof u === "string" && u.length > 0);
 }
 
-function safeEmbedUrl(raw: string | null | undefined): string | null {
-  if (!raw || typeof raw !== "string") return null;
+function safeEmbedUrl(raw: string | string[] | null | undefined): string | null {
+  const candidate = Array.isArray(raw) && raw.length > 0 ? raw[0] : raw;
+  if (!candidate || typeof candidate !== "string") return null;
   try {
-    const parsed = new URL(raw.trim());
+    const parsed = new URL(candidate.trim());
     if (parsed.protocol !== "https:") return null;
     if (!/(?:^|\.)(?:iaai\.com|copart\.com)$/i.test(parsed.hostname)) return null;
     return parsed.toString();

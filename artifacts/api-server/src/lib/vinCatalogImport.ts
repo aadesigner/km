@@ -119,11 +119,16 @@ export const CATALOG_JSON_KEYS = [
   "marketData",
 ] as const;
 
+/** Still / spin frame galleries only — not single embed URL strings. */
 const CATALOG_PHOTO_LIST_KEYS = [
   "photos",
   "photosHd",
   "photos360Exterior",
   "photos360Interior",
+] as const;
+
+/** IAAI/Copart interactive viewer URLs (single string each). */
+const CATALOG_EMBED_URL_KEYS = [
   "photos360EmbedUrl",
   "photos360EmbedExteriorUrl",
   "photos360EmbedInteriorUrl",
@@ -131,6 +136,23 @@ const CATALOG_PHOTO_LIST_KEYS = [
 
 function isCatalogPhotoListKey(key: string): boolean {
   return (CATALOG_PHOTO_LIST_KEYS as readonly string[]).includes(key);
+}
+
+function isCatalogEmbedUrlKey(key: string): boolean {
+  return (CATALOG_EMBED_URL_KEYS as readonly string[]).includes(key);
+}
+
+function normalizeEmbedUrl(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  // Legacy bug: sanitize once stored embed URLs as a 1-element photo array.
+  if (Array.isArray(value) && value.length > 0 && typeof value[0] === "string") {
+    const trimmed = value[0].trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  return null;
 }
 
 export const CATALOG_CSV_COLUMNS = [
@@ -332,6 +354,11 @@ export function sanitizeCatalogPayload(input: Record<string, unknown>): Record<s
 
   for (const key of CATALOG_JSON_KEYS) {
     const value = input[key];
+    if (isCatalogEmbedUrlKey(key)) {
+      const url = normalizeEmbedUrl(value);
+      if (url) out[key] = url;
+      continue;
+    }
     if (isCatalogPhotoListKey(key)) {
       if (Array.isArray(value)) {
         out[key] = normalizePhotos(value) ?? [];
@@ -378,6 +405,12 @@ export function mergeCatalogData(
   for (const key of CATALOG_JSON_KEYS) {
     if (!(key in incoming)) continue;
     const value = incoming[key];
+    if (isCatalogEmbedUrlKey(key)) {
+      const url = normalizeEmbedUrl(value);
+      if (url) merged[key] = url;
+      else if (value === null || value === "") delete merged[key];
+      continue;
+    }
     if (isCatalogPhotoListKey(key)) {
       merged[key] = normalizePhotos(value) ?? [];
       continue;
@@ -418,6 +451,12 @@ export function applyCatalogAdminPatch(
   for (const key of CATALOG_JSON_KEYS) {
     if (!(key in rawBody)) continue;
     const raw = rawBody[key];
+    if (isCatalogEmbedUrlKey(key)) {
+      const url = normalizeEmbedUrl(raw);
+      if (url) merged[key] = url;
+      else delete merged[key];
+      continue;
+    }
     if (isCatalogPhotoListKey(key)) {
       merged[key] = normalizePhotos(raw) ?? [];
       continue;

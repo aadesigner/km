@@ -14,6 +14,8 @@ import {
   resolveVinReportForViewer,
   resolveLockedPreviewPhotoSources,
   isStaleCachedReport,
+  sanitizeAuctionPanoramaUrl,
+  splitAuctionPanoramaUrls,
 } from "../lib/vinService.js";
 import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger.js";
@@ -943,10 +945,12 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     const photos360Interior = Array.isArray(d.photos360Interior)
       ? (d.photos360Interior as string[]).filter(Boolean)
       : [];
-    const photos360EmbedUrl =
-      typeof d.photos360EmbedUrl === "string" && d.photos360EmbedUrl.trim()
-        ? d.photos360EmbedUrl.trim()
-        : null;
+    const photos360EmbedUrl = sanitizeAuctionPanoramaUrl(d.photos360EmbedUrl);
+    const splitEmbed = splitAuctionPanoramaUrls(photos360EmbedUrl);
+    const photos360EmbedExteriorUrl =
+      sanitizeAuctionPanoramaUrl(d.photos360EmbedExteriorUrl) ?? splitEmbed.exterior;
+    const photos360EmbedInteriorUrl =
+      sanitizeAuctionPanoramaUrl(d.photos360EmbedInteriorUrl) ?? splitEmbed.interior;
     Object.assign(response, {
       trim: (d.trim as string | null) ?? null,
       odometer: (d.odometer as number | null) ?? (d.mileage as number | null) ?? null,
@@ -972,12 +976,8 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
         ? { photos360Interior: proxySpinPhotoUrls(photos360Interior, mediaVersion) }
         : {}),
       ...(photos360EmbedUrl ? { photos360EmbedUrl } : {}),
-      ...(typeof d.photos360EmbedExteriorUrl === "string" && d.photos360EmbedExteriorUrl.trim()
-        ? { photos360EmbedExteriorUrl: d.photos360EmbedExteriorUrl.trim() }
-        : {}),
-      ...(typeof d.photos360EmbedInteriorUrl === "string" && d.photos360EmbedInteriorUrl.trim()
-        ? { photos360EmbedInteriorUrl: d.photos360EmbedInteriorUrl.trim() }
-        : {}),
+      ...(photos360EmbedExteriorUrl ? { photos360EmbedExteriorUrl } : {}),
+      ...(photos360EmbedInteriorUrl ? { photos360EmbedInteriorUrl } : {}),
       hp: (d.hp as number | null) ?? null,
       cylinders: (d.cylinders as number | null) ?? null,
       bodyType: (d.bodyType as string | null) ?? null,
