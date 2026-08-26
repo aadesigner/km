@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Bienvenido a kmcheck",
   "check_vin": "Comprobar VIN",
   "check_vin_short": "Comprobar",
@@ -1716,6 +1716,11 @@
   "vin_360_exterior": "Exterior",
   "vin_360_interior": "Interior",
   "vin_360_hint": "Arrastra para girar",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "¿Qué significa siniestro total / salvage?",
   "salvage_meaning_learn": "¿Qué es el salvage?",
   "salvage_meaning_body": "Un título de siniestro total (salvage o write-off) indica que una aseguradora declaró el vehículo pérdida total — normalmente tras un accidente grave, inundación, incendio o recuperación tras robo — porque repararlo costaba más que su valor. Puede reconstruirse y venderse, pero suele ser más caro de asegurar, puede no pasar algunas inspecciones y generalmente vale menos que un coche con título limpio.",

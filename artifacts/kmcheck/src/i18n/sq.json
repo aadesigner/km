@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Mirësevini në kmcheck",
   "check_vin": "Kontrollo VIN",
   "check_vin_short": "Kontrollo",
@@ -1719,6 +1719,11 @@
   "vin_360_exterior": "Jashtë",
   "vin_360_interior": "Brenda",
   "vin_360_hint": "Tërhiq për të rrotulluar",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "Çfarë do të thotë dëmtim total?",
   "salvage_meaning_learn": "Çfarë është dëmtimi total?",
   "salvage_meaning_body": "Një titull dëmtimi total (salvage / write-off) do të thotë se siguruesi e ka shpallur automjetin humbje totale — zakonisht pas një aksidenti të rëndë, përmbytjeje, zjarri ose rikuperimi pas vjedhjeje — sepse kostoja e riparimit e kalonte vlerën. Mund të rindërtohet dhe të shitet, por shpesh kushton më shumë për t’u siguruar, mund të dështojë në disa kontrolle dhe zakonisht vlen më pak se një makinë me titull të pastër.",

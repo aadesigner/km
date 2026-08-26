@@ -201,6 +201,9 @@ type VinPublicReport = {
   photosHd?: string[] | null;
   photos360Exterior?: string[] | null;
   photos360Interior?: string[] | null;
+  photos360EmbedUrl?: string | null;
+  photos360EmbedExteriorUrl?: string | null;
+  photos360EmbedInteriorUrl?: string | null;
   hp?: number | null;
   cylinders?: number | null;
   bodyType?: string | null;
@@ -1318,6 +1321,9 @@ export default function VinPublic({ params }: Props) {
               <VinPhoto360Viewer
                 exterior={data.photos360Exterior}
                 interior={data.photos360Interior}
+                embedUrl={data.photos360EmbedUrl}
+                embedExteriorUrl={data.photos360EmbedExteriorUrl}
+                embedInteriorUrl={data.photos360EmbedInteriorUrl}
                 className="print:hidden"
               />
             ) : null}

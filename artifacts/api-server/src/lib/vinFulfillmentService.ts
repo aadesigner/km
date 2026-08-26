@@ -13,6 +13,7 @@ import {
   getCatalogVin,
   upsertVinCatalog,
   enrichVinReportDataForServe,
+  isStaleCachedReport,
 } from "./vinService.js";
 import { catalogHasDeliverableReport } from "./vinCatalogImport.js";
 import {
@@ -188,15 +189,15 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
 
       const catalogEntry = await getCatalogVin(normalizedVin);
         const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-        // Local catalog wins — never call provider when we already have a deliverable report.
-        if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
+        // Local catalog wins when fresh — re-fetch provider for stale rows (missing IAAI 360, etc.).
+        if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
           await completeLookupFromCatalog(lookupId, input, catalogEntry);
           return;
         }
 
         const cached = await getCachedVin(normalizedVin);
         const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-        if (cached && cachedData) {
+        if (cached && cachedData && !isStaleCachedReport(cachedData)) {
           const enriched = await enrichVinReportDataForServe(normalizedVin, cachedData, {
             primaryUpdatedAt: cached.updatedAt,
           });

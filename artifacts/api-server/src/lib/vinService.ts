@@ -98,6 +98,15 @@ export interface NormalizedVinData {
   photos360Exterior?: string[];
   /** Copart/IAAI 360° interior frames (ordered spin). */
   photos360Interior?: string[];
+  /**
+   * Auction-hosted interactive 360° viewer (e.g. IAAI `external_panorama_url`).
+   * Used when frame arrays are null/empty — common on newer IAAI lots.
+   */
+  photos360EmbedUrl?: string | null;
+  /** IAAI exterior-only ThreeSixtyView (derived from STP token). */
+  photos360EmbedExteriorUrl?: string | null;
+  /** IAAI interior-only ThreeSixtyView (derived from INT token). */
+  photos360EmbedInteriorUrl?: string | null;
   accidents?: Array<{
     date?: string | null;
     severity?: string | null;
@@ -486,6 +495,17 @@ export function mergeVinReportBodies(
     MAX_VIN_SPIN_PHOTOS,
     ...valid.map((b) => b.photos360Interior as string[] | undefined),
   );
+  const photos360EmbedUrl = [...valid]
+    .map((b) => sanitizeAuctionPanoramaUrl(b.photos360EmbedUrl))
+    .find((u): u is string => !!u) ?? null;
+  const photos360EmbedExteriorUrl = [...valid]
+    .map((b) => sanitizeAuctionPanoramaUrl(b.photos360EmbedExteriorUrl))
+    .find((u): u is string => !!u)
+    ?? splitAuctionPanoramaUrls(photos360EmbedUrl).exterior;
+  const photos360EmbedInteriorUrl = [...valid]
+    .map((b) => sanitizeAuctionPanoramaUrl(b.photos360EmbedInteriorUrl))
+    .find((u): u is string => !!u)
+    ?? splitAuctionPanoramaUrls(photos360EmbedUrl).interior;
   const photos = excludeSpinUrlsFromGallery(photosRaw, photos360Exterior, photos360Interior);
   const photosHd = excludeSpinUrlsFromGallery(photosHdRaw, photos360Exterior, photos360Interior);
 
@@ -510,6 +530,9 @@ export function mergeVinReportBodies(
       : {}),
     ...(photos360Exterior.length > 0 ? { photos360Exterior } : {}),
     ...(photos360Interior.length > 0 ? { photos360Interior } : {}),
+    ...(photos360EmbedUrl ? { photos360EmbedUrl } : {}),
+    ...(photos360EmbedExteriorUrl ? { photos360EmbedExteriorUrl } : {}),
+    ...(photos360EmbedInteriorUrl ? { photos360EmbedInteriorUrl } : {}),
     ...(frozenRate != null ? { krwPerUsd: frozenRate } : {}),
   };
 }
@@ -545,6 +568,18 @@ export function pickRicherVinReportData(
     lookupData.photos360Interior as string[] | undefined,
     catalogData.photos360Interior as string[] | undefined,
   );
+  const merged360EmbedUrl =
+    sanitizeAuctionPanoramaUrl(lookupData.photos360EmbedUrl)
+    ?? sanitizeAuctionPanoramaUrl(catalogData.photos360EmbedUrl);
+  const splitEmbed = splitAuctionPanoramaUrls(merged360EmbedUrl);
+  const merged360EmbedExteriorUrl =
+    sanitizeAuctionPanoramaUrl(lookupData.photos360EmbedExteriorUrl)
+    ?? sanitizeAuctionPanoramaUrl(catalogData.photos360EmbedExteriorUrl)
+    ?? splitEmbed.exterior;
+  const merged360EmbedInteriorUrl =
+    sanitizeAuctionPanoramaUrl(lookupData.photos360EmbedInteriorUrl)
+    ?? sanitizeAuctionPanoramaUrl(catalogData.photos360EmbedInteriorUrl)
+    ?? splitEmbed.interior;
   const mergedPhotos = excludeSpinUrlsFromGallery(
     mergedPhotosRaw,
     merged360Exterior,
@@ -569,6 +604,9 @@ export function pickRicherVinReportData(
       : {}),
     ...(merged360Exterior.length > 0 ? { photos360Exterior: merged360Exterior } : {}),
     ...(merged360Interior.length > 0 ? { photos360Interior: merged360Interior } : {}),
+    ...(merged360EmbedUrl ? { photos360EmbedUrl: merged360EmbedUrl } : {}),
+    ...(merged360EmbedExteriorUrl ? { photos360EmbedExteriorUrl: merged360EmbedExteriorUrl } : {}),
+    ...(merged360EmbedInteriorUrl ? { photos360EmbedInteriorUrl: merged360EmbedInteriorUrl } : {}),
     ...(frozenRate != null && readFrozenKrwPerUsd(picked) == null ? { krwPerUsd: frozenRate } : {}),
   };
 
@@ -857,7 +895,51 @@ export function isStaleCachedReport(
 ): boolean {
   if (!data) return false;
   if (isPartialCarstatPhotoCache(data)) return true;
+  if (isMissingAuction360Media(data)) return true;
   return isStaleKoreanReport(data);
+}
+
+function reportHasUsable360Media(data: Record<string, unknown>): boolean {
+  const ext = Array.isArray(data.photos360Exterior) ? data.photos360Exterior.length : 0;
+  const int = Array.isArray(data.photos360Interior) ? data.photos360Interior.length : 0;
+  if (ext >= 8 || int >= 8) return true;
+  return !!(
+    sanitizeAuctionPanoramaUrl(data.photos360EmbedUrl)
+    || sanitizeAuctionPanoramaUrl(data.photos360EmbedExteriorUrl)
+    || sanitizeAuctionPanoramaUrl(data.photos360EmbedInteriorUrl)
+  );
+}
+
+function reportLooksLikeNaAuction(data: Record<string, unknown>): boolean {
+  const mileage = data.mileageHistory;
+  if (Array.isArray(mileage)) {
+    for (const row of mileage) {
+      if (!row || typeof row !== "object") continue;
+      if ((row as Record<string, unknown>).source === "na_auction") return true;
+    }
+  }
+  const auctions = data.auctionHistory;
+  if (Array.isArray(auctions) && auctions.length > 0) {
+    const country = String(data.country ?? "").toLowerCase();
+    if (country === "us" || country === "usa" || country === "ca" || country === "canada") {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Older catalog rows from IAAI/Copart often have still photos but no 360 frames/embed
+ * (IAAI now ships `external_panorama_url` with null exterior/interior arrays).
+ */
+export function isMissingAuction360Media(
+  data: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!data) return false;
+  if (reportHasUsable360Media(data)) return false;
+  if (!reportLooksLikeNaAuction(data)) return false;
+  const photos = Array.isArray(data.photos) ? data.photos.length : 0;
+  return photos >= 8;
 }
 
 /**
@@ -1117,7 +1199,7 @@ export async function grantVinReportToUser(
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(catalogData, {
       existingRate: readFrozenKrwPerUsd(catalogData),
@@ -1821,6 +1903,90 @@ const INTERIOR_SPIN_KEY = /interior|i360|cabin|inside|in360|int360/;
 const EXTERIOR_SPIN_KEY = /exterior|c360|outside|spin|ext360|e360/;
 const INTERIOR_URL_HINT = /(?:^|[\/_\-.])(?:int(?:erior)?|i360|cabin|inside)(?:[\/_\-.]|$)/i;
 const EXTERIOR_URL_HINT = /(?:^|[\/_\-.])(?:ext(?:erior)?|c360|outside)(?:[\/_\-.]|$)/i;
+
+/** Hosts allowed for auction interactive 360° embeds (IAAI ThreeSixtyView, etc.). */
+const AUCTION_PANORAMA_HOST_RE = /(?:^|\.)(?:iaai\.com|copart\.com)$/i;
+
+/**
+ * Keep only https auction panorama viewers — never pass through arbitrary URLs.
+ */
+export function sanitizeAuctionPanoramaUrl(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "https:") return null;
+    if (!AUCTION_PANORAMA_HOST_RE.test(parsed.hostname)) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Split IAAI ThreeSixtyView `keys=SID-…~STP-1~INT-1` into exterior / interior embeds.
+ * Copart-style URLs without STP/INT tokens return only `combined`.
+ */
+export function splitAuctionPanoramaUrls(raw: unknown): {
+  combined: string | null;
+  exterior: string | null;
+  interior: string | null;
+} {
+  const combined = sanitizeAuctionPanoramaUrl(raw);
+  if (!combined) return { combined: null, exterior: null, interior: null };
+
+  try {
+    const parsed = new URL(combined);
+    const keys = parsed.searchParams.get("keys") ?? "";
+    const parts = keys.split("~").map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) return { combined, exterior: null, interior: null };
+
+    const sid = parts.find((p) => /^SID-/i.test(p)) ?? parts[0]!;
+    const stp = parts.find((p) => /^STP-/i.test(p));
+    const int = parts.find((p) => /^INT-/i.test(p));
+
+    const build = (tokens: string[]): string | null => {
+      if (tokens.length === 0) return null;
+      const next = new URL(combined);
+      next.searchParams.set("keys", tokens.join("~"));
+      if (!next.searchParams.has("iframeview")) next.searchParams.set("iframeview", "true");
+      return sanitizeAuctionPanoramaUrl(next.toString());
+    };
+
+    return {
+      combined,
+      exterior: stp ? build([sid, stp]) : null,
+      interior: int ? build([sid, int]) : null,
+    };
+  } catch {
+    return { combined, exterior: null, interior: null };
+  }
+}
+
+/** IAAI often ships exterior/interior as null and puts both spins in external_panorama_url. */
+export function extractLotPanoramaUrl(
+  lot: Record<string, unknown>,
+  imgs?: Record<string, unknown>,
+): string | null {
+  const images = imgs ?? lotImagesRecord(lot);
+  const candidates = [
+    images.external_panorama_url,
+    images.externalPanoramaUrl,
+    images.panorama_url,
+    images.panoramaUrl,
+    images.panorama,
+    lot.external_panorama_url,
+    lot.externalPanoramaUrl,
+    lot.panorama_url,
+    lot.panoramaUrl,
+  ];
+  for (const c of candidates) {
+    const ok = sanitizeAuctionPanoramaUrl(c);
+    if (ok) return ok;
+  }
+  return null;
+}
 
 /** When a provider dumps both spins into one tier, split by URL path hints. */
 export function splitMixedSpinUrls(urls: string[]): { exterior: string[]; interior: string[] } {
@@ -3128,6 +3294,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   let allPhotosHd: string[] = [];
   let allSpinExterior: string[] = [];
   let allSpinInterior: string[] = [];
+  let photos360EmbedUrl: string | null = null;
   const mileageHistory: NormalizedVinData["mileageHistory"] = [];
   const ownerHistory: NormalizedVinData["ownerHistory"] = [];
   const auctionHistory: NormalizedVinData["auctionHistory"] = [];
@@ -3144,6 +3311,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     const spin = collectSpinPhotosFromLot(l, allSpinExterior, allSpinInterior);
     allSpinExterior = spin.exterior;
     allSpinInterior = spin.interior;
+    if (!photos360EmbedUrl) {
+      photos360EmbedUrl = extractLotPanoramaUrl(l);
+    }
 
     if (isMarketplaceListingLot(l)) {
       const domain = lotDomainName(l);
@@ -3362,6 +3532,14 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     ...(photosHd ? { photosHd } : {}),
     ...(photos360Exterior.length > 0 ? { photos360Exterior } : {}),
     ...(photos360Interior.length > 0 ? { photos360Interior } : {}),
+    ...(photos360EmbedUrl ? { photos360EmbedUrl } : {}),
+    ...(() => {
+      const split = splitAuctionPanoramaUrls(photos360EmbedUrl);
+      return {
+        ...(split.exterior ? { photos360EmbedExteriorUrl: split.exterior } : {}),
+        ...(split.interior ? { photos360EmbedInteriorUrl: split.interior } : {}),
+      };
+    })(),
     accidents: sortHistoryNewestFirst(repairedAccidents),
     insuranceClaims: repairedClaims.length > 0 ? repairedClaims : undefined,
     registryHistory: repairedRegistry,

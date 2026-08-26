@@ -13,6 +13,7 @@ import {
   vinHasReportData,
   resolveVinReportForViewer,
   resolveLockedPreviewPhotoSources,
+  isStaleCachedReport,
 } from "../lib/vinService.js";
 import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger.js";
@@ -254,6 +255,16 @@ function proxyPhotoUrls(
   return photos
     .filter(Boolean)
     .slice(0, MAX_VIN_PHOTOS)
+    .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
+}
+
+function proxySpinPhotoUrls(
+  photos: string[],
+  mediaVersion?: number,
+): string[] {
+  return photos
+    .filter(Boolean)
+    .slice(0, MAX_VIN_SPIN_PHOTOS)
     .map((p) => resolveVinPhotoUrlForClient(p, { mediaVersion }));
 }
 
@@ -674,8 +685,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  // Deliver from local catalog when present — do not call provider (even if marked "stale").
-  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
+  // Deliver from local catalog when present and fresh — skip stale rows (e.g. missing IAAI 360 embed).
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
@@ -704,8 +715,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const cached = await getCachedVin(normalizedVin);
   const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-  // Reuse another user's complete local report — no provider call.
-  if (cached && cachedData) {
+  // Reuse another user's complete local report — skip stale (e.g. missing IAAI 360).
+  if (cached && cachedData && !isStaleCachedReport(cachedData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
@@ -932,6 +943,10 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     const photos360Interior = Array.isArray(d.photos360Interior)
       ? (d.photos360Interior as string[]).filter(Boolean)
       : [];
+    const photos360EmbedUrl =
+      typeof d.photos360EmbedUrl === "string" && d.photos360EmbedUrl.trim()
+        ? d.photos360EmbedUrl.trim()
+        : null;
     Object.assign(response, {
       trim: (d.trim as string | null) ?? null,
       odometer: (d.odometer as number | null) ?? (d.mileage as number | null) ?? null,
@@ -951,10 +966,17 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
         ? { photosHd: proxyPhotoUrls(catalogPhotosHd, mediaVersion) }
         : {}),
       ...(photos360Exterior.length > 0
-        ? { photos360Exterior: proxyPhotoUrls(photos360Exterior, mediaVersion) }
+        ? { photos360Exterior: proxySpinPhotoUrls(photos360Exterior, mediaVersion) }
         : {}),
       ...(photos360Interior.length > 0
-        ? { photos360Interior: proxyPhotoUrls(photos360Interior, mediaVersion) }
+        ? { photos360Interior: proxySpinPhotoUrls(photos360Interior, mediaVersion) }
+        : {}),
+      ...(photos360EmbedUrl ? { photos360EmbedUrl } : {}),
+      ...(typeof d.photos360EmbedExteriorUrl === "string" && d.photos360EmbedExteriorUrl.trim()
+        ? { photos360EmbedExteriorUrl: d.photos360EmbedExteriorUrl.trim() }
+        : {}),
+      ...(typeof d.photos360EmbedInteriorUrl === "string" && d.photos360EmbedInteriorUrl.trim()
+        ? { photos360EmbedInteriorUrl: d.photos360EmbedInteriorUrl.trim() }
         : {}),
       hp: (d.hp as number | null) ?? null,
       cylinders: (d.cylinders as number | null) ?? null,

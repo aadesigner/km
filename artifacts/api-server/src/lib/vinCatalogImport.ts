@@ -105,6 +105,9 @@ export const CATALOG_JSON_KEYS = [
   "photosHd",
   "photos360Exterior",
   "photos360Interior",
+  "photos360EmbedUrl",
+  "photos360EmbedExteriorUrl",
+  "photos360EmbedInteriorUrl",
   "accidents",
   "insuranceClaims",
   "mileageHistory",
@@ -121,6 +124,9 @@ const CATALOG_PHOTO_LIST_KEYS = [
   "photosHd",
   "photos360Exterior",
   "photos360Interior",
+  "photos360EmbedUrl",
+  "photos360EmbedExteriorUrl",
+  "photos360EmbedInteriorUrl",
 ] as const;
 
 function isCatalogPhotoListKey(key: string): boolean {

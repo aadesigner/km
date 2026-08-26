@@ -29,6 +29,7 @@ import {
   preserveManualMileageAnnotations,
   isStaleKoreanReport,
   isStaleCachedReport,
+  isMissingAuction360Media,
   isPartialCarstatPhotoCache,
   isCarstatMirroredPreviewUrl,
   vinDataHasCorruptObjectMarker,
@@ -934,6 +935,69 @@ describe("pickBestLotPhotoUrls", () => {
     });
     expect(normalized.photos360Exterior?.length).toBeGreaterThanOrEqual(20);
     expect(normalized.photos360Interior?.length).toBe(16);
+  });
+
+  it("extracts IAAI external_panorama_url when exterior/interior frame arrays are null", () => {
+    const normal = Array.from({ length: 8 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const embed =
+      "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-45976616~STP-1~INT-1&iframeview=true";
+    const normalized = normalizeCarstatResponse({
+      year: 2018,
+      vin: "5UXKR0C59J0Y06117",
+      manufacturer: { name: "BMW" },
+      model: { name: "X5" },
+      lots: [{
+        domain: { name: "iaai_com" },
+        images: {
+          normal,
+          exterior: null,
+          interior: null,
+          external_panorama_url: embed,
+        },
+      }],
+    });
+    expect(normalized.photos360Exterior).toBeUndefined();
+    expect(normalized.photos360Interior).toBeUndefined();
+    expect(normalized.photos360EmbedUrl).toBe(embed);
+    expect(normalized.photos360EmbedExteriorUrl).toContain("STP-1");
+    expect(normalized.photos360EmbedExteriorUrl).not.toContain("INT-1");
+    expect(normalized.photos360EmbedInteriorUrl).toContain("INT-1");
+    expect(normalized.photos360EmbedInteriorUrl).not.toContain("STP-1");
+  });
+
+  it("rejects non-auction panorama hosts", () => {
+    const normal = Array.from({ length: 4 }, (_, i) => `https://cdn/n-${i}.jpg`);
+    const normalized = normalizeCarstatResponse({
+      year: 2018,
+      vin: "5UXKR0C59J0Y06117",
+      manufacturer: { name: "BMW" },
+      model: { name: "X5" },
+      lots: [{
+        domain: { name: "iaai_com" },
+        images: {
+          normal,
+          exterior: null,
+          interior: null,
+          external_panorama_url: "https://evil.example/pwn",
+        },
+      }],
+    });
+    expect(normalized.photos360EmbedUrl).toBeUndefined();
+  });
+
+  it("marks IAAI auction catalog rows without 360 media as stale", () => {
+    const stale = {
+      country: "US",
+      photos: Array.from({ length: 12 }, (_, i) => `https://cdn/n-${i}.jpg`),
+      mileageHistory: [{ source: "na_auction", date: "2024-01-01", odometer: 10000 }],
+      auctionHistory: [{ date: "2024-01-01", finalPrice: 1000 }],
+    };
+    expect(isMissingAuction360Media(stale)).toBe(true);
+    expect(isStaleCachedReport(stale)).toBe(true);
+    expect(isMissingAuction360Media({
+      ...stale,
+      photos360EmbedUrl: "https://vis.iaai.com/Home/ThreeSixtyView?keys=SID-1~STP-1&iframeview=true",
+    })).toBe(false);
   });
 
   it("stores mid-size photos for display and HD for lightbox when both tiers exist", () => {

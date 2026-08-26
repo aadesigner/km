@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "مرحباً بك في kmcheck",
   "check_vin": "تحقق من رقم الشاسيه",
   "check_vin_short": "تحقق",
@@ -1716,6 +1716,11 @@
   "vin_360_exterior": "الخارج",
   "vin_360_interior": "الداخل",
   "vin_360_hint": "اسحب للتدوير",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "ماذا يعني عنوان الإنقاذ / الشطب؟",
   "salvage_meaning_learn": "ما معنى الإنقاذ؟",
   "salvage_meaning_body": "يعني عنوان الإنقاذ (أو الشطب / الخسارة الكلية) أن شركة التأمين اعتبرت المركبة خسارة كلية — غالباً بعد حادث جسيم أو فيضان أو حريق أو استعادة بعد سرقة — لأن تكلفة الإصلاح تجاوزت قيمتها. قد يُعاد بناؤها وتُباع، لكنها غالباً أغلى تأميناً، وقد تفشل في بعض الفحوصات، وعادةً ما تكون أقل قيمة من سيارة بسند ملكية نظيف.",

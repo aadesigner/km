@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Добре дошли в kmcheck",
   "check_vin": "Проверка на VIN",
   "check_vin_short": "Проверка",
@@ -1716,6 +1716,11 @@
   "vin_360_exterior": "Екстериор",
   "vin_360_interior": "Интериор",
   "vin_360_hint": "Плъзнете за завъртане",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "Какво означава salvage / тотална щета?",
   "salvage_meaning_learn": "Какво е salvage?",
   "salvage_meaning_body": "Salvage (или отписване като тотална щета) означава, че застраховател е обявил автомобила за икономически нерентабилен за ремонт — обикновено след тежка катастрофа, наводнение, пожар или възстановяване след кражба — защото ремонтът е струвал повече от стойността. Може да бъде възстановен и продаден, но често е по-скъп за застраховка, може да не премине някои прегледи и обикновено струва по-малко от автомобил с чист талон.",

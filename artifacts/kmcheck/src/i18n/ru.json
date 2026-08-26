@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "Добро пожаловать в kmcheck",
   "check_vin": "Проверить VIN",
   "check_vin_short": "Проверить",
@@ -1716,6 +1716,11 @@
   "vin_360_exterior": "Экстерьер",
   "vin_360_interior": "Интерьер",
   "vin_360_hint": "Перетащите, чтобы вращать",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "Что значит аварийное / списанное ТС?",
   "salvage_meaning_learn": "Что такое salvage?",
   "salvage_meaning_body": "Аварийный (salvage) или списанный титул означает, что страховщик признал автомобиль тотальной утратой — обычно после серьёзного ДТП, потопа, пожара или возврата после угона — потому что ремонт стоил дороже стоимости машины. Её можно восстановить и продать, но страхование часто дороже, авто может не пройти некоторые проверки и обычно стоит меньше, чем машина с чистым титулом.",

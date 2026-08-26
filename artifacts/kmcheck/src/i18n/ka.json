@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "კეთილი იყოს თქვენი მობრძანება kmcheck-ში",
   "check_vin": "შეამოწმე VIN",
   "check_vin_short": "შეამოწმე",
@@ -1719,6 +1719,11 @@
   "vin_360_exterior": "ექსტერიერი",
   "vin_360_interior": "ინტერიერი",
   "vin_360_hint": "გადაათრიეთ მოსაბრუნებლად",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "რას ნიშნავს სალვაჟი / ჩამოწერა?",
   "salvage_meaning_learn": "რა არის სალვაჟი?",
   "salvage_meaning_body": "სალვაჟის ან ჩამოწერის ტიტული ნიშნავს, რომ მზღვეველმა ავტომობილი ტოტალურ ზარალად ჩაითვალა — ჩვეულებრივ მძიმე ავარიის, წყალდიდობის, ხანძრის ან ქურდობის შემდეგ აღდგენის შემდეგ — რადგან რემონტის ღირებულება აღემატებოდა მანქანის ფასს. ის შეიძლება აღდგეს და გაიყიდოს, მაგრამ ხშირად უფრო ძვირია დაზღვევა, შეიძლება ვერ გაიაროს ზოგიერთი შემოწმება და ჩვეულებრივ ნაკლები ღირს, ვიდრე სუფთა ტიტულის მანქანა.",

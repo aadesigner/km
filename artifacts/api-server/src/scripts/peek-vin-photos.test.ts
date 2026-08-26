@@ -64,5 +64,10 @@ describe("peek vin photos", () => {
 
     const normalized = normalizeCarstatResponse(body.lots ? body : { ...body, lots });
     console.log(`normalizeCarstatResponse photos: ${normalized.photos?.length ?? 0}`);
+    console.log(`normalize 360 exterior: ${normalized.photos360Exterior?.length ?? 0}`);
+    console.log(`normalize 360 interior: ${normalized.photos360Interior?.length ?? 0}`);
+    console.log(`normalize 360 embed: ${normalized.photos360EmbedUrl ?? "(none)"}`);
+    console.log(`normalize 360 embed ext: ${normalized.photos360EmbedExteriorUrl ?? "(none)"}`);
+    console.log(`normalize 360 embed int: ${normalized.photos360EmbedInteriorUrl ?? "(none)"}`);
   }, 120_000);
 });

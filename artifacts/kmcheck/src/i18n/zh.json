@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "欢迎使用 kmcheck",
   "check_vin": "查询 VIN",
   "check_vin_short": "查询",
@@ -1716,6 +1716,11 @@
   "vin_360_exterior": "外观",
   "vin_360_interior": "内饰",
   "vin_360_hint": "拖动旋转",
+  "vin_360_zoom": "Zoom",
+  "vin_360_zoom_hint": "Use 1x / 2x / 3x to zoom. Switch Exterior / Interior above.",
+  "vin_360_embed_hint": "Interactive exterior & interior 360° from the auction listing.",
+  "vin_360_embed_extra": "Open the full auction 360° viewer for more detail.",
+  "vin_360_open": "Open 360° viewer",
   "salvage_meaning_title": "什么是报废 / 全损（salvage）？",
   "salvage_meaning_learn": "什么是报废车？",
   "salvage_meaning_body": "报废或全损产权（salvage / write-off）表示保险公司认定该车为全损——通常因严重事故、水灾、火灾或失窃追回后——修理费用超过车辆价值。车辆仍可能被修复并出售，但往往保费更高、可能无法通过部分检测，且通常比清洁产权车辆更便宜。",
