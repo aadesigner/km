@@ -11,6 +11,31 @@ import { injectMarketingPageSeoFromPath } from "./marketingSeoHtmlInject.js";
 import { isKnownSpaPath } from "./spaKnownPaths.js";
 import { isCrawlerUserAgent } from "./crawlerDetection.js";
 
+/** BCP 47 tags for Content-Language — keep in sync with kmcheck scripts/languages.mjs */
+const CONTENT_LANGUAGE_MAP: Record<string, string> = {
+  en: "en",
+  de: "de",
+  es: "es",
+  fr: "fr",
+  sq: "sq-AL",
+  pl: "pl",
+  ro: "ro",
+  bg: "bg",
+  ka: "ka",
+  ar: "ar",
+  uk: "uk-UA",
+  ru: "ru",
+  zh: "zh-Hans",
+};
+
+const LANG_PATH_RE = /^\/(en|de|es|fr|sq|pl|ro|bg|ka|ar|uk|ru|zh)(?:\/|$)/;
+
+function applyContentLanguageHeader(res: Response, reqPath: string): void {
+  const m = reqPath.match(LANG_PATH_RE);
+  if (!m) return;
+  res.setHeader("Content-Language", CONTENT_LANGUAGE_MAP[m[1]] ?? m[1]);
+}
+
 const ONE_YEAR_SEC = 31_536_000;
 const ONE_DAY_SEC = 86_400;
 
@@ -148,6 +173,7 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
   const direct = path.join(publicDir, relative);
   if (existsSync(direct) && statSync(direct).isFile()) {
     applyStaticCacheHeaders(res, direct);
+    if (direct.endsWith(".html")) applyContentLanguageHeader(res, reqPath);
     res.sendFile(direct, (err) => {
       if (!err) return;
       logger.error({ err, file: direct, path: reqPath }, "static sendFile failed");
@@ -161,6 +187,7 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
   if (existsSync(withIndex) && statSync(withIndex).isFile()) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Pragma", "no-cache");
+    applyContentLanguageHeader(res, reqPath);
     res.sendFile(withIndex, (err) => {
       if (!err) return;
       logger.error({ err, file: withIndex, path: reqPath }, "static index sendFile failed");
@@ -179,6 +206,7 @@ async function sendSpaFallback(publicDir: string, reqPath: string, req: Request,
 
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.setHeader("Pragma", "no-cache");
+  applyContentLanguageHeader(res, reqPath);
   const origin = requestOrigin(req);
   let html = loadIndexHtml(publicDir);
   html = await injectVinCatalogSeo(html, req.path, origin);

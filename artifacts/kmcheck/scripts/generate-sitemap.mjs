@@ -3,37 +3,18 @@
  * - public/sitemap-pages.xml  — urlset for indexable marketing routes
  * - public/sitemap.xml        — sitemap index pointing at pages (+ VIN shards later)
  *
- * Keep PATHS in sync with src/lib/seo-config.ts INDEXABLE_PATHS.
+ * Paths from src/lib/indexable-paths.json via seo-inject.mjs.
  * VIN catalog URLs are written by generate-vin-sitemap.mjs into separate shards.
  */
 import { writeFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
+import { INDEXABLE_PRERENDER_PATHS } from "./seo-inject.mjs";
 
 const ORIGIN = "https://kmcheck.com";
 const LANGS = SUPPORTED_LANGS;
-const PATHS = [
-  "",
-  "/pricing",
-  "/free-vin-decoder",
-  "/how-it-works",
-  "/faq",
-  "/cars/usa",
-  "/cars/korea",
-  "/cars/canada",
-  "/cars/china",
-  "/cars/uae",
-  "/api-b2b",
-  "/api-b2b/plans",
-  "/api-b2b/contact",
-  "/api-b2b/vin-decoder",
-  "/api-b2b/usa-cars",
-  "/api-b2b/canada-cars",
-  "/api-b2b/korea-cars",
-  "/api-b2b/dubai-cars",
-  "/api-b2b/china-cars",
-];
+const PATHS = INDEXABLE_PRERENDER_PATHS;
 
 const HREFLANG = HREFLANG_MAP;
 

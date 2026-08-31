@@ -37,6 +37,19 @@ const b2bSeoData = JSON.parse(
 
 export const B2B_PRERENDER_PATHS = Object.keys(b2bSeoData);
 
+/** Canonical indexable routes — keep in sync with src/lib/indexable-paths.json */
+export const INDEXABLE_PRERENDER_PATHS = JSON.parse(
+  readFileSync(join(__dir, "../src/lib/indexable-paths.json"), "utf8"),
+);
+
+const b2bInIndexable = INDEXABLE_PRERENDER_PATHS.filter((p) => p.startsWith("/api-b2b")).sort();
+const b2bInData = [...B2B_PRERENDER_PATHS].sort();
+if (JSON.stringify(b2bInIndexable) !== JSON.stringify(b2bInData)) {
+  throw new Error(
+    "indexable-paths.json B2B routes out of sync with b2b-seo-data.json — update both files",
+  );
+}
+
 export const PATH_TO_SEO_KEY = {
   "": "home",
   "/pricing": "pricing",
@@ -346,9 +359,9 @@ export function injectSeoIntoHtml(html, pathname, basePath = "") {
   return out;
 }
 
-/** Paths to prerender as static HTML (lang prefix added separately). */
+/** Indexable marketing routes only — no sign-in/checkout/dashboard shells. */
 export function getPrerenderPaths() {
-  return [...Object.keys(PATH_TO_SEO_KEY), ...B2B_PRERENDER_PATHS];
+  return INDEXABLE_PRERENDER_PATHS;
 }
 
 export { seoData, b2bSeoData };

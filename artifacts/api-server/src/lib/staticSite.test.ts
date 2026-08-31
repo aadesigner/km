@@ -43,8 +43,9 @@ describe("staticSite asset fallback", () => {
     expect(src).toContain("injectMarketingPageSeoFromPath");
   });
 
-  it("strips leading slash before joining prerender paths", () => {
-    expect(src).toContain("spaRelativePath");
+  it("sets Content-Language on localized HTML responses", () => {
+    expect(src).toContain("applyContentLanguageHeader");
+    expect(src).toContain("Content-Language");
   });
 });
 

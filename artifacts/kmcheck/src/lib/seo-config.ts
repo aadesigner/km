@@ -4,6 +4,7 @@ import {
   LANG_META,
   type Language,
 } from "@/lib/languages";
+import indexablePaths from "./indexable-paths.json";
 
 /** Public site origin for canonical URLs and sitemap (production). */
 export const SITE_ORIGIN = "https://kmcheck.com";
@@ -22,29 +23,9 @@ export const OG_LOCALE_MAP: Record<SeoLang, string> = Object.fromEntries(
 ) as Record<SeoLang, string>;
 
 /** Paths indexed in sitemap-pages.xml (without language prefix). Home = "".
- *  Build scripts write sitemap.xml as an index → sitemap-pages.xml (+ optional VIN shards).
+ *  Canonical list: src/lib/indexable-paths.json (also used by prerender + sitemap scripts).
  */
-export const INDEXABLE_PATHS = [
-  "",
-  "/pricing",
-  "/free-vin-decoder",
-  "/how-it-works",
-  "/faq",
-  "/cars/usa",
-  "/cars/korea",
-  "/cars/canada",
-  "/cars/china",
-  "/cars/uae",
-  "/api-b2b",
-  "/api-b2b/plans",
-  "/api-b2b/contact",
-  "/api-b2b/vin-decoder",
-  "/api-b2b/usa-cars",
-  "/api-b2b/canada-cars",
-  "/api-b2b/korea-cars",
-  "/api-b2b/dubai-cars",
-  "/api-b2b/china-cars",
-] as const;
+export const INDEXABLE_PATHS = indexablePaths as readonly string[];
 
 export function buildLocalizedPath(lang: SeoLang, path: string): string {
   if (!path || path === "/") return `/${lang}`;
