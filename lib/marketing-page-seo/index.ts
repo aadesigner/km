@@ -134,6 +134,13 @@ export function injectMarketingSsrIntoHtml(
   return out;
 }
 
+export {
+  injectMarketingMetaSeoIntoHtml,
+  parseMarketingPath,
+  resolveMarketingMetaSeo,
+  type MarketingMetaSeo,
+} from "./marketing-meta-seo";
+
 export function resolveMarketingSsrContent(
   data: MarketingSsrData,
   pageKey: string,

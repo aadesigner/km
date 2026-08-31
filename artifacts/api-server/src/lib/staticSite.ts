@@ -7,7 +7,7 @@ import { vinHasReportData } from "./vinService.js";
 import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
-import { injectMarketingPageSsrFromPath } from "./marketingSeoHtmlInject.js";
+import { injectMarketingPageSeoFromPath } from "./marketingSeoHtmlInject.js";
 import { isKnownSpaPath } from "./spaKnownPaths.js";
 import { isCrawlerUserAgent } from "./crawlerDetection.js";
 
@@ -135,11 +135,17 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
   }
 }
 
-function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean {
-  // Match sitemap/canonical paths (no trailing slash) and legacy slashed URLs.
+function spaRelativePath(reqPath: string): string {
   const trimmed = reqPath.replace(/\/+$/, "") || "/";
   const safe = path.normalize(trimmed).replace(/^(\.\.(\/|\\|$))+/, "");
-  const direct = path.join(publicDir, safe);
+  if (safe === "/" || safe === ".") return "";
+  return safe.replace(/^[/\\]+/, "");
+}
+
+function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean {
+  // Match sitemap/canonical paths (no trailing slash) and legacy slashed URLs.
+  const relative = spaRelativePath(reqPath);
+  const direct = path.join(publicDir, relative);
   if (existsSync(direct) && statSync(direct).isFile()) {
     applyStaticCacheHeaders(res, direct);
     res.sendFile(direct, (err) => {
@@ -151,7 +157,7 @@ function sendSpaFile(publicDir: string, reqPath: string, res: Response): boolean
     });
     return true;
   }
-  const withIndex = path.join(publicDir, safe, "index.html");
+  const withIndex = path.join(publicDir, relative, "index.html");
   if (existsSync(withIndex) && statSync(withIndex).isFile()) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Pragma", "no-cache");
@@ -176,7 +182,7 @@ async function sendSpaFallback(publicDir: string, reqPath: string, req: Request,
   const origin = requestOrigin(req);
   let html = loadIndexHtml(publicDir);
   html = await injectVinCatalogSeo(html, req.path, origin);
-  html = injectMarketingPageSsrFromPath(html, req.path);
+  html = injectMarketingPageSeoFromPath(html, req.path, origin);
   res.type("html").send(html);
   return true;
 }

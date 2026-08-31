@@ -39,8 +39,12 @@ describe("staticSite asset fallback", () => {
     expect(src).toMatch(/req\.path === \"\/\"[\s\S]*isCrawlerUserAgent[\s\S]*redirect\(301,\s*`\/en/);
   });
 
-  it("injects marketing SSR body in SPA fallback for indexable pages", () => {
-    expect(src).toContain("injectMarketingPageSsrFromPath");
+  it("injects marketing SEO meta + SSR body in SPA fallback for indexable pages", () => {
+    expect(src).toContain("injectMarketingPageSeoFromPath");
+  });
+
+  it("strips leading slash before joining prerender paths", () => {
+    expect(src).toContain("spaRelativePath");
   });
 });
 

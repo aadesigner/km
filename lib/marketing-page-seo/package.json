@@ -7,6 +7,8 @@
     "types": "./index.ts",
     "exports": {
       ".": "./index.ts",
-      "./marketing-ssr-data.json": "./marketing-ssr-data.json"
+      "./marketing-ssr-data.json": "./marketing-ssr-data.json",
+      "./marketing-seo-data.json": "./marketing-seo-data.json",
+      "./marketing-b2b-seo-data.json": "./marketing-b2b-seo-data.json"
     }
 }

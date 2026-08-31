@@ -2,7 +2,7 @@
  * Snapshot marketing SSR body copy for prerender + server inject.
  * Run: pnpm exec tsx scripts/build-marketing-ssr-data.ts
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { MarketingSsrContent, MarketingSsrData } from "@workspace/marketing-page-seo";
@@ -215,4 +215,12 @@ const json = `${JSON.stringify(data, null, 2)}\n`;
 writeFileSync(outPath, json, "utf8");
 writeFileSync(libOutPath, json, "utf8");
 writeFileSync(workspaceOutPath, json, "utf8");
+
+const seoDataSrc = join(__dir, "../src/lib/seo-data.json");
+const b2bSeoSrc = join(__dir, "b2b-seo-data.json");
+const workspaceSeoOut = join(__dir, "../../../lib/marketing-page-seo/marketing-seo-data.json");
+const workspaceB2bOut = join(__dir, "../../../lib/marketing-page-seo/marketing-b2b-seo-data.json");
+copyFileSync(seoDataSrc, workspaceSeoOut);
+copyFileSync(b2bSeoSrc, workspaceB2bOut);
+
 console.log(`Wrote marketing SSR data → ${outPath}`);

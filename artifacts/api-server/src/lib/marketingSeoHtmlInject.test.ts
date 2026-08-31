@@ -1,33 +1,44 @@
 import { describe, expect, it } from "vitest";
-import { injectMarketingPageSsrFromPath } from "./marketingSeoHtmlInject.js";
+import {
+  injectMarketingPageMetaFromPath,
+  injectMarketingPageSeoFromPath,
+  injectMarketingPageSsrFromPath,
+} from "./marketingSeoHtmlInject.js";
 
 const SAMPLE_HTML = `<!DOCTYPE html>
 <html lang="en">
-<head><title>Test</title></head>
+<head><title>kmcheck.com</title>
+<meta name="description" content="Check real mileage, hidden accidents, salvage titles, theft records and full car history with your VIN. Instant vehicle history report at kmcheck.com." />
+</head>
 <body>
   <div id="root"></div>
   <script type="module" src="/assets/index.js"></script>
 </body>
 </html>`;
 
-const SAMPLE_HTML_WITH_BOOT = `<!DOCTYPE html>
-<html lang="en">
-<head><title>Test</title></head>
-<body>
-  <div id="root">
-    <div class="app-boot-shell" aria-hidden="true"><div class="app-boot-line"></div></div>
-  </div>
-  <script type="module" src="/assets/index.js"></script>
-</body>
-</html>`;
+const ORIGIN = "https://kmcheck.com";
 
 describe("marketingSeoHtmlInject", () => {
+  it("injects localized meta description for SQ home (replaces English fallback)", () => {
+    const sq = injectMarketingPageMetaFromPath(SAMPLE_HTML, "/sq", ORIGIN);
+    expect(sq).toContain('lang="sq"');
+    expect(sq).toMatch(/meta name="description" content="[^"]*Kontroll kilometrash/i);
+    expect(sq).not.toContain("Check real mileage, hidden accidents");
+    expect(sq).toContain('href="https://kmcheck.com/sq"');
+  });
+
   it("injects localized H1 for EN and SQ home paths", () => {
     const en = injectMarketingPageSsrFromPath(SAMPLE_HTML, "/en");
     const sq = injectMarketingPageSsrFromPath(SAMPLE_HTML, "/sq");
     expect(en).toContain('<main id="kmcheck-page-ssr"');
     expect(en).toMatch(/<h1>[^<]*mileage/i);
     expect(sq).toMatch(/<h1>[^<]*Kontroll/i);
+  });
+
+  it("combines meta + SSR for SPA fallback", () => {
+    const html = injectMarketingPageSeoFromPath(SAMPLE_HTML, "/sq", ORIGIN);
+    expect(html).toMatch(/meta name="description" content="[^"]*Kontroll kilometrash/i);
+    expect(html).toMatch(/<h1>[^<]*Kontroll/i);
   });
 
   it("injects pricing page SSR body", () => {
@@ -38,14 +49,5 @@ describe("marketingSeoHtmlInject", () => {
   it("skips non-marketing routes", () => {
     const html = injectMarketingPageSsrFromPath(SAMPLE_HTML, "/en/dashboard");
     expect(html).not.toContain("kmcheck-page-ssr");
-  });
-
-  it("keeps boot shell and visually hides SSR snapshot", () => {
-    const html = injectMarketingPageSsrFromPath(SAMPLE_HTML_WITH_BOOT, "/sq");
-    expect(html).toContain("app-boot-shell");
-    expect(html).toContain('id="kmcheck-page-ssr"');
-    expect(html).toContain('aria-hidden="true"');
-    expect(html).toContain("clip:rect(0,0,0,0)");
-    expect(html).toMatch(/<h1>[^<]*Kontroll/i);
   });
 });

@@ -126,8 +126,8 @@ function withLang(
     );
     return (
       <I18nProvider initialLanguage={props.params.lang as Language}>
+        <RouteSEO />
         <LocaleReadyGate>
-          <RouteSEO />
           <Layout>
             {errorScope ? <RouteErrorBoundary scope={errorScope} resetKey={resetKey}>{page}</RouteErrorBoundary> : page}
           </Layout>
@@ -145,8 +145,8 @@ function AuthPage({ params, mode }: { params: { lang: string }; mode: "sign-in" 
 
   return (
     <I18nProvider initialLanguage={lang as Language}>
+      <RouteSEO />
       <LocaleReadyGate>
-        <RouteSEO />
         <Layout>
           <RouteErrorBoundary scope="auth" resetKey={resetKey}>
             <Suspense fallback={<PageLoader />}>
@@ -164,8 +164,8 @@ function AuthSubPage({ lang, children }: { lang: Language; children: React.React
   const resetKey = location.split("?")[0] ?? location;
   return (
     <I18nProvider initialLanguage={lang}>
+      <RouteSEO />
       <LocaleReadyGate>
-        <RouteSEO />
         <Layout>
           <RouteErrorBoundary scope="auth" resetKey={resetKey}>
             <Suspense fallback={<PageLoader />}>{children}</Suspense>
@@ -214,8 +214,8 @@ function withApiB2bLang(
     }
     return (
       <I18nProvider initialLanguage={props.params.lang as Language}>
+        <RouteSEO />
         <LocaleReadyGate>
-          <RouteSEO />
           <Suspense fallback={<PageLoader />}>
             <ApiB2bLayoutLazy>
               <RouteErrorBoundary scope="api-b2b" resetKey={resetKey}>
@@ -243,8 +243,8 @@ function ApiB2bRegionLang(props: { params: { lang: string; region: string } }) {
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en/api-b2b" />;
   return (
     <I18nProvider initialLanguage={props.params.lang as Language}>
+      <RouteSEO />
       <LocaleReadyGate>
-        <RouteSEO />
         <Suspense fallback={<PageLoader />}>
           <ApiB2bLayoutLazy>
             <RouteErrorBoundary scope="api-b2b-region" resetKey={resetKey}>
@@ -264,8 +264,8 @@ function CountryLang(props: { params: { lang: string; country: string } }) {
   if (!validLangs.includes(props.params.lang)) return <Redirect to="/en" />;
   return (
     <I18nProvider initialLanguage={props.params.lang as Language}>
+      <RouteSEO />
       <LocaleReadyGate>
-        <RouteSEO />
         <Layout>
           <RouteErrorBoundary scope="country" resetKey={resetKey}>
             <Suspense fallback={<PageLoader />}>
