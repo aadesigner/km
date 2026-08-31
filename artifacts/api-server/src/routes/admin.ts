@@ -99,7 +99,9 @@ import {
   recordedTransactionWhere,
   paymentHasFulfilledLookup,
   sumCollectedRevenue,
+  SQL_COLLECTED_REVENUE_ROW_FILTER,
 } from "../lib/recordedPayments.js";
+import { registerAdminStatsInvalidationHook } from "../lib/adminStatsInvalidation.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
 import rateLimit from "express-rate-limit";
@@ -284,31 +286,31 @@ async function loadAdminStatsPayload() {
         (SELECT COUNT(*) FROM users)::int AS total_users,
         (SELECT COUNT(*) FROM vin_lookups)::int AS total_vin_checks,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')) AS total_revenue,
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}) AS total_revenue,
         (SELECT COUNT(*)::int FROM payments p
          WHERE p.status IN ('completed', 'revoked')) AS qualifying_payment_count,
         (SELECT COALESCE(AVG(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND p.amount > 0) AS avg_paid_order_value,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_this_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
            AND (p.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_last_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_this_month,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
            AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_last_month,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date) AS revenue_today,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
-         WHERE p.status IN ('completed', 'revoked')
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day') AS revenue_yesterday,
         (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_this_week,
@@ -360,7 +362,7 @@ async function loadAdminStatsPayload() {
     db.execute(sql`
       SELECT (p.created_at AT TIME ZONE 'UTC')::date as date, COALESCE(SUM(p.amount), 0)::float as revenue
       FROM payments p
-      WHERE p.status IN ('completed', 'revoked')
+      WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
         AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
       GROUP BY (p.created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
@@ -438,7 +440,7 @@ async function loadAdminStatsPayload() {
         COUNT(*)::int AS count,
         COALESCE(SUM(p.amount), 0)::float AS revenue
       FROM payments p
-      WHERE p.status IN ('completed', 'revoked')
+      WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
         AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
       GROUP BY 1, 2
       ORDER BY date ASC
@@ -558,9 +560,7 @@ async function loadAdminStatsPayload() {
 
 const adminStatsCache = makeTtlCache<Awaited<ReturnType<typeof loadAdminStatsPayload>>>(ADMIN_STATS_CACHE_MS);
 
-export function invalidateAdminStatsCache(): void {
-  adminStatsCache.invalidate();
-}
+registerAdminStatsInvalidationHook(() => adminStatsCache.invalidate());
 
 router.get("/admin/stats", requireAdmin, async (_req, res) => {
   res.setHeader("Cache-Control", "private, no-store");
@@ -2684,7 +2684,10 @@ router.get("/admin/transactions", requireAdmin, async (req, res) => {
       : db.select({ total: count() }).from(paymentsTable)
     ),
     db.execute(sql`
-      SELECT status, COUNT(*)::int as cnt, COALESCE(SUM(amount), 0)::float as rev
+      SELECT status, COUNT(*)::int as cnt,
+        COALESCE(SUM(
+          CASE WHEN COALESCE(p.kind, 'vin_report') = 'credit_redemption' THEN 0 ELSE p.amount END
+        ), 0)::float as rev
       FROM payments p
       WHERE status <> 'voided'
         AND (

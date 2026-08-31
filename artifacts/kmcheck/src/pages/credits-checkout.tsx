@@ -6,7 +6,14 @@ import { useAuth } from "@/lib/auth-context";
 import { getCreditPack, isCreditPackId } from "@/lib/creditPacks";
 import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
 import { useDisplayPrice } from "@/hooks/use-display-price";
-import { AUTH_RETURN_PATH_KEY } from "@/lib/checkout-vin-flow";
+import {
+  AUTH_RETURN_PATH_KEY,
+  clearPaypalCreditPackSession,
+  markPaypalCreditPackAwaitingApproval,
+  markPaypalCreditPackCapturePending,
+  readPaypalCreditPackSession,
+  shouldResumePaypalCreditPackCapture,
+} from "@/lib/checkout-vin-flow";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { translateClientError } from "@/lib/translate-client-error";
@@ -92,6 +99,8 @@ export default function CreditsCheckout({ params }: Props) {
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
   const pokConfirmingRef = useRef(false);
   const pokResumeAttemptedRef = useRef(false);
+  const paypalReturnHandledRef = useRef(false);
+  const paypalResumeAttemptedRef = useRef(false);
 
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const paypalInstanceRef = useRef<{ close: () => void } | null>(null);
@@ -148,14 +157,16 @@ export default function CreditsCheckout({ params }: Props) {
         success?: boolean;
         error?: string;
         code?: string;
+        creditBalance?: number;
       };
       if (!resp.ok || !data.success) {
         setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_capture"));
         setStatus("error");
         return;
       }
+      clearPaypalCreditPackSession();
       setStatus("success");
-      void refreshUser();
+      await refreshUser();
     } catch {
       setErrorMsg(t("checkout_error_capture"));
       setStatus("error");
@@ -185,7 +196,7 @@ export default function CreditsCheckout({ params }: Props) {
       }
       clearPokCheckoutSession();
       setStatus("success");
-      void refreshUser();
+      await refreshUser();
     } catch {
       setErrorMsg(t("checkout_error_capture"));
       setStatus("error");
@@ -197,6 +208,39 @@ export default function CreditsCheckout({ params }: Props) {
   useLayoutEffect(() => {
     finalizeRef.current = finalizeCapture;
   }, [finalizeCapture]);
+
+  // PayPal full-page return (?token=ORDER_ID) after mobile/redirect checkout.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !packId) return;
+    if (paypalReturnHandledRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token")?.toUpperCase() ?? "";
+    if (!/^[A-Z0-9]{8,20}$/.test(token)) return;
+
+    paypalReturnHandledRef.current = true;
+    paypalResumeAttemptedRef.current = true;
+
+    const clean = new URL(window.location.href);
+    clean.searchParams.delete("token");
+    clean.searchParams.delete("PayerID");
+    window.history.replaceState({}, "", clean.pathname + clean.search);
+
+    markPaypalCreditPackCapturePending(token, packId);
+    setPaymentStarted(true);
+    void finalizeCapture(token);
+  }, [isLoaded, isSignedIn, packId, finalizeCapture]);
+
+  // Resume capture after refresh if user approved PayPal but capture did not finish.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !packId || payMethod !== "paypal") return;
+    if (paypalResumeAttemptedRef.current || paypalReturnHandledRef.current) return;
+    const session = readPaypalCreditPackSession();
+    if (!session || session.packId !== packId || !shouldResumePaypalCreditPackCapture(session)) return;
+
+    paypalResumeAttemptedRef.current = true;
+    setPaymentStarted(true);
+    void finalizeCapture(session.orderId);
+  }, [isLoaded, isSignedIn, packId, payMethod, finalizeCapture]);
 
   const mountPaypal = useCallback(async (orderId: string) => {
     // Settings can still be loading after create-order succeeds (server uses env secrets).
@@ -236,6 +280,9 @@ export default function CreditsCheckout({ params }: Props) {
     pendingOrderRef.current = orderId;
     setPaymentStarted(true);
     setStatus("idle");
+    if (packId) {
+      markPaypalCreditPackAwaitingApproval(orderId, packId);
+    }
 
     const buttons = window.paypal!.Buttons({
       style: {
@@ -252,6 +299,9 @@ export default function CreditsCheckout({ params }: Props) {
       },
       onApprove: async (data: { orderID: string }) => {
         pendingOrderRef.current = null;
+        if (packId) {
+          markPaypalCreditPackCapturePending(data.orderID, packId);
+        }
         await finalizeRef.current(data.orderID);
       },
       onError: () => {
@@ -269,7 +319,7 @@ export default function CreditsCheckout({ params }: Props) {
     paypalInstanceRef.current = buttons;
     paypalContainerRef.current.innerHTML = "";
     await buttons.render(paypalContainerRef.current);
-  }, [pubSettings?.paypalClientId, refetchPubSettings, resolvedTheme, t]);
+  }, [pubSettings?.paypalClientId, refetchPubSettings, resolvedTheme, t, packId]);
 
   useEffect(() => {
     if (!pokEnabled || pokResumeAttemptedRef.current || pokConfirmingRef.current) return;

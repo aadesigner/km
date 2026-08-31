@@ -28,6 +28,7 @@ import {
 import { paypalOrderCreateLimiter, paypalCaptureLimiter, pokOrderCreateLimiter, pokConfirmLimiter, pokWebhookLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
 import { completeCreditPackPayment } from "../lib/creditRedemption.js";
+import { invalidateAdminStatsCache } from "../lib/adminStatsInvalidation.js";
 import { vinReportPaymentLabel } from "../lib/vinReportPaymentLabel.js";
 import {
   POK_ORDER_ID_RE,
@@ -863,6 +864,54 @@ router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, require
     return;
   }
 
+  const finishCreditPackCapture = async (logMsg: string) => {
+    const result = await completeCreditPackPayment(payment.id, userId, credits);
+    invalidateAdminStatsCache();
+    logger.info({
+      msg: logMsg,
+      orderId,
+      paymentId: payment.id,
+      userId,
+      creditsAdded: result.creditsAdded,
+      creditBalance: result.creditBalance,
+      alreadyCompleted: result.alreadyCompleted,
+      amount: payment.amount,
+    });
+    res.json({
+      success: true,
+      paymentId: payment.id,
+      creditsAdded: result.creditsAdded,
+      creditBalance: result.creditBalance,
+    });
+  };
+
+  const verifyPaypalCapturedAmount = async (
+    base: string,
+    ppToken: string,
+  ): Promise<boolean> => {
+    const captured = await fetchPaypalOrderCaptureAmount(base, ppToken, orderId);
+    if (captured && !paypalAmountsMatch(Number(payment.amount), payment.currency, captured)) {
+      await db.update(paymentsTable)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(paymentsTable.paypalOrderId, orderId));
+      logger.error({
+        msg: "credit_pack_capture_amount_mismatch",
+        orderId,
+        paymentId: payment.id,
+        expectedAmount: payment.amount,
+        expectedCurrency: payment.currency,
+        capturedAmount: captured.amount,
+        capturedCurrency: captured.currency,
+      });
+      res.status(402).json({
+        error: "Payment amount verification failed. Please contact support.",
+        code: "PAYMENT_AMOUNT_MISMATCH",
+      });
+      return false;
+    }
+    return true;
+  };
+
   try {
     const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
     const captureResp = await fetch(`${base}/v2/checkout/orders/${orderId}/capture`, {
@@ -880,6 +929,13 @@ router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, require
     );
 
     if (!captureAttempt.treatedAsCompleted) {
+      const orderStatus = await fetchPaypalOrderStatus(base, ppToken, orderId);
+      if (orderStatus === "COMPLETED") {
+        const amountCheck = await verifyPaypalCapturedAmount(base, ppToken);
+        if (!amountCheck) return;
+        await finishCreditPackCapture("credit_pack_captured_recovered");
+        return;
+      }
       await db.update(paymentsTable)
         .set({ status: "failed", updatedAt: new Date() })
         .where(eq(paymentsTable.paypalOrderId, orderId));
@@ -922,23 +978,7 @@ router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, require
       return;
     }
 
-    const result = await completeCreditPackPayment(payment.id, userId, credits);
-    logger.info({
-      msg: "credit_pack_captured",
-      orderId,
-      paymentId: payment.id,
-      userId,
-      creditsAdded: result.creditsAdded,
-      creditBalance: result.creditBalance,
-      alreadyCompleted: result.alreadyCompleted,
-    });
-
-    res.json({
-      success: true,
-      paymentId: payment.id,
-      creditsAdded: result.creditsAdded,
-      creditBalance: result.creditBalance,
-    });
+    await finishCreditPackCapture("credit_pack_captured");
   } catch (err) {
     logger.error({ err, orderId }, "PayPal credit-pack capture failed");
 
@@ -946,21 +986,9 @@ router.post("/payments/capture-credit-pack-order", paypalCaptureLimiter, require
       const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
       const orderStatus = await fetchPaypalOrderStatus(base, ppToken, orderId);
       if (orderStatus === "COMPLETED") {
-        const result = await completeCreditPackPayment(payment.id, userId, credits);
-        logger.info({
-          msg: "credit_pack_captured_recovered",
-          orderId,
-          paymentId: payment.id,
-          userId,
-          creditsAdded: result.creditsAdded,
-          creditBalance: result.creditBalance,
-        });
-        res.json({
-          success: true,
-          paymentId: payment.id,
-          creditsAdded: result.creditsAdded,
-          creditBalance: result.creditBalance,
-        });
+        const amountCheck = await verifyPaypalCapturedAmount(base, ppToken);
+        if (!amountCheck) return;
+        await finishCreditPackCapture("credit_pack_captured_recovered");
         return;
       }
     } catch (recoverErr) {

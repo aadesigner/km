@@ -1,4 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@workspace/db", () => ({
+  db: {},
+  paymentsTable: {},
+  vinLookupsTable: {},
+}));
+
 import {
   isCollectedRevenueStatus,
   isPaymentUsableForLookup,
@@ -36,8 +43,15 @@ describe("collected revenue after pending credit/remove", () => {
   it("does not count refunded toward collected revenue", () => {
     expect(isCollectedRevenueStatus("refunded")).toBe(false);
     expect(sumCollectedRevenue([
-      { status: "completed", rev: 10 },
-      { status: "refunded", rev: 10 },
+      { status: "completed", kind: "vin_report", rev: 10 },
+      { status: "refunded", kind: "vin_report", rev: 10 },
     ])).toBe(10);
+  });
+
+  it("excludes credit_redemption from collected revenue totals", () => {
+    expect(sumCollectedRevenue([
+      { status: "completed", kind: "credit_pack", rev: 41.97 },
+      { status: "completed", kind: "credit_redemption", rev: 13.99 },
+    ])).toBe(41.97);
   });
 });

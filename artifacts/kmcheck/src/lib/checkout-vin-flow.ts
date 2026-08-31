@@ -246,6 +246,67 @@ export function captureVinFromSearch(search: string = typeof window !== "undefin
 export function clearCheckoutPaymentResumeState(): void {
   if (typeof sessionStorage === "undefined") return;
   sessionStorage.removeItem(PAYPAL_CHECKOUT_SESSION_KEY);
+  sessionStorage.removeItem(PAYPAL_CREDIT_PACK_SESSION_KEY);
+}
+
+export const PAYPAL_CREDIT_PACK_SESSION_KEY = "kmcheck_paypal_credit_pack";
+
+export type PaypalCreditPackSession = {
+  orderId: string;
+  packId: string;
+  phase?: PaypalCheckoutSessionPhase;
+};
+
+export function readPaypalCreditPackSession(): PaypalCreditPackSession | null {
+  if (typeof sessionStorage === "undefined") return null;
+  let raw: string | null;
+  try {
+    raw = sessionStorage.getItem(PAYPAL_CREDIT_PACK_SESSION_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { orderId?: string; packId?: string; phase?: string };
+    const orderId = parsed.orderId?.toUpperCase() ?? "";
+    const packId = parsed.packId ?? "";
+    if (!PAYPAL_ORDER_ID_RE.test(orderId)) return null;
+    if (packId !== "pack3" && packId !== "pack5") return null;
+    const phase =
+      parsed.phase === "capture" ? "capture" : parsed.phase === "approval" ? "approval" : undefined;
+    return { orderId, packId, phase };
+  } catch {
+    return null;
+  }
+}
+
+export function writePaypalCreditPackSession(session: PaypalCreditPackSession): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.setItem(
+    PAYPAL_CREDIT_PACK_SESSION_KEY,
+    JSON.stringify({
+      orderId: session.orderId.toUpperCase(),
+      packId: session.packId,
+      phase: session.phase,
+    }),
+  );
+}
+
+export function markPaypalCreditPackAwaitingApproval(orderId: string, packId: string): void {
+  writePaypalCreditPackSession({ orderId, packId, phase: "approval" });
+}
+
+export function markPaypalCreditPackCapturePending(orderId: string, packId: string): void {
+  writePaypalCreditPackSession({ orderId, packId, phase: "capture" });
+}
+
+export function clearPaypalCreditPackSession(): void {
+  if (typeof sessionStorage === "undefined") return;
+  sessionStorage.removeItem(PAYPAL_CREDIT_PACK_SESSION_KEY);
+}
+
+export function shouldResumePaypalCreditPackCapture(session: PaypalCreditPackSession): boolean {
+  return session.phase === "capture";
 }
 
 export function markCheckoutPrefillOnly(): void {

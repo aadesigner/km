@@ -7,6 +7,16 @@ export const FULFILLED_LOOKUP_STATUSES = ["complete", "pending_manual"] as const
 /** Payment kinds that are real money/history without a VIN lookup row. */
 export const NON_LOOKUP_PAYMENT_KINDS = ["credit_pack", "credit_redemption"] as const;
 
+/** Prepaid credit spend — always €0; revenue was collected on credit_pack purchase. */
+export const REVENUE_EXCLUDED_PAYMENT_KINDS = ["credit_redemption"] as const;
+
+/**
+ * SQL fragment (payments alias `p`): rows that contribute to collected revenue.
+ * Includes credit_pack + vin_report cash; excludes credit_redemption redemptions.
+ */
+export const SQL_COLLECTED_REVENUE_ROW_FILTER =
+  "p.status IN ('completed', 'revoked') AND COALESCE(p.kind, 'vin_report') <> 'credit_redemption'";
+
 /** Payment is linked to a fulfilled VIN report (unlock or manual pending queue). */
 export function paymentHasFulfilledLookup(): SQL {
   return exists(
@@ -58,12 +68,25 @@ export function isCollectedRevenueStatus(status: string): boolean {
   return status === "completed" || status === "revoked";
 }
 
+export function isRevenueExcludedPaymentKind(kind: string | null | undefined): boolean {
+  return (kind ?? "vin_report") === "credit_redemption";
+}
+
+/** Whether a payment row contributes to admin revenue totals. */
+export function countsAsCollectedRevenue(payment: {
+  status: string;
+  kind?: string | null;
+}): boolean {
+  if (!isCollectedRevenueStatus(payment.status)) return false;
+  return !isRevenueExcludedPaymentKind(payment.kind);
+}
+
 export function sumCollectedRevenue(
-  rows: Array<{ status: string; rev?: number | null; revenue?: number | null }>,
+  rows: Array<{ status: string; kind?: string | null; rev?: number | null; revenue?: number | null }>,
 ): number {
   let total = 0;
   for (const row of rows) {
-    if (!isCollectedRevenueStatus(row.status)) continue;
+    if (!countsAsCollectedRevenue(row)) continue;
     total += Number(row.rev ?? row.revenue ?? 0);
   }
   return total;

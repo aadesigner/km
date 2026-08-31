@@ -5,6 +5,7 @@
 import { db, paymentsTable, couponsTable, type Payment } from "@workspace/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { completeCreditPackPayment } from "./creditRedemption.js";
+import { invalidateAdminStatsCache } from "./adminStatsInvalidation.js";
 import { logger } from "./logger.js";
 import {
   pokAmountsMatch,
@@ -235,8 +236,10 @@ export async function confirmPokPaymentRecord(
         paymentId: payment.id,
         userId: payment.userId,
         creditsAdded: result.creditsAdded,
+        amount: payment.amount,
         source: opts.source,
       });
+      invalidateAdminStatsCache();
       return {
         ok: true,
         payment: fresh,
