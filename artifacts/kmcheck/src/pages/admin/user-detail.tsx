@@ -33,6 +33,7 @@ import { UserCountrySelect } from "@/components/user-country-select";
 import { UserPhoneFields } from "@/components/user-phone-fields";
 import { formatPhoneDisplay } from "@/lib/user-phone";
 import { useAuth } from "@/lib/auth-context";
+import { ADMIN_QUERY_OPTIONS, ADMIN_USER_DETAIL_QUERY, adminUserDetailQuery } from "@/lib/admin-query-options";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -229,17 +230,19 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
     isError: userLoadFailed,
     error: userLoadError,
     refetch: refetchUser,
-  } = useAdminGetUser(userId);
+  } = useAdminGetUser(userId, { query: adminUserDetailQuery() });
 
   const {
     data: creditPurchases,
     refetch: refetchCreditPurchases,
-  } = useAdminGetUserCreditPurchases(userId, { page: 1, limit: 20 });
+  } = useAdminGetUserCreditPurchases(userId, { page: 1, limit: 20 }, { query: adminUserDetailQuery() });
 
   const {
     data: userTransactions,
     refetch: refetchUserTransactions,
   } = useQuery<UserPaymentsPage>({
+    ...ADMIN_QUERY_OPTIONS,
+    ...ADMIN_USER_DETAIL_QUERY,
     queryKey: ["/api/admin/users", userId, "transactions"],
     queryFn: async () => {
       const r = await fetch(

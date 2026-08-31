@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect, Suspense } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useEffect, Suspense, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAdminGetStats } from "@workspace/api-client-react";
-import { ADMIN_QUERY_OPTIONS, adminStatsQuery } from "@/lib/admin-query-options";
+import { ADMIN_QUERY_OPTIONS, adminStatsQuery, refreshAdminDashboard } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -447,7 +447,9 @@ function PresenceUserList({
 }
 
 export default function AdminOverview() {
-  const { data: rawStats, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useAdminGetStats({
+  const queryClient = useQueryClient();
+  const [dashboardRefreshing, setDashboardRefreshing] = useState(false);
+  const { data: rawStats, isLoading, isError, error, isFetching, dataUpdatedAt } = useAdminGetStats({
     query: adminStatsQuery(),
   });
   const stats = rawStats as unknown as ExtendedStats | undefined;
@@ -539,13 +541,24 @@ export default function AdminOverview() {
     ? new Date(dataUpdatedAt).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" })
     : null;
 
+  const statsRefreshing = isFetching || dashboardRefreshing;
+
+  const handleDashboardRefresh = useCallback(async () => {
+    setDashboardRefreshing(true);
+    try {
+      await refreshAdminDashboard(queryClient);
+    } finally {
+      setDashboardRefreshing(false);
+    }
+  }, [queryClient]);
+
   return (
     <AdminQueryFallback
       isLoading={isLoading}
       isError={isError}
-      isFetching={isFetching}
+      isFetching={statsRefreshing}
       error={error}
-      refetch={refetch}
+      refetch={() => { void handleDashboardRefresh(); }}
       hasData={!!stats}
       message="Failed to load dashboard"
       skeleton={(
@@ -576,11 +589,11 @@ export default function AdminOverview() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
+            onClick={() => { void handleDashboardRefresh(); }}
+            disabled={statsRefreshing}
             className="h-9 md:h-10 gap-1.5 px-3 text-xs md:text-sm shrink-0"
           >
-            <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+            <RefreshCw className={cn("h-4 w-4", statsRefreshing && "animate-spin")} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>

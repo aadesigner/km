@@ -101,7 +101,7 @@ import {
   sumCollectedRevenue,
   SQL_COLLECTED_REVENUE_ROW_FILTER,
 } from "../lib/recordedPayments.js";
-import { registerAdminStatsInvalidationHook } from "../lib/adminStatsInvalidation.js";
+import { invalidateAdminStatsCache, registerAdminStatsInvalidationHook } from "../lib/adminStatsInvalidation.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
 import rateLimit from "express-rate-limit";
@@ -562,8 +562,11 @@ const adminStatsCache = makeTtlCache<Awaited<ReturnType<typeof loadAdminStatsPay
 
 registerAdminStatsInvalidationHook(() => adminStatsCache.invalidate());
 
-router.get("/admin/stats", requireAdmin, async (_req, res) => {
+router.get("/admin/stats", requireAdmin, async (req, res) => {
   res.setHeader("Cache-Control", "private, no-store");
+  if (req.query.refresh === "1") {
+    invalidateAdminStatsCache();
+  }
   const payload = await adminStatsCache.getOrFetch(loadAdminStatsPayload);
   res.json(payload);
 });

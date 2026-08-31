@@ -1,6 +1,11 @@
+import type { QueryClient } from "@tanstack/react-query";
+import { getAdminGetStatsQueryKey } from "@workspace/api-client-react";
 import { getErrorStatus } from "@/lib/api-error";
+import { ADMIN_PENDING_COUNT_QUERY_KEY, fetchAdminPendingCount } from "@/lib/admin-pending-count";
 import { orvalQuery, type SharedQueryExtras } from "@/lib/query-options";
-import type { AdminStats, AdminUserPage, AdminVinPage, SystemSettings } from "@workspace/api-client-react";
+import type { AdminStats, AdminUser, AdminUserPage, AdminVinPage, SystemSettings } from "@workspace/api-client-react";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function shouldRetryAdminQuery(failureCount: number, error: unknown): boolean {
   if (failureCount >= 3) return false;
@@ -48,3 +53,44 @@ export const adminSettingsQuery = () => orvalQuery<SystemSettings>(ADMIN_QUERY_B
 
 /** @deprecated Use adminStatsQuery() for orval hooks; ADMIN_QUERY_OPTIONS for useQuery spreads. */
 export const ADMIN_STATS_QUERY = ADMIN_STATS_QUERY_BASE;
+
+/** Admin user detail — poll credits/spend while the page is open. */
+const ADMIN_USER_DETAIL_QUERY_BASE: SharedQueryExtras = {
+  ...ADMIN_QUERY_BASE,
+  staleTime: 15_000,
+  refetchInterval: 30_000,
+  refetchIntervalInBackground: false,
+  refetchOnWindowFocus: true,
+};
+
+export const adminUserDetailQuery = () => orvalQuery<AdminUser>(ADMIN_USER_DETAIL_QUERY_BASE);
+
+/** Same timing as adminUserDetailQuery — for manual useQuery spreads. */
+export const ADMIN_USER_DETAIL_QUERY = ADMIN_USER_DETAIL_QUERY_BASE;
+
+/** Bypass server-side admin stats TTL (90s) — used by dashboard Refresh. */
+export async function fetchAdminStatsFresh(signal?: AbortSignal): Promise<AdminStats> {
+  const r = await fetch(`${basePath}/api/admin/stats?refresh=1`, {
+    credentials: "include",
+    signal,
+  });
+  if (!r.ok) {
+    throw new Error(`Stats refresh failed (${r.status})`);
+  }
+  return r.json() as Promise<AdminStats>;
+}
+
+/** Wipe client + server dashboard caches and reload stats, pending count, presence. */
+export async function refreshAdminDashboard(queryClient: QueryClient): Promise<void> {
+  await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: getAdminGetStatsQueryKey(),
+      queryFn: ({ signal }) => fetchAdminStatsFresh(signal),
+    }),
+    queryClient.fetchQuery({
+      queryKey: ADMIN_PENDING_COUNT_QUERY_KEY,
+      queryFn: ({ signal }) => fetchAdminPendingCount(signal),
+    }),
+  ]);
+  await queryClient.invalidateQueries({ queryKey: ["admin", "presence-users"] });
+}
