@@ -1,6 +1,9 @@
 /**
  * Post-build: every sitemap/indexable route must have a prerendered shell per language
  * with localized title, lang attribute, and index robots meta.
+ *
+ * Titles/descriptions are HTML-escaped in shells (& → &amp;), so comparisons must
+ * use the same escaping as seo-inject.mjs.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -13,6 +16,14 @@ import {
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const dist = join(dir, "..", "dist", "public");
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 if (!existsSync(dist)) {
   console.error("verify-prerender-html: dist/public missing — run vite build first");
@@ -48,7 +59,8 @@ for (const lang of SEO_LANGS) {
       errors++;
     }
 
-    if (!html.includes(seo.title)) {
+    const titleInHtml = escapeHtml(seo.title);
+    if (!html.includes(titleInHtml)) {
       console.error(`TITLE not baked into HTML for ${urlPath}`);
       console.error(`  expected fragment: ${seo.title.slice(0, 60)}…`);
       errors++;
@@ -59,7 +71,8 @@ for (const lang of SEO_LANGS) {
       errors++;
     }
 
-    if (!html.includes(seo.description)) {
+    const descriptionInHtml = escapeHtml(seo.description);
+    if (!html.includes(descriptionInHtml)) {
       console.error(`DESCRIPTION not baked into HTML for ${urlPath}`);
       errors++;
     }
