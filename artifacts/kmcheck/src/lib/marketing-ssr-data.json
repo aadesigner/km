@@ -1,19 +1,19 @@
 {
   "home": {
     "en": {
-      "h1": "Car mileage check — accidents & vehicle history",
-      "lead": "Instant car mileage check by VIN — verify real km, accidents, salvage and theft. Built for USA imports, Korean cars, Canada, China and UAE.",
+      "h1": "Car mileage check, accidents & vehicle history",
+      "lead": "Instant car mileage check by VIN — spot odometer rollbacks, hidden accidents, salvage titles and theft. Built for USA imports, Korean cars, Canada, China and Dubai.",
       "bullets": [
         "hidden accidents",
         "salvage titles",
         "mileage rollbacks",
         "theft records",
-        "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and UAE flood/import risks in one report."
+        "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and Dubai flood/import risks in one report."
       ],
       "sections": [
         {
           "title": "What We Check",
-          "body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We specialise in USA mileage checks, Korean mileage checks and history for cars from Canada, China and the UAE — so you can buy used cars with clearer data before you pay."
+          "body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We specialise in USA mileage checks, Korean mileage checks and history for cars from Canada, China and Dubai — so you can buy used cars with clearer data before you pay."
         },
         {
           "title": "What We Check",
@@ -25,7 +25,7 @@
         },
         {
           "title": "Check cars from:",
-          "body": "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and UAE flood/import risks in one report."
+          "body": "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and Dubai flood/import risks in one report."
         }
       ],
       "links": [
@@ -61,18 +61,18 @@
     },
     "de": {
       "h1": "Kilometerstand prüfen, Unfälle & Totalschaden.",
-      "lead": "VIN-Check in Sekunden — Kilometerstand, Unfälle und Totalschaden prüfen.",
+      "lead": "VIN-Check in Sekunden — Tachobetrug, versteckte Unfälle, Totalschaden und Diebstahl prüfen. Für Importe aus USA, Korea, Kanada, China und Dubai.",
       "bullets": [
         "Unfälle",
         "Totalschaden",
         "Tachobetrug",
         "Diebstahl",
-        "USA-Kilometerstand, Korea-Importe, Kanada, China und VAE in einem Bericht prüfen."
+        "USA-Kilometerstand, Korea-Importe, Kanada, China und Dubai in einem Bericht prüfen."
       ],
       "sections": [
         {
           "title": "Was wir prüfen",
-          "body": "kmcheck.com ist ein Service zur Kilometerstand-Prüfung und Fahrzeughistorie. Geben Sie die 17-stellige VIN ein, um Kilometerstand, Unfälle, Totalschaden und Diebstahl zu prüfen — inkl. USA-, Korea-, Kanada-, China- und VAE-Importe."
+          "body": "kmcheck.com ist ein Service zur Kilometerstand-Prüfung und Fahrzeughistorie. Geben Sie die 17-stellige VIN ein, um Kilometerstand, Unfälle, Totalschaden und Diebstahl zu prüfen — inkl. USA-, Korea-, Kanada-, China- und Dubai-Importe."
         },
         {
           "title": "Was wir prüfen",
@@ -84,7 +84,7 @@
         },
         {
           "title": "Autos prüfen aus:",
-          "body": "USA-Kilometerstand, Korea-Importe, Kanada, China und VAE in einem Bericht prüfen."
+          "body": "USA-Kilometerstand, Korea-Importe, Kanada, China und Dubai in einem Bericht prüfen."
         }
       ],
       "links": [
@@ -120,18 +120,18 @@
     },
     "es": {
       "h1": "Verifique el kilometraje, accidentes y siniestros totales.",
-      "lead": "Informe VIN al instante: verifique el kilometraje real, descubra accidentes ocultos y registros de siniestro total de cualquier coche.",
+      "lead": "Informe VIN al instante: manipulación de kilometraje, accidentes ocultos, títulos de siniestro total y robos. Para importaciones de EE. UU., Corea, Canadá, China y Dubái.",
       "bullets": [
         "accidentes ocultos",
         "títulos de siniestro total",
         "manipulaciones de kilometraje",
         "registros de robo",
-        "Compruebe kilometraje de USA, Corea, Canadá, China y EAU en un informe."
+        "Compruebe kilometraje de USA, Corea, Canadá, China y Dubái en un informe."
       ],
       "sections": [
         {
           "title": "Qué comprobamos",
-          "body": "kmcheck.com es un servicio de comprobación de kilometraje e historial del vehículo. Introduzca el VIN de 17 caracteres para verificar km, accidentes, siniestro total y robo — USA, Corea, Canadá, China y EAU."
+          "body": "kmcheck.com es un servicio de comprobación de kilometraje e historial del vehículo. Introduzca el VIN de 17 caracteres para verificar km, accidentes, siniestro total y robo — USA, Corea, Canadá, China y Dubái."
         },
         {
           "title": "Qué comprobamos",
@@ -143,7 +143,7 @@
         },
         {
           "title": "Comprobar coches de:",
-          "body": "Compruebe kilometraje de USA, Corea, Canadá, China y EAU en un informe."
+          "body": "Compruebe kilometraje de USA, Corea, Canadá, China y Dubái en un informe."
         }
       ],
       "links": [
@@ -179,18 +179,18 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage, les accidents et le salvage.",
-      "lead": "Contrôle VIN instantané — vérifiez le kilométrage réel, découvrez l'historique complet des accidents et les enregistrements salvage de tout véhicule.",
+      "lead": "Contrôle VIN instantané — retours de compteur, accidents cachés, titres salvage et vols. Pour importations USA, Corée, Canada, Chine et Dubaï.",
       "bullets": [
         "accidents cachés",
         "titres salvage",
         "retours de compteur",
         "registres de vol",
-        "Contrôlez le kilométrage USA, Corée, Canada, Chine et EAU dans un seul rapport."
+        "Contrôlez le kilométrage USA, Corée, Canada, Chine et Dubaï dans un seul rapport."
       ],
       "sections": [
         {
           "title": "Ce que nous vérifions",
-          "body": "kmcheck.com est un service de contrôle du kilométrage et d’historique véhicule. Entrez le VIN 17 caractères pour vérifier le km, les accidents, l’épave et le vol — USA, Corée, Canada, Chine et EAU."
+          "body": "kmcheck.com est un service de contrôle du kilométrage et d’historique véhicule. Entrez le VIN 17 caractères pour vérifier le km, les accidents, l’épave et le vol — USA, Corée, Canada, Chine et Dubaï."
         },
         {
           "title": "Ce que nous vérifions",
@@ -202,7 +202,7 @@
         },
         {
           "title": "Vérifier les voitures de :",
-          "body": "Contrôlez le kilométrage USA, Corée, Canada, Chine et EAU dans un seul rapport."
+          "body": "Contrôlez le kilométrage USA, Corée, Canada, Chine et Dubaï dans un seul rapport."
         }
       ],
       "links": [
@@ -238,18 +238,18 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash, aksidente dhe historiku i makinës",
-      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidentet dhe historikun e makinës. Ideal për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet.",
+      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Ideal për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai.",
       "bullets": [
         "aksidentesh",
         "dëmtim total",
         "km origjinale",
         "vjedhjesh",
-        "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — në një raport."
+        "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — në një raport."
       ],
       "sections": [
         {
           "title": "Çfarë kontrollojmë",
-          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Specializoheni në makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — që të blini me më shumë informacion para pagesës."
+          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Specializoheni në makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — që të blini me më shumë informacion para pagesës."
         },
         {
           "title": "Çfarë kontrollojmë",
@@ -261,7 +261,7 @@
         },
         {
           "title": "Kontrollo makina nga:",
-          "body": "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — në një raport."
+          "body": "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — në një raport."
         }
       ],
       "links": [
@@ -297,18 +297,18 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg, wypadki i szkody całkowite.",
-      "lead": "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i rejestry szkód całkowitych dowolnego samochodu.",
+      "lead": "Natychmiastowe sprawdzenie VIN — skręcone liczniki, ukryte wypadki, tytuły szkód całkowitych i kradzieże. Dla importów z USA, Korei, Kanady, Chin i Dubaju.",
       "bullets": [
         "ukryte wypadki",
         "tytuły salvage",
         "skręcone liczniki",
         "rejestry kradzieży",
-        "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i ZEA w jednym raporcie."
+        "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i Dubaju w jednym raporcie."
       ],
       "sections": [
         {
           "title": "Co sprawdzamy",
-          "body": "kmcheck.com to usługa sprawdzania przebiegu i historii pojazdu. Wpisz 17-znakowy VIN, aby zweryfikować km, wypadki, szkodę całkowitą i kradzież — USA, Korea, Kanada, Chiny i ZEA."
+          "body": "kmcheck.com to usługa sprawdzania przebiegu i historii pojazdu. Wpisz 17-znakowy VIN, aby zweryfikować km, wypadki, szkodę całkowitą i kradzież — USA, Korea, Kanada, Chiny i Dubaj."
         },
         {
           "title": "Co sprawdzamy",
@@ -320,7 +320,7 @@
         },
         {
           "title": "Sprawdź auta z:",
-          "body": "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i ZEA w jednym raporcie."
+          "body": "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i Dubaju w jednym raporcie."
         }
       ],
       "links": [
@@ -356,18 +356,18 @@
     },
     "ro": {
       "h1": "Verifică kilometrajul, accidentele și salvajul.",
-      "lead": "Verificare VIN instantanee — confirmați kilometrajul real, descoperiți istoricul complet al accidentelor și înregistrările de salvaj pentru orice mașină.",
+      "lead": "Verificare VIN instantanee — manipulări de kilometraj, accidente ascunse, titluri de salvaj și furturi. Pentru importuri din SUA, Coreea, Canada, China și Dubai.",
       "bullets": [
         "accidente ascunse",
         "titluri de salvaj",
         "manipulări kilometraj",
         "înregistrări de furt",
-        "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Emirate într-un singur raport."
+        "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Dubai într-un singur raport."
       ],
       "sections": [
         {
           "title": "Ce verificăm",
-          "body": "kmcheck.com este un serviciu de verificare a kilometrajului și a istoricului auto. Introduceți VIN-ul de 17 caractere pentru km, accidente, daună totală și furt — SUA, Coreea, Canada, China și Emirate."
+          "body": "kmcheck.com este un serviciu de verificare a kilometrajului și a istoricului auto. Introduceți VIN-ul de 17 caractere pentru km, accidente, daună totală și furt — SUA, Coreea, Canada, China și Dubai."
         },
         {
           "title": "Ce verificăm",
@@ -379,7 +379,7 @@
         },
         {
           "title": "Verifică mașini din:",
-          "body": "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Emirate într-un singur raport."
+          "body": "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Dubai într-un singur raport."
         }
       ],
       "links": [
@@ -415,18 +415,18 @@
     },
     "bg": {
       "h1": "Проверете пробега, катастрофи и salvage.",
-      "lead": "Моментална VIN проверка — потвърдете реалния пробег в км, разкрийте пълната история на катастрофи и salvage записи за всеки автомобил.",
+      "lead": "Моментална VIN проверка — манипулации на пробега, скрити катастрофи, salvage записи и кражби. За внос от САЩ, Корея, Канада, Китай и Дубай.",
       "bullets": [
         "скрити катастрофи",
         "salvage талони",
         "манипулации на пробега",
         "записи за кражби",
-        "Проверете пробег за авто от САЩ, Корея, Канада, Китай и ОАЕ в един отчет."
+        "Проверете пробег за авто от САЩ, Корея, Канада, Китай и Дубай в един отчет."
       ],
       "sections": [
         {
           "title": "Какво проверяваме",
-          "body": "kmcheck.com е услуга за проверка на пробег и история на автомобила. Въведете 17-символния VIN за пробег, катастрофи, тотал и кражба — САЩ, Корея, Канада, Китай и ОАЕ."
+          "body": "kmcheck.com е услуга за проверка на пробег и история на автомобила. Въведете 17-символния VIN за пробег, катастрофи, тотал и кражба — САЩ, Корея, Канада, Китай и Дубай."
         },
         {
           "title": "Какво проверяваме",
@@ -438,7 +438,7 @@
         },
         {
           "title": "Проверете коли от:",
-          "body": "Проверете пробег за авто от САЩ, Корея, Канада, Китай и ОАЕ в един отчет."
+          "body": "Проверете пробег за авто от САЩ, Корея, Канада, Китай и Дубай в един отчет."
         }
       ],
       "links": [
@@ -474,18 +474,18 @@
     },
     "ka": {
       "h1": "შეამოწმე გარბენი, ავარიები და სალვაჟი.",
-      "lead": "მყისიერი VIN შემოწმება — რეალური გარბენი, ავარიების ისტორია და სალვაჟის ჩანაწერები ნებისმიერ მანქანაზე.",
+      "lead": "მყისიერი VIN შემოწმება — გარბენის უკან გადახვევა, დამალული ავარიები, სალვაჟის ტიტულები და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და დუბაის იმპორტისთვის.",
       "bullets": [
         "დამალული ავარიები",
         "სალვაჟის ტიტულები",
         "გარბენის უკან გადახვევა",
         "ქურდობის ჩანაწერები",
-        "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროების მანქანები ერთ ანგარიშში."
+        "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და დუბაის მანქანები ერთ ანგარიშში."
       ],
       "sections": [
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
-          "body": "kmcheck.com არის გარბენის და მანქანის ისტორიის შემოწმების სერვისი. შეიყვანეთ 17-ნიშნა VIN — გარბენი, ავარიები, სალვაჟი და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროები."
+          "body": "kmcheck.com არის გარბენის და მანქანის ისტორიის შემოწმების სერვისი. შეიყვანეთ 17-ნიშნა VIN — გარბენი, ავარიები, სალვაჟი და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და დუბაი."
         },
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
@@ -497,7 +497,7 @@
         },
         {
           "title": "შეამოწმეთ მანქანები:",
-          "body": "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროების მანქანები ერთ ანგარიშში."
+          "body": "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და დუბაის მანქანები ერთ ანგარიშში."
         }
       ],
       "links": [
@@ -533,18 +533,18 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات، الحوادث والمصدومات.",
-      "lead": "فحص VIN فوري — تحقق من قراءات الكيلومتر الحقيقية، واكشف تاريخ الحوادث الكامل وسجلات الإتلاف لأي سيارة.",
+      "lead": "فحص VIN فوري — تلاعب بالكيلومتر، حوادث مخفية، سجلات الإتلاف والسرقة. لاستيراد أمريكا وكوريا وكندا والصين ودبي.",
       "bullets": [
         "حوادث مخفية",
         "سجلات الخردة",
         "تلاعب بالكيلومتر",
         "سجلات السرقة",
-        "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين والإمارات في تقرير واحد."
+        "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين ودبي في تقرير واحد."
       ],
       "sections": [
         {
           "title": "ما الذي نفحصه",
-          "body": "kmcheck.com خدمة لفحص الكيلومترات وتاريخ السيارة. أدخل رقم VIN المكوّن من 17 خانة للتحقق من الكيلومترات والحوادث والإتلاف والسرقة — أمريكا وكوريا وكندا والصين والإمارات."
+          "body": "kmcheck.com خدمة لفحص الكيلومترات وتاريخ السيارة. أدخل رقم VIN المكوّن من 17 خانة للتحقق من الكيلومترات والحوادث والإتلاف والسرقة — أمريكا وكوريا وكندا والصين ودبي."
         },
         {
           "title": "ما الذي نفحصه",
@@ -556,7 +556,7 @@
         },
         {
           "title": "تحقق من السيارات من:",
-          "body": "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين والإمارات في تقرير واحد."
+          "body": "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين ودبي في تقرير واحد."
         }
       ],
       "links": [
@@ -592,18 +592,18 @@
     },
     "uk": {
       "h1": "Перевір пробіг, аварії та тоталі.",
-      "lead": "Миттєва перевірка VIN — перевірте реальні показники пробігу (км), розкрийте повну історію ДТП та записи про утилізацію для будь-якого авто.",
+      "lead": "Миттєва перевірка VIN — скручений пробіг, приховані ДТП, тоталі та викрадення. Для імпорту з США, Кореї, Канади, Китаю та Дубая.",
       "bullets": [
         "приховані аварії",
         "тотальні авто",
         "скручений пробіг",
         "реєстри угону",
-        "Перевірте пробіг авто з США, Кореї, Канади, Китаю та ОАЕ в одному звіті."
+        "Перевірте пробіг авто з США, Кореї, Канади, Китаю та Дубая в одному звіті."
       ],
       "sections": [
         {
           "title": "Що ми перевіряємо",
-          "body": "kmcheck.com — сервіс перевірки пробігу та історії авто. Введіть 17-символьний VIN, щоб перевірити пробіг, ДТП, тотал і викрадення — США, Корея, Канада, Китай і ОАЕ."
+          "body": "kmcheck.com — сервіс перевірки пробігу та історії авто. Введіть 17-символьний VIN, щоб перевірити пробіг, ДТП, тотал і викрадення — США, Корея, Канада, Китай і Дубай."
         },
         {
           "title": "Що ми перевіряємо",
@@ -615,7 +615,7 @@
         },
         {
           "title": "Перевірте авто з:",
-          "body": "Перевірте пробіг авто з США, Кореї, Канади, Китаю та ОАЕ в одному звіті."
+          "body": "Перевірте пробіг авто з США, Кореї, Канади, Китаю та Дубая в одному звіті."
         }
       ],
       "links": [
@@ -651,18 +651,18 @@
     },
     "ru": {
       "h1": "Проверь пробег, аварии и тоталы.",
-      "lead": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля.",
+      "lead": "Мгновенная проверка VIN — скрученный пробег, скрытые ДТП, тоталы и угоны. Для импорта из США, Кореи, Канады, Китая и Дубая.",
       "bullets": [
         "скрытые аварии",
         "тотальные авто",
         "скрученный пробег",
         "реестры угонов",
-        "Проверьте пробег авто из США, Кореи, Канады, Китая и ОАЭ в одном отчёте."
+        "Проверьте пробег авто из США, Кореи, Канады, Китая и Дубая в одном отчёте."
       ],
       "sections": [
         {
           "title": "Что мы проверяем",
-          "body": "kmcheck.com — сервис проверки пробега и истории автомобиля. Введите 17-значный VIN, чтобы проверить пробег, аварии, тотал и угон — США, Корея, Канада, Китай и ОАЭ."
+          "body": "kmcheck.com — сервис проверки пробега и истории автомобиля. Введите 17-значный VIN, чтобы проверить пробег, аварии, тотал и угон — США, Корея, Канада, Китай и Дубай."
         },
         {
           "title": "Что мы проверяем",
@@ -674,7 +674,7 @@
         },
         {
           "title": "Проверьте авто из:",
-          "body": "Проверьте пробег авто из США, Кореи, Канады, Китая и ОАЭ в одном отчёте."
+          "body": "Проверьте пробег авто из США, Кореи, Канады, Китая и Дубая в одном отчёте."
         }
       ],
       "links": [
@@ -710,18 +710,18 @@
     },
     "zh": {
       "h1": "查 事故与报废。",
-      "lead": "即时 VIN 查询 — 核实真实公里数，揭露任何车辆的完整事故历史与报废记录。",
+      "lead": "即时 VIN 查询 — 核实调表、隐瞒事故、报废产权与盗抢记录。覆盖美国、韩国、加拿大、中国与迪拜进口车。",
       "bullets": [
         "隐藏事故",
         "报废产权",
         "里程回拨",
         "盗抢记录",
-        "在一份报告中核查美国、韩国、加拿大、中国与阿联酋车辆里程。"
+        "在一份报告中核查美国、韩国、加拿大、中国与迪拜车辆里程。"
       ],
       "sections": [
         {
           "title": "我们检查什么",
-          "body": "kmcheck.com 提供里程核查与车辆历史报告。输入17位VIN即可核实里程、事故、报废与盗抢记录，覆盖美国、韩国、加拿大、中国与阿联酋进口车。"
+          "body": "kmcheck.com 提供里程核查与车辆历史报告。输入17位VIN即可核实里程、事故、报废与盗抢记录，覆盖美国、韩国、加拿大、中国与迪拜进口车。"
         },
         {
           "title": "我们检查什么",
@@ -733,7 +733,7 @@
         },
         {
           "title": "查验车辆来自：",
-          "body": "在一份报告中核查美国、韩国、加拿大、中国与阿联酋车辆里程。"
+          "body": "在一份报告中核查美国、韩国、加拿大、中国与迪拜车辆里程。"
         }
       ],
       "links": [
@@ -3097,7 +3097,7 @@
     },
     "de": {
       "h1": "Prüfen Sie Kilometerstand von Autos aus den USA",
-      "lead": "Die USA haben einen der größten Gebrauchtwagenmärkte der Welt — Millionen Verkäufe in 50 Bundesstaaten. Verkäufer erzählen nicht immer die ganze Geschichte. Prüfen Sie vor dem Kauf.",
+      "lead": "USA-Kilometercheck für amerikanische Autos — Tachostand, Unfälle, Salvage-Titel und Diebstahl in allen 50 Bundesstaaten vor dem Kauf oder Import prüfen.",
       "bullets": [
         "Auktions- & Marktplatzdaten aus allen 50 Bundesstaaten",
         "Hochwasser-, Brand- & Hagelschadensnachweise",
@@ -3153,7 +3153,7 @@
     },
     "es": {
       "h1": "Verifique kilometraje de coches de USA",
-      "lead": "EE. UU. tiene uno de los mayores mercados de coches usados del mundo: millones de ventas en 50 estados. Los vendedores no siempre cuentan toda la historia. Verifique antes de comprar.",
+      "lead": "Control de kilometraje EE. UU. — verifique odómetro, accidentes, títulos de siniestro total y robos en los 50 estados antes de comprar o importar.",
       "bullets": [
         "Registros de subastas y marketplaces en los 50 estados",
         "Registros de daños por inundación, incendio y granizo",
@@ -3209,7 +3209,7 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage des voitures des USA",
-      "lead": "Les États-Unis ont l'un des plus grands marchés de voitures d'occasion au monde — des millions de ventes dans 50 États. Les vendeurs ne racontent pas toujours toute l'histoire. Vérifiez avant d'acheter.",
+      "lead": "Contrôle kilométrage USA — vérifiez compteur, accidents, titres salvage et vols dans les 50 États avant d'acheter ou d'importer.",
       "bullets": [
         "Registres d'enchères et de marketplaces dans les 50 États",
         "Registres de dommages par inondation, incendie et grêle",
@@ -3321,7 +3321,7 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg samochodów z USA",
-      "lead": "USA to jeden z największych rynków samochodów używanych na świecie — miliony transakcji w 50 stanach. Sprzedawcy nie zawsze podają pełną historię. Zweryfikuj przed zakupem.",
+      "lead": "Sprawdzenie przebiegu USA — zweryfikuj licznik, wypadki, tytuły szkód całkowitych i kradzieże we wszystkich 50 stanach przed zakupem lub importem.",
       "bullets": [
         "Rejestry aukcji i marketplace'ów we wszystkich 50 stanach",
         "Rejestry uszkodzeń powodziowych, pożarowych i gradowych",
@@ -3377,7 +3377,7 @@
     },
     "ro": {
       "h1": "Verifică kilometrajul mașinilor din SUA",
-      "lead": "SUA are una dintre cele mai mari piețe de mașini second-hand din lume — milioane de vânzări în 50 de state. Vânzătorii nu împărtășesc întotdeauna povestea completă. Verificați înainte de a cumpăra.",
+      "lead": "Verificare kilometraj SUA — confirmați odometrul, accidentele, titlurile de salvaj și furturile în toate cele 50 de state înainte de cumpărare sau import.",
       "bullets": [
         "Înregistrări licitații și piețe în toate cele 50 de state",
         "Înregistrări daune inundații, incendiu și grindină",
@@ -3433,7 +3433,7 @@
     },
     "bg": {
       "h1": "Проверете пробега на автомобили от САЩ",
-      "lead": "САЩ имат един от най-големите пазари на употребявани автомобили в света — милиони продажби в 50 щата. Продавачите не винаги споделят цялата история. Проверете преди да купите.",
+      "lead": "Проверка на пробег САЩ — потвърдете километрите, катастрофите, salvage талоните и кражбите във всички 50 щата преди покупка или внос.",
       "bullets": [
         "Записи от търгове и пазари във всички 50 щата",
         "Записи за щети от наводнения, пожар и градушка",
@@ -3489,7 +3489,7 @@
     },
     "ka": {
       "h1": "შეამოწმეთ გარბენი მანქანები ამერიკიდან",
-      "lead": "აშშ მართავს მსოფლიოში ერთ-ერთ ყველაზე დიდ მეორადი ავტომობილების ბაზარს - მილიონობით გაყიდვა 50 შტატში. გამყიდველები ყოველთვის არ იზიარებენ სრულ ამბავს. გადაამოწმეთ სანამ იყიდით.",
+      "lead": "აშშ გარბენის შემოწმება — ყიდვამდე ან იმპორტამდე გადაამოწმეთ ოდომეტრი, ავარიები, სალვაჟის ტიტულები და ქურდობა ყველა 50 შტატში.",
       "bullets": [
         "აუქციონისა და ბაზრის ჩანაწერები 50-ვე შტატში",
         "წყალდიდობის, ხანძრის და სეტყვის დაზიანების ჩანაწერები",
@@ -3545,7 +3545,7 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات سيارات من أمريكا",
-      "lead": "تمتلك الولايات المتحدة من أكبر أسواق السيارات المستعملة في العالم — ملايين المبيعات عبر 50 ولاية. لا يشارك البائعون دائماً القصة كاملة. تحقق قبل الشراء.",
+      "lead": "فحص كيلومترات أمريكا — تحقق من العداد والحوادث وسجلات الإتلاف والسرقة في الولايات الخمسين قبل الشراء أو الاستيراد.",
       "bullets": [
         "سجلات المزادات والأسواق عبر جميع الولايات الخمسين",
         "سجلات أضرار الفيضانات والحرائق والبَرَد",
@@ -3601,7 +3601,7 @@
     },
     "uk": {
       "h1": "Перевір пробіг автомобілів з США",
-      "lead": "У США один з найбільших ринків вживаних авто — мільйони угод у 50 штатах. Продавці не завжди розповідають повну історію. Перевірте перед покупкою.",
+      "lead": "Перевірка пробігу США — звіріть одометр, аварії, тоталі та викрадення в усіх 50 штатах перед купівлею або імпортом.",
       "bullets": [
         "Дані аукціонів та маркетплейсів по всіх 50 штатах",
         "Записи пошкоджень від повеней, пожеж та граду",
@@ -3657,7 +3657,7 @@
     },
     "ru": {
       "h1": "Проверь пробег автомобилей из США",
-      "lead": "В США один из крупнейших рынков подержанных авто — миллионы сделок в 50 штатах. Продавцы не всегда рассказывают всю историю. Проверьте перед покупкой.",
+      "lead": "Проверка пробега США — сверьте одометр, аварии, тоталы и угоны во всех 50 штатах перед покупкой или импортом.",
       "bullets": [
         "Данные аукционов и маркетплейсов по всем 50 штатам",
         "Записи об ущербе от наводнений, пожаров и града",
@@ -3713,7 +3713,7 @@
     },
     "zh": {
       "h1": "查询 里程 美国进口车",
-      "lead": "美国拥有全球最大的二手车市场之一 — 50 个州数百万笔交易。卖家未必透露全部真相。购买前请核实。",
+      "lead": "美国里程核查 — 购买或进口前核实全美 50 州的里程、事故、报废产权与盗抢记录。",
       "bullets": [
         "覆盖 50 个州的拍卖与交易平台记录",
         "洪水、火灾与冰雹损伤记录",
@@ -3771,7 +3771,7 @@
   "country_korea": {
     "en": {
       "h1": "Korean mileage check for cars from South Korea",
-      "lead": "Korean mileage check for cars from South Korea — verify km, accidents, export/import history and hidden damage for Hyundai, Kia, Genesis and more.",
+      "lead": "Korean mileage check for cars from South Korea — verify km, accidents, export/import history, salvage flags and hidden damage for Hyundai, Kia, Genesis and more.",
       "bullets": [
         "Korean auction platform & marketplace records",
         "Private insurance filings & accident records",
@@ -3827,7 +3827,7 @@
     },
     "de": {
       "h1": "Prüfen Sie Kilometerstand von Autos aus Südkorea",
-      "lead": "Südkorea hat über 25 Mio. zugelassene Fahrzeuge und einen schnelllebigen Gebrauchtwagenmarkt. Versteckte Schäden und verschwiegene Historie sind häufig. Prüfen Sie vor Kauf oder Import.",
+      "lead": "Korea-Kilometercheck für Fahrzeuge aus Südkorea — km, Unfälle, Export-/Importhistorie, Salvage-Hinweise und versteckte Schäden bei Hyundai, Kia, Genesis und mehr prüfen.",
       "bullets": [
         "Koreanische Auktionsplattform- & Marktplatzdaten",
         "Private Versicherungsmeldungen & Unfallnachweise",
@@ -3883,7 +3883,7 @@
     },
     "es": {
       "h1": "Verifique kilometraje de coches de Corea del Sur",
-      "lead": "Corea del Sur tiene más de 25 millones de vehículos matriculados y un mercado de usados muy dinámico. Los daños ocultos y el historial no declarado son frecuentes. Revise antes de comprar o importar.",
+      "lead": "Control de kilometraje Corea — verifique km, accidentes, historial de exportación/importación, siniestro total y daños ocultos en Hyundai, Kia, Genesis y más.",
       "bullets": [
         "Registros de plataformas de subasta y marketplaces coreanos",
         "Registros privados de seguros y accidentes",
@@ -3939,7 +3939,7 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage des voitures de Corée du Sud",
-      "lead": "La Corée du Sud compte plus de 25 millions de véhicules immatriculés et un marché de l'occasion très dynamique. Les dommages cachés et l'historique non déclaré sont fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "lead": "Contrôle kilométrage Corée — vérifiez km, accidents, historique export/import, salvage et dommages cachés pour Hyundai, Kia, Genesis et plus.",
       "bullets": [
         "Registres des plateformes d'enchères et marketplaces coréennes",
         "Dossiers d'assurance privés et registres d'accidents",
@@ -3995,7 +3995,7 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash për makina nga Koreja",
-      "lead": "Kontroll kilometrash për makina nga Koreja — verifikoni km, aksidentet, historikun e importit dhe dëmet e fshehura për Hyundai, Kia, Genesis e të tjera.",
+      "lead": "Kontroll kilometrash për makina nga Koreja — verifikoni km, aksidentet, historikun e importit, dëmtimin total dhe dëmet e fshehura për Hyundai, Kia, Genesis e të tjera.",
       "bullets": [
         "Regjistra të platformave të ankandeve dhe tregjeve koreane",
         "Deklarata sigurimi dhe regjistrat e aksidenteve",
@@ -4051,7 +4051,7 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg samochodów z Korei Południowej",
-      "lead": "Korea Południowa ma ponad 25 mln zarejestrowanych pojazdów i dynamiczny rynek używanych. Ukryte uszkodzenia i nieujawniona historia są powszechne. Sprawdź przed zakupem lub importem.",
+      "lead": "Sprawdzenie przebiegu Korea — zweryfikuj km, wypadki, historię eksportu/importu, szkody całkowite i ukryte uszkodzenia dla Hyundai, Kia, Genesis i innych.",
       "bullets": [
         "Rejestry koreańskich platform aukcyjnych i marketplace'ów",
         "Prywatne zgłoszenia ubezpieczeniowe i rejestry wypadków",
@@ -4107,7 +4107,7 @@
     },
     "ro": {
       "h1": "Verifică kilometrajul mașinilor din Coreea de Sud",
-      "lead": "Coreea de Sud are peste 25M de vehicule înmatriculate și o piață second-hand dinamică. Daunele ascunse și istoricul nedeclarat sunt frecvente. Verificați înainte de a cumpăra sau importa.",
+      "lead": "Verificare kilometraj Coreea — confirmați km, accidentele, istoricul export/import, salvajul și daunele ascunse pentru Hyundai, Kia, Genesis și altele.",
       "bullets": [
         "Înregistrări platforme de licitații și piețe coreene",
         "Dosare asigurări private și înregistrări accidente",
@@ -4163,7 +4163,7 @@
     },
     "bg": {
       "h1": "Проверете пробега на автомобили от Южна Корея",
-      "lead": "Южна Корея има над 25 милиона регистрирани автомобили и бърз пазар на употребявани коли. Скрити щети и неразкрита история са чести. Проверете преди да купите или внесете.",
+      "lead": "Проверка на пробег Корея — потвърдете км, катастрофи, история на внос/износ, salvage и скрити щети за Hyundai, Kia, Genesis и други.",
       "bullets": [
         "Записи от корейски търгови платформи и пазари",
         "Частни застрахователни документи и записи за катастрофи",
@@ -4219,7 +4219,7 @@
     },
     "ka": {
       "h1": "შეამოწმეთ გარბენი მანქანები სამხრეთ კორეიდან",
-      "lead": "სამხრეთ კორეას აქვს 25 მილიონი+ რეგისტრირებული მანქანა და სწრაფად მოძრავი მეორადი ბაზარი. დამალული დაზიანება და გაურკვეველი ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
+      "lead": "კორეის გარბენის შემოწმება — გადაამოწმეთ კმ, ავარიები, ექსპორტი/იმპორტი, სალვაჟი და დამალული დაზიანება Hyundai, Kia, Genesis და სხვებისთვის.",
       "bullets": [
         "კორეის აუქციონის პლატფორმა და ბაზრის ჩანაწერები",
         "პირადი დაზღვევის ჩანაწერები და ავარიების ჩანაწერები",
@@ -4275,7 +4275,7 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات سيارات من كوريا",
-      "lead": "في كوريا الجنوبية أكثر من 25 مليون مركبة مسجّلة وسوق مستعمل نشط. الأضرار المخفية والتاريخ غير المُعلن شائعان. تحقق قبل الشراء أو الاستيراد.",
+      "lead": "فحص كيلومترات كوريا — تحقق من الكيلومتر والحوادث وتاريخ التصدير/الاستيراد والإتلاف والأضرار المخفية لـ Hyundai وKia وGenesis وغيرها.",
       "bullets": [
         "سجلات منصات المزادات والأسواق الكورية",
         "وثائق التأمين الخاصة وسجلات الحوادث",
@@ -4331,7 +4331,7 @@
     },
     "uk": {
       "h1": "Перевір пробіг автомобілів з Кореї",
-      "lead": "У Південній Кореї зареєстровано 25M+ авто та активний ринок вживаних машин. Приховані пошкодження й нерозкрита історія — звична справа. Перевірте перед покупкою чи імпортом.",
+      "lead": "Перевірка пробігу Корея — звіріть км, аварії, історію експорту/імпорту, тоталі та приховані пошкодження для Hyundai, Kia, Genesis та інших.",
       "bullets": [
         "Дані корейських аукціонних майданчиків та маркетплейсів",
         "Приватні страхові документи та записи про аварії",
@@ -4387,7 +4387,7 @@
     },
     "ru": {
       "h1": "Проверь пробег автомобилей из Кореи",
-      "lead": "В Южной Корее зарегистрировано 25M+ автомобилей и активный рынок подержанных авто. Скрытые повреждения и нераскрытая история — обычное дело. Проверьте перед покупкой или импортом.",
+      "lead": "Проверка пробега Корея — сверьте км, аварии, историю экспорта/импорта, тоталы и скрытые повреждения для Hyundai, Kia, Genesis и других.",
       "bullets": [
         "Данные корейских аукционных площадок и маркетплейсов",
         "Частные страховые документы и записи об авариях",
@@ -4443,7 +4443,7 @@
     },
     "zh": {
       "h1": "查询 里程 韩国进口车",
-      "lead": "韩国有超过 2500 万辆注册车辆，二手车市场流转迅速。隐藏损伤与未披露历史很常见。购买或进口前请查询。",
+      "lead": "韩国里程核查 — 核实公里数、事故、进出口历史、报废标记与隐藏损伤，覆盖现代、起亚、捷尼赛思等。",
       "bullets": [
         "韩国拍卖平台与交易平台记录",
         "私人保险备案与事故记录",
@@ -4501,7 +4501,7 @@
   "country_canada": {
     "en": {
       "h1": "Canada mileage check for Canadian cars",
-      "lead": "Canada has 30M+ registered vehicles and a busy used-car market from coast to coast. Branded titles, hidden insurance claims and cross-province transfers are common risks. Verify before you buy or import.",
+      "lead": "Canada mileage check — verify odometer history, accidents, branded titles and theft before you buy or import. 30M+ vehicles coast to coast with common cross-province title risks.",
       "bullets": [
         "Provincial registration & lien search indicators",
         "Insurance claim & collision history",
@@ -4557,7 +4557,7 @@
     },
     "de": {
       "h1": "Prüfen Sie Kilometerstand von Autos aus Kanada",
-      "lead": "Kanada hat über 30 Mio. zugelassene Fahrzeuge und einen lebhaften Gebrauchtwagenmarkt von Küste zu Küste. Markierte Titel, versteckte Versicherungsansprüche und provinzübergreifende Ummeldungen sind häufige Risiken. Prüfen Sie vor Kauf oder Import.",
+      "lead": "Kanada-Kilometercheck — Tachohistorie, Unfälle, branded titles und Diebstahl vor dem Kauf oder Import prüfen. Über 30 Mio. Fahrzeuge von Küste zu Küste.",
       "bullets": [
         "Provinzielle Zulassungs- & Pfandrechtsindikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
@@ -4613,7 +4613,7 @@
     },
     "es": {
       "h1": "Verifique kilometraje de coches de Canadá",
-      "lead": "Canadá tiene más de 30 millones de vehículos matriculados y un mercado de usados activo de costa a costa. Los títulos marcados, las reclamaciones de seguro ocultas y las transferencias entre provincias son riesgos frecuentes. Verifique antes de comprar o importar.",
+      "lead": "Control de kilometraje Canadá — verifique historial del odómetro, accidentes, títulos marcados y robos antes de comprar o importar. Más de 30 M de vehículos de costa a costa.",
       "bullets": [
         "Indicadores de matriculación provincial y búsqueda de gravámenes",
         "Historial de reclamaciones de seguro y colisiones",
@@ -4669,7 +4669,7 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage des voitures du Canada",
-      "lead": "Le Canada compte plus de 30 millions de véhicules immatriculés et un marché de l'occasion actif d'un océan à l'autre. Les titres marqués, les sinistres dissimulés et les transferts interprovinciaux sont des risques fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "lead": "Contrôle kilométrage Canada — vérifiez historique du compteur, accidents, titres marqués et vols avant d'acheter ou d'importer. Plus de 30 M de véhicules d'un océan à l'autre.",
       "bullets": [
         "Indicateurs d'immatriculation provinciale et de recherche de privilèges",
         "Historique des sinistres et des collisions",
@@ -4725,7 +4725,7 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash për makina nga Kanadaja",
-      "lead": "Kontroll kilometrash makinash nga Kanadaja — verifikoni km, aksidentet, pronarët dhe statusin e dëmtimit total përpara blerjes. Raport me shasi (VIN) për të gjitha provincat.",
+      "lead": "Kontroll kilometrash makinash nga Kanadaja — verifikoni km, aksidentet, titujt e markuar dhe vjedhjet para blerjes. Raport me shasi (VIN) për të gjitha provincat.",
       "bullets": [
         "Tregues regjistrimi dhe pengjesh provincial",
         "Histori kërkesash sigurimi dhe përplasjesh",
@@ -4781,7 +4781,7 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg samochodów z Kanady",
-      "lead": "Kanada ma ponad 30 mln zarejestrowanych pojazdów i aktywny rynek samochodów używanych od wybrzeża do wybrzeża. Oznaczone tytuły, ukryte roszczenia ubezpieczeniowe i transfery między prowincjami to typowe ryzyka. Zweryfikuj przed zakupem lub importem.",
+      "lead": "Sprawdzenie przebiegu Kanada — zweryfikuj historię licznika, wypadki, oznaczone tytuły i kradzieże przed zakupem lub importem. Ponad 30 mln pojazdów od wybrzeża do wybrzeża.",
       "bullets": [
         "Wskaźniki rejestracji prowincjonalnej i wyszukiwania zastawów",
         "Historia roszczeń ubezpieczeniowych i kolizji",
@@ -4837,7 +4837,7 @@
     },
     "ro": {
       "h1": "Verifică kilometrajul mașinilor din Canada",
-      "lead": "Canada are peste 30M de vehicule înmatriculate și o piață second-hand activă de la coastă la coastă. Titlurile branded, cererile de daune ascunse și transferurile interprovinciale sunt riscuri frecvente. Verificați înainte de a cumpăra sau importa.",
+      "lead": "Verificare kilometraj Canada — confirmați istoricul odometrului, accidentele, titlurile branded și furturile înainte de cumpărare sau import. Peste 30M de vehicule de la coastă la coastă.",
       "bullets": [
         "Indicatori înmatriculare provincială și căutare gaj",
         "Istoric cereri de daune și coliziuni",
@@ -4893,7 +4893,7 @@
     },
     "bg": {
       "h1": "Проверете пробега на автомобили от Канада",
-      "lead": "Канада има над 30 милиона регистрирани автомобили и оживен пазар на употребявани коли от край до край. Брандирани талони, скрити застрахователни претенции и трансфери между провинции са чести рискове. Проверете преди да купите или внесете.",
+      "lead": "Проверка на пробег Канада — потвърдете историята на одометъра, катастрофите, маркираните титули и кражбите преди покупка или внос. Над 30M превозни средства от бряг до бряг.",
       "bullets": [
         "Провинциална регистрация и индикатори за търсене на залози",
         "Застрахователни претенции и история на сблъсъци",
@@ -4949,7 +4949,7 @@
     },
     "ka": {
       "h1": "შეამოწმეთ გარბენი მანქანები კანადიდან",
-      "lead": "კანადას აქვს 30 მილიონზე მეტი რეგისტრირებული მანქანა და მეორადი მანქანების დატვირთული ბაზარი სანაპიროდან სანაპირომდე. ბრენდირებული ტიტულები, ფარული სადაზღვევო პრეტენზიები და პროვინციების გადარიცხვები საერთო რისკებია. გადაამოწმეთ ყიდვამდე ან იმპორტამდე.",
+      "lead": "კანადის გარბენის შემოწმება — ყიდვამდე ან იმპორტამდე გადაამოწმეთ ოდომეტრის ისტორია, ავარიები, branded titles და ქურდობა. 30M+ მანქანა სანაპიროდან სანაპირომდე.",
       "bullets": [
         "პროვინციული რეგისტრაციისა და გირავნობის ძიების ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
@@ -5005,7 +5005,7 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات سيارات من كندا",
-      "lead": "في كندا أكثر من 30 مليون مركبة مسجلة وسوق مستعمل نشط من الساحل إلى الساحل. العناوين المصنفة والمطالبات المخفية والنقل بين المقاطعات مخاطر شائعة. تحقق قبل الشراء أو الاستيراد.",
+      "lead": "فحص كيلومترات كندا — تحقق من تاريخ العداد والحوادث والعناوين الموسومة والسرقة قبل الشراء أو الاستيراد. أكثر من 30 مليون مركبة من الساحل إلى الساحل.",
       "bullets": [
         "مؤشرات التسجيل الإقليمي والرهن",
         "تاريخ مطالبات التأمين والتصادم",
@@ -5061,7 +5061,7 @@
     },
     "uk": {
       "h1": "Перевір пробіг автомобілів з Канади",
-      "lead": "У Канаді зареєстровано 30M+ авто та активний ринок вживаних машин. Брендовані титули, приховані страхові випадки та міжпровінційні перепродажі — поширені ризики. Перевірте перед покупкою чи імпортом.",
+      "lead": "Перевірка пробігу Канада — звіріть історію одометра, аварії, branded titles та викрадення перед купівлею або імпортом. Понад 30 млн авто від узбережжя до узбережжя.",
       "bullets": [
         "Провінційні реєстраційні та заставні індикатори",
         "Історія страхових випадків і зіткнень",
@@ -5117,7 +5117,7 @@
     },
     "ru": {
       "h1": "Проверь пробег автомобилей из Канады",
-      "lead": "В Канаде зарегистрировано 30M+ автомобилей и активный рынок подержанных машин. Брендированные титулы, скрытые страховые случаи и межпровинциальные перепродажи — частые риски. Проверьте перед покупкой или импортом.",
+      "lead": "Проверка пробега Канада — сверьте историю одометра, аварии, branded titles и угоны перед покупкой или импортом. Более 30 млн авто от побережья до побережья.",
       "bullets": [
         "Провинциальные регистрационные и залоговые индикаторы",
         "История страховых случаев и столкновений",
@@ -5173,7 +5173,7 @@
     },
     "zh": {
       "h1": "查询 里程 加拿大进口车",
-      "lead": "加拿大有超过 3000 万辆注册车辆，二手车市场遍布全国。品牌产权、隐藏保险理赔与跨省过户是常见风险。购买或进口前请核实。",
+      "lead": "加拿大里程核查 — 购买或进口前核实里程历史、事故、品牌产权与盗抢。全国逾 3000 万辆注册车辆。",
       "bullets": [
         "省级登记与留置权查询指标",
         "保险理赔与碰撞历史",
@@ -5231,7 +5231,7 @@
   "country_china": {
     "en": {
       "h1": "China mileage check for cars from China",
-      "lead": "China has 350M+ registered vehicles and the world's largest used-car market. Odometer fraud and hidden accident history are common. Check before you buy or import.",
+      "lead": "China mileage check — verify odometer readings, hidden accidents, salvage and theft risks in the world's largest used-car market before you buy or import.",
       "bullets": [
         "National registration & ownership transfer indicators",
         "Insurance claim & collision history",
@@ -5287,7 +5287,7 @@
     },
     "de": {
       "h1": "Prüfen Sie Kilometerstand von Autos aus China",
-      "lead": "China hat über 350 Mio. zugelassene Fahrzeuge und den weltweit größten Gebrauchtwagenmarkt. Tachomanipulation und versteckte Unfallhistorie sind häufig. Prüfen Sie vor Kauf oder Import.",
+      "lead": "China-Kilometercheck — Tachostand, versteckte Unfälle, Totalschaden und Diebstahlrisiko im weltweit größten Gebrauchtwagenmarkt vor Kauf oder Import prüfen.",
       "bullets": [
         "Nationale Zulassungs- & Eigentümerwechsel-Indikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
@@ -5343,7 +5343,7 @@
     },
     "es": {
       "h1": "Verifique kilometraje de coches de China",
-      "lead": "China tiene más de 350 millones de vehículos matriculados y el mayor mercado de usados del mundo. El fraude del odómetro y el historial de accidentes oculto son frecuentes. Revise antes de comprar o importar.",
+      "lead": "Control de kilometraje China — verifique odómetro, accidentes ocultos, siniestro total y riesgo de robo en el mayor mercado de usados del mundo antes de comprar o importar.",
       "bullets": [
         "Indicadores de matriculación nacional y transferencia de propiedad",
         "Historial de reclamaciones de seguro y colisiones",
@@ -5399,7 +5399,7 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage des voitures de Chine",
-      "lead": "La Chine compte plus de 350 millions de véhicules immatriculés et le plus grand marché de l'occasion au monde. Fraude au compteur et historique d'accidents dissimulé sont fréquents. Vérifiez avant d'acheter ou d'importer.",
+      "lead": "Contrôle kilométrage Chine — vérifiez compteur, accidents cachés, salvage et risques de vol sur le plus grand marché de l'occasion au monde avant d'acheter ou d'importer.",
       "bullets": [
         "Indicateurs d'immatriculation nationale et de changement de propriétaire",
         "Historique des sinistres et des collisions",
@@ -5455,7 +5455,7 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash për makina nga Kina",
-      "lead": "Kontroll kilometrash makinash nga Kina — manipulim km, riparime të fshehura aksidentesh dhe humbje totale. Kontrollo me shasi (VIN) para blerjes ose importit.",
+      "lead": "Kontroll kilometrash makinash nga Kina — manipulim km, aksidente të fshehura, humbje totale dhe rrezik vjedhjeje. Kontrollo me shasi (VIN) para blerjes ose importit.",
       "bullets": [
         "Shenja regjistrimi kombëtar dhe transferimi pronësie",
         "Histori kërkesash sigurimi dhe përplasjesh",
@@ -5511,7 +5511,7 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg samochodów z Chin",
-      "lead": "Chiny mają ponad 350 mln zarejestrowanych pojazdów i największy na świecie rynek samochodów używanych. Fałszowanie licznika i ukryta historia wypadków są powszechne. Sprawdź przed zakupem lub importem.",
+      "lead": "Sprawdzenie przebiegu Chiny — zweryfikuj licznik, ukryte wypadki, szkody całkowite i ryzyko kradzieży na największym rynku używanych aut przed zakupem lub importem.",
       "bullets": [
         "Wskaźniki rejestracji krajowej i zmiany właściciela",
         "Historia roszczeń ubezpieczeniowych i kolizji",
@@ -5567,7 +5567,7 @@
     },
     "ro": {
       "h1": "Verificați kilometrajul mașinilor din China",
-      "lead": "China are peste 350 de milioane de vehicule înmatriculate și cea mai mare piață de mașini second-hand din lume. Frauda la odometru și istoricul ascuns de accidente sunt frecvente. Verificați înainte de cumpărare sau import.",
+      "lead": "Verificare kilometraj China — confirmați odometrul, accidentele ascunse, salvajul și riscul de furt pe cea mai mare piață second-hand din lume înainte de cumpărare sau import.",
       "bullets": [
         "Indicatori de înmatriculare națională și transfer de proprietate",
         "Istoric daune asigurare și coliziuni",
@@ -5623,7 +5623,7 @@
     },
     "bg": {
       "h1": "Проверете пробега на автомобили от Китай",
-      "lead": "Китай има над 350 милиона регистрирани автомобили и най-големия пазар на употребявани коли в света. Манипулация на одометъра и скрита история на катастрофи са чести. Проверете преди покупка или внос.",
+      "lead": "Проверка на пробег Китай — потвърдете одометъра, скритите катастрофи, salvage и риск от кражба на най-големия пазар на употребявани коли преди покупка или внос.",
       "bullets": [
         "Национални регистрационни индикатори и смяна на собственик",
         "История на застрахователни претенции и сблъсъци",
@@ -5679,7 +5679,7 @@
     },
     "ka": {
       "h1": "შეამოწმეთ გარბენი მანქანები ჩინეთიდან",
-      "lead": "ჩინეთს აქვს 350 მილიონზე მეტი რეგისტრირებული მანქანა და მსოფლიოში ყველაზე დიდი მეორადი ავტომობილების ბაზარი. ოდომეტრის გაყალბება და ფარული ავარიის ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
+      "lead": "ჩინეთის გარბენის შემოწმება — ყიდვამდე ან იმპორტამდე გადაამოწმეთ ოდომეტრი, დამალული ავარიები, სალვაჟი და ქურდობის რისკი მსოფლიოს უდიდეს მეორად ბაზარზე.",
       "bullets": [
         "ეროვნული რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
@@ -5735,7 +5735,7 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات سيارات من الصين",
-      "lead": "في الصين أكثر من 350 مليون مركبة مسجلة وأكبر سوق سيارات مستعملة في العالم. تلاعب عداد المسافات والتاريخ المخفي للحوادث شائعان. تحقق قبل الشراء أو الاستيراد.",
+      "lead": "فحص كيلومترات الصين — تحقق من العداد والحوادث المخفية والإتلاف وخطر السرقة في أكبر سوق مستعمل في العالم قبل الشراء أو الاستيراد.",
       "bullets": [
         "مؤشرات التسجيل الوطني ونقل الملكية",
         "تاريخ مطالبات التأمين والتصادم",
@@ -5791,7 +5791,7 @@
     },
     "uk": {
       "h1": "Перевір пробіг автомобілів з Китаю",
-      "lead": "У Китаї понад 350 млн зареєстрованих авто та найбільший у світі ринок вживаних машин. Шахрайство з одометром і прихована історія ДТП — поширені ризики. Перевірте перед покупкою чи імпортом.",
+      "lead": "Перевірка пробігу Китай — звіріть одометр, приховані ДТП, тоталі та ризик викрадення на найбільшому ринку вживаних авто перед купівлею або імпортом.",
       "bullets": [
         "Національні реєстраційні індикатори та зміна власника",
         "Історія страхових випадків і зіткнень",
@@ -5847,7 +5847,7 @@
     },
     "ru": {
       "h1": "Проверь пробег автомобилей из Китая",
-      "lead": "В Китае более 350 млн зарегистрированных авто и крупнейший в мире рынок подержанных машин. Скрутка одометра и скрытая история ДТП — частые риски. Проверьте перед покупкой или импортом.",
+      "lead": "Проверка пробега Китай — сверьте одометр, скрытые ДТП, тоталы и риск угона на крупнейшем рынке подержанных авто перед покупкой или импортом.",
       "bullets": [
         "Национальные регистрационные индикаторы и смена владельца",
         "История страховых случаев и столкновений",
@@ -5903,7 +5903,7 @@
     },
     "zh": {
       "h1": "查询 里程 来自中国的汽车",
-      "lead": "中国拥有超过3.5亿辆注册汽车，是全球最大的二手车市场。调表和隐瞒的事故历史很常见。购买或进口前请查询。",
+      "lead": "中国里程核查 — 在全球最大二手车市场购买或进口前，核实里程、隐瞒事故、报废与盗抢风险。",
       "bullets": [
         "全国登记与过户指标",
         "保险理赔与碰撞历史",
@@ -5961,7 +5961,7 @@
   "country_uae": {
     "en": {
       "h1": "UAE mileage check for cars from the UAE",
-      "lead": "The UAE has 3M+ registered vehicles and an import-heavy used market centred on Dubai. Flood imports, odometer rollbacks and GCC registration gaps are common. Check before you buy.",
+      "lead": "UAE / Dubai mileage check — verify odometer rollbacks, flood imports, accidents, salvage flags and GCC registration gaps before you buy.",
       "bullets": [
         "GCC registration & ownership transfer indicators",
         "Insurance claim & collision history",
@@ -6017,7 +6017,7 @@
     },
     "de": {
       "h1": "Prüfen Sie Kilometerstand von Autos aus den VAE",
-      "lead": "Die VAE haben über 3 Mio. zugelassene Fahrzeuge und einen importstarken Gebrauchtwagenmarkt rund um Dubai. Hochwasser-Importe, Tachomanipulation und Lücken in GCC-Zulassungen sind häufig. Prüfen Sie vor dem Kauf.",
+      "lead": "VAE-/Dubai-Kilometercheck — Tachobetrug, Flutimporte, Unfälle, Salvage-Hinweise und Lücken in der GCC-Zulassung vor dem Kauf prüfen.",
       "bullets": [
         "GCC-Zulassungs- & Eigentümerwechsel-Indikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
@@ -6073,7 +6073,7 @@
     },
     "es": {
       "h1": "Verifique kilometraje de coches de los EAU",
-      "lead": "Los EAU tienen más de 3 millones de vehículos matriculados y un mercado de usados muy dependiente de importaciones, centrado en Dubái. Importaciones inundadas, manipulación del odómetro y lagunas en el registro GCC son frecuentes. Verifique antes de comprar.",
+      "lead": "Control de kilometraje EAU / Dubái — manipulación del odómetro, importaciones inundadas, accidentes, siniestro total y lagunas de registro GCC antes de comprar.",
       "bullets": [
         "Indicadores de matriculación GCC y transferencia de propiedad",
         "Historial de reclamaciones de seguro y colisiones",
@@ -6129,7 +6129,7 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage des voitures des EAU",
-      "lead": "Les EAU comptent plus de 3 millions de véhicules immatriculés et un marché de l'occasion très tourné vers l'import, centré sur Dubaï. Imports inondés, retour de compteur et lacunes d'immatriculation GCC sont fréquents. Vérifiez avant d'acheter.",
+      "lead": "Contrôle kilométrage EAU / Dubaï — retours de compteur, imports inondés, accidents, salvage et lacunes d'immatriculation GCC avant d'acheter.",
       "bullets": [
         "Indicateurs d'immatriculation GCC et changement de propriétaire",
         "Historique des sinistres et des collisions",
@@ -6185,7 +6185,7 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash për makina nga Emiratet",
-      "lead": "Kontroll kilometrash makinash nga Emiratet dhe Dubai — importe të përmbytura, manipulim km dhe boshllëqe regjistrimi GCC. Kontrollo me shasi (VIN) para blerjes.",
+      "lead": "Kontroll kilometrash makinash nga Emiratet dhe Dubai — importe të përmbytura, manipulim km, aksidente, dëmtim total dhe boshllëqe regjistrimi GCC. Kontrollo me shasi (VIN) para blerjes.",
       "bullets": [
         "Shenja regjistrimi GCC dhe transferimi pronësie",
         "Histori kërkesash sigurimi dhe përplasjesh",
@@ -6241,7 +6241,7 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg samochodów ze ZEA",
-      "lead": "ZEA mają ponad 3 mln zarejestrowanych pojazdów i rynek używanych mocno oparty na imporcie, ze szczególnym naciskiem na Dubaj. Importy powodziowe, cofanie licznika i luki w rejestracji GCC są częste. Sprawdź przed zakupem.",
+      "lead": "Sprawdzenie przebiegu ZEA / Dubaj — cofanie licznika, importy powodziowe, wypadki, szkody całkowite i luki w rejestracji GCC przed zakupem.",
       "bullets": [
         "Wskaźniki rejestracji GCC i zmiany właściciela",
         "Historia roszczeń ubezpieczeniowych i kolizji",
@@ -6297,7 +6297,7 @@
     },
     "ro": {
       "h1": "Verificați kilometrajul mașinilor din EAU",
-      "lead": "EAU au peste 3 milioane de vehicule înmatriculate și o piață second-hand bazată pe import, centrată pe Dubai. Importuri inundate, rollback la odometru și lacune în înregistrarea GCC sunt frecvente. Verificați înainte de cumpărare.",
+      "lead": "Verificare kilometraj EAU / Dubai — rollback odometru, importuri inundate, accidente, salvaj și lacune de înregistrare GCC înainte de cumpărare.",
       "bullets": [
         "Indicatori înmatriculare GCC și transfer proprietate",
         "Istoric daune asigurare și coliziuni",
@@ -6353,7 +6353,7 @@
     },
     "bg": {
       "h1": "Проверете пробега на автомобили от ОАЕ",
-      "lead": "ОАЕ имат над 3 милиона регистрирани автомобили и пазар на употребявани коли, ориентиран към внос, с фокус върху Дубай. Внос след наводнения, манипулация на одометъра и пропуски в GCC регистрацията са чести. Проверете преди покупка.",
+      "lead": "Проверка на пробег ОАЕ / Дубай — манипулация на одометър, наводнени вноси, катастрофи, salvage и пропуски в GCC регистрацията преди покупка.",
       "bullets": [
         "GCC регистрационни индикатори и смяна на собственик",
         "История на застрахователни претенции и сблъсъци",
@@ -6409,7 +6409,7 @@
     },
     "ka": {
       "h1": "შეამოწმეთ გარბენი მანქანები UAE-დან",
-      "lead": "არაბეთის გაერთიანებულ საემიროებს აქვს 3M+ რეგისტრირებული მანქანა და იმპორტისთვის მძიმე მეორადი ბაზარი, რომელიც ორიენტირებულია დუბაიზე. ხშირია წყალდიდობის იმპორტი, ოდომეტრის გადაბრუნება და GCC-ის რეგისტრაციის ხარვეზები. შეამოწმეთ სანამ იყიდით.",
+      "lead": "არაბეთის გაერთიანებული საემიროები / დუბაი გარბენის შემოწმება — ოდომეტრის გადაბრუნება, წყალდიდობის იმპორტი, ავარიები, სალვაჟი და GCC რეგისტრაციის ხარვეზები ყიდვამდე.",
       "bullets": [
         "GCC რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
@@ -6465,7 +6465,7 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات سيارات من الإمارات",
-      "lead": "في الإمارات أكثر من 3 ملايين مركبة مسجلة وسوق مستعمل يعتمد بشدة على الاستيراد، ودبي في قلبه. واردات متضررة من الفيضانات وإرجاع العداد وفجوات تسجيل مجلس التعاون شائعة. تحقق قبل الشراء.",
+      "lead": "فحص كيلومترات الإمارات / دبي — تلاعب بالعداد واستيراد غمر وحوادث وإتلاف وفجوات تسجيل مجلس التعاون قبل الشراء.",
       "bullets": [
         "مؤشرات تسجيل مجلس التعاون ونقل الملكية",
         "تاريخ مطالبات التأمين والتصادم",
@@ -6521,7 +6521,7 @@
     },
     "uk": {
       "h1": "Перевір пробіг автомобілів з ОАЕ",
-      "lead": "В ОАЕ понад 3 млн зареєстрованих авто та ринок вживаних машин, орієнтований на імпорт, з центром у Дубаї. Імпорт після повені, скручування одометра та прогалини в реєстрації GCC — типові ризики. Перевірте перед покупкою.",
+      "lead": "Перевірка пробігу ОАЕ / Дубай — скрутка одометра, імпорт після повеней, аварії, тоталі та прогалини в реєстрації GCC перед купівлею.",
       "bullets": [
         "Індикатори реєстрації GCC та зміни власника",
         "Історія страхових випадків і зіткнень",
@@ -6577,7 +6577,7 @@
     },
     "ru": {
       "h1": "Проверь пробег автомобилей из ОАЭ",
-      "lead": "В ОАЭ более 3 млн зарегистрированных авто и рынок подержанных машин с упором на импорт, с центром в Дубае. Импорт после наводнений, скрутка одометра и пробелы в регистрации GCC — частые риски. Проверьте перед покупкой.",
+      "lead": "Проверка пробега ОАЭ / Дубай — скрутка одометра, импорт после наводнений, аварии, тоталы и пробелы в регистрации GCC перед покупкой.",
       "bullets": [
         "Индикаторы регистрации GCC и смены владельца",
         "История страховых случаев и столкновений",
@@ -6633,7 +6633,7 @@
     },
     "zh": {
       "h1": "查询 里程 来自阿联酋的汽车",
-      "lead": "阿联酋拥有超过300万辆注册汽车，迪拜是进口依赖型二手车市场的核心。水淹进口车、调表和海合会登记信息缺失很常见。购买前请核实。",
+      "lead": "阿联酋/迪拜里程核查 — 购买前核实调表、水淹进口、事故、报废标记与海合会登记缺口。",
       "bullets": [
         "海合会登记与过户指标",
         "保险理赔与碰撞历史",

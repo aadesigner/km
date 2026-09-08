@@ -176,7 +176,12 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false, class
         </motion.div>
 
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-center lg:gap-6 xl:gap-8">
-          <div className="space-y-2 w-full lg:w-[24rem] lg:shrink-0" role="tablist" aria-label={t("what_we_check_sections")}>
+          {/* Feature boxes: desktop only — mobile uses clickable sections inside the preview card. */}
+          <div
+            className="hidden lg:block space-y-2 w-full lg:w-[24rem] lg:shrink-0"
+            role="tablist"
+            aria-label={t("what_we_check_sections")}
+          >
             {features.map((feat, i) => (
               <FeatureRow
                 key={feat.id}

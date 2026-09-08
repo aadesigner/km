@@ -13,7 +13,7 @@ import { HomeCountriesCoverageSection } from "@/components/home-countries-covera
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
 import { Badge } from "@/components/ui/badge";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout, persistVinForCheckout, clearStoredPendingVin } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
@@ -56,61 +56,6 @@ function useSteps(t: (k: string) => string) {
     { n: "02", title: t("step_2_title"), desc: t("step_2_desc"), icon: ShieldCheck },
     { n: "03", title: t("step_3_title"), desc: t("step_3_desc"), icon: FileText },
   ];
-}
-
-const DEFAULT_CYCLING_KEYS = [
-  "cycling_mileage_rollbacks",
-  "cycling_hidden_accidents",
-  "cycling_salvage_titles",
-  "cycling_theft_records",
-] as const;
-
-/** Extra / reordered hero cycling phrases per locale */
-const CYCLING_KEYS_BY_LANG: Partial<Record<string, readonly string[]>> = {
-  sq: [
-    "cycling_vehicle_history",
-    "cycling_mileage_rollbacks",
-    "cycling_hidden_accidents",
-    "cycling_salvage_titles",
-    "cycling_theft_records",
-  ],
-};
-
-function CyclingWord() {
-  const { t, language } = useTranslation();
-  const keys = CYCLING_KEYS_BY_LANG[language] ?? DEFAULT_CYCLING_KEYS;
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    setIdx(0);
-  }, [language]);
-  useEffect(() => {
-    const id = setInterval(() => setIdx((i) => (i + 1) % keys.length), 4200);
-    return () => clearInterval(id);
-  }, [keys.length]);
-  // Invisible copies reserve the tallest phrase height so cycling never pushes content.
-  return (
-    <span className="relative inline-grid w-full justify-items-center">
-      {keys.map((key) => (
-        <span key={`reserve-${language}-${key}`} className="invisible col-start-1 row-start-1" aria-hidden>
-          {t(key)}
-        </span>
-      ))}
-      <span className="col-start-1 row-start-1">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={`${language}-${idx}`}
-            className="inline-block"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            {t(keys[idx])}
-          </motion.span>
-        </AnimatePresence>
-      </span>
-    </span>
-  );
 }
 
 export default function Home() {
@@ -231,8 +176,8 @@ export default function Home() {
             transition={{ duration: 0.55 }}
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
-            {/* Stable H1 for Google — full keyword phrase. Motion lives outside <h1>. */}
-            <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
+            {/* Stable H1 for Google — full keyword phrase, no rotating text. */}
+            <h1 className="text-[2.25rem] sm:text-4xl lg:text-[3.1rem] font-extrabold tracking-tight leading-[1.12]">
               {language === "zh" ? (
                 <>
                   {t("hero_headline_lead")}
@@ -246,12 +191,6 @@ export default function Home() {
                 </>
               )}
             </h1>
-            <p
-              className="text-sm md:text-base font-semibold text-primary/90 tracking-wide"
-              aria-hidden="true"
-            >
-              <CyclingWord />
-            </p>
             <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
               {t("hero_subtext")}
             </p>

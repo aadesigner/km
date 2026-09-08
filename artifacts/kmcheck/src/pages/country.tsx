@@ -127,47 +127,6 @@ function useCountryContent(slug: string, t: (k: string) => string) {
   };
 }
 
-const COUNTRY_CYCLING_SUFFIXES = ["_cycling_1", "_cycling_2", "_cycling_3"] as const;
-
-function CountryCyclingHeadline({ slug }: { slug: string }) {
-  const { t } = useTranslation();
-  const keys = COUNTRY_CYCLING_SUFFIXES.map(s => `country_${slug}${s}`);
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    setIdx(0);
-  }, [slug]);
-
-  useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % keys.length), 3800);
-    return () => clearInterval(id);
-  }, [keys.length]);
-
-  return (
-    <span className="relative inline-grid w-full lg:justify-items-start justify-items-center">
-      {keys.map((key) => (
-        <span key={`reserve-${slug}-${key}`} className="invisible col-start-1 row-start-1" aria-hidden>
-          {t(key)}
-        </span>
-      ))}
-      <span className="col-start-1 row-start-1">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={idx}
-            className="text-primary inline-block"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            {t(keys[idx])}
-          </motion.span>
-        </AnimatePresence>
-      </span>
-    </span>
-  );
-}
-
 interface Props { params: { lang: string; country: string } }
 
 export default function CountryPage({ params }: Props) {
@@ -394,12 +353,6 @@ export default function CountryPage({ params }: Props) {
                 {t(`country_${slug}_headline_origin`)}
               </span>
             </h1>
-            <p
-              className="text-sm md:text-base font-semibold text-primary/90 tracking-wide"
-              aria-hidden="true"
-            >
-              <CountryCyclingHeadline slug={slug} />
-            </p>
 
             <p className="text-sm md:text-base text-muted-foreground mx-auto lg:mx-0 max-w-lg leading-relaxed">
               {content.description}
