@@ -177,7 +177,7 @@ export default function Home() {
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
             {/* Stable H1 for Google — full keyword phrase, no rotating text. */}
-            <h1 className="text-[2.25rem] sm:text-4xl lg:text-[3.1rem] font-extrabold tracking-tight leading-[1.12]">
+            <h1 className="text-[2.5rem] sm:text-[2.85rem] lg:text-[3.55rem] font-extrabold tracking-tight leading-[1.18] sm:leading-[1.16] lg:leading-[1.14]">
               {language === "zh" ? (
                 <>
                   {t("hero_headline_lead")}
@@ -191,7 +191,7 @@ export default function Home() {
                 </>
               )}
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
+            <p className="text-[1.05rem] sm:text-lg lg:text-xl text-muted-foreground dark:text-white/60 max-w-2xl leading-[1.65] sm:leading-[1.7] mx-auto">
               {t("hero_subtext")}
             </p>
 
