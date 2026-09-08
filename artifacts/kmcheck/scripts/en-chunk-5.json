@@ -34,7 +34,7 @@
   "photo_view_full_size": "View full size",
   "owner_privacy_note": "Owner identities not disclosed",
   "vin_result_share_title": "Save or share this report",
-  "vin_report_data_disclaimer": "Data is collected from different sources, archives and auctions. We aren't responsible for its accuracy.",
+  "vin_report_data_disclaimer": "Data is collected from different sources — official registries, archives, auctions and many more. KMCheck has one of the largest databases across many regions; however, we are not the provider of this information and therefore do not take responsibility for its accuracy.",
   "vin_result_share_card_desc": "Download or share a PDF of this vehicle's full report.",
   "vin_result_pdf_hint": "Save a full PDF report with photos and vehicle history details.",
   "vin_result_share_native_text": "Check {vehicle} — mileage, accidents, owners & full history on kmcheck.com",

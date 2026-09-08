@@ -231,24 +231,27 @@ export default function Home() {
             transition={{ duration: 0.55 }}
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
+            {/* Stable H1 for Google — full keyword phrase. Motion lives outside <h1>. */}
             <h1 className="text-[2.9rem] sm:text-5xl lg:text-[4.25rem] font-extrabold tracking-tight leading-[1.08]">
               {language === "zh" ? (
                 <>
                   {t("hero_headline_lead")}
-                  <span className="text-primary">
-                    <CyclingWord />
-                  </span>
+                  <span className="text-primary">{t("hero_headline_2")}</span>
                 </>
               ) : (
                 <>
                   {language === "sq" ? <>{t("hero_headline_1")},</> : t("hero_headline_1")}
                   <br />
-                  <span className="block text-primary">
-                    <CyclingWord />
-                  </span>
+                  <span className="block text-primary">{t("hero_headline_2")}</span>
                 </>
               )}
             </h1>
+            <p
+              className="text-sm md:text-base font-semibold text-primary/90 tracking-wide"
+              aria-hidden="true"
+            >
+              <CyclingWord />
+            </p>
             <p className="text-base md:text-lg text-muted-foreground dark:text-white/60 max-w-xl leading-relaxed mx-auto">
               {t("hero_subtext")}
             </p>

@@ -2198,7 +2198,8 @@ export function extractLotTitle(lot: Record<string, unknown>): string | null {
 
 export function isSalvageTitle(title: string | null | undefined): boolean {
   if (!title) return false;
-  return /salvage|rebuilt|junk|total\s*loss|non[- ]?repair|certificate\s+of\s+destruction|scrap|write[- ]?off|bos\b/i.test(title);
+  // NA auction title codes only — do not match bare "Bos" (Alberta bill of sale).
+  return /salvage|rebuilt|junk|total\s*loss|non[- ]?repair|certificate\s+of\s+destruction|scrap|write[- ]?off/i.test(title);
 }
 
 function isNorthAmericanAuctionLot(lot: Record<string, unknown>): boolean {
@@ -2387,10 +2388,17 @@ function parseWonAmount(value: string | null | undefined): number | null {
 export function mapKoreanInsuranceClaimToAccident(
   claim: VinInsuranceClaim,
   country: string | null,
+  opts?: { totalLossDate?: string | null },
 ): VinAccident {
+  let severity = inferKoreanLossSeverity(claim.lossAmount);
+  const lossDate = opts?.totalLossDate?.slice(0, 10);
+  const claimDate = claim.date?.slice(0, 10);
+  if (lossDate && claimDate === lossDate) {
+    severity = "total_loss";
+  }
   return {
     date: claim.date ?? null,
-    severity: inferKoreanLossSeverity(claim.lossAmount),
+    severity,
     description: claim.type ?? claim.description ?? null,
     country,
     type: "insurance",
@@ -2453,8 +2461,11 @@ function buildKoreanSupplementalAccidents(
   insuranceClaims: VinInsuranceClaim[],
   registryHistory: RegistryHistoryEvent[],
   country: string | null,
+  totalLossDate?: string | null,
 ): VinAccident[] {
-  const fromClaims = insuranceClaims.map((claim) => mapKoreanInsuranceClaimToAccident(claim, country));
+  const fromClaims = insuranceClaims.map((claim) =>
+    mapKoreanInsuranceClaimToAccident(claim, country, { totalLossDate }),
+  );
   const claimDateKeys = new Set(
     fromClaims
       .map((accident) => (accident.date ?? "").slice(0, 10))
@@ -3175,6 +3186,7 @@ export function resolveVinAccidents(input: {
 } {
   const { country, insurance, lotDetails, auctionAccidents, registryHistory = [] } = input;
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
+  const totalLossDate = str(insurance.totalLossDate);
   const rawRecords = Array.isArray(insurance.accidents)
     ? insurance.accidents as Array<Record<string, unknown>>
     : [];
@@ -3226,7 +3238,7 @@ export function resolveVinAccidents(input: {
   }
 
   const koreanSupplemental = usesKoreanClaimModel
-    ? buildKoreanSupplementalAccidents(insuranceClaims, registryHistory, country)
+    ? buildKoreanSupplementalAccidents(insuranceClaims, registryHistory, country, totalLossDate)
     : registryHistory
       .map((event) => mapRegistryEventToAccident(event, country))
       .filter((event): event is VinAccident => event != null);
@@ -3444,9 +3456,14 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   );
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
 
-  // Derive salvage/stolen from insurance flags and US/Canada auction title
+  // totalLossCnt / explicit salvage flags + NA auction title strings → isSalvage.
   const isSalvageFromInsurance = totalLoss > 0
-    || !!(insurance.is_salvage ?? insurance.isSalvage ?? insurance.salvage ?? insurance.totalLoss);
+    || !!(
+      insurance.is_salvage
+      ?? insurance.isSalvage
+      ?? insurance.salvage
+      ?? (typeof insurance.totalLoss === "boolean" ? insurance.totalLoss : null)
+    );
   const isSalvage = isSalvageFromInsurance || isSalvageFromLots;
   const isStolen = !!(insurance.stolen ?? insurance.is_stolen ?? insurance.theft ?? insurance.isStolen);
 

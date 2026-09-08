@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { inferAccidentSeverityFromUsd, inferAccidentSeverityFromLossAmount } from "@workspace/accident-severity";
 
 vi.hoisted(() => {
@@ -186,6 +189,11 @@ describe("isSalvageTitle", () => {
     expect(isSalvageTitle("Bv - Salvage Title")).toBe(true);
     expect(isSalvageTitle("Ab - Bos - Salvage")).toBe(true);
     expect(isSalvageTitle("Clean Title")).toBe(false);
+  });
+
+  it("does not treat Alberta bill-of-sale codes as salvage", () => {
+    expect(isSalvageTitle("Ab - Bos")).toBe(false);
+    expect(isSalvageTitle("CA - Clean Title")).toBe(false);
   });
 });
 
@@ -1672,5 +1680,28 @@ describe("dedupeRegistryHistoryEvents", () => {
     ]);
     expect(events).toHaveLength(1);
     expect(events[0]?.subtitle).toBe("regular inspection");
+  });
+});
+
+describe("WBA5V510XKAJ52378 — provider total loss drives salvage flag", () => {
+  it("flags isSalvage from insurance_v2.totalLossCnt (not invented)", () => {
+    const fixturePath = join(
+      dirname(fileURLToPath(import.meta.url)),
+      "fixtures",
+      "WBA5V510XKAJ52378-carstat-raw.json",
+    );
+    const raw = JSON.parse(readFileSync(fixturePath, "utf8"));
+    const insurance = raw.data?.lots?.[0]?.details?.insurance_v2;
+    expect(insurance?.totalLossCnt).toBe(1);
+    expect(insurance?.totalLossDate).toBe("2020-12-05");
+
+    const normalized = normalizeCarstatResponse(raw);
+
+    expect(normalized.country).toBe("kr");
+    expect(normalized.isSalvage).toBe(true);
+    expect(normalized.accidentCount).toBe(5);
+
+    const totalLossEvents = (normalized.accidents ?? []).filter((a) => a.severity === "total_loss");
+    expect(totalLossEvents.some((a) => a.date?.startsWith("2020-12-05"))).toBe(true);
   });
 });

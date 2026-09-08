@@ -1,22 +1,31 @@
 {
   "home": {
     "en": {
-      "h1": "Check mileage, accidents & salvage.",
-      "lead": "Instant VIN check — verify real km readings, uncover full accident history & salvage records for any car.",
+      "h1": "Car mileage check — accidents & vehicle history",
+      "lead": "Instant car mileage check by VIN — verify real km, accidents, salvage and theft. Built for USA imports, Korean cars, Canada, China and UAE.",
       "bullets": [
         "hidden accidents",
         "salvage titles",
         "mileage rollbacks",
-        "theft records"
+        "theft records",
+        "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and UAE flood/import risks in one report."
       ],
       "sections": [
         {
           "title": "What We Check",
-          "body": "The same document layout you receive after checkout — built from live data for your VIN."
+          "body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We specialise in USA mileage checks, Korean mileage checks and history for cars from Canada, China and the UAE — so you can buy used cars with clearer data before you pay."
+        },
+        {
+          "title": "What We Check",
+          "body": "Every report includes a car mileage check, accident and damage history, salvage or write-off status, and theft screening — the same layout you see after checkout, built from live data for your VIN."
         },
         {
           "title": "How it works",
           "body": "Three simple steps to check mileage, accidents, theft, and full vehicle history before you buy."
+        },
+        {
+          "title": "Check cars from:",
+          "body": "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and UAE flood/import risks in one report."
         }
       ],
       "links": [
@@ -57,9 +66,14 @@
         "Unfälle",
         "Totalschaden",
         "Tachobetrug",
-        "Diebstahl"
+        "Diebstahl",
+        "USA-Kilometerstand, Korea-Importe, Kanada, China und VAE in einem Bericht prüfen."
       ],
       "sections": [
+        {
+          "title": "Was wir prüfen",
+          "body": "kmcheck.com ist ein Service zur Kilometerstand-Prüfung und Fahrzeughistorie. Geben Sie die 17-stellige VIN ein, um Kilometerstand, Unfälle, Totalschaden und Diebstahl zu prüfen — inkl. USA-, Korea-, Kanada-, China- und VAE-Importe."
+        },
         {
           "title": "Was wir prüfen",
           "body": "Dasselbe Dokumentlayout wie nach dem Kauf — mit Live-Daten zu Ihrer VIN."
@@ -67,6 +81,10 @@
         {
           "title": "So funktioniert's",
           "body": "In 3 Schritten Kilometerstand, Unfälle und Historie prüfen — vor dem Kauf."
+        },
+        {
+          "title": "Autos prüfen aus:",
+          "body": "USA-Kilometerstand, Korea-Importe, Kanada, China und VAE in einem Bericht prüfen."
         }
       ],
       "links": [
@@ -107,9 +125,14 @@
         "accidentes ocultos",
         "títulos de siniestro total",
         "manipulaciones de kilometraje",
-        "registros de robo"
+        "registros de robo",
+        "Compruebe kilometraje de USA, Corea, Canadá, China y EAU en un informe."
       ],
       "sections": [
+        {
+          "title": "Qué comprobamos",
+          "body": "kmcheck.com es un servicio de comprobación de kilometraje e historial del vehículo. Introduzca el VIN de 17 caracteres para verificar km, accidentes, siniestro total y robo — USA, Corea, Canadá, China y EAU."
+        },
         {
           "title": "Qué comprobamos",
           "body": "El mismo diseño del informe entregado — con datos en vivo para su VIN."
@@ -117,6 +140,10 @@
         {
           "title": "Cómo funciona",
           "body": "Tres pasos sencillos para comprobar kilometraje, accidentes, robos e historial del vehículo antes de comprar."
+        },
+        {
+          "title": "Comprobar coches de:",
+          "body": "Compruebe kilometraje de USA, Corea, Canadá, China y EAU en un informe."
         }
       ],
       "links": [
@@ -157,9 +184,14 @@
         "accidents cachés",
         "titres salvage",
         "retours de compteur",
-        "registres de vol"
+        "registres de vol",
+        "Contrôlez le kilométrage USA, Corée, Canada, Chine et EAU dans un seul rapport."
       ],
       "sections": [
+        {
+          "title": "Ce que nous vérifions",
+          "body": "kmcheck.com est un service de contrôle du kilométrage et d’historique véhicule. Entrez le VIN 17 caractères pour vérifier le km, les accidents, l’épave et le vol — USA, Corée, Canada, Chine et EAU."
+        },
         {
           "title": "Ce que nous vérifions",
           "body": "La même mise en page que votre rapport livré — avec des données en direct pour votre VIN."
@@ -167,6 +199,10 @@
         {
           "title": "Comment ça marche",
           "body": "Trois étapes simples pour vérifier le kilométrage, les accidents, les vols et l'historique du véhicule avant d'acheter."
+        },
+        {
+          "title": "Vérifier les voitures de :",
+          "body": "Contrôlez le kilométrage USA, Corée, Canada, Chine et EAU dans un seul rapport."
         }
       ],
       "links": [
@@ -201,22 +237,31 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash, aksidentesh, vjedhjesh dhe dëmtim total.",
-      "lead": "Kontroll kilometrash me SHASI — verifikoni kilometrat (km) origjinale, aksidentet dhe historinë e makinës tuaj.",
+      "h1": "Kontroll kilometrash, aksidente dhe historiku i makinës",
+      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidentet dhe historikun e makinës. Ideal për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet.",
       "bullets": [
         "aksidentesh",
         "dëmtim total",
         "km origjinale",
-        "vjedhjesh"
+        "vjedhjesh",
+        "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — në një raport."
       ],
       "sections": [
         {
           "title": "Çfarë kontrollojmë",
-          "body": "I njëjti format dokumenti që merrni pas pagesës — me të dhëna reale për VIN-in tuaj."
+          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Specializoheni në makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — që të blini me më shumë informacion para pagesës."
+        },
+        {
+          "title": "Çfarë kontrollojmë",
+          "body": "Çdo raport përfshin kontroll kilometrash, historik aksidentesh, dëmtim total dhe vjedhje — i njëjti format që merrni pas pagesës, me të dhëna reale për numrin e shasisë."
         },
         {
           "title": "Si funksionon",
           "body": "Tre hapa të thjeshtë për të kontrolluar kilometrat, aksidentet, vjedhjet dhe historinë e makinës para blerjes."
+        },
+        {
+          "title": "Kontrollo makina nga:",
+          "body": "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Emiratet — në një raport."
         }
       ],
       "links": [
@@ -257,9 +302,14 @@
         "ukryte wypadki",
         "tytuły salvage",
         "skręcone liczniki",
-        "rejestry kradzieży"
+        "rejestry kradzieży",
+        "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i ZEA w jednym raporcie."
       ],
       "sections": [
+        {
+          "title": "Co sprawdzamy",
+          "body": "kmcheck.com to usługa sprawdzania przebiegu i historii pojazdu. Wpisz 17-znakowy VIN, aby zweryfikować km, wypadki, szkodę całkowitą i kradzież — USA, Korea, Kanada, Chiny i ZEA."
+        },
         {
           "title": "Co sprawdzamy",
           "body": "Ten sam układ dokumentu co po zakupie — z danymi na żywo dla Twojego VIN."
@@ -267,6 +317,10 @@
         {
           "title": "Jak to działa",
           "body": "Trzy proste kroki do sprawdzenia przebiegu, wypadków, kradzieży i historii pojazdu przed zakupem."
+        },
+        {
+          "title": "Sprawdź auta z:",
+          "body": "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i ZEA w jednym raporcie."
         }
       ],
       "links": [
@@ -307,9 +361,14 @@
         "accidente ascunse",
         "titluri de salvaj",
         "manipulări kilometraj",
-        "înregistrări de furt"
+        "înregistrări de furt",
+        "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Emirate într-un singur raport."
       ],
       "sections": [
+        {
+          "title": "Ce verificăm",
+          "body": "kmcheck.com este un serviciu de verificare a kilometrajului și a istoricului auto. Introduceți VIN-ul de 17 caractere pentru km, accidente, daună totală și furt — SUA, Coreea, Canada, China și Emirate."
+        },
         {
           "title": "Ce verificăm",
           "body": "Aceeași structură ca raportul livrat — cu date live pentru VIN-ul tău."
@@ -317,6 +376,10 @@
         {
           "title": "Cum funcționează",
           "body": "Trei pași simpli pentru verificarea kilometrajului, accidentelor, furturilor și istoricului vehiculului înainte de cumpărare."
+        },
+        {
+          "title": "Verifică mașini din:",
+          "body": "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Emirate într-un singur raport."
         }
       ],
       "links": [
@@ -357,9 +420,14 @@
         "скрити катастрофи",
         "salvage талони",
         "манипулации на пробега",
-        "записи за кражби"
+        "записи за кражби",
+        "Проверете пробег за авто от САЩ, Корея, Канада, Китай и ОАЕ в един отчет."
       ],
       "sections": [
+        {
+          "title": "Какво проверяваме",
+          "body": "kmcheck.com е услуга за проверка на пробег и история на автомобила. Въведете 17-символния VIN за пробег, катастрофи, тотал и кражба — САЩ, Корея, Канада, Китай и ОАЕ."
+        },
         {
           "title": "Какво проверяваме",
           "body": "Същото оформление като доставения отчет — с реални данни за вашия VIN."
@@ -367,6 +435,10 @@
         {
           "title": "Как работи",
           "body": "Три прости стъпки за проверка на пробег, катастрофи, кражби и история на автомобила преди покупка."
+        },
+        {
+          "title": "Проверете коли от:",
+          "body": "Проверете пробег за авто от САЩ, Корея, Канада, Китай и ОАЕ в един отчет."
         }
       ],
       "links": [
@@ -407,9 +479,14 @@
         "დამალული ავარიები",
         "სალვაჟის ტიტულები",
         "გარბენის უკან გადახვევა",
-        "ქურდობის ჩანაწერები"
+        "ქურდობის ჩანაწერები",
+        "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროების მანქანები ერთ ანგარიშში."
       ],
       "sections": [
+        {
+          "title": "რასაც ჩვენ ვამოწმებთ",
+          "body": "kmcheck.com არის გარბენის და მანქანის ისტორიის შემოწმების სერვისი. შეიყვანეთ 17-ნიშნა VIN — გარბენი, ავარიები, სალვაჟი და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროები."
+        },
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
           "body": "იგივე დოკუმენტის განლაგება, რაც გადახდის შემდეგ — ცოცხალი მონაცემებით თქვენს VIN-ზე."
@@ -417,6 +494,10 @@
         {
           "title": "როგორ მუშაობს",
           "body": "სამი მარტივი ნაბიჯი გარბენის, ავარიების, ქურდობისა და მანქანის სრული ისტორიის შესამოწმებლად, სანამ ყიდულობთ."
+        },
+        {
+          "title": "შეამოწმეთ მანქანები:",
+          "body": "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და არაბთა გაერთიანებული საამიროების მანქანები ერთ ანგარიშში."
         }
       ],
       "links": [
@@ -457,9 +538,14 @@
         "حوادث مخفية",
         "سجلات الخردة",
         "تلاعب بالكيلومتر",
-        "سجلات السرقة"
+        "سجلات السرقة",
+        "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين والإمارات في تقرير واحد."
       ],
       "sections": [
+        {
+          "title": "ما الذي نفحصه",
+          "body": "kmcheck.com خدمة لفحص الكيلومترات وتاريخ السيارة. أدخل رقم VIN المكوّن من 17 خانة للتحقق من الكيلومترات والحوادث والإتلاف والسرقة — أمريكا وكوريا وكندا والصين والإمارات."
+        },
         {
           "title": "ما الذي نفحصه",
           "body": "نفس تخطيط المستند الذي تستلمه بعد الدفع — ببيانات مباشرة لرقم VIN."
@@ -467,6 +553,10 @@
         {
           "title": "كيف يعمل",
           "body": "ثلاث خطوات بسيطة للتحقق من الكيلومترات والحوادث والسرقة وتاريخ السيارة قبل الشراء."
+        },
+        {
+          "title": "تحقق من السيارات من:",
+          "body": "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين والإمارات في تقرير واحد."
         }
       ],
       "links": [
@@ -507,9 +597,14 @@
         "приховані аварії",
         "тотальні авто",
         "скручений пробіг",
-        "реєстри угону"
+        "реєстри угону",
+        "Перевірте пробіг авто з США, Кореї, Канади, Китаю та ОАЕ в одному звіті."
       ],
       "sections": [
+        {
+          "title": "Що ми перевіряємо",
+          "body": "kmcheck.com — сервіс перевірки пробігу та історії авто. Введіть 17-символьний VIN, щоб перевірити пробіг, ДТП, тотал і викрадення — США, Корея, Канада, Китай і ОАЕ."
+        },
         {
           "title": "Що ми перевіряємо",
           "body": "Той самий макет документа, що після оплати — з актуальними даними для вашого VIN."
@@ -517,6 +612,10 @@
         {
           "title": "Як це працює",
           "body": "Три прості кроки для перевірки пробігу, аварій, викрадень та історії авто перед покупкою."
+        },
+        {
+          "title": "Перевірте авто з:",
+          "body": "Перевірте пробіг авто з США, Кореї, Канади, Китаю та ОАЕ в одному звіті."
         }
       ],
       "links": [
@@ -557,9 +656,14 @@
         "скрытые аварии",
         "тотальные авто",
         "скрученный пробег",
-        "реестры угонов"
+        "реестры угонов",
+        "Проверьте пробег авто из США, Кореи, Канады, Китая и ОАЭ в одном отчёте."
       ],
       "sections": [
+        {
+          "title": "Что мы проверяем",
+          "body": "kmcheck.com — сервис проверки пробега и истории автомобиля. Введите 17-значный VIN, чтобы проверить пробег, аварии, тотал и угон — США, Корея, Канада, Китай и ОАЭ."
+        },
         {
           "title": "Что мы проверяем",
           "body": "Тот же формат документа, что после оплаты — с актуальными данными по вашему VIN."
@@ -567,6 +671,10 @@
         {
           "title": "Как это работает",
           "body": "Три простых шага для проверки пробега, аварий, угонов и истории автомобиля перед покупкой."
+        },
+        {
+          "title": "Проверьте авто из:",
+          "body": "Проверьте пробег авто из США, Кореи, Канады, Китая и ОАЭ в одном отчёте."
         }
       ],
       "links": [
@@ -607,9 +715,14 @@
         "隐藏事故",
         "报废产权",
         "里程回拨",
-        "盗抢记录"
+        "盗抢记录",
+        "在一份报告中核查美国、韩国、加拿大、中国与阿联酋车辆里程。"
       ],
       "sections": [
+        {
+          "title": "我们检查什么",
+          "body": "kmcheck.com 提供里程核查与车辆历史报告。输入17位VIN即可核实里程、事故、报废与盗抢记录，覆盖美国、韩国、加拿大、中国与阿联酋进口车。"
+        },
         {
           "title": "我们检查什么",
           "body": "与购买后交付的报告相同版式 — 基于您 VIN 的实时数据。"
@@ -617,6 +730,10 @@
         {
           "title": "如何运作",
           "body": "三个简单步骤，购车前查清里程、事故、盗抢与完整车辆历史。"
+        },
+        {
+          "title": "查验车辆来自：",
+          "body": "在一份报告中核查美国、韩国、加拿大、中国与阿联酋车辆里程。"
         }
       ],
       "links": [
@@ -2440,8 +2557,8 @@
   },
   "free_decoder": {
     "en": {
-      "h1": "Free VIN Decoder",
-      "lead": "Decode any VIN instantly — get year, make, model, engine, and more. No account required.",
+      "h1": "Free VIN & mileage decoder",
+      "lead": "Decode any VIN free — year, make, model, engine. Then unlock a full car mileage check for accidents, salvage and theft.",
       "bullets": [
         "100% Free — No Registration"
       ],
@@ -2588,8 +2705,8 @@
       ]
     },
     "sq": {
-      "h1": "Dekodues VIN Falas",
-      "lead": "Dekodoni shasinë (VIN) falas — viti, marka, modeli. Për kontroll kilometrash dhe aksidentesh, zhbllokoni raportin e plotë.",
+      "h1": "Dekodues shasie & kilometrash falas",
+      "lead": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni kontrollin e plotë të kilometrash dhe aksidenteve.",
       "bullets": [
         "100% Falas — Pa Regjistrim"
       ],
@@ -2923,17 +3040,28 @@
   },
   "country_usa": {
     "en": {
-      "h1": "Check mileage of cars from theUSA",
-      "lead": "The US runs one of the world's largest used-car markets — millions of sales across 50 states. Sellers don't always share the full story. Verify before you buy.",
+      "h1": "USA mileage check for American cars",
+      "lead": "USA mileage check for American cars — verify odometer readings, accidents, salvage titles and theft across all 50 states before you buy or import.",
       "bullets": [
         "Auction & marketplace records across all 50 states",
         "Flood, fire & hail damage records",
-        "Accident severity & airbag deployment"
+        "Accident severity & airbag deployment",
+        "Lemon law & manufacturer buyback status",
+        "accidents & theft",
+        "salvage titles"
       ],
       "sections": [
         {
           "title": "The most common red flags we find on US-market vehicles — before you commit to a purchase.",
           "body": "Every report pulls from auction houses, insurance filings, and provider databases across all 50 states."
+        },
+        {
+          "title": "What is a salvage title?",
+          "body": "A salvage title means the vehicle was declared a total loss by an insurance company. A rebuilt title means it was repaired and re-registered. Both are significant red flags."
+        },
+        {
+          "title": "How does flood damage get hidden?",
+          "body": "Vehicles flood-damaged in one state are often transported to another state and retitled, erasing the damage history. Our multi-state search catches this."
         }
       ],
       "links": [
@@ -2968,17 +3096,28 @@
       ]
     },
     "de": {
-      "h1": "Prüfen Sie Kilometerstand von Autos ausUSA",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus den USA",
       "lead": "Die USA haben einen der größten Gebrauchtwagenmärkte der Welt — Millionen Verkäufe in 50 Bundesstaaten. Verkäufer erzählen nicht immer die ganze Geschichte. Prüfen Sie vor dem Kauf.",
       "bullets": [
         "Auktions- & Marktplatzdaten aus allen 50 Bundesstaaten",
         "Hochwasser-, Brand- & Hagelschadensnachweise",
-        "Unfallschwere & Airbag-Auslösung"
+        "Unfallschwere & Airbag-Auslösung",
+        "Lemon-Law- & Herstellerrückkaufstatus",
+        "Unfälle",
+        "Diebstähle"
       ],
       "sections": [
         {
           "title": "Die häufigsten Warnsignale bei US-Fahrzeugen — bevor Sie den Kauf abschließen.",
           "body": "Jeder Bericht zieht Daten aus Auktionshäusern, Versicherungsmeldungen und Anbieterdatenbanken in allen 50 Bundesstaaten."
+        },
+        {
+          "title": "Was ist ein salvage-Titel?",
+          "body": "Ein salvage-Titel bedeutet, dass das Fahrzeug von einer Versicherung als Totalschaden erklärt wurde. Ein rebuilt-Titel bedeutet, dass es repariert und neu zugelassen wurde. Beides sind erhebliche Warnsignale."
+        },
+        {
+          "title": "Wie werden Hochwasserschäden versteckt?",
+          "body": "Hochwasserbeschädigte Fahrzeuge werden oft in einen anderen Bundesstaat transportiert und neu getitelt, wodurch die Schadenshistorie gelöscht wird. Unsere bundesstaatsübergreifende Suche deckt das auf."
         }
       ],
       "links": [
@@ -3013,17 +3152,28 @@
       ]
     },
     "es": {
-      "h1": "Verifique kilometraje de coches deUSA",
+      "h1": "Verifique kilometraje de coches de USA",
       "lead": "EE. UU. tiene uno de los mayores mercados de coches usados del mundo: millones de ventas en 50 estados. Los vendedores no siempre cuentan toda la historia. Verifique antes de comprar.",
       "bullets": [
         "Registros de subastas y marketplaces en los 50 estados",
         "Registros de daños por inundación, incendio y granizo",
-        "Gravedad del accidente y despliegue de airbags"
+        "Gravedad del accidente y despliegue de airbags",
+        "Estado de ley del limón y recompra del fabricante",
+        "accidentes",
+        "robos"
       ],
       "sections": [
         {
           "title": "Las señales de alerta más frecuentes que encontramos en vehículos del mercado estadounidense — antes de comprometerse con una compra.",
           "body": "Cada informe extrae datos de casas de subastas, registros de seguros y bases de datos de proveedores en los 50 estados."
+        },
+        {
+          "title": "¿Qué es un título de siniestro total?",
+          "body": "Un título de siniestro total significa que el vehículo fue declarado pérdida total por una aseguradora. Un título reconstruido significa que fue reparado y vuelto a matricular. Ambos son señales de alerta importantes."
+        },
+        {
+          "title": "¿Cómo se ocultan los daños por inundación?",
+          "body": "Los vehículos dañados por inundación en un estado suelen trasladarse a otro y volver a titularse, borrando el historial de daños. Nuestra búsqueda multiestatal lo detecta."
         }
       ],
       "links": [
@@ -3058,17 +3208,28 @@
       ]
     },
     "fr": {
-      "h1": "Vérifiez le kilométrage des voituresUSA",
+      "h1": "Vérifiez le kilométrage des voitures des USA",
       "lead": "Les États-Unis ont l'un des plus grands marchés de voitures d'occasion au monde — des millions de ventes dans 50 États. Les vendeurs ne racontent pas toujours toute l'histoire. Vérifiez avant d'acheter.",
       "bullets": [
         "Registres d'enchères et de marketplaces dans les 50 États",
         "Registres de dommages par inondation, incendie et grêle",
-        "Gravité des accidents et déploiement des airbags"
+        "Gravité des accidents et déploiement des airbags",
+        "Statut lemon law et rachat constructeur",
+        "les accidents",
+        "les vols"
       ],
       "sections": [
         {
           "title": "Les signaux d'alerte les plus fréquents que nous trouvons sur les véhicules du marché américain — avant de vous engager dans un achat.",
           "body": "Chaque rapport puise dans les maisons de vente, les dossiers d'assurance et les bases de données des fournisseurs dans les 50 États."
+        },
+        {
+          "title": "Qu'est-ce qu'un titre salvage ?",
+          "body": "Un titre salvage signifie que le véhicule a été déclaré perte totale par une compagnie d'assurance. Un titre reconstruit signifie qu'il a été réparé et réimmatriculé. Les deux sont des signaux d'alerte importants."
+        },
+        {
+          "title": "Comment les dommages d'inondation sont-ils dissimulés ?",
+          "body": "Les véhicules endommagés par une inondation dans un État sont souvent transportés dans un autre et retitrés, effaçant l'historique des dommages. Notre recherche multi-États le détecte."
         }
       ],
       "links": [
@@ -3103,17 +3264,28 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash për makina ngaSHBA",
-      "lead": "Kontroll kilometrash makinash nga Amerika — verifikoni km, aksidentet, pronarët dhe vjedhjet përpara blerjes. Raport me shasi (VIN) për të 50 shtetet.",
+      "h1": "Kontroll kilometrash për makina nga SHBA",
+      "lead": "Kontroll kilometrash për makina nga SHBA — verifikoni km, aksidentet, dëmtimin total dhe vjedhjet para blerjes. Raport me numrin e shasisë për të 50 shtetet.",
       "bullets": [
         "Regjistra ankandesh dhe tregjesh në të 50 shtetet",
         "Regjistrat e dëmeve nga përmbytjet, zjarri dhe breshëri",
-        "Ashpërsia e aksidentit dhe aktivizimi i airbag-ëve"
+        "Ashpërsia e aksidentit dhe aktivizimi i airbag-ëve",
+        "Statusi Lemon dhe blerjet e prodhuesit",
+        "aksidente & vjedhje",
+        "dëmtim total"
       ],
       "sections": [
         {
           "title": "Sinjalet më të zakonshme të rrezikut që gjejmë në makinat e tregut amerikan — para se të vendosni për blerje.",
           "body": "Çdo raport mbledh të dhëna nga ankande, deklarata sigurimi dhe regjistrat qeveritarë në të 50 shtetet."
+        },
+        {
+          "title": "Çfarë do të thotë titulli i dëmtimit total?",
+          "body": "Titulli i dëmtimit total do të thotë se makina u shpall humbje totale nga sigurimi. Titulli i rindërtuar do të thotë se u riparua dhe u riregjistrua. Të dyja janë sinjale serioze rreziku."
+        },
+        {
+          "title": "Si fshihet dëmi nga përmbytja?",
+          "body": "Makinat e dëmtuara nga përmbytja në një shtet shpesh transportohen në një shtet tjetër dhe riregjistrohen, duke fshirë historinë e dëmeve. Kërkimi ynë në shumë shtete e zbulon këtë."
         }
       ],
       "links": [
@@ -3148,17 +3320,28 @@
       ]
     },
     "pl": {
-      "h1": "Sprawdź przebieg samochodów zUSA",
+      "h1": "Sprawdź przebieg samochodów z USA",
       "lead": "USA to jeden z największych rynków samochodów używanych na świecie — miliony transakcji w 50 stanach. Sprzedawcy nie zawsze podają pełną historię. Zweryfikuj przed zakupem.",
       "bullets": [
         "Rejestry aukcji i marketplace'ów we wszystkich 50 stanach",
         "Rejestry uszkodzeń powodziowych, pożarowych i gradowych",
-        "Ciężkość wypadku i uruchomienie poduszek powietrznych"
+        "Ciężkość wypadku i uruchomienie poduszek powietrznych",
+        "Status wykupu na podstawie prawa lemon i wykupu przez producenta",
+        "wypadki",
+        "kradzieże"
       ],
       "sections": [
         {
           "title": "Najczęstsze czerwone flagi, które znajdujemy w pojazdach z rynku amerykańskiego — zanim podejmiesz decyzję o zakupie.",
           "body": "Każdy raport pobiera dane z domów aukcyjnych, zgłoszeń ubezpieczeniowych i baz dostawców we wszystkich 50 stanach."
+        },
+        {
+          "title": "Czym jest tytuł szkody całkowitej?",
+          "body": "Tytuł szkody całkowitej oznacza, że pojazd został uznany za całkowitą stratę przez firmę ubezpieczeniową. Tytuł odbudowany oznacza, że został naprawiony i ponownie zarejestrowany. Oba są poważnymi sygnałami ostrzegawczymi."
+        },
+        {
+          "title": "Jak ukrywa się uszkodzenia powodziowe?",
+          "body": "Pojazdy uszkodzone powodzią w jednym stanie są często przewożone do innego stanu i ponownie rejestrowane, co kasuje historię uszkodzeń. Nasze wyszukiwanie wielostanowe to wykrywa."
         }
       ],
       "links": [
@@ -3193,17 +3376,28 @@
       ]
     },
     "ro": {
-      "h1": "Verifică kilometrajul mașinilor dinSUA",
+      "h1": "Verifică kilometrajul mașinilor din SUA",
       "lead": "SUA are una dintre cele mai mari piețe de mașini second-hand din lume — milioane de vânzări în 50 de state. Vânzătorii nu împărtășesc întotdeauna povestea completă. Verificați înainte de a cumpăra.",
       "bullets": [
         "Înregistrări licitații și piețe în toate cele 50 de state",
         "Înregistrări daune inundații, incendiu și grindină",
-        "Gravitate accident și declanșare airbag"
+        "Gravitate accident și declanșare airbag",
+        "Status lemon-law și răscumpărare producător",
+        "accidentele",
+        "furturile"
       ],
       "sections": [
         {
           "title": "Cele mai frecvente semnale de alarmă pe vehiculele de pe piața americană — înainte să vă angajați la o achiziție.",
           "body": "Fiecare raport extrage date din case de licitații, dosare de asigurări și baze de date ale furnizorilor din toate cele 50 de state."
+        },
+        {
+          "title": "Ce este un titlu de salvaj?",
+          "body": "Un titlu de salvaj înseamnă că vehiculul a fost declarat pierdere totală de o companie de asigurări. Un titlu reconstruit înseamnă că a fost reparat și reînmatriculat. Ambele sunt semnale de alarmă importante."
+        },
+        {
+          "title": "Cum sunt ascunse daunele de inundație?",
+          "body": "Vehiculele avariate de inundații într-un stat sunt adesea transportate în alt stat și reînmatriculate, ștergând istoricul daunelor. Căutarea noastră multi-statal o detectează."
         }
       ],
       "links": [
@@ -3238,17 +3432,28 @@
       ]
     },
     "bg": {
-      "h1": "Проверете пробега на автомобили отСАЩ",
+      "h1": "Проверете пробега на автомобили от САЩ",
       "lead": "САЩ имат един от най-големите пазари на употребявани автомобили в света — милиони продажби в 50 щата. Продавачите не винаги споделят цялата история. Проверете преди да купите.",
       "bullets": [
         "Записи от търгове и пазари във всички 50 щата",
         "Записи за щети от наводнения, пожар и градушка",
-        "Тежест на катастрофата и активиране на въздушни възглавници"
+        "Тежест на катастрофата и активиране на въздушни възглавници",
+        "Статус по lemon law и изкупуване от производител",
+        "катастрофите",
+        "кражбите"
       ],
       "sections": [
         {
           "title": "Най-честите червени флагове, които откриваме при автомобили от американския пазар — преди да се ангажирате с покупка.",
           "body": "Всеки отчет извлича данни от търгови къщи, застрахователни документи и бази данни на доставчици във всички 50 щата."
+        },
+        {
+          "title": "Какво е salvage талон?",
+          "body": "Salvage талон означава, че автомобилът е обявен за тотална загуба от застрахователна компания. Възстановен талон означава, че е ремонтиран и пререгистриран. И двете са сериозни червени флагове."
+        },
+        {
+          "title": "Как се скриват щетите от наводнение?",
+          "body": "Автомобили, повредени от наводнение в един щат, често се транспортират в друг и получават нов талон, изтривайки историята на щетите. Многощатното ни търсене улавя това."
         }
       ],
       "links": [
@@ -3283,17 +3488,28 @@
       ]
     },
     "ka": {
-      "h1": "შეამოწმეთ გარბენი მანქანებიდანUSA",
+      "h1": "შეამოწმეთ გარბენი მანქანები ამერიკიდან",
       "lead": "აშშ მართავს მსოფლიოში ერთ-ერთ ყველაზე დიდ მეორადი ავტომობილების ბაზარს - მილიონობით გაყიდვა 50 შტატში. გამყიდველები ყოველთვის არ იზიარებენ სრულ ამბავს. გადაამოწმეთ სანამ იყიდით.",
       "bullets": [
         "აუქციონისა და ბაზრის ჩანაწერები 50-ვე შტატში",
         "წყალდიდობის, ხანძრის და სეტყვის დაზიანების ჩანაწერები",
-        "ავარიის სიმძიმე და აირბალიშის გაშლა"
+        "ავარიის სიმძიმე და აირბალიშის გაშლა",
+        "ლიმონის კანონი და მწარმოებლის ყიდვის სტატუსი",
+        "ავარიები",
+        "ქურდობები"
       ],
       "sections": [
         {
           "title": "ყველაზე გავრცელებულ წითელ დროშებს, რომლებსაც ვპოულობთ აშშ-ს ბაზრის მანქანებზე - სანამ ყიდულობთ ვალდებულებას.",
           "body": "ყველა ანგარიში ამოღებულია აუქციონის სახლებიდან, სადაზღვევო ფაილებიდან და პროვაიდერების მონაცემთა ბაზებიდან 50-ვე შტატში."
+        },
+        {
+          "title": "რა არის სალვაჟის ტიტული?",
+          "body": "სალვაჟის ტიტული ნიშნავს, რომ მანქანა სადაზღვევო კომპანიამ ტოტალურ ზარალად გამოაცხადა. აღდგენილი ტიტული — გარემონტდა და ხელახლა დარეგისტრირდა. ორივე სერიოზული წითელი დროშაა."
+        },
+        {
+          "title": "როგორ იმალება წყალდიდობის ზარალი?",
+          "body": "ერთ შტატში დატბორვის შედეგად დაზიანებული მანქანები ხშირად ტრანსპორტირდება სხვა შტატში და ასწორებენ სათაურს, რაც ანადგურებს ზიანის ისტორიას. ჩვენი მრავალსახელმწიფოებრივი ძებნა ამას იჭერს."
         }
       ],
       "links": [
@@ -3328,17 +3544,28 @@
       ]
     },
     "ar": {
-      "h1": "تحقق من الكيلومترات سيارات منالولايات المتحدة",
+      "h1": "تحقق من الكيلومترات سيارات من أمريكا",
       "lead": "تمتلك الولايات المتحدة من أكبر أسواق السيارات المستعملة في العالم — ملايين المبيعات عبر 50 ولاية. لا يشارك البائعون دائماً القصة كاملة. تحقق قبل الشراء.",
       "bullets": [
         "سجلات المزادات والأسواق عبر جميع الولايات الخمسين",
         "سجلات أضرار الفيضانات والحرائق والبَرَد",
-        "شدة الحوادث ونشر الوسائد الهوائية"
+        "شدة الحوادث ونشر الوسائد الهوائية",
+        "حالة قانون الليمون واسترداد الشركة المصنّعة",
+        "الحوادث",
+        "السرقة"
       ],
       "sections": [
         {
           "title": "أكثر الإشارات الحمراء شيوعاً في السيارات الأمريكية — قبل أن تلتزم بالشراء.",
           "body": "كل تقرير يجمع بيانات من دور المزادات ووثائق التأمين والسجلات الحكومية في جميع الولايات."
+        },
+        {
+          "title": "ما هو صك الإنقاذ؟",
+          "body": "صك الإنقاذ يعني أن المركبة أُعلنت خسارة كاملة من قِبل شركة التأمين. وصك الإعادة يعني إصلاحها وإعادة تسجيلها. كلاهما تحذير بالغ الأهمية."
+        },
+        {
+          "title": "كيف يُخفى ضرر الفيضانات؟",
+          "body": "كثيراً ما تُنقل المركبات المتضررة من الفيضانات في ولاية ما إلى ولاية أخرى لإعادة تسجيلها، مما يمحو سجل الأضرار. بحثنا متعدد الولايات يكشف ذلك."
         }
       ],
       "links": [
@@ -3373,17 +3600,28 @@
       ]
     },
     "uk": {
-      "h1": "Перевір пробіг автомобілів зСША",
+      "h1": "Перевір пробіг автомобілів з США",
       "lead": "У США один з найбільших ринків вживаних авто — мільйони угод у 50 штатах. Продавці не завжди розповідають повну історію. Перевірте перед покупкою.",
       "bullets": [
         "Дані аукціонів та маркетплейсів по всіх 50 штатах",
         "Записи пошкоджень від повеней, пожеж та граду",
-        "Тяжкість аварії та спрацювання подушок безпеки"
+        "Тяжкість аварії та спрацювання подушок безпеки",
+        "Статус за законом про лимони та викуп виробником",
+        "аварії",
+        "угони"
       ],
       "sections": [
         {
           "title": "Найпоширеніші червоні прапорці в американських вживаних авто — перш ніж ви приймете рішення.",
           "body": "Кожен звіт об'єднує дані аукціонів, страхових документів і державних реєстрів по всіх штатах."
+        },
+        {
+          "title": "Що таке salvage title?",
+          "body": "Salvage title означає, що транспортний засіб визнано повністю знищеним страховою компанією. Rebuilt title означає, що його відремонтували і перереєстрували. Обидва є серйозними попереджувальними знаками."
+        },
+        {
+          "title": "Як приховують пошкодження від повені?",
+          "body": "Авто, пошкоджені повенями в одному штаті, часто перевозять в інший штат і перереєстровують, стираючи історію пошкоджень. Наш пошук по кількох штатах виявляє це."
         }
       ],
       "links": [
@@ -3418,17 +3656,28 @@
       ]
     },
     "ru": {
-      "h1": "Проверь пробег автомобилей изСША",
+      "h1": "Проверь пробег автомобилей из США",
       "lead": "В США один из крупнейших рынков подержанных авто — миллионы сделок в 50 штатах. Продавцы не всегда рассказывают всю историю. Проверьте перед покупкой.",
       "bullets": [
         "Данные аукционов и маркетплейсов по всем 50 штатам",
         "Записи об ущербе от наводнений, пожаров и града",
-        "Тяжесть аварии и срабатывание подушек безопасности"
+        "Тяжесть аварии и срабатывание подушек безопасности",
+        "Статус по закону о лимонах и выкуп производителем",
+        "аварии",
+        "угоны"
       ],
       "sections": [
         {
           "title": "Самые частые красные флаги в американских подержанных авто — до того, как вы примете решение.",
           "body": "Каждый отчёт объединяет данные аукционов, страховых документов и государственных реестров по всем штатам."
+        },
+        {
+          "title": "Что такое salvage title?",
+          "body": "Salvage title означает, что транспортное средство признано полностью уничтоженным страховой компанией. Rebuilt title означает, что его отремонтировали и перерегистрировали. Оба являются серьёзными предупредительными знаками."
+        },
+        {
+          "title": "Как скрывают ущерб от наводнений?",
+          "body": "Авто, повреждённые наводнениями в одном штате, часто перевозят в другой штат и перерегистрируют, стирая историю повреждений. Наш поиск по нескольким штатам выявляет это."
         }
       ],
       "links": [
@@ -3463,17 +3712,28 @@
       ]
     },
     "zh": {
-      "h1": "查询 里程 来自美国",
+      "h1": "查询 里程 美国进口车",
       "lead": "美国拥有全球最大的二手车市场之一 — 50 个州数百万笔交易。卖家未必透露全部真相。购买前请核实。",
       "bullets": [
         "覆盖 50 个州的拍卖与交易平台记录",
         "洪水、火灾与冰雹损伤记录",
-        "事故严重程度与气囊弹出"
+        "事故严重程度与气囊弹出",
+        "柠檬法与厂家回购状态",
+        "事故",
+        "盗抢"
       ],
       "sections": [
         {
           "title": "美国市场车辆最常见的风险信号 — 付款前先查清。",
           "body": "每份报告从全美拍卖行、保险备案与供应商数据库拉取数据。"
+        },
+        {
+          "title": "什么是报废产权？",
+          "body": "报废产权表示保险公司已认定车辆全损。重建产权表示已修复并重新登记。两者都是重要风险信号。"
+        },
+        {
+          "title": "洪水损伤如何被隐藏？",
+          "body": "在一个州遭水淹的车辆常被运到另一州重新登记，抹去损伤历史。我们的多州搜索可发现此类情况。"
         }
       ],
       "links": [
@@ -3510,17 +3770,28 @@
   },
   "country_korea": {
     "en": {
-      "h1": "Check mileage of cars fromSouth Korea",
-      "lead": "South Korea has 25M+ registered vehicles and a fast-moving used market. Hidden damage and undisclosed history are common. Check before you buy or import.",
+      "h1": "Korean mileage check for cars from South Korea",
+      "lead": "Korean mileage check for cars from South Korea — verify km, accidents, export/import history and hidden damage for Hyundai, Kia, Genesis and more.",
       "bullets": [
         "Korean auction platform & marketplace records",
         "Private insurance filings & accident records",
-        "Odometer history verification"
+        "Odometer history verification",
+        "Export inspection records",
+        "accidents & damage",
+        "import history"
       ],
       "sections": [
         {
           "title": "Real risks in the Korean used-car market — especially for imports and private sales.",
           "body": "Regional sources including Encar, insurance filings, and Korean marketplace listings."
+        },
+        {
+          "title": "Are cars registered in South Korea safe to buy or import?",
+          "body": "Yes, when properly checked. South Korea has a large used-car market with all brands — domestic and imported. Undisclosed damage and odometer fraud are known risks. Our report gives you the full picture."
+        },
+        {
+          "title": "Where is the VIN on a Korean car?",
+          "body": "Korean VINs start with 'K' and are found on the dashboard near the windshield and on the engine block. Some older models have them on the firewall."
         }
       ],
       "links": [
@@ -3555,17 +3826,28 @@
       ]
     },
     "de": {
-      "h1": "Prüfen Sie Kilometerstand von Autos ausSüdkorea",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus Südkorea",
       "lead": "Südkorea hat über 25 Mio. zugelassene Fahrzeuge und einen schnelllebigen Gebrauchtwagenmarkt. Versteckte Schäden und verschwiegene Historie sind häufig. Prüfen Sie vor Kauf oder Import.",
       "bullets": [
         "Koreanische Auktionsplattform- & Marktplatzdaten",
         "Private Versicherungsmeldungen & Unfallnachweise",
-        "Kilometerstandshistorie-Verifizierung"
+        "Kilometerstandshistorie-Verifizierung",
+        "Export-Inspektionsnachweise",
+        "Unfälle",
+        "Importhistorie"
       ],
       "sections": [
         {
           "title": "Echte Risiken auf dem koreanischen Gebrauchtwagenmarkt — besonders bei Importen und Privatverkäufen.",
           "body": "Regionale Quellen wie Encar, Versicherungsmeldungen und koreanische Marktplatz-Inserate."
+        },
+        {
+          "title": "Sind in Südkorea zugelassene Autos sicher zu kaufen oder zu importieren?",
+          "body": "Ja, wenn sie ordnungsgemäß geprüft werden. Südkorea hat einen großen Gebrauchtwagenmarkt mit allen Marken — inländisch und importiert. Verschwiegene Schäden und Tachobetrug sind bekannte Risiken. Unser Bericht gibt Ihnen das vollständige Bild."
+        },
+        {
+          "title": "Wo steht die VIN an einem koreanischen Auto?",
+          "body": "Koreanische VINs beginnen mit ‚K‘ und befinden sich am Armaturenbrett nahe der Windschutzscheibe und am Motorblock. Bei einigen älteren Modellen steht sie an der Spritzwand."
         }
       ],
       "links": [
@@ -3600,17 +3882,28 @@
       ]
     },
     "es": {
-      "h1": "Verifique kilometraje de coches deCorea del Sur",
+      "h1": "Verifique kilometraje de coches de Corea del Sur",
       "lead": "Corea del Sur tiene más de 25 millones de vehículos matriculados y un mercado de usados muy dinámico. Los daños ocultos y el historial no declarado son frecuentes. Revise antes de comprar o importar.",
       "bullets": [
         "Registros de plataformas de subasta y marketplaces coreanos",
         "Registros privados de seguros y accidentes",
-        "Verificación del historial de odómetro"
+        "Verificación del historial de odómetro",
+        "Registros de inspección de exportación",
+        "accidentes",
+        "historial de importación"
       ],
       "sections": [
         {
           "title": "Riesgos reales en el mercado coreano de coches usados — especialmente en importaciones y ventas privadas.",
           "body": "Fuentes regionales incluyendo Encar, registros de seguros y anuncios en marketplaces coreanos."
+        },
+        {
+          "title": "¿Es seguro comprar o importar coches matriculados en Corea del Sur?",
+          "body": "Sí, si revisa bien el historial. Corea del Sur tiene un gran mercado de usados con todas las marcas, nacionales e importadas. Los daños no declarados y el fraude de odómetro son riesgos conocidos. Nuestro informe le da el panorama completo."
+        },
+        {
+          "title": "¿Dónde está el VIN en un coche coreano?",
+          "body": "Los VIN coreanos empiezan por \"K\" y se encuentran en el salpicadero junto al parabrisas y en el bloque del motor. Algunos modelos antiguos los tienen en el murete cortafuegos."
         }
       ],
       "links": [
@@ -3645,17 +3938,28 @@
       ]
     },
     "fr": {
-      "h1": "Vérifiez le kilométrage des voituresCorée du Sud",
+      "h1": "Vérifiez le kilométrage des voitures de Corée du Sud",
       "lead": "La Corée du Sud compte plus de 25 millions de véhicules immatriculés et un marché de l'occasion très dynamique. Les dommages cachés et l'historique non déclaré sont fréquents. Vérifiez avant d'acheter ou d'importer.",
       "bullets": [
         "Registres des plateformes d'enchères et marketplaces coréennes",
         "Dossiers d'assurance privés et registres d'accidents",
-        "Vérification de l'historique du compteur"
+        "Vérification de l'historique du compteur",
+        "Registres d'inspection à l'export",
+        "les accidents",
+        "l'historique d'import"
       ],
       "sections": [
         {
           "title": "Les risques réels sur le marché coréen de l'occasion — surtout pour les importations et les ventes entre particuliers.",
           "body": "Sources régionales incluant Encar, dossiers d'assurance et annonces sur les marketplaces coréennes."
+        },
+        {
+          "title": "Est-il sûr d'acheter ou d'importer des voitures immatriculées en Corée du Sud ?",
+          "body": "Oui, si l'historique est correctement vérifié. La Corée du Sud a un grand marché de l'occasion avec toutes les marques — nationales et importées. Les dommages non déclarés et la fraude au compteur sont des risques connus. Notre rapport vous donne une vue complète."
+        },
+        {
+          "title": "Où se trouve le VIN sur une voiture coréenne ?",
+          "body": "Les VIN coréens commencent par « K » et se trouvent sur le tableau de bord près du pare-brise et sur le bloc moteur. Certains modèles plus anciens l'ont sur la cloison pare-feu."
         }
       ],
       "links": [
@@ -3690,17 +3994,28 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash për makina ngaKoreja e Jugut",
-      "lead": "Kontroll kilometrash makinash nga Koreja — dëme të fshehura, manipulim km dhe histori importi. Kontrollo me shasi (VIN) para blerjes ose importit.",
+      "h1": "Kontroll kilometrash për makina nga Koreja",
+      "lead": "Kontroll kilometrash për makina nga Koreja — verifikoni km, aksidentet, historikun e importit dhe dëmet e fshehura për Hyundai, Kia, Genesis e të tjera.",
       "bullets": [
         "Regjistra të platformave të ankandeve dhe tregjeve koreane",
         "Deklarata sigurimi dhe regjistrat e aksidenteve",
-        "Verifikimi i historisë së kilometrave"
+        "Verifikimi i historisë së kilometrave",
+        "Rekordet e inspektimit të eksportit",
+        "aksidente & dëme",
+        "historiku i importit"
       ],
       "sections": [
         {
           "title": "Rreziqe reale në tregun korean të makinave të përdorura — veçanërisht për importe dhe shitje private.",
           "body": "Burime rajonale përfshirë Encar, deklarata sigurimi dhe listime të tregut korean."
+        },
+        {
+          "title": "A janë makinat koreane të sigurta për import?",
+          "body": "Po, kur kontrollohen siç duhet. Makinat koreane janë të ndërtuara mirë, por tregu vendas i makinave të përdorura ka probleme të njohura me dëme të padeklaruara. Raporti ynë të jep pamjen e plotë."
+        },
+        {
+          "title": "Ku ndodhet VIN-i në një makinë koreane?",
+          "body": "VIN-et koreane fillojnë me 'K' dhe gjenden në panelin e instrumenteve pranë xhamit të përparmë dhe në bllokun e motorit. Disa modele të vjetra i kanë në murin e ndarjes."
         }
       ],
       "links": [
@@ -3735,17 +4050,28 @@
       ]
     },
     "pl": {
-      "h1": "Sprawdź przebieg samochodów zKorea Południowa",
+      "h1": "Sprawdź przebieg samochodów z Korei Południowej",
       "lead": "Korea Południowa ma ponad 25 mln zarejestrowanych pojazdów i dynamiczny rynek używanych. Ukryte uszkodzenia i nieujawniona historia są powszechne. Sprawdź przed zakupem lub importem.",
       "bullets": [
         "Rejestry koreańskich platform aukcyjnych i marketplace'ów",
         "Prywatne zgłoszenia ubezpieczeniowe i rejestry wypadków",
-        "Weryfikacja historii licznika"
+        "Weryfikacja historii licznika",
+        "Rejestry inspekcji eksportowej",
+        "wypadki",
+        "historia importu"
       ],
       "sections": [
         {
           "title": "Rzeczywiste ryzyka na koreańskim rynku samochodów używanych — szczególnie przy imporcie i sprzedaży prywatnej.",
           "body": "Źródła regionalne, w tym Encar, zgłoszenia ubezpieczeniowe i koreańskie ogłoszenia na marketplace'ach."
+        },
+        {
+          "title": "Czy samochody zarejestrowane w Korei Południowej są bezpieczne do zakupu lub importu?",
+          "body": "Tak, pod warunkiem właściwego sprawdzenia. Korea Południowa ma duży rynek samochodów używanych ze wszystkimi markami — krajowymi i importowanymi. Nieujawnione uszkodzenia i fałszowanie licznika to znane ryzyka. Nasz raport daje pełny obraz."
+        },
+        {
+          "title": "Gdzie znajduje się numer VIN w koreańskim samochodzie?",
+          "body": "Koreańskie numery VIN zaczynają się od „K” i znajdują się na desce rozdzielczej przy przedniej szybie oraz na bloku silnika. W starszych modelach bywają też na przegrodzie czołowej."
         }
       ],
       "links": [
@@ -3780,17 +4106,28 @@
       ]
     },
     "ro": {
-      "h1": "Verifică kilometrajul mașinilor dinCoreea de Sud",
+      "h1": "Verifică kilometrajul mașinilor din Coreea de Sud",
       "lead": "Coreea de Sud are peste 25M de vehicule înmatriculate și o piață second-hand dinamică. Daunele ascunse și istoricul nedeclarat sunt frecvente. Verificați înainte de a cumpăra sau importa.",
       "bullets": [
         "Înregistrări platforme de licitații și piețe coreene",
         "Dosare asigurări private și înregistrări accidente",
-        "Verificare istoric odometru"
+        "Verificare istoric odometru",
+        "Înregistrări inspecție export",
+        "accidentele",
+        "istoricul de import"
       ],
       "sections": [
         {
           "title": "Riscuri reale pe piața second-hand coreeană — în special pentru importuri și vânzări private.",
           "body": "Surse regionale inclusiv Encar, dosare de asigurări și anunțuri pe piețele coreene."
+        },
+        {
+          "title": "Sunt mașinile înmatriculate în Coreea de Sud sigure de cumpărat sau importat?",
+          "body": "Da, când sunt verificate corespunzător. Coreea de Sud are o piață second-hand mare cu toate mărcile — domestice și importate. Daunele nedeclarate și frauda la odometru sunt riscuri cunoscute. Raportul nostru vă oferă imaginea completă."
+        },
+        {
+          "title": "Unde este VIN-ul pe o mașină coreeană?",
+          "body": "VIN-urile coreene încep cu „K” și se găsesc pe bord lângă parbriz și pe blocul motor. Unele modele mai vechi le au pe tabloul de bord."
         }
       ],
       "links": [
@@ -3825,17 +4162,28 @@
       ]
     },
     "bg": {
-      "h1": "Проверете пробега на автомобили отЮжна Корея",
+      "h1": "Проверете пробега на автомобили от Южна Корея",
       "lead": "Южна Корея има над 25 милиона регистрирани автомобили и бърз пазар на употребявани коли. Скрити щети и неразкрита история са чести. Проверете преди да купите или внесете.",
       "bullets": [
         "Записи от корейски търгови платформи и пазари",
         "Частни застрахователни документи и записи за катастрофи",
-        "Верификация на историята на одометъра"
+        "Верификация на историята на одометъра",
+        "Записи от износни инспекции",
+        "катастрофите",
+        "историята на вноса"
       ],
       "sections": [
         {
           "title": "Реални рискове на корейския пазар на употребявани автомобили — особено при внос и частни продажби.",
           "body": "Регионални източници, включително Encar, застрахователни документи и корейски обяви."
+        },
+        {
+          "title": "Безопасно ли е да купите или внесете автомобил, регистриран в Южна Корея?",
+          "body": "Да, при правилна проверка. Южна Корея има голям пазар на употребявани автомобили с всички марки — местни и вносни. Неразкрити щети и манипулация на одометъра са известни рискове. Нашият отчет ви дава пълната картина."
+        },
+        {
+          "title": "Къде е VIN на корейски автомобил?",
+          "body": "Корейските VIN започват с „K“ и се намират на таблото до предното стъкло и на блока на двигателя. При някои по-стари модели са на преградната стена."
         }
       ],
       "links": [
@@ -3870,17 +4218,28 @@
       ]
     },
     "ka": {
-      "h1": "შეამოწმეთ გარბენი მანქანებიდანსამხრეთ კორეა",
+      "h1": "შეამოწმეთ გარბენი მანქანები სამხრეთ კორეიდან",
       "lead": "სამხრეთ კორეას აქვს 25 მილიონი+ რეგისტრირებული მანქანა და სწრაფად მოძრავი მეორადი ბაზარი. დამალული დაზიანება და გაურკვეველი ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
       "bullets": [
         "კორეის აუქციონის პლატფორმა და ბაზრის ჩანაწერები",
         "პირადი დაზღვევის ჩანაწერები და ავარიების ჩანაწერები",
-        "ოდომეტრის ისტორიის შემოწმება"
+        "ოდომეტრის ისტორიის შემოწმება",
+        "ექსპორტის ინსპექტირების ჩანაწერები",
+        "ავარიები",
+        "იმპორტის ისტორია"
       ],
       "sections": [
         {
           "title": "რეალური რისკები კორეის მეორადი მანქანების ბაზარზე - განსაკუთრებით იმპორტისა და კერძო გაყიდვებისთვის.",
           "body": "რეგიონალური წყაროები, მათ შორის Encar, სადაზღვევო ფაილები და კორეული ბაზრის ჩამონათვალი."
+        },
+        {
+          "title": "არის თუ არა სამხრეთ კორეაში რეგისტრირებული მანქანები უსაფრთხო შესაძენად ან იმპორტისთვის?",
+          "body": "დიახ, როდესაც სათანადოდ შემოწმდება. სამხრეთ კორეას აქვს მეორადი მანქანების დიდი ბაზარი ყველა ბრენდით - შიდა და იმპორტირებული. გაურკვეველი დაზიანება და ოდომეტრის გაყალბება ცნობილი რისკებია. ჩვენი ანგარიში სრულ სურათს გაძლევთ."
+        },
+        {
+          "title": "სად არის VIN კორეულ მანქანაზე?",
+          "body": "კორეული VIN-ები იწყება „K“-ით და ჩანს დაფაზე (საქარე მინასთან) და ძრავის ბლოკზე. ზოგ ძველ მოდელზე — ძრავის განყოფილების კედელზეც."
         }
       ],
       "links": [
@@ -3915,17 +4274,28 @@
       ]
     },
     "ar": {
-      "h1": "تحقق من الكيلومترات سيارات منكوريا الجنوبية",
+      "h1": "تحقق من الكيلومترات سيارات من كوريا",
       "lead": "في كوريا الجنوبية أكثر من 25 مليون مركبة مسجّلة وسوق مستعمل نشط. الأضرار المخفية والتاريخ غير المُعلن شائعان. تحقق قبل الشراء أو الاستيراد.",
       "bullets": [
         "سجلات منصات المزادات والأسواق الكورية",
         "وثائق التأمين الخاصة وسجلات الحوادث",
-        "التحقق من تاريخ العداد"
+        "التحقق من تاريخ العداد",
+        "سجلات فحص التصدير",
+        "الحوادث",
+        "تاريخ الاستيراد"
       ],
       "sections": [
         {
           "title": "مخاطر حقيقية في سوق السيارات المستعملة الكورية — خاصة للواردات والبيع الخاص.",
           "body": "مصادر إقليمية تشمل Encar ووثائق التأمين وإعلانات السوق الكورية."
+        },
+        {
+          "title": "هل السيارات الكورية آمنة للاستيراد؟",
+          "body": "نعم، عند الفحص المناسب. المركبات الكورية متينة الصنع ولكن سوق السيارات المستعملة المحلي فيه مشاكل معروفة بالأضرار غير المُعلنة. تقريرنا يُعطيك الصورة الكاملة."
+        },
+        {
+          "title": "أين يقع رقم الشاسيه في السيارة الكورية؟",
+          "body": "أرقام الشاسيه الكورية تبدأ بـ 'K' وتُعثر عليها على لوحة القيادة بالقرب من الزجاج الأمامي وعلى كتلة المحرك. بعض الطرازات القديمة لها على الجدار الناري."
         }
       ],
       "links": [
@@ -3960,17 +4330,28 @@
       ]
     },
     "uk": {
-      "h1": "Перевір пробіг автомобілів зПівденна Корея",
+      "h1": "Перевір пробіг автомобілів з Кореї",
       "lead": "У Південній Кореї зареєстровано 25M+ авто та активний ринок вживаних машин. Приховані пошкодження й нерозкрита історія — звична справа. Перевірте перед покупкою чи імпортом.",
       "bullets": [
         "Дані корейських аукціонних майданчиків та маркетплейсів",
         "Приватні страхові документи та записи про аварії",
-        "Перевірка історії одометра"
+        "Перевірка історії одометра",
+        "Записи про інспекцію на експорт",
+        "аварії",
+        "історію імпорту"
       ],
       "sections": [
         {
           "title": "Реальні ризики на корейському ринку вживаних авто — особливо при імпорті та приватних продажах.",
           "body": "Регіональні джерела: Encar, страхові документи та оголошення корейських маркетплейсів."
+        },
+        {
+          "title": "Чи безпечно імпортувати корейські автомобілі?",
+          "body": "Так, за умови належної перевірки. Корейські автомобілі добре зроблені, але внутрішній ринок вживаних авто має відомі проблеми з нерозкритими пошкодженнями. Наш звіт дає вам повну картину."
+        },
+        {
+          "title": "Де знаходиться VIN на корейському автомобілі?",
+          "body": "Корейські VIN починаються з 'K' і знаходяться на приладовій панелі біля лобового скла та на блоці двигуна. Деякі старі моделі мають їх на брандмауері."
         }
       ],
       "links": [
@@ -4005,17 +4386,28 @@
       ]
     },
     "ru": {
-      "h1": "Проверь пробег автомобилей изЮжная Корея",
+      "h1": "Проверь пробег автомобилей из Кореи",
       "lead": "В Южной Корее зарегистрировано 25M+ автомобилей и активный рынок подержанных авто. Скрытые повреждения и нераскрытая история — обычное дело. Проверьте перед покупкой или импортом.",
       "bullets": [
         "Данные корейских аукционных площадок и маркетплейсов",
         "Частные страховые документы и записи об авариях",
-        "Проверка истории одометра"
+        "Проверка истории одометра",
+        "Записи об инспекции на экспорт",
+        "аварии",
+        "историю импорта"
       ],
       "sections": [
         {
           "title": "Реальные риски на корейском рынке подержанных авто — особенно при импорте и частных продажах.",
           "body": "Региональные источники: Encar, страховые документы и объявления корейских маркетплейсов."
+        },
+        {
+          "title": "Безопасно ли импортировать корейские автомобили?",
+          "body": "Да, при надлежащей проверке. Корейские автомобили хорошо сделаны, но внутренний рынок подержанных авто имеет известные проблемы с нераскрытыми повреждениями. Наш отчёт даёт вам полную картину."
+        },
+        {
+          "title": "Где находится VIN на корейском автомобиле?",
+          "body": "Корейские VIN начинаются с 'K' и находятся на приборной панели рядом с лобовым стеклом и на блоке двигателя. Некоторые старые модели имеют их на брандмауэре."
         }
       ],
       "links": [
@@ -4050,17 +4442,28 @@
       ]
     },
     "zh": {
-      "h1": "查询 里程 来自韩国",
+      "h1": "查询 里程 韩国进口车",
       "lead": "韩国有超过 2500 万辆注册车辆，二手车市场流转迅速。隐藏损伤与未披露历史很常见。购买或进口前请查询。",
       "bullets": [
         "韩国拍卖平台与交易平台记录",
         "私人保险备案与事故记录",
-        "里程历史核实"
+        "里程历史核实",
+        "出口检验记录",
+        "事故",
+        "进口历史"
       ],
       "sections": [
         {
           "title": "韩国二手车市场的真实风险 — 尤其进口车与私人交易。",
           "body": "区域来源包括 Encar、保险备案与韩国交易平台挂牌信息。"
+        },
+        {
+          "title": "韩国注册车辆可以安全购买或进口吗？",
+          "body": "可以，但需充分核查。韩国二手车市场规模大，涵盖国产与进口各品牌。未披露损伤与调表是已知风险。我们的报告让您掌握完整信息。"
+        },
+        {
+          "title": "韩国车的 VIN 在哪里？",
+          "body": "韩国 VIN 以「K」开头，位于挡风玻璃附近仪表盘和发动机缸体。部分老款车型在防火墙处。"
         }
       ],
       "links": [
@@ -4097,17 +4500,28 @@
   },
   "country_canada": {
     "en": {
-      "h1": "Check mileage of cars fromCanada",
+      "h1": "Canada mileage check for Canadian cars",
       "lead": "Canada has 30M+ registered vehicles and a busy used-car market from coast to coast. Branded titles, hidden insurance claims and cross-province transfers are common risks. Verify before you buy or import.",
       "bullets": [
         "Provincial registration & lien search indicators",
         "Insurance claim & collision history",
-        "Auction and marketplace listing records"
+        "Auction and marketplace listing records",
+        "Branded, salvage & rebuilt title flags",
+        "accidents & theft",
+        "branded titles"
       ],
       "sections": [
         {
           "title": "The most common red flags on Canadian used vehicles — before you hand over a deposit.",
           "body": "Every report pulls auction data, insurance indicators and registration signals across Canadian provinces and territories."
+        },
+        {
+          "title": "What is a branded title in Canada?",
+          "body": "A branded title marks a vehicle that was written off, rebuilt, or declared irreparable by an insurer or provincial authority. It is a major warning sign for buyers."
+        },
+        {
+          "title": "Can US flood cars be hidden in Canada?",
+          "body": "Yes. Flood-damaged US vehicles are sometimes imported and sold in Canada with incomplete history. Our cross-border VIN search helps surface prior damage records."
         }
       ],
       "links": [
@@ -4142,17 +4556,28 @@
       ]
     },
     "de": {
-      "h1": "Prüfen Sie Kilometerstand von Autos ausKanada",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus Kanada",
       "lead": "Kanada hat über 30 Mio. zugelassene Fahrzeuge und einen lebhaften Gebrauchtwagenmarkt von Küste zu Küste. Markierte Titel, versteckte Versicherungsansprüche und provinzübergreifende Ummeldungen sind häufige Risiken. Prüfen Sie vor Kauf oder Import.",
       "bullets": [
         "Provinzielle Zulassungs- & Pfandrechtsindikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
-        "Auktions- und Marktplatz-Inserate"
+        "Auktions- und Marktplatz-Inserate",
+        "Markierte, salvage- & rebuilt-Titel-Hinweise",
+        "Unfälle",
+        "Diebstähle"
       ],
       "sections": [
         {
           "title": "Die häufigsten Warnsignale bei kanadischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Auktionsdaten, Versicherungsindikatoren und Zulassungssignale aus kanadischen Provinzen und Territorien."
+        },
+        {
+          "title": "Was ist ein markierter Titel in Kanada?",
+          "body": "Ein markierter Titel kennzeichnet ein Fahrzeug, das von einem Versicherer oder einer Provinzbehörde als Totalschaden, rebuilt oder irreparabel erklärt wurde. Das ist ein wichtiges Warnsignal für Käufer."
+        },
+        {
+          "title": "Können US-Hochwasserautos in Kanada versteckt werden?",
+          "body": "Ja. Hochwasserbeschädigte US-Fahrzeuge werden manchmal nach Kanada importiert und mit unvollständiger Historie verkauft. Unsere grenzüberschreitende VIN-Suche hilft, frühere Schadensnachweise aufzudecken."
         }
       ],
       "links": [
@@ -4187,17 +4612,28 @@
       ]
     },
     "es": {
-      "h1": "Verifique kilometraje de coches deCanadá",
+      "h1": "Verifique kilometraje de coches de Canadá",
       "lead": "Canadá tiene más de 30 millones de vehículos matriculados y un mercado de usados activo de costa a costa. Los títulos marcados, las reclamaciones de seguro ocultas y las transferencias entre provincias son riesgos frecuentes. Verifique antes de comprar o importar.",
       "bullets": [
         "Indicadores de matriculación provincial y búsqueda de gravámenes",
         "Historial de reclamaciones de seguro y colisiones",
-        "Registros de subastas y anuncios en marketplaces"
+        "Registros de subastas y anuncios en marketplaces",
+        "Alertas de títulos marcados, siniestro total y reconstruidos",
+        "accidentes",
+        "robos"
       ],
       "sections": [
         {
           "title": "Las señales de alerta más frecuentes en vehículos usados canadienses — antes de entregar un depósito.",
           "body": "Cada informe extrae datos de subastas, indicadores de seguros y señales de matriculación en provincias y territorios canadienses."
+        },
+        {
+          "title": "¿Qué es un título marcado en Canadá?",
+          "body": "Un título marcado identifica un vehículo que fue declarado siniestro total, reconstruido o irreparable por una aseguradora o autoridad provincial. Es una señal de alerta importante para los compradores."
+        },
+        {
+          "title": "¿Pueden ocultarse coches inundados de EE. UU. en Canadá?",
+          "body": "Sí. Los vehículos inundados en EE. UU. a veces se importan y venden en Canadá con historial incompleto. Nuestra búsqueda VIN transfronteriza ayuda a revelar registros de daños previos."
         }
       ],
       "links": [
@@ -4232,17 +4668,28 @@
       ]
     },
     "fr": {
-      "h1": "Vérifiez le kilométrage des voituresCanada",
+      "h1": "Vérifiez le kilométrage des voitures du Canada",
       "lead": "Le Canada compte plus de 30 millions de véhicules immatriculés et un marché de l'occasion actif d'un océan à l'autre. Les titres marqués, les sinistres dissimulés et les transferts interprovinciaux sont des risques fréquents. Vérifiez avant d'acheter ou d'importer.",
       "bullets": [
         "Indicateurs d'immatriculation provinciale et de recherche de privilèges",
         "Historique des sinistres et des collisions",
-        "Registres d'enchères et d'annonces sur marketplaces"
+        "Registres d'enchères et d'annonces sur marketplaces",
+        "Alertes titres marqués, salvage et reconstruits",
+        "les accidents",
+        "les vols"
       ],
       "sections": [
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion canadiens — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les données d'enchères, les indicateurs d'assurance et les signaux d'immatriculation dans les provinces et territoires canadiens."
+        },
+        {
+          "title": "Qu'est-ce qu'un titre marqué au Canada ?",
+          "body": "Un titre marqué identifie un véhicule déclaré perte totale, reconstruit ou irréparable par un assureur ou une autorité provinciale. C'est un signal d'alerte majeur pour les acheteurs."
+        },
+        {
+          "title": "Des voitures inondées des USA peuvent-elles être dissimulées au Canada ?",
+          "body": "Oui. Des véhicules américains endommagés par une inondation sont parfois importés et vendus au Canada avec un historique incomplet. Notre recherche VIN transfrontalière aide à faire remonter les antécédents de dommages."
         }
       ],
       "links": [
@@ -4277,17 +4724,28 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash për makina ngaKanadaja",
+      "h1": "Kontroll kilometrash për makina nga Kanadaja",
       "lead": "Kontroll kilometrash makinash nga Kanadaja — verifikoni km, aksidentet, pronarët dhe statusin e dëmtimit total përpara blerjes. Raport me shasi (VIN) për të gjitha provincat.",
       "bullets": [
         "Tregues regjistrimi dhe pengjesh provincial",
         "Histori kërkesash sigurimi dhe përplasjesh",
-        "Regjistra ankandesh dhe tregjesh"
+        "Regjistra ankandesh dhe tregjesh",
+        "Shenja dëmtim total dhe rindërtimi",
+        "aksidentesh",
+        "vjedhjesh"
       ],
       "sections": [
         {
           "title": "Sinjalet më të zakonshme të rrezikut në tregun kanadez të makinave të përdorura — para se të jepni kapar.",
           "body": "Çdo raport mbledh të dhëna ankandesh, tregues sigurimi dhe sinjale regjistrimi në të gjitha provincat dhe territoret kanadeze."
+        },
+        {
+          "title": "Çfarë është titulli i dëmtimit total në Kanada?",
+          "body": "Titulli i dëmtimit total tregon se mjeti u shpall humbje totale, u rindërtua ose u deklarua i papërshtatshëm për riparim nga siguruesi ose autoriteti provincial. Është sinjal serioz paralajmërues."
+        },
+        {
+          "title": "A mund të fshihen makinat amerikane nga përmbytjet në Kanada?",
+          "body": "Po. Mjetet amerikane të dëmtuara nga përmbytja ndonjëherë importohen dhe shiten në Kanada me histori të paplotë. Kërkimi ynë VIN ndërkufitar ndihmon të zbulojë regjistrat e mëparshëm të dëmit."
         }
       ],
       "links": [
@@ -4322,17 +4780,28 @@
       ]
     },
     "pl": {
-      "h1": "Sprawdź przebieg samochodów zKanada",
+      "h1": "Sprawdź przebieg samochodów z Kanady",
       "lead": "Kanada ma ponad 30 mln zarejestrowanych pojazdów i aktywny rynek samochodów używanych od wybrzeża do wybrzeża. Oznaczone tytuły, ukryte roszczenia ubezpieczeniowe i transfery między prowincjami to typowe ryzyka. Zweryfikuj przed zakupem lub importem.",
       "bullets": [
         "Wskaźniki rejestracji prowincjonalnej i wyszukiwania zastawów",
         "Historia roszczeń ubezpieczeniowych i kolizji",
-        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+        "Rejestry aukcji i ogłoszeń na marketplace'ach",
+        "Oznaczenia tytułów szkód całkowitych, odpisów i odbudowanych",
+        "wypadki",
+        "kradzieże"
       ],
       "sections": [
         {
           "title": "Najczęstsze czerwone flagi w kanadyjskich samochodach używanych — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera dane aukcyjne, wskaźniki ubezpieczeniowe i sygnały rejestracyjne z kanadyjskich prowincji i terytoriów."
+        },
+        {
+          "title": "Czym jest oznaczony tytuł w Kanadzie?",
+          "body": "Oznaczony tytuł oznacza pojazd, który został odpisany, odbudowany lub uznany za nie do naprawy przez ubezpieczyciela lub władze prowincjonalne. To poważne ostrzeżenie dla kupujących."
+        },
+        {
+          "title": "Czy samochody powodziowe z USA mogą być ukryte w Kanadzie?",
+          "body": "Tak. Pojazdy powodziowe z USA są czasem importowane i sprzedawane w Kanadzie z niepełną historią. Nasze transgraniczne wyszukiwanie VIN pomaga ujawnić wcześniejsze rejestry uszkodzeń."
         }
       ],
       "links": [
@@ -4367,17 +4836,28 @@
       ]
     },
     "ro": {
-      "h1": "Verifică kilometrajul mașinilor dinCanada",
+      "h1": "Verifică kilometrajul mașinilor din Canada",
       "lead": "Canada are peste 30M de vehicule înmatriculate și o piață second-hand activă de la coastă la coastă. Titlurile branded, cererile de daune ascunse și transferurile interprovinciale sunt riscuri frecvente. Verificați înainte de a cumpăra sau importa.",
       "bullets": [
         "Indicatori înmatriculare provincială și căutare gaj",
         "Istoric cereri de daune și coliziuni",
-        "Înregistrări licitații și anunțuri pe piețe"
+        "Înregistrări licitații și anunțuri pe piețe",
+        "Semnalizări titluri branded, salvaj și reconstruite",
+        "accidentele",
+        "furturile"
       ],
       "sections": [
         {
           "title": "Cele mai frecvente semnale de alarmă pe vehiculele second-hand canadiene — înainte să dați un avans.",
           "body": "Fiecare raport extrage date de licitații, indicatori de asigurări și semnale de înmatriculare din provinciile și teritoriile canadiene."
+        },
+        {
+          "title": "Ce este un titlu branded în Canada?",
+          "body": "Un titlu branded marchează un vehicul casat total, reconstruit sau declarat ireparabil de un asigurător sau autoritate provincială. Este un semnal major de avertizare pentru cumpărători."
+        },
+        {
+          "title": "Pot fi ascunse mașinile inundate din SUA în Canada?",
+          "body": "Da. Vehiculele avariate de inundații din SUA sunt uneori importate și vândute în Canada cu istoric incomplet. Căutarea noastră VIN transfrontalieră ajută la descoperirea înregistrărilor anterioare de daune."
         }
       ],
       "links": [
@@ -4412,17 +4892,28 @@
       ]
     },
     "bg": {
-      "h1": "Проверете пробега на автомобили отКанада",
+      "h1": "Проверете пробега на автомобили от Канада",
       "lead": "Канада има над 30 милиона регистрирани автомобили и оживен пазар на употребявани коли от край до край. Брандирани талони, скрити застрахователни претенции и трансфери между провинции са чести рискове. Проверете преди да купите или внесете.",
       "bullets": [
         "Провинциална регистрация и индикатори за търсене на залози",
         "Застрахователни претенции и история на сблъсъци",
-        "Записи от търгове и пазарни обяви"
+        "Записи от търгове и пазарни обяви",
+        "Брандирани, salvage и възстановени талони",
+        "катастрофите",
+        "кражбите"
       ],
       "sections": [
         {
           "title": "Най-честите червени флагове при канадски употребявани автомобили — преди да платите капаро.",
           "body": "Всеки отчет извлича данни от търгове, застрахователни индикатори и регистрационни сигнали в канадските провинции и територии."
+        },
+        {
+          "title": "Какво е брандиран талон в Канада?",
+          "body": "Брандиран талон маркира автомобил, отписан, възстановен или обявен за непоправим от застраховател или провинциален орган. Това е сериозен предупредителен знак за купувачите."
+        },
+        {
+          "title": "Могат ли американски автомобили от наводнения да се скрият в Канада?",
+          "body": "Да. Автомобили от САЩ, повредени от наводнение, понякога се внасят и продават в Канада с непълна история. Междудържавното ни VIN търсене помага да се открият предишни записи за щети."
         }
       ],
       "links": [
@@ -4457,17 +4948,28 @@
       ]
     },
     "ka": {
-      "h1": "შეამოწმეთ გარბენი მანქანებიდანკანადა",
+      "h1": "შეამოწმეთ გარბენი მანქანები კანადიდან",
       "lead": "კანადას აქვს 30 მილიონზე მეტი რეგისტრირებული მანქანა და მეორადი მანქანების დატვირთული ბაზარი სანაპიროდან სანაპირომდე. ბრენდირებული ტიტულები, ფარული სადაზღვევო პრეტენზიები და პროვინციების გადარიცხვები საერთო რისკებია. გადაამოწმეთ ყიდვამდე ან იმპორტამდე.",
       "bullets": [
         "პროვინციული რეგისტრაციისა და გირავნობის ძიების ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
-        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები",
+        "ბრენდირებული, სალვაჟისა და აღდგენილი ტიტულის დროშები",
+        "ავარიები",
+        "ქურდობები"
       ],
       "sections": [
         {
           "title": "ყველაზე გავრცელებული წითელი დროშები კანადის მეორად მანქანებზე - სანამ დეპოზიტს გადასცემთ.",
           "body": "ყოველი ანგარიში იზიდავს აუქციონის მონაცემებს, დაზღვევის ინდიკატორებს და რეგისტრაციის სიგნალებს კანადის პროვინციებსა და ტერიტორიებზე."
+        },
+        {
+          "title": "რა არის ბრენდირებული ტიტული კანადაში?",
+          "body": "ბრენდირებული ტიტული აღნიშნავს მანქანას, რომელიც ჩამოწერეს, აღადგინეს ან გამოაცხადეს გამოუსწორებლად მზღვეველმა ან პროვინციულმა ორგანომ. ეს არის მთავარი გამაფრთხილებელი ნიშანი მყიდველებისთვის."
+        },
+        {
+          "title": "შეიძლება თუ არა აშშ-ს წყალდიდობის მანქანების დამალვა კანადაში?",
+          "body": "დიახ. წყალდიდობის შედეგად დაზიანებული ამერიკული მანქანები ხანდახან შემოაქვთ და იყიდება კანადაში არასრული ისტორიით. ჩვენი ტრანსსასაზღვრო VIN ძიება ხელს უწყობს წინასწარი დაზიანების ჩანაწერების გამოვლენას."
         }
       ],
       "links": [
@@ -4502,17 +5004,28 @@
       ]
     },
     "ar": {
-      "h1": "تحقق من الكيلومترات سيارات منكندا",
+      "h1": "تحقق من الكيلومترات سيارات من كندا",
       "lead": "في كندا أكثر من 30 مليون مركبة مسجلة وسوق مستعمل نشط من الساحل إلى الساحل. العناوين المصنفة والمطالبات المخفية والنقل بين المقاطعات مخاطر شائعة. تحقق قبل الشراء أو الاستيراد.",
       "bullets": [
         "مؤشرات التسجيل الإقليمي والرهن",
         "تاريخ مطالبات التأمين والتصادم",
-        "سجلات المزادات والأسواق"
+        "سجلات المزادات والأسواق",
+        "علامات العناوين المصنفة والإتلاف وإعادة البناء",
+        "الحوادث",
+        "سرقات"
       ],
       "sections": [
         {
           "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة الكندي — قبل دفع العربون.",
           "body": "كل تقرير يجمع بيانات المزادات ومؤشرات التأمين وإشارات التسجيل عبر المقاطعات والأقاليم الكندية."
+        },
+        {
+          "title": "ما هو العنوان المصنف في كندا؟",
+          "body": "العنوان المصنف يعني أن المركبة أُعلنت خسارة كلية أو أُعيد بناؤها أو أُعلنت غير قابلة للإصلاح من شركة التأمين أو السلطة الإقليمية. إنه تحذير خطير للمشترين."
+        },
+        {
+          "title": "هل يمكن إخفاء سيارات الفيضانات الأمريكية في كندا؟",
+          "body": "نعم. أحياناً تُستورد مركبات أمريكية متضررة من الفيضانات وتُباع في كندا بتاريخ غير مكتمل. بحث VIN عبر الحدود يساعد في كشف سجلات الضرر السابقة."
         }
       ],
       "links": [
@@ -4547,17 +5060,28 @@
       ]
     },
     "uk": {
-      "h1": "Перевір пробіг автомобілів зКанада",
+      "h1": "Перевір пробіг автомобілів з Канади",
       "lead": "У Канаді зареєстровано 30M+ авто та активний ринок вживаних машин. Брендовані титули, приховані страхові випадки та міжпровінційні перепродажі — поширені ризики. Перевірте перед покупкою чи імпортом.",
       "bullets": [
         "Провінційні реєстраційні та заставні індикатори",
         "Історія страхових випадків і зіткнень",
-        "Записи аукціонів і маркетплейсів"
+        "Записи аукціонів і маркетплейсів",
+        "Прапорці брендованих, salvage і rebuilt титулів",
+        "аварії",
+        "угони"
       ],
       "sections": [
         {
           "title": "Найпоширеніші червоні прапорці на канадському ринку вживаних авто — до того, як ви внесете завдаток.",
           "body": "Кожен звіт об'єднує аукціонні дані, страхові індикатори та реєстраційні сигнали по провінціях і територіях Канади."
+        },
+        {
+          "title": "Що таке брендований титул у Канаді?",
+          "body": "Брендований титул означає, що авто було списано, відновлено або визнано непридатним до ремонту страховиком чи провінційним органом. Це серйозний попереджувальний знак."
+        },
+        {
+          "title": "Чи можуть приховати американські авто після повені в Канаді?",
+          "body": "Так. Пошкоджені повенею US-авто іноді імпортують і продають у Канаді з неповною історією. Наш транскордонний пошук VIN допомагає виявити попередні записи про пошкодження."
         }
       ],
       "links": [
@@ -4592,17 +5116,28 @@
       ]
     },
     "ru": {
-      "h1": "Проверь пробег автомобилей изКанада",
+      "h1": "Проверь пробег автомобилей из Канады",
       "lead": "В Канаде зарегистрировано 30M+ автомобилей и активный рынок подержанных машин. Брендированные титулы, скрытые страховые случаи и межпровинциальные перепродажи — частые риски. Проверьте перед покупкой или импортом.",
       "bullets": [
         "Провинциальные регистрационные и залоговые индикаторы",
         "История страховых случаев и столкновений",
-        "Записи аукционов и маркетплейсов"
+        "Записи аукционов и маркетплейсов",
+        "Флаги брендированных, salvage и rebuilt титулов",
+        "аварии",
+        "угоны"
       ],
       "sections": [
         {
           "title": "Самые частые красные флаги на канадском рынке подержанных авто — до того, как вы внесёте задаток.",
           "body": "Каждый отчёт объединяет аукционные данные, страховые индикаторы и регистрационные сигналы по провинциям и территориям Канады."
+        },
+        {
+          "title": "Что такое брендированный титул в Канаде?",
+          "body": "Брендированный титул означает, что автомобиль был списан, восстановлен или признан непригодным к ремонту страховщиком или провинциальным органом. Это серьёзный предупреждающий знак."
+        },
+        {
+          "title": "Могут ли скрыть американские машины после наводнения в Канаде?",
+          "body": "Да. Повреждённые наводнением US-авто иногда импортируют и продают в Канаде с неполной историей. Наш трансграничный поиск по VIN помогает выявить прежние записи о повреждениях."
         }
       ],
       "links": [
@@ -4637,17 +5172,28 @@
       ]
     },
     "zh": {
-      "h1": "查询 里程 来自加拿大",
+      "h1": "查询 里程 加拿大进口车",
       "lead": "加拿大有超过 3000 万辆注册车辆，二手车市场遍布全国。品牌产权、隐藏保险理赔与跨省过户是常见风险。购买或进口前请核实。",
       "bullets": [
         "省级登记与留置权查询指标",
         "保险理赔与碰撞历史",
-        "拍卖与交易平台挂牌记录"
+        "拍卖与交易平台挂牌记录",
+        "品牌、报废与重建产权标记",
+        "事故",
+        "盗抢"
       ],
       "sections": [
         {
           "title": "加拿大二手车最常见的风险信号 — 付定金前先查清。",
           "body": "每份报告汇总加拿大各省与地区的拍卖数据、保险指标与登记信号。"
+        },
+        {
+          "title": "加拿大的品牌产权是什么？",
+          "body": "品牌产权标记被保险公司或省级机构认定为全损、重建或不可修复的车辆。对买家是重大警示。"
+        },
+        {
+          "title": "美国水淹车能在加拿大被隐藏吗？",
+          "body": "可以。美国水淹车有时进口到加拿大销售，历史不完整。我们的跨境 VIN 搜索有助于发现既往损伤记录。"
         }
       ],
       "links": [
@@ -4684,17 +5230,28 @@
   },
   "country_china": {
     "en": {
-      "h1": "Check mileage of cars fromChina",
+      "h1": "China mileage check for cars from China",
       "lead": "China has 350M+ registered vehicles and the world's largest used-car market. Odometer fraud and hidden accident history are common. Check before you buy or import.",
       "bullets": [
         "National registration & ownership transfer indicators",
         "Insurance claim & collision history",
-        "Auction and marketplace listing records"
+        "Auction and marketplace listing records",
+        "Salvage, write-off & rebuilt title flags",
+        "accidents & repairs",
+        "salvage records"
       ],
       "sections": [
         {
           "title": "The most common red flags on Chinese used vehicles — before you hand over a deposit.",
           "body": "Every report pulls registration signals, insurance indicators and marketplace data across China's major provinces and export channels."
+        },
+        {
+          "title": "What does a Chinese VIN starting with 'L' mean?",
+          "body": "VINs starting with 'L' are assigned to vehicles manufactured in China. It confirms factory origin but does not guarantee a clean history — always check mileage and accident records."
+        },
+        {
+          "title": "Are BYD, Geely and NIO vehicles covered?",
+          "body": "Yes. Our reports cover major domestic brands including BYD, Geely, NIO, Chery and SAIC, as well as imported vehicles registered in China."
         }
       ],
       "links": [
@@ -4729,17 +5286,28 @@
       ]
     },
     "de": {
-      "h1": "Prüfen Sie Kilometerstand von Autos ausChina",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus China",
       "lead": "China hat über 350 Mio. zugelassene Fahrzeuge und den weltweit größten Gebrauchtwagenmarkt. Tachomanipulation und versteckte Unfallhistorie sind häufig. Prüfen Sie vor Kauf oder Import.",
       "bullets": [
         "Nationale Zulassungs- & Eigentümerwechsel-Indikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
-        "Auktions- und Marktplatz-Inserate"
+        "Auktions- und Marktplatz-Inserate",
+        "Salvage-, Totalschaden- & rebuilt-Titel-Hinweise",
+        "Unfälle",
+        "Salvage-Einträge"
       ],
       "sections": [
         {
           "title": "Die häufigsten Warnsignale bei chinesischen Gebrauchtwagen — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Marktplatzdaten aus Chinas wichtigsten Provinzen und Exportkanälen."
+        },
+        {
+          "title": "Was bedeutet eine chinesische VIN, die mit ‚L‘ beginnt?",
+          "body": "VINs mit ‚L‘ werden Fahrzeugen zugewiesen, die in China hergestellt wurden. Das bestätigt den Werksursprung, garantiert aber keine saubere Historie — prüfen Sie immer Kilometerstand und Unfallnachweise."
+        },
+        {
+          "title": "Sind BYD, Geely und NIO abgedeckt?",
+          "body": "Ja. Unsere Berichte decken große Inlandsmarken wie BYD, Geely, NIO, Chery und SAIC sowie in China zugelassene Importfahrzeuge ab."
         }
       ],
       "links": [
@@ -4774,17 +5342,28 @@
       ]
     },
     "es": {
-      "h1": "Verifique kilometraje de coches deChina",
+      "h1": "Verifique kilometraje de coches de China",
       "lead": "China tiene más de 350 millones de vehículos matriculados y el mayor mercado de usados del mundo. El fraude del odómetro y el historial de accidentes oculto son frecuentes. Revise antes de comprar o importar.",
       "bullets": [
         "Indicadores de matriculación nacional y transferencia de propiedad",
         "Historial de reclamaciones de seguro y colisiones",
-        "Registros de subastas y anuncios en marketplaces"
+        "Registros de subastas y anuncios en marketplaces",
+        "Alertas de salvamento, siniestro total y títulos reconstruidos",
+        "accidentes",
+        "registros de salvamento"
       ],
       "sections": [
         {
           "title": "Las señales de alerta más frecuentes en vehículos usados chinos — antes de pagar un depósito.",
           "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de marketplaces en las principales provincias y canales de exportación de China."
+        },
+        {
+          "title": "¿Qué significa un VIN chino que empieza por «L»?",
+          "body": "Los VIN que empiezan por «L» se asignan a vehículos fabricados en China. Confirma el origen de fábrica pero no garantiza un historial limpio — compruebe siempre el kilometraje y los accidentes."
+        },
+        {
+          "title": "¿Están cubiertos los vehículos BYD, Geely y NIO?",
+          "body": "Sí. Nuestros informes cubren las principales marcas nacionales, incluidas BYD, Geely, NIO, Chery y SAIC, así como vehículos importados matriculados en China."
         }
       ],
       "links": [
@@ -4819,17 +5398,28 @@
       ]
     },
     "fr": {
-      "h1": "Vérifiez le kilométrage des voitures deChine",
+      "h1": "Vérifiez le kilométrage des voitures de Chine",
       "lead": "La Chine compte plus de 350 millions de véhicules immatriculés et le plus grand marché de l'occasion au monde. Fraude au compteur et historique d'accidents dissimulé sont fréquents. Vérifiez avant d'acheter ou d'importer.",
       "bullets": [
         "Indicateurs d'immatriculation nationale et de changement de propriétaire",
         "Historique des sinistres et des collisions",
-        "Registres d'enchères et d'annonces sur marketplaces"
+        "Registres d'enchères et d'annonces sur marketplaces",
+        "Alertes salvage, perte totale et titres reconstruits",
+        "les accidents",
+        "les registres salvage"
       ],
       "sections": [
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion chinois — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les signaux d'immatriculation, les indicateurs d'assurance et les données marketplaces des principales provinces et canaux d'export chinois."
+        },
+        {
+          "title": "Que signifie un VIN chinois commençant par « L » ?",
+          "body": "Les VIN commençant par « L » sont attribués aux véhicules fabriqués en Chine. Cela confirme l'origine usine mais ne garantit pas un historique propre — vérifiez toujours le kilométrage et les accidents."
+        },
+        {
+          "title": "Les véhicules BYD, Geely et NIO sont-ils couverts ?",
+          "body": "Oui. Nos rapports couvrent les grandes marques nationales dont BYD, Geely, NIO, Chery et SAIC, ainsi que les véhicules importés immatriculés en Chine."
         }
       ],
       "links": [
@@ -4864,17 +5454,28 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash për makina ngaKina",
+      "h1": "Kontroll kilometrash për makina nga Kina",
       "lead": "Kontroll kilometrash makinash nga Kina — manipulim km, riparime të fshehura aksidentesh dhe humbje totale. Kontrollo me shasi (VIN) para blerjes ose importit.",
       "bullets": [
         "Shenja regjistrimi kombëtar dhe transferimi pronësie",
         "Histori kërkesash sigurimi dhe përplasjesh",
-        "Regjistra ankesh dhe listimesh në tregje"
+        "Regjistra ankesh dhe listimesh në tregje",
+        "Shenja dëmtim total, humbje totale dhe tituj rindërtimi",
+        "aksidentesh",
+        "dëmtim total"
       ],
       "sections": [
         {
           "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura kineze — para se të paguani kapar.",
           "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna tregu në provincat kryesore dhe kanalet e eksportit të Kinës."
+        },
+        {
+          "title": "Çfarë do të thotë një VIN kinez që fillon me «L»?",
+          "body": "VIN-et që fillojnë me «L» u caktohen automjeteve të prodhuara në Kinë. Konfirmon origjinën e fabrikës por nuk garanton histori të pastër — kontrolloni gjithmonë kilometrat dhe aksidentet."
+        },
+        {
+          "title": "A mbulohen automjetet BYD, Geely dhe NIO?",
+          "body": "Po. Raportet tona mbulojnë markat kryesore vendase përfshirë BYD, Geely, NIO, Chery dhe SAIC, si dhe automjete të importuara të regjistruara në Kinë."
         }
       ],
       "links": [
@@ -4909,17 +5510,28 @@
       ]
     },
     "pl": {
-      "h1": "Sprawdź przebieg samochodów zChiny",
+      "h1": "Sprawdź przebieg samochodów z Chin",
       "lead": "Chiny mają ponad 350 mln zarejestrowanych pojazdów i największy na świecie rynek samochodów używanych. Fałszowanie licznika i ukryta historia wypadków są powszechne. Sprawdź przed zakupem lub importem.",
       "bullets": [
         "Wskaźniki rejestracji krajowej i zmiany właściciela",
         "Historia roszczeń ubezpieczeniowych i kolizji",
-        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+        "Rejestry aukcji i ogłoszeń na marketplace'ach",
+        "Oznaczenia salvage, odpisów i tytułów odbudowanych",
+        "wypadki",
+        "rejestry salvage"
       ],
       "sections": [
         {
           "title": "Najczęstsze czerwone flagi w chińskich samochodach używanych — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane z marketplace'ów z głównych prowincji i kanałów eksportowych Chin."
+        },
+        {
+          "title": "Co oznacza chiński numer VIN zaczynający się od „L”?",
+          "body": "Numery VIN zaczynające się od „L” są przypisywane pojazdom wyprodukowanym w Chinach. Potwierdza pochodzenie z fabryki, ale nie gwarantuje czystej historii — zawsze sprawdź przebieg i wypadki."
+        },
+        {
+          "title": "Czy pojazdy BYD, Geely i NIO są objęte?",
+          "body": "Tak. Nasze raporty obejmują główne marki krajowe, w tym BYD, Geely, NIO, Chery i SAIC, oraz pojazdy importowane zarejestrowane w Chinach."
         }
       ],
       "links": [
@@ -4954,17 +5566,28 @@
       ]
     },
     "ro": {
-      "h1": "Verificați kilometrajul mașinilor dinChina",
+      "h1": "Verificați kilometrajul mașinilor din China",
       "lead": "China are peste 350 de milioane de vehicule înmatriculate și cea mai mare piață de mașini second-hand din lume. Frauda la odometru și istoricul ascuns de accidente sunt frecvente. Verificați înainte de cumpărare sau import.",
       "bullets": [
         "Indicatori de înmatriculare națională și transfer de proprietate",
         "Istoric daune asigurare și coliziuni",
-        "Înregistrări licitații și anunțuri pe piețe"
+        "Înregistrări licitații și anunțuri pe piețe",
+        "Alerte salvage, daună totală și titluri reconstruite",
+        "accidentele",
+        "înregistrările salvage"
       ],
       "sections": [
         {
           "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand chinezești — înainte să plătiți avansul.",
           "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de piață din provinciile majore și canalele de export ale Chinei."
+        },
+        {
+          "title": "Ce înseamnă un VIN chinezesc care începe cu «L»?",
+          "body": "VIN-urile care încep cu «L» sunt atribuite vehiculelor fabricate în China. Confirmă originea din fabrică, dar nu garantează un istoric curat — verificați întotdeauna kilometrajul și accidentele."
+        },
+        {
+          "title": "Sunt acoperite vehiculele BYD, Geely și NIO?",
+          "body": "Da. Rapoartele noastre acoperă mărcile interne majore, inclusiv BYD, Geely, NIO, Chery și SAIC, precum și vehicule importate înmatriculate în China."
         }
       ],
       "links": [
@@ -4999,17 +5622,28 @@
       ]
     },
     "bg": {
-      "h1": "Проверете пробега на автомобили отКитай",
+      "h1": "Проверете пробега на автомобили от Китай",
       "lead": "Китай има над 350 милиона регистрирани автомобили и най-големия пазар на употребявани коли в света. Манипулация на одометъра и скрита история на катастрофи са чести. Проверете преди покупка или внос.",
       "bullets": [
         "Национални регистрационни индикатори и смяна на собственик",
         "История на застрахователни претенции и сблъсъци",
-        "Записи от търгове и обяви на пазари"
+        "Записи от търгове и обяви на пазари",
+        "Сигнали за salvage, тотална щета и възстановени талони",
+        "катастрофите",
+        "salvage записите"
       ],
       "sections": [
         {
           "title": "Най-честите червени флагове при китайски употребявани автомобили — преди да платите капаро.",
           "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и пазарни данни от основните провинции и експортни канали на Китай."
+        },
+        {
+          "title": "Какво означава китайски VIN, започващ с „L“?",
+          "body": "VIN номерата, започващи с „L“, се присвояват на автомобили, произведени в Китай. Потвърждава произхода от фабриката, но не гарантира чиста история — винаги проверявайте пробега и катастрофите."
+        },
+        {
+          "title": "Покрити ли са автомобилите BYD, Geely и NIO?",
+          "body": "Да. Отчетите ни покриват основните местни марки, включително BYD, Geely, NIO, Chery и SAIC, както и вносни автомобили, регистрирани в Китай."
         }
       ],
       "links": [
@@ -5044,17 +5678,28 @@
       ]
     },
     "ka": {
-      "h1": "შეამოწმეთ გარბენი მანქანებიდანჩინეთი",
+      "h1": "შეამოწმეთ გარბენი მანქანები ჩინეთიდან",
       "lead": "ჩინეთს აქვს 350 მილიონზე მეტი რეგისტრირებული მანქანა და მსოფლიოში ყველაზე დიდი მეორადი ავტომობილების ბაზარი. ოდომეტრის გაყალბება და ფარული ავარიის ისტორია ხშირია. ყიდვამდე ან იმპორტამდე შეამოწმეთ.",
       "bullets": [
         "ეროვნული რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
-        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები",
+        "სალვაჟის, ჩამოწერისა და აღდგენილი ტიტულის დროშები",
+        "ავარიები",
+        "სალვაჟის ჩანაწერები"
       ],
       "sections": [
         {
           "title": "ყველაზე გავრცელებული წითელი დროშები ჩინურ მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
           "body": "ყოველი ანგარიში იზიდავს რეგისტრაციის სიგნალებს, დაზღვევის ინდიკატორებს და ბაზრის მონაცემებს ჩინეთის მთავარ პროვინციებსა და საექსპორტო არხებზე."
+        },
+        {
+          "title": "რას ნიშნავს ჩინური VIN, რომელიც იწყება \"L\"-ით?",
+          "body": "\"L\"-ით დაწყებული VIN ენიჭება ჩინეთში წარმოებულ მანქანებს. ის ადასტურებს ქარხნულ წარმოშობას, მაგრამ არ იძლევა სუფთა ისტორიის გარანტიას - ყოველთვის შეამოწმეთ გარბენი და ავარიის ჩანაწერები."
+        },
+        {
+          "title": "დაფარულია თუ არა BYD, Geely და NIO მანქანები?",
+          "body": "დიახ. ჩვენი ანგარიშები მოიცავს ძირითად შიდა ბრენდებს, მათ შორის BYD, Geely, NIO, Chery და SAIC, ასევე იმპორტირებულ მანქანებს, რომლებიც რეგისტრირებულია ჩინეთში."
         }
       ],
       "links": [
@@ -5089,17 +5734,28 @@
       ]
     },
     "ar": {
-      "h1": "تحقق من الكيلومترات سيارات منالصين",
+      "h1": "تحقق من الكيلومترات سيارات من الصين",
       "lead": "في الصين أكثر من 350 مليون مركبة مسجلة وأكبر سوق سيارات مستعملة في العالم. تلاعب عداد المسافات والتاريخ المخفي للحوادث شائعان. تحقق قبل الشراء أو الاستيراد.",
       "bullets": [
         "مؤشرات التسجيل الوطني ونقل الملكية",
         "تاريخ مطالبات التأمين والتصادم",
-        "سجلات المزادات والأسواق"
+        "سجلات المزادات والأسواق",
+        "علامات الإتلاف والشطب وإعادة البناء",
+        "الحوادث",
+        "سجلات الإتلاف"
       ],
       "sections": [
         {
           "title": "أكثر علامات الخطر شيوعاً في السيارات المستعملة الصينية — قبل دفع العربون.",
           "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الأسواق عبر المقاطعات الرئيسية وقنوات التصدير في الصين."
+        },
+        {
+          "title": "ماذا يعني رقم VIN صيني يبدأ بـ «L»؟",
+          "body": "أرقام VIN التي تبدأ بـ «L» تُخصص للمركبات المصنعة في الصين. يؤكد أصل المصنع لكنه لا يضمن تاريخاً نظيفاً — تحقق دائماً من الكيلومترات والحوادث."
+        },
+        {
+          "title": "هل تُغطى مركبات BYD وGeely وNIO؟",
+          "body": "نعم. تقاريرنا تغطي العلامات المحلية الكبرى بما فيها BYD وGeely وNIO وChery وSAIC، وكذلك المركبات المستوردة المسجلة في الصين."
         }
       ],
       "links": [
@@ -5134,17 +5790,28 @@
       ]
     },
     "uk": {
-      "h1": "Перевір пробіг автомобілів зКитай",
+      "h1": "Перевір пробіг автомобілів з Китаю",
       "lead": "У Китаї понад 350 млн зареєстрованих авто та найбільший у світі ринок вживаних машин. Шахрайство з одометром і прихована історія ДТП — поширені ризики. Перевірте перед покупкою чи імпортом.",
       "bullets": [
         "Національні реєстраційні індикатори та зміна власника",
         "Історія страхових випадків і зіткнень",
-        "Записи аукціонів і маркетплейсів"
+        "Записи аукціонів і маркетплейсів",
+        "Прапорці salvage, списання та rebuilt титулів",
+        "аварії",
+        "записи salvage"
       ],
       "sections": [
         {
           "title": "Найпоширеніші червоні прапорці на китайському ринку вживаних авто — до внесення завдатку.",
           "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані маркетплейсів з основних провінцій і експортних каналів Китаю."
+        },
+        {
+          "title": "Що означає китайський VIN, що починається з «L»?",
+          "body": "VIN, що починаються з «L», призначаються авто, виготовленим у Китаї. Це підтверджує заводське походження, але не гарантує чисту історію — завжди перевіряйте пробіг і аварії."
+        },
+        {
+          "title": "Чи покриваються авто BYD, Geely та NIO?",
+          "body": "Так. Наші звіти охоплюють основні внутрішні бренди, зокрема BYD, Geely, NIO, Chery та SAIC, а також імпортні авто, зареєстровані в Китаї."
         }
       ],
       "links": [
@@ -5179,17 +5846,28 @@
       ]
     },
     "ru": {
-      "h1": "Проверь пробег автомобилей изКитай",
+      "h1": "Проверь пробег автомобилей из Китая",
       "lead": "В Китае более 350 млн зарегистрированных авто и крупнейший в мире рынок подержанных машин. Скрутка одометра и скрытая история ДТП — частые риски. Проверьте перед покупкой или импортом.",
       "bullets": [
         "Национальные регистрационные индикаторы и смена владельца",
         "История страховых случаев и столкновений",
-        "Записи аукционов и маркетплейсов"
+        "Записи аукционов и маркетплейсов",
+        "Признаки salvage, утилизации и rebuilt титулов",
+        "аварии",
+        "записи salvage"
       ],
       "sections": [
         {
           "title": "Самые частые красные флаги на китайском рынке подержанных авто — до внесения задатка.",
           "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные маркетплейсов из основных провинций и экспортных каналов Китая."
+        },
+        {
+          "title": "Что означает китайский VIN, начинающийся с «L»?",
+          "body": "VIN, начинающиеся с «L», присваиваются автомобилям, произведённым в Китае. Это подтверждает заводское происхождение, но не гарантирует чистую историю — всегда проверяйте пробег и аварии."
+        },
+        {
+          "title": "Покрываются ли автомобили BYD, Geely и NIO?",
+          "body": "Да. Наши отчёты охватывают основные отечественные бренды, включая BYD, Geely, NIO, Chery и SAIC, а также импортные авто, зарегистрированные в Китае."
         }
       ],
       "links": [
@@ -5224,17 +5902,28 @@
       ]
     },
     "zh": {
-      "h1": "查询 里程 来自中国",
+      "h1": "查询 里程 来自中国的汽车",
       "lead": "中国拥有超过3.5亿辆注册汽车，是全球最大的二手车市场。调表和隐瞒的事故历史很常见。购买或进口前请查询。",
       "bullets": [
         "全国登记与过户指标",
         "保险理赔与碰撞历史",
-        "拍卖与交易平台挂牌记录"
+        "拍卖与交易平台挂牌记录",
+        "报废、全损与翻新标记",
+        "事故",
+        "报废记录"
       ],
       "sections": [
         {
           "title": "中国二手车最常见的风险信号——付定金之前先查清。",
           "body": "每份报告汇总中国主要省份和出口渠道的登记信号、保险指标与平台数据。"
+        },
+        {
+          "title": "以「L」开头的中国VIN代表什么？",
+          "body": "以「L」开头的VIN分配给在中国制造的车辆，确认工厂产地，但不保证历史清白——务必核查里程和事故记录。"
+        },
+        {
+          "title": "比亚迪、吉利和蔚来是否在覆盖范围内？",
+          "body": "是的。报告覆盖比亚迪、吉利、蔚来、奇瑞、上汽等主要国产品牌，以及在中国登记的进口车。"
         }
       ],
       "links": [
@@ -5271,17 +5960,28 @@
   },
   "country_uae": {
     "en": {
-      "h1": "Check mileage of cars fromUAE",
+      "h1": "UAE mileage check for cars from the UAE",
       "lead": "The UAE has 3M+ registered vehicles and an import-heavy used market centred on Dubai. Flood imports, odometer rollbacks and GCC registration gaps are common. Check before you buy.",
       "bullets": [
         "GCC registration & ownership transfer indicators",
         "Insurance claim & collision history",
-        "Auction and marketplace listing records"
+        "Auction and marketplace listing records",
+        "Flood, salvage & write-off flags",
+        "accidents & flood damage",
+        "import history"
       ],
       "sections": [
         {
           "title": "The most common red flags on UAE used vehicles — before you hand over a deposit.",
           "body": "Every report pulls registration signals, insurance indicators and import data across Dubai, Abu Dhabi and the wider GCC."
+        },
+        {
+          "title": "Are flood-damaged imports common in Dubai?",
+          "body": "Yes. Flood-damaged vehicles from the US and other markets are sometimes imported and sold in Dubai and Abu Dhabi with incomplete disclosure. A VIN check helps surface prior total-loss and flood records."
+        },
+        {
+          "title": "Does the report cover Toyota, Nissan and Mercedes imports?",
+          "body": "Yes. Our reports cover popular UAE imports including Toyota, Nissan, Mercedes-Benz, BMW and Lexus, plus GCC-registered domestic stock."
         }
       ],
       "links": [
@@ -5316,17 +6016,28 @@
       ]
     },
     "de": {
-      "h1": "Prüfen Sie Kilometerstand von Autos ausVAE",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus den VAE",
       "lead": "Die VAE haben über 3 Mio. zugelassene Fahrzeuge und einen importstarken Gebrauchtwagenmarkt rund um Dubai. Hochwasser-Importe, Tachomanipulation und Lücken in GCC-Zulassungen sind häufig. Prüfen Sie vor dem Kauf.",
       "bullets": [
         "GCC-Zulassungs- & Eigentümerwechsel-Indikatoren",
         "Versicherungsansprüche & Kollisionshistorie",
-        "Auktions- und Marktplatz-Inserate"
+        "Auktions- und Marktplatz-Inserate",
+        "Hochwasser-, Salvage- & Totalschaden-Hinweise",
+        "Unfälle",
+        "Hochwasserschäden"
       ],
       "sections": [
         {
           "title": "Die häufigsten Warnsignale bei Gebrauchtwagen in den VAE — bevor Sie eine Anzahlung leisten.",
           "body": "Jeder Bericht zieht Zulassungssignale, Versicherungsindikatoren und Importdaten aus Dubai, Abu Dhabi und der gesamten GCC."
+        },
+        {
+          "title": "Sind Hochwasser-Importe in Dubai häufig?",
+          "body": "Ja. Hochwasserbeschädigte Fahrzeuge aus den USA und anderen Märkten werden manchmal in Dubai und Abu Dhabi mit unvollständiger Offenlegung verkauft. Ein VIN-Check hilft, frühere Totalschaden- und Hochwassernachweise aufzudecken."
+        },
+        {
+          "title": "Deckt der Bericht Toyota-, Nissan- und Mercedes-Importe ab?",
+          "body": "Ja. Unsere Berichte decken beliebte VAE-Importe wie Toyota, Nissan, Mercedes-Benz, BMW und Lexus sowie GCC-zugelassenen Bestand ab."
         }
       ],
       "links": [
@@ -5361,17 +6072,28 @@
       ]
     },
     "es": {
-      "h1": "Verifique kilometraje de coches deEAU",
+      "h1": "Verifique kilometraje de coches de los EAU",
       "lead": "Los EAU tienen más de 3 millones de vehículos matriculados y un mercado de usados muy dependiente de importaciones, centrado en Dubái. Importaciones inundadas, manipulación del odómetro y lagunas en el registro GCC son frecuentes. Verifique antes de comprar.",
       "bullets": [
         "Indicadores de matriculación GCC y transferencia de propiedad",
         "Historial de reclamaciones de seguro y colisiones",
-        "Registros de subastas y anuncios en marketplaces"
+        "Registros de subastas y anuncios en marketplaces",
+        "Alertas de inundación, salvamento y siniestro total",
+        "accidentes",
+        "daños por inundación"
       ],
       "sections": [
         {
           "title": "Las señales de alerta más frecuentes en vehículos usados de los EAU — antes de pagar un depósito.",
           "body": "Cada informe recopila señales de matriculación, indicadores de seguro y datos de importación en Dubái, Abu Dabi y el CCG."
+        },
+        {
+          "title": "¿Son frecuentes las importaciones inundadas en Dubái?",
+          "body": "Sí. Vehículos dañados por inundaciones de EE. UU. y otros mercados a veces se importan y venden en Dubái y Abu Dabi sin divulgación completa. Una comprobación VIN ayuda a detectar registros previos de siniestro total e inundación."
+        },
+        {
+          "title": "¿Cubre el informe importaciones Toyota, Nissan y Mercedes?",
+          "body": "Sí. Nuestros informes cubren importaciones populares en los EAU, incluidas Toyota, Nissan, Mercedes-Benz, BMW y Lexus, además del stock nacional matriculado en el CCG."
         }
       ],
       "links": [
@@ -5406,17 +6128,28 @@
       ]
     },
     "fr": {
-      "h1": "Vérifiez le kilométrage des voitures desEAU",
+      "h1": "Vérifiez le kilométrage des voitures des EAU",
       "lead": "Les EAU comptent plus de 3 millions de véhicules immatriculés et un marché de l'occasion très tourné vers l'import, centré sur Dubaï. Imports inondés, retour de compteur et lacunes d'immatriculation GCC sont fréquents. Vérifiez avant d'acheter.",
       "bullets": [
         "Indicateurs d'immatriculation GCC et changement de propriétaire",
         "Historique des sinistres et des collisions",
-        "Registres d'enchères et d'annonces sur marketplaces"
+        "Registres d'enchères et d'annonces sur marketplaces",
+        "Alertes inondation, salvage et perte totale",
+        "les accidents",
+        "les dégâts d'inondation"
       ],
       "sections": [
         {
           "title": "Les signaux d'alerte les plus fréquents sur les véhicules d'occasion aux EAU — avant de verser un acompte.",
           "body": "Chaque rapport puise dans les signaux d'immatriculation, indicateurs d'assurance et données d'import à Dubaï, Abou Dabi et dans le CCG."
+        },
+        {
+          "title": "Les imports inondés sont-ils fréquents à Dubaï ?",
+          "body": "Oui. Des véhicules endommagés par inondation des USA et d'autres marchés sont parfois importés et vendus à Dubaï et Abou Dabi sans divulgation complète. Un contrôle VIN aide à faire remonter les antécédents de perte totale et d'inondation."
+        },
+        {
+          "title": "Le rapport couvre-t-il les imports Toyota, Nissan et Mercedes ?",
+          "body": "Oui. Nos rapports couvrent les imports populaires aux EAU dont Toyota, Nissan, Mercedes-Benz, BMW et Lexus, ainsi que le stock immatriculé GCC."
         }
       ],
       "links": [
@@ -5451,17 +6184,28 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash për makina ngaEmiratet",
+      "h1": "Kontroll kilometrash për makina nga Emiratet",
       "lead": "Kontroll kilometrash makinash nga Emiratet dhe Dubai — importe të përmbytura, manipulim km dhe boshllëqe regjistrimi GCC. Kontrollo me shasi (VIN) para blerjes.",
       "bullets": [
         "Shenja regjistrimi GCC dhe transferimi pronësie",
         "Histori kërkesash sigurimi dhe përplasjesh",
-        "Regjistra ankesh dhe listimesh në tregje"
+        "Regjistra ankesh dhe listimesh në tregje",
+        "Shenja përmbytjeje, dëmtim total dhe humbjes totale",
+        "aksidentesh",
+        "dëmtimet nga përmbytja"
       ],
       "sections": [
         {
           "title": "Shenjat më të zakonshme të rrezikut te makinat e përdorura në Emiratet — para se të paguani kapar.",
           "body": "Çdo raport mbledh shenja regjistrimi, tregues sigurimi dhe të dhëna importi në Dubai, Abu Dhabi dhe GCC."
+        },
+        {
+          "title": "A janë të zakonshme importet e përmbytura në Dubai?",
+          "body": "Po. Automjete të dëmtuara nga përmbytja nga SHBA dhe tregje të tjera ndonjëherë importohen dhe shiten në Dubai dhe Abu Dhabi pa zbulim të plotë. Kontrolli VIN ndihmon të zbulojë regjistra paraprakë të dëmtimit total dhe përmbytjeje."
+        },
+        {
+          "title": "A mbulon raporti importet Toyota, Nissan dhe Mercedes?",
+          "body": "Po. Raportet tona mbulojnë importet popullore në Emiratet përfshirë Toyota, Nissan, Mercedes-Benz, BMW dhe Lexus, plus stokun e regjistruar në GCC."
         }
       ],
       "links": [
@@ -5496,17 +6240,28 @@
       ]
     },
     "pl": {
-      "h1": "Sprawdź przebieg samochodów zZEA",
+      "h1": "Sprawdź przebieg samochodów ze ZEA",
       "lead": "ZEA mają ponad 3 mln zarejestrowanych pojazdów i rynek używanych mocno oparty na imporcie, ze szczególnym naciskiem na Dubaj. Importy powodziowe, cofanie licznika i luki w rejestracji GCC są częste. Sprawdź przed zakupem.",
       "bullets": [
         "Wskaźniki rejestracji GCC i zmiany właściciela",
         "Historia roszczeń ubezpieczeniowych i kolizji",
-        "Rejestry aukcji i ogłoszeń na marketplace'ach"
+        "Rejestry aukcji i ogłoszeń na marketplace'ach",
+        "Oznaczenia powodzi, salvage i odpisów",
+        "wypadki",
+        "szkody powodziowe"
       ],
       "sections": [
         {
           "title": "Najczęstsze czerwone flagi w samochodach używanych w ZEA — zanim wpłacisz zadatek.",
           "body": "Każdy raport pobiera sygnały rejestracyjne, wskaźniki ubezpieczeniowe i dane importowe z Dubaju, Abu Zabi i całego GCC."
+        },
+        {
+          "title": "Czy importy powodziowe są częste w Dubaju?",
+          "body": "Tak. Pojazdy powodziowe z USA i innych rynków są czasem importowane i sprzedawane w Dubaju i Abu Zabi bez pełnego ujawnienia. Sprawdzenie VIN pomaga wykryć wcześniejsze totale i szkody powodziowe."
+        },
+        {
+          "title": "Czy raport obejmuje importy Toyota, Nissan i Mercedes?",
+          "body": "Tak. Nasze raporty obejmują popularne importy w ZEA, w tym Toyota, Nissan, Mercedes-Benz, BMW i Lexus, oraz stock zarejestrowany w GCC."
         }
       ],
       "links": [
@@ -5541,17 +6296,28 @@
       ]
     },
     "ro": {
-      "h1": "Verificați kilometrajul mașinilor dinEAU",
+      "h1": "Verificați kilometrajul mașinilor din EAU",
       "lead": "EAU au peste 3 milioane de vehicule înmatriculate și o piață second-hand bazată pe import, centrată pe Dubai. Importuri inundate, rollback la odometru și lacune în înregistrarea GCC sunt frecvente. Verificați înainte de cumpărare.",
       "bullets": [
         "Indicatori înmatriculare GCC și transfer proprietate",
         "Istoric daune asigurare și coliziuni",
-        "Înregistrări licitații și anunțuri pe piețe"
+        "Înregistrări licitații și anunțuri pe piețe",
+        "Alerte inundație, salvage și daună totală",
+        "accidentele",
+        "daunele de inundație"
       ],
       "sections": [
         {
           "title": "Cele mai frecvente semnale de alarmă la mașinile second-hand din EAU — înainte să plătiți avansul.",
           "body": "Fiecare raport adună semnale de înmatriculare, indicatori de asigurare și date de import din Dubai, Abu Dhabi și GCC."
+        },
+        {
+          "title": "Sunt frecvente importurile inundate în Dubai?",
+          "body": "Da. Vehicule avariate de inundații din SUA și alte piețe sunt uneori importate și vândute în Dubai și Abu Dhabi fără dezvăluire completă. Verificarea VIN ajută la detectarea înregistrărilor anterioare de total loss și inundație."
+        },
+        {
+          "title": "Acoperă raportul importurile Toyota, Nissan și Mercedes?",
+          "body": "Da. Rapoartele noastre acoperă importurile populare în EAU, inclusiv Toyota, Nissan, Mercedes-Benz, BMW și Lexus, plus stocul înmatriculat în GCC."
         }
       ],
       "links": [
@@ -5586,17 +6352,28 @@
       ]
     },
     "bg": {
-      "h1": "Проверете пробега на автомобили отОАЕ",
+      "h1": "Проверете пробега на автомобили от ОАЕ",
       "lead": "ОАЕ имат над 3 милиона регистрирани автомобили и пазар на употребявани коли, ориентиран към внос, с фокус върху Дубай. Внос след наводнения, манипулация на одометъра и пропуски в GCC регистрацията са чести. Проверете преди покупка.",
       "bullets": [
         "GCC регистрационни индикатори и смяна на собственик",
         "История на застрахователни претенции и сблъсъци",
-        "Записи от търгове и обяви на пазари"
+        "Записи от търгове и обяви на пазари",
+        "Сигнали за наводнение, salvage и тотална щета",
+        "катастрофите",
+        "щетите от наводнение"
       ],
       "sections": [
         {
           "title": "Най-честите червени флагове при употребявани автомобили в ОАЕ — преди да платите капаро.",
           "body": "Всеки отчет извлича регистрационни сигнали, застрахователни индикатори и вносни данни от Дубай, Абу Даби и GCC."
+        },
+        {
+          "title": "Често ли са вносите след наводнения в Дубай?",
+          "body": "Да. Автомобили, повредени от наводнения от САЩ и други пазари, понякога се внасят и продават в Дубай и Абу Даби без пълно разкриване. VIN проверката помага да се открият предишни тотали и записи за наводнения."
+        },
+        {
+          "title": "Покрива ли отчетът внос на Toyota, Nissan и Mercedes?",
+          "body": "Да. Отчетите ни покриват популярни вносни марки в ОАЕ, включително Toyota, Nissan, Mercedes-Benz, BMW и Lexus, както и GCC регистриран сток."
         }
       ],
       "links": [
@@ -5631,17 +6408,28 @@
       ]
     },
     "ka": {
-      "h1": "შეამოწმეთ გარბენი მანქანებიდანUAE",
+      "h1": "შეამოწმეთ გარბენი მანქანები UAE-დან",
       "lead": "არაბეთის გაერთიანებულ საემიროებს აქვს 3M+ რეგისტრირებული მანქანა და იმპორტისთვის მძიმე მეორადი ბაზარი, რომელიც ორიენტირებულია დუბაიზე. ხშირია წყალდიდობის იმპორტი, ოდომეტრის გადაბრუნება და GCC-ის რეგისტრაციის ხარვეზები. შეამოწმეთ სანამ იყიდით.",
       "bullets": [
         "GCC რეგისტრაციისა და საკუთრების გადაცემის ინდიკატორები",
         "სადაზღვევო პრეტენზია და შეჯახების ისტორია",
-        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები"
+        "აუქციონისა და ბაზრის ჩამონათვალის ჩანაწერები",
+        "წყალდიდობის, სალვაჟისა და ჩამოწერის დროშები",
+        "ავარიები",
+        "წყალდიდობის დაზიანება"
       ],
       "sections": [
         {
           "title": "ყველაზე გავრცელებული წითელი დროშები არაბეთის გაერთიანებულ საემიროებში მეორად მანქანებზე - დეპოზიტის ჩაბარებამდე.",
           "body": "ყოველი ანგარიში იზიდავს სარეგისტრაციო სიგნალებს, დაზღვევის ინდიკატორებს და იმპორტის მონაცემებს დუბაიში, აბუ დაბიში და უფრო ფართო GCC-ში."
+        },
+        {
+          "title": "ხშირია თუ არა წყალდიდობის შედეგად დაზიანებული იმპორტი დუბაიში?",
+          "body": "დიახ. წყალდიდობის შედეგად დაზიანებული მანქანები აშშ-დან და სხვა ბაზრებიდან ზოგჯერ იმპორტირებულია და იყიდება დუბაიში და აბუ დაბიში არასრული გამჟღავნების გარეშე. VIN-ის შემოწმება ხელს უწყობს ჯამური ზარალისა და წყალდიდობის წინა ჩანაწერების მოპოვებას."
+        },
+        {
+          "title": "ეხება თუ არა ანგარიში Toyota-ს, Nissan-ის და Mercedes-ის იმპორტს?",
+          "body": "დიახ. ჩვენი ანგარიშები მოიცავს არაბეთის გაერთიანებულ საემიროებში პოპულარულ იმპორტს, მათ შორის Toyota, Nissan, Mercedes-Benz, BMW და Lexus, პლუს GCC-ში რეგისტრირებული შიდა მარაგი."
         }
       ],
       "links": [
@@ -5676,17 +6464,28 @@
       ]
     },
     "ar": {
-      "h1": "تحقق من الكيلومترات سيارات منالإمارات",
+      "h1": "تحقق من الكيلومترات سيارات من الإمارات",
       "lead": "في الإمارات أكثر من 3 ملايين مركبة مسجلة وسوق مستعمل يعتمد بشدة على الاستيراد، ودبي في قلبه. واردات متضررة من الفيضانات وإرجاع العداد وفجوات تسجيل مجلس التعاون شائعة. تحقق قبل الشراء.",
       "bullets": [
         "مؤشرات تسجيل مجلس التعاون ونقل الملكية",
         "تاريخ مطالبات التأمين والتصادم",
-        "سجلات المزادات والأسواق"
+        "سجلات المزادات والأسواق",
+        "علامات فيضان وإتلاف وشطب",
+        "الحوادث",
+        "أضرار الفيضانات"
       ],
       "sections": [
         {
           "title": "أكثر علامات الخطر شيوعاً في سوق السيارات المستعملة بالإمارات — قبل دفع العربون.",
           "body": "كل تقرير يجمع إشارات التسجيل ومؤشرات التأمين وبيانات الاستيراد في دبي وأبوظبي ومجلس التعاون."
+        },
+        {
+          "title": "هل واردات الفيضانات شائعة في دبي؟",
+          "body": "نعم. مركبات متضررة من الفيضانات من أمريكا وأسواق أخرى تُستورد أحياناً وتُباع في دبي وأبوظبي دون إفصاح كامل. فحص VIN يساعد في كشف سجلات الخسارة الكلية والفيضانات السابقة."
+        },
+        {
+          "title": "هل يغطي التقرير واردات تويوتا ونيسان ومرسيدس؟",
+          "body": "نعم. تقاريرنا تغطي الواردات الشائعة في الإمارات بما فيها تويوتا ونيسان ومرسيدس-بنز وBMW ولكزس، إضافة إلى المخزون المسجل في مجلس التعاون."
         }
       ],
       "links": [
@@ -5721,17 +6520,28 @@
       ]
     },
     "uk": {
-      "h1": "Перевір пробіг автомобілів зОАЕ",
+      "h1": "Перевір пробіг автомобілів з ОАЕ",
       "lead": "В ОАЕ понад 3 млн зареєстрованих авто та ринок вживаних машин, орієнтований на імпорт, з центром у Дубаї. Імпорт після повені, скручування одометра та прогалини в реєстрації GCC — типові ризики. Перевірте перед покупкою.",
       "bullets": [
         "Індикатори реєстрації GCC та зміни власника",
         "Історія страхових випадків і зіткнень",
-        "Записи аукціонів і маркетплейсів"
+        "Записи аукціонів і маркетплейсів",
+        "Прапорці повені, salvage і списання",
+        "аварії",
+        "шкоду від повені"
       ],
       "sections": [
         {
           "title": "Найпоширеніші червоні прапорці на ринку вживаних авто ОАЕ — до внесення завдатку.",
           "body": "Кожен звіт об'єднує реєстраційні сигнали, страхові індикатори та дані імпорту з Дубаї, Абу-Дабі та GCC."
+        },
+        {
+          "title": "Чи поширений імпорт після повені в Дубаї?",
+          "body": "Так. Авто, пошкоджені повенями з США та інших ринків, іноді імпортують і продають у Дубаї та Абу-Дабі без повного розкриття. Перевірка VIN допомагає виявити попередні тотали та записи про повені."
+        },
+        {
+          "title": "Чи покриває звіт імпорт Toyota, Nissan і Mercedes?",
+          "body": "Так. Наші звіти охоплюють популярний імпорт в ОАЕ, зокрема Toyota, Nissan, Mercedes-Benz, BMW і Lexus, а також авто, зареєстровані в GCC."
         }
       ],
       "links": [
@@ -5766,17 +6576,28 @@
       ]
     },
     "ru": {
-      "h1": "Проверь пробег автомобилей изОАЭ",
+      "h1": "Проверь пробег автомобилей из ОАЭ",
       "lead": "В ОАЭ более 3 млн зарегистрированных авто и рынок подержанных машин с упором на импорт, с центром в Дубае. Импорт после наводнений, скрутка одометра и пробелы в регистрации GCC — частые риски. Проверьте перед покупкой.",
       "bullets": [
         "Индикаторы регистрации GCC и смены владельца",
         "История страховых случаев и столкновений",
-        "Записи аукционов и маркетплейсов"
+        "Записи аукционов и маркетплейсов",
+        "Признаки наводнения, salvage и утилизации",
+        "аварии",
+        "повреждения от наводнения"
       ],
       "sections": [
         {
           "title": "Самые частые красные флаги на рынке подержанных авто ОАЭ — до внесения задатка.",
           "body": "Каждый отчёт объединяет регистрационные сигналы, страховые индикаторы и данные импорта из Дубая, Абу-Даби и GCC."
+        },
+        {
+          "title": "Часто ли встречается импорт после наводнений в Дубае?",
+          "body": "Да. Авто, повреждённые наводнениями из США и других рынков, иногда импортируют и продают в Дубае и Абу-Даби без полного раскрытия. Проверка VIN помогает выявить прежние тоталы и записи о наводнениях."
+        },
+        {
+          "title": "Покрывает ли отчёт импорт Toyota, Nissan и Mercedes?",
+          "body": "Да. Наши отчёты охватывают популярный импорт в ОАЭ, включая Toyota, Nissan, Mercedes-Benz, BMW и Lexus, а также авто, зарегистрированные в GCC."
         }
       ],
       "links": [
@@ -5811,17 +6632,28 @@
       ]
     },
     "zh": {
-      "h1": "查询 里程 来自阿联酋",
+      "h1": "查询 里程 来自阿联酋的汽车",
       "lead": "阿联酋拥有超过300万辆注册汽车，迪拜是进口依赖型二手车市场的核心。水淹进口车、调表和海合会登记信息缺失很常见。购买前请核实。",
       "bullets": [
         "海合会登记与过户指标",
         "保险理赔与碰撞历史",
-        "拍卖与交易平台挂牌记录"
+        "拍卖与交易平台挂牌记录",
+        "水淹、报废与全损标记",
+        "事故",
+        "水淹损伤"
       ],
       "sections": [
         {
           "title": "阿联酋二手车最常见的风险信号——付定金之前先查清。",
           "body": "每份报告汇总迪拜、阿布扎比及整个海合会地区的登记信号、保险指标与进口数据。"
+        },
+        {
+          "title": "迪拜的水淹进口车常见吗？",
+          "body": "是的。来自美国等市场的水淹车有时进口到迪拜和阿布扎比出售，披露不完整。VIN查询有助于发现此前的全损和水淹记录。"
+        },
+        {
+          "title": "报告是否覆盖丰田、日产和奔驰进口车？",
+          "body": "是的。报告覆盖阿联酋常见进口品牌，包括丰田、日产、奔驰、宝马和雷克萨斯，以及海合会登记的本地车源。"
         }
       ],
       "links": [

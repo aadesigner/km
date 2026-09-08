@@ -1,8 +1,8 @@
 {
   "home": {
     "en": {
-      "title": "Car VIN Check — Mileage, Accidents & Salvage | kmcheck.com",
-      "description": "Check real mileage, hidden accidents, salvage titles, theft records and full car history with your VIN. Instant vehicle history report at kmcheck.com."
+      "title": "Car Mileage Check & Vehicle History Report | kmcheck.com",
+      "description": "Car mileage check by VIN — verify real km, accidents, salvage and theft. USA mileage check, Korean cars check and imports from Canada, China & UAE."
     },
     "ar": {
       "title": "فحص VIN — الكيلومترات والحوادث والإتلاف | kmcheck.com",
@@ -17,8 +17,8 @@
       "description": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля."
     },
     "sq": {
-      "title": "Kontroll kilometrash, aksidente — me SHASI | kmcheck.com",
-      "description": "Kontroll kilometrash me SHASI — verifikoni kilometrat (km) origjinalë, aksidentet dhe dëmtimin total për çdo makinë."
+      "title": "Kontroll kilometrash me shasi | kmcheck.com",
+      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidentet dhe historikun e makinës. Ideal për makina nga SHBA, Koreja dhe importet."
     },
     "es": {
       "title": "Comprobar VIN — kilometraje y accidentes | kmcheck.com",
@@ -55,8 +55,8 @@
   },
   "pricing": {
     "en": {
-      "title": "Pricing — VIN history report | kmcheck.com",
-      "description": "One affordable VIN report covers mileage verification, accidents, salvage status and theft. Instant delivery. No subscription."
+      "title": "Pricing — Car Mileage Check & History Report | kmcheck.com",
+      "description": "One affordable car mileage check covers km verification, accidents, salvage and theft. Instant delivery. No subscription."
     },
     "ar": {
       "title": "الأسعار — تقارير فحص VIN | kmcheck.com",
@@ -71,8 +71,8 @@
       "description": "Один отчёт VIN: пробег, ДТП, утилизация и угон. Мгновенная доставка. Без подписки."
     },
     "sq": {
-      "title": "Çmimet — raport historiku me shasi | kmcheck.com",
-      "description": "Një raport i përballueshëm me shasi: kilometrazhi, aksidentet, dëmtimi total dhe vjedhjet. Dorëzim i menjëhershëm, pa abonim."
+      "title": "Çmimet — kontroll kilometrash me shasi | kmcheck.com",
+      "description": "Një raport i përballueshëm me numrin e shasisë: kontroll kilometrash, aksidente, dëmtim total dhe vjedhje. Dorëzim i menjëhershëm, pa abonim."
     },
     "es": {
       "title": "Precios — Informes de historial VIN | kmcheck.com",
@@ -271,8 +271,8 @@
   },
   "country_usa": {
     "en": {
-      "title": "Check USA Car Mileage, Accidents & Theft | kmcheck.com",
-      "description": "Check car mileage, accidents, thefts and salvage titles for American cars. Instant VIN report for Ford, Toyota, BMW, Honda and Chevrolet — all 50 states."
+      "title": "USA Mileage Check — Accidents, Theft & Salvage | kmcheck.com",
+      "description": "USA mileage check for American cars. Verify odometer, accidents, salvage titles and theft across all 50 states — Ford, Toyota, BMW, Honda, Chevrolet."
     },
     "ar": {
       "title": "تحقق من كيلومترات وحوادث السيارات الأمريكية | kmcheck.com",
@@ -287,8 +287,8 @@
       "description": "Проверка пробега, аварий, угонов и тоталов американских авто. Мгновенный отчёт VIN для Ford, Toyota, BMW, Honda и Chevrolet — все 50 штатов."
     },
     "sq": {
-      "title": "Kontroll kilometrash për makina nga SHBA | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe vjedhjesh për makina nga SHBA. Raport VIN për Ford, Toyota, BMW, Honda dhe Chevrolet — të 50 shtetet."
+      "title": "Kontroll kilometrash — makina nga SHBA | kmcheck.com",
+      "description": "Kontroll kilometrash për makina nga SHBA. Verifikoni km, aksidentet, dëmtimin total dhe vjedhjet — raport me shasi për Ford, Toyota, BMW, Honda dhe Chevrolet."
     },
     "es": {
       "title": "Coches USA — kilometraje, accidentes y robo | kmcheck.com",
@@ -325,8 +325,8 @@
   },
   "country_korea": {
     "en": {
-      "title": "Korean Cars — Mileage, Accidents & History | kmcheck.com",
-      "description": "Check car mileage, accidents, import history and hidden damage for cars from Korea. Instant VIN report for Hyundai, Kia, Genesis, BMW, Mercedes and Toyota."
+      "title": "Korean Mileage Check — Cars from Korea | kmcheck.com",
+      "description": "Korean mileage check for cars from South Korea. Verify km, accidents, import history and hidden damage — Hyundai, Kia, Genesis, BMW, Mercedes, Toyota."
     },
     "ar": {
       "title": "تحقق من كيلومترات وحوادث السيارات الكورية | kmcheck.com",
@@ -341,8 +341,8 @@
       "description": "Проверка пробега, аварий, импорта и скрытых повреждений авто из Кореи. Мгновенный отчёт VIN для Hyundai, Kia, Genesis, BMW, Mercedes и Toyota."
     },
     "sq": {
-      "title": "Kontroll kilometrash për makina nga Koreja | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe historiku importi për makina nga Koreja. Raport VIN për Hyundai, Kia, Genesis, BMW, Mercedes dhe Toyota."
+      "title": "Kontroll kilometrash — makina nga Koreja | kmcheck.com",
+      "description": "Kontroll kilometrash për makina nga Koreja. Verifikoni km, aksidentet, historikun e importit dhe dëmet e fshehura — Hyundai, Kia, Genesis, BMW, Mercedes, Toyota."
     },
     "es": {
       "title": "Coches Corea — kilometraje, accidentes e historial | kmcheck.com",
@@ -379,8 +379,8 @@
   },
   "country_canada": {
     "en": {
-      "title": "Canadian Cars — Mileage, Accidents & History | kmcheck.com",
-      "description": "Check car mileage, accidents, branded titles and theft for Canadian cars. Instant VIN report for Honda, Toyota, Ford, BMW and Mercedes — all provinces."
+      "title": "Canada Mileage Check — Cars from Canada | kmcheck.com",
+      "description": "Canada mileage check for Canadian cars. Verify km, accidents, branded titles and theft — Honda, Toyota, Ford, BMW and Mercedes across all provinces."
     },
     "ar": {
       "title": "تحقق من كيلومترات وحوادث السيارات الكندية | kmcheck.com",
@@ -395,8 +395,8 @@
       "description": "Проверка пробега, аварий, брендированных титулов и угонов канадских авто. Мгновенный отчёт VIN для Honda, Toyota, Ford, BMW и Mercedes — все провинции."
     },
     "sq": {
-      "title": "Kontroll kilometrash për makina nga Kanadaja | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe titujsh të shënuar për makina nga Kanadaja. Raport VIN për Honda, Toyota, Ford, BMW dhe Mercedes — të gjitha provincat."
+      "title": "Kontroll kilometrash — makina nga Kanadaja | kmcheck.com",
+      "description": "Kontroll kilometrash për makina nga Kanadaja. Verifikoni km, aksidentet dhe titujt e shënuar — Honda, Toyota, Ford, BMW dhe Mercedes."
     },
     "es": {
       "title": "Coches Canadá — kilometraje, accidentes e historial | kmcheck.com",
@@ -433,8 +433,8 @@
   },
   "free_decoder": {
     "en": {
-      "title": "Free VIN Decoder — BMW, Audi, Mercedes & All Brands | kmcheck.com",
-      "description": "Decode any 17-digit VIN free. BMW VIN decoder, Audi VIN decoder, Toyota, Ford & more. Year, make, model, engine — no registration."
+      "title": "Free VIN Decoder — Start Your Car Mileage Check | kmcheck.com",
+      "description": "Free VIN decoder for any 17-digit VIN. Get year, make, model and engine — then unlock a full car mileage check for accidents, salvage and theft."
     },
     "ar": {
       "title": "فك تشفير VIN مجاني — BMW وAudi وMercedes | kmcheck.com",
@@ -449,8 +449,8 @@
       "description": "Расшифруйте 17-значный VIN бесплатно. BMW, Audi, Mercedes, Toyota. Год, марка, модель — без регистрации."
     },
     "sq": {
-      "title": "Dekodues VIN falas — BMW, Audi, Mercedes | kmcheck.com",
-      "description": "Dekodoni VIN 17-shifror falas. Dekodues BMW, Audi, Mercedes, Toyota. Viti, marka, modeli, motori — pa regjistrim."
+      "title": "Dekodues shasie falas — kontroll kilometrash | kmcheck.com",
+      "description": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni kontrollin e plotë të kilometrash, aksidenteve dhe dëmtimit total."
     },
     "es": {
       "title": "Decodificador VIN gratis — BMW, Audi, Mercedes | kmcheck.com",
@@ -487,8 +487,8 @@
   },
   "how_it_works": {
     "en": {
-      "title": "How VIN Check Works — 3 Steps | kmcheck.com",
-      "description": "Get a vehicle history report for your car. Enter your VIN to check mileage, accidents, theft, salvage, and ownership — results in seconds from provider databases."
+      "title": "How Car Mileage Check Works — 3 Steps | kmcheck.com",
+      "description": "How to run a car mileage check and vehicle history report. Enter your VIN to verify km, accidents, theft and salvage — results in seconds."
     },
     "ar": {
       "title": "كيف يعمل فحص VIN — 3 خطوات | kmcheck.com",
@@ -503,8 +503,8 @@
       "description": "Получите отчёт об истории автомобиля. Введите VIN для проверки пробега, аварий, угонов, тотала и владельцев — за секунды из баз поставщиков."
     },
     "sq": {
-      "title": "Si funksionon kontrolli me shasi — 3 hapa | kmcheck.com",
-      "description": "Merrni raportin e historikut të makinës. Shkruani numrin e shasisë për të kontrolluar kilometrazhin, aksidentet, vjedhjet dhe dëmtimin total — rezultat për sekonda."
+      "title": "Si funksionon kontrolli i kilometrash me shasi | kmcheck.com",
+      "description": "Si të bëni kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë për km, aksidente, vjedhje dhe dëmtim total — rezultat për sekonda."
     },
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
@@ -541,8 +541,8 @@
   },
   "faq": {
     "en": {
-      "title": "VIN Check FAQ | kmcheck.com",
-      "description": "Answers about VIN checks, coverage, data accuracy, delivery, payments and refunds."
+      "title": "Car Mileage Check FAQ | kmcheck.com",
+      "description": "FAQ on car mileage checks, VIN reports, USA and Korean cars coverage, data accuracy, delivery, payments and refunds."
     },
     "ar": {
       "title": "الأسئلة الشائعة — فحص VIN | kmcheck.com",
@@ -557,8 +557,8 @@
       "description": "Ответы о проверке VIN, покрытии, точности данных, доставке, оплате и возвратах."
     },
     "sq": {
-      "title": "Pyetje të shpeshta — kontroll me shasi | kmcheck.com",
-      "description": "Përgjigje për kontrollin me shasi, mbulimin e të dhënave, saktësinë, dorëzimin, pagesat dhe rimbursimet në kmcheck.com."
+      "title": "Pyetje të shpeshta — kontroll kilometrash me shasi | kmcheck.com",
+      "description": "Përgjigje për kontrollin e kilometrash, mbulimin e të dhënave, saktësinë, dorëzimin, pagesat dhe rimbursimet në kmcheck.com."
     },
     "es": {
       "title": "Preguntas frecuentes — Comprobación VIN | kmcheck.com",
@@ -1027,8 +1027,8 @@
   },
   "country_china": {
     "en": {
-      "title": "Chinese Cars — Mileage, Accidents & History | kmcheck.com",
-      "description": "Check car mileage, accidents, odometer fraud and salvage for Chinese cars. Instant VIN report for BYD, Geely, NIO, BMW, Mercedes, Tesla and Toyota."
+      "title": "China Mileage Check — Cars from China | kmcheck.com",
+      "description": "China mileage check for cars from China. Verify km, accidents, odometer fraud and salvage — BYD, Geely, NIO, BMW, Mercedes, Tesla and Toyota."
     },
     "de": {
       "title": "China-Importe — Kilometerstand, Unfälle & Historie | kmcheck.com",
@@ -1081,8 +1081,8 @@
   },
   "country_uae": {
     "en": {
-      "title": "UAE Cars — Mileage, Accidents & Import History | kmcheck.com",
-      "description": "Check car mileage, accidents, flood damage and import history for UAE cars. Instant VIN report for Toyota, Nissan, Mercedes, BMW and Lexus in Dubai and GCC."
+      "title": "UAE Mileage Check — Accidents & Import History | kmcheck.com",
+      "description": "UAE mileage check for cars from Dubai and the GCC. Verify km, accidents, flood damage and import history — Toyota, Nissan, Mercedes, BMW and Lexus."
     },
     "de": {
       "title": "VAE-Importe — Kilometerstand, Unfälle & Importhistorie | kmcheck.com",

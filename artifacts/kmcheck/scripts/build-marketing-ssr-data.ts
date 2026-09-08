@@ -60,6 +60,9 @@ function homeContent(t: Dict, lang: Language): MarketingSsrContent {
     ? `${pick(t, "hero_headline_1")}, ${pick(t, "hero_headline_2")}`
     : `${pick(t, "hero_headline_1")} ${pick(t, "hero_headline_2")}`.replace(/\s+/g, " ").trim();
 
+  const seoBody = pick(t, "seo_home_body");
+  const seoMarkets = pick(t, "seo_home_markets");
+
   return withNavLinks(t, lang, {
     h1,
     lead: pick(t, "hero_subtext"),
@@ -68,10 +71,17 @@ function homeContent(t: Dict, lang: Language): MarketingSsrContent {
       "cycling_salvage_titles",
       "cycling_mileage_rollbacks",
       "cycling_theft_records",
+      ...(seoMarkets ? ["seo_home_markets"] : []),
     ]),
     sections: [
+      seoBody
+        ? { title: pick(t, "what_we_check") || "What we check", body: seoBody }
+        : null,
       section(t, "what_we_check", "what_we_check_sub"),
       section(t, "how_it_works", "how_it_works_desc"),
+      seoMarkets
+        ? { title: pick(t, "home_stats_from") || "Markets", body: seoMarkets }
+        : null,
     ].filter((row): row is { title: string; body: string } => row != null),
   });
 }
@@ -122,9 +132,9 @@ function freeDecoderContent(t: Dict, lang: Language): MarketingSsrContent {
 
 function countryContent(t: Dict, lang: Language, prefix: string): MarketingSsrContent {
   const origin = pick(t, `${prefix}_headline_origin`);
-  const originPrefix = pick(t, `${prefix}_headline_origin_prefix`);
-  const originWord = pick(t, `${prefix}_name`) || origin.replace(originPrefix, "").trim();
-  const h1 = `${pick(t, `${prefix}_headline_verb`)} ${pick(t, `${prefix}_cycling_0`)} ${originPrefix}${originWord}`.replace(/\s+/g, " ").trim();
+  const verb = pick(t, `${prefix}_headline_verb`);
+  const primary = pick(t, `${prefix}_cycling_0`);
+  const h1 = `${verb} ${primary} ${origin}`.replace(/\s+/g, " ").trim();
 
   return withNavLinks(t, lang, {
     h1,
@@ -133,9 +143,14 @@ function countryContent(t: Dict, lang: Language, prefix: string): MarketingSsrCo
       `${prefix}_included_0`,
       `${prefix}_included_1`,
       `${prefix}_included_2`,
+      `${prefix}_included_3`,
+      `${prefix}_cycling_1`,
+      `${prefix}_cycling_2`,
     ]),
     sections: [
       section(t, `${prefix}_issues_sub`, `${prefix}_included_sub`),
+      section(t, `${prefix}_faq_0_q`, `${prefix}_faq_0_a`),
+      section(t, `${prefix}_faq_1_q`, `${prefix}_faq_1_a`),
     ].filter((row): row is { title: string; body: string } => row != null),
   });
 }

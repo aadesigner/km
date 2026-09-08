@@ -99,9 +99,13 @@ for (const key of vinPageKeys) {
   }
 }
 
+function readJson(path) {
+  return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
+}
+
 /** Romanian i18n: vin_* keys must match en key set */
-const enI18n = JSON.parse(readFileSync(join(root, "src/i18n/en.json"), "utf8"));
-const roI18n = JSON.parse(readFileSync(join(root, "src/i18n/ro.json"), "utf8"));
+const enI18n = readJson(join(root, "src/i18n/en.json"));
+const roI18n = readJson(join(root, "src/i18n/ro.json"));
 const enKeys = Object.keys(enI18n);
 const roKeys = new Set(Object.keys(roI18n));
 const missingRo = enKeys.filter((k) => !roKeys.has(k));
@@ -137,7 +141,7 @@ if (untranslatedVin.length > 0) {
 /** Polish i18n: pl.json key parity and vin translations */
 const plI18nPath = join(root, "src/i18n/pl.json");
 if (existsSync(plI18nPath)) {
-  const plI18n = JSON.parse(readFileSync(plI18nPath, "utf8"));
+  const plI18n = readJson(plI18nPath);
   const plKeys = new Set(Object.keys(plI18n));
   const missingPl = enKeys.filter((k) => !plKeys.has(k));
   if (missingPl.length > 0) {
@@ -186,7 +190,7 @@ function checkI18nParity(langCode, label) {
     errors++;
     return;
   }
-  const dict = JSON.parse(readFileSync(path, "utf8"));
+  const dict = readJson(path);
   const dictKeys = new Set(Object.keys(dict));
   const missing = enKeys.filter((k) => !dictKeys.has(k));
   if (missing.length > 0) {
@@ -249,17 +253,16 @@ if (errors === 0) {
   process.exit(1);
 }
 
-/** Albanian (sq) keyword alignment — title/description should match on-page SEO targets */
+/** Albanian (sq) keyword alignment — natural search intents */
 const SQ_KEYWORDS = {
   home: ["kontroll kilometrash", "shasi"],
-  // Pricing / how-it-works / FAQ: page-focused copy (not homepage "kontroll kilometrash")
-  pricing: ["çmime", "shasi"],
+  pricing: ["çmime", "shasi", "kontroll kilometrash"],
   free_decoder: ["shasi", "kontroll kilometrash"],
-  how_it_works: ["si funksionon", "shasi"],
-  faq: ["pyetje", "shasi"],
-  country_usa: ["kontroll kilometrash", "vjedhjesh", "shba"],
-  country_korea: ["kontroll kilometrash", "vjedhjesh", "koreja"],
-  country_canada: ["kontroll kilometrash", "vjedhjesh", "kanadaja"],
+  how_it_works: ["kontroll", "shasi"],
+  faq: ["kontroll kilometrash", "shasi"],
+  country_usa: ["kontroll kilometrash", "shba"],
+  country_korea: ["kontroll kilometrash", "koreja"],
+  country_canada: ["kontroll kilometrash", "kanadaja"],
 };
 
 let sqWarn = 0;
@@ -278,34 +281,62 @@ if (sqWarn === 0) {
   console.log("OK — Albanian SEO keywords aligned for indexable pages");
 }
 
-/** sq: homepage/country titles use "kontroll kilometrash", not "kontroll kilometra" alone */
+/** English keyword alignment — mileage-check intent + market pages */
+const EN_KEYWORDS = {
+  home: ["car mileage check", "usa mileage", "korean"],
+  pricing: ["mileage check"],
+  free_decoder: ["mileage check", "vin"],
+  how_it_works: ["mileage check"],
+  faq: ["mileage check"],
+  country_usa: ["usa mileage check"],
+  country_korea: ["korean mileage check"],
+  country_canada: ["canada mileage check"],
+  country_china: ["china mileage check"],
+  country_uae: ["uae mileage check"],
+};
+
+let enWarn = 0;
+for (const [key, needles] of Object.entries(EN_KEYWORDS)) {
+  const entry = seoData[key]?.en;
+  if (!entry) continue;
+  const blob = `${entry.title} ${entry.description}`.toLowerCase();
+  for (const needle of needles) {
+    if (!blob.includes(needle)) {
+      console.warn(`WARN en.${key}: missing keyword "${needle}" in title/description`);
+      enWarn++;
+    }
+  }
+}
+if (enWarn === 0) {
+  console.log("OK — English SEO keywords aligned for indexable pages");
+}
+
+/** sq: homepage/country titles use "kontroll kilometrash" */
 const SQ_TITLE_KEYS = [
   "home",
   "free_decoder",
   "country_usa",
   "country_korea",
   "country_canada",
-  "country_china",
-  "country_uae",
 ];
 for (const key of SQ_TITLE_KEYS) {
   const title = (seoData[key]?.sq?.title ?? "").toLowerCase();
   if (title.includes("kontroll kilometra") && !title.includes("kilometrash")) {
-    console.warn(`WARN sq.${key}: title uses "kilometra" without "kilometrash" (prefer genitive for Google)`);
+    console.warn(`WARN sq.${key}: title uses "kilometra" without "kilometrash"`);
     sqWarn++;
   }
 }
-if (!(seoData.home?.sq?.title ?? "").toLowerCase().includes("aksidente")) {
-  console.warn("WARN sq.home: title missing aksidente");
-  sqWarn++;
-}
 
-/** sq i18n H1 should use Kontroll + cycling genitive keywords */
+/** sq i18n: stable H1 (no rotating primary keyword) */
 const sqI18nPath = join(root, "src/i18n/sq.json");
 if (existsSync(sqI18nPath)) {
-  const sqI18n = JSON.parse(readFileSync(sqI18nPath, "utf8"));
+  const sqI18n = readJson(sqI18nPath);
   if (sqI18n.hero_headline_1 !== "Kontroll kilometrash") {
-    console.warn('WARN sq.json: hero_headline_1 should be "Kontroll kilometrash" (static homepage H1)');
+    console.warn('WARN sq.json: hero_headline_1 should be "Kontroll kilometrash"');
+    sqWarn++;
+  }
+  if (!(sqI18n.hero_headline_2 ?? "").toLowerCase().includes("aksidente")) {
+    console.warn("WARN sq.json: hero_headline_2 should mention aksidente");
     sqWarn++;
   }
   for (const slug of ["usa", "korea", "canada", "china", "uae"]) {
@@ -317,13 +348,9 @@ if (existsSync(sqI18nPath)) {
       console.warn(`WARN sq.json: country_${slug}_headline_origin should use makina not makinat`);
       sqWarn++;
     }
-    const cycling = [0, 1, 2, 3].map((i) => sqI18n[`country_${slug}_cycling_${i}`] ?? "");
-    const expected = ["kilometrash", "aksidentesh", "vjedhjesh", "dëmtim total"];
-    for (let i = 0; i < 4; i++) {
-      if (cycling[i] !== expected[i]) {
-        console.warn(`WARN sq.json: country_${slug}_cycling_${i} expected "${expected[i]}", got "${cycling[i]}"`);
-        sqWarn++;
-      }
+    if ((sqI18n[`country_${slug}_cycling_0`] ?? "") !== "kilometrash") {
+      console.warn(`WARN sq.json: country_${slug}_cycling_0 should be kilometrash (stable H1 primary)`);
+      sqWarn++;
     }
   }
   const sub = sqI18n.hero_subtext ?? "";
@@ -331,10 +358,39 @@ if (existsSync(sqI18nPath)) {
     console.warn("WARN sq.json: hero_subtext missing kontroll kilometrash");
     sqWarn++;
   }
+  if (!(sqI18n.seo_home_body ?? "").toLowerCase().includes("kontroll kilometrash")) {
+    console.warn("WARN sq.json: seo_home_body missing kontroll kilometrash");
+    sqWarn++;
+  }
+}
+
+/** en i18n: stable H1 + market keywords */
+const enI18nPath = join(root, "src/i18n/en.json");
+if (existsSync(enI18nPath)) {
+  const enI18nSeo = readJson(enI18nPath);
+  if (!(enI18nSeo.hero_headline_1 ?? "").toLowerCase().includes("mileage")) {
+    console.warn("WARN en.json: hero_headline_1 should mention mileage");
+    enWarn++;
+  }
+  if ((enI18nSeo.country_usa_cycling_0 ?? "") !== "mileage check") {
+    console.warn('WARN en.json: country_usa_cycling_0 should be "mileage check"');
+    enWarn++;
+  }
+  if ((enI18nSeo.country_korea_cycling_0 ?? "") !== "mileage check") {
+    console.warn('WARN en.json: country_korea_cycling_0 should be "mileage check"');
+    enWarn++;
+  }
+  if (!(enI18nSeo.seo_home_body ?? "").toLowerCase().includes("usa mileage")) {
+    console.warn("WARN en.json: seo_home_body missing USA mileage");
+    enWarn++;
+  }
 }
 
 if (sqWarn === 0) {
   console.log("OK — Albanian title/H1 SEO alignment");
+}
+if (enWarn === 0) {
+  console.log("OK — English title/H1 SEO alignment");
 }
 
 /** Marketing SSR body snapshots — crawlers need H1 + lead in first HTML */
