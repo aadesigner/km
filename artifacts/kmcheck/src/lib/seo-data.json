@@ -2,55 +2,55 @@
   "home": {
     "en": {
       "title": "Car Mileage Check & Vehicle History Report | kmcheck.com",
-      "description": "Car mileage check by VIN — verify real km, accidents, salvage and theft. USA mileage check, Korean cars check and imports from Canada, China & Dubai."
+      "description": "Car mileage check by VIN — verify real km, accidents, salvage and theft. Vehicle history for the USA, Korea, Canada, China and Dubai."
     },
     "ar": {
       "title": "فحص VIN — الكيلومترات والحوادث والإتلاف | kmcheck.com",
-      "description": "فحص VIN فوري — تحقق من قراءات الكيلومتر الحقيقية، واكشف تاريخ الحوادث الكامل وسجلات الإتلاف لأي سيارة."
+      "description": "فحص VIN: الكيلومترات والحوادث والإتلاف. تاريخ المركبة للولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي."
     },
     "uk": {
       "title": "Перевірка VIN авто — пробіг, ДТП та історія | kmcheck.com",
-      "description": "Миттєва перевірка VIN — перевірте реальні показники пробігу (км), розкрийте повну історію ДТП та записи про утилізацію для будь-якого авто."
+      "description": "Перевірка VIN: пробіг, ДТП і тоталі. Історія авто для США, Південної Кореї, Канади, Китаю та Дубая."
     },
     "ru": {
       "title": "Проверка VIN — пробег, ДТП и история | kmcheck.com",
-      "description": "Мгновенная проверка VIN — проверьте реальные показания пробега (км), раскройте полную историю ДТП и записи об утилизации для любого автомобиля."
+      "description": "Проверка VIN: пробег, ДТП и тоталы. История автомобиля для США, Южной Кореи, Канады, Китая и Дубая."
     },
     "sq": {
       "title": "Kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidentet dhe historikun e makinës. Ideal për makina nga SHBA, Koreja dhe importet."
+      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidente dhe historikun e makinës. Historik makine për SHBA, Koreja, Kanadaja, Kina dhe Dubai."
     },
     "es": {
       "title": "Comprobar VIN — kilometraje y accidentes | kmcheck.com",
-      "description": "Compruebe el VIN al instante: verifique el kilometraje real, descubra accidentes ocultos y registros de siniestro total de cualquier coche."
+      "description": "Informe VIN: kilometraje, accidentes y siniestro total. Historial de vehículos de EE. UU., Corea del Sur, Canadá, China y Dubái."
     },
     "ro": {
       "title": "Verificare VIN — kilometraj, accidente, total | kmcheck.com",
-      "description": "Verificare VIN instantanee — confirmați kilometrajul real, descoperiți accidentele și înregistrările de daună totală pentru orice mașină."
+      "description": "Verificare VIN: kilometraj, accidente și daună totală. Istoric auto pentru SUA, Coreea de Sud, Canada, China și Dubai."
     },
     "pl": {
       "title": "VIN — przebieg, wypadki i szkoda całkowita | kmcheck.com",
-      "description": "Natychmiastowe sprawdzenie VIN — zweryfikuj rzeczywisty przebieg, odkryj pełną historię wypadków i zapisy szkody całkowitej dowolnego auta."
+      "description": "Sprawdzenie VIN: przebieg, wypadki i szkoda całkowita. Historia pojazdu dla USA, Korei Południowej, Kanady, Chin i Dubaju."
     },
     "ka": {
       "title": "VIN შემოწმება — გარბენი, ავარიები და სალვაჟი | kmcheck.com",
-      "description": "შეამოწმე რეალური გარბენი, დამალული ავარიები, სალვაჟის ტიტულები და მანქანის სრული ისტორია VIN-ით. მყისიერი ანგარიში kmcheck.com-ზე."
+      "description": "VIN შემოწმება: გარბენი, ავარიები და სალვაჟი. მანქანის ისტორია აშშ-ს, სამხრეთ კორეის, კანადის, ჩინეთისა და დუბაისთვის."
     },
     "de": {
       "title": "Kilometerstand prüfen — Unfälle & Totalschaden | kmcheck.com",
-      "description": "VIN-Check sofort: Kilometerstand, Unfallhistorie und Totalschaden für jedes Auto prüfen."
+      "description": "VIN-Check: Kilometerstand, Unfälle und Totalschaden prüfen. Fahrzeughistorie für die USA, Südkorea, Kanada, China und Dubai."
     },
     "fr": {
       "title": "Vérifier le kilométrage — accidents & épave | kmcheck.com",
-      "description": "Contrôle VIN instantané : vérifiez le kilométrage réel, l'historique des accidents et le statut épave de tout véhicule."
+      "description": "Contrôle VIN: kilométrage, accidents et épave. Historique véhicule pour les États-Unis, la Corée du Sud, le Canada, la Chine et Dubaï."
     },
     "bg": {
       "title": "VIN проверка — пробег, катастрофи, тотал | kmcheck.com",
-      "description": "Мигновена проверка на VIN — потвърдете реалния пробег, разкрийте пълната история на катастрофи и записи за тотална щета за всеки автомобил."
+      "description": "VIN проверка: пробег, катастрофи и тотал. История на автомобила за САЩ, Южна Корея, Канада, Китай и Дубай."
     },
     "zh": {
       "title": "汽车VIN查询 — 里程、事故与报废 | kmcheck.com",
-      "description": "即时VIN查询 — 核实真实里程、揭露完整事故历史和任何车辆的报废记录。"
+      "description": "VIN查询：核实里程、事故与报废。覆盖美国、韩国、加拿大、中国与迪拜的车辆历史。"
     }
   },
   "pricing": {

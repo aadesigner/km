@@ -2,18 +2,18 @@
   "home": {
     "en": {
       "h1": "Car mileage check, accidents & vehicle history",
-      "lead": "Instant car mileage check by VIN — spot odometer rollbacks, hidden accidents, salvage titles and theft. Built for USA imports, Korean cars, Canada, China and Dubai.",
+      "lead": "Instant car mileage check by VIN — spot odometer rollbacks, hidden accidents, salvage titles and theft. Vehicle history for the USA, Korea, Canada, China and Dubai.",
       "bullets": [
         "hidden accidents",
         "salvage titles",
         "mileage rollbacks",
         "theft records",
-        "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and Dubai flood/import risks in one report."
+        "Vehicle history for the USA, Korea, Canada, China and Dubai — mileage, accidents, salvage and theft in one report."
       ],
       "sections": [
         {
           "title": "What We Check",
-          "body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We specialise in USA mileage checks, Korean mileage checks and history for cars from Canada, China and Dubai — so you can buy used cars with clearer data before you pay."
+          "body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We cover vehicles from the USA, Korea, Canada, China and Dubai — so you can buy used cars with clearer data before you pay."
         },
         {
           "title": "What We Check",
@@ -25,7 +25,7 @@
         },
         {
           "title": "Check cars from:",
-          "body": "Check USA car mileage, Korean cars mileage, Canadian imports, China export history and Dubai flood/import risks in one report."
+          "body": "Vehicle history for the USA, Korea, Canada, China and Dubai — mileage, accidents, salvage and theft in one report."
         }
       ],
       "links": [
@@ -61,18 +61,18 @@
     },
     "de": {
       "h1": "Kilometerstand prüfen, Unfälle & Totalschaden.",
-      "lead": "VIN-Check in Sekunden — Tachobetrug, versteckte Unfälle, Totalschaden und Diebstahl prüfen. Für Importe aus USA, Korea, Kanada, China und Dubai.",
+      "lead": "VIN-Check in Sekunden — Tachobetrug, versteckte Unfälle, Totalschaden und Diebstahl prüfen. Fahrzeughistorie für die USA, Südkorea, Kanada, China und Dubai.",
       "bullets": [
         "Unfälle",
         "Totalschaden",
         "Tachobetrug",
         "Diebstahl",
-        "USA-Kilometerstand, Korea-Importe, Kanada, China und Dubai in einem Bericht prüfen."
+        "Fahrzeughistorie für USA, Südkorea, Kanada, China und Dubai — Kilometerstand, Unfälle, Totalschaden und Diebstahl in einem Bericht."
       ],
       "sections": [
         {
           "title": "Was wir prüfen",
-          "body": "kmcheck.com ist ein Service zur Kilometerstand-Prüfung und Fahrzeughistorie. Geben Sie die 17-stellige VIN ein, um Kilometerstand, Unfälle, Totalschaden und Diebstahl zu prüfen — inkl. USA-, Korea-, Kanada-, China- und Dubai-Importe."
+          "body": "kmcheck.com ist ein Service zur Kilometerstand-Prüfung und Fahrzeughistorie. Geben Sie die 17-stellige VIN ein, um Kilometerstand, Unfälle, Totalschaden und Diebstahl zu prüfen — für Fahrzeuge aus den USA, Südkorea, Kanada, China und Dubai."
         },
         {
           "title": "Was wir prüfen",
@@ -84,7 +84,7 @@
         },
         {
           "title": "Autos prüfen aus:",
-          "body": "USA-Kilometerstand, Korea-Importe, Kanada, China und Dubai in einem Bericht prüfen."
+          "body": "Fahrzeughistorie für USA, Südkorea, Kanada, China und Dubai — Kilometerstand, Unfälle, Totalschaden und Diebstahl in einem Bericht."
         }
       ],
       "links": [
@@ -120,18 +120,18 @@
     },
     "es": {
       "h1": "Verifique el kilometraje, accidentes y siniestros totales.",
-      "lead": "Informe VIN al instante: manipulación de kilometraje, accidentes ocultos, títulos de siniestro total y robos. Para importaciones de EE. UU., Corea, Canadá, China y Dubái.",
+      "lead": "Informe VIN al instante: manipulación de kilometraje, accidentes ocultos, títulos de siniestro total y robos. Historial de vehículos de EE. UU., Corea del Sur, Canadá, China y Dubái.",
       "bullets": [
         "accidentes ocultos",
         "títulos de siniestro total",
         "manipulaciones de kilometraje",
         "registros de robo",
-        "Compruebe kilometraje de USA, Corea, Canadá, China y Dubái en un informe."
+        "Historial de vehículos de EE. UU., Corea del Sur, Canadá, China y Dubái — kilometraje, accidentes, siniestro total y robo en un informe."
       ],
       "sections": [
         {
           "title": "Qué comprobamos",
-          "body": "kmcheck.com es un servicio de comprobación de kilometraje e historial del vehículo. Introduzca el VIN de 17 caracteres para verificar km, accidentes, siniestro total y robo — USA, Corea, Canadá, China y Dubái."
+          "body": "kmcheck.com es un servicio de comprobación de kilometraje e historial del vehículo. Introduzca el VIN de 17 caracteres para verificar km, accidentes, siniestro total y robo — para vehículos de EE. UU., Corea del Sur, Canadá, China y Dubái."
         },
         {
           "title": "Qué comprobamos",
@@ -143,7 +143,7 @@
         },
         {
           "title": "Comprobar coches de:",
-          "body": "Compruebe kilometraje de USA, Corea, Canadá, China y Dubái en un informe."
+          "body": "Historial de vehículos de EE. UU., Corea del Sur, Canadá, China y Dubái — kilometraje, accidentes, siniestro total y robo en un informe."
         }
       ],
       "links": [
@@ -179,18 +179,18 @@
     },
     "fr": {
       "h1": "Vérifiez le kilométrage, les accidents et le salvage.",
-      "lead": "Contrôle VIN instantané — retours de compteur, accidents cachés, titres salvage et vols. Pour importations USA, Corée, Canada, Chine et Dubaï.",
+      "lead": "Contrôle VIN instantané — retours de compteur, accidents cachés, titres salvage et vols. Historique véhicule pour les États-Unis, la Corée du Sud, le Canada, la Chine et Dubaï.",
       "bullets": [
         "accidents cachés",
         "titres salvage",
         "retours de compteur",
         "registres de vol",
-        "Contrôlez le kilométrage USA, Corée, Canada, Chine et Dubaï dans un seul rapport."
+        "Historique véhicule pour les États-Unis, la Corée du Sud, le Canada, la Chine et Dubaï — kilométrage, accidents, épave et vol en un seul rapport."
       ],
       "sections": [
         {
           "title": "Ce que nous vérifions",
-          "body": "kmcheck.com est un service de contrôle du kilométrage et d’historique véhicule. Entrez le VIN 17 caractères pour vérifier le km, les accidents, l’épave et le vol — USA, Corée, Canada, Chine et Dubaï."
+          "body": "kmcheck.com est un service de contrôle du kilométrage et d’historique véhicule. Entrez le VIN 17 caractères pour vérifier le km, les accidents, l’épave et le vol — pour les véhicules des États-Unis, de Corée du Sud, du Canada, de Chine et de Dubaï."
         },
         {
           "title": "Ce que nous vérifions",
@@ -202,7 +202,7 @@
         },
         {
           "title": "Vérifier les voitures de :",
-          "body": "Contrôlez le kilométrage USA, Corée, Canada, Chine et Dubaï dans un seul rapport."
+          "body": "Historique véhicule pour les États-Unis, la Corée du Sud, le Canada, la Chine et Dubaï — kilométrage, accidents, épave et vol en un seul rapport."
         }
       ],
       "links": [
@@ -238,18 +238,18 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash, aksidente dhe historiku i makinës",
-      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Ideal për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai.",
+      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Historik makine për SHBA, Koreja, Kanadaja, Kina dhe Dubai.",
       "bullets": [
         "aksidentesh",
         "dëmtim total",
         "km origjinale",
         "vjedhjesh",
-        "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — në një raport."
+        "Historik makine për SHBA, Koreja, Kanadaja, Kina dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
       ],
       "sections": [
         {
           "title": "Çfarë kontrollojmë",
-          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Specializoheni në makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — që të blini me më shumë informacion para pagesës."
+          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Mbulojmë makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — që të blini me më shumë informacion para pagesës."
         },
         {
           "title": "Çfarë kontrollojmë",
@@ -261,7 +261,7 @@
         },
         {
           "title": "Kontrollo makina nga:",
-          "body": "Kontroll kilometrash për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai — në një raport."
+          "body": "Historik makine për SHBA, Koreja, Kanadaja, Kina dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
         }
       ],
       "links": [
@@ -297,18 +297,18 @@
     },
     "pl": {
       "h1": "Sprawdź przebieg, wypadki i szkody całkowite.",
-      "lead": "Natychmiastowe sprawdzenie VIN — skręcone liczniki, ukryte wypadki, tytuły szkód całkowitych i kradzieże. Dla importów z USA, Korei, Kanady, Chin i Dubaju.",
+      "lead": "Natychmiastowe sprawdzenie VIN — skręcone liczniki, ukryte wypadki, tytuły szkód całkowitych i kradzieże. Historia pojazdu dla USA, Korei Południowej, Kanady, Chin i Dubaju.",
       "bullets": [
         "ukryte wypadki",
         "tytuły salvage",
         "skręcone liczniki",
         "rejestry kradzieży",
-        "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i Dubaju w jednym raporcie."
+        "Historia pojazdu dla USA, Korei Południowej, Kanady, Chin i Dubaju — przebieg, wypadki, szkoda całkowita i kradzież w jednym raporcie."
       ],
       "sections": [
         {
           "title": "Co sprawdzamy",
-          "body": "kmcheck.com to usługa sprawdzania przebiegu i historii pojazdu. Wpisz 17-znakowy VIN, aby zweryfikować km, wypadki, szkodę całkowitą i kradzież — USA, Korea, Kanada, Chiny i Dubaj."
+          "body": "kmcheck.com to usługa sprawdzania przebiegu i historii pojazdu. Wpisz 17-znakowy VIN, aby zweryfikować km, wypadki, szkodę całkowitą i kradzież — dla aut z USA, Korei Południowej, Kanady, Chin i Dubaju."
         },
         {
           "title": "Co sprawdzamy",
@@ -320,7 +320,7 @@
         },
         {
           "title": "Sprawdź auta z:",
-          "body": "Sprawdź przebieg aut z USA, Korei, Kanady, Chin i Dubaju w jednym raporcie."
+          "body": "Historia pojazdu dla USA, Korei Południowej, Kanady, Chin i Dubaju — przebieg, wypadki, szkoda całkowita i kradzież w jednym raporcie."
         }
       ],
       "links": [
@@ -356,18 +356,18 @@
     },
     "ro": {
       "h1": "Verifică kilometrajul, accidentele și salvajul.",
-      "lead": "Verificare VIN instantanee — manipulări de kilometraj, accidente ascunse, titluri de salvaj și furturi. Pentru importuri din SUA, Coreea, Canada, China și Dubai.",
+      "lead": "Verificare VIN instantanee — manipulări de kilometraj, accidente ascunse, titluri de salvaj și furturi. Istoric auto pentru SUA, Coreea de Sud, Canada, China și Dubai.",
       "bullets": [
         "accidente ascunse",
         "titluri de salvaj",
         "manipulări kilometraj",
         "înregistrări de furt",
-        "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Dubai într-un singur raport."
+        "Istoric auto pentru SUA, Coreea de Sud, Canada, China și Dubai — kilometraj, accidente, daună totală și furt într-un singur raport."
       ],
       "sections": [
         {
           "title": "Ce verificăm",
-          "body": "kmcheck.com este un serviciu de verificare a kilometrajului și a istoricului auto. Introduceți VIN-ul de 17 caractere pentru km, accidente, daună totală și furt — SUA, Coreea, Canada, China și Dubai."
+          "body": "kmcheck.com este un serviciu de verificare a kilometrajului și a istoricului auto. Introduceți VIN-ul de 17 caractere pentru km, accidente, daună totală și furt — pentru mașini din SUA, Coreea de Sud, Canada, China și Dubai."
         },
         {
           "title": "Ce verificăm",
@@ -379,7 +379,7 @@
         },
         {
           "title": "Verifică mașini din:",
-          "body": "Verificați kilometrajul pentru mașini din SUA, Coreea, Canada, China și Dubai într-un singur raport."
+          "body": "Istoric auto pentru SUA, Coreea de Sud, Canada, China și Dubai — kilometraj, accidente, daună totală și furt într-un singur raport."
         }
       ],
       "links": [
@@ -415,18 +415,18 @@
     },
     "bg": {
       "h1": "Проверете пробега, катастрофи и salvage.",
-      "lead": "Моментална VIN проверка — манипулации на пробега, скрити катастрофи, salvage записи и кражби. За внос от САЩ, Корея, Канада, Китай и Дубай.",
+      "lead": "Моментална VIN проверка — манипулации на пробега, скрити катастрофи, тотална щета и кражби. История на автомобила за САЩ, Южна Корея, Канада, Китай и Дубай.",
       "bullets": [
         "скрити катастрофи",
         "salvage талони",
         "манипулации на пробега",
         "записи за кражби",
-        "Проверете пробег за авто от САЩ, Корея, Канада, Китай и Дубай в един отчет."
+        "История на автомобила за САЩ, Южна Корея, Канада, Китай и Дубай — пробег, катастрофи, тотал и кражба в един отчет."
       ],
       "sections": [
         {
           "title": "Какво проверяваме",
-          "body": "kmcheck.com е услуга за проверка на пробег и история на автомобила. Въведете 17-символния VIN за пробег, катастрофи, тотал и кражба — САЩ, Корея, Канада, Китай и Дубай."
+          "body": "kmcheck.com е услуга за проверка на пробег и история на автомобила. Въведете 17-символния VIN за пробег, катастрофи, тотал и кражба — за автомобили от САЩ, Южна Корея, Канада, Китай и Дубай."
         },
         {
           "title": "Какво проверяваме",
@@ -438,7 +438,7 @@
         },
         {
           "title": "Проверете коли от:",
-          "body": "Проверете пробег за авто от САЩ, Корея, Канада, Китай и Дубай в един отчет."
+          "body": "История на автомобила за САЩ, Южна Корея, Канада, Китай и Дубай — пробег, катастрофи, тотал и кражба в един отчет."
         }
       ],
       "links": [
@@ -474,18 +474,18 @@
     },
     "ka": {
       "h1": "შეამოწმე გარბენი, ავარიები და სალვაჟი.",
-      "lead": "მყისიერი VIN შემოწმება — გარბენის უკან გადახვევა, დამალული ავარიები, სალვაჟის ტიტულები და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და დუბაის იმპორტისთვის.",
+      "lead": "მყისიერი VIN შემოწმება — გარბენის უკან გადახვევა, დამალული ავარიები, სალვაჟის ტიტულები და ქურდობა. მანქანის ისტორია აშშ-ს, სამხრეთ კორეის, კანადის, ჩინეთისა და დუბაისთვის.",
       "bullets": [
         "დამალული ავარიები",
         "სალვაჟის ტიტულები",
         "გარბენის უკან გადახვევა",
         "ქურდობის ჩანაწერები",
-        "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და დუბაის მანქანები ერთ ანგარიშში."
+        "მანქანის ისტორია აშშ-ს, სამხრეთ კორეის, კანადის, ჩინეთისა და დუბაისთვის — გარბენი, ავარიები, სალვაჟი და ქურდობა ერთ ანგარიშში."
       ],
       "sections": [
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
-          "body": "kmcheck.com არის გარბენის და მანქანის ისტორიის შემოწმების სერვისი. შეიყვანეთ 17-ნიშნა VIN — გარბენი, ავარიები, სალვაჟი და ქურდობა. აშშ, კორეა, კანადა, ჩინეთი და დუბაი."
+          "body": "kmcheck.com არის გარბენის და მანქანის ისტორიის შემოწმების სერვისი. შეიყვანეთ 17-ნიშნა VIN — გარბენი, ავარიები, სალვაჟი და ქურდობა. ვფარავთ მანქანებს აშშ-დან, სამხრეთ კორეიდან, კანადიდან, ჩინეთიდან და დუბაიდან."
         },
         {
           "title": "რასაც ჩვენ ვამოწმებთ",
@@ -497,7 +497,7 @@
         },
         {
           "title": "შეამოწმეთ მანქანები:",
-          "body": "შეამოწმეთ აშშ, კორეა, კანადა, ჩინეთი და დუბაის მანქანები ერთ ანგარიშში."
+          "body": "მანქანის ისტორია აშშ-ს, სამხრეთ კორეის, კანადის, ჩინეთისა და დუბაისთვის — გარბენი, ავარიები, სალვაჟი და ქურდობა ერთ ანგარიშში."
         }
       ],
       "links": [
@@ -533,18 +533,18 @@
     },
     "ar": {
       "h1": "تحقق من الكيلومترات، الحوادث والمصدومات.",
-      "lead": "فحص VIN فوري — تلاعب بالكيلومتر، حوادث مخفية، سجلات الإتلاف والسرقة. لاستيراد أمريكا وكوريا وكندا والصين ودبي.",
+      "lead": "فحص VIN فوري — تلاعب بالكيلومتر، حوادث مخفية، سجلات الإتلاف والسرقة. تاريخ المركبة للولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي.",
       "bullets": [
         "حوادث مخفية",
         "سجلات الخردة",
         "تلاعب بالكيلومتر",
         "سجلات السرقة",
-        "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين ودبي في تقرير واحد."
+        "تاريخ المركبة للولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي — كيلومترات وحوادث وإتلاف وسرقة في تقرير واحد."
       ],
       "sections": [
         {
           "title": "ما الذي نفحصه",
-          "body": "kmcheck.com خدمة لفحص الكيلومترات وتاريخ السيارة. أدخل رقم VIN المكوّن من 17 خانة للتحقق من الكيلومترات والحوادث والإتلاف والسرقة — أمريكا وكوريا وكندا والصين ودبي."
+          "body": "kmcheck.com خدمة لفحص الكيلومترات وتاريخ السيارة. أدخل رقم VIN المكوّن من 17 خانة للتحقق من الكيلومترات والحوادث والإتلاف والسرقة — لمركبات من الولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي."
         },
         {
           "title": "ما الذي نفحصه",
@@ -556,7 +556,7 @@
         },
         {
           "title": "تحقق من السيارات من:",
-          "body": "افحص كيلومترات سيارات أمريكا وكوريا وكندا والصين ودبي في تقرير واحد."
+          "body": "تاريخ المركبة للولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي — كيلومترات وحوادث وإتلاف وسرقة في تقرير واحد."
         }
       ],
       "links": [
@@ -592,18 +592,18 @@
     },
     "uk": {
       "h1": "Перевір пробіг, аварії та тоталі.",
-      "lead": "Миттєва перевірка VIN — скручений пробіг, приховані ДТП, тоталі та викрадення. Для імпорту з США, Кореї, Канади, Китаю та Дубая.",
+      "lead": "Миттєва перевірка VIN — скручений пробіг, приховані ДТП, тоталі та викрадення. Історія авто для США, Південної Кореї, Канади, Китаю та Дубая.",
       "bullets": [
         "приховані аварії",
         "тотальні авто",
         "скручений пробіг",
         "реєстри угону",
-        "Перевірте пробіг авто з США, Кореї, Канади, Китаю та Дубая в одному звіті."
+        "Історія авто для США, Південної Кореї, Канади, Китаю та Дубая — пробіг, ДТП, тотал і викрадення в одному звіті."
       ],
       "sections": [
         {
           "title": "Що ми перевіряємо",
-          "body": "kmcheck.com — сервіс перевірки пробігу та історії авто. Введіть 17-символьний VIN, щоб перевірити пробіг, ДТП, тотал і викрадення — США, Корея, Канада, Китай і Дубай."
+          "body": "kmcheck.com — сервіс перевірки пробігу та історії авто. Введіть 17-символьний VIN, щоб перевірити пробіг, ДТП, тотал і викрадення — для авто зі США, Південної Кореї, Канади, Китаю та Дубая."
         },
         {
           "title": "Що ми перевіряємо",
@@ -615,7 +615,7 @@
         },
         {
           "title": "Перевірте авто з:",
-          "body": "Перевірте пробіг авто з США, Кореї, Канади, Китаю та Дубая в одному звіті."
+          "body": "Історія авто для США, Південної Кореї, Канади, Китаю та Дубая — пробіг, ДТП, тотал і викрадення в одному звіті."
         }
       ],
       "links": [
@@ -651,18 +651,18 @@
     },
     "ru": {
       "h1": "Проверь пробег, аварии и тоталы.",
-      "lead": "Мгновенная проверка VIN — скрученный пробег, скрытые ДТП, тоталы и угоны. Для импорта из США, Кореи, Канады, Китая и Дубая.",
+      "lead": "Мгновенная проверка VIN — скрученный пробег, скрытые ДТП, тоталы и угоны. История автомобиля для США, Южной Кореи, Канады, Китая и Дубая.",
       "bullets": [
         "скрытые аварии",
         "тотальные авто",
         "скрученный пробег",
         "реестры угонов",
-        "Проверьте пробег авто из США, Кореи, Канады, Китая и Дубая в одном отчёте."
+        "История автомобиля для США, Южной Кореи, Канады, Китая и Дубая — пробег, аварии, тотал и угон в одном отчёте."
       ],
       "sections": [
         {
           "title": "Что мы проверяем",
-          "body": "kmcheck.com — сервис проверки пробега и истории автомобиля. Введите 17-значный VIN, чтобы проверить пробег, аварии, тотал и угон — США, Корея, Канада, Китай и Дубай."
+          "body": "kmcheck.com — сервис проверки пробега и истории автомобиля. Введите 17-значный VIN, чтобы проверить пробег, аварии, тотал и угон — для автомобилей из США, Южной Кореи, Канады, Китая и Дубая."
         },
         {
           "title": "Что мы проверяем",
@@ -674,7 +674,7 @@
         },
         {
           "title": "Проверьте авто из:",
-          "body": "Проверьте пробег авто из США, Кореи, Канады, Китая и Дубая в одном отчёте."
+          "body": "История автомобиля для США, Южной Кореи, Канады, Китая и Дубая — пробег, аварии, тотал и угон в одном отчёте."
         }
       ],
       "links": [
@@ -710,18 +710,18 @@
     },
     "zh": {
       "h1": "查 事故与报废。",
-      "lead": "即时 VIN 查询 — 核实调表、隐瞒事故、报废产权与盗抢记录。覆盖美国、韩国、加拿大、中国与迪拜进口车。",
+      "lead": "即时 VIN 查询 — 核实调表、隐瞒事故、报废产权与盗抢记录。覆盖美国、韩国、加拿大、中国与迪拜的车辆历史。",
       "bullets": [
         "隐藏事故",
         "报废产权",
         "里程回拨",
         "盗抢记录",
-        "在一份报告中核查美国、韩国、加拿大、中国与迪拜车辆里程。"
+        "覆盖美国、韩国、加拿大、中国与迪拜的车辆历史 — 里程、事故、报废与盗抢，一份报告搞定。"
       ],
       "sections": [
         {
           "title": "我们检查什么",
-          "body": "kmcheck.com 提供里程核查与车辆历史报告。输入17位VIN即可核实里程、事故、报废与盗抢记录，覆盖美国、韩国、加拿大、中国与迪拜进口车。"
+          "body": "kmcheck.com 提供里程核查与车辆历史报告。输入17位VIN即可核实里程、事故、报废与盗抢记录，覆盖美国、韩国、加拿大、中国与迪拜车辆。"
         },
         {
           "title": "我们检查什么",
@@ -733,7 +733,7 @@
         },
         {
           "title": "查验车辆来自：",
-          "body": "在一份报告中核查美国、韩国、加拿大、中国与迪拜车辆里程。"
+          "body": "覆盖美国、韩国、加拿大、中国与迪拜的车辆历史 — 里程、事故、报废与盗抢，一份报告搞定。"
         }
       ],
       "links": [
