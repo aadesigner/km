@@ -34,8 +34,14 @@ describe("formatVehicleTitle", () => {
     expect(formatVehicleTitle(peek)).toBe("BMW");
   });
 
-  it("shows make alone for Baumuster without year", () => {
-    const peek = { vin: "WDB2110222B056667", make: "Mercedes-Benz", model: "E-Class", year: null };
+  it("shows make alone for Baumuster without year — never ranges", () => {
+    const peek = {
+      vin: "WDB2110222B056667",
+      make: "Mercedes-Benz",
+      model: "E-Class",
+      year: null,
+      modelYearRange: "2002–2009 (W211)",
+    };
     expect(formatVehicleTitle(peek)).toBe("Mercedes-Benz");
   });
 

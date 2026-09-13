@@ -73,7 +73,7 @@ export function shouldShowPendingVinDoubleCheck(
 
 /**
  * Checkout preview title ONLY: make, or make + year when year is available.
- * Never include model in checkout preview.
+ * Never include model or generation ranges in checkout preview.
  */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;

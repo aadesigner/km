@@ -118,11 +118,17 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "E65": { from: 2001, to: 2008 },
   "E66": { from: 2001, to: 2008 },
   "E70": { from: 2006, to: 2013 },
+  "E71": { from: 2008, to: 2014 },
   "E83": { from: 2003, to: 2010 },
   "E84": { from: 2009, to: 2015 },
   "E87": { from: 2004, to: 2011 },
   "E81": { from: 2007, to: 2012 },
+  "E82 Coupé": { from: 2007, to: 2013 },
+  "E88 Convertible": { from: 2008, to: 2013 },
   "F25": { from: 2010, to: 2017 },
+  "F15": { from: 2013, to: 2018 },
+  "F16": { from: 2014, to: 2019 },
+  "F11 Touring": { from: 2010, to: 2017 },
   // MINI
   "R55": { from: 2007, to: 2014 },
   "R56": { from: 2006, to: 2013 },
@@ -142,7 +148,13 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "Spectre": { from: 2023, to: 2099 },
   // Mercedes
   "W177": { from: 2018, to: 2099 },
+  "W176": { from: 2012, to: 2018 },
+  "W169": { from: 2004, to: 2012 },
+  "W168": { from: 1997, to: 2004 },
+  "C117": { from: 2013, to: 2019 },
   "C118": { from: 2019, to: 2099 },
+  "R172": { from: 2011, to: 2020 },
+  "C190": { from: 2014, to: 2021 },
   "W205": { from: 2014, to: 2021 },
   "W206": { from: 2021, to: 2099 },
   "W204": { from: 2007, to: 2014 },
@@ -781,7 +793,11 @@ const BMW_RULES = compilePrefixRules([
 
 const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD177", model: "A-Class", chassis: "W177" },
+  { prefix: "WDD176", model: "A-Class", chassis: "W176" },
+  { prefix: "WDD169", model: "A-Class", chassis: "W169" },
+  { prefix: "WDD168", model: "A-Class", chassis: "W168" },
   { prefix: "WDD118", model: "CLA", chassis: "C118" },
+  { prefix: "WDD117", model: "CLA", chassis: "C117" },
   // Letter-VDS coupe/roadster/4-door-coupe lines (pos 4–5). These share pos-4
   // letters with unrelated models, so they MUST be matched at 2 chars, not 1.
   // Verified against NHTSA vPIC: SJ/5J = CLA, PK = SLK/SLC, JK = SL, LJ = CLS.
@@ -799,6 +815,9 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD212", model: "E-Class", chassis: "W212" },
   { prefix: "WDD211", model: "E-Class", chassis: "W211" },
   { prefix: "WDD210", model: "E-Class", chassis: "W210" },
+  { prefix: "WDD207", model: "E-Class Coupé/Cabrio", chassis: "C207" },
+  { prefix: "WDD218", model: "CLS", chassis: "C218" },
+  { prefix: "WDD257", model: "CLS", chassis: "C257" },
   { prefix: "WDD222", model: "S-Class", chassis: "W222" },
   { prefix: "WDD223", model: "S-Class", chassis: "W223" },
   { prefix: "WDD221", model: "S-Class", chassis: "W221" },
@@ -809,13 +828,17 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD166", model: "GLE", chassis: "W166" },
   // 167 = GLE (W167) and GLS (X167) — do not pick one from chassis digits alone.
   { prefix: "WDD167", model: "GLE / GLS", chassis: "W167/X167" },
+  { prefix: "WDD156", model: "GLA", chassis: "X156" },
   // 247 = GLA (H247) and GLB (X247) — do not pick one from chassis digits alone.
   { prefix: "WDD247", model: "GLA / GLB", chassis: "H247/X247" },
   { prefix: "WDD246", model: "B-Class", chassis: "W246" },
   { prefix: "WDD163", model: "ML-Class", chassis: "W163" },
   { prefix: "WDD164", model: "ML-Class", chassis: "W164" },
+  // Digit 251 mapped historically as GLK (X204) in this codebase — keep stable.
   { prefix: "WDD251", model: "GLK", chassis: "X204" },
+  { prefix: "WDD292", model: "GLE Coupé", chassis: "C292" },
   { prefix: "WDD463", model: "G-Class", chassis: "W463/W465" },
+  { prefix: "WDD465", model: "G-Class", chassis: "W465" },
   { prefix: "WDD290", model: "EQS", chassis: "V297" },
   { prefix: "WDD294", model: "EQE", chassis: "V294" },
   { prefix: "WDD296", model: "EQS SUV", chassis: "X296" },
@@ -825,6 +848,9 @@ const MERCEDES_RULES = compilePrefixRules([
   { prefix: "WDD236", model: "CLE", chassis: "C236" },
   { prefix: "WDD245", model: "B-Class", chassis: "W245" },
   { prefix: "WDD238", model: "E-Class Coupé/Cabrio", chassis: "C238" },
+  { prefix: "WDD172", model: "SLK / SLC", chassis: "R172" },
+  { prefix: "WDD231", model: "SL", chassis: "R231" },
+  { prefix: "WDD190", model: "AMG GT", chassis: "C190" },
   { prefix: "WDD192", model: "AMG GT", chassis: "C192" },
   { prefix: "WDD197", model: "SL", chassis: "R232" },
   { prefix: "WDDLJ", model: "CLS", chassis: "C257" },

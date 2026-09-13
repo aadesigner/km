@@ -81,22 +81,32 @@ const ETK_CODES: Array<{ code: string; model: string; chassis?: string; yearFrom
   { code: "BL53", model: "3 Series", chassis: "E46", yearFrom: 1998, yearTo: 2006 },
   { code: "AN53", model: "3 Series", chassis: "E46", yearFrom: 1998, yearTo: 2006 },
 
-  // ── E90 / E91 / E92 3 Series ─────────────────────────────────────────────
+  // ── E90 / E91 / E92 / E93 3 Series ───────────────────────────────────────
   { code: "VA31", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
   { code: "VA51", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
+  { code: "VA71", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
+  { code: "VA91", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
   { code: "VB31", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
   { code: "VB51", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
   { code: "VB53", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
+  { code: "VB71", model: "3 Series", chassis: "E90/E91", yearFrom: 2005, yearTo: 2012 },
   { code: "PX31", model: "3 Series", chassis: "E92 Coupé", yearFrom: 2006, yearTo: 2013 },
   { code: "PX53", model: "3 Series", chassis: "E92 Coupé", yearFrom: 2006, yearTo: 2013 },
   { code: "PX71", model: "3 Series", chassis: "E92 Coupé", yearFrom: 2006, yearTo: 2013 },
+  { code: "PM31", model: "3 Series", chassis: "E93 Convertible", yearFrom: 2007, yearTo: 2013 },
+  { code: "PM51", model: "3 Series", chassis: "E93 Convertible", yearFrom: 2007, yearTo: 2013 },
+  { code: "PM71", model: "3 Series", chassis: "E93 Convertible", yearFrom: 2007, yearTo: 2013 },
 
-  // ── E81 / E87 1 Series (BMW parts catalog type codes) ────────────────────
+  // ── E81 / E82 / E87 / E88 1 Series ───────────────────────────────────────
   // UA71 = E81 120i 3-door (catalog); UB* = E87 5-door family.
   { code: "UA71", model: "1 Series", chassis: "E81", yearFrom: 2007, yearTo: 2012 },
   { code: "UA11", model: "1 Series", chassis: "E81", yearFrom: 2007, yearTo: 2012 },
   { code: "UB71", model: "1 Series", chassis: "E87", yearFrom: 2004, yearTo: 2011 },
   { code: "UB31", model: "1 Series", chassis: "E87", yearFrom: 2004, yearTo: 2011 },
+  { code: "UC31", model: "1 Series", chassis: "E82 Coupé", yearFrom: 2007, yearTo: 2013 },
+  { code: "UC71", model: "1 Series", chassis: "E82 Coupé", yearFrom: 2007, yearTo: 2013 },
+  { code: "UD31", model: "1 Series", chassis: "E88 Convertible", yearFrom: 2008, yearTo: 2013 },
+  { code: "UD71", model: "1 Series", chassis: "E88 Convertible", yearFrom: 2008, yearTo: 2013 },
 
   // ── E83 X3 (Magna / WBX common) ──────────────────────────────────────────
   { code: "PC71", model: "X3", chassis: "E83", yearFrom: 2003, yearTo: 2010 },
@@ -110,26 +120,36 @@ const ETK_CODES: Array<{ code: string; model: string; chassis?: string; yearFrom
   { code: "VN72", model: "X1", chassis: "E84", yearFrom: 2009, yearTo: 2015 },
   { code: "VN92", model: "X1", chassis: "E84", yearFrom: 2009, yearTo: 2015 },
 
-  // ── E53 / E70 X5 ─────────────────────────────────────────────────────────
+  // ── E53 / E70 / E71 X5 / X6 ──────────────────────────────────────────────
   { code: "FB53", model: "X5", chassis: "E53", yearFrom: 1999, yearTo: 2006 },
   { code: "FG01", model: "X5", chassis: "E70", yearFrom: 2006, yearTo: 2013 },
   { code: "FG31", model: "X5", chassis: "E70", yearFrom: 2006, yearTo: 2013 },
   { code: "FG51", model: "X5", chassis: "E70", yearFrom: 2006, yearTo: 2013 },
+  { code: "FG71", model: "X5", chassis: "E70", yearFrom: 2006, yearTo: 2013 },
 
   // ── F25 X3 (RealOEM WX73 USA sample → WX7* family) ───────────────────────
   { code: "WX73", model: "X3", chassis: "F25", yearFrom: 2010, yearTo: 2017 },
   { code: "WX71", model: "X3", chassis: "F25", yearFrom: 2010, yearTo: 2017 },
   { code: "WX72", model: "X3", chassis: "F25", yearFrom: 2010, yearTo: 2017 },
 
+  // ── F15 / F16 X5 / X6 ────────────────────────────────────────────────────
+  { code: "KS01", model: "X5", chassis: "F15", yearFrom: 2013, yearTo: 2018 },
+  { code: "KS31", model: "X5", chassis: "F15", yearFrom: 2013, yearTo: 2018 },
+  { code: "KS51", model: "X5", chassis: "F15", yearFrom: 2013, yearTo: 2018 },
+  { code: "KU31", model: "X6", chassis: "F16", yearFrom: 2014, yearTo: 2019 },
+  { code: "KU51", model: "X6", chassis: "F16", yearFrom: 2014, yearTo: 2019 },
+
   // ── F10 / F11 (letter type codes overlapping modern XA* rules) ───────────
   { code: "XA71", model: "5 Series", chassis: "F10/F11", yearFrom: 2010, yearTo: 2017 },
   { code: "XA72", model: "5 Series", chassis: "F10/F11", yearFrom: 2010, yearTo: 2017 },
   { code: "XA51", model: "5 Series", chassis: "F10/F11", yearFrom: 2010, yearTo: 2017 },
   { code: "FZ01", model: "5 Series", chassis: "F10/F11", yearFrom: 2010, yearTo: 2017 },
+  { code: "FZ31", model: "5 Series", chassis: "F10/F11", yearFrom: 2010, yearTo: 2017 },
+  { code: "FP31", model: "5 Series", chassis: "F11 Touring", yearFrom: 2010, yearTo: 2017 },
   { code: "NB31", model: "5 Series", chassis: "E60", yearFrom: 2003, yearTo: 2010 },
   { code: "NF11", model: "5 Series", chassis: "E60", yearFrom: 2003, yearTo: 2010 },
 
-  // ── F30 / F31 ────────────────────────────────────────────────────────────
+  // ── F30 / F31 (digit-led codes kept for completeness; classic ETK path skips digit-first)
   { code: "3V01", model: "3 Series", chassis: "F30 Sedan", yearFrom: 2012, yearTo: 2019 },
   { code: "3A91", model: "3 Series", chassis: "F30 Sedan", yearFrom: 2012, yearTo: 2019 },
 ];
