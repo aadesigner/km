@@ -1,7 +1,7 @@
 /**
  * ISO 3779 model-year codes (VIN position 10).
  *
- * Letters/digits repeat every 30 years. We never "prefer the recent cycle" —
+ * Letters/digits repeat every 30 years. We never guess a cycle —
  * a year is returned only when exactly one candidate remains after optional
  * production-window filtering (and excluding impossible future years).
  */
@@ -39,15 +39,12 @@ function maxPlausibleModelYear(now = new Date().getFullYear()): number {
 
 /**
  * Resolve a single model year from a position-10 code.
- * Returns null when zero candidates remain.
- * When multiple candidates remain:
- * - default: null (no cycle guessing)
- * - preferRecentIfAmbiguous: pick the newest candidate ≤ now+1 (known-make fallback only)
+ * Returns null when zero or multiple candidates remain — never pick a cycle by preference.
  */
 export function resolveIsoModelYear(
   code: string,
   window?: IsoYearWindow | null,
-  opts?: { preferRecentIfAmbiguous?: boolean; now?: number },
+  opts?: { now?: number },
 ): number | null {
   const now = opts?.now ?? new Date().getFullYear();
   const maxY = maxPlausibleModelYear(now);
@@ -69,13 +66,7 @@ export function resolveIsoModelYear(
     }
     return only;
   }
-  if (cands.length === 0) return null;
-  // A production window that spans both ISO cycles still uniquely prefers the
-  // newest in-window year (the generation was still in production).
-  if (window) return Math.max(...cands);
-  if (opts?.preferRecentIfAmbiguous) {
-    return Math.max(...cands);
-  }
+  // 0 or 2+ candidates — omit rather than guess.
   return null;
 }
 

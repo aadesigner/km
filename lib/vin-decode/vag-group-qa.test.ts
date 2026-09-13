@@ -15,41 +15,37 @@ function zzz(wmi: string, type78: string, year = "E"): string {
 }
 
 describe("VAG Group QA — Typ 16 regression", () => {
-  it("WVWZZZ16ZEM043873 → Beetle (2014), never Golf, no engine", () => {
+  it("letter E is ambiguous (1984 Jetta vs 2014 Beetle) → omit model", () => {
     const vin = "WVWZZZ16ZEM043873";
     const r = decodeVin(vin);
     expect(r.make).toBe("Volkswagen");
-    expect(r.year).toBe(2014);
-    expect(r.model).toMatch(/Beetle/i);
-    expect(r.model).not.toMatch(/Golf/i);
-    expect(r.engineDecoded).toBeNull();
-    expect(r.fuelType).toBeNull();
-
-    const prem = decodePremiumEuropean(vin);
-    expect(prem?.model).toMatch(/Beetle/i);
-    expect(prem?.chassis).toBe("A5");
-
-    const free = decodeVinLocalFree(vin)!;
-    expect(free.model).toMatch(/Beetle/i);
-    expect(free.engineDecoded).toBeNull();
+    // Both Typ 16 generations fit an ISO cycle of E — do not guess Beetle vs Jetta.
+    expect(r.year).toBeNull();
+    expect(r.model).toBeNull();
+    expect(decodeVolkswagenModern(vin)).toBeNull();
   });
 
-  it("early Typ 16 (pre-reuse) → Jetta via year gate", () => {
+  it("early Typ 16 uniquely resolves to Jetta when only the old cycle fits", () => {
+    // A → 1980/2010; Beetle window starts 2012 → only Jetta 1980 remains.
     const vin = "WVWZZZ16ZAM043873";
-    expect(decodeVolkswagenModern(vin, 1988)?.model).toBe("Jetta");
-    expect(decodeVolkswagenModern(vin, 1988)?.chassis).toBe("Typ 16");
-    expect(decodeVolkswagenModern(vin, 2014)?.model).toBe("Beetle");
+    expect(decodeVolkswagenModern(vin)?.model).toBe("Jetta");
+    expect(decodeVolkswagenModern(vin)?.chassis).toBe("Typ 16");
+    expect(decodeVin(vin).model).toMatch(/Jetta/i);
+    expect(decodeVin(vin).year).toBe(1980);
   });
 
   it("Typ 16 outside known windows → null (no invent)", () => {
-    expect(decodeVolkswagenModern("WVWZZZ16Z5M043873", 2005)).toBeNull();
-    expect(decodeVolkswagenModern("WVWZZZ16ZAM043873", null)).toBeNull();
+    // Digit 5 = 2005 sits between Jetta (≤1992) and Beetle (≥2012).
+    expect(decodeVolkswagenModern("WVWZZZ16Z5M043873")).toBeNull();
+    // P → 1993/2023 — neither generation window.
+    expect(decodeVolkswagenModern("WVWZZZ16ZPM043873")).toBeNull();
   });
 });
 
 describe("VAG Group QA — sibling negatives", () => {
   it("16 ≠ Golf; 9N ≠ Touran; Touran stays 1T/5T", () => {
-    expect(decodeVin("WVWZZZ16ZEM043873").model).not.toMatch(/Golf/i);
+    // Ambiguous Typ 16 letter → null model (never invent Golf).
+    expect(decodeVin("WVWZZZ16ZEM043873").model).toBeNull();
     expect(decodeVin(zzz("WVW", "9N")).model).toMatch(/Polo/i);
     expect(decodeVin(zzz("WVW", "9N")).model).not.toMatch(/Touran/i);
     expect(decodeVin(zzz("WVW", "1T")).model).toMatch(/Touran/i);

@@ -30,12 +30,21 @@ describe("Mercedes Euro Baumuster year encoding", () => {
     { vin: "WDD213042GA123456", year: 2016, model: /E-Class/i, chassis: "W213" },
     { vin: "WDD206087MA123456", year: 2021, model: /C-Class/i, chassis: "W206" },
     { vin: "WDD177087KA123456", year: 2019, model: /A-Class/i, chassis: "W177" },
-    { vin: "WDDGF8HB6LA123456", year: 2020, model: /C-Class/i },
-    { vin: "WDDHF5KB6FA123456", year: 2015, model: /E-Class/i },
-    { vin: "WDDZF4JB0LA123456", year: 2020, model: /E-Class/i },
+    // Letter-series (no chassis digits): year only when ISO cycle is unique (digit codes).
+    { vin: "WDDGF8HB68A123456", year: 2008, model: /C-Class/i },
+    { vin: "WDDHF5KB69A123456", year: 2009, model: /E-Class/i },
+    { vin: "WDDZF4JB05A123456", year: 2005, model: /E-Class/i },
     { vin: "WDCDA5HB6HA123456", year: 2017, model: /GLE|ML/i, chassis: "W166" },
     { vin: "WDDZZZ213GAA12345", year: 2016, model: /E-Class/i },
   ];
+
+  it("letter-series without chassis omits ambiguous ISO letter years", () => {
+    expect(decodeVin("WDDGF8HB6LA123456").year).toBeNull();
+    expect(decodeVin("WDDHF5KB6FA123456").year).toBeNull();
+    expect(decodeVin("WDDZF4JB0LA123456").year).toBeNull();
+    // Z uniquely maps to E-Class without needing a year
+    expect(decodeVin("WDDZF4JB0LA123456").model).toMatch(/E-Class/i);
+  });
 
   it.each(baumuster)("does not invent year for Baumuster %s", (vin) => {
     expect(vin).toHaveLength(17);

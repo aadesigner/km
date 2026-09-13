@@ -77,7 +77,7 @@ describe("Toyota worldwide QA", () => {
 describe("Hyundai worldwide QA", () => {
   it("India MAL real i20 prefix", () => {
     const r = decodeVin("MALAN51BLHM692929");
-    expect(r).toMatchObject({ make: "Hyundai", model: "i20", country: "India", year: 2017 });
+    expect(r).toMatchObject({ make: "Hyundai", model: "i20", country: "India", year: null });
   });
 
   it("China LBE is Beijing Hyundai, not Mercedes", () => {
@@ -94,7 +94,7 @@ describe("Hyundai worldwide QA", () => {
       make: "Hyundai",
       model: "HB20 / Creta",
       country: "Brazil",
-      year: 2019,
+      year: null,
     });
   });
 
@@ -129,7 +129,7 @@ describe("Hyundai worldwide QA", () => {
     expect(decodeVin("KMHD251UBEU098635")).toMatchObject({
       make: "Hyundai",
       model: "i30",
-      year: 2014,
+      year: null,
     });
     // Sedans (body '4') on the D-line remain Elantra.
     expect(decodeVin("KMHD641FBEU123456").model).toBe("Elantra");

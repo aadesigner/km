@@ -18,8 +18,8 @@ export type VagModernHit = {
 };
 
 export function vagModelYear(vin: string, window?: { from: number; to: number } | null): number | null {
-  if (window) return resolveIsoModelYear(vin.trim().toUpperCase()[9] ?? "", window);
-  return resolveIsoModelYear(vin.trim().toUpperCase()[9] ?? "", null, { preferRecentIfAmbiguous: true });
+  // Unique ISO cycle only — never prefer-recent when both 30-year twins remain.
+  return resolveIsoModelYear(vin.trim().toUpperCase()[9] ?? "", window ?? null);
 }
 
 const VW_WMIS = new Set([
@@ -74,14 +74,18 @@ const VW_EU_YEAR_GATED: YearGatedEuType[] = [
   { code: "16", model: "Beetle", chassis: "A5", yearFrom: 2012, yearTo: 2019 },
 ];
 
-function matchVwYearGated(code: string, year: number | null, _yearCode?: string): VagModernHit | null {
+function matchVwYearGated(code: string, yearCode: string): VagModernHit | null {
   const candidates = VW_EU_YEAR_GATED.filter((r) => r.code === code);
   if (candidates.length === 0) return null;
-  if (year == null) return null;
-  const hit = candidates.find(
-    (r) => (r.yearFrom == null || year >= r.yearFrom) && (r.yearTo == null || year <= r.yearTo),
-  );
-  return hit ? materialize(hit) : null;
+  // Resolve year against each production window — emit only when exactly one rule matches.
+  const hits = candidates.filter((r) => {
+    const y = resolveIsoModelYear(yearCode, {
+      from: r.yearFrom ?? 1980,
+      to: r.yearTo ?? 2099,
+    });
+    return y != null;
+  });
+  return hits.length === 1 ? materialize(hits[0]!) : null;
 }
 
 const VW_EU_TYPE_78: Record<string, StaticHit> = {
@@ -161,7 +165,7 @@ function materialize(hit: StaticHit | undefined): VagModernHit | null {
   return { model: hit.model, chassis: hit.chassis ?? null, ...(hit.electric ? { electric: true } : {}) };
 }
 
-export function decodeVolkswagenModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {
+export function decodeVolkswagenModern(vin: string, _year?: number | null): VagModernHit | null {
   const u = vin.trim().toUpperCase();
   if (u.length !== 17 || !isVolkswagenVin(u)) return null;
   // China-only ID.6 uses joint-venture-specific VDS prefixes rather than the
@@ -174,13 +178,14 @@ export function decodeVolkswagenModern(vin: string, year = vagModelYear(vin)): V
   }
   const type78 = u.slice(6, 8);
   const wmi = u.slice(0, 3);
+  const yearCode = u[9] ?? "";
   const isEuZzz =
     u.slice(3, 6) === "ZZZ"
     && (wmi === "WVW" || wmi === "WVG" || wmi === "WV1" || wmi === "WV2" || wmi === "WV3");
   if (isEuZzz) {
-    const gated = matchVwYearGated(type78, year, u[9]);
+    const gated = matchVwYearGated(type78, yearCode);
     if (gated) return gated;
-    // Reused codes with no year window match stay null (do not fall through to invent).
+    // Reused codes with no unique window match stay null (do not invent).
     if (VW_EU_YEAR_GATED.some((r) => r.code === type78)) return null;
     return materialize(VW_EU_TYPE_78[type78]);
   }
@@ -188,25 +193,25 @@ export function decodeVolkswagenModern(vin: string, year = vagModelYear(vin)): V
 }
 
 const AUDI_TYPE_78: Record<string, StaticHit> = {
-  // Current PPE/MEB/J1 electric lines
-  GH: { model: "A6 e-tron / S6 e-tron", chassis: "GH (PPE)", electric: true },
-  GF: { model: "Q6 e-tron / SQ6 e-tron", chassis: "GF (PPE)", electric: true },
+  // Current PPE/MEB/J1 electric lines — base product only (no S/RS slash guesses).
+  GH: { model: "A6 e-tron", chassis: "GH (PPE)", electric: true },
+  GF: { model: "Q6 e-tron", chassis: "GF (PPE)", electric: true },
   FZ: { model: "Q4 e-tron", chassis: "FZ/F4 (MEB)", electric: true },
   FW: { model: "e-tron GT", chassis: "J1", electric: true },
-  GU: { model: "Q5 / SQ5", chassis: "GU" },
+  GU: { model: "Q5", chassis: "GU" },
   FN: { model: "A6", chassis: "C9/FN" },
   FJ: { model: "Q3", chassis: "FJ" },
-  FY: { model: "Q5 / SQ5", chassis: "FY" },
-  FP: { model: "Q5 / SQ5", chassis: "8R/FP" },
-  F7: { model: "Q7 / SQ7", chassis: "4M/F7" },
+  FY: { model: "Q5", chassis: "FY" },
+  FP: { model: "Q5", chassis: "8R/FP" },
+  F7: { model: "Q7", chassis: "4M/F7" },
   F1: { model: "Q8", chassis: "4M/F1" },
   FS: { model: "Q3", chassis: "8U/FS" },
   F3: { model: "Q3", chassis: "F3" },
-  F4: { model: "A4 / S4 / RS4", chassis: "B9/8W" },
-  F5: { model: "A5 / S5 / RS5", chassis: "F5" },
+  F4: { model: "A4", chassis: "B9/8W" },
+  F5: { model: "A5", chassis: "F5" },
   // F2 is shared A6(C8/4A)+A7(C8/4K) — NA split via pos.4; EU ZZZ stays null.
-  F8: { model: "A8 / S8", chassis: "4N/F8" },
-  FF: { model: "A3", chassis: "8V/FF" },
+  F8: { model: "A8", chassis: "4N/F8" },
+  FF: { model: "A3", chassis: "FF" },
   // GY = A3 Typ 8Y (Wikibooks) — never Q7.
   GY: { model: "A3 / S3 / RS3", chassis: "8Y" },
   GA: { model: "Q2", chassis: "GA" },
@@ -273,7 +278,7 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   "8P": { model: "A3", chassis: "8P" },
   "8V": { model: "A3", chassis: "8V" },
   "8L": { model: "A3", chassis: "8L" },
-  FF: { model: "A3", chassis: "8V" },
+  FF: { model: "A3", chassis: "FF" },
   FM: { model: "A3", chassis: "8P" },
   // A4 family
   "8E": { model: "A4 / S4 / RS4", chassis: "8E" },
@@ -345,19 +350,25 @@ const AUDI_PLATFORM_78: Record<string, StaticHit> = {
   "8Z": { model: "A2", chassis: "8Z" },
 };
 
-export function decodeAudiModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {
+export function decodeAudiModern(vin: string, _year?: number | null): VagModernHit | null {
   const u = vin.trim().toUpperCase();
   if (u.length !== 17 || !isAudiVin(u)) return null;
   const type78 = u.slice(6, 8);
   const isEuZzz = u.slice(3, 6) === "ZZZ";
 
-  // Year-gated e-tron rename (GE platform)
+  // Year-gated e-tron rename (GE platform) — windows only, never prefer-recent.
   if (type78 === "GE") {
-    return {
-      model: year != null && year >= 2024 ? "Q8 e-tron / SQ8 e-tron" : "e-tron / e-tron S",
-      chassis: "GE",
-      electric: true,
-    };
+    const yearCode = u[9] ?? "";
+    const yQ8 = resolveIsoModelYear(yearCode, { from: 2024, to: 2099 });
+    const yEt = resolveIsoModelYear(yearCode, { from: 2019, to: 2023 });
+    if (yQ8 != null && yEt == null) {
+      return { model: "Q8 e-tron", chassis: "GE", electric: true };
+    }
+    if (yEt != null && yQ8 == null) {
+      return { model: "e-tron", chassis: "GE", electric: true };
+    }
+    // Ambiguous or unknown year — omit model rather than guess the rename.
+    return null;
   }
 
   // North-American / non-ZZZ passenger (WAU/WUA/TRU): positions 7–8 = platform.
@@ -411,23 +422,25 @@ const SKODA_TYPE_78: Record<string, StaticHit> = {
   RV: { model: "Enyaq", chassis: "RV (MEB)", electric: true },
 };
 
-export function decodeSkodaModern(vin: string, year = vagModelYear(vin)): VagModernHit | null {
+export function decodeSkodaModern(vin: string, _year?: number | null): VagModernHit | null {
   const u = vin.trim().toUpperCase();
   if (u.length !== 17 || !isSkodaVin(u)) return null;
   const type78 = u.slice(6, 8);
-  // PS was used by the Kamiq before Škoda reused it for the second-generation
-  // Kodiaq. The model year is necessary to avoid rewriting older cars.
-  if (type78 === "PS" && year != null && year < 2024) {
-    return { model: "Kamiq", chassis: "PS" };
+  const yearCode = u[9] ?? "";
+  // PS was Kamiq, then reused for second-gen Kodiaq — resolve via production windows only.
+  if (type78 === "PS") {
+    const yKamiq = resolveIsoModelYear(yearCode, { from: 2019, to: 2023 });
+    const yKodiaq = resolveIsoModelYear(yearCode, { from: 2024, to: 2099 });
+    if (yKamiq != null && yKodiaq == null) return { model: "Kamiq", chassis: "PS" };
+    if (yKodiaq != null && yKamiq == null) return { model: "Kodiaq", chassis: "PS" };
+    return null;
   }
-  // NY is shared by Enyaq Coupé and the newer Elroq — disambiguate by plant/VDS.
-  if (
-    type78 === "NY"
-    && year != null
-    && year >= 2025
-    && u.startsWith("TMBNC")
-  ) {
-    return { model: "Elroq", chassis: "PY (MEB)", electric: true };
+  // NY is shared by Enyaq Coupé and Elroq — Elroq only with plant prefix + MY window.
+  if (type78 === "NY" && u.startsWith("TMBNC")) {
+    const yElroq = resolveIsoModelYear(yearCode, { from: 2025, to: 2099 });
+    if (yElroq != null) {
+      return { model: "Elroq", chassis: "PY (MEB)", electric: true };
+    }
   }
   return materialize(SKODA_TYPE_78[type78]);
 }
@@ -447,17 +460,17 @@ export function decodePorscheModern(vin: string, year = vagModelYear(vin)): VagM
   const type78 = u.slice(6, 8);
   switch (type78) {
     case "99":
-      // 99 is the long-running 911 family type; year alone is not enough to
-      // safely claim a specific generation for every market/VIN format.
+      // 99 is the long-running 911 family type; generation is not unique in the VIN alone.
+      // Omit chassis so year stays null unless another verified window applies.
       return { model: "911", chassis: null };
     case "97":
-      return { model: "Panamera", chassis: year != null && year >= 2017 ? "971" : "970" };
+      return { model: "Panamera", chassis: "970/971" };
     case "98":
       return { model: "718 Boxster / Cayman", chassis: "981/982" };
     case "92":
-      return { model: "Cayenne", chassis: year != null && year >= 2018 ? "E3/9YA" : "92A" };
+      return { model: "Cayenne", chassis: "92A/E3" };
     case "95":
-      return { model: "Panamera", chassis: year != null && year >= 2017 ? "971" : "970" };
+      return { model: "Panamera", chassis: "970/971" };
     case "9Y":
       return { model: "Taycan", chassis: "J1", electric: true };
     case "9Z":

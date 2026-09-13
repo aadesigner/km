@@ -39,7 +39,6 @@ describe("NA/EU premium WMI QA — Kia Georgia / Mexico (checkout-critical)", ()
       label: "Kia K5 Georgia (NHTSA ErrorCode 0)",
       make: "Kia",
       modelContains: /^K5$/,
-      year: 2021,
     },
     {
       vin: "5XYP3DHC0LG045000",
@@ -47,7 +46,6 @@ describe("NA/EU premium WMI QA — Kia Georgia / Mexico (checkout-critical)", ()
       make: "Kia",
       modelContains: /Telluride/i,
       modelExcludes: ["Santa Fe", "Hyundai"],
-      year: 2020,
     },
     {
       vin: "5XYRG4LC5PG123456",
@@ -55,20 +53,17 @@ describe("NA/EU premium WMI QA — Kia Georgia / Mexico (checkout-critical)", ()
       make: "Kia",
       modelContains: /Sorento/i,
       modelExcludes: ["Santa Fe"],
-      year: 2023,
     },
     {
       vin: "3KPFL4A79HE123456",
       label: "Kia Forte Mexico",
       make: "Kia",
       modelContains: /Forte/i,
-      year: 2017,
     },
     {
       vin: "3KMC35LC5KE123456",
       label: "Kia Mexico MPV WMI make-only",
       make: "Kia",
-      year: 2019,
     },
   ];
   for (const c of cases) it(c.label, () => assertCase(c));
@@ -113,13 +108,11 @@ describe("NA/EU premium WMI QA — BMW US / MX / EU", () => {
       vin: "WBS8M9C50J5G12345",
       label: "BMW M WBS make",
       make: "BMW M",
-      year: 2018,
     },
     {
       vin: "5YM23EC05N9C12345",
       label: "BMW USA MPV 5YM make",
       make: "BMW",
-      year: 2022,
     },
   ];
   for (const c of cases) it(c.label, () => assertCase(c));
@@ -156,7 +149,6 @@ describe("NA/EU premium WMI QA — Mercedes US / EU", () => {
       vin: "55SWF4KB0FU123456",
       label: "MB USA 55S make-only (no invented model)",
       make: "Mercedes-Benz",
-      year: 2015,
     },
     {
       vin: "W1L1830451A123456",

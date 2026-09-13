@@ -102,7 +102,8 @@ describe("Toyota USA 5YF (not Tesla)", () => {
     const r = decodeVin("5YFS4MCE0NP127131");
     expect(r.make).toBe("Toyota");
     expect(r.model).toBe("Corolla");
-    expect(r.year).toBe(2022);
+    // Letter N without a verified Corolla window → null (no cycle guess)
+    expect(r.year).toBeNull();
     expect(r.plantCity).toBe("Blue Springs, MS");
     expect(r.engineDecoded).toContain("2.0L");
   });

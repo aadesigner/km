@@ -12,13 +12,14 @@ import { describe, expect, it } from "vitest";
 import { decodeVin, decodeSeatEuModel, decodeGlobalBrand, decodeLocalSeries } from "./index";
 
 describe("SEAT Europe QA — model regressions", () => {
-  it("VSSZZZ5FZ… → León 5F, year from ISO pos.10", () => {
+  it("VSSZZZ5FZ… → León 5F; letter year omitted without verified window", () => {
     const vin = "VSSZZZ5FZFR123456";
     const r = decodeVin(vin);
     expect(r.make).toBe("SEAT");
     expect(r.model).toMatch(/León/i);
     expect(r.model).toContain("5F");
-    expect(r.year).toBe(2015); // F
+    // Letter F without a verified 5F production window → null
+    expect(r.year).toBeNull();
   });
 
   it("VSSZZZ6FZ… late MY still Ibiza 6F (open year label)", () => {
@@ -28,7 +29,8 @@ describe("SEAT Europe QA — model regressions", () => {
     expect(r.model).toMatch(/Ibiza/i);
     expect(r.model).toContain("6F");
     expect(r.model).toMatch(/2017–/);
-    expect(r.year).toBe(2023); // P
+    // Letter P without a verified 6F production window → null
+    expect(r.year).toBeNull();
   });
 
   it("VSSZZZKNZ… → SEAT Tarraco, not Cupra León", () => {
@@ -40,7 +42,8 @@ describe("SEAT Europe QA — model regressions", () => {
     expect(r.model).toMatch(/Tarraco/i);
     expect(r.model).toContain("KN");
     expect(r.model).not.toMatch(/Le[oó]n/i);
-    expect(r.year).toBe(2020); // L
+    // Letter L without a verified KN production window → null
+    expect(r.year).toBeNull();
   });
 
   it("VSSZZZKM… stays Cupra Formentor", () => {

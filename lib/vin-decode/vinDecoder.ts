@@ -8,7 +8,11 @@
  */
 
 import { decodeModelEuropean, hasEuZzzTypeApprovalDescriptor } from "./vinDecoder-european";
-import { chassisProductionWindow, decodePremiumEuropeanModel } from "./european-premium";
+import {
+  chassisProductionWindow,
+  decodePremiumEuropeanModel,
+  decodePremiumEuropeanSeries,
+} from "./european-premium";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 import { bmwEtkOmitsIsoYear, isBmwEuroEtkVin } from "./bmw-etk";
 import { decodeEuropeanBrandModel } from "./european-brands";
@@ -61,10 +65,11 @@ function decodeVinLayoutYear(vin: string): { handled: true; year: number | null 
 }
 
 /**
- * Resolve model year without inventing data for unknown manufacturers.
+ * Resolve model year without inventing data.
  * - Unknown make → null (obscure WMIs like WSD may not use ISO year at pos.10).
  * - Verified production / platform window → unique cycle only.
- * - Known make without window → newest plausible ISO cycle (same as prior decoder default).
+ * - Known make without window → unique ISO cycle only (digit codes until +30 is plausible);
+ *   ambiguous letter codes → null (never prefer-recent).
  */
 function resolveVinModelYear(
   vin: string,
@@ -79,38 +84,39 @@ function resolveVinModelYear(
   const code = vin[9] ?? "";
   if (yearWindow) return resolveIsoModelYear(code, yearWindow);
 
-  // Static VAG type chassis (ignore guessed year so windows are not stripped first).
+  // Verified platform windows only (VAG type / premium chassis / global chassis).
+  // Never invent a cycle without a window that leaves exactly one candidate.
   const vagHit =
     decodeVolkswagenModern(vin, null)
     ?? decodeAudiModern(vin, null)
     ?? decodeSkodaModern(vin, null)
     ?? decodePorscheModern(vin, null);
-  if (vagHit?.chassis) {
-    const vagWin = chassisProductionWindow(vagHit.chassis);
-    if (vagWin) {
-      const gated = resolveIsoModelYear(code, vagWin);
-      if (gated != null) return gated;
-      // Window rejects every cycle: allow unambiguous digit years only.
-      // Do not prefer-recent a letter into a generation the chassis window forbids.
-      const digitOnly = resolveIsoModelYear(code, null);
-      if (digitOnly != null) return digitOnly;
-      return null;
-    }
+  const premiumChassis = decodePremiumEuropeanSeries(vin);
+  const globalChassis = decodeGlobalBrand(vin).chassis;
+  const hyRule = isHyundaiVin(vin) ? matchHyundaiRule(vin) : null;
+  const series =
+    vagHit?.chassis
+    ?? premiumChassis
+    ?? globalChassis
+    ?? hyRule?.chassis
+    ?? decodeLocalSeries(vin, model)
+    ?? seriesFromDisplayModel(model);
+  const chassisWin = chassisProductionWindow(series);
+  if (chassisWin) {
+    const gated = resolveIsoModelYear(code, chassisWin);
+    if (gated != null) return gated;
+    // Window rejects every cycle: allow unambiguous digit years only.
+    const digitOnly = resolveIsoModelYear(code, null);
+    if (digitOnly != null) return digitOnly;
+    return null;
   }
 
-  const series = decodeLocalSeries(vin, model) ?? seriesFromDisplayModel(model);
-  const chassisWin = chassisProductionWindow(series);
-  if (chassisWin) return resolveIsoModelYear(code, chassisWin);
-
   // Platform / prefix verified window (e.g. Hyundai IONIQ 5 from 2021).
-  if (isHyundaiVin(vin)) {
-    const rule = matchHyundaiRule(vin);
-    if (rule?.yearFrom != null || rule?.yearTo != null) {
-      return resolveIsoModelYear(code, {
-        from: rule.yearFrom ?? 1980,
-        to: rule.yearTo ?? 2099,
-      });
-    }
+  if (hyRule?.yearFrom != null || hyRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: hyRule.yearFrom ?? 1980,
+      to: hyRule.yearTo ?? 2099,
+    });
   }
   if (isOpelVauxhallVin(vin)) {
     const rule = matchOpelVauxhallRule(vin);
@@ -121,8 +127,30 @@ function resolveVinModelYear(
       });
     }
   }
-  // Known make, no verified window: prefer newest plausible cycle (never for unknown WMI).
-  return resolveIsoModelYear(code, null, { preferRecentIfAmbiguous: true });
+  // Tesla model lines have verified production floors (no prefer-recent).
+  if (make === "Tesla" && model) {
+    const teslaWin = teslaModelYearWindow(model);
+    if (teslaWin) return resolveIsoModelYear(code, teslaWin);
+  }
+  // BMW M5 WBS5 spans F10/F90/G90 — verified production floor only (no display chassis).
+  if (vin.startsWith("WBS5")) {
+    return resolveIsoModelYear(code, chassisProductionWindow("F10/F90/G90"));
+  }
+  // Known make, no verified window: unique cycle only — never prefer-recent.
+  return resolveIsoModelYear(code, null);
+}
+
+/** Verified Tesla model-year floors — omit rather than invent a cycle. */
+function teslaModelYearWindow(model: string): IsoYearWindow | null {
+  const m = model.toLowerCase();
+  if (m.includes("cybertruck")) return { from: 2023, to: 2099 };
+  if (m.includes("model y")) return { from: 2020, to: 2099 };
+  if (m.includes("model 3")) return { from: 2017, to: 2099 };
+  if (m.includes("model x")) return { from: 2015, to: 2099 };
+  if (m.includes("model s")) return { from: 2012, to: 2099 };
+  if (m.includes("semi")) return { from: 2022, to: 2099 };
+  if (m.includes("roadster")) return { from: 2008, to: 2012 };
+  return null;
 }
 
 /** Platform token in parentheses on display models, e.g. "Passat / CC (B6-B8/3C)". */
@@ -547,20 +575,22 @@ const MODEL_MAP_4: Record<string, string> = {
   // pos-4 letters are ambiguous; precise pos-4–5 rules live in european-premium
   // (SJ/5J=CLA, PK=SLK/SLC, JK=SL, LJ=CLS). These 4-char keys are last-resort only.
   // WDDS(J)=CLA and WDDP(K)=SLK were previously swapped (CLA decoded as SLK).
+  // Never emit slash/"or" labels here — leave model null rather than guess.
   "WDDC": "C-Class",    "WDDE": "E-Class",    "WDDS": "CLA-Class",
   "WDDA": "A-Class",
   "WDDB": "B-Class",    "WDDF": "E-Class",    "WDDN": "GLA-Class",
-  "WDDP": "SLK/SLC",    "WDDR": "GLC-Class",  "WDDW": "C-Class",
+  "WDDR": "GLC-Class",  "WDDW": "C-Class",
   "WDDX": "SL-Class",   "WDC0": "GLC-Class",  "WDCG": "GLK",
   "WDCJ": "GLC-Class",  "WDCA": "ML-Class",   "WDCB": "ML-Class",
   "WDCD": "GLE",        "WDCF": "GLE",        "WDCK": "GLC-Class",
-  "WDCT": "GLA",        "WDC4": "GLA / GLB",
+  "WDCT": "GLA",
   "4JGD": "GLE",        "4JGF": "GLE",        "4JG0": "GLC-Class",
   "W1ND": "GLE",        "W1NF": "GLE",        "W1N0": "GLC-Class",
-  "W1NK": "GLC-Class",  "W1NT": "GLA",        "W1N4": "GLA / GLB",
+  "W1NK": "GLC-Class",  "W1NT": "GLA",
   // ── Audi ──────────────────────────────────────────────────────────────────
-  "WAUC": "A4/A5",      "WAUE": "A6/A7",      "WAUA": "A8",
-  "WAUJ": "A3",         "WAUM": "Q8",         "WAUS": "S/RS Series",
+  // Ambiguous family buckets (A4/A5, A6/A7, S/RS) removed — use vag-modern / premium.
+  "WAUA": "A8",
+  "WAUJ": "A3",         "WAUM": "Q8",
   // WA1* SUV lines: do NOT map by pos.4 (A/B/C/F are trim). Use pos.7–8 via premium/modern.
   // ── Volkswagen ────────────────────────────────────────────────────────────
   // Do not map WVWZ/1VWZ — position 4 is ZZZ filler on EU VINs, not a model line.
@@ -571,9 +601,10 @@ const MODEL_MAP_4: Record<string, string> = {
   // North American VW assembly plant prefixes (1VW*)
   "1VWF": "Golf",       "1VWA": "Eos",
   // ── Porsche ───────────────────────────────────────────────────────────────
-  "WP0A": "911",        "WP0B": "Boxster/Cayman",
+  "WP0A": "911",
   "WP0C": "Cayenne",    "WP0Z": "Panamera",   "WP0G": "Taycan",
   "WP1A": "Cayenne",    "WP1Z": "Macan",
+  // Boxster/Cayman share WP0B — leave to vag-modern / premium (no slash guess).
   // Land Rover / Range Rover: never use coarse 4-char fallbacks here.
   // Model identity is year-gated in jlr-eu.ts (longest prefix + production window).
   // ── Jaguar (coarse letter series; longer SAJ* rules in jlr-eu win first) ──
@@ -607,14 +638,16 @@ const MODEL_MAP_4: Record<string, string> = {
   "1GCH": "Silverado",  "1GCP": "Silverado",  "2GCH": "Silverado",
   "1GTN": "Sierra",     "1GTG": "Sierra",
   // ── Nissan / Infiniti ─────────────────────────────────────────────────────
-  "1N4A": "Altima",     "1N4B": "Maxima",     "1N6A": "Titan/Frontier",
+  "1N4A": "Altima",     "1N4B": "Maxima",
   "5N1A": "Pathfinder", "5N1D": "Armada",     "5N1Z": "Murano",
   "JN1A": "Infiniti",
+  // 1N6A Titan vs Frontier is ambiguous — omit coarse fallback.
   // Mazda models: see mazda.ts (carline pos. 4–5). Do not use coarse JM1B/JM3K here —
   // JM1GJ (Mazda6) must not become MX-5 via a JM1G → Miata map.
   // ── Subaru ────────────────────────────────────────────────────────────────
-  "JF1V": "WRX/STI",    "JF2S": "Forester",   "JF2T": "Outback",
+  "JF2S": "Forester",   "JF2T": "Outback",
   "4S3B": "Impreza",    "4S4B": "Outback",
+  // JF1V WRX vs STI is ambiguous — omit.
   // ── Mitsubishi ────────────────────────────────────────────────────────────
   "JA3A": "Eclipse",    "JA4A": "Outlander",  "JA4J": "Eclipse Cross",
   // ── Lexus ─────────────────────────────────────────────────────────────────
@@ -629,9 +662,10 @@ const MODEL_MAP_4: Record<string, string> = {
   "JN8A": "X-Trail",     "JN8B": "Patrol",     "JN8D": "Qashqai",
   "JN8E": "Murano",      "JN8G": "Juke",       "JN8J": "Armada",
   // ── Infiniti (JNA* / JNK*) ───────────────────────────────────────────────
-  "JNKA": "Q70 / M",     "JNKB": "QX80",       "JNKC": "Q50",
-  "JNKD": "QX70 / FX",   "JNKN": "Q60",
-  "JNAA": "QX60",        "JNAB": "Q30 / QX30",
+  "JNKB": "QX80",       "JNKC": "Q50",
+  "JNKN": "Q60",
+  "JNAA": "QX60",
+  // Ambiguous Q70/M, QX70/FX, Q30/QX30 omitted.
   // ── Acura USA (JH4* / 19U*) ──────────────────────────────────────────────
   "JH4D": "Integra",     "JH4K": "MDX",        "JH4T": "TL",
   "JH4V": "RL",          "JH4Y": "NSX",
@@ -677,7 +711,8 @@ const MODEL_MAP_4: Record<string, string> = {
   "1GYC": "CT6",         "1GYD": "XT5",         "1GYE": "XT6",
   "1GYF": "CT5",
   // ── Lincoln ───────────────────────────────────────────────────────────────
-  "1LNH": "Navigator",   "5LMJ": "Navigator",   "5LMF": "MKZ / Zephyr",
+  "1LNH": "Navigator",   "5LMJ": "Navigator",
+  // 5LMF MKZ vs Zephyr is ambiguous — omit.
   // ── Rivian (7FC*) ─────────────────────────────────────────────────────────
   "7FCA": "R1T",         "7FCC": "R1S",         "7FCB": "EDV 700",
   // ── More Renault (VF1*) ───────────────────────────────────────────────────

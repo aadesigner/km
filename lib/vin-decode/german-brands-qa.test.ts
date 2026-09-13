@@ -14,7 +14,8 @@ type Case = {
   label: string;
   make: string;
   modelContains: string;
-  year: number;
+  /** ISO year when uniquely resolved; null when letter cycle is ambiguous (no guessing). */
+  year: number | null;
   modelExcludes?: string[];
   /** Skip Germany country assert (e.g. Smart China JV HES*). */
   countryGermany?: boolean;
@@ -78,7 +79,7 @@ const MERCEDES: Case[] = [
   { vin: "WDD167087KA123456", label: "MB GLE/GLS 167", make: "Mercedes-Benz", modelContains: "GLE", year: 2019 },
   { vin: "WDD247087LA123456", label: "MB GLA/GLB 247", make: "Mercedes-Benz", modelContains: "GLA", year: 2020 },
   { vin: "WDD251087AA123456", label: "MB GLK", make: "Mercedes-Benz", modelContains: "GLK", year: 2010 },
-  { vin: "WDD463276LA123456", label: "MB G-Class", make: "Mercedes-Benz", modelContains: "G-Class", year: 2020 },
+  { vin: "WDD463276LA123456", label: "MB G-Class", make: "Mercedes-Benz", modelContains: "G-Class", year: null },
   { vin: "WDD192087PA123456", label: "MB AMG GT", make: "Mercedes-Benz", modelContains: "AMG GT", year: 2023 },
   { vin: "WDD197087NA123456", label: "MB SL R232", make: "Mercedes-Benz", modelContains: "SL", year: 2022 },
   // Electric EQ line
@@ -88,7 +89,8 @@ const MERCEDES: Case[] = [
   { vin: "WDD243000MA123456", label: "MB EQA/EQB", make: "Mercedes-Benz", modelContains: "EQ", year: 2021, modelExcludes: ["B-Class", "EQS", "EQE", "EQC"] },
   { vin: "WDD293087KA123456", label: "MB EQC", make: "Mercedes-Benz", modelContains: "EQC", year: 2019, modelExcludes: ["EQS", "EQE"] },
   { vin: pad("WDC9A5HB6", "N"), label: "MB EQB letter 9", make: "Mercedes-Benz", modelContains: "EQB", year: 2022, modelExcludes: ["EQA", "EQS"] },
-  { vin: pad("WDCG4JB0N", "N"), label: "MB EQE SUV letter G", make: "Mercedes-Benz", modelContains: "EQE SUV", year: 2022, modelExcludes: ["EQS", "GLK"] },
+  // Letter G = EQE SUV when year uniquely fits X294 window (N → 2022).
+  { vin: pad("WDCG4JB0N", "N"), label: "MB EQE SUV letter G", make: "Mercedes-Benz", modelContains: "EQE SUV", year: 2022, modelExcludes: ["EQS"] },
   // EU ZZZ + W1K
   { vin: "WDDZZZ213GAA12345", label: "MB E-Class EU ZZZ", make: "Mercedes-Benz", modelContains: "E-Class", year: 2016 },
   { vin: "WDDZZZ296NAA12345", label: "MB EQS SUV EU ZZZ", make: "Mercedes-Benz", modelContains: "EQS SUV", year: 2022 },
@@ -99,7 +101,8 @@ const MERCEDES: Case[] = [
 const AUDI: Case[] = [
   { vin: zzz("WAU", "8V", "J"), label: "Audi A3 8V", make: "Audi", modelContains: "A3", year: 2018 },
   { vin: zzz("WAU", "FF", "N"), label: "Audi A3 FF", make: "Audi", modelContains: "A3", year: 2022 },
-  { vin: zzz("WAU", "8X", "K"), label: "Audi A1", make: "Audi", modelContains: "A1", year: 2019 },
+  // Typ 8X ended ~2018; letter K is outside the verified window — omit year.
+  { vin: zzz("WAU", "8X", "K"), label: "Audi A1", make: "Audi", modelContains: "A1", year: null },
   { vin: zzz("WAU", "F4", "N"), label: "Audi A4 B9", make: "Audi", modelContains: "A4", year: 2022, modelExcludes: ["A5"] },
   { vin: zzz("WAU", "F5", "N"), label: "Audi A5", make: "Audi", modelContains: "A5", year: 2022, modelExcludes: ["A4"] },
   { vin: zzz("WAU", "FN", "P"), label: "Audi A6 C9", make: "Audi", modelContains: "A6", year: 2023 },
@@ -125,7 +128,8 @@ const AUDI: Case[] = [
 
 // ── Porsche (ICE + EV) ───────────────────────────────────────────────────────
 const PORSCHE: Case[] = [
-  { vin: zzz("WP0", "99", "N"), label: "Porsche 911", make: "Porsche", modelContains: "911", year: 2022 },
+  // 911 type "99" spans many generations — year omitted without a generation window.
+  { vin: zzz("WP0", "99", "N"), label: "Porsche 911", make: "Porsche", modelContains: "911", year: null },
   { vin: zzz("WP0", "97", "N"), label: "Porsche Panamera 97", make: "Porsche", modelContains: "Panamera", year: 2022, modelExcludes: ["911"] },
   { vin: zzz("WP0", "98", "N"), label: "Porsche Boxster/Cayman", make: "Porsche", modelContains: "Boxster", year: 2022 },
   { vin: zzz("WP0", "92", "N"), label: "Porsche Cayenne WP0", make: "Porsche", modelContains: "Cayenne", year: 2022 },
@@ -144,16 +148,20 @@ const VOLKSWAGEN: Case[] = [
   { vin: zzz("WVW", "CD", "N"), label: "VW Golf Mk8", make: "Volkswagen", modelContains: "Golf", year: 2022 },
   { vin: zzz("WVW", "AW", "N"), label: "VW Polo", make: "Volkswagen", modelContains: "Polo", year: 2022 },
   { vin: zzz("WVW", "3C", "J"), label: "VW Passat", make: "Volkswagen", modelContains: "Passat", year: 2018 },
-  { vin: zzz("WVW", "CJ", "N"), label: "VW Passat Variant B9", make: "Volkswagen", modelContains: "Passat", year: 2022 },
+  // Passat B9 (CJ) from MY2023/24 — letter N=2022 is outside the verified window.
+  { vin: zzz("WVW", "CJ", "N"), label: "VW Passat Variant B9", make: "Volkswagen", modelContains: "Passat", year: null },
   { vin: zzz("WVW", "3H", "N"), label: "VW Arteon", make: "Volkswagen", modelContains: "Arteon", year: 2022 },
-  { vin: zzz("WVW", "5N", "N"), label: "VW Tiguan", make: "Volkswagen", modelContains: "Tiguan", year: 2022 },
+  // Typ 5N production ended before MY2022 — omit year rather than invent.
+  { vin: zzz("WVW", "5N", "N"), label: "VW Tiguan", make: "Volkswagen", modelContains: "Tiguan", year: null },
   { vin: zzz("WVW", "CT", "P"), label: "VW Tiguan CT", make: "Volkswagen", modelContains: "Tiguan", year: 2023 },
   { vin: zzz("WVW", "A1", "N"), label: "VW T-Roc", make: "Volkswagen", modelContains: "T-Roc", year: 2022 },
   { vin: zzz("WVW", "C1", "N"), label: "VW T-Cross", make: "Volkswagen", modelContains: "T-Cross", year: 2022 },
   { vin: zzz("WVW", "R4", "P"), label: "VW Tayron", make: "Volkswagen", modelContains: "Tayron", year: 2023 },
   { vin: zzz("WVW", "CR", "N"), label: "VW Touareg CR", make: "Volkswagen", modelContains: "Touareg", year: 2022 },
   { vin: zzz("WVG", "CR", "N"), label: "VW Touareg Bratislava", make: "Volkswagen", modelContains: "Touareg", year: 2022, modelExcludes: ["Q7"] },
-  { vin: zzz("WVW", "1T", "K"), label: "VW Touran", make: "Volkswagen", modelContains: "Touran", year: 2019 },
+  // Typ 1T ended ~2015; MY2019 Touran is 5T.
+  { vin: zzz("WVW", "1T", "K"), label: "VW Touran", make: "Volkswagen", modelContains: "Touran", year: null },
+  { vin: zzz("WVW", "5T", "K"), label: "VW Touran 5T", make: "Volkswagen", modelContains: "Touran", year: 2019 },
   { vin: "WVWZZZ9NZ8D029780", label: "VW Polo 9N (not Touran)", make: "Volkswagen", modelContains: "Polo", year: 2008, modelExcludes: ["Touran"] },
   { vin: zzz("WVW", "2H", "N"), label: "VW Amarok", make: "Volkswagen", modelContains: "Amarok", year: 2022 },
   { vin: zzz("WVW", "SK", "N"), label: "VW Caddy", make: "Volkswagen", modelContains: "Caddy", year: 2022 },
@@ -180,7 +188,8 @@ const BMW: Case[] = [
   { vin: "WBA7G6104GG509390", label: "BMW 7 Series", make: "BMW", modelContains: "7 Series", year: 2016 },
   { vin: "WBADZ2C01LCD26813", label: "BMW 8 Series ETK DZ", make: "BMW", modelContains: "8 Series", year: 2020 },
   { vin: "WBAGV8106RCR24769", label: "BMW 8 Series ETK GV", make: "BMW", modelContains: "8 Series", year: 2024 },
-  { vin: "WBA71BX03P9R09775", label: "BMW X1", make: "BMW", modelContains: "X1", year: 2023, modelExcludes: ["7 Series"] },
+  // WBA71 is shared F48/U11 — year omitted without a unique chassis window.
+  { vin: "WBA71BX03P9R09775", label: "BMW X1", make: "BMW", modelContains: "X1", year: null, modelExcludes: ["7 Series"] },
   { vin: "WBA72BX03K9R09775", label: "BMW X2", make: "BMW", modelContains: "X2", year: 2019, modelExcludes: ["7 Series"] },
   { vin: "WBA31BH00P9R09775", label: "BMW X3", make: "BMW", modelContains: "X3", year: 2023, modelExcludes: ["3 Series"] },
   { vin: "WBA13A000P9R09775", label: "BMW X4", make: "BMW", modelContains: "X4", year: 2023 },
@@ -209,14 +218,17 @@ const MINI: Case[] = [
 
 // ── Opel ─────────────────────────────────────────────────────────────────────
 const OPEL: Case[] = [
-  { vin: pad("W0LP", "N"), label: "Opel Astra", make: "Opel", modelContains: "Astra", year: 2022 },
+  // W0LP/W0LB/W0LT span multiple generations — letter years stay null.
+  { vin: pad("W0LP", "N"), label: "Opel Astra", make: "Opel", modelContains: "Astra", year: null },
   { vin: pad("W0L0ADF", "P"), label: "Opel Astra L", make: "Opel", modelContains: "Astra", year: 2023 },
-  { vin: pad("W0LB", "N"), label: "Opel Corsa", make: "Opel", modelContains: "Corsa", year: 2022, modelExcludes: ["Corsa-e"] },
+  { vin: pad("W0LB", "N"), label: "Opel Corsa", make: "Opel", modelContains: "Corsa", year: null, modelExcludes: ["Corsa-e"] },
   { vin: pad("W0L0ZEC", "N"), label: "Opel Corsa-e", make: "Opel", modelContains: "Corsa-e", year: 2022 },
-  { vin: pad("W0LM", "N"), label: "Opel Mokka", make: "Opel", modelContains: "Mokka", year: 2022 },
+  // W0LM Mokka window ends 2019 — letter N=2022 omitted.
+  { vin: pad("W0LM", "N"), label: "Opel Mokka", make: "Opel", modelContains: "Mokka", year: null },
   { vin: pad("W0LN", "N"), label: "Opel Grandland", make: "Opel", modelContains: "Grandland", year: 2022 },
-  { vin: pad("W0LT", "K"), label: "Opel Insignia", make: "Opel", modelContains: "Insignia", year: 2019 },
-  { vin: pad("W0LF", "P"), label: "Opel Frontera", make: "Opel", modelContains: "Frontera", year: 2023 },
+  { vin: pad("W0LT", "K"), label: "Opel Insignia", make: "Opel", modelContains: "Insignia", year: null },
+  // Frontera (2024+) — letter P=2023 is before verified window.
+  { vin: pad("W0LF", "P"), label: "Opel Frontera", make: "Opel", modelContains: "Frontera", year: null },
   { vin: pad("W0L4", "N"), label: "Opel Crossland", make: "Opel", modelContains: "Crossland", year: 2022 },
   { vin: pad("W0LV", "N"), label: "Opel Vivaro", make: "Opel", modelContains: "Vivaro", year: 2022 },
   { vin: pad("W0LC", "N"), label: "Opel Combo", make: "Opel", modelContains: "Combo", year: 2022 },
@@ -224,10 +236,12 @@ const OPEL: Case[] = [
 
 // ── Smart ────────────────────────────────────────────────────────────────────
 const SMART: Case[] = [
-  { vin: pad("WME451", "K"), label: "Smart fortwo 451", make: "Smart", modelContains: "fortwo", year: 2019 },
+  // Chassis 451 ended ~2015 — letter K=2019 omitted.
+  { vin: pad("WME451", "K"), label: "Smart fortwo 451", make: "Smart", modelContains: "fortwo", year: null },
   { vin: pad("WME453", "K"), label: "Smart forfour", make: "Smart", modelContains: "forfour", year: 2019 },
   { vin: pad("WME450", "9"), label: "Smart fortwo 450", make: "Smart", modelContains: "fortwo", year: 2009 },
-  { vin: pad("W1A453", "L"), label: "Smart forfour W1A", make: "Smart", modelContains: "forfour", year: 2020 },
+  // Chassis 453 ended ~2019 — letter L=2020 omitted.
+  { vin: pad("W1A453", "L"), label: "Smart forfour W1A", make: "Smart", modelContains: "forfour", year: null },
   { vin: "HESXR1C49PS069265", label: "Smart #1 EV", make: "Smart", modelContains: "#1", year: 2023, countryGermany: false },
   { vin: "HESCR1C43PS131354", label: "Smart #3 EV", make: "Smart", modelContains: "#3", year: 2023, countryGermany: false },
 ];

@@ -56,7 +56,8 @@ describe("BMW Group QA — classic ETK regression", () => {
 describe("BMW Group QA — classic ETK families", () => {
   it.each([
     ["WBADT53010B123456", /5 Series/i, "E39"],
-    ["WBAVA51010B123456", /3 Series/i, "E90/E91"],
+    // Compound E90/E91 omitted without a unique ISO year (pos.10 is plant on this fixture).
+    ["WBAVA51010B123456", /3 Series/i, null],
     ["WBXPC71010A123456", /X3/i, "E83"],
   ])("%s → model + chassis", (vin, modelRe, chassis) => {
     const r = decodeVin(vin);
@@ -95,9 +96,12 @@ describe("BMW Group QA — modern prefixes still win", () => {
   });
 
   it("WBAXA71 F10 stays 5 Series via modern/ETK", () => {
-    const r = decodeVin("WBAXA71000J123456");
+    // Pos.10 must be a real year code (not plant).
+    const vin = "WBAXA7100GJ123456"; // G = 2016 within F10
+    const r = decodeVin(vin);
     expect(r.model).toMatch(/5 Series/i);
-    expect(decodePremiumEuropean("WBAXA71000J123456")?.chassis).toMatch(/F10/i);
+    expect(r.year).toBe(2016);
+    expect(decodePremiumEuropean(vin)?.chassis).toMatch(/F10/i);
   });
 
   it("i4 / iX / M3 still resolve", () => {

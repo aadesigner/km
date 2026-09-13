@@ -21,12 +21,12 @@ describe("Toyota QA — France VNK (Valenciennes)", () => {
     expect(r.plantCity).toMatch(/Onnaing/i);
   });
 
-  it("known VNK Yaris sample with valid year", () => {
-    // Bumper sample: VNKKTUD30EA001248 — year E = 2014
+  it("known VNK Yaris sample; letter year omitted without verified window", () => {
+    // Bumper sample: VNKKTUD30EA001248 — letter E is ambiguous without a verified window
     const r = decodeVin("VNKKTUD30EA001248");
     expect(r.make).toBe("Toyota");
     expect(r.model).toMatch(/Yaris/i);
-    expect(r.year).toBe(2014);
+    expect(r.year).toBeNull();
   });
 
   it("VNK Yaris Cross specific prefix when known", () => {
@@ -39,7 +39,8 @@ describe("Toyota QA — Turkey NMT (Sakarya)", () => {
     const r = decodeVin("NMTKHMBX0JR000838");
     expect(r.make).toBe("Toyota");
     expect(r.model).toMatch(/C-HR/i);
-    expect(r.year).toBe(2018); // J
+    // Letter J without a verified C-HR window → null (no cycle guess)
+    expect(r.year).toBeNull();
     expect(r.country).toBe("Turkey");
   });
 

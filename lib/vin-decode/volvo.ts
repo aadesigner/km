@@ -154,8 +154,8 @@ const LEGACY_CODES: Record<string, Candidate[]> = {
 };
 
 function volvoModelYear(vin: string, window?: { from: number; to: number } | null): number | null {
-  if (window) return resolveIsoModelYear(vin[9] ?? "", window);
-  return resolveIsoModelYear(vin[9] ?? "", null, { preferRecentIfAmbiguous: true });
+  // Unique ISO cycle only — never prefer-recent.
+  return resolveIsoModelYear(vin[9] ?? "", window ?? null);
 }
 
 /** Pick the model for a vehicle-line letter, constrained by year and XC-ness. */
@@ -177,11 +177,15 @@ function pickModel(
   if (year != null) {
     const inRange = cands.filter((c) => year >= c.from && year <= c.to);
     if (inRange.length === 0) return null;
-    return inRange[inRange.length - 1].model;
+    if (inRange.length === 1) return inRange[0]!.model;
+    // Multiple rows for the same year span — only emit if they share one model name.
+    const names = [...new Set(inRange.map((c) => c.model))];
+    return names.length === 1 ? names[0]! : null;
   }
 
-  // Year unknown — do not invent the newest generation.
-  return null;
+  // Year unknown — emit model only when the VDS letter maps to exactly one name.
+  const names = [...new Set(cands.map((c) => c.model))];
+  return names.length === 1 ? names[0]! : null;
 }
 
 /**

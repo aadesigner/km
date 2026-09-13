@@ -134,9 +134,9 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "KMHJ551", model: "Nexo" },
   { prefix: "KMHN551", model: "Nexo" },
   // Staria / commercial light
-  { prefix: "KMFWB", model: "Staria" },
-  { prefix: "KMFWA", model: "Staria" },
-  { prefix: "KMFWC", model: "Staria" },
+  { prefix: "KMFWB", model: "Staria", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "KMFWA", model: "Staria", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "KMFWC", model: "Staria", yearFrom: 2021, yearTo: 2099 },
   // Creta / Casper / Inster (regional)
   { prefix: "MALA51", model: "Creta", chassis: "SU2 IN" },
   { prefix: "MALB51", model: "Creta", chassis: "SU2 IN" },

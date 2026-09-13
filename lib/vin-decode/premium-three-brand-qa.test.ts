@@ -92,14 +92,15 @@ const MERCEDES: Case[] = [
   { vin: "WDDZZZ236PAA12345", label: "MB CLE EU ZZZ", make: "Mercedes-Benz", modelContains: "CLE", year: 2023 },
   { vin: "WDDZZZ296NAA12345", label: "MB EQS SUV EU ZZZ", make: "Mercedes-Benz", modelContains: "EQS SUV", year: 2022 },
   // Letter-series (NA)
-  { vin: "WDDGF8HB6LA123456", label: "MB letter G C-Class", make: "Mercedes-Benz", modelContains: "C-Class", modelExcludes: ["G-Class"] },
-  { vin: "WDDHF5KB6FA123456", label: "MB letter H E-Class", make: "Mercedes-Benz", modelContains: "E-Class", year: 2015, modelExcludes: ["C-Class"] },
-  { vin: "WDDZF4JB0LA123456", label: "MB letter Z E-Class", make: "Mercedes-Benz", modelContains: "E-Class", year: 2020, modelExcludes: ["C-Class"] },
-  { vin: "WDDLF4JB0PA123456", label: "MB letter L E-Class 2023", make: "Mercedes-Benz", modelContains: "E-Class", year: 2023, modelExcludes: ["GLE", "C-Class"] },
-  { vin: "WDDLF4JB0KA123456", label: "MB letter L CLS 2019", make: "Mercedes-Benz", modelContains: "CLS", year: 2019, modelExcludes: ["GLE"] },
-  { vin: "WDDWF4JB0LA123456", label: "MB letter W C-Class", make: "Mercedes-Benz", modelContains: "C-Class", year: 2020 },
-  { vin: "WDDAF4JB0MA123456", label: "MB letter A C-Class", make: "Mercedes-Benz", modelContains: "C-Class", year: 2021 },
-  { vin: "WDDMF4JB0PA123456", label: "MB letter M CLE", make: "Mercedes-Benz", modelContains: "CLE", year: 2023 },
+  // Letter VDS — year-gated letters omit model when ISO cycle is ambiguous (no prefer-recent).
+  { vin: "WDDGF8HB68A123456", label: "MB letter G C-Class digit year", make: "Mercedes-Benz", modelContains: "C-Class", modelExcludes: ["G-Class"], year: 2008 },
+  { vin: "WDDHF5KB69A123456", label: "MB letter H E-Class digit year", make: "Mercedes-Benz", modelContains: "E-Class", year: 2009, modelExcludes: ["C-Class"] },
+  { vin: "WDDZF4JB0LA123456", label: "MB letter Z E-Class", make: "Mercedes-Benz", modelContains: "E-Class", year: null, modelExcludes: ["C-Class"] },
+  { vin: "WDD214087PA123456", label: "MB W214 E-Class chassis", make: "Mercedes-Benz", modelContains: "E-Class", year: 2023, modelExcludes: ["GLE", "C-Class"] },
+  { vin: "WDDLJ7EB5KA123456", label: "MB CLS C257", make: "Mercedes-Benz", modelContains: "CLS", year: 2019, modelExcludes: ["GLE"] },
+  { vin: "WDD205037FA123456", label: "MB W205 C-Class", make: "Mercedes-Benz", modelContains: "C-Class", year: 2015 },
+  { vin: "WDD206087MA123456", label: "MB W206 C-Class", make: "Mercedes-Benz", modelContains: "C-Class", year: 2021 },
+  { vin: "WDD236087PA123456", label: "MB CLE C236", make: "Mercedes-Benz", modelContains: "CLE", year: 2023 },
 ];
 
 const AUDI: Case[] = [
@@ -223,10 +224,12 @@ describe("premium three-brand model QA — BMW", () => {
 });
 
 describe("premium three-brand negatives", () => {
-  it("Mercedes letter H never returns C-Class on a 2015 VIN", () => {
+  it("Mercedes letter H omits model when year cycle is ambiguous", () => {
     const r = decodeVin("WDDHF5KB6FA123456");
-    expect(r.model).toMatch(/E-Class/i);
-    expect(r.model).not.toMatch(/C-Class/i);
+    expect(r.model).toBeNull();
+    const digit = decodeVin("WDDHF5KB69A123456");
+    expect(digit.model).toMatch(/E-Class/i);
+    expect(digit.model).not.toMatch(/C-Class/i);
   });
 
   it("Mercedes WDD296 is EQS SUV not EQE SUV", () => {

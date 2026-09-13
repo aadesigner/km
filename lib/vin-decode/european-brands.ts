@@ -144,7 +144,7 @@ function decodeRenaultModel(vin: string): string | null {
 const FIAT_PLATFORM_456: Record<string, string> = {
   "169": "Panda",
   "198": "Bravo",
-  "225": "Qubo / Fiorino",
+  // Platform 225 is shared Qubo/Fiorino — omit rather than guess.
   "250": "Ducato",
   "263": "Doblo",
   "270": "Scudo",

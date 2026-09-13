@@ -7,14 +7,15 @@ import { decodePremiumEuropean, premiumVinModelYear } from "./european-premium";
 import { decodeVin } from "./vinDecoder";
 
 describe("premium chassis year coherence", () => {
-  it("BMW WBA3A + 2015 (F30-era) must not claim E90", () => {
-    const vin = "WBA3A5C55FK123456"; // year F = 2015
-    expect(premiumVinModelYear(vin)).toBe(2015);
+  it("BMW WBA3A + letter year without chassis does not invent 2015", () => {
+    const vin = "WBA3A5C55FK123456"; // year F = 1985/2015 ambiguous
+    expect(premiumVinModelYear(vin)).toBeNull();
     const prem = decodePremiumEuropean(vin);
     expect(prem?.model).toBe("3 Series");
     expect(prem?.chassis).toBeNull();
     expect(prem?.displayModel).not.toMatch(/E90/i);
     expect(decodeVin(vin).model).not.toMatch(/E90/i);
+    expect(decodeVin(vin).year).toBeNull();
   });
 
   it("BMW WBA3A + 2008 may omit chassis rather than invent E90", () => {
@@ -37,13 +38,14 @@ describe("premium chassis year coherence", () => {
     expect(decodeVin(vin).model).toMatch(/E-Class/i);
   });
 
-  it("Mercedes WDD213 + ISO year letter 2016 may claim W213", () => {
-    const vin = "WDD213042GA123456"; // pos.10 = G → 2016
+  it("Mercedes WDD213 + ISO year letter resolves via W213 production window", () => {
+    const vin = "WDD213042GA123456"; // pos.10 = G → 1986/2016; W213 window → 2016
     expect(vin).toHaveLength(17);
-    expect(premiumVinModelYear(vin)).toBe(2016);
+    expect(premiumVinModelYear(vin, { from: 2016, to: 2023 })).toBe(2016);
     const prem = decodePremiumEuropean(vin);
     expect(prem?.chassis).toBe("W213");
     expect(prem?.displayModel).toContain("W213");
+    expect(decodeVin(vin).year).toBe(2016);
   });
 
   it("real W203 Baumuster VIN has no invented year", () => {
@@ -73,20 +75,39 @@ describe("premium chassis year coherence", () => {
     expect(decodeVin(vin).model).toMatch(/EQS SUV/i);
   });
 
-  it("Mercedes letter-series C-Class does not invent W204 on a 2020 VIN", () => {
-    const vin = "WDDGF8HB6LA123456"; // L = 2020
+  it("Mercedes letter-series G without unique year omits model (no C/S guess)", () => {
+    const vin = "WDDGF8HB6LA123456"; // L = 1990/2020 ambiguous
+    expect(decodeVin(vin).year).toBeNull();
     const prem = decodePremiumEuropean(vin);
-    expect(prem?.model).toBe("C-Class");
-    expect(prem?.chassis).toBeNull();
-    expect(prem?.displayModel).not.toMatch(/W204/i);
+    // Letter G needs a year to choose C-Class vs S-Class — omit rather than guess.
+    expect(prem?.model ?? null).toBeNull();
+    expect(decodeVin(vin).model).toBeNull();
   });
 
-  it("Mercedes letter-series H (W212) is E-Class, not C-Class", () => {
-    const vin = "WDDHF5KB6FA123456"; // F = 2015
+  it("Mercedes letter-series H without unique year omits model (no C/E guess)", () => {
+    const vin = "WDDHF5KB6FA123456"; // F = 1985/2015 ambiguous
+    expect(decodeVin(vin).year).toBeNull();
+    const prem = decodePremiumEuropean(vin);
+    // Letter H needs a year — omit rather than invent E-Class for 2015.
+    expect(prem?.model ?? null).toBeNull();
+    expect(decodeVin(vin).model).toBeNull();
+  });
+
+  it("Mercedes letter-series H with digit year 2009 is E-Class (W212 era)", () => {
+    const vin = "WDDHF5KB69A123456"; // 9 = 2009 (unique until 2039)
+    expect(decodeVin(vin).year).toBe(2009);
     const prem = decodePremiumEuropean(vin);
     expect(prem?.model).toBe("E-Class");
-    expect(prem?.displayModel).not.toMatch(/C-Class/i);
     expect(decodeVin(vin).model).toMatch(/E-Class/i);
+  });
+
+  it("Mercedes letter-series G with digit year 2008 is C-Class", () => {
+    // Digit 8 = 2008 (unique until 2038) → G letter maps to C-Class (year > 2006)
+    const vin = "WDDGF8HB68A123456";
+    expect(decodeVin(vin).year).toBe(2008);
+    const prem = decodePremiumEuropean(vin);
+    expect(prem?.model).toBe("C-Class");
+    expect(prem?.displayModel).not.toMatch(/W204/i);
   });
 
   it("Mercedes letter-series Z (W213) is E-Class", () => {

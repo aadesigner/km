@@ -16,15 +16,10 @@ describe("iso year — unique cycle only", () => {
     expect(isoModelYearCandidates("4")).toEqual([2004, 2034]);
   });
 
-  it("never prefers recent when both cycles are plausible (strict mode)", () => {
+  it("never prefers recent when both cycles are plausible", () => {
     expect(resolveIsoModelYear("N")).toBeNull();
     expect(resolveIsoModelYear("W")).toBeNull();
     expect(resolveIsoModelYear("P")).toBeNull();
-  });
-
-  it("known-make fallback may prefer recent when explicitly requested", () => {
-    expect(resolveIsoModelYear("N", null, { preferRecentIfAmbiguous: true })).toBe(2022);
-    expect(resolveIsoModelYear("P", null, { preferRecentIfAmbiguous: true })).toBe(2023);
   });
 
   it("emits digit years when the +30 cycle is still in the future", () => {
@@ -32,11 +27,11 @@ describe("iso year — unique cycle only", () => {
     expect(resolveIsoModelYear("9")).toBe(2009);
   });
 
-  it("uses a verified production window to pick exactly one cycle", () => {
+  it("uses a verified production window only when exactly one cycle remains", () => {
     expect(resolveIsoModelYear("P", { from: 2018, to: 2099 })).toBe(2023);
     expect(resolveIsoModelYear("N", { from: 1988, to: 1995 })).toBe(1992);
-    // Wide window spanning both cycles → newest in-window year
-    expect(resolveIsoModelYear("D", { from: 1983, to: 2016 })).toBe(2013);
+    // Wide window spanning both cycles → omit (do not prefer newest)
+    expect(resolveIsoModelYear("D", { from: 1983, to: 2016 })).toBeNull();
   });
 });
 
@@ -82,6 +77,14 @@ describe("known makes — year only with evidence", () => {
     const r = decodeVin("WVWZZZ3CZWE123456");
     expect(r.make).toBe("Volkswagen");
     // B6–B8 window is 2005–2023; W → 1998/2028 both out → omit year
+    expect(r.year).toBeNull();
+  });
+
+  it("known make without chassis window does not invent letter-year via prefer-recent", () => {
+    // WBA3A = 3 Series model only — letter F is 1985/2015 ambiguous without chassis
+    const r = decodeVin("WBA3A5C55FK123456");
+    expect(r.make).toBe("BMW");
+    expect(r.model).toMatch(/3 Series/i);
     expect(r.year).toBeNull();
   });
 });

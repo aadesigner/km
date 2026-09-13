@@ -107,7 +107,8 @@ describe("Polestar 3", () => {
     const r = decodeVin("YSREJ3YB0SG123456");
     expect(r.make).toBe("Polestar");
     expect(r.model).toBe("Polestar 3");
-    expect(r.year).toBe(2025);
+    // Letter S without a verified Polestar 3 window → null
+    expect(r.year).toBeNull();
   });
 
   it("7SY USA MPV Performance motor → Polestar 3", () => {
@@ -128,7 +129,8 @@ describe("Lucid Air / Gravity", () => {
     const r = decodeVin("7UUG1GHL4SA012345");
     expect(r.make).toBe("Lucid");
     expect(r.model).toBe("Gravity");
-    expect(r.year).toBe(2025);
+    // Letter S without a verified Lucid Gravity window → null
+    expect(r.year).toBeNull();
     expect(r.fuelType).toBe("Electric");
   });
 

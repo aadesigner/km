@@ -23,9 +23,9 @@ describe("Hyundai Tucson identification", () => {
   });
 
   it("year-gated KMH J-line is Tucson after 2005 (not Elantra/Bayon)", () => {
-    // pos10 D = 2013; KMHJ381 must not be hard-mapped to Bayon (Bayon is line B)
+    // pos10 D is ambiguous without a verified production window (1983/2013)
     const r = decodeVin("KMHJ381AADU123456");
-    expect(r.year).toBe(2013);
+    expect(r.year).toBeNull();
     expect(r.model).toBe("Tucson");
   });
 
@@ -66,7 +66,8 @@ describe("Hyundai other models + year", () => {
 
     const sonata2019 = decodeVin("KMHE141ABKA123456");
     expect(sonata2019.model).toBe("Sonata");
-    expect(sonata2019.year).toBe(2019);
+    // Letter K without a verified window → null (no cycle guess)
+    expect(sonata2019.year).toBeNull();
   });
 
   it("IONIQ 5 still wins on KMHL341 / KMHLW4 platforms", () => {

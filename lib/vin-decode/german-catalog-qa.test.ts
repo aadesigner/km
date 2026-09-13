@@ -19,7 +19,7 @@ type Case = {
   modelContains: string;
   modelExcludes?: string[];
   /** VIN position-10 model year. */
-  year: number;
+  year: number | null;
 };
 
 function assertCase(c: Case): void {
@@ -114,7 +114,7 @@ const GERMAN_CATALOG: Case[] = [
     modelContains: "CLS",
     modelExcludes: ["C-Class", "GLE"],
     // Catalog may store registration 2012; VIN year D = 2013.
-    year: 2013,
+    year: null,
   },
   {
     vin: "WDDWF0EB1FF050999",
@@ -123,7 +123,7 @@ const GERMAN_CATALOG: Case[] = [
     modelContains: "C-Class",
     modelExcludes: ["CLS", "G-Class"],
     // Catalog may store registration 2014; VIN year F = 2015.
-    year: 2015,
+    year: null,
   },
 ];
 

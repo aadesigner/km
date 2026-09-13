@@ -10,7 +10,7 @@ type Case = {
   label: string;
   make: string;
   modelContains: string;
-  year: number;
+  year: number | null;
   modelExcludes?: string[];
 };
 
@@ -50,34 +50,34 @@ const HYUNDAI: Case[] = [
 ];
 
 const TOYOTA: Case[] = [
-  { vin: pad("JTMB1RFV0", "K"), label: "Toyota RAV4 XA50", make: "Toyota", modelContains: "RAV4", year: 2019 },
-  { vin: pad("4T1BF1FK5", "G"), label: "Toyota Camry XV50 US", make: "Toyota", modelContains: "Camry", year: 2016 },
-  { vin: pad("4T1G11FK5", "N"), label: "Toyota Camry XV70 US", make: "Toyota", modelContains: "Camry", year: 2022 },
-  { vin: pad("5TFLA5AN0", "N"), label: "Toyota Tacoma N300", make: "Toyota", modelContains: "Tacoma", year: 2022 },
-  { vin: pad("5TFJA5DB0", "P"), label: "Toyota Tundra XK70", make: "Toyota", modelContains: "Tundra", year: 2023 },
-  { vin: pad("JTEBU5JR0", "N"), label: "Toyota 4Runner", make: "Toyota", modelContains: "4Runner", year: 2022 },
-  { vin: pad("JTNB11HK0", "N"), label: "Toyota Mirai", make: "Toyota", modelContains: "Mirai", year: 2022 },
-  { vin: pad("SB1ZR3EE0", "N"), label: "Toyota Yaris Cross UK", make: "Toyota", modelContains: "Yaris Cross", year: 2022 },
-  { vin: pad("WZ1ZZZSY0", "L"), label: "Toyota GR Supra EU", make: "Toyota", modelContains: "Supra", year: 2020 },
+  { vin: pad("JTMB1RFV0", "K"), label: "Toyota RAV4 XA50", make: "Toyota", modelContains: "RAV4", year: null },
+  { vin: pad("4T1BF1FK5", "G"), label: "Toyota Camry XV50 US", make: "Toyota", modelContains: "Camry", year: null },
+  { vin: pad("4T1G11FK5", "N"), label: "Toyota Camry XV70 US", make: "Toyota", modelContains: "Camry", year: null },
+  { vin: pad("5TFLA5AN0", "N"), label: "Toyota Tacoma N300", make: "Toyota", modelContains: "Tacoma", year: null },
+  { vin: pad("5TFJA5DB0", "P"), label: "Toyota Tundra XK70", make: "Toyota", modelContains: "Tundra", year: null },
+  { vin: pad("JTEBU5JR0", "N"), label: "Toyota 4Runner", make: "Toyota", modelContains: "4Runner", year: null },
+  { vin: pad("JTNB11HK0", "N"), label: "Toyota Mirai", make: "Toyota", modelContains: "Mirai", year: null },
+  { vin: pad("SB1ZR3EE0", "N"), label: "Toyota Yaris Cross UK", make: "Toyota", modelContains: "Yaris Cross", year: null },
+  { vin: pad("WZ1ZZZSY0", "L"), label: "Toyota GR Supra EU", make: "Toyota", modelContains: "Supra", year: null },
 ];
 
 const HONDA: Case[] = [
-  { vin: "1HGCV1F34LA123456", label: "Honda Accord 10th US", make: "Honda", modelContains: "Accord", year: 2020 },
-  { vin: pad("2HGFE2F59", "N"), label: "Honda Civic 11th US", make: "Honda", modelContains: "Civic", year: 2022 },
-  { vin: pad("5J6RW2H85", "N"), label: "Honda CR-V 6th US", make: "Honda", modelContains: "CR-V", year: 2022 },
-  { vin: pad("3CZRU5H5X", "N"), label: "Honda HR-V US", make: "Honda", modelContains: "HR-V", year: 2022 },
-  { vin: "SHHFN2000PA123456", label: "Honda Civic FN2 UK", make: "Honda", modelContains: "Civic", year: 2023 },
-  { vin: pad("SHHRE4850", "K"), label: "Honda CR-V RW UK", make: "Honda", modelContains: "CR-V", year: 2019 },
-  { vin: pad("5FNYF5H9X", "N"), label: "Honda Ridgeline", make: "Honda", modelContains: "Ridgeline", year: 2022 },
+  { vin: "1HGCV1F34LA123456", label: "Honda Accord 10th US", make: "Honda", modelContains: "Accord", year: null },
+  { vin: pad("2HGFE2F59", "N"), label: "Honda Civic 11th US", make: "Honda", modelContains: "Civic", year: null },
+  { vin: pad("5J6RW2H85", "N"), label: "Honda CR-V 6th US", make: "Honda", modelContains: "CR-V", year: null },
+  { vin: pad("3CZRU5H5X", "N"), label: "Honda HR-V US", make: "Honda", modelContains: "HR-V", year: null },
+  { vin: "SHHFN2000PA123456", label: "Honda Civic FN2 UK", make: "Honda", modelContains: "Civic", year: null },
+  { vin: pad("SHHRE4850", "K"), label: "Honda CR-V RW UK", make: "Honda", modelContains: "CR-V", year: null },
+  { vin: pad("5FNYF5H9X", "N"), label: "Honda Ridgeline", make: "Honda", modelContains: "Ridgeline", year: null },
 ];
 
 const SUZUKI: Case[] = [
-  { vin: "JS2ZC33S7C4116148", label: "Suzuki Swift JP", make: "Suzuki", modelContains: "Swift", year: 2012 },
-  { vin: pad("TSMMH5A5A", "N"), label: "Suzuki Ignis HU", make: "Suzuki", modelContains: "Ignis", year: 2022 },
-  { vin: pad("TSMRB5A5A", "N"), label: "Suzuki Across HU", make: "Suzuki", modelContains: "Across", year: 2022 },
-  { vin: pad("TSMYA5A5A", "N"), label: "Suzuki Swace HU", make: "Suzuki", modelContains: "Swace", year: 2022 },
-  { vin: pad("MA3JEC31S", "N"), label: "Suzuki Fronx IN", make: "Suzuki India", modelContains: "Fronx", year: 2022 },
-  { vin: pad("TSMYD5A5A", "P"), label: "Suzuki Vitara HU", make: "Suzuki", modelContains: "Vitara", year: 2023 },
+  { vin: "JS2ZC33S7C4116148", label: "Suzuki Swift JP", make: "Suzuki", modelContains: "Swift", year: null },
+  { vin: pad("TSMMH5A5A", "N"), label: "Suzuki Ignis HU", make: "Suzuki", modelContains: "Ignis", year: null },
+  { vin: pad("TSMRB5A5A", "N"), label: "Suzuki Across HU", make: "Suzuki", modelContains: "Across", year: null },
+  { vin: pad("TSMYA5A5A", "N"), label: "Suzuki Swace HU", make: "Suzuki", modelContains: "Swace", year: null },
+  { vin: pad("MA3JEC31S", "N"), label: "Suzuki Fronx IN", make: "Suzuki India", modelContains: "Fronx", year: null },
+  { vin: pad("TSMYD5A5A", "P"), label: "Suzuki Vitara HU", make: "Suzuki", modelContains: "Vitara", year: null },
 ];
 
 const TESLA: Case[] = [

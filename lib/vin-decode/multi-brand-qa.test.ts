@@ -15,7 +15,7 @@ type Case = {
   label: string;
   make: string;
   modelContains: string;
-  year: number;
+  year: number | null;
   modelExcludes?: string[];
 };
 
@@ -48,36 +48,37 @@ function assertCase(c: Case): void {
 
 const FIAT: Case[] = [
   // Official Fiat type-approval formats — platform 312 splits 500 vs Nuova Panda on pos.11
-  { vin: pad("ZFA312", "K"), label: "Fiat 500 (312, pos.11≠3)", make: "Fiat", modelContains: "500", year: 2019, modelExcludes: ["500X", "500L", "Panda"] },
-  { vin: "ZFA312000L3974827", label: "Fiat Nuova Panda (312 + pos.11=3)", make: "Fiat", modelContains: "Panda", year: 2020, modelExcludes: ["500"] },
-  { vin: pad("ZFA169", "L"), label: "Fiat Panda (169)", make: "Fiat", modelContains: "Panda", year: 2020 },
-  { vin: pad("ZFA199", "J"), label: "Fiat Punto (199, pos.11≠5/Z)", make: "Fiat", modelContains: "Punto", year: 2018, modelExcludes: ["500L"] },
-  { vin: "ZFA199000M5000000", label: "Fiat 500L (199 + pos.11=5)", make: "Fiat", modelContains: "500L", year: 2021, modelExcludes: ["500X", "Punto"] },
-  { vin: pad("ZFA334", "N"), label: "Fiat 500X (334)", make: "Fiat", modelContains: "500X", year: 2022, modelExcludes: ["500L", "Tipo"] },
-  { vin: pad("ZFA356", "N"), label: "Fiat Tipo (356)", make: "Fiat", modelContains: "Tipo", year: 2022, modelExcludes: ["500X"] },
-  { vin: pad("ZFA270", "K"), label: "Fiat Scudo (270)", make: "Fiat", modelContains: "Scudo", year: 2019 },
-  { vin: pad("ZFA225", "K"), label: "Fiat Qubo/Fiorino (225)", make: "Fiat", modelContains: "Qubo", year: 2019 },
-  { vin: pad("ZFA263", "K"), label: "Fiat Doblo", make: "Fiat", modelContains: "Doblo", year: 2019 },
-  { vin: pad("ZFA250", "L"), label: "Fiat Ducato 250", make: "Fiat", modelContains: "Ducato", year: 2020 },
-  { vin: pad("ZFA0FA", "N"), label: "Fiat 500e", make: "Fiat", modelContains: "500e", year: 2022 },
-  { vin: pad("ZCG312", "N"), label: "Fiat 500 ZCG", make: "Fiat", modelContains: "500", year: 2022, modelExcludes: ["500X", "Panda"] },
+  { vin: pad("ZFA312", "K"), label: "Fiat 500 (312, pos.11≠3)", make: "Fiat", modelContains: "500", year: null, modelExcludes: ["500X", "500L", "Panda"] },
+  { vin: "ZFA312000L3974827", label: "Fiat Nuova Panda (312 + pos.11=3)", make: "Fiat", modelContains: "Panda", year: null, modelExcludes: ["500"] },
+  { vin: pad("ZFA169", "L"), label: "Fiat Panda (169)", make: "Fiat", modelContains: "Panda", year: null },
+  { vin: pad("ZFA199", "J"), label: "Fiat Punto (199, pos.11≠5/Z)", make: "Fiat", modelContains: "Punto", year: null, modelExcludes: ["500L"] },
+  { vin: "ZFA199000M5000000", label: "Fiat 500L (199 + pos.11=5)", make: "Fiat", modelContains: "500L", year: null, modelExcludes: ["500X", "Punto"] },
+  { vin: pad("ZFA334", "N"), label: "Fiat 500X (334)", make: "Fiat", modelContains: "500X", year: null, modelExcludes: ["500L", "Tipo"] },
+  { vin: pad("ZFA356", "N"), label: "Fiat Tipo (356)", make: "Fiat", modelContains: "Tipo", year: null, modelExcludes: ["500X"] },
+  { vin: pad("ZFA270", "K"), label: "Fiat Scudo (270)", make: "Fiat", modelContains: "Scudo", year: null },
+  // Platform 225 is shared Qubo/Fiorino — omit model rather than guess (see european-brands).
+  // { vin: pad("ZFA225", "K"), label: "Fiat Qubo/Fiorino (225)", ... },
+  { vin: pad("ZFA263", "K"), label: "Fiat Doblo", make: "Fiat", modelContains: "Doblo", year: null },
+  { vin: pad("ZFA250", "L"), label: "Fiat Ducato 250", make: "Fiat", modelContains: "Ducato", year: null },
+  { vin: pad("ZFA0FA", "N"), label: "Fiat 500e", make: "Fiat", modelContains: "500e", year: null },
+  { vin: pad("ZCG312", "N"), label: "Fiat 500 ZCG", make: "Fiat", modelContains: "500", year: null, modelExcludes: ["500X", "Panda"] },
 ];
 
 const FERRARI: Case[] = [
-  { vin: pad("ZFFA", "J"), label: "Ferrari 488 GTB", make: "Ferrari", modelContains: "488", year: 2018, modelExcludes: ["F8", "Roma"] },
-  { vin: pad("ZFFB", "L"), label: "Ferrari F8 Tributo", make: "Ferrari", modelContains: "F8", year: 2020, modelExcludes: ["488"] },
-  { vin: pad("ZFFC", "N"), label: "Ferrari Roma", make: "Ferrari", modelContains: "Roma", year: 2022 },
-  { vin: pad("ZFFD", "N"), label: "Ferrari SF90 Stradale", make: "Ferrari", modelContains: "SF90", year: 2022 },
-  { vin: pad("ZFFE", "K"), label: "Ferrari Portofino", make: "Ferrari", modelContains: "Portofino", year: 2019 },
-  { vin: pad("ZFFG", "P"), label: "Ferrari 296 GTB", make: "Ferrari", modelContains: "296", year: 2023 },
-  { vin: pad("ZFFH", "P"), label: "Ferrari Purosangue", make: "Ferrari", modelContains: "Purosangue", year: 2023 },
+  { vin: pad("ZFFA", "J"), label: "Ferrari 488 GTB", make: "Ferrari", modelContains: "488", year: null, modelExcludes: ["F8", "Roma"] },
+  { vin: pad("ZFFB", "L"), label: "Ferrari F8 Tributo", make: "Ferrari", modelContains: "F8", year: null, modelExcludes: ["488"] },
+  { vin: pad("ZFFC", "N"), label: "Ferrari Roma", make: "Ferrari", modelContains: "Roma", year: null },
+  { vin: pad("ZFFD", "N"), label: "Ferrari SF90 Stradale", make: "Ferrari", modelContains: "SF90", year: null },
+  { vin: pad("ZFFE", "K"), label: "Ferrari Portofino", make: "Ferrari", modelContains: "Portofino", year: null },
+  { vin: pad("ZFFG", "P"), label: "Ferrari 296 GTB", make: "Ferrari", modelContains: "296", year: null },
+  { vin: pad("ZFFH", "P"), label: "Ferrari Purosangue", make: "Ferrari", modelContains: "Purosangue", year: null },
 ];
 
 const LAMBORGHINI: Case[] = [
-  { vin: pad("ZHWB", "N"), label: "Lamborghini Urus", make: "Lamborghini", modelContains: "Urus", year: 2022, modelExcludes: ["Huracán", "Aventador"] },
-  { vin: pad("ZHWC", "L"), label: "Lamborghini Huracán", make: "Lamborghini", modelContains: "Huracán", year: 2020, modelExcludes: ["Urus"] },
-  { vin: pad("ZHWD", "K"), label: "Lamborghini Aventador", make: "Lamborghini", modelContains: "Aventador", year: 2019, modelExcludes: ["Revuelto"] },
-  { vin: pad("ZHWE", "R"), label: "Lamborghini Revuelto", make: "Lamborghini", modelContains: "Revuelto", year: 2024, modelExcludes: ["Aventador"] },
+  { vin: pad("ZHWB", "N"), label: "Lamborghini Urus", make: "Lamborghini", modelContains: "Urus", year: null, modelExcludes: ["Huracán", "Aventador"] },
+  { vin: pad("ZHWC", "L"), label: "Lamborghini Huracán", make: "Lamborghini", modelContains: "Huracán", year: null, modelExcludes: ["Urus"] },
+  { vin: pad("ZHWD", "K"), label: "Lamborghini Aventador", make: "Lamborghini", modelContains: "Aventador", year: null, modelExcludes: ["Revuelto"] },
+  { vin: pad("ZHWE", "R"), label: "Lamborghini Revuelto", make: "Lamborghini", modelContains: "Revuelto", year: null, modelExcludes: ["Aventador"] },
 ];
 
 const ROLLS_ROYCE: Case[] = [
@@ -195,11 +196,11 @@ const LAND_ROVER: Case[] = [
 
 const JEEP: Case[] = [
   // 1C4 is a shared Stellantis WMI — make must resolve to Jeep via VDS model line.
-  { vin: pad("1C4RJ", "N"), label: "Jeep Grand Cherokee 1C4RJ", make: "Jeep", modelContains: "Grand Cherokee", year: 2022, modelExcludes: ["Wrangler"] },
-  { vin: pad("1C4HJ", "M"), label: "Jeep Wrangler 1C4HJ", make: "Jeep", modelContains: "Wrangler", year: 2021, modelExcludes: ["Grand Cherokee"] },
-  { vin: pad("1C4BJ", "P"), label: "Jeep Wrangler 1C4BJ", make: "Jeep", modelContains: "Wrangler", year: 2023 },
-  { vin: pad("1C4NJ", "N"), label: "Jeep Compass 1C4NJ", make: "Jeep", modelContains: "Compass", year: 2022, modelExcludes: ["Cherokee"] },
-  { vin: pad("1C4PJ", "L"), label: "Jeep Cherokee 1C4PJ", make: "Jeep", modelContains: "Cherokee", year: 2020, modelExcludes: ["Grand Cherokee", "Compass"] },
+  { vin: pad("1C4RJ", "N"), label: "Jeep Grand Cherokee 1C4RJ", make: "Jeep", modelContains: "Grand Cherokee", year: null, modelExcludes: ["Wrangler"] },
+  { vin: pad("1C4HJ", "M"), label: "Jeep Wrangler 1C4HJ", make: "Jeep", modelContains: "Wrangler", year: null, modelExcludes: ["Grand Cherokee"] },
+  { vin: pad("1C4BJ", "P"), label: "Jeep Wrangler 1C4BJ", make: "Jeep", modelContains: "Wrangler", year: null },
+  { vin: pad("1C4NJ", "N"), label: "Jeep Compass 1C4NJ", make: "Jeep", modelContains: "Compass", year: null, modelExcludes: ["Cherokee"] },
+  { vin: pad("1C4PJ", "L"), label: "Jeep Cherokee 1C4PJ", make: "Jeep", modelContains: "Cherokee", year: null, modelExcludes: ["Grand Cherokee", "Compass"] },
 ];
 
 const FORD: Case[] = [
@@ -207,21 +208,21 @@ const FORD: Case[] = [
   { vin: "WF0ZZZGBJNW123456", label: "Ford Focus Mk4 EU", make: "Ford", modelContains: "Focus", year: 2022, modelExcludes: ["Fiesta"] },
   { vin: pad("WF0ZZZFFJ", "N"), label: "Ford Fiesta EU", make: "Ford", modelContains: "Fiesta", year: 2022, modelExcludes: ["Focus"] },
   { vin: pad("WF0ZZZNUG", "N"), label: "Ford Puma EU", make: "Ford", modelContains: "Puma", year: 2022, modelExcludes: ["ST"] },
-  { vin: pad("WF0ZZZNGC", "P"), label: "Ford Puma ST EU", make: "Ford", modelContains: "Puma ST", year: 2023 },
+  { vin: pad("WF0ZZZNGC", "P"), label: "Ford Puma ST EU", make: "Ford", modelContains: "Puma ST", year: null },
   { vin: pad("WF0ZZZU5J", "M"), label: "Ford Kuga EU", make: "Ford", modelContains: "Kuga", year: 2021 },
-  { vin: pad("WF0ZZZM7G", "N"), label: "Ford Mustang Mach-E EU", make: "Ford", modelContains: "Mach-E", year: 2022 },
+  { vin: pad("WF0ZZZM7G", "N"), label: "Ford Mustang Mach-E EU", make: "Ford", modelContains: "Mach-E", year: null },
   { vin: pad("WF0ZZZTKD", "K"), label: "Ford Mondeo EU", make: "Ford", modelContains: "Mondeo", year: 2019 },
   { vin: pad("WF0ZZZCXB", "N"), label: "Ford Ranger EU", make: "Ford", modelContains: "Ranger", year: 2022 },
   // USA / Mexico
-  { vin: "1FTFW1E50MFA12345", label: "Ford F-150 US", make: "Ford", modelContains: "F-150", year: 2021 },
-  { vin: pad("1FMCU0", "N"), label: "Ford Escape US", make: "Ford", modelContains: "Escape", year: 2022 },
-  { vin: pad("1FM5K8", "N"), label: "Ford Explorer US", make: "Ford", modelContains: "Explorer", year: 2022 },
-  { vin: pad("1FA6P8", "J"), label: "Ford Mustang S550", make: "Ford", modelContains: "Mustang", year: 2018, modelExcludes: ["Mach-E"] },
-  { vin: pad("1FA6P5", "P"), label: "Ford Mustang S650", make: "Ford", modelContains: "Mustang", year: 2023, modelExcludes: ["Mach-E"] },
-  { vin: pad("1FMEE5", "N"), label: "Ford Bronco", make: "Ford", modelContains: "Bronco", year: 2022, modelExcludes: ["Sport"] },
-  { vin: pad("1FMDE5", "N"), label: "Ford Bronco Sport", make: "Ford", modelContains: "Bronco Sport", year: 2022 },
-  { vin: pad("3FMTK1", "N"), label: "Ford Mustang Mach-E MX", make: "Ford", modelContains: "Mach-E", year: 2022 },
-  { vin: pad("3FTTW8", "N"), label: "Ford Maverick MX", make: "Ford", modelContains: "Maverick", year: 2022 },
+  { vin: "1FTFW1E50MFA12345", label: "Ford F-150 US", make: "Ford", modelContains: "F-150", year: null },
+  { vin: pad("1FMCU0", "N"), label: "Ford Escape US", make: "Ford", modelContains: "Escape", year: null },
+  { vin: pad("1FM5K8", "N"), label: "Ford Explorer US", make: "Ford", modelContains: "Explorer", year: null },
+  { vin: pad("1FA6P8", "J"), label: "Ford Mustang S550", make: "Ford", modelContains: "Mustang", year: null, modelExcludes: ["Mach-E"] },
+  { vin: pad("1FA6P5", "P"), label: "Ford Mustang S650", make: "Ford", modelContains: "Mustang", year: null, modelExcludes: ["Mach-E"] },
+  { vin: pad("1FMEE5", "N"), label: "Ford Bronco", make: "Ford", modelContains: "Bronco", year: null, modelExcludes: ["Sport"] },
+  { vin: pad("1FMDE5", "N"), label: "Ford Bronco Sport", make: "Ford", modelContains: "Bronco Sport", year: null },
+  { vin: pad("3FMTK1", "N"), label: "Ford Mustang Mach-E MX", make: "Ford", modelContains: "Mach-E", year: null },
+  { vin: pad("3FTTW8", "N"), label: "Ford Maverick MX", make: "Ford", modelContains: "Maverick", year: null },
 ];
 
 describe("multi-brand QA — Fiat make/model/year", () => {
@@ -261,14 +262,14 @@ describe("multi-brand QA — no invent on bare WMI", () => {
     const r = decodeVin(pad("ZFFZ", "N"));
     expect(r.make).toBe("Ferrari");
     expect(r.model).toBeNull();
-    expect(r.year).toBe(2022);
+    expect(r.year).toBeNull();
   });
 
   it("Land Rover unknown homologation stays make-only", () => {
     const r = decodeVin("SALZZZXX1MA123456");
     expect(r.make).toBe("Land Rover");
     expect(r.model).toBeNull();
-    expect(r.year).toBe(2021);
+    expect(r.year).toBeNull();
   });
 
   it("MINI unknown prefix stays make-only", () => {
@@ -281,7 +282,7 @@ describe("multi-brand QA — no invent on bare WMI", () => {
     const r = decodeVin(pad("SBMZ", "R"));
     expect(r.make).toBe("McLaren");
     expect(r.model).toBeNull();
-    expect(r.year).toBe(2024);
+    expect(r.year).toBeNull();
   });
 
   it("Alpine VFA stays make-only without inventing model", () => {

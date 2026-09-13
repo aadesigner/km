@@ -16,29 +16,34 @@ describe("Mercedes VDS decoding", () => {
   });
 
   it("decodes letter-series C-Class (WDDG = W204, not G-Class)", () => {
-    const r = decodeVin("WDDGF8HB6LA123456");
+    // Digit year uniquely resolves; letter years stay null → omit year-gated model.
+    const r = decodeVin("WDDGF8HB68A123456"); // 8 = 2008
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/C-Class/i);
     expect(r.model).not.toMatch(/G-Class/i);
+    expect(decodeVin("WDDGF8HB6LA123456").model).toBeNull();
   });
 
   it("decodes letter-series E-Class W212 (WDDH) — not C-Class", () => {
-    // Pos.4 H = W212 E-Class on modern NA VINs (not W202 C-Class)
-    const r = decodeVin("WDDHF5KB6FA123456"); // F = 2015
+    // Digit 9 = 2009 uniquely; letter F is ambiguous without a chassis window.
+    const r = decodeVin("WDDHF5KB69A123456");
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);
     expect(r.model).not.toMatch(/C-Class/i);
+    expect(decodeVin("WDDHF5KB6FA123456").model).toBeNull();
   });
 
   it("decodes letter-series E-Class W213 (WDDZ)", () => {
-    const r = decodeVin("WDDZF4JB0LA123456"); // L = 2020
+    const r = decodeVin("WDDZF4JB0LA123456"); // Z is unambiguous class (year may be null)
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);
     expect(r.model).not.toMatch(/C-Class/i);
   });
 
   it("decodes letter-series E-Class W214 (WDDL) for recent years", () => {
-    const r = decodeVin("WDDLF4JB0PA123456"); // P = 2023
+    // Letter P/R alone are cycle-ambiguous → omit model; use chassis-digit W214 instead.
+    expect(decodeVin("WDDLF4JB0PA123456").model).toBeNull();
+    const r = decodeVin("WDD214087PA123456");
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);
     expect(r.model).not.toMatch(/GLE|C-Class/i);
