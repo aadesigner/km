@@ -25,7 +25,7 @@ import { decodeFordNaModel, isFordNaVin } from "./ford-na";
 import { decodeGmNaModel, isGmNaVin } from "./gm-na";
 import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin, isOpelVauxhallVin, matchOpelVauxhallRule } from "./opel-vauxhall";
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule } from "./asian-eu";
-import { decodeUsVdsModel, resolveUsVdsMake } from "./us-vds";
+import { decodeUsVdsModel, matchUsVdsRule, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
   inferBodyStyleFromModel,
@@ -92,7 +92,8 @@ function resolveVinModelYear(
     ?? decodeSkodaModern(vin, null)
     ?? decodePorscheModern(vin, null);
   const premiumChassis = decodePremiumEuropeanSeries(vin);
-  const globalChassis = decodeGlobalBrand(vin).chassis;
+  const globalHit = decodeGlobalBrand(vin);
+  const globalChassis = globalHit.chassis;
   const hyRule = isHyundaiVin(vin) ? matchHyundaiRule(vin) : null;
   const series =
     vagHit?.chassis
@@ -116,6 +117,19 @@ function resolveVinModelYear(
     return resolveIsoModelYear(code, {
       from: hyRule.yearFrom ?? 1980,
       to: hyRule.yearTo ?? 2099,
+    });
+  }
+  const usRule = matchUsVdsRule(vin);
+  if (usRule?.yearFrom != null || usRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: usRule.yearFrom ?? 1980,
+      to: usRule.yearTo ?? 2099,
+    });
+  }
+  if (globalHit.yearFrom != null || globalHit.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: globalHit.yearFrom ?? 1980,
+      to: globalHit.yearTo ?? 2099,
     });
   }
   if (isOpelVauxhallVin(vin)) {
@@ -332,7 +346,7 @@ const WMI_MAP: Record<string, string> = {
   "JF1": "Subaru", "JF2": "Subaru",
   "JH4": "Acura", "JHM": "Honda",
   "JM1": "Mazda", "JM3": "Mazda", "JMB": "Mitsubishi",
-  "JN1": "Infiniti", "JN3": "Nissan", "JN8": "Nissan",
+  "JN1": "Nissan", "JN3": "Nissan", "JN8": "Nissan",
   "JT": "Toyota",  // 2-char prefix catch-all for Toyota Japan
   "JTD": "Toyota", "JTM": "Toyota", "JTN": "Toyota", "JT1": "Toyota",
   // JTE / JTK / JTJ refined later (Toyota trucks / Lexus)
@@ -640,7 +654,8 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Nissan / Infiniti ─────────────────────────────────────────────────────
   "1N4A": "Altima",     "1N4B": "Maxima",
   "5N1A": "Pathfinder", "5N1D": "Armada",     "5N1Z": "Murano",
-  "JN1A": "Infiniti",
+  // JN1* is shared Nissan/Infiniti Japan PC WMI — no 4-char make/model guesses
+  // (JN1A≠Infiniti, JN1B≠Leaf). Longer verified descriptors live in global-brands.
   // 1N6A Titan vs Frontier is ambiguous — omit coarse fallback.
   // Mazda models: see mazda.ts (carline pos. 4–5). Do not use coarse JM1B/JM3K here —
   // JM1GJ (Mazda6) must not become MX-5 via a JM1G → Miata map.
@@ -657,8 +672,7 @@ const MODEL_MAP_4: Record<string, string> = {
   "JTHB": "ES 300h",    "JTHD": "LS 600h",    "JTHG": "IS 300/350",
   "JTHJ": "RX 450h",    "JTHK": "NX 300h",    "JTHL": "CT 200h",
   "JTHM": "GS 450h",    "JTHN": "RZ 450e",    "JTHE": "IS 500",
-  // ── Nissan Japan (JN1* / JN8*) ───────────────────────────────────────────
-  "JN1B": "Leaf",        "JN1C": "Z / Fairlady Z",
+  // ── Nissan Japan (JN8*) — JN1* models resolved via global-brands (shared Infiniti)
   "JN8A": "X-Trail",     "JN8B": "Patrol",     "JN8D": "Qashqai",
   "JN8E": "Murano",      "JN8G": "Juke",       "JN8J": "Armada",
   // ── Infiniti (JNA* / JNK*) ───────────────────────────────────────────────

@@ -50,16 +50,16 @@ const SUZUKI_PREFIX_RULES = compilePrefixRules([
   { prefix: "TSMKY", model: "SX4 S-Cross" },
   { prefix: "TSMJY", model: "SX4 S-Cross" },
   { prefix: "TSMJB", model: "Jimny" },
-  { prefix: "TSMMH", model: "Ignis" },
+  { prefix: "TSMMH", model: "Ignis", yearFrom: 2016, yearTo: 2099 },
   { prefix: "TSMEX", model: "Splash" },
   { prefix: "TSMMA", model: "Swift" },
-  { prefix: "TSMRB", model: "Across" },
-  { prefix: "TSMYA", model: "Swace" },
-  { prefix: "JSAFH", model: "Ignis" },
+  { prefix: "TSMRB", model: "Across", chassis: "XA50", yearFrom: 2020, yearTo: 2099 },
+  { prefix: "TSMYA", model: "Swace", chassis: "E210", yearFrom: 2020, yearTo: 2099 },
+  { prefix: "JSAFH", model: "Ignis", yearFrom: 2016, yearTo: 2099 },
   { prefix: "MA3E", model: "Swift" },
   { prefix: "MA3C", model: "Dzire" },
   { prefix: "MA3F", model: "Brezza" },
-  { prefix: "MA3J", model: "Fronx" },
+  { prefix: "MA3J", model: "Fronx", yearFrom: 2023, yearTo: 2099 },
   { prefix: "2S3TC", model: "Vitara" },
 ]);
 
@@ -137,6 +137,52 @@ const LUCID_PREFIX_RULES = compilePrefixRules([
   // NHTSA: 50E = Lucid passenger (Air); 7UUG* = Gravity (pos.4 G) — verified ErrorCode 0 samples
   { prefix: "50E", model: "Air" },
   { prefix: "7UUG", model: "Gravity" },
+]);
+
+/**
+ * JN1 is Nissan Motor Co. Japan PC WMI — used by both Nissan and Infiniti.
+ * Default make is Nissan (WMI_MAP). Override to Infiniti only on verified VDS prefixes
+ * (Bumper / NHTSA vehicle descriptors). Never map bare JN1 / JN1A / JN1B.
+ */
+const INFINITI_JN1_PREFIX_RULES = compilePrefixRules([
+  // Q50 — known VDS (JN1 + 5-char VDS)
+  { prefix: "JN1AV7AP", model: "Q50" },
+  { prefix: "JN1AV7AR", model: "Q50" },
+  { prefix: "JN1BV7AP", model: "Q50" },
+  { prefix: "JN1BV7AR", model: "Q50" },
+  { prefix: "JN1CV7AP", model: "Q50" },
+  { prefix: "JN1CV7AR", model: "Q50" },
+  { prefix: "JN1EV7AP", model: "Q50" },
+  { prefix: "JN1EV7AR", model: "Q50" },
+  { prefix: "JN1EV7BP", model: "Q50" },
+  { prefix: "JN1EV7BR", model: "Q50" },
+  { prefix: "JN1EV7CP", model: "Q50" },
+  { prefix: "JN1EV7CR", model: "Q50" },
+  { prefix: "JN1FV7AP", model: "Q50" },
+  { prefix: "JN1FV7AR", model: "Q50" },
+  { prefix: "JN1FV7DP", model: "Q50" },
+  { prefix: "JN1FV7DR", model: "Q50" },
+  // Q60 — known VDS
+  { prefix: "JN1CV6EK", model: "Q60" },
+  { prefix: "JN1CV6EL", model: "Q60" },
+  { prefix: "JN1CV6FE", model: "Q60" },
+  { prefix: "JN1CV7EK", model: "Q60" },
+  { prefix: "JN1CV7EL", model: "Q60" },
+  { prefix: "JN1EV7EK", model: "Q60" },
+  { prefix: "JN1EV7EL", model: "Q60" },
+  { prefix: "JN1EV7JK", model: "Q60" },
+  { prefix: "JN1EV7JL", model: "Q60" },
+  { prefix: "JN1EV7KK", model: "Q60" },
+  { prefix: "JN1EV7KL", model: "Q60" },
+  { prefix: "JN1FV7EK", model: "Q60" },
+  { prefix: "JN1FV7EL", model: "Q60" },
+  { prefix: "JN1FV7LK", model: "Q60" },
+  { prefix: "JN1FV7LL", model: "Q60" },
+]);
+
+const NISSAN_JN1_PREFIX_RULES = compilePrefixRules([
+  // Japan-built Leaf (NHTSA: JN1AZ0CP* → Leaf); US Leaf uses 1N4*
+  { prefix: "JN1AZ0", model: "Leaf" },
 ]);
 
 // ── Isuzu / Tata / KGM ───────────────────────────────────────────────────────
@@ -253,6 +299,8 @@ export type GlobalBrandDecode = {
   makeOverride: string | null;
   /** Platform / chassis / generation when the prefix rule encodes one. */
   chassis: string | null;
+  yearFrom?: number;
+  yearTo?: number;
 };
 
 const EMPTY_GLOBAL: GlobalBrandDecode = { model: null, makeOverride: null, chassis: null };
@@ -266,6 +314,8 @@ function hitToGlobal(
     model: hit.model,
     makeOverride,
     chassis: hit.chassis ?? null,
+    yearFrom: hit.yearFrom,
+    yearTo: hit.yearTo,
   };
 }
 
@@ -353,6 +403,15 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
 
   if (wmi === "5LA" || wmi === "50E" || wmi === "7UU") {
     return hitToGlobal(matchLongestPrefix(upper, LUCID_PREFIX_RULES), "Lucid");
+  }
+
+  // JN1 shared Nissan / Infiniti Japan PC — Infiniti only on verified VDS.
+  if (wmi === "JN1") {
+    const infiniti = matchLongestPrefix(upper, INFINITI_JN1_PREFIX_RULES);
+    if (infiniti) return hitToGlobal(infiniti, "Infiniti");
+    const nissan = matchLongestPrefix(upper, NISSAN_JN1_PREFIX_RULES);
+    if (nissan) return hitToGlobal(nissan, null);
+    return EMPTY_GLOBAL;
   }
 
   // WME (EU classic) + W1A (MB AG from 2019) + HES (China Smart Automobile JV)

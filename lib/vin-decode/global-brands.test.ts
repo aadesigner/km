@@ -15,15 +15,26 @@ describe("decodeGlobalBrand lightweight dispatch", () => {
   });
 });
 
-describe("decodeVin year + identity accuracy", () => {
-  it("decodes model year when a verified chassis/platform window uniquely selects a cycle", () => {
-    expect(decodeVin("WBA21EM00P9R09775").year).toBe(2023);
-    expect(decodeVin("KMHL341BGM1234567").year).toBe(2021);
+describe("JN1 Nissan vs Infiniti (shared Japan PC WMI)", () => {
+  it("defaults JN1 make to Nissan (not Infiniti)", () => {
+    const r = decodeVin("JN1ZZZZZ0N0123456");
+    expect(r.make).toBe("Nissan");
+    expect(r.model).toBeNull();
   });
 
-  it("returns null model when prefix confidence is missing", () => {
-    const r = decodeVin("LSJXXXXXXXXXXXXX1");
-    expect(r.make).toBe("MG");
-    expect(r.model).toBeNull();
+  it("Japan Leaf JN1AZ0* stays Nissan Leaf", () => {
+    const r = decodeVin("JN1AZ0CP0BT000001");
+    expect(r.make).toBe("Nissan");
+    expect(r.model).toBe("Leaf");
+  });
+
+  it("verified Infiniti Q50 / Q60 VDS on JN1 overrides make", () => {
+    expect(decodeVin("JN1BV7AR0EM680355")).toMatchObject({ make: "Infiniti", model: "Q50" });
+    expect(decodeVin("JN1FV7LK0MM530035")).toMatchObject({ make: "Infiniti", model: "Q60" });
+  });
+
+  it("dedicated Infiniti WMIs remain Infiniti", () => {
+    expect(decodeVin("JNKCV51E0AM123456").make).toBe("Infiniti");
+    expect(decodeVin("JNAAZ0CP0N0123456").make).toBe("Infiniti");
   });
 });

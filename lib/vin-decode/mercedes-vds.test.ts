@@ -25,24 +25,29 @@ describe("Mercedes VDS decoding", () => {
   });
 
   it("decodes letter-series E-Class W212 (WDDH) — not C-Class", () => {
-    // Digit 9 = 2009 uniquely; letter F is ambiguous without a chassis window.
+    // Digit 9 = 2009 uniquely; letter F resolves via W212 window → 2015.
     const r = decodeVin("WDDHF5KB69A123456");
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);
     expect(r.model).not.toMatch(/C-Class/i);
-    expect(decodeVin("WDDHF5KB6FA123456").model).toBeNull();
+    const f = decodeVin("WDDHF5KB6FA123456");
+    expect(f.model).toMatch(/E-Class/i);
+    expect(f.year).toBe(2015);
   });
 
   it("decodes letter-series E-Class W213 (WDDZ)", () => {
-    const r = decodeVin("WDDZF4JB0LA123456"); // Z is unambiguous class (year may be null)
+    const r = decodeVin("WDDZF4JB0LA123456"); // Z + W213 window → 2020
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);
     expect(r.model).not.toMatch(/C-Class/i);
+    expect(r.year).toBe(2020);
   });
 
   it("decodes letter-series E-Class W214 (WDDL) for recent years", () => {
-    // Letter P/R alone are cycle-ambiguous → omit model; use chassis-digit W214 instead.
-    expect(decodeVin("WDDLF4JB0PA123456").model).toBeNull();
+    // Letter P uniquely fits W214 (2023–) → E-Class; chassis-digit W214 still works.
+    const letter = decodeVin("WDDLF4JB0PA123456");
+    expect(letter.model).toMatch(/E-Class/i);
+    expect(letter.year).toBe(2023);
     const r = decodeVin("WDD214087PA123456");
     expect(r.make).toBe("Mercedes-Benz");
     expect(r.model).toMatch(/E-Class/i);

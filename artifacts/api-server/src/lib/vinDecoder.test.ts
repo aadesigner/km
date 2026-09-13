@@ -266,7 +266,6 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["5N1A", "Pathfinder"],
     ["5N1D", "Armada"],
     ["5N1Z", "Murano"],
-    ["JN1A", "Infiniti"],
     ["1N4C", "Altima"],
     ["5N1B", "Rogue"],
     ["5N1R", "Xterra"],
@@ -317,17 +316,12 @@ describe("model decoding — every MODEL_MAP_4 entry", () => {
     ["JTHM", "GS 450h"],
     ["JTHN", "RZ 450e"],
     ["JTHE", "IS 500"],
-    // Infiniti Japan
-    ["JNKA", "Q70 / M"],
+    // Infiniti Japan (JNK* / JNA*)
     ["JNKB", "QX80"],
     ["JNKC", "Q50"],
-    ["JNKD", "QX70 / FX"],
     ["JNKN", "Q60"],
     ["JNAA", "QX60"],
-    ["JNAB", "Q30 / QX30"],
-    // Nissan Japan
-    ["JN1B", "Leaf"],
-    ["JN1C", "Z / Fairlady Z"],
+    // Nissan Japan JN8*
     ["JN8A", "X-Trail"],
     ["JN8B", "Patrol"],
     ["JN8D", "Qashqai"],

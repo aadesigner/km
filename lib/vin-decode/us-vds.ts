@@ -10,12 +10,12 @@ import { decodeFordNaModel, matchFordNaRule } from "./ford-na";
 import { decodeGmNaModel, matchGmNaRule } from "./gm-na";
 
 const US_VDS_RULES = compilePrefixRules([
-  // Stellantis — Jeep / Ram / Dodge / Chrysler
-  { prefix: "1C4RJ", model: "Grand Cherokee" },
-  { prefix: "1C4HJ", model: "Wrangler" },
-  { prefix: "1C4BJ", model: "Wrangler" },
-  { prefix: "1C4NJ", model: "Compass" },
-  { prefix: "1C4PJ", model: "Cherokee" },
+  // Stellantis — Jeep / Ram / Dodge / Chrysler (modern floors only)
+  { prefix: "1C4RJ", model: "Grand Cherokee", yearFrom: 2011, yearTo: 2099 },
+  { prefix: "1C4HJ", model: "Wrangler", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "1C4BJ", model: "Wrangler", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "1C4NJ", model: "Compass", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "1C4PJ", model: "Cherokee", yearFrom: 2014, yearTo: 2099 },
   { prefix: "1C6SR", model: "Ram 1500" },
   { prefix: "1C6RR", model: "Ram 1500" },
   { prefix: "2C3CD", model: "Charger" },
@@ -36,17 +36,17 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "5J6RW2", model: "CR-V", chassis: "6th gen" },
   { prefix: "5J6RT", model: "CR-V", chassis: "5th gen Hybrid" },
   { prefix: "2HKRS4", model: "CR-V", chassis: "5th gen CA" },
-  { prefix: "3CZRU5", model: "HR-V", chassis: "3rd gen" },
+  { prefix: "3CZRU5", model: "HR-V", chassis: "HR-V 3rd gen" },
   { prefix: "3CZRU6", model: "HR-V" },
   { prefix: "5FNRL6", model: "Odyssey" },
   { prefix: "5J8YD", model: "Pilot" },
   { prefix: "5FNYF8", model: "Pilot" },
   { prefix: "5FNYF6", model: "Passport" },
-  { prefix: "5FNYF5", model: "Ridgeline" },
+  { prefix: "5FNYF5", model: "Ridgeline", yearFrom: 2017, yearTo: 2099 },
   { prefix: "19UUB", model: "Acura TLX" },
   { prefix: "5J8TB", model: "Acura MDX" },
-  { prefix: "JHMFD", model: "Fit", chassis: "3rd gen" },
-  { prefix: "JHMGE", model: "Fit", chassis: "2nd gen" },
+  { prefix: "JHMFD", model: "Fit", chassis: "Fit 3rd gen" },
+  { prefix: "JHMGE", model: "Fit", chassis: "Fit 2nd gen" },
   { prefix: "JHMZF", model: "Insight" },
   // Toyota / Lexus USA / Canada
   { prefix: "4T1B11", model: "Camry", chassis: "XV70" },

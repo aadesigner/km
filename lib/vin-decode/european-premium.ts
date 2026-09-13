@@ -151,6 +151,9 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "W213": { from: 2016, to: 2023 },
   "W214": { from: 2023, to: 2099 },
   "W212": { from: 2009, to: 2016 },
+  "C207": { from: 2009, to: 2017 },
+  "C218": { from: 2011, to: 2020 },
+  "R231": { from: 2012, to: 2020 },
   "W211": { from: 2002, to: 2009 },
   "W210": { from: 1995, to: 2003 },
   "W222": { from: 2013, to: 2020 },
@@ -285,7 +288,7 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "8V/FF": { from: 2012, to: 2020 },
   "FF": { from: 2020, to: 2099 },
   "8X": { from: 2010, to: 2018 },
-  "GB": { from: 2018, to: 2099 },
+  // Audi Typ GB (Q4 e-tron) uses chassis "MEB" — do not key "GB" here (Hyundai i20).
   "F5": { from: 2016, to: 2099 },
   "8S": { from: 2014, to: 2099 },
   "42": { from: 2015, to: 2099 },
@@ -337,7 +340,6 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   // WBS5 spans F10 (2011–16), F90 (2017–23), G90 (2024+) — year window only (not display).
   "F90/G90": { from: 2011, to: 2099 },
   "F10/F90/G90": { from: 2011, to: 2099 },
-  "C9": { from: 2023, to: 2099 },
   "C9/FN": { from: 2023, to: 2099 },
   "4S": { from: 2006, to: 2015 },
   "8P": { from: 2003, to: 2013 },
@@ -370,7 +372,6 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "5M": { from: 2004, to: 2014 },
   "1Y": { from: 2003, to: 2010 },
   "9C": { from: 1998, to: 2011 },
-  "B6-B8/3C": { from: 2005, to: 2023 },
   // Hyundai / Kia platform codes (from hyundai.ts chassis labels)
   "NX4": { from: 2021, to: 2099 },
   "NX4 US": { from: 2021, to: 2099 },
@@ -395,6 +396,82 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "AC3": { from: 2019, to: 2099 },
   "VF": { from: 2011, to: 2019 },
   "JK1 US": { from: 2021, to: 2099 },
+  "AD": { from: 2016, to: 2020 },
+  "GD": { from: 2012, to: 2017 },
+  "GB": { from: 2014, to: 2020 },
+  // Toyota / Lexus platform codes (labels already on asian-eu / us-vds)
+  "XA50": { from: 2019, to: 2099 },
+  "XA50 UK": { from: 2019, to: 2099 },
+  "XA40": { from: 2013, to: 2018 },
+  "XV70": { from: 2018, to: 2024 },
+  "XV70 Hybrid": { from: 2018, to: 2024 },
+  "XV50": { from: 2012, to: 2017 },
+  "XV40": { from: 2007, to: 2011 },
+  "N300": { from: 2016, to: 2023 },
+  "XK70": { from: 2022, to: 2099 },
+  "XK50": { from: 2010, to: 2021 },
+  "XK60": { from: 2008, to: 2022 },
+  "XU70": { from: 2020, to: 2099 },
+  "XU50": { from: 2014, to: 2019 },
+  "XP210": { from: 2020, to: 2099 },
+  "XP210 UK": { from: 2020, to: 2099 },
+  "XP210 FR": { from: 2020, to: 2099 },
+  "XP130": { from: 2011, to: 2020 },
+  "E210": { from: 2019, to: 2099 },
+  "E210 UK": { from: 2019, to: 2099 },
+  "E210 2.0L": { from: 2019, to: 2099 },
+  "E170": { from: 2014, to: 2019 },
+  "JPD20": { from: 2021, to: 2099 },
+  "A90": { from: 2019, to: 2099 },
+  "A90 EU": { from: 2019, to: 2099 },
+  "XL40": { from: 2021, to: 2099 },
+  "XL30": { from: 2011, to: 2020 },
+  "XG10": { from: 2020, to: 2099 },
+  "AX20": { from: 2023, to: 2099 },
+  "AX10": { from: 2017, to: 2023 },
+  "XW60": { from: 2023, to: 2099 },
+  "XW50": { from: 2016, to: 2022 },
+  "XW30": { from: 2009, to: 2015 },
+  "XW20": { from: 2003, to: 2009 },
+  "S220": { from: 2022, to: 2099 },
+  "AZ20": { from: 2022, to: 2099 },
+  "J300": { from: 2021, to: 2099 },
+  "J200": { from: 2008, to: 2021 },
+  "J150": { from: 2009, to: 2023 },
+  "N280": { from: 2010, to: 2024 },
+  "AB40": { from: 2014, to: 2021 },
+  "AB10": { from: 2005, to: 2014 },
+  // Honda generation labels (exact strings from us-vds / asian-eu)
+  "10th gen": { from: 2016, to: 2022 },
+  "11th gen": { from: 2022, to: 2099 },
+  "11th gen Hybrid": { from: 2023, to: 2099 },
+  "5th gen": { from: 2017, to: 2022 },
+  "5th gen Hybrid": { from: 2020, to: 2022 },
+  "5th gen CA": { from: 2017, to: 2022 },
+  "6th gen": { from: 2023, to: 2099 },
+  "HR-V 3rd gen": { from: 2023, to: 2099 },
+  "Fit 3rd gen": { from: 2014, to: 2020 },
+  "Fit 2nd gen": { from: 2009, to: 2014 },
+  "RW": { from: 2017, to: 2023 },
+  "FK2/FK8": { from: 2015, to: 2021 },
+  "FK": { from: 2012, to: 2017 },
+  // Ford NA platforms
+  "P702": { from: 2021, to: 2099 },
+  "P415": { from: 2009, to: 2014 },
+  "P415/P552": { from: 2009, to: 2020 },
+  "S550": { from: 2015, to: 2023 },
+  "S650": { from: 2024, to: 2099 },
+  "S197": { from: 2005, to: 2014 },
+  "U625": { from: 2020, to: 2099 },
+  "U553": { from: 2018, to: 2099 },
+  "U725": { from: 2021, to: 2099 },
+  "CX430": { from: 2021, to: 2099 },
+  "CX482": { from: 2020, to: 2099 },
+  "V363": { from: 2015, to: 2099 },
+  "Mk3 US": { from: 2012, to: 2018 },
+  "Super Duty": { from: 2017, to: 2099 },
+  "Mach-E": { from: 2021, to: 2099 },
+  "Maverick": { from: 2022, to: 2099 },
   // Land Rover / Range Rover / Jaguar platforms
   "L316": { from: 1983, to: 2016 },
   "L318": { from: 1990, to: 2004 },
@@ -438,7 +515,7 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "4E": { from: 2002, to: 2010 },
   "4D": { from: 1994, to: 2010 },
   "4N": { from: 2017, to: 2099 },
-  "4A": { from: 1994, to: 2099 },
+  "4A": { from: 2018, to: 2099 },
   "4K": { from: 2008, to: 2099 },
   "FD": { from: 2008, to: 2099 },
   "8W": { from: 2015, to: 2099 },
@@ -472,11 +549,18 @@ export function chassisProductionWindow(
 ): { from: number; to: number } | null {
   if (!chassis) return null;
   const key = chassis.replace(/\s*\(US\)\s*$/i, "").trim();
-  const direct =
-    CHASSIS_YEAR[key]
-    ?? CHASSIS_YEAR[key.split("/")[0]!]
-    ?? (key.includes(" ") ? CHASSIS_YEAR[key.split(" ")[0]!] : undefined);
-  if (direct) return direct;
+  if (CHASSIS_YEAR[key]) return CHASSIS_YEAR[key]!;
+  // Slash compounds: "G30/G31" → try left token.
+  const slash = key.split("/")[0]!.trim();
+  if (slash !== key && CHASSIS_YEAR[slash]) return CHASSIS_YEAR[slash]!;
+  // Multi-word labels: "5th gen Hybrid" → "5th gen" → skip bare "5th".
+  if (key.includes(" ")) {
+    const parts = key.split(/\s+/);
+    for (let n = parts.length - 1; n >= 2; n--) {
+      const sub = parts.slice(0, n).join(" ");
+      if (CHASSIS_YEAR[sub]) return CHASSIS_YEAR[sub]!;
+    }
+  }
 
   // "G16 Gran Coupé" / "F33 Convertible" → match G16 / F33 inside slash groups too.
   const token = key.match(/^([EFRGULWXHACVN]\d{2,3})\b/i)?.[1]?.toUpperCase();
@@ -748,74 +832,83 @@ const MERCEDES_RULES = compilePrefixRules([
 
 /**
  * Mercedes passenger cars — position 4 series letter (North American / letter VDS).
- * Letters were reused across generations (Wikibooks Mercedes VIN Codes); year-band the class.
- * Chassis omitted here — letter alone is not a unique generation.
- * When year is null, only return a model if the letter is unambiguous across eras
- * (do not use old-cycle-only windows — that invents 1980s cars from modern VINs).
+ * Letters were reused across generations; year-band the class.
+ * When year is null, modern-only windows may uniquely resolve the ISO letter
+ * (never old-cycle-only windows that invent 1980s cars from modern VINs).
  */
 function mercedesPassengerSeriesAt4(
   letter: string,
   year: number | null,
-): { model: string } | null {
+  vin?: string,
+): { model: string; chassis?: string } | null {
+  const modernGate = (
+    model: string,
+    chassis: string | undefined,
+    from: number,
+    to: number,
+  ): { model: string; chassis?: string } | null => {
+    if (!vin) return null;
+    const y = premiumVinModelYear(vin, { from, to });
+    return y != null ? { model, chassis } : null;
+  };
+
   switch (letter) {
     case "H":
-      // ≤2000: W202 C-Class; ≥2009: W212 E-Class. Never map modern H → C-Class.
-      if (year == null) return null;
-      return year <= 2000 ? { model: "C-Class" } : { model: "E-Class" };
+      if (year == null) return modernGate("E-Class", "W212", 2009, 2016);
+      return year <= 2000 ? { model: "C-Class" } : { model: "E-Class", chassis: "W212" };
     case "Z":
-      // W213/S213/X213 E-Class family letter (not reused for another class).
-      return { model: "E-Class" };
+      // W213 family letter — attach chassis only when year fits (or is still unknown).
+      if (year != null && (year < 2016 || year > 2023)) return { model: "E-Class" };
+      return { model: "E-Class", chassis: "W213" };
     case "1":
-      // C238/A238 E-Class coupe/cabriolet
-      return { model: "E-Class Coupé/Cabrio" };
+      return { model: "E-Class Coupé/Cabrio", chassis: "C238" };
     case "K":
-      // C207/A207 E-Class coupe/cabriolet (~2009–2017)
-      if (year != null && year >= 2009 && year <= 2017) return { model: "E-Class Coupé/Cabrio" };
+      if (year != null && year >= 2009 && year <= 2017) {
+        return { model: "E-Class Coupé/Cabrio", chassis: "C207" };
+      }
+      if (year == null) return modernGate("E-Class Coupé/Cabrio", "C207", 2009, 2017);
       return null;
     case "L":
-      // ≥2023: W214 E-Class; ~2011–2020: C218 CLS
-      if (year != null && year >= 2023) return { model: "E-Class" };
-      if (year != null && year >= 2011 && year <= 2020) return { model: "CLS" };
+      if (year != null && year >= 2023) return { model: "E-Class", chassis: "W214" };
+      if (year != null && year >= 2011 && year <= 2020) return { model: "CLS", chassis: "C218" };
+      if (year == null && vin) {
+        const e214 = modernGate("E-Class", "W214", 2023, 2099);
+        if (e214) return e214;
+        return modernGate("CLS", "C218", 2011, 2020);
+      }
       return null;
     case "G":
-      // ≤2006: W140 S-Class; ~2007+: W204 C-Class
-      if (year == null) return null;
-      return year <= 2006 ? { model: "S-Class" } : { model: "C-Class" };
+      if (year == null) return modernGate("C-Class", "W204", 2007, 2014);
+      return year <= 2006 ? { model: "S-Class" } : { model: "C-Class", chassis: "W204" };
     case "W":
-      // Pre-W205 letter W was R171 SLK; from ~2014: W205 C-Class
-      if (year == null) return null;
+      if (year == null) return modernGate("C-Class", "W205", 2014, 2021);
       if (year < 2014) return { model: "SLK" };
-      return { model: "C-Class" };
+      return { model: "C-Class", chassis: "W205" };
     case "A":
-      // ≥2021: W206 C-Class (earlier eras reused A for unrelated lines)
-      if (year != null && year >= 2021) return { model: "C-Class" };
-      return null;
+      if (year != null && year >= 2021) return { model: "C-Class", chassis: "W206" };
+      return modernGate("C-Class", "W206", 2021, 2099);
     case "R":
-      // ≤2007: W203 C-Class; later reused for SLS / AMG GT — do not force C-Class
       if (year != null && year <= 2007) return { model: "C-Class" };
       return null;
     case "U":
-      // ≤2009: W211 E-Class; ≥2013: W222 S-Class
       if (year != null && year <= 2009) return { model: "E-Class" };
-      if (year != null && year >= 2013 && year <= 2020) return { model: "S-Class" };
+      if (year != null && year >= 2013 && year <= 2020) return { model: "S-Class", chassis: "W222" };
+      if (year == null) return modernGate("S-Class", "W222", 2013, 2020);
       return null;
     case "J":
-      // ≤2003: W210 E-Class; ≥2012: R231 SL
       if (year != null && year <= 2003) return { model: "E-Class" };
-      if (year != null && year >= 2012) return { model: "SL-Class" };
+      if (year != null && year >= 2012) return { model: "SL-Class", chassis: "R231" };
+      if (year == null) return modernGate("SL-Class", "R231", 2012, 2020);
       return null;
     case "M":
-      // ≥2023: C236/A236 CLE; earlier reused for B-Class (Canada)
-      if (year != null && year >= 2023) return { model: "CLE" };
-      return null;
+      if (year != null && year >= 2023) return { model: "CLE", chassis: "C236" };
+      return modernGate("CLE", "C236", 2023, 2099);
     case "E":
-      // ≥2022: V295 EQE; earlier reused for CL
-      if (year != null && year >= 2022) return { model: "EQE" };
-      return null;
+      if (year != null && year >= 2022) return { model: "EQE", chassis: "V294" };
+      return modernGate("EQE", "V294", 2022, 2099);
     case "C":
-      // ≥2021: V297 EQS
-      if (year != null && year >= 2021) return { model: "EQS" };
-      return null;
+      if (year != null && year >= 2021) return { model: "EQS", chassis: "V297" };
+      return modernGate("EQS", "V297", 2021, 2099);
     default:
       return null;
   }
@@ -1212,8 +1305,14 @@ function decodeMercedesPremium(upper: string): PremiumEuropeanDecode | null {
   }
 
   if (isMercedesPassengerWmi(wmi)) {
-    const series = mercedesPassengerSeriesAt4(ruleVin[3]!, year);
-    if (series) return finalizePremium(series.model, null, year);
+    const series = mercedesPassengerSeriesAt4(ruleVin[3]!, year, upper);
+    if (series) {
+      return finalizePremium(
+        series.model,
+        series.chassis ?? null,
+        premiumVinModelYear(upper, chassisProductionWindow(series.chassis ?? null)),
+      );
+    }
   }
 
   return null;

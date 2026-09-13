@@ -39,8 +39,8 @@ describe("Toyota QA — Turkey NMT (Sakarya)", () => {
     const r = decodeVin("NMTKHMBX0JR000838");
     expect(r.make).toBe("Toyota");
     expect(r.model).toMatch(/C-HR/i);
-    // Letter J without a verified C-HR window → null (no cycle guess)
-    expect(r.year).toBeNull();
+    // Letter J uniquely fits AX10 C-HR window (2017–2023) → 2018
+    expect(r.year).toBe(2018);
     expect(r.country).toBe("Turkey");
   });
 

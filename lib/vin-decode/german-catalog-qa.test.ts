@@ -122,8 +122,8 @@ const GERMAN_CATALOG: Case[] = [
     make: "Mercedes-Benz",
     modelContains: "C-Class",
     modelExcludes: ["CLS", "G-Class"],
-    // Catalog may store registration 2014; VIN year F = 2015.
-    year: null,
+    // Catalog may store registration 2014; VIN year F uniquely fits W205 → 2015.
+    year: 2015,
   },
 ];
 

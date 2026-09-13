@@ -196,11 +196,11 @@ const LAND_ROVER: Case[] = [
 
 const JEEP: Case[] = [
   // 1C4 is a shared Stellantis WMI — make must resolve to Jeep via VDS model line.
-  { vin: pad("1C4RJ", "N"), label: "Jeep Grand Cherokee 1C4RJ", make: "Jeep", modelContains: "Grand Cherokee", year: null, modelExcludes: ["Wrangler"] },
-  { vin: pad("1C4HJ", "M"), label: "Jeep Wrangler 1C4HJ", make: "Jeep", modelContains: "Wrangler", year: null, modelExcludes: ["Grand Cherokee"] },
-  { vin: pad("1C4BJ", "P"), label: "Jeep Wrangler 1C4BJ", make: "Jeep", modelContains: "Wrangler", year: null },
-  { vin: pad("1C4NJ", "N"), label: "Jeep Compass 1C4NJ", make: "Jeep", modelContains: "Compass", year: null, modelExcludes: ["Cherokee"] },
-  { vin: pad("1C4PJ", "L"), label: "Jeep Cherokee 1C4PJ", make: "Jeep", modelContains: "Cherokee", year: null, modelExcludes: ["Grand Cherokee", "Compass"] },
+  { vin: pad("1C4RJ", "N"), label: "Jeep Grand Cherokee 1C4RJ", make: "Jeep", modelContains: "Grand Cherokee", year: 2022, modelExcludes: ["Wrangler"] },
+  { vin: pad("1C4HJ", "M"), label: "Jeep Wrangler 1C4HJ", make: "Jeep", modelContains: "Wrangler", year: 2021, modelExcludes: ["Grand Cherokee"] },
+  { vin: pad("1C4BJ", "P"), label: "Jeep Wrangler 1C4BJ", make: "Jeep", modelContains: "Wrangler", year: 2023 },
+  { vin: pad("1C4NJ", "N"), label: "Jeep Compass 1C4NJ", make: "Jeep", modelContains: "Compass", year: 2022, modelExcludes: ["Cherokee"] },
+  { vin: pad("1C4PJ", "L"), label: "Jeep Cherokee 1C4PJ", make: "Jeep", modelContains: "Cherokee", year: 2020, modelExcludes: ["Grand Cherokee", "Compass"] },
 ];
 
 const FORD: Case[] = [
@@ -208,21 +208,21 @@ const FORD: Case[] = [
   { vin: "WF0ZZZGBJNW123456", label: "Ford Focus Mk4 EU", make: "Ford", modelContains: "Focus", year: 2022, modelExcludes: ["Fiesta"] },
   { vin: pad("WF0ZZZFFJ", "N"), label: "Ford Fiesta EU", make: "Ford", modelContains: "Fiesta", year: 2022, modelExcludes: ["Focus"] },
   { vin: pad("WF0ZZZNUG", "N"), label: "Ford Puma EU", make: "Ford", modelContains: "Puma", year: 2022, modelExcludes: ["ST"] },
-  { vin: pad("WF0ZZZNGC", "P"), label: "Ford Puma ST EU", make: "Ford", modelContains: "Puma ST", year: null },
+  { vin: pad("WF0ZZZNGC", "P"), label: "Ford Puma ST EU", make: "Ford", modelContains: "Puma ST", year: 2023 },
   { vin: pad("WF0ZZZU5J", "M"), label: "Ford Kuga EU", make: "Ford", modelContains: "Kuga", year: 2021 },
-  { vin: pad("WF0ZZZM7G", "N"), label: "Ford Mustang Mach-E EU", make: "Ford", modelContains: "Mach-E", year: null },
+  { vin: pad("WF0ZZZM7G", "N"), label: "Ford Mustang Mach-E EU", make: "Ford", modelContains: "Mach-E", year: 2022 },
   { vin: pad("WF0ZZZTKD", "K"), label: "Ford Mondeo EU", make: "Ford", modelContains: "Mondeo", year: 2019 },
   { vin: pad("WF0ZZZCXB", "N"), label: "Ford Ranger EU", make: "Ford", modelContains: "Ranger", year: 2022 },
   // USA / Mexico
-  { vin: "1FTFW1E50MFA12345", label: "Ford F-150 US", make: "Ford", modelContains: "F-150", year: null },
-  { vin: pad("1FMCU0", "N"), label: "Ford Escape US", make: "Ford", modelContains: "Escape", year: null },
-  { vin: pad("1FM5K8", "N"), label: "Ford Explorer US", make: "Ford", modelContains: "Explorer", year: null },
-  { vin: pad("1FA6P8", "J"), label: "Ford Mustang S550", make: "Ford", modelContains: "Mustang", year: null, modelExcludes: ["Mach-E"] },
+  { vin: "1FTFW1E50MFA12345", label: "Ford F-150 US", make: "Ford", modelContains: "F-150", year: 2021 },
+  { vin: pad("1FMCU0", "N"), label: "Ford Escape US", make: "Ford", modelContains: "Escape", year: 2022 },
+  { vin: pad("1FM5K8", "N"), label: "Ford Explorer US", make: "Ford", modelContains: "Explorer", year: 2022 },
+  { vin: pad("1FA6P8", "J"), label: "Ford Mustang S550", make: "Ford", modelContains: "Mustang", year: 2018, modelExcludes: ["Mach-E"] },
   { vin: pad("1FA6P5", "P"), label: "Ford Mustang S650", make: "Ford", modelContains: "Mustang", year: null, modelExcludes: ["Mach-E"] },
-  { vin: pad("1FMEE5", "N"), label: "Ford Bronco", make: "Ford", modelContains: "Bronco", year: null, modelExcludes: ["Sport"] },
-  { vin: pad("1FMDE5", "N"), label: "Ford Bronco Sport", make: "Ford", modelContains: "Bronco Sport", year: null },
-  { vin: pad("3FMTK1", "N"), label: "Ford Mustang Mach-E MX", make: "Ford", modelContains: "Mach-E", year: null },
-  { vin: pad("3FTTW8", "N"), label: "Ford Maverick MX", make: "Ford", modelContains: "Maverick", year: null },
+  { vin: pad("1FMEE5", "N"), label: "Ford Bronco", make: "Ford", modelContains: "Bronco", year: 2022, modelExcludes: ["Sport"] },
+  { vin: pad("1FMDE5", "N"), label: "Ford Bronco Sport", make: "Ford", modelContains: "Bronco Sport", year: 2022 },
+  { vin: pad("3FMTK1", "N"), label: "Ford Mustang Mach-E MX", make: "Ford", modelContains: "Mach-E", year: 2022 },
+  { vin: pad("3FTTW8", "N"), label: "Ford Maverick MX", make: "Ford", modelContains: "Maverick", year: 2022 },
 ];
 
 describe("multi-brand QA — Fiat make/model/year", () => {

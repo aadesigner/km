@@ -38,11 +38,15 @@ describe("Mercedes Euro Baumuster year encoding", () => {
     { vin: "WDDZZZ213GAA12345", year: 2016, model: /E-Class/i },
   ];
 
-  it("letter-series without chassis omits ambiguous ISO letter years", () => {
+  it("letter-series resolves year only via verified chassis windows", () => {
+    // G+L: L∉W204 window → omit year (and model)
     expect(decodeVin("WDDGF8HB6LA123456").year).toBeNull();
-    expect(decodeVin("WDDHF5KB6FA123456").year).toBeNull();
-    expect(decodeVin("WDDZF4JB0LA123456").year).toBeNull();
-    // Z uniquely maps to E-Class without needing a year
+    expect(decodeVin("WDDGF8HB6LA123456").model).toBeNull();
+    // H+F: F→2015 uniquely inside W212 2009–2016
+    expect(decodeVin("WDDHF5KB6FA123456").year).toBe(2015);
+    expect(decodeVin("WDDHF5KB6FA123456").model).toMatch(/E-Class/i);
+    // Z+L: L→2020 uniquely inside W213 2016–2023
+    expect(decodeVin("WDDZF4JB0LA123456").year).toBe(2020);
     expect(decodeVin("WDDZF4JB0LA123456").model).toMatch(/E-Class/i);
   });
 

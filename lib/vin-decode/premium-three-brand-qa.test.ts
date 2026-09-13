@@ -95,7 +95,7 @@ const MERCEDES: Case[] = [
   // Letter VDS — year-gated letters omit model when ISO cycle is ambiguous (no prefer-recent).
   { vin: "WDDGF8HB68A123456", label: "MB letter G C-Class digit year", make: "Mercedes-Benz", modelContains: "C-Class", modelExcludes: ["G-Class"], year: 2008 },
   { vin: "WDDHF5KB69A123456", label: "MB letter H E-Class digit year", make: "Mercedes-Benz", modelContains: "E-Class", year: 2009, modelExcludes: ["C-Class"] },
-  { vin: "WDDZF4JB0LA123456", label: "MB letter Z E-Class", make: "Mercedes-Benz", modelContains: "E-Class", year: null, modelExcludes: ["C-Class"] },
+  { vin: "WDDZF4JB0LA123456", label: "MB letter Z E-Class", make: "Mercedes-Benz", modelContains: "E-Class", year: 2020, modelExcludes: ["C-Class"] },
   { vin: "WDD214087PA123456", label: "MB W214 E-Class chassis", make: "Mercedes-Benz", modelContains: "E-Class", year: 2023, modelExcludes: ["GLE", "C-Class"] },
   { vin: "WDDLJ7EB5KA123456", label: "MB CLS C257", make: "Mercedes-Benz", modelContains: "CLS", year: 2019, modelExcludes: ["GLE"] },
   { vin: "WDD205037FA123456", label: "MB W205 C-Class", make: "Mercedes-Benz", modelContains: "C-Class", year: 2015 },
@@ -224,9 +224,10 @@ describe("premium three-brand model QA — BMW", () => {
 });
 
 describe("premium three-brand negatives", () => {
-  it("Mercedes letter H omits model when year cycle is ambiguous", () => {
+  it("Mercedes letter H resolves via W212 window when unique", () => {
     const r = decodeVin("WDDHF5KB6FA123456");
-    expect(r.model).toBeNull();
+    expect(r.model).toMatch(/E-Class/i);
+    expect(r.year).toBe(2015);
     const digit = decodeVin("WDDHF5KB69A123456");
     expect(digit.model).toMatch(/E-Class/i);
     expect(digit.model).not.toMatch(/C-Class/i);

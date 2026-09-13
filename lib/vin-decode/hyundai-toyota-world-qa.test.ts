@@ -129,7 +129,7 @@ describe("Hyundai worldwide QA", () => {
     expect(decodeVin("KMHD251UBEU098635")).toMatchObject({
       make: "Hyundai",
       model: "i30",
-      year: null,
+      year: 2014,
     });
     // Sedans (body '4') on the D-line remain Elantra.
     expect(decodeVin("KMHD641FBEU123456").model).toBe("Elantra");

@@ -84,13 +84,12 @@ describe("premium chassis year coherence", () => {
     expect(decodeVin(vin).model).toBeNull();
   });
 
-  it("Mercedes letter-series H without unique year omits model (no C/E guess)", () => {
-    const vin = "WDDHF5KB6FA123456"; // F = 1985/2015 ambiguous
-    expect(decodeVin(vin).year).toBeNull();
+  it("Mercedes letter-series H resolves via W212 window (F→2015)", () => {
+    const vin = "WDDHF5KB6FA123456"; // F = 1985/2015 → unique inside W212
+    expect(decodeVin(vin).year).toBe(2015);
     const prem = decodePremiumEuropean(vin);
-    // Letter H needs a year — omit rather than invent E-Class for 2015.
-    expect(prem?.model ?? null).toBeNull();
-    expect(decodeVin(vin).model).toBeNull();
+    expect(prem?.model).toBe("E-Class");
+    expect(decodeVin(vin).model).toMatch(/E-Class/i);
   });
 
   it("Mercedes letter-series H with digit year 2009 is E-Class (W212 era)", () => {
@@ -101,20 +100,21 @@ describe("premium chassis year coherence", () => {
     expect(decodeVin(vin).model).toMatch(/E-Class/i);
   });
 
-  it("Mercedes letter-series G with digit year 2008 is C-Class", () => {
-    // Digit 8 = 2008 (unique until 2038) → G letter maps to C-Class (year > 2006)
+  it("Mercedes letter-series G with digit year 2008 is C-Class (W204)", () => {
+    // Digit 8 = 2008 (unique until 2038) → G letter maps to C-Class + W204 window
     const vin = "WDDGF8HB68A123456";
     expect(decodeVin(vin).year).toBe(2008);
     const prem = decodePremiumEuropean(vin);
     expect(prem?.model).toBe("C-Class");
-    expect(prem?.displayModel).not.toMatch(/W204/i);
+    expect(prem?.displayModel).toMatch(/W204/i);
   });
 
-  it("Mercedes letter-series Z (W213) is E-Class", () => {
-    const vin = "WDDZF4JB0LA123456"; // L = 2020
+  it("Mercedes letter-series Z (W213) is E-Class with unique year", () => {
+    const vin = "WDDZF4JB0LA123456"; // L = 2020 inside W213
     const prem = decodePremiumEuropean(vin);
     expect(prem?.model).toBe("E-Class");
     expect(decodeVin(vin).model).toMatch(/E-Class/i);
+    expect(decodeVin(vin).year).toBe(2020);
   });
 
   it("Porsche WP0ZZZ99 is 911 without hardcoded 992", () => {
