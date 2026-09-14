@@ -79,14 +79,23 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
           data?: VinCatalogData;
           ownerHistoryLen?: number;
         };
-        const ownerLen = payload.ownerHistoryLen
-          ?? (Array.isArray(payload.data?.ownerHistory) ? payload.data.ownerHistory.length : null);
-        setRefreshMsg({
-          ok: true,
-          text: ownerLen != null
-            ? `Refreshed from Carstat — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`
-            : "Refreshed from Carstat — catalog and all lookups updated.",
-        });
+        const ownerLen = typeof payload.ownerHistoryLen === "number"
+          ? payload.ownerHistoryLen
+          : (Array.isArray(payload.data?.ownerHistory) ? payload.data.ownerHistory.length : 0);
+        const ownerCount = typeof payload.data?.ownerCount === "number" ? payload.data.ownerCount : null;
+        if (ownerLen <= 0) {
+          setRefreshMsg({
+            ok: false,
+            text: ownerCount && ownerCount > 0
+              ? `Refreshed, but owner timeline is empty (provider ownerCount=${ownerCount}). Do not Save — owners were not extracted.`
+              : "Refreshed, but 0 owner records were extracted. Do not Save until owners look correct.",
+          });
+        } else {
+          setRefreshMsg({
+            ok: true,
+            text: `Refreshed from Carstat — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`,
+          });
+        }
         if (payload.data) {
           setForm(vinCatalogFormFromData(payload.data));
           lastHydratedAtRef.current = payload.updatedAt ?? new Date().toISOString();

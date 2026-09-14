@@ -475,6 +475,50 @@ describe("normalizeCarstatResponse", () => {
     expect(normalized.isStolen).toBe(false);
   });
 
+  it("merges ownerChanges from a secondary lot when the richest claim lot lacks them", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2019,
+      vin: "WDDUG8JB2KA456113",
+      manufacturer: { name: "Benz" },
+      model: { name: "S-Class" },
+      lots: [
+        {
+          domain: { name: "encar_com" },
+          location: { country: { iso: "kr", name: "kr" } },
+          details: {
+            insurance_v2: {
+              ownerChangeCnt: 0,
+              floodTotalLossCnt: 0,
+              accidents: [
+                { date: "2022-12-21", type: "1", insuranceBenefit: 5_928_477 },
+              ],
+            },
+          },
+        },
+        {
+          domain: { name: "encar_com" },
+          location: { country: { iso: "kr", name: "kr" } },
+          details: {
+            insurance_v2: {
+              ownerChangeCnt: 2,
+              ownerChanges: ["2024-10-14", "2023-06-29"],
+              carInfoChanges: [{ carNo: "61부XXXX", date: "2019-07-31" }],
+              floodTotalLossCnt: 0,
+              accidents: [],
+            },
+          },
+        },
+      ],
+    });
+
+    expect(normalized.insuranceClaims?.length).toBeGreaterThan(0);
+    expect(normalized.isFlooded).toBe(false);
+    expect(normalized.ownerHistory?.map((o) => o.date)).toEqual(
+      expect.arrayContaining(["2024-10-14", "2023-06-29", "2019-07-31"]),
+    );
+    expect(normalized.ownerCount).toBeGreaterThanOrEqual(3);
+  });
+
   it("does not treat otherAccidentCnt as flood (ImportMotor mistranslates that row)", () => {
     const normalized = normalizeCarstatResponse({
       year: 2019,

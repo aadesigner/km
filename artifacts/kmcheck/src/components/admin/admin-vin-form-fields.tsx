@@ -76,18 +76,28 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-/** Show stored ISO (YYYY-MM-DD) as day/month/year in admin inputs. */
+/** Show stored ISO (YYYY-MM-DD) as day-month-year in admin inputs. */
 export function adminDateToDisplay(stored: string): string {
   const t = stored.trim();
   if (!t) return "";
   const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
-  if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  if (iso) return `${iso[3]}-${iso[2]}-${iso[1]}`;
+  // Prefer dash separators when a complete DMY was left unconverted.
+  const dmy = /^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/.exec(t);
+  if (dmy) {
+    const day = Number(dmy[1]);
+    const month = Number(dmy[2]);
+    const year = Number(dmy[3]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${pad2(day)}-${pad2(month)}-${year}`;
+    }
+  }
   return stored;
 }
 
 /**
- * Map admin day/month/year typing back to storage.
- * Complete DD/MM/YYYY → YYYY-MM-DD (report-safe). Incomplete / free text kept as typed.
+ * Map admin day-month-year typing back to storage.
+ * Complete DD-MM-YYYY or DD/MM/YYYY → YYYY-MM-DD (report-safe). Incomplete / free text kept as typed.
  */
 export function adminDateFromDisplay(input: string): string {
   const t = input.trim();
@@ -105,10 +115,10 @@ export function adminDateFromDisplay(input: string): string {
   return input;
 }
 
-/** Admin date input: UI is day/month/year; complete values stored as YYYY-MM-DD. */
+/** Admin date input: UI is day-month-year; complete values stored as YYYY-MM-DD. */
 export function AdminDateField({
   label = "Date",
-  hint = "day/month/year",
+  hint = "dd-mm-yyyy ( / also accepted )",
   value,
   onChange,
   compact,
@@ -127,7 +137,7 @@ export function AdminDateField({
       hint={hint}
       value={adminDateToDisplay(value)}
       onChange={(v) => onChange(adminDateFromDisplay(v))}
-      placeholder="dd/mm/yyyy"
+      placeholder="dd-mm-yyyy"
       compact={compact}
       className={className}
     />
