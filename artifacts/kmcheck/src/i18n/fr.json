@@ -1741,5 +1741,10 @@
   "owners_meaning_title": "Pourquoi le nombre de propriétaires compte-t-il ?",
   "owners_meaning_learn": "Nombre de propriétaires",
   "owners_meaning_body": "Beaucoup de propriétaires antérieurs peuvent indiquer plus d’usure ou des lacunes d’entretien. Ce n’est pas une preuve seule, mais une raison d’exiger un historique d’entretien et une inspection.",
-  "checkout_error_card_validation": "Vérifiez le numéro de carte, la date d'expiration et le code de sécurité, puis réessayez."
+  "checkout_error_card_validation": "Vérifiez le numéro de carte, la date d'expiration et le code de sécurité, puis réessayez.",
+  "vin_public_found_count": "{count} trouvés",
+  "vin_public_preview_eyebrow": "Ce que nous avons trouvé",
+  "vin_public_preview_locked_badge": "Aperçu",
+  "vin_public_preview_for_vin": "Pour le VIN",
+  "vin_public_preview_unlock_hint": "Débloquez le rapport complet pour les dates, valeurs et tous les détails."
 }

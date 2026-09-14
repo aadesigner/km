@@ -47,6 +47,8 @@ type VinReportHeroProps = {
   unlockedLabel?: string;
   scoreData?: VinHeroScore | null;
   summaryItems?: VinHeroSummaryItem[];
+  /** Locked preview: structured findings panel in the hero right column (replaces bottom chips). */
+  lockedPanel?: React.ReactNode;
   /** Shown as a rating-style badge to the left of the score on mobile. */
   accidentCount?: number;
   onPhotoClick?: (index: number) => void;
@@ -55,7 +57,7 @@ type VinReportHeroProps = {
   pendingPhotoScan?: boolean;
   /** Show “can take a couple of hours + email” note under the VIN (pending reports). */
   pendingEta?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   showStatsRow?: boolean;
 };
 
@@ -525,6 +527,7 @@ export function VinReportHero({
   pendingPhotoScan = false,
   pendingEta = false,
   showStatsRow = true,
+  lockedPanel,
   children,
 }: VinReportHeroProps) {
   const { t, language } = useTranslation();
@@ -537,6 +540,7 @@ export function VinReportHero({
   const showDesktopSummary = !!summaryItems?.length;
   const showScoreAccent = !locked && scoreData?.accentBar;
   const isRiskAccent = scoreData?.riskTier === "risk" || (scoreData && parseFloat(scoreData.score) < 6);
+  const useLockedPanel = locked && !!lockedPanel;
 
   return (
     <div
@@ -693,11 +697,15 @@ export function VinReportHero({
                   {displayCountry}
                 </p>
               )}
-              {showDesktopSummary && <HeroSummaryList items={summaryItems!} />}
+              {showDesktopSummary && !useLockedPanel && <HeroSummaryList items={summaryItems!} />}
             </div>
           </div>
 
-          {showStatsRow && (
+          {useLockedPanel ? (
+            <div className="px-3 sm:px-5 pb-3 sm:pb-5 pt-0 mt-auto print:hidden">
+              {lockedPanel}
+            </div>
+          ) : showStatsRow ? (
           <div className={cn(
             "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-0 grid gap-1.5 sm:gap-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats [&>*]:flex [&>*]:w-full [&>*]:justify-center print:grid-cols-4 print:gap-1 print:py-1.5 print:px-2",
             locked ? "grid-cols-1" : "grid-cols-2",
@@ -705,7 +713,7 @@ export function VinReportHero({
           )}>
             {children}
           </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

@@ -1741,5 +1741,10 @@
   "owners_meaning_title": "¿Por qué importa el número de dueños?",
   "owners_meaning_learn": "Sobre los dueños",
   "owners_meaning_body": "Muchos dueños previos pueden indicar más desgaste o lagunas de mantenimiento. No prueba un problema por sí solo, pero justifica una revisión a fondo del historial y del coche.",
-  "checkout_error_card_validation": "Compruebe el número de tarjeta, la fecha de caducidad y el código de seguridad, e inténtelo de nuevo."
+  "checkout_error_card_validation": "Compruebe el número de tarjeta, la fecha de caducidad y el código de seguridad, e inténtelo de nuevo.",
+  "vin_public_found_count": "{count} encontrados",
+  "vin_public_preview_eyebrow": "Lo que encontramos",
+  "vin_public_preview_locked_badge": "Vista previa",
+  "vin_public_preview_for_vin": "Para el VIN",
+  "vin_public_preview_unlock_hint": "Desbloquee el informe completo para fechas, valores y todos los detalles."
 }

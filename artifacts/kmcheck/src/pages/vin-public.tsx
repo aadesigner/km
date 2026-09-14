@@ -22,7 +22,7 @@ import { translateTitleStatus } from "@/lib/translate-title-status";
 import { translateLotStatus } from "@/lib/translate-lot-status";
 import { SEOHead } from "@/components/seo";
 import { SITE_ORIGIN } from "@/lib/seo-config";
-import { buildLockedHistorySummary, buildVinPageSeo, type LockedPreviewSignals, type VinSeoLang } from "@workspace/vin-page-seo";
+import { buildLockedHistorySummary, buildVinPageSeo, lockedPreviewSignalsHaveFindings, type LockedPreviewSignals, type VinSeoLang } from "@workspace/vin-page-seo";
 import { PrintReportBranding } from "@/components/print-report-branding";
 import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
@@ -98,7 +98,6 @@ import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
 import {
   VinLockedFindingsSummary,
-  VinLockedHeroStat,
   VinLockedSectionCard,
   VinLockedTimelinePreview,
 } from "@/components/vin-locked-preview";
@@ -731,14 +730,6 @@ export default function VinPublic({ params }: Props) {
 
   const lockedHint = t("vin_public_locked_hint");
   const previewSignals = !data.isUnlocked ? data.previewSignals ?? null : null;
-  const lockedFindingsSummary = previewSignals
-    ? buildLockedHistorySummary(seoLang, {
-        vin,
-        make: data.make,
-        model: data.model,
-        year: data.year,
-      }, previewSignals)
-    : null;
   const foundLabel = (count: number) =>
     t("vin_public_found_count").replace("{count}", String(count));
 
@@ -869,27 +860,21 @@ export default function VinPublic({ params }: Props) {
           summaryItems={heroSummary}
           accidentCount={data.isUnlocked ? accidentSignals : 0}
           onPhotoClick={data.isUnlocked && heroPhotos.length > 0 ? (i) => openLightbox(i) : undefined}
+          lockedPanel={
+            !data.isUnlocked
+            && previewSignals
+            && lockedPreviewSignalsHaveFindings(previewSignals)
+              ? (
+                <VinLockedFindingsSummary
+                  vin={vin}
+                  signals={previewSignals}
+                  t={t}
+                />
+              )
+              : undefined
+          }
         >
-          {!data.isUnlocked ? (
-            <>
-              <VinLockedHeroStat label={t("vin_public_accidents_section")} />
-              <VinLockedHeroStat label={t("vin_public_safety_section")} />
-              <VinLockedHeroStat
-                label={t("vin_public_mileage_section")}
-                foundCount={previewSignals?.mileageRecordCount}
-                foundLabel={previewSignals && previewSignals.mileageRecordCount > 0
-                  ? foundLabel(previewSignals.mileageRecordCount)
-                  : undefined}
-              />
-              <VinLockedHeroStat
-                label={t("vin_result_owners_title")}
-                foundCount={previewSignals?.ownerCount}
-                foundLabel={previewSignals && previewSignals.ownerCount > 0
-                  ? foundLabel(previewSignals.ownerCount)
-                  : undefined}
-              />
-            </>
-          ) : (
+          {data.isUnlocked ? (
             <>
           {showAccidentsSection && (
             <div className="!hidden print:!flex w-full justify-center">
@@ -917,12 +902,8 @@ export default function VinPublic({ params }: Props) {
             <PassPill ok={data.taxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
           ) : null}
             </>
-          )}
+          ) : null}
         </VinReportHero>
-
-        {!data.isUnlocked && lockedFindingsSummary ? (
-          <VinLockedFindingsSummary summary={lockedFindingsSummary} />
-        ) : null}
 
         {data.isUnlocked && shouldShowReportTimeline(timelineEvents) ? (
           <ReportHistoryTimeline

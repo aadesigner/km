@@ -212,27 +212,124 @@ export function VinLockedHeroStat({
   );
 }
 
-/** Custom locked preview summary under the hero — VIN + findings, never accidents. */
+type FindingChip = {
+  key: string;
+  count: number;
+  label: string;
+  icon: ElementType;
+  tone: string;
+};
+
+/** Structured findings panel — lives inside the hero right column (no accidents). */
 export function VinLockedFindingsSummary({
-  summary,
+  vin,
+  signals,
+  t,
   className,
 }: {
-  summary: string;
+  vin: string;
+  signals: {
+    mileageRecordCount: number;
+    ownerCount: number;
+    insuranceClaimCount: number;
+    auctionRecordCount: number;
+    registryRecordCount: number;
+  };
+  t: (key: string) => string;
   className?: string;
 }) {
+  const chips: FindingChip[] = [
+    signals.mileageRecordCount > 0 && {
+      key: "mileage",
+      count: signals.mileageRecordCount,
+      label: t("vin_public_mileage_section"),
+      icon: Gauge,
+      tone: "text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20",
+    },
+    signals.ownerCount > 0 && {
+      key: "owners",
+      count: signals.ownerCount,
+      label: t("vin_result_owners_title"),
+      icon: Users,
+      tone: "text-violet-600 dark:text-violet-400 bg-violet-500/10 border-violet-500/20",
+    },
+    signals.insuranceClaimCount > 0 && {
+      key: "insurance",
+      count: signals.insuranceClaimCount,
+      label: t("report_insurance_claims"),
+      icon: FileText,
+      tone: "text-amber-700 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
+    },
+    signals.auctionRecordCount > 0 && {
+      key: "auctions",
+      count: signals.auctionRecordCount,
+      label: t("auction_history"),
+      icon: TrendingUp,
+      tone: "text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    },
+    signals.registryRecordCount > 0 && {
+      key: "registry",
+      count: signals.registryRecordCount,
+      label: t("report_registry_history"),
+      icon: Shield,
+      tone: "text-teal-700 dark:text-teal-400 bg-teal-500/10 border-teal-500/20",
+    },
+  ].filter(Boolean) as FindingChip[];
+
+  if (chips.length === 0) return null;
+
   return (
     <div
       className={cn(
-        "rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card px-4 py-3.5 sm:px-5 sm:py-4 print:hidden",
+        "rounded-xl border border-border/70 bg-muted/30 dark:bg-muted/20 overflow-hidden",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 h-8 w-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
+      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/50 bg-background/40">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+          <p className="text-[11px] font-semibold tracking-wide text-foreground truncate">
+            {t("vin_public_preview_eyebrow")}
+          </p>
         </div>
-        <p className="text-sm leading-relaxed text-foreground/90">
-          {summary}
+        <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
+          <Lock className="h-2.5 w-2.5" />
+          {t("vin_public_preview_locked_badge")}
+        </span>
+      </div>
+
+      <div className="px-3 py-2.5 space-y-2.5">
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          <span className="font-medium text-foreground/80">{t("vin_public_preview_for_vin")}</span>{" "}
+          <span className="font-mono text-[10.5px] tracking-wide text-foreground/90 select-all">{vin}</span>
+        </p>
+
+        <ul className="grid grid-cols-2 gap-1.5">
+          {chips.map(({ key, count, label, icon: Icon, tone }) => (
+            <li
+              key={key}
+              className={cn(
+                "flex items-center gap-2 rounded-lg border px-2 py-1.5 min-w-0",
+                tone,
+              )}
+            >
+              <div className="h-7 w-7 rounded-md bg-background/70 border border-border/40 flex items-center justify-center shrink-0">
+                <Icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold tabular-nums leading-none tracking-tight">
+                  {count}
+                </p>
+                <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-wide truncate opacity-80">
+                  {label}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <p className="text-[10px] leading-relaxed text-muted-foreground">
+          {t("vin_public_preview_unlock_hint")}
         </p>
       </div>
     </div>

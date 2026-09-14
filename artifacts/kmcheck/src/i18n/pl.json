@@ -1741,5 +1741,10 @@
   "owners_meaning_title": "Dlaczego liczba właścicieli ma znaczenie?",
   "owners_meaning_learn": "O liczbie właścicieli",
   "owners_meaning_body": "Wielu poprzednich właścicieli może oznaczać większe zużycie, krótkie okresy posiadania lub luki w opiece serwisowej. To samo w sobie nie jest dowodem problemu, ale zwiększa potrzebę dokładnej historii serwisowej i oględzin przed zakupem.",
-  "checkout_error_card_validation": "Sprawdź numer karty, datę ważności i kod zabezpieczający, a następnie spróbuj ponownie."
+  "checkout_error_card_validation": "Sprawdź numer karty, datę ważności i kod zabezpieczający, a następnie spróbuj ponownie.",
+  "vin_public_found_count": "znaleziono {count}",
+  "vin_public_preview_eyebrow": "Co znaleźliśmy",
+  "vin_public_preview_locked_badge": "Podgląd",
+  "vin_public_preview_for_vin": "Dla VIN",
+  "vin_public_preview_unlock_hint": "Odblokuj pełny raport, aby zobaczyć daty, wartości i wszystkie szczegóły."
 }

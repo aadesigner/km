@@ -1744,5 +1744,10 @@
   "owners_meaning_title": "Pse ka rëndësi numri i pronarëve?",
   "owners_meaning_learn": "Rreth numrit të pronarëve",
   "owners_meaning_body": "Shumë pronarë të mëparshëm mund të nënkuptojnë konsum më të lartë, periudha të shkurtra pronësie ose boshllëqe në mirëmbajtje. Nuk është prova e vetme e një problemi, por rrit nevojën për historik të plotë servisi dhe inspektim para blerjes.",
-  "checkout_error_card_validation": "Kontrolloni numrin e kartës, datën e skadimit dhe kodin e sigurisë, pastaj provoni përsëri."
+  "checkout_error_card_validation": "Kontrolloni numrin e kartës, datën e skadimit dhe kodin e sigurisë, pastaj provoni përsëri.",
+  "vin_public_found_count": "{count} të gjetura",
+  "vin_public_preview_eyebrow": "Çfarë gjetëm",
+  "vin_public_preview_locked_badge": "Pamje",
+  "vin_public_preview_for_vin": "Për VIN",
+  "vin_public_preview_unlock_hint": "Zhbllokoni raportin e plotë për datat, vlerat dhe të gjitha detajet."
 }

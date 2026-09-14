@@ -1741,5 +1741,10 @@
   "owners_meaning_title": "لماذا يهم عدد المالكين؟",
   "owners_meaning_learn": "حول عدد المالكين",
   "owners_meaning_body": "كثرة المالكين السابقين قد تعني تآكلاً أعلى أو فترات ملكية قصيرة أو فجوات في العناية. ليست دليلاً وحدها على مشكلة، لكنها تزيد الحاجة إلى سجل صيانة وفحص شامل قبل الشراء.",
-  "checkout_error_card_validation": "يرجى التحقق من رقم البطاقة وتاريخ الانتهاء ورمز الأمان، ثم المحاولة مرة أخرى."
+  "checkout_error_card_validation": "يرجى التحقق من رقم البطاقة وتاريخ الانتهاء ورمز الأمان، ثم المحاولة مرة أخرى.",
+  "vin_public_found_count": "{count} موجود",
+  "vin_public_preview_eyebrow": "ما وجدناه",
+  "vin_public_preview_locked_badge": "معاينة",
+  "vin_public_preview_for_vin": "لـ VIN",
+  "vin_public_preview_unlock_hint": "افتح التقرير الكامل للتواريخ والقيم وجميع التفاصيل."
 }
