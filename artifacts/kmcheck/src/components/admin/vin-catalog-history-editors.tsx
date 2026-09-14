@@ -12,7 +12,11 @@ import {
 import { ADMIN_DAMAGE_VALUES } from "@/components/admin/admin-vin-form-constants";
 import { useKrwPerUsd } from "@/hooks/use-krw-per-usd";
 import { useTranslation } from "@/i18n/context";
-import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
+import {
+  formatCountryName,
+  countryLabelsFromT,
+  canonicalCountryStorageLabel,
+} from "@/lib/format-country-name";
 import { defaultAmountCurrencyForCountry } from "@/lib/korean-currency";
 import { damageValueKey } from "@/lib/translate-damage-label";
 import {
@@ -678,13 +682,11 @@ function damageSelectOptions(
   return options;
 }
 
-function vehicleCountryLabel(
-  code: string | null | undefined,
-  formatCountry: (c: string) => string,
-): string {
+/** Prefill location in English/canonical form so report i18n can translate it. */
+function vehicleCountryLabel(code: string | null | undefined): string {
   const c = code?.trim();
   if (!c) return "";
-  return formatCountry(c) || c.toUpperCase();
+  return canonicalCountryStorageLabel(c) || c.toUpperCase();
 }
 
 export type VinCatalogHistoryFormSlice = {
@@ -723,7 +725,7 @@ export function VinCatalogHistorySections({
   const grid = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
   const defaultCurrency = defaultAmountCurrencyForCountry(vehicleCountry);
   const marketCurrency = form.marketData.currency.trim() || defaultCurrency;
-  const locationPreset = vehicleCountryLabel(vehicleCountry, formatCountry);
+  const locationPreset = vehicleCountryLabel(vehicleCountry);
 
   const patchMarketData = (patch: Partial<CatalogMarketDataForm>) => {
     const next = { ...form.marketData, ...patch };

@@ -69,9 +69,13 @@ describe("finalizeAdminCatalogSave", () => {
     expect(out.odometerLocked).toBe(true);
     expect(out.mileageHistory).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ odometer: 42_000, source: "admin" }),
+        expect.objectContaining({ odometer: 42_000 }),
       ]),
     );
+    expect(
+      (out.mileageHistory as { odometer: number; source?: string }[])
+        .find((e) => e.odometer === 42_000)?.source,
+    ).toBeUndefined();
     expect((out.mileageHistory as { odometer: number }[]).every((e) => e.odometer <= 42_000)).toBe(true);
   });
 
@@ -93,11 +97,12 @@ describe("finalizeAdminCatalogSave", () => {
 });
 
 describe("reconcileLockedOdometerData", () => {
-  it("adds admin mileage row when none match locked value", () => {
+  it("adds mileage row when none match locked value without source", () => {
     const out = reconcileLockedOdometerData({ mileageHistory: [] }, 30_000);
     expect(out.mileageHistory).toEqual([
-      expect.objectContaining({ odometer: 30_000, source: "admin" }),
+      expect.objectContaining({ odometer: 30_000 }),
     ]);
+    expect((out.mileageHistory as { source?: string }[])[0]?.source).toBeUndefined();
   });
 
   it("caps owner and registry mileage when locking", () => {

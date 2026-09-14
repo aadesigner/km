@@ -175,15 +175,104 @@ const LOCALE_MAP: Record<string, string> = {
   zh: "zh-CN",
 };
 
+/** ISO codes we reverse-lookup from localized DisplayNames (admin catalog + markets). */
+const LOCALIZED_LOOKUP_ISOS = [
+  "KR", "US", "CA", "DE", "JP", "GB", "FR", "IT", "ES", "NL", "AU",
+  "PL", "RO", "UA", "RU", "CN", "MX", "AE", "SE", "NO", "DK", "FI",
+  "AT", "BE", "CH", "PT", "GR", "TR", "BR", "IN", "TH", "TW", "ZA",
+] as const;
+
+/**
+ * Extra free-text aliases (site i18n labels + common typos) → ISO.
+ * Lets stored values like Albanian "Koreja e Jugut" still translate on the report.
+ */
+const EXTRA_NAME_TO_ISO: Record<string, string> = {
+  // Korea
+  "koreja e jugut": "KR",
+  "koreja e jugit": "KR",
+  koreja: "KR",
+  "südkorea": "KR",
+  "corea del sur": "KR",
+  "corée du sud": "KR",
+  "corea de sud": "KR",
+  "korea południowa": "KR",
+  "coreea de sud": "KR",
+  "южна корея": "KR",
+  "південна корея": "KR",
+  "южная корея": "KR",
+  // USA
+  shba: "US",
+  sua: "US",
+  "u.s.a": "US",
+  // Canada
+  kanadaja: "CA",
+  kanada: "CA",
+  canadá: "CA",
+  // China / UAE (market labels)
+  kina: "CN",
+  chiny: "CN",
+  chine: "CN",
+  emiratet: "AE",
+  eau: "AE",
+  vae: "AE",
+  zea: "AE",
+  "оае": "AE",
+  "оаэ": "AE",
+};
+
 function normalizeCountryKey(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, " ");
 }
+
+function buildLocalizedNameToIso(): Record<string, string> {
+  const out: Record<string, string> = { ...EXTRA_NAME_TO_ISO };
+  for (const lang of Object.keys(LOCALE_MAP)) {
+    const locale = LOCALE_MAP[lang] ?? lang;
+    let display: Intl.DisplayNames;
+    try {
+      display = new Intl.DisplayNames([locale], { type: "region" });
+    } catch {
+      continue;
+    }
+    for (const iso2 of LOCALIZED_LOOKUP_ISOS) {
+      try {
+        const name = display.of(iso2);
+        if (!name) continue;
+        const key = normalizeCountryKey(name);
+        if (!key) continue;
+        // Never override English canonical map entries with a different ISO.
+        const englishHit = ENGLISH_NAME_TO_ISO[key];
+        if (englishHit && englishHit !== iso2) continue;
+        if (!out[key]) out[key] = iso2;
+      } catch {
+        /* skip unsupported region in this locale */
+      }
+    }
+  }
+  return out;
+}
+
+const LOCALIZED_NAME_TO_ISO = buildLocalizedNameToIso();
 
 function resolveIso2(raw: string): string | null {
   const upper = raw.trim().toUpperCase();
   if (ISO_ALIASES[upper]) return ISO_ALIASES[upper];
   if (/^[A-Z]{2}$/.test(upper)) return upper;
-  return ENGLISH_NAME_TO_ISO[normalizeCountryKey(raw)] ?? null;
+  const key = normalizeCountryKey(raw);
+  return ENGLISH_NAME_TO_ISO[key] ?? LOCALIZED_NAME_TO_ISO[key] ?? null;
+}
+
+/** English label for storage/prefill so every UI language can resolve + translate it. */
+export function canonicalCountryStorageLabel(raw: string | null | undefined): string {
+  if (!raw?.trim()) return "";
+  const iso2 = resolveIso2(raw.trim());
+  if (!iso2) return raw.trim();
+  if (iso2 === "US") return "USA";
+  if (iso2 === "KR") return "South Korea";
+  if (iso2 === "CA") return "Canada";
+  if (iso2 === "AE") return "UAE";
+  if (iso2 === "CN") return "China";
+  return localizedRegionName(iso2, "en") ?? raw.trim();
 }
 
 function localizedRegionName(iso2: string, lang: string): string | null {
@@ -230,7 +319,31 @@ export function formatCountryName(
   return localizedRegionName(iso2, lang) ?? trimmed;
 }
 
-/** Location line — translates trailing country segment when present (e.g. "Asan, South Korea"). */
+/** Translate a single location segment only if it is a known country label/code. */
+function translateCountrySegmentOnly(
+  segment: string,
+  lang: string,
+  overrides?: CountryLabelOverrides,
+): string | null {
+  const trimmed = segment.trim();
+  if (!trimmed) return null;
+
+  // VIN-style combined origins in a location field (rare): only if every part is a country.
+  if (trimmed.includes("/")) {
+    const bits = trimmed.split("/").map((p) => p.trim()).filter(Boolean);
+    if (bits.length === 0 || !bits.every((b) => resolveIso2(b))) return null;
+    return bits.map((b) => formatCountryName(b, lang, overrides)).join(" / ");
+  }
+
+  if (!resolveIso2(trimmed)) return null;
+  return formatCountryName(trimmed, lang, overrides);
+}
+
+/**
+ * Location line — translates only the trailing country segment.
+ * City / region text before the last comma is never rewritten
+ * (e.g. "Asan, South Korea" → "Asan, Koreja e Jugut" in Albanian).
+ */
 export function formatLocationLabel(
   raw: string | null | undefined,
   lang = "en",
@@ -242,17 +355,12 @@ export function formatLocationLabel(
   const parts = trimmed.split(",").map((p) => p.trim()).filter(Boolean);
   if (parts.length === 0) return trimmed;
 
-  if (parts.length === 1) {
-    return formatCountryName(parts[0], lang, overrides) || parts[0];
-  }
+  const countryPart = parts[parts.length - 1]!;
+  const translatedCountry = translateCountrySegmentOnly(countryPart, lang, overrides);
+  if (!translatedCountry) return trimmed;
 
-  const countryPart = parts[parts.length - 1];
-  const translatedCountry = formatCountryName(countryPart, lang, overrides);
-  if (translatedCountry && translatedCountry !== countryPart) {
-    return [...parts.slice(0, -1), translatedCountry].join(", ");
-  }
-
-  return trimmed;
+  if (parts.length === 1) return translatedCountry;
+  return [...parts.slice(0, -1), translatedCountry].join(", ");
 }
 
 export function countryLabelsFromT(t: (key: string) => string): CountryLabelOverrides {

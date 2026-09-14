@@ -85,7 +85,7 @@ export function reconcileLockedOdometerData(
       .some((e) => e.odometer === lockedKm);
     if (!hasExact) {
       out.mileageHistory = [
-        { date: new Date().toISOString().slice(0, 10), odometer: lockedKm, source: "admin" },
+        { date: new Date().toISOString().slice(0, 10), odometer: lockedKm },
         ...(out.mileageHistory as unknown[]),
       ];
     }
@@ -93,7 +93,6 @@ export function reconcileLockedOdometerData(
     out.mileageHistory = [{
       date: new Date().toISOString().slice(0, 10),
       odometer: lockedKm,
-      source: "admin",
     }];
   }
 
