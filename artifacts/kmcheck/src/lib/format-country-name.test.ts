@@ -23,11 +23,14 @@ describe("formatVinOriginCountry", () => {
   });
 });
 
-describe("localized country free-text", () => {
-  it("resolves Albanian South Korea variants so other languages can translate", () => {
-    expect(formatCountryName("Koreja e Jugut", "en")).toBe("South Korea");
-    expect(formatCountryName("koreja e jugit", "de")).toMatch(/korea/i);
-    expect(formatLocationLabel("Asan, Koreja e Jugut", "en")).toBe("Asan, South Korea");
+describe("location country translation", () => {
+  it("translates English country names / codes; leaves non-English free text as typed", () => {
+    expect(formatCountryName("South Korea", "sq")).toBeTruthy();
+    expect(formatCountryName("South Korea", "sq")).not.toBe("South Korea");
+    expect(formatCountryName("Koreja e Jugut", "en")).toBe("Koreja e Jugut");
+    expect(formatCountryName("koreja e jugit", "de")).toBe("koreja e jugit");
+    expect(formatLocationLabel("Asan, Koreja e Jugut", "en")).toBe("Asan, Koreja e Jugut");
+    expect(formatLocationLabel("Asan, South Korea", "en")).toBe("Asan, South Korea");
   });
 
   it("translates only the trailing country; leaves city/region text unchanged", () => {
@@ -43,9 +46,9 @@ describe("localized country free-text", () => {
     expect(formatLocationLabel("Gyeonggi-do", "sq")).toBe("Gyeonggi-do");
   });
 
-  it("prefills English canonical labels from codes", () => {
+  it("prefills English canonical labels from codes only", () => {
     expect(canonicalCountryStorageLabel("kr")).toBe("South Korea");
     expect(canonicalCountryStorageLabel("us")).toBe("USA");
-    expect(canonicalCountryStorageLabel("Koreja e Jugut")).toBe("South Korea");
+    expect(canonicalCountryStorageLabel("Koreja e Jugut")).toBe("Koreja e Jugut");
   });
 });

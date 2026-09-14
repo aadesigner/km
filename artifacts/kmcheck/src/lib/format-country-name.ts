@@ -175,91 +175,16 @@ const LOCALE_MAP: Record<string, string> = {
   zh: "zh-CN",
 };
 
-/** ISO codes we reverse-lookup from localized DisplayNames (admin catalog + markets). */
-const LOCALIZED_LOOKUP_ISOS = [
-  "KR", "US", "CA", "DE", "JP", "GB", "FR", "IT", "ES", "NL", "AU",
-  "PL", "RO", "UA", "RU", "CN", "MX", "AE", "SE", "NO", "DK", "FI",
-  "AT", "BE", "CH", "PT", "GR", "TR", "BR", "IN", "TH", "TW", "ZA",
-] as const;
-
-/**
- * Extra free-text aliases (site i18n labels + common typos) → ISO.
- * Lets stored values like Albanian "Koreja e Jugut" still translate on the report.
- */
-const EXTRA_NAME_TO_ISO: Record<string, string> = {
-  // Korea
-  "koreja e jugut": "KR",
-  "koreja e jugit": "KR",
-  koreja: "KR",
-  "südkorea": "KR",
-  "corea del sur": "KR",
-  "corée du sud": "KR",
-  "corea de sud": "KR",
-  "korea południowa": "KR",
-  "coreea de sud": "KR",
-  "южна корея": "KR",
-  "південна корея": "KR",
-  "южная корея": "KR",
-  // USA
-  shba: "US",
-  sua: "US",
-  "u.s.a": "US",
-  // Canada
-  kanadaja: "CA",
-  kanada: "CA",
-  canadá: "CA",
-  // China / UAE (market labels)
-  kina: "CN",
-  chiny: "CN",
-  chine: "CN",
-  emiratet: "AE",
-  eau: "AE",
-  vae: "AE",
-  zea: "AE",
-  "оае": "AE",
-  "оаэ": "AE",
-};
-
 function normalizeCountryKey(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function buildLocalizedNameToIso(): Record<string, string> {
-  const out: Record<string, string> = { ...EXTRA_NAME_TO_ISO };
-  for (const lang of Object.keys(LOCALE_MAP)) {
-    const locale = LOCALE_MAP[lang] ?? lang;
-    let display: Intl.DisplayNames;
-    try {
-      display = new Intl.DisplayNames([locale], { type: "region" });
-    } catch {
-      continue;
-    }
-    for (const iso2 of LOCALIZED_LOOKUP_ISOS) {
-      try {
-        const name = display.of(iso2);
-        if (!name) continue;
-        const key = normalizeCountryKey(name);
-        if (!key) continue;
-        // Never override English canonical map entries with a different ISO.
-        const englishHit = ENGLISH_NAME_TO_ISO[key];
-        if (englishHit && englishHit !== iso2) continue;
-        if (!out[key]) out[key] = iso2;
-      } catch {
-        /* skip unsupported region in this locale */
-      }
-    }
-  }
-  return out;
-}
-
-const LOCALIZED_NAME_TO_ISO = buildLocalizedNameToIso();
-
+/** Resolve only ISO codes and English country names — non-English free text stays as typed. */
 function resolveIso2(raw: string): string | null {
   const upper = raw.trim().toUpperCase();
   if (ISO_ALIASES[upper]) return ISO_ALIASES[upper];
   if (/^[A-Z]{2}$/.test(upper)) return upper;
-  const key = normalizeCountryKey(raw);
-  return ENGLISH_NAME_TO_ISO[key] ?? LOCALIZED_NAME_TO_ISO[key] ?? null;
+  return ENGLISH_NAME_TO_ISO[normalizeCountryKey(raw)] ?? null;
 }
 
 /** English label for storage/prefill so every UI language can resolve + translate it. */
