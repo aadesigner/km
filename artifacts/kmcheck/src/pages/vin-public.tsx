@@ -72,7 +72,7 @@ import {
 import { buildUnlockCheckoutTarget } from "@/lib/checkout-vin-flow";
 import { VinLookupDisabledBanner } from "@/components/vin-lookup-disabled-banner";
 import { repairDatedRecords } from "@/lib/encar-date-repair";
-import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
+import { formatCountryName, formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
 import { computeVinConditionScore, hasMileageRollback, scoreInputFromPublic } from "@/lib/vin-condition-score";
 import { buildVinHeroSummaryItems } from "@/lib/vin-hero-summary";
 import { countAccidentSignals } from "@/lib/accident-signals";
@@ -334,7 +334,9 @@ function MileageTimeline({
         const status = translateLotStatus(t, cleanStr(entry.lotStatus));
         const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
         const servicesNote = cleanStr(entry.description);
-        const locationLabel = cleanStr(entry.location);
+        const locationLabel = entry.location
+          ? (formatLocationLabel(entry.location, language, countryLabelsFromT(t)) || cleanStr(entry.location))
+          : null;
         return (
           <div key={i} className="relative pl-7">
             <div className={cn("absolute left-0 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-background ring-2", col.dot)} />
@@ -763,7 +765,7 @@ export default function VinPublic({ params }: Props) {
     accidents, t, language, data.country, krwPerUsd, data.year, insuranceClaims.length > 0, countryLabels,
   );
   const insurancePrintHighlights = buildInsurancePrintHighlights(insuranceClaims, t, language, data.country, krwPerUsd, data.year);
-  const mileagePrintRows = buildMileagePrintRows(mileageHistory, t, language, data.year, data.country);
+  const mileagePrintRows = buildMileagePrintRows(mileageHistory, t, language, data.year, data.country, countryLabels);
   const ownerPrintRows = buildOwnerPrintRows(ownerHistory, language, data.year, countryLabels, data.country);
   const registryPrintRows = buildRegistryPrintRows(registryHistory, t, language, data.country, krwPerUsd, data.year);
   const auctionPrintRows = buildAuctionPrintRows(auctionHistory, t, language, data.year, countryLabels, data.country);
@@ -1027,7 +1029,9 @@ export default function VinPublic({ params }: Props) {
                                   {(acc.location || acc.country) && (
                                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                                       <MapPin className="h-3 w-3 shrink-0" />
-                                      {acc.location || fmtCountry(acc.country)}
+                                      {acc.location
+                                        ? (formatLocationLabel(acc.location, language, countryLabels) || acc.location)
+                                        : fmtCountry(acc.country)}
                                     </p>
                                   )}
                                   {cleanStr(acc.description) && (

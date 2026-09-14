@@ -752,6 +752,7 @@ export function VinCatalogHistorySections({
         emptyItem={() => ({
           ...EMPTY_ACCIDENT,
           currency: defaultCurrency,
+          location: locationPreset,
         })}
         onChange={(accidents) => onChange({ accidents })}
         compact={compact}

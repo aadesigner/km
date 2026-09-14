@@ -71,6 +71,7 @@ type AccidentLike = {
   secondaryDamage?: string | null;
   type?: string | null;
   country?: string | null;
+  location?: string | null;
   lossAmount?: number | null;
   currency?: string | null;
 };
@@ -137,7 +138,11 @@ export function buildAccidentPrintHighlights(
     const severity = trSeverity(t, acc.severity);
     const typeLabel = formatAccidentType(t, acc.type);
     const parts = [severity, typeLabel, damage].filter(Boolean);
-    if (acc.country) parts.push(formatCountryName(acc.country, language, countryLabels));
+    if (acc.location) {
+      parts.push(formatLocationLabel(acc.location, language, countryLabels));
+    } else if (acc.country) {
+      parts.push(formatCountryName(acc.country, language, countryLabels));
+    }
     if (acc.lossAmount != null) {
       parts.push(formatInsuranceAmount(acc.lossAmount, country ?? acc.country, krwPerUsd, {
         currency: acc.currency,
@@ -182,11 +187,15 @@ export function buildMileagePrintRows(
   language: Language,
   vehicleYear?: number | null,
   vehicleCountry?: string | null,
+  countryLabels?: CountryLabelOverrides,
 ): PrintMileageRow[] {
   return entries.slice(0, PRINT_MILEAGE_LIMIT).map((entry) => {
     const damage = translateDamageLabel(t, entry.primaryDamage)
       ?? translateDamageLabel(t, entry.damage);
-    const detail = [damage, entry.titleStatus, entry.lotStatus, entry.location, entry.description]
+    const location = entry.location
+      ? formatLocationLabel(entry.location, language, countryLabels)
+      : null;
+    const detail = [damage, entry.titleStatus, entry.lotStatus, location, entry.description]
       .filter(Boolean)
       .join(" · ") || null;
     return {

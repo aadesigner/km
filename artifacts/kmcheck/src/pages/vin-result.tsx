@@ -64,7 +64,7 @@ import {
   accidentSeverityStyle,
   ACCIDENT_SEVERITY_I18N_KEYS,
 } from "@/lib/accident-display";
-import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
+import { formatCountryName, formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
 import { repairDatedRecords } from "@/lib/encar-date-repair";
 import { computeVinConditionScore, hasMileageRollback, scoreInputFromLookup } from "@/lib/vin-condition-score";
 import { formatAccidentCount } from "@/lib/format-accident-count";
@@ -356,7 +356,9 @@ function MileageTimeline({
         const status = translateLotStatus(t, cleanStr(entry.lotStatus));
         const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
         const servicesNote = cleanStr(entry.description);
-        const locationLabel = cleanStr(entry.location);
+        const locationLabel = entry.location
+          ? (formatLocationLabel(entry.location, language, countryLabelsFromT(t)) || cleanStr(entry.location))
+          : null;
         return (
           <div key={i} className="relative pl-7">
             <div className={cn(
@@ -779,7 +781,7 @@ export default function VinResult({ params }: Props) {
     accidents, t, language, data?.country, krwPerUsd, data?.year, insuranceClaims.length > 0, countryLabels,
   );
   const insurancePrintHighlights = buildInsurancePrintHighlights(insuranceClaims, t, language, data?.country, krwPerUsd, data?.year);
-  const mileagePrintRows = buildMileagePrintRows(mileageHistory, t, language, data?.year, data?.country);
+  const mileagePrintRows = buildMileagePrintRows(mileageHistory, t, language, data?.year, data?.country, countryLabels);
   const ownerPrintRows = buildOwnerPrintRows(ownerHistory, language, data?.year, countryLabels, data?.country);
   const registryPrintRows = buildRegistryPrintRows(registryHistory, t, language, data?.country, krwPerUsd, data?.year);
   const auctionPrintRows = buildAuctionPrintRows(auctionHistory, t, language, data?.year, countryLabels, data?.country);
@@ -1074,7 +1076,9 @@ export default function VinResult({ params }: Props) {
                                 {(acc.location || acc.country) && (
                                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                     <MapPin className="h-3 w-3" />
-                                    {acc.location || fmtCountry(acc.country)}
+                                    {acc.location
+                                      ? (formatLocationLabel(acc.location, language, countryLabels) || acc.location)
+                                      : fmtCountry(acc.country)}
                                   </p>
                                 )}
                               </div>
