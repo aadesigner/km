@@ -120,10 +120,13 @@ export const CATALOG_SCALAR_KEYS = [
   "isSalvage",
   "isStolen",
   "isTaxi",
+  "isFlooded",
+  "floodCount",
+  "floodLossAmount",
   "krwPerUsd",
 ] as const;
 
-const CATALOG_BOOL_KEYS = ["isSalvage", "isStolen", "isTaxi"] as const;
+const CATALOG_BOOL_KEYS = ["isSalvage", "isStolen", "isTaxi", "isFlooded"] as const;
 
 function isCatalogBoolKey(key: string): boolean {
   return (CATALOG_BOOL_KEYS as readonly string[]).includes(key);

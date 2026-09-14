@@ -10,6 +10,7 @@ import {
   Shield,
   Sparkles,
   ChevronRight,
+  Droplets,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -293,6 +294,7 @@ export function VinLockedFindingsSummary({
     insuranceClaimCount: number;
     auctionRecordCount: number;
     registryRecordCount: number;
+    floodRecordCount: number;
   };
   t: (key: string) => string;
   className?: string;
@@ -315,6 +317,12 @@ export function VinLockedFindingsSummary({
       count: signals.insuranceClaimCount,
       label: t("report_insurance_claims"),
       icon: FileText,
+    },
+    signals.floodRecordCount > 0 && {
+      key: "flood",
+      count: signals.floodRecordCount,
+      label: t("report_flood_section"),
+      icon: Droplets,
     },
     signals.auctionRecordCount > 0 && {
       key: "auctions",

@@ -20,6 +20,8 @@ export type LockedPreviewSignals = {
   insuranceClaimCount: number;
   auctionRecordCount: number;
   registryRecordCount: number;
+  /** Flood / water-damage records (count only — never loss amount). */
+  floodRecordCount: number;
 };
 
 function normalizeVin(vin: string): string {
@@ -63,12 +65,22 @@ export function extractLockedPreviewSignals(
   const ownerHistoryLen = arrayLen(d.ownerHistory);
   const ownerCount = ownerFromField ?? ownerHistoryLen;
 
+  const floodFlagged = d.isFlooded === true || d.flooded === true;
+  const floodFromCount = positiveInt(d.floodCount);
+  const floodRecordCount =
+    floodFromCount != null && floodFromCount > 0
+      ? floodFromCount
+      : floodFlagged
+        ? 1
+        : 0;
+
   return {
     mileageRecordCount,
     ownerCount,
     insuranceClaimCount: arrayLen(d.insuranceClaims),
     auctionRecordCount: arrayLen(d.auctionHistory),
     registryRecordCount: arrayLen(d.registryHistory),
+    floodRecordCount,
   };
 }
 
@@ -79,6 +91,7 @@ export function lockedPreviewSignalsHaveFindings(signals: LockedPreviewSignals):
     || signals.insuranceClaimCount > 0
     || signals.auctionRecordCount > 0
     || signals.registryRecordCount > 0
+    || signals.floodRecordCount > 0
   );
 }
 
@@ -88,6 +101,7 @@ const LOCKED_SIGNAL_KEYS = [
   "insuranceClaimCount",
   "auctionRecordCount",
   "registryRecordCount",
+  "floodRecordCount",
 ] as const;
 
 /** Max count exposed publicly — avoids odd overflow / fingerprinting noise. */
@@ -113,6 +127,7 @@ export function sanitizeLockedPreviewSignalsForClient(
     insuranceClaimCount: 0,
     auctionRecordCount: 0,
     registryRecordCount: 0,
+    floodRecordCount: 0,
   };
   for (const key of LOCKED_SIGNAL_KEYS) {
     out[key] = clampPublicCount(src[key]);
@@ -140,6 +155,10 @@ export const LOCKED_PUBLIC_FORBIDDEN_KEYS = [
   "isSalvage",
   "isStolen",
   "isTaxi",
+  "isFlooded",
+  "flooded",
+  "floodCount",
+  "floodLossAmount",
   "titleStatus",
   "marketData",
   "photosHd",
@@ -159,6 +178,7 @@ type FindingParts = {
   insurance: string;
   auctions: string;
   registry: string;
+  flood: string;
   join: (parts: string[]) => string;
   template: (vin: string, vehicle: string, findings: string) => string;
 };
@@ -170,6 +190,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} insurance claims",
     auctions: "{n} auction records",
     registry: "{n} registry records",
+    flood: "{n} flood damage records",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `For VIN ${vin} (${vehicle}), we found ${findings}. Unlock the full report for dates, values, and complete details.`,
@@ -180,6 +201,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} Versicherungsfälle",
     auctions: "{n} Auktionsdaten",
     registry: "{n} Registereinträge",
+    flood: "{n} Wasserschäden",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Für VIN ${vin} (${vehicle}) haben wir ${findings} gefunden. Schalten Sie den Vollbericht für Daten, Werte und alle Details frei.`,
@@ -190,6 +212,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} reclamaciones de seguro",
     auctions: "{n} registros de subasta",
     registry: "{n} registros de registro",
+    flood: "{n} registros de daños por inundación",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Para el VIN ${vin} (${vehicle}) encontramos ${findings}. Desbloquee el informe completo para fechas, valores y todos los detalles.`,
@@ -200,6 +223,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} sinistres d'assurance",
     auctions: "{n} dossiers d'enchères",
     registry: "{n} dossiers de registre",
+    flood: "{n} dossiers d'inondation",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Pour le VIN ${vin} (${vehicle}), nous avons trouvé ${findings}. Débloquez le rapport complet pour les dates, valeurs et tous les détails.`,
@@ -210,6 +234,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} pretendime sigurimi",
     auctions: "{n} rekorde ankandi",
     registry: "{n} rekorde regjistri",
+    flood: "{n} rekorde dëmtimi nga përmbytja",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Për VIN ${vin} (${vehicle}) gjetëm ${findings}. Zhbllokoni raportin e plotë për datat, vlerat dhe të gjitha detajet.`,
@@ -220,6 +245,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} szkód ubezpieczeniowych",
     auctions: "{n} wpisów aukcyjnych",
     registry: "{n} wpisów rejestru",
+    flood: "{n} zapisów uszkodzeń powodziowych",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Dla VIN ${vin} (${vehicle}) znaleźliśmy ${findings}. Odblokuj pełny raport, aby zobaczyć daty, wartości i wszystkie szczegóły.`,
@@ -230,6 +256,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} daune de asigurare",
     auctions: "{n} înregistrări de licitație",
     registry: "{n} înregistrări de registru",
+    flood: "{n} înregistrări de daune prin inundație",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Pentru VIN ${vin} (${vehicle}) am găsit ${findings}. Deblocați raportul complet pentru date, valori și toate detaliile.`,
@@ -240,6 +267,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} застрахователни претенции",
     auctions: "{n} аукционни записа",
     registry: "{n} регистрационни записа",
+    flood: "{n} записа за щети от наводнение",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `За VIN ${vin} (${vehicle}) намерихме ${findings}. Отключете пълния доклад за дати, стойности и всички подробности.`,
@@ -250,6 +278,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} სადაზღვევო პრეტენზია",
     auctions: "{n} აუქციონის ჩანაწერი",
     registry: "{n} რეესტრის ჩანაწერი",
+    flood: "{n} წყალდიდობის ჩანაწერი",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `VIN ${vin} (${vehicle})-ისთვის ვიპოვეთ ${findings}. განბლოკეთ სრული ანგარიში თარიღების, ღირებულებებისა და ყველა დეტალისთვის.`,
@@ -260,6 +289,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} مطالبات تأمين",
     auctions: "{n} سجلات مزاد",
     registry: "{n} سجلات سجل",
+    flood: "{n} سجلات أضرار فيضان",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `لـ VIN ${vin} (${vehicle}) وجدنا ${findings}. افتح التقرير الكامل للتواريخ والقيم وجميع التفاصيل.`,
@@ -270,6 +300,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} страхових випадків",
     auctions: "{n} аукціонних записів",
     registry: "{n} реєстрових записів",
+    flood: "{n} записів про пошкодження від повені",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Для VIN ${vin} (${vehicle}) ми знайшли ${findings}. Розблокуйте повний звіт для дат, значень і всіх деталей.`,
@@ -280,6 +311,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} страховых случаев",
     auctions: "{n} аукционных записей",
     registry: "{n} записей реестра",
+    flood: "{n} записей о повреждениях от наводнения",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `Для VIN ${vin} (${vehicle}) мы нашли ${findings}. Разблокируйте полный отчёт, чтобы увидеть даты, значения и все детали.`,
@@ -290,6 +322,7 @@ const FINDING_COPY: Record<LockedPreviewLang, FindingParts> = {
     insurance: "{n} 条保险理赔",
     auctions: "{n} 条拍卖记录",
     registry: "{n} 条登记记录",
+    flood: "{n} 条水浸记录",
     join: (parts) => parts.join(" · "),
     template: (vin, vehicle, findings) =>
       `针对 VIN ${vin}（${vehicle}），我们找到了${findings}。解锁完整报告可查看日期、数值与全部详情。`,
@@ -324,6 +357,9 @@ export function buildLockedHistorySummary(
   }
   if (signals.registryRecordCount > 0) {
     parts.push(fmtFinding(copy.registry, signals.registryRecordCount));
+  }
+  if (signals.floodRecordCount > 0) {
+    parts.push(fmtFinding(copy.flood, signals.floodRecordCount));
   }
   if (parts.length === 0) return null;
 

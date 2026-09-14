@@ -970,6 +970,9 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
       salvage: (d.isSalvage as boolean | null) ?? (d.salvage as boolean | null) ?? null,
       stolen: (d.isStolen as boolean | null) ?? (d.stolen as boolean | null) ?? null,
       taxi: (d.isTaxi as boolean | null) ?? (d.taxi as boolean | null) ?? null,
+      flooded: (d.isFlooded as boolean | null) ?? (d.flooded as boolean | null) ?? null,
+      floodCount: (d.floodCount as number | null) ?? null,
+      floodLossAmount: (d.floodLossAmount as number | null) ?? null,
       titleStatus: (d.titleStatus as string | null) ?? null,
       photos: proxyPhotoUrls(catalogPhotos, mediaVersion),
       ...(catalogPhotosHd.length > 0

@@ -46,8 +46,10 @@ type VinPrintSummaryProps = {
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
   isTaxi?: boolean | null;
+  isFlooded?: boolean | null;
   hasSalvageData: boolean;
   hasTheftData: boolean;
+  hasFloodData?: boolean;
   marketValue?: string | null;
   lastAuction?: string | null;
   reportUrl?: string;
@@ -228,8 +230,10 @@ export function VinPrintSummary({
   isSalvage,
   isStolen,
   isTaxi,
+  isFlooded,
   hasSalvageData,
   hasTheftData,
+  hasFloodData = false,
   marketValue,
   lastAuction,
   reportUrl,
@@ -251,6 +255,11 @@ export function VinPrintSummary({
     : isStolen
       ? t("report_stolen_flag")
       : t("report_not_stolen");
+  const floodText = !hasFloodData
+    ? null
+    : isFlooded
+      ? t("flood_flagged")
+      : t("report_not_flooded");
 
   const filteredPhotos = photos.filter(Boolean);
   const heroPhoto = filteredPhotos[0];
@@ -322,6 +331,14 @@ export function VinPrintSummary({
         label={t("report_theft")}
         value={theftText}
         tone={isStolen ? "negative" : "positive"}
+      />
+    ) : null,
+    floodText ? (
+      <FindingBadge
+        key="flood"
+        label={t("report_flood")}
+        value={floodText}
+        tone={isFlooded ? "negative" : "positive"}
       />
     ) : null,
     <FindingBadge

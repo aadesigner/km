@@ -87,6 +87,7 @@ import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-mark
 import { KoreanWonAmount } from "@/components/korean-won-amount";
 import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
+import { FloodDamageSection } from "@/components/flood-damage-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { RegistryHistorySection } from "@/components/registry-history-section";
 import { ServiceHistorySection } from "@/components/service-history-section";
@@ -227,6 +228,9 @@ type LookupData = {
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
   isTaxi?: boolean | null;
+  isFlooded?: boolean | null;
+  floodCount?: number | null;
+  floodLossAmount?: number | null;
   accidentCount?: number | null;
   titleStatus?: string;
   photos?: string[];
@@ -863,6 +867,8 @@ export default function VinResult({ params }: Props) {
         isSalvage={data?.isSalvage}
         isStolen={data?.isStolen}
         isTaxi={data?.isTaxi === true}
+        isFlooded={data?.isFlooded}
+        hasFloodData={data?.isFlooded != null}
         hasSalvageData={hasSalvageData}
         hasTheftData={hasTheftData}
         marketValue={printMarketValue}
@@ -917,6 +923,9 @@ export default function VinResult({ params }: Props) {
           : null}
         {hasTheftData
           ? <PassPill ok={data!.isStolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
+          : null}
+        {data?.isFlooded != null
+          ? <PassPill ok={data.isFlooded === false} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
           : null}
         <PassPill ok={data?.isTaxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
           </>
@@ -1469,6 +1478,19 @@ export default function VinResult({ params }: Props) {
             variant="report"
             delay={0.08}
           />
+
+          {data?.isFlooded === true ? (
+            <FloodDamageSection
+              isFlooded
+              floodCount={data.floodCount}
+              floodLossAmount={data.floodLossAmount}
+              country={data.country}
+              krwPerUsd={krwPerUsd}
+              t={t}
+              language={language}
+              variant="report"
+            />
+          ) : null}
 
           <RegistryHistorySection
             events={registryHistory}

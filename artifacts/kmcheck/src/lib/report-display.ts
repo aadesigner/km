@@ -328,6 +328,7 @@ export function sanitizeAccidents<T extends AccidentLike>(
 ): T[] {
   return dedupeAccidents(
     (accidents ?? [])
+      .filter((entry) => entry.type !== "flood" && entry.primaryDamage !== "water_flood")
       .filter(isMeaningfulAccidentEntry)
       .map((entry) => ({
         ...entry,

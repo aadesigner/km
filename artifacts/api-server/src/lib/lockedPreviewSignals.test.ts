@@ -27,12 +27,39 @@ describe("extractLockedPreviewSignals", () => {
       insuranceClaimCount: 1,
       auctionRecordCount: 3,
       registryRecordCount: 0,
+      floodRecordCount: 0,
     });
     expect(signals).not.toHaveProperty("accidentCount");
   });
 
   it("treats scalar odometer as one mileage reading when history empty", () => {
     expect(extractLockedPreviewSignals({ odometer: 50000 }).mileageRecordCount).toBe(1);
+  });
+
+  it("counts flood records from floodCount when flooded", () => {
+    expect(
+      extractLockedPreviewSignals({
+        isFlooded: true,
+        floodCount: 4,
+        floodLossAmount: 4_060_218,
+      }).floodRecordCount,
+    ).toBe(4);
+  });
+
+  it("counts one flood record when flagged without floodCount", () => {
+    expect(
+      extractLockedPreviewSignals({ flooded: true }).floodRecordCount,
+    ).toBe(1);
+  });
+
+  it("ignores flood amount / false flags", () => {
+    expect(
+      extractLockedPreviewSignals({
+        isFlooded: false,
+        floodCount: 0,
+        floodLossAmount: 999,
+      }).floodRecordCount,
+    ).toBe(0);
   });
 });
 
@@ -44,10 +71,13 @@ describe("sanitizeLockedPreviewSignalsForClient", () => {
       insuranceClaimCount: 1,
       auctionRecordCount: 0,
       registryRecordCount: 0,
+      floodRecordCount: 4,
       accidentCount: 7,
       accidents: [{ secret: true }],
       odometer: 120000,
       mileageHistory: [{ odometer: 1 }],
+      isFlooded: true,
+      floodLossAmount: 4_060_218,
       isUnlocked: true,
     };
     const clean = sanitizeLockedPreviewSignalsForClient(dirty);
@@ -57,11 +87,14 @@ describe("sanitizeLockedPreviewSignalsForClient", () => {
       insuranceClaimCount: 1,
       auctionRecordCount: 0,
       registryRecordCount: 0,
+      floodRecordCount: 4,
     });
     for (const key of LOCKED_PUBLIC_FORBIDDEN_KEYS) {
       expect(clean).not.toHaveProperty(key);
     }
     expect(clean).not.toHaveProperty("isUnlocked");
+    expect(clean).not.toHaveProperty("isFlooded");
+    expect(clean).not.toHaveProperty("floodLossAmount");
   });
 
   it("clamps invalid and oversized counts", () => {
@@ -72,6 +105,7 @@ describe("sanitizeLockedPreviewSignalsForClient", () => {
         insuranceClaimCount: "nope",
         auctionRecordCount: 2.7,
         registryRecordCount: null,
+        floodRecordCount: 1.9,
       }),
     ).toEqual({
       mileageRecordCount: 0,
@@ -79,6 +113,7 @@ describe("sanitizeLockedPreviewSignalsForClient", () => {
       insuranceClaimCount: 0,
       auctionRecordCount: 2,
       registryRecordCount: 0,
+      floodRecordCount: 1,
     });
   });
 });
@@ -94,6 +129,7 @@ describe("buildLockedHistorySummary", () => {
         insuranceClaimCount: 0,
         auctionRecordCount: 1,
         registryRecordCount: 0,
+        floodRecordCount: 0,
       },
     );
 
@@ -105,6 +141,23 @@ describe("buildLockedHistorySummary", () => {
     expect(summary?.toLowerCase()).not.toContain("accident");
   });
 
+  it("includes flood damage findings when present", () => {
+    const summary = buildLockedHistorySummary(
+      "en",
+      { vin: "WDDUG8JB2KA456113", year: 2019, make: "Mercedes-Benz", model: "S-Class" },
+      {
+        mileageRecordCount: 0,
+        ownerCount: 0,
+        insuranceClaimCount: 0,
+        auctionRecordCount: 0,
+        registryRecordCount: 0,
+        floodRecordCount: 4,
+      },
+    );
+    expect(summary).toContain("4 flood damage records");
+    expect(summary).toContain("WDDUG8JB2KA456113");
+  });
+
   it("returns null when there are no findings", () => {
     expect(
       lockedPreviewSignalsHaveFindings({
@@ -113,6 +166,7 @@ describe("buildLockedHistorySummary", () => {
         insuranceClaimCount: 0,
         auctionRecordCount: 0,
         registryRecordCount: 0,
+        floodRecordCount: 0,
       }),
     ).toBe(false);
     expect(
@@ -122,6 +176,7 @@ describe("buildLockedHistorySummary", () => {
         insuranceClaimCount: 0,
         auctionRecordCount: 0,
         registryRecordCount: 0,
+        floodRecordCount: 0,
       }),
     ).toBeNull();
   });
@@ -136,6 +191,7 @@ describe("buildLockedHistorySummary", () => {
         insuranceClaimCount: 0,
         auctionRecordCount: 0,
         registryRecordCount: 0,
+        floodRecordCount: 0,
       },
     );
     expect(summary).toContain("VIN WBA3V7106FJ995387");

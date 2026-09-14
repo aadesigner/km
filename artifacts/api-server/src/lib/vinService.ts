@@ -90,6 +90,10 @@ export interface NormalizedVinData {
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
   isTaxi?: boolean | null;
+  /** Korean insurance_v2.floodTotalLossCnt > 0 (null = unknown / not assessed). */
+  isFlooded?: boolean | null;
+  floodCount?: number | null;
+  floodLossAmount?: number | null;
   /** Mid-size gallery for hero / thumbs (prefer normal over big when available). */
   photos?: string[];
   /** Full-resolution gallery for lightbox; falls back to photos when absent. */
@@ -3203,15 +3207,25 @@ export function resolveVinAccidents(input: {
   accidents: NonNullable<NormalizedVinData["accidents"]>;
   insuranceClaims: NonNullable<NormalizedVinData["insuranceClaims"]>;
   accidentCount: number;
+  isFlooded: boolean | null;
+  floodCount: number | null;
+  floodLossAmount: number | null;
 } {
   const { country, insurance, lotDetails, auctionAccidents, registryHistory = [] } = input;
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
   const totalLossDate = str(insurance.totalLossDate);
-  const floodCnt = Number(insurance.floodTotalLossCnt ?? insurance.floodCnt ?? 0);
+  const hasInsuranceBlock = insurance && Object.keys(insurance).length > 0;
+  const floodCntRaw = Number(insurance.floodTotalLossCnt ?? insurance.floodCnt ?? NaN);
+  const floodCnt = Number.isFinite(floodCntRaw) ? floodCntRaw : null;
   const floodCost = sanitizeKoreanRepairKrwAmount(
     Number(insurance.floodTotalLossCost ?? insurance.floodCost ?? insurance.floodDamageCost)
     || null,
   );
+  const isFlooded = !hasInsuranceBlock
+    ? null
+    : floodCnt != null && floodCnt > 0;
+  const floodCount = isFlooded ? floodCnt : (hasInsuranceBlock ? 0 : null);
+  const floodLossAmount = isFlooded ? floodCost : null;
   const rawRecords = Array.isArray(insurance.accidents)
     ? insurance.accidents as Array<Record<string, unknown>>
     : [];
@@ -3283,30 +3297,17 @@ export function resolveVinAccidents(input: {
     accidents = dedupeAccidents([...accidents, ...auctionAccidents]);
   }
 
-  // ImportMotor "Flood damage N times" — insurance_v2.floodTotalLossCnt was previously ignored.
-  if (Number.isFinite(floodCnt) && floodCnt > 0) {
-    const floodAccident: VinAccident = {
-      date: null,
-      severity: floodCnt >= 2 || (floodCost != null && floodCost >= 3_000_000) ? "major" : "moderate",
-      description: floodCnt === 1
-        ? "Flood damage recorded (Korean insurance)"
-        : `Flood damage recorded ${floodCnt} times (Korean insurance)`,
-      country,
-      type: "flood",
-      primaryDamage: "water_flood",
-      secondaryDamage: null,
-      airbagDeployed: null,
-      odometerAtLoss: null,
-      lossAmount: floodCost,
-    };
-    accidents = dedupeAccidents([...accidents, floodAccident]);
-  }
+  // Keep flood out of accident history — shown in its own report section / header pill.
+  accidents = accidents.filter((a) => a.type !== "flood" && a.primaryDamage !== "water_flood");
 
   const accidentCount = accidents.length;
   return {
     accidents: sortHistoryNewestFirst(accidents),
     insuranceClaims,
     accidentCount,
+    isFlooded,
+    floodCount,
+    floodLossAmount,
   };
 }
 
@@ -3526,7 +3527,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     ? extractRecallHistoryFromLots(lots)
     : [];
 
-  const { accidents, insuranceClaims, accidentCount: resolvedAccidentCount } = resolveVinAccidents({
+  const { accidents, insuranceClaims, accidentCount: resolvedAccidentCount, isFlooded, floodCount, floodLossAmount } = resolveVinAccidents({
     country,
     insurance,
     lotDetails,
@@ -3604,6 +3605,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     cylinders,
     isSalvage,
     isStolen,
+    ...(isFlooded != null ? { isFlooded, floodCount, floodLossAmount } : {}),
     titleStatus,
     photos: photosClean,
     ...(photosHd ? { photosHd } : {}),

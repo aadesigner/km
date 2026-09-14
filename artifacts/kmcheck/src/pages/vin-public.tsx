@@ -13,7 +13,7 @@ import {
   Wrench, Palette, MapPin, Calendar,
   ShieldCheck, ShieldAlert, ChevronRight, AlertTriangle,
   Zap, Settings2, TrendingUp, DollarSign, Fuel, Box,
-  X, ChevronLeft, ChevronDown, FileText, ClipboardList,
+  X, ChevronLeft, ChevronDown, FileText, ClipboardList, Droplets,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isKoreanCountry } from "@/lib/korean-currency";
@@ -84,6 +84,7 @@ import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-mark
 import { KoreanWonAmount } from "@/components/korean-won-amount";
 import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
+import { FloodDamageSection } from "@/components/flood-damage-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { RegistryHistorySection } from "@/components/registry-history-section";
@@ -198,6 +199,9 @@ type VinPublicReport = {
   salvage?: boolean | null;
   stolen?: boolean | null;
   taxi?: boolean | null;
+  flooded?: boolean | null;
+  floodCount?: number | null;
+  floodLossAmount?: number | null;
   titleStatus?: string | null;
   photos?: string[] | null;
   photosHd?: string[] | null;
@@ -848,6 +852,8 @@ export default function VinPublic({ params }: Props) {
             isSalvage={data.salvage}
             isStolen={data.stolen}
             isTaxi={data.taxi === true}
+            isFlooded={data.flooded}
+            hasFloodData={data.flooded != null}
             hasSalvageData={data.salvage != null}
             hasTheftData={data.stolen != null}
             marketValue={printMarketValue}
@@ -906,6 +912,9 @@ export default function VinPublic({ params }: Props) {
           ) : null}
           {data.isUnlocked && data.stolen != null ? (
             <PassPill ok={data.stolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
+          ) : null}
+          {data.isUnlocked && data.flooded != null ? (
+            <PassPill ok={data.flooded === false} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
           ) : null}
           {data.isUnlocked ? (
             <PassPill ok={data.taxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
@@ -1385,6 +1394,18 @@ export default function VinPublic({ params }: Props) {
                     ? foundLabel(previewSignals.insuranceClaimCount)
                     : undefined}
                 />
+                {previewSignals && previewSignals.floodRecordCount > 0 ? (
+                  <VinLockedSectionCard
+                    title={t("report_flood_section")}
+                    icon={Droplets}
+                    delay={0.135}
+                    hint={lockedHint}
+                    variant="rows"
+                    accent="bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                    foundCount={previewSignals.floodRecordCount}
+                    foundLabel={foundLabel(previewSignals.floodRecordCount)}
+                  />
+                ) : null}
                 {isKoreanCountry(data.country) ? (
                   <VinLockedSectionCard
                     title={t("report_registry_history")}
@@ -1421,6 +1442,17 @@ export default function VinPublic({ params }: Props) {
               language={language}
               variant="public"
               delay={0.11}
+            />
+
+            <FloodDamageSection
+              isFlooded={data.flooded === true}
+              floodCount={data.floodCount}
+              floodLossAmount={data.floodLossAmount}
+              country={data.country}
+              krwPerUsd={krwPerUsd}
+              t={t}
+              language={language}
+              variant="public"
             />
 
             <RegistryHistorySection

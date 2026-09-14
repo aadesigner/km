@@ -464,11 +464,10 @@ describe("normalizeCarstatResponse", () => {
     });
 
     expect(normalized.insuranceClaims).toHaveLength(2);
-    expect(normalized.accidents?.some((a) => a.type === "flood")).toBe(true);
-    const flood = normalized.accidents?.find((a) => a.type === "flood");
-    expect(flood?.primaryDamage).toBe("water_flood");
-    expect(flood?.lossAmount).toBe(4_060_218);
-    expect(flood?.description).toMatch(/4 times/i);
+    expect(normalized.accidents?.some((a) => a.type === "flood")).toBe(false);
+    expect(normalized.isFlooded).toBe(true);
+    expect(normalized.floodCount).toBe(4);
+    expect(normalized.floodLossAmount).toBe(4_060_218);
     expect(normalized.ownerCount).toBeGreaterThanOrEqual(3);
     expect(normalized.ownerHistory?.map((o) => o.date)).toEqual(
       expect.arrayContaining(["2024-10-14", "2023-06-29"]),
