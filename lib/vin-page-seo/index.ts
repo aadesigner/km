@@ -357,6 +357,8 @@ export type VinSsrBodyContent = {
   specs: Array<{ label: string; value: string }>;
   cta: string;
   links?: VinSsrLink[];
+  /** Optional unique locked findings paragraph (no accident counts). */
+  findingsSummary?: string;
 };
 
 type SsrNavLabels = {
@@ -488,10 +490,15 @@ export function buildVinPageTitle(lang: VinSeoLang, vehicle: VinSeoVehicle): str
 export function buildVinPageDescription(
   lang: VinSeoLang,
   vehicle: VinSeoVehicle,
-  opts?: { locked?: boolean },
+  opts?: { locked?: boolean; findingsSummary?: string | null },
 ): string {
   const vin = normalizeVin(vehicle.vin);
   const locked = opts?.locked !== false;
+  const findings = opts?.findingsSummary?.trim();
+
+  if (locked && findings) {
+    return `${findings} kmcheck.com.`;
+  }
 
   if (!vehicleHasIdentity(vehicle)) {
     if (locked) {
@@ -510,7 +517,11 @@ export function buildVinPageDescription(
   return fn(buildVehicleTitle(vehicle), vin, specSnippet(vehicle));
 }
 
-export function buildVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle): VinSsrBodyContent | null {
+export function buildVinSsrBodyContent(
+  lang: VinSeoLang,
+  vehicle: VinSeoVehicle,
+  opts?: { findingsSummary?: string | null },
+): VinSsrBodyContent | null {
   if (!vehicleHasIdentity(vehicle)) return null;
 
   const labels = SSR_LABELS[lang] ?? SSR_LABELS.en;
@@ -525,11 +536,16 @@ export function buildVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle)
   if (vehicle.color) specs.push({ label: labels.color, value: vehicle.color });
   if (vehicle.country) specs.push({ label: labels.country, value: vehicle.country });
 
+  const findingsSummary = opts?.findingsSummary?.trim() || undefined;
+  const intro = findingsSummary
+    ?? labels.intro.replace("{vehicle}", heading);
+
   return {
     heading,
     vin: normalizeVin(vehicle.vin),
     vinLabel: labels.vin,
-    intro: labels.intro.replace("{vehicle}", heading),
+    intro,
+    ...(findingsSummary ? { findingsSummary } : {}),
     specs,
     cta: labels.cta,
     links: buildVinSsrNavLinks(lang),
@@ -553,8 +569,12 @@ export function buildVinOnlySsrBodyContent(lang: VinSeoLang, vin: string): VinSs
   };
 }
 
-export function resolveVinSsrBodyContent(lang: VinSeoLang, vehicle: VinSeoVehicle): VinSsrBodyContent {
-  return buildVinSsrBodyContent(lang, vehicle) ?? buildVinOnlySsrBodyContent(lang, vehicle.vin);
+export function resolveVinSsrBodyContent(
+  lang: VinSeoLang,
+  vehicle: VinSeoVehicle,
+  opts?: { findingsSummary?: string | null },
+): VinSsrBodyContent {
+  return buildVinSsrBodyContent(lang, vehicle, opts) ?? buildVinOnlySsrBodyContent(lang, vehicle.vin);
 }
 
 /** Resolve relative API image paths to absolute URLs for Open Graph / Twitter cards. */
@@ -581,7 +601,11 @@ export function buildVinPageSeo(
   lang: VinSeoLang,
   vehicle: VinSeoVehicle,
   origin: string,
-  opts?: { odometer?: number | null; isUnlocked?: boolean },
+  opts?: {
+    odometer?: number | null;
+    isUnlocked?: boolean;
+    findingsSummary?: string | null;
+  },
 ): VinPageSeo {
   const vin = normalizeVin(vehicle.vin);
   const vehicleTitle = buildVehicleTitle(vehicle);
@@ -591,7 +615,10 @@ export function buildVinPageSeo(
   const absoluteImage = resolveAbsoluteAssetUrl(siteOrigin, vehicle.thumbnailUrl);
 
   const isUnlocked = opts?.isUnlocked === true;
-  const pageDescription = buildVinPageDescription(lang, vehicle, { locked: !isUnlocked });
+  const pageDescription = buildVinPageDescription(lang, vehicle, {
+    locked: !isUnlocked,
+    findingsSummary: !isUnlocked ? opts?.findingsSummary : undefined,
+  });
 
   const vehicleLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -691,7 +718,9 @@ ${navLinks}
         <h1>${escapeVinHtml(content.heading)}</h1>
         <p><strong>${escapeVinHtml(content.vinLabel)}:</strong> ${escapeVinHtml(content.vin)}</p>
         <p class="lead">${escapeVinHtml(content.intro)}</p>
-${navBlock}
+${content.findingsSummary && content.findingsSummary !== content.intro
+  ? `        <p class="findings">${escapeVinHtml(content.findingsSummary)}</p>\n`
+  : ""}${navBlock}
 ${specBlock}
         <p>${escapeVinHtml(content.cta)}</p>
       </article>
@@ -721,3 +750,13 @@ export function injectVinSsrIntoHtml(html: string, content: VinSsrBodyContent | 
 
   return out;
 }
+
+export {
+  extractLockedPreviewSignals,
+  buildLockedHistorySummary,
+  lockedPreviewSignalsHaveFindings,
+  sanitizeLockedPreviewSignalsForClient,
+  LOCKED_PUBLIC_FORBIDDEN_KEYS,
+  type LockedPreviewSignals,
+} from "./locked-preview";
+

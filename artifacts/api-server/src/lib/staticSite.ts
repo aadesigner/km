@@ -1,7 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { parseVinPagePath } from "@workspace/vin-page-seo";
+import { parseVinPagePath, buildLockedHistorySummary, extractLockedPreviewSignals } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
 import { vinHasReportData } from "./vinService.js";
 import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
@@ -153,7 +153,12 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
       origin,
       isUnlocked: false,
     });
-    return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin, vehicle);
+    const summary = buildLockedHistorySummary(
+      parsed.lang,
+      vehicle,
+      extractLockedPreviewSignals(d as Record<string, unknown>),
+    );
+    return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin, vehicle, summary);
   } catch (err) {
     logger.warn({ err, path: reqPath }, "VIN SEO HTML inject failed");
     return html;

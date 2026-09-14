@@ -138,6 +138,9 @@ type LockedSectionCardProps = {
   variant?: "rows" | "stats" | "timeline";
   accent?: string;
   className?: string;
+  /** Safe count badge — never use for accidents. */
+  foundCount?: number | null;
+  foundLabel?: string;
 };
 
 export function VinLockedSectionCard({
@@ -148,8 +151,11 @@ export function VinLockedSectionCard({
   variant = "rows",
   accent = "bg-muted text-muted-foreground",
   className,
+  foundCount,
+  foundLabel,
 }: LockedSectionCardProps) {
   const tone = sectionToneFromChip(accent);
+  const showFound = foundCount != null && foundCount > 0;
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -169,8 +175,14 @@ export function VinLockedSectionCard({
               <Icon className="h-3.5 w-3.5" />
             </div>
           )}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</h2>
-          <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground min-w-0 truncate">{title}</h2>
+          {showFound ? (
+            <span className="ml-auto shrink-0 inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-bold tabular-nums text-primary">
+              {foundLabel ?? String(foundCount)}
+            </span>
+          ) : (
+            <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
+          )}
         </div>
         <VinLockedSectionBody hint={hint} variant={variant} />
       </VinReportSection>
@@ -178,11 +190,51 @@ export function VinLockedSectionCard({
   );
 }
 
-export function VinLockedHeroStat({ label }: { label: string }) {
+export function VinLockedHeroStat({
+  label,
+  foundCount,
+  foundLabel,
+}: {
+  label: string;
+  foundCount?: number | null;
+  foundLabel?: string;
+}) {
+  const showFound = foundCount != null && foundCount > 0;
   return (
     <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/80 border border-border/60 px-2.5 py-1 w-full justify-center">
-      <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
+      {showFound ? (
+        <span className="text-[10px] font-bold tabular-nums text-primary shrink-0">{foundLabel ?? foundCount}</span>
+      ) : (
+        <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
+      )}
       <span className="text-[10px] font-medium text-muted-foreground truncate">{label}</span>
+    </div>
+  );
+}
+
+/** Custom locked preview summary under the hero — VIN + findings, never accidents. */
+export function VinLockedFindingsSummary({
+  summary,
+  className,
+}: {
+  summary: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card px-4 py-3.5 sm:px-5 sm:py-4 print:hidden",
+        className,
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 h-8 w-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <p className="text-sm leading-relaxed text-foreground/90">
+          {summary}
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,12 @@
 import type { VinPageSeo, VinSeoLang, VinSeoVehicle } from "@workspace/vin-page-seo";
 import {
+  buildLockedHistorySummary,
   buildVinPageSeo,
   buildVinSsrBodyContent,
+  extractLockedPreviewSignals,
   normalizeVin,
   vehicleHasIdentity,
+  type LockedPreviewSignals,
 } from "@workspace/vin-page-seo";
 
 export function catalogDataToVinSeoVehicle(
@@ -27,6 +30,12 @@ export function catalogDataToVinSeoVehicle(
   };
 }
 
+export function lockedSignalsFromCatalogData(
+  data: Record<string, unknown>,
+): LockedPreviewSignals {
+  return extractLockedPreviewSignals(data);
+}
+
 export function buildVinSeoFromCatalogData(
   lang: VinSeoLang,
   vin: string,
@@ -40,8 +49,28 @@ export function buildVinSeoFromCatalogData(
 ) {
   const siteOrigin = (opts?.origin ?? process.env.SITE_URL ?? "https://kmcheck.com").replace(/\/$/, "");
   const vehicle = catalogDataToVinSeoVehicle(vin, data, opts?.thumbnailUrl);
+  const isUnlocked = opts?.isUnlocked === true;
+  const signals = isUnlocked ? null : extractLockedPreviewSignals(data);
+  const findingsSummary = signals
+    ? buildLockedHistorySummary(lang, vehicle, signals)
+    : null;
+
   return buildVinPageSeo(lang, vehicle, siteOrigin, {
     odometer: opts?.odometer,
-    isUnlocked: opts?.isUnlocked,
+    isUnlocked,
+    findingsSummary,
   });
 }
+
+export function buildLockedSsrFromCatalog(
+  lang: VinSeoLang,
+  vehicle: VinSeoVehicle,
+  data: Record<string, unknown>,
+) {
+  const signals = extractLockedPreviewSignals(data);
+  const findingsSummary = buildLockedHistorySummary(lang, vehicle, signals);
+  if (!vehicleHasIdentity(vehicle)) return null;
+  return buildVinSsrBodyContent(lang, vehicle, { findingsSummary });
+}
+
+export type { VinPageSeo, LockedPreviewSignals };

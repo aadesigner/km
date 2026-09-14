@@ -37,7 +37,7 @@ import { isRecaptchaRelaxedForRequest } from "../lib/allowedOrigins.js";
 import rateLimit from "express-rate-limit";
 import { createReadStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { VIN_SEO_LANGS, type VinSeoLang } from "@workspace/vin-page-seo";
+import { VIN_SEO_LANGS, extractLockedPreviewSignals, sanitizeLockedPreviewSignalsForClient, type VinSeoLang } from "@workspace/vin-page-seo";
 import { buildVinSeoFromCatalogData } from "../lib/vinPageSeo.js";
 import {
   applyFrozenKrwPerUsd,
@@ -934,6 +934,13 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     price: displayPrice,
     currency,
   };
+
+  if (!isUnlocked) {
+    // Counts only — never accident/salvage/stolen/odometer values or history arrays.
+    response.previewSignals = sanitizeLockedPreviewSignalsForClient(
+      extractLockedPreviewSignals(d as Record<string, unknown>),
+    );
+  }
 
   if (isUnlocked) {
     const catalogPhotosHd = Array.isArray(d.photosHd)

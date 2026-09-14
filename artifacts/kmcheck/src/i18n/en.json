@@ -949,6 +949,7 @@
   "vin_public_owners_label": "Previous owners",
   "vin_public_unlocked_badge": "Full Report — Unlocked",
   "vin_public_share_copied": "Link copied!",
+  "vin_public_found_count": "{count} found",
   "safety_status": "Safety Status",
   "all_clear": "All Clear",
   "issue_found": "Issue Found",

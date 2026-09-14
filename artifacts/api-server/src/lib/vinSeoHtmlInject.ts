@@ -124,6 +124,7 @@ export function injectVinPageSeoIntoHtml(
   lang: VinSeoLang,
   origin: string,
   vehicle?: VinSeoVehicle | null,
+  findingsSummary?: string | null,
 ): string {
   const dir = lang === "ar" ? "rtl" : "ltr";
   let out = removeGeneratedSeoTags(html);
@@ -146,7 +147,7 @@ export function injectVinPageSeoIntoHtml(
   if (!seo.noIndex) {
     const vin = normalizeVin(vehicle?.vin ?? seo.canonicalPath.split("/").pop() ?? "");
     const ssrContent = vehicle
-      ? resolveVinSsrBodyContent(lang, { ...vehicle, vin })
+      ? resolveVinSsrBodyContent(lang, { ...vehicle, vin }, { findingsSummary })
       : null;
     if (ssrContent) {
       out = injectVinSsrIntoHtml(out, ssrContent);

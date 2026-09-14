@@ -22,7 +22,7 @@ import { translateTitleStatus } from "@/lib/translate-title-status";
 import { translateLotStatus } from "@/lib/translate-lot-status";
 import { SEOHead } from "@/components/seo";
 import { SITE_ORIGIN } from "@/lib/seo-config";
-import { buildVinPageSeo, type VinSeoLang } from "@workspace/vin-page-seo";
+import { buildLockedHistorySummary, buildVinPageSeo, type LockedPreviewSignals, type VinSeoLang } from "@workspace/vin-page-seo";
 import { PrintReportBranding } from "@/components/print-report-branding";
 import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
@@ -97,6 +97,7 @@ import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
 import {
+  VinLockedFindingsSummary,
   VinLockedHeroStat,
   VinLockedSectionCard,
   VinLockedTimelinePreview,
@@ -222,6 +223,8 @@ type VinPublicReport = {
   serviceHistory?: ServiceHistoryEntry[] | null;
   auctionHistory?: AuctionEntry[] | null;
   krwPerUsd?: number | null;
+  /** Locked preview only — safe counts, never accidents. */
+  previewSignals?: LockedPreviewSignals | null;
 };
 
 interface Props {
@@ -504,6 +507,14 @@ export default function VinPublic({ params }: Props) {
       {
         isUnlocked: data.isUnlocked,
         odometer: resolvedOdometer,
+        findingsSummary: !data.isUnlocked && data.previewSignals
+          ? buildLockedHistorySummary(seoLang, {
+              vin,
+              make: data.make,
+              model: data.model,
+              year: data.year,
+            }, data.previewSignals)
+          : undefined,
       },
     );
   }, [data, seoLang, vin, seoOrigin, vinOnlySeo]);
@@ -719,6 +730,17 @@ export default function VinPublic({ params }: Props) {
   });
 
   const lockedHint = t("vin_public_locked_hint");
+  const previewSignals = !data.isUnlocked ? data.previewSignals ?? null : null;
+  const lockedFindingsSummary = previewSignals
+    ? buildLockedHistorySummary(seoLang, {
+        vin,
+        make: data.make,
+        model: data.model,
+        year: data.year,
+      }, previewSignals)
+    : null;
+  const foundLabel = (count: number) =>
+    t("vin_public_found_count").replace("{count}", String(count));
 
   const vehicleSpecFields = [
     { icon: Car, label: t("free_decoder_field_make"), value: data.make },
@@ -852,8 +874,20 @@ export default function VinPublic({ params }: Props) {
             <>
               <VinLockedHeroStat label={t("vin_public_accidents_section")} />
               <VinLockedHeroStat label={t("vin_public_safety_section")} />
-              <VinLockedHeroStat label={t("vin_public_mileage_section")} />
-              <VinLockedHeroStat label={t("vin_result_owners_title")} />
+              <VinLockedHeroStat
+                label={t("vin_public_mileage_section")}
+                foundCount={previewSignals?.mileageRecordCount}
+                foundLabel={previewSignals && previewSignals.mileageRecordCount > 0
+                  ? foundLabel(previewSignals.mileageRecordCount)
+                  : undefined}
+              />
+              <VinLockedHeroStat
+                label={t("vin_result_owners_title")}
+                foundCount={previewSignals?.ownerCount}
+                foundLabel={previewSignals && previewSignals.ownerCount > 0
+                  ? foundLabel(previewSignals.ownerCount)
+                  : undefined}
+              />
             </>
           ) : (
             <>
@@ -885,6 +919,10 @@ export default function VinPublic({ params }: Props) {
             </>
           )}
         </VinReportHero>
+
+        {!data.isUnlocked && lockedFindingsSummary ? (
+          <VinLockedFindingsSummary summary={lockedFindingsSummary} />
+        ) : null}
 
         {data.isUnlocked && shouldShowReportTimeline(timelineEvents) ? (
           <ReportHistoryTimeline
@@ -932,6 +970,10 @@ export default function VinPublic({ params }: Props) {
                   hint={lockedHint}
                   variant="timeline"
                   accent="bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                  foundCount={previewSignals?.mileageRecordCount}
+                  foundLabel={previewSignals && previewSignals.mileageRecordCount > 0
+                    ? foundLabel(previewSignals.mileageRecordCount)
+                    : undefined}
                 />
                 <VinLockedSectionCard
                   title={t("vin_result_owners_title")}
@@ -940,6 +982,10 @@ export default function VinPublic({ params }: Props) {
                   hint={lockedHint}
                   variant="rows"
                   accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                  foundCount={previewSignals?.ownerCount}
+                  foundLabel={previewSignals && previewSignals.ownerCount > 0
+                    ? foundLabel(previewSignals.ownerCount)
+                    : undefined}
                 />
               </div>
             ) : (
@@ -1337,6 +1383,10 @@ export default function VinPublic({ params }: Props) {
                   hint={lockedHint}
                   variant="rows"
                   accent="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  foundCount={previewSignals?.insuranceClaimCount}
+                  foundLabel={previewSignals && previewSignals.insuranceClaimCount > 0
+                    ? foundLabel(previewSignals.insuranceClaimCount)
+                    : undefined}
                 />
                 {isKoreanCountry(data.country) ? (
                   <VinLockedSectionCard
@@ -1346,6 +1396,10 @@ export default function VinPublic({ params }: Props) {
                     hint={lockedHint}
                     variant="rows"
                     accent="bg-teal-500/10 text-teal-600 dark:text-teal-400"
+                    foundCount={previewSignals?.registryRecordCount}
+                    foundLabel={previewSignals && previewSignals.registryRecordCount > 0
+                      ? foundLabel(previewSignals.registryRecordCount)
+                      : undefined}
                   />
                 ) : null}
                 <VinLockedSectionCard
