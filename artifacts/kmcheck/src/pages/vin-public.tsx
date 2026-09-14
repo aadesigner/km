@@ -866,7 +866,6 @@ export default function VinPublic({ params }: Props) {
             && lockedPreviewSignalsHaveFindings(previewSignals)
               ? (
                 <VinLockedFindingsSummary
-                  vin={vin}
                   signals={previewSignals}
                   t={t}
                 />

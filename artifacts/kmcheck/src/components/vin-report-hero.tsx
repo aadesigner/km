@@ -698,14 +698,11 @@ export function VinReportHero({
                 </p>
               )}
               {showDesktopSummary && !useLockedPanel && <HeroSummaryList items={summaryItems!} />}
+              {useLockedPanel ? lockedPanel : null}
             </div>
           </div>
 
-          {useLockedPanel ? (
-            <div className="px-3 sm:px-5 pb-3 sm:pb-5 pt-0 mt-auto print:hidden">
-              {lockedPanel}
-            </div>
-          ) : showStatsRow ? (
+          {!useLockedPanel && showStatsRow ? (
           <div className={cn(
             "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-0 grid gap-1.5 sm:gap-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats [&>*]:flex [&>*]:w-full [&>*]:justify-center print:grid-cols-4 print:gap-1 print:py-1.5 print:px-2",
             locked ? "grid-cols-1" : "grid-cols-2",
