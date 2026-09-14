@@ -188,8 +188,9 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
   if (!publicDir) return null;
   if (!existsSync(path.join(publicDir, "sitemap-pages.xml"))) return null;
 
-  const { desc } = await import("drizzle-orm");
+  const { desc, sql } = await import("drizzle-orm");
   const { db, vinCatalogTable } = await import("@workspace/db");
+  const { CATALOG_HAS_PREVIEW_PHOTO_SQL } = await import("./vinCatalogImport.js");
 
   const today = new Date().toISOString().slice(0, 10);
   const rows = await db
@@ -198,6 +199,7 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
       updatedAt: vinCatalogTable.updatedAt,
     })
     .from(vinCatalogTable)
+    .where(sql.raw(CATALOG_HAS_PREVIEW_PHOTO_SQL))
     .orderBy(desc(vinCatalogTable.updatedAt))
     .limit(50_000);
 

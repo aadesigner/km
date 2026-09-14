@@ -14,6 +14,8 @@ import {
   dedupeCatalogImportRows,
   mergeCatalogData,
   catalogHasDeliverableReport,
+  catalogHasPreviewPhoto,
+  catalogIsSeoIndexable,
   catalogDeliverableFromHint,
   normalizeJsonImportRecord,
   parseCsvBool,
@@ -47,6 +49,24 @@ describe("catalogHasDeliverableReport", () => {
 
   it("rejects empty catalog payload", () => {
     expect(catalogHasDeliverableReport({})).toBe(false);
+  });
+
+  it("requires preview photo for SEO indexability", () => {
+    const withHistoryOnly = {
+      make: "Hyundai",
+      model: "Elantra",
+      year: 2018,
+      mileageHistory: [{ date: "2020-01-01", odometer: 50000 }],
+    };
+    expect(catalogHasDeliverableReport(withHistoryOnly)).toBe(true);
+    expect(catalogHasPreviewPhoto(withHistoryOnly)).toBe(false);
+    expect(catalogIsSeoIndexable(withHistoryOnly)).toBe(false);
+
+    const withPhoto = {
+      ...withHistoryOnly,
+      photos: ["https://cdn.test/1.jpg"],
+    };
+    expect(catalogIsSeoIndexable(withPhoto)).toBe(true);
   });
 
   it("catalogDeliverableFromHint matches full-data helper", () => {

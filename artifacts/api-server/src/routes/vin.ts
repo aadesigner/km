@@ -842,8 +842,8 @@ router.get("/vin/seo/:vin", publicVinLimiter, async (req, res) => {
   }
 
   const d = report.dataSource;
-  const photos = Array.isArray(d.photos) ? (d.photos as string[]).filter(Boolean) : [];
-  const previewPhotos = proxyPhotoUrls(photos.slice(0, 1), report.mediaVersion);
+  const lockedPreviewSources = await resolveLockedPreviewPhotoSources(vin, d);
+  const previewPhotos = proxyPhotoUrls(lockedPreviewSources, report.mediaVersion);
 
   const seo = buildVinSeoFromCatalogData(seoLang, vin, d, {
     thumbnailUrl: previewPhotos[0] ?? null,

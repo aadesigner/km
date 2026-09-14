@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { parseVinPagePath, buildLockedHistorySummary, extractLockedPreviewSignals } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
-import { vinHasReportData } from "./vinService.js";
+import { resolveLockedPreviewPhotoSources, vinHasReportData } from "./vinService.js";
 import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { buildImageProxyUrl } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
@@ -142,10 +142,15 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
     }
 
     const d = report.dataSource;
-    const photos = Array.isArray(d.photos) ? (d.photos as string[]).filter(Boolean) : [];
-    const thumbnailUrl = photos[0]
-      ? buildImageProxyUrl(photos[0], { mediaVersion: report.mediaVersion })
+    const lockedPreviewSources = await resolveLockedPreviewPhotoSources(parsed.vin, d);
+    const thumbnailUrl = lockedPreviewSources[0]
+      ? buildImageProxyUrl(lockedPreviewSources[0], { mediaVersion: report.mediaVersion })
       : null;
+
+    if (!thumbnailUrl) {
+      const seo = buildVinOnlyFallbackSeo(parsed.lang, parsed.vin, origin);
+      return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin);
+    }
 
     const vehicle = catalogDataToVinSeoVehicle(parsed.vin, d, thumbnailUrl);
     const seo = buildVinSeoFromCatalogData(parsed.lang, parsed.vin, d, {

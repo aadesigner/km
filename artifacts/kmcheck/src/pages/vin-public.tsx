@@ -527,7 +527,7 @@ export default function VinPublic({ params }: Props) {
       jsonLd={notFound ? undefined : pageSeo.jsonLd}
       ogImage={pageSeo.ogImage}
       ogImageAlt={pageSeo.ogImageAlt}
-      noIndex={notFound || undefined}
+      noIndex={notFound || pageSeo.noIndex || undefined}
     />
   );
 

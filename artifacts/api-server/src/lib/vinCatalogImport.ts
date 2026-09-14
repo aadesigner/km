@@ -57,6 +57,36 @@ export function catalogDeliverableFromHint(hint: CatalogDeliverableHint): boolea
   return false;
 }
 
+function catalogPhotoArrayHasUrl(value: unknown): boolean {
+  if (!Array.isArray(value)) return false;
+  return value.some((p) => typeof p === "string" && p.trim().length > 0);
+}
+
+/** True when catalog `data` stores at least one still or 360 preview URL. */
+export function catalogHasPreviewPhoto(data: unknown): boolean {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const d = data as Record<string, unknown>;
+  return (
+    catalogPhotoArrayHasUrl(d.photos)
+    || catalogPhotoArrayHasUrl(d.photosHd)
+    || catalogPhotoArrayHasUrl(d.photos360Exterior)
+  );
+}
+
+/** Google/sitemap eligibility — deliverable catalog row with a teaser image only. */
+export function catalogIsSeoIndexable(data: unknown): boolean {
+  return catalogHasDeliverableReport(data) && catalogHasPreviewPhoto(data);
+}
+
+/** SQL fragment for VIN sitemap queries — keep in sync with catalogHasPreviewPhoto. */
+export const CATALOG_HAS_PREVIEW_PHOTO_SQL = `
+  (
+    jsonb_array_length(COALESCE(data->'photos', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'photosHd', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'photos360Exterior', '[]'::jsonb)) > 0
+  )
+`.trim();
+
 const JSON_META_KEYS = new Set([
   "id",
   "vin",

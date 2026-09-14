@@ -656,12 +656,14 @@ export function buildVinPageSeo(
     primaryImageOfPage: absoluteImage ?? undefined,
   };
 
+  const noIndex = !absoluteImage;
+
   return {
     title: buildVinPageTitle(lang, vehicle),
     description: pageDescription,
     canonicalPath,
-    noIndex: false,
-    jsonLd: [webPageLd, vehicleLd],
+    noIndex,
+    jsonLd: noIndex ? [] : [webPageLd, vehicleLd],
     ogImage: absoluteImage,
     ogImageAlt: vehicleTitle,
   };

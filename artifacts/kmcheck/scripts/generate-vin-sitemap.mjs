@@ -157,7 +157,13 @@ const client = new pg.Client({
 try {
   await client.connect();
   const result = await client.query(
-    `SELECT vin, updated_at FROM vin_catalog ORDER BY updated_at DESC LIMIT 50000`,
+    `SELECT vin, updated_at FROM vin_catalog
+     WHERE (
+       jsonb_array_length(COALESCE(data->'photos', '[]'::jsonb)) > 0
+       OR jsonb_array_length(COALESCE(data->'photosHd', '[]'::jsonb)) > 0
+       OR jsonb_array_length(COALESCE(data->'photos360Exterior', '[]'::jsonb)) > 0
+     )
+     ORDER BY updated_at DESC LIMIT 50000`,
   );
   rows = result.rows;
   await client.end();

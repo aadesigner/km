@@ -193,7 +193,7 @@ describe("vin-page-seo", () => {
       model: "3 Series",
       engine: "2.0L",
       country: "KR",
-    });
+    }, "/api/vin/image?token=abc");
     const seo = buildVinPageSeo("en", vehicle, "https://kmcheck.com", { isUnlocked: false });
     const html = injectVinPageSeoIntoHtml(SAMPLE_HTML, seo, "en", "https://kmcheck.com", vehicle);
 
@@ -207,10 +207,27 @@ describe("vin-page-seo", () => {
     expect(html.indexOf('id="kmcheck-vin-ssr"')).toBeGreaterThan(html.indexOf("</div>"));
   });
 
-  it("emits WebPage + Vehicle JSON-LD", () => {
+  it("noindexes catalog pages without a preview image", () => {
     const seo = buildVinPageSeo(
       "en",
       { vin: "1HGBH41JXMN109186", make: "Honda", model: "Accord", year: 1991 },
+      "https://kmcheck.com",
+    );
+    expect(seo.noIndex).toBe(true);
+    expect(seo.jsonLd).toHaveLength(0);
+    expect(seo.ogImage).toBeUndefined();
+  });
+
+  it("emits WebPage + Vehicle JSON-LD when preview image exists", () => {
+    const seo = buildVinPageSeo(
+      "en",
+      {
+        vin: "1HGBH41JXMN109186",
+        make: "Honda",
+        model: "Accord",
+        year: 1991,
+        thumbnailUrl: "/api/vin/image?token=abc",
+      },
       "https://kmcheck.com",
     );
     expect(seo.noIndex).toBe(false);
