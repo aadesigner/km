@@ -39,7 +39,10 @@ export function isEuropeanCountry(country?: string | null): boolean {
 /** Encar/KOTSA insurance payouts and registry repair costs are stored as KRW. */
 export function isKoreanSourcedAccidentType(type?: string | null): boolean {
   const normalized = type?.toLowerCase();
-  return normalized === "insurance" || normalized === "registry" || normalized === "inspection";
+  return normalized === "insurance"
+    || normalized === "registry"
+    || normalized === "inspection"
+    || normalized === "flood";
 }
 
 /** Normalize admin/provider currency tags to KRW / USD / EUR when recognizable. */

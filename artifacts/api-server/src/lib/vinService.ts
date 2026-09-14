@@ -2624,7 +2624,11 @@ export function isKoreanRecallRegistryEvent(event: RegistryHistoryEvent): boolea
 
 function isKoreanOwnershipTitle(title: string): boolean {
   const t = title.toLowerCase().replace(/\s+/g, " ").trim();
-  return t === "ownership" || /owner change/.test(t);
+  return t === "ownership"
+    || /owner change/.test(t)
+    // ImportMotor / Encar first registration — counts as ownership timeline entry
+    || /first vehicle number/.test(t)
+    || /first registration/.test(t);
 }
 
 function pickLotHistoryBlocks(lots: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
@@ -2926,23 +2930,56 @@ export function extractKoreanOwnerHistory(
       if (!isKoreanOwnershipTitle(title)) continue;
 
       const changeDate = normalizeEventDate(strField(item, "Change date"))
-        ?? normalizeEventDate(strField(item, "Date of change"));
+        ?? normalizeEventDate(strField(item, "Date of change"))
+        ?? normalizeEventDate(strField(item, "Initial registration date"))
+        ?? normalizeEventDate(strField(item, "First registration date"))
+        ?? normalizeHistoryGroupDate(strField(group, "date"));
       const mileage = parseKmFromText(strField(item, "Drown distance when changing"))
         ?? parseKmFromText(strField(item, "Driving distance when changing"))
         ?? parseKmFromText(strField(item, "sub"));
       const transaction = strField(item, "Transaction")
         ?? strField(item, "Transaction type");
       const flag = strField(item, "flag");
+      const titleLower = title.toLowerCase();
+      const lotStatus = /first vehicle|first registration/.test(titleLower)
+        ? (transaction ?? flag ?? "First registration")
+        : (transaction ?? flag);
 
       events.push({
         date: changeDate,
         location: null,
         mileage,
         auctionPrice: null,
-        lotStatus: transaction ?? flag,
+        lotStatus,
         condition: null,
       });
     }
+  }
+
+  // Always merge insurance_v2.ownerChanges — do not stop after history rows
+  // (history can be incomplete while ownerChanges has the full transfer list).
+  const dates = Array.isArray(insurance.ownerChanges)
+    ? (insurance.ownerChanges as unknown[])
+      .map((d) => normalizeEventDate(str(d)))
+      .filter((d): d is string => !!d)
+    : [];
+
+  const existingDates = new Set(
+    events.map((e) => e.date?.slice(0, 10)).filter((d): d is string => !!d),
+  );
+
+  for (const date of dates) {
+    const key = date.slice(0, 10);
+    if (existingDates.has(key)) continue;
+    existingDates.add(key);
+    events.push({
+      date,
+      location: null,
+      mileage: null,
+      auctionPrice: null,
+      lotStatus: null,
+      condition: null,
+    });
   }
 
   const meaningful = events.filter((entry) =>
@@ -2952,24 +2989,7 @@ export function extractKoreanOwnerHistory(
     || isMeaningfulProviderText(entry.location),
   );
 
-  if (meaningful.length > 0) {
-    return sortOwnerHistoryChronologically(dedupeOwnerHistory(meaningful));
-  }
-
-  const dates = Array.isArray(insurance.ownerChanges)
-    ? (insurance.ownerChanges as unknown[])
-      .map((d) => normalizeEventDate(str(d)))
-      .filter((d): d is string => !!d)
-    : [];
-
-  return sortOwnerHistoryChronologically(dedupeOwnerHistory(dates.map((date) => ({
-    date,
-    location: null,
-    mileage: null,
-    auctionPrice: null,
-    lotStatus: null,
-    condition: null,
-  }))));
+  return sortOwnerHistoryChronologically(dedupeOwnerHistory(meaningful));
 }
 
 function mapKoreanRegistryContentItem(
@@ -3187,6 +3207,11 @@ export function resolveVinAccidents(input: {
   const { country, insurance, lotDetails, auctionAccidents, registryHistory = [] } = input;
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
   const totalLossDate = str(insurance.totalLossDate);
+  const floodCnt = Number(insurance.floodTotalLossCnt ?? insurance.floodCnt ?? 0);
+  const floodCost = sanitizeKoreanRepairKrwAmount(
+    Number(insurance.floodTotalLossCost ?? insurance.floodCost ?? insurance.floodDamageCost)
+    || null,
+  );
   const rawRecords = Array.isArray(insurance.accidents)
     ? insurance.accidents as Array<Record<string, unknown>>
     : [];
@@ -3256,6 +3281,25 @@ export function resolveVinAccidents(input: {
 
   if (auctionAccidents.length > 0) {
     accidents = dedupeAccidents([...accidents, ...auctionAccidents]);
+  }
+
+  // ImportMotor "Flood damage N times" — insurance_v2.floodTotalLossCnt was previously ignored.
+  if (Number.isFinite(floodCnt) && floodCnt > 0) {
+    const floodAccident: VinAccident = {
+      date: null,
+      severity: floodCnt >= 2 || (floodCost != null && floodCost >= 3_000_000) ? "major" : "moderate",
+      description: floodCnt === 1
+        ? "Flood damage recorded (Korean insurance)"
+        : `Flood damage recorded ${floodCnt} times (Korean insurance)`,
+      country,
+      type: "flood",
+      primaryDamage: "water_flood",
+      secondaryDamage: null,
+      airbagDeployed: null,
+      odometerAtLoss: null,
+      lossAmount: floodCost,
+    };
+    accidents = dedupeAccidents([...accidents, floodAccident]);
   }
 
   const accidentCount = accidents.length;
@@ -3454,6 +3498,12 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   const resolvedOwnerHistory = dedupeOwnerHistory(
     resolveOwnerHistoryFromLots(lots, insurance, ownerHistory),
   );
+  // Prefer the richer of insurance ownerChangeCnt and actual timeline rows we extracted.
+  const ownerCount = Math.max(
+    ownerChanges > 0 ? ownerChanges + 1 : 0,
+    resolvedOwnerHistory.length,
+    1,
+  );
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
 
   // totalLossCnt / explicit salvage flags + NA auction title strings → isSalvage.
@@ -3465,7 +3515,9 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
       ?? (typeof insurance.totalLoss === "boolean" ? insurance.totalLoss : null)
     );
   const isSalvage = isSalvageFromInsurance || isSalvageFromLots;
-  const isStolen = !!(insurance.stolen ?? insurance.is_stolen ?? insurance.theft ?? insurance.isStolen);
+  const robberCnt = Number(insurance.robberCnt ?? insurance.theftCnt ?? 0);
+  const isStolen = robberCnt > 0
+    || !!(insurance.stolen ?? insurance.is_stolen ?? insurance.theft ?? insurance.isStolen);
 
   const registryHistory = lotsHaveRegistryTimeline(lots)
     ? extractRegistryHistoryFromLots(lots)
@@ -3547,7 +3599,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     country,
     odometer: resolvedOdometer,
     accidentCount: resolvedAccidentCount,
-    ownerCount: ownerChanges + 1,
+    ownerCount,
     hp,
     cylinders,
     isSalvage,

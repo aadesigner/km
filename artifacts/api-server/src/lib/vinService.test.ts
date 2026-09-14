@@ -436,6 +436,46 @@ describe("normalizeCarstatResponse", () => {
     expect(normalized.registryHistory?.some((e) => e.type === "inspection")).toBe(true);
   });
 
+  it("maps Korea floodTotalLossCnt and robberCnt that ImportMotor shows", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2019,
+      vin: "WDDUG8JB2KA456113",
+      manufacturer: { name: "Benz" },
+      model: { name: "S-Class" },
+      lots: [{
+        domain: { name: "encar_com" },
+        odometer: { km: 50000 },
+        location: { country: { iso: "kr", name: "kr" } },
+        details: {
+          insurance_v2: {
+            ownerChangeCnt: 2,
+            ownerChanges: ["2024-10-14", "2023-06-29"],
+            floodTotalLossCnt: 4,
+            floodTotalLossCost: 4_060_218,
+            robberCnt: 0,
+            totalLossCnt: 0,
+            accidents: [
+              { date: "2022-12-21", type: "1", insuranceBenefit: 5_928_477 },
+              { date: "2023-06-26", type: "2", insuranceBenefit: 1_398_650 },
+            ],
+          },
+        },
+      }],
+    });
+
+    expect(normalized.insuranceClaims).toHaveLength(2);
+    expect(normalized.accidents?.some((a) => a.type === "flood")).toBe(true);
+    const flood = normalized.accidents?.find((a) => a.type === "flood");
+    expect(flood?.primaryDamage).toBe("water_flood");
+    expect(flood?.lossAmount).toBe(4_060_218);
+    expect(flood?.description).toMatch(/4 times/i);
+    expect(normalized.ownerCount).toBeGreaterThanOrEqual(3);
+    expect(normalized.ownerHistory?.map((o) => o.date)).toEqual(
+      expect.arrayContaining(["2024-10-14", "2023-06-29"]),
+    );
+    expect(normalized.isStolen).toBe(false);
+  });
+
   it("does not synthesize engine from hp when engine.name is missing", () => {
     const normalized = normalizeCarstatResponse({
       year: 2019,
@@ -742,6 +782,34 @@ describe("extractKoreanOwnerHistory", () => {
     expect(owners).toHaveLength(2);
     expect(owners[0]?.date).toBe("2025-01-13");
     expect(owners[1]?.date).toBe("2024-12-24");
+  });
+
+  it("merges insurance ownerChanges with history ownership rows (does not drop either)", () => {
+    const owners = extractKoreanOwnerHistory([{
+      details: {
+        history: [{
+          date: "July 19",
+          content: [{
+            title: "Owner change",
+            "Change date": "June 29, 2023",
+            Transaction: "Owner change",
+          }, {
+            title: "First vehicle number",
+            "Initial registration date": "July 31, 2019",
+            "Previous plate": "61부****",
+          }],
+        }],
+      },
+    }], {
+      ownerChangeCnt: 2,
+      ownerChanges: ["2024-10-14", "2023-06-29"],
+    });
+
+    expect(owners.map((o) => o.date)).toEqual([
+      "2024-10-14",
+      "2023-06-29",
+      "2019-07-31",
+    ]);
   });
 
   it("deduplicates repeated ownership rows with the same date and mileage", () => {
