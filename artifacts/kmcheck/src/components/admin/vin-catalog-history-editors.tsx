@@ -699,6 +699,8 @@ export type VinCatalogHistoryFormSlice = {
   auctionHistory: CatalogAuctionForm[];
   registryHistory: CatalogRegistryForm[];
   marketData: CatalogMarketDataForm;
+  floodCount: string;
+  floodLossAmount: string;
 };
 
 export function VinCatalogHistorySections({
@@ -1044,6 +1046,36 @@ export function VinCatalogHistorySections({
           </div>
         )}
       />
+
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-sky-500/5 to-background shadow-sm">
+        <div className="px-4 py-3.5 border-b border-border/60">
+          <p className="text-sm font-semibold tracking-tight">Flood history</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+            Count and loss amount for the flood report card. Turn on “Flood damage” under Metrics to show them on the report.
+          </p>
+        </div>
+        <div className="px-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AdminTextField
+              label="Flood record count"
+              value={form.floodCount}
+              onChange={(v) => onChange({ floodCount: v })}
+              type="number"
+              compact={compact}
+            />
+            <AdminAmountWithCurrency
+              label="Flood loss amount"
+              amount={form.floodLossAmount}
+              currency="KRW"
+              onAmountChange={(v) => onChange({ floodLossAmount: v })}
+              onCurrencyChange={() => {}}
+              krwPerUsd={krwPerUsd}
+              compact={compact}
+              showCurrencySelect={false}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-background shadow-sm">
         <div className="px-4 py-3.5 border-b border-primary/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

@@ -374,6 +374,7 @@ function historyRecordCount(form: VinCatalogFormState): number {
     + form.auctionHistory.length
     + form.registryHistory.length
     + (form.marketData.estimatedValue || form.marketData.lastAuctionPrice ? 1 : 0)
+    + (form.floodCount.trim() || form.floodLossAmount.trim() ? 1 : 0)
   );
 }
 
@@ -555,23 +556,9 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
         />
         <AdminCheckField
           label="Flood damage"
-          hint="From Korean floodTotalLossCnt (official flood). Not the ImportMotor row labeled Flood damage (that is other-party claims)."
+          hint="Shows the flood pill and flood section on reports (edit count/amount under History)"
           checked={form.isFlooded}
           onChange={(v) => set("isFlooded", v)}
-        />
-        <AdminTextField
-          label="Flood record count"
-          value={form.floodCount}
-          onChange={(v) => set("floodCount", v)}
-          type="number"
-          compact={compact}
-        />
-        <AdminTextField
-          label="Flood loss amount (KRW)"
-          value={form.floodLossAmount}
-          onChange={(v) => set("floodLossAmount", v)}
-          type="number"
-          compact={compact}
         />
       </div>
     </div>
