@@ -3,6 +3,8 @@
  * Stored as stable English tokens; UI/report labels come from i18n.
  */
 
+import { resolveCountryIso2 } from "./format-country-name";
+
 export type SelectOption = { value: string; label: string };
 
 export const ADMIN_FUEL_OPTIONS: { value: string; i18nKey: string }[] = [
@@ -170,7 +172,10 @@ export function resolveCountrySelectValue(raw: string): string {
   if (!trimmed) return "";
   const lower = trimmed.toLowerCase();
   const hit = ADMIN_COUNTRY_CODES.find((c) => c === lower);
-  return hit ?? trimmed;
+  if (hit) return hit;
+  const iso = resolveCountryIso2(trimmed)?.toLowerCase();
+  if (iso && (ADMIN_COUNTRY_CODES as readonly string[]).includes(iso)) return iso;
+  return trimmed;
 }
 
 /** Build select options; keep an unknown current value so edits don't wipe provider data. */

@@ -1,6 +1,7 @@
+import { resolveCountryIso2 } from "./format-country-name";
+
 /** Default KRW per 1 USD when admin rate is unset (USD/KRW ~1,415 as of Aug 2026) */
 export const DEFAULT_KRW_PER_USD = 1415;
-
 /** Admin amount currencies only — no CAD/GBP/etc. */
 export type AmountCurrencyCode = "KRW" | "USD" | "EUR";
 
@@ -9,22 +10,29 @@ const EUROPE_COUNTRY_CODES = new Set([
   "al", "ad", "at", "ba", "be", "bg", "by", "ch", "cy", "cz", "de", "dk", "ee",
   "es", "fi", "fr", "gb", "gr", "hr", "hu", "ie", "is", "it", "li", "lt", "lu",
   "lv", "mc", "md", "me", "mk", "mt", "nl", "no", "pl", "pt", "ro", "rs", "se",
-  "si", "sk", "sm", "ua", "va", "xk", "xk-xk",
+  "si", "sk", "sm", "ua", "va", "xk",
 ]);
 
+function countryIsoLower(country?: string | null): string | null {
+  const iso = resolveCountryIso2(country);
+  if (iso) return iso.toLowerCase();
+  const c = country?.toLowerCase().trim();
+  return c || null;
+}
+
 export function isKoreanCountry(country?: string | null): boolean {
-  return country?.toLowerCase() === "kr";
+  return countryIsoLower(country) === "kr";
 }
 
 export function isUsdDefaultCountry(country?: string | null): boolean {
-  const c = country?.toLowerCase().trim();
-  return c === "us" || c === "ca" || c === "usa" || c === "can";
+  const c = countryIsoLower(country);
+  return c === "us" || c === "ca";
 }
 
 export function isEuropeanCountry(country?: string | null): boolean {
-  const c = country?.toLowerCase().trim();
+  const c = countryIsoLower(country);
   if (!c) return false;
-  if (isKoreanCountry(c) || isUsdDefaultCountry(c)) return false;
+  if (c === "kr" || c === "us" || c === "ca") return false;
   return EUROPE_COUNTRY_CODES.has(c);
 }
 

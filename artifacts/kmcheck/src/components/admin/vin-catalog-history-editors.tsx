@@ -814,7 +814,134 @@ export function VinCatalogHistorySections({
               </div>
           </div>
         )}
-      />
+      /
+
+      <CatalogListSection
+        title="Mileage history"
+        hint="Odometer defaults to kilometers. New rows prefill location from vehicle country."
+        items={form.mileageHistory}
+        emptyItem={() => ({
+          ...EMPTY_MILEAGE,
+          unit: "km",
+          location: locationPreset,
+        })}
+        onChange={(mileageHistory) => onChange({ mileageHistory })}
+        compact={compact}
+        renderItem={(item, _i, update) => (
+          <div className={grid}>
+            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminOdometerWithUnit
+              odometer={item.odometer}
+              unit={item.unit || "km"}
+              onOdometerChange={(v) => update({ odometer: v })}
+              onUnitChange={(v) => update({ unit: v })}
+              compact={compact}
+            />
+            <AdminTextField label="Source" value={item.source} onChange={(v) => update({ source: v })} compact={compact} />
+            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
+            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
+            <AdminTextField
+              label="Location"
+              hint="Prefills from vehicle country — clear or edit anytime"
+              value={item.location}
+              onChange={(v) => update({ location: v })}
+              compact={compact}
+            />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <AdminTextField
+                label="Description / notes"
+                value={item.description}
+                onChange={(v) => update({ description: v })}
+                compact={compact}
+              />
+            </div>
+          </div>
+        )}
+      /
+
+      <CatalogListSection
+        title="Auction history"
+        items={form.auctionHistory}
+        emptyItem={() => ({
+          ...EMPTY_AUCTION,
+          country: vehicleCountry?.trim() || "",
+        })}
+        onChange={(auctionHistory) => onChange({ auctionHistory })}
+        compact={compact}
+        renderItem={(item, _i, update) => (
+          <div className={grid}>
+            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminTextField label="City" value={item.city} onChange={(v) => update({ city: v })} compact={compact} />
+            <AdminTextField label="State" value={item.state} onChange={(v) => update({ state: v })} compact={compact} />
+            <AdminSelectField
+              label="Country"
+              value={resolveCountrySelectValue(item.country)}
+              onChange={(v) => update({ country: v })}
+              options={countryOptionsFor(item.country)}
+              compact={compact}
+            />
+            <AdminTextField label="Final price" value={item.finalPrice} onChange={(v) => update({ finalPrice: v })} type="number" compact={compact} />
+            <AdminTextField label="Opening bid" value={item.openingBid} onChange={(v) => update({ openingBid: v })} type="number" compact={compact} />
+            <AdminTextField label="Buy now price" value={item.buyNowPrice} onChange={(v) => update({ buyNowPrice: v })} type="number" compact={compact} />
+            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
+            <AdminTextField label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
+            <AdminSelectField
+              label="Primary damage"
+              value={resolveDamageSelectValue(item.primaryDamage)}
+              onChange={(v) => update({ primaryDamage: v })}
+              options={damageSelectOptions(t, item.primaryDamage)}
+              compact={compact}
+            />
+            <AdminSelectField
+              label="Secondary damage"
+              value={resolveDamageSelectValue(item.secondaryDamage)}
+              onChange={(v) => update({ secondaryDamage: v })}
+              options={damageSelectOptions(t, item.secondaryDamage)}
+              compact={compact}
+            />
+            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
+            <AdminTextField label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
+          </div>
+        )}
+      /
+
+      <CatalogListSection
+        title="Registry history"
+        hint="New rows prefill location from vehicle country."
+        items={form.registryHistory}
+        emptyItem={() => ({
+          ...EMPTY_REGISTRY,
+          location: locationPreset,
+        })}
+        onChange={(registryHistory) => onChange({ registryHistory })}
+        compact={compact}
+        renderItem={(item, _i, update) => (
+          <div className="space-y-3">
+            <div className={grid}>
+              <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+              <AdminTextField label="Type" value={item.type} onChange={(v) => update({ type: v })} compact={compact} />
+              <AdminTextField label="Mileage" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
+              <AdminTextField label="Amount" value={item.amount} onChange={(v) => update({ amount: v })} compact={compact} />
+              <AdminTextField
+                label="Location"
+                hint="Prefills from vehicle country — clear or edit anytime"
+                value={item.location}
+                onChange={(v) => update({ location: v })}
+                compact={compact}
+              />
+              <AdminTextField label="Title" value={item.title} onChange={(v) => update({ title: v })} compact={compact} />
+              <div className="sm:col-span-2 lg:col-span-3">
+                <AdminTextField label="Subtitle" value={item.subtitle} onChange={(v) => update({ subtitle: v })} compact={compact} />
+              </div>
+            </div>
+            <RegistryDetailsEditor
+              details={item.details}
+              onChange={(details) => update({ details })}
+              compact={compact}
+            />
+          </div>
+        )}
+      /
 
       <CatalogListSection
         title="Insurance claims"
@@ -871,50 +998,7 @@ export function VinCatalogHistorySections({
             </div>
           );
         }}
-      />
-
-      <CatalogListSection
-        title="Mileage history"
-        hint="Odometer defaults to kilometers. New rows prefill location from vehicle country."
-        items={form.mileageHistory}
-        emptyItem={() => ({
-          ...EMPTY_MILEAGE,
-          unit: "km",
-          location: locationPreset,
-        })}
-        onChange={(mileageHistory) => onChange({ mileageHistory })}
-        compact={compact}
-        renderItem={(item, _i, update) => (
-          <div className={grid}>
-            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
-            <AdminOdometerWithUnit
-              odometer={item.odometer}
-              unit={item.unit || "km"}
-              onOdometerChange={(v) => update({ odometer: v })}
-              onUnitChange={(v) => update({ unit: v })}
-              compact={compact}
-            />
-            <AdminTextField label="Source" value={item.source} onChange={(v) => update({ source: v })} compact={compact} />
-            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
-            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
-            <AdminTextField
-              label="Location"
-              hint="Prefills from vehicle country — clear or edit anytime"
-              value={item.location}
-              onChange={(v) => update({ location: v })}
-              compact={compact}
-            />
-            <div className="sm:col-span-2 lg:col-span-3">
-              <AdminTextField
-                label="Description / notes"
-                value={item.description}
-                onChange={(v) => update({ description: v })}
-                compact={compact}
-              />
-            </div>
-          </div>
-        )}
-      />
+      /
 
       <CatalogListSection
         title="Service history (manual only)"
@@ -939,7 +1023,7 @@ export function VinCatalogHistorySections({
             </div>
           </div>
         )}
-      />
+      /
 
       <CatalogListSection
         title="Owner history"
@@ -957,91 +1041,7 @@ export function VinCatalogHistorySections({
             <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
           </div>
         )}
-      />
-
-      <CatalogListSection
-        title="Auction history"
-        items={form.auctionHistory}
-        emptyItem={() => ({
-          ...EMPTY_AUCTION,
-          country: vehicleCountry?.trim() || "",
-        })}
-        onChange={(auctionHistory) => onChange({ auctionHistory })}
-        compact={compact}
-        renderItem={(item, _i, update) => (
-          <div className={grid}>
-            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
-            <AdminTextField label="City" value={item.city} onChange={(v) => update({ city: v })} compact={compact} />
-            <AdminTextField label="State" value={item.state} onChange={(v) => update({ state: v })} compact={compact} />
-            <AdminSelectField
-              label="Country"
-              value={resolveCountrySelectValue(item.country)}
-              onChange={(v) => update({ country: v })}
-              options={countryOptionsFor(item.country)}
-              compact={compact}
-            />
-            <AdminTextField label="Final price" value={item.finalPrice} onChange={(v) => update({ finalPrice: v })} type="number" compact={compact} />
-            <AdminTextField label="Opening bid" value={item.openingBid} onChange={(v) => update({ openingBid: v })} type="number" compact={compact} />
-            <AdminTextField label="Buy now price" value={item.buyNowPrice} onChange={(v) => update({ buyNowPrice: v })} type="number" compact={compact} />
-            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
-            <AdminTextField label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
-            <AdminSelectField
-              label="Primary damage"
-              value={resolveDamageSelectValue(item.primaryDamage)}
-              onChange={(v) => update({ primaryDamage: v })}
-              options={damageSelectOptions(t, item.primaryDamage)}
-              compact={compact}
-            />
-            <AdminSelectField
-              label="Secondary damage"
-              value={resolveDamageSelectValue(item.secondaryDamage)}
-              onChange={(v) => update({ secondaryDamage: v })}
-              options={damageSelectOptions(t, item.secondaryDamage)}
-              compact={compact}
-            />
-            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
-            <AdminTextField label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
-          </div>
-        )}
-      />
-
-      <CatalogListSection
-        title="Registry history"
-        hint="New rows prefill location from vehicle country."
-        items={form.registryHistory}
-        emptyItem={() => ({
-          ...EMPTY_REGISTRY,
-          location: locationPreset,
-        })}
-        onChange={(registryHistory) => onChange({ registryHistory })}
-        compact={compact}
-        renderItem={(item, _i, update) => (
-          <div className="space-y-3">
-            <div className={grid}>
-              <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
-              <AdminTextField label="Type" value={item.type} onChange={(v) => update({ type: v })} compact={compact} />
-              <AdminTextField label="Mileage" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
-              <AdminTextField label="Amount" value={item.amount} onChange={(v) => update({ amount: v })} compact={compact} />
-              <AdminTextField
-                label="Location"
-                hint="Prefills from vehicle country — clear or edit anytime"
-                value={item.location}
-                onChange={(v) => update({ location: v })}
-                compact={compact}
-              />
-              <AdminTextField label="Title" value={item.title} onChange={(v) => update({ title: v })} compact={compact} />
-              <div className="sm:col-span-2 lg:col-span-3">
-                <AdminTextField label="Subtitle" value={item.subtitle} onChange={(v) => update({ subtitle: v })} compact={compact} />
-              </div>
-            </div>
-            <RegistryDetailsEditor
-              details={item.details}
-              onChange={(details) => update({ details })}
-              compact={compact}
-            />
-          </div>
-        )}
-      />
+      /
 
       <div className="overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-background shadow-sm">
         <div className="px-4 py-3.5 border-b border-primary/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1097,4 +1097,3 @@ export function VinCatalogHistorySections({
       </div>
     </div>
   );
-}

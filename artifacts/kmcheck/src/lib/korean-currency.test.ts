@@ -43,8 +43,12 @@ describe("korean-currency", () => {
     expect(defaultAmountCurrencyForCountry("us")).toBe("USD");
     expect(defaultAmountCurrencyForCountry("ca")).toBe("USD");
     expect(defaultAmountCurrencyForCountry("de")).toBe("EUR");
+    expect(defaultAmountCurrencyForCountry("Germany")).toBe("EUR");
+    expect(defaultAmountCurrencyForCountry("DEU")).toBe("EUR");
     expect(defaultAmountCurrencyForCountry("al")).toBe("EUR");
     expect(defaultAmountCurrencyForCountry("fr")).toBe("EUR");
+    expect(defaultAmountCurrencyForCountry("France")).toBe("EUR");
+    expect(defaultAmountCurrencyForCountry("South Korea")).toBe("KRW");
   });
 });
 

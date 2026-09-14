@@ -180,7 +180,8 @@ function normalizeCountryKey(raw: string): string {
 }
 
 /** Resolve only ISO codes and English country names — non-English free text stays as typed. */
-function resolveIso2(raw: string): string | null {
+export function resolveCountryIso2(raw: string | null | undefined): string | null {
+  if (!raw?.trim()) return null;
   const upper = raw.trim().toUpperCase();
   if (ISO_ALIASES[upper]) return ISO_ALIASES[upper];
   if (/^[A-Z]{2}$/.test(upper)) return upper;
@@ -190,7 +191,7 @@ function resolveIso2(raw: string): string | null {
 /** English label for storage/prefill so every UI language can resolve + translate it. */
 export function canonicalCountryStorageLabel(raw: string | null | undefined): string {
   if (!raw?.trim()) return "";
-  const iso2 = resolveIso2(raw.trim());
+  const iso2 = resolveCountryIso2(raw.trim());
   if (!iso2) return raw.trim();
   if (iso2 === "US") return "USA";
   if (iso2 === "KR") return "South Korea";
@@ -234,7 +235,7 @@ export function formatCountryName(
       .join(" / ");
   }
 
-  const iso2 = resolveIso2(trimmed);
+  const iso2 = resolveCountryIso2(trimmed);
 
   if (!iso2) return trimmed;
 
@@ -256,11 +257,11 @@ function translateCountrySegmentOnly(
   // VIN-style combined origins in a location field (rare): only if every part is a country.
   if (trimmed.includes("/")) {
     const bits = trimmed.split("/").map((p) => p.trim()).filter(Boolean);
-    if (bits.length === 0 || !bits.every((b) => resolveIso2(b))) return null;
+    if (bits.length === 0 || !bits.every((b) => resolveCountryIso2(b))) return null;
     return bits.map((b) => formatCountryName(b, lang, overrides)).join(" / ");
   }
 
-  if (!resolveIso2(trimmed)) return null;
+  if (!resolveCountryIso2(trimmed)) return null;
   return formatCountryName(trimmed, lang, overrides);
 }
 

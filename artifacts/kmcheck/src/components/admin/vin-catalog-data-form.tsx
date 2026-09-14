@@ -215,7 +215,7 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     fuelType: form.fuelType.trim() || null,
     bodyType: form.bodyType.trim() || null,
     color: form.color.trim() || null,
-    country: form.country.trim() || null,
+    country: resolveCountrySelectValue(form.country) || null,
     odometer: numberOrNull(form.odometer),
     ownerCount,
     accidentCount,
