@@ -69,3 +69,35 @@ export function parseLangFromSegment(seg: string | undefined | null): Language |
   if (!seg) return null;
   return isSupportedLang(seg) ? seg : null;
 }
+
+/** Locale homepage path used for crawlable cross-language footer links. */
+export function localeHomePath(lang: Language): string {
+  return `/${lang}`;
+}
+
+/**
+ * Swap the leading locale segment in a pathname.
+ * Falls back to the locale homepage when the path has no matching prefix.
+ */
+export function replaceLangInPath(
+  pathname: string,
+  currentLang: Language,
+  nextLang: Language,
+): string {
+  const newPath = pathname.replace(new RegExp(`^/${currentLang}(/|$)`), `/${nextLang}$1`);
+  return newPath === pathname ? localeHomePath(nextLang) : newPath;
+}
+
+/** True when a click should keep SPA soft-navigation (left click, no modifiers). */
+export function shouldSoftNavigateClick(
+  e: Pick<MouseEvent, "defaultPrevented" | "button" | "metaKey" | "altKey" | "ctrlKey" | "shiftKey">,
+): boolean {
+  return (
+    !e.defaultPrevented
+    && e.button === 0
+    && !e.metaKey
+    && !e.altKey
+    && !e.ctrlKey
+    && !e.shiftKey
+  );
+}

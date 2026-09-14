@@ -12,10 +12,20 @@ type Props = {
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   role?: string;
   "aria-label"?: string;
+  "aria-current"?: "page" | "step" | "location" | "date" | "time" | "true" | "false" | boolean;
 };
 
 /** wouter Link that prefetches the target page chunk (and VIN data when applicable) on hover/focus. */
-export function PrefetchLink({ to, href, children, className, onClick, role, "aria-label": ariaLabel }: Props) {
+export function PrefetchLink({
+  to,
+  href,
+  children,
+  className,
+  onClick,
+  role,
+  "aria-label": ariaLabel,
+  "aria-current": ariaCurrent,
+}: Props) {
   const { isSignedIn } = useAuth();
   const path = to ?? href ?? "";
 
@@ -40,6 +50,7 @@ export function PrefetchLink({ to, href, children, className, onClick, role, "ar
       className={className}
       role={role}
       aria-label={ariaLabel}
+      aria-current={ariaCurrent}
       onMouseEnter={scheduleWarmHref}
       onFocus={scheduleWarmHref}
       onClick={onClick}

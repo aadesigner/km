@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
-import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
+import { LANG_PICKER_OPTIONS, isSupportedLang, replaceLangInPath, type Language } from "@/lib/languages";
 import { FlagImg } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
@@ -418,6 +418,13 @@ function MobileLangPicker({
                 <LangPickerList
                   language={language as Language}
                   layout="mobile"
+                  hrefForLanguage={(code) =>
+                    replaceLangInPath(
+                      typeof window !== "undefined" ? window.location.pathname : `/${language}`,
+                      language as Language,
+                      code,
+                    )
+                  }
                   onSelect={(code) => {
                     close();
                     requestAnimationFrame(() => onLanguageChange(code));
@@ -575,9 +582,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const handleLanguageChange = (lang: string) => {
     if (!isSupportedLang(lang)) return;
     const next: Language = lang;
-    const path = window.location.pathname;
-    const newPath = path.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
-    const target = newPath === path ? `/${next}` : newPath;
+    const target = replaceLangInPath(window.location.pathname, language, next);
     void ensureDict(next)
       .catch(() => {
         // Still switch language — English fallback strings apply if locale bundle failed.
@@ -799,6 +804,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       <div className={cn(dropdownCls, "w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}>
                         <LangPickerList
                           language={language}
+                          hrefForLanguage={(code) =>
+                            replaceLangInPath(
+                              typeof window !== "undefined" ? window.location.pathname : `/${language}`,
+                              language,
+                              code,
+                            )
+                          }
                           onSelect={(code) => handleLanguageChange(code)}
                         />
                       </div>

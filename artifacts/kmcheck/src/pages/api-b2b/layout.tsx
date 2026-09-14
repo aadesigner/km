@@ -4,7 +4,7 @@ import { useTheme } from "@/components/theme-provider";
 import { FlagImg } from "@/components/flag-img";
 import { cn } from "@/lib/utils";
 import { API_B2B_REGIONS } from "./regions";
-import { LANG_META } from "@/lib/languages";
+import { LANG_META, LANG_PICKER_OPTIONS, localeHomePath, replaceLangInPath } from "@/lib/languages";
 import type { Language } from "@/lib/languages";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { ensureDict } from "@/i18n/context";
@@ -75,10 +75,12 @@ function LangDropdown({
   lang,
   onSelect,
   tone = "nav",
+  locationPath,
 }: {
   lang: Language;
   onSelect: (l: Language) => void;
   tone?: "nav" | "footer";
+  locationPath: string;
 }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -162,6 +164,7 @@ function LangDropdown({
                 <LangPickerList
                   language={lang}
                   tone={isFooter ? "footer" : "nav"}
+                  hrefForLanguage={(code) => replaceLangInPath(locationPath, lang, code)}
                   onSelect={(code) => {
                     onSelect(code);
                     closeMenu();
@@ -398,7 +401,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden items-center gap-2.5 md:flex">
-            <LangDropdown lang={lang} onSelect={switchLang} />
+            <LangDropdown lang={lang} onSelect={switchLang} locationPath={location} />
             <Link
               href={`${base}/contact`}
               className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-slate-900/15 transition hover:bg-slate-800 dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20 dark:hover:bg-emerald-400"
@@ -409,7 +412,7 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1.5 md:hidden">
-            <LangDropdown lang={lang} onSelect={switchLang} />
+            <LangDropdown lang={lang} onSelect={switchLang} locationPath={location} />
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-800 transition hover:bg-slate-900/[0.06] dark:text-white dark:hover:bg-white/10"
@@ -540,7 +543,31 @@ export function ApiB2bLayout({ children }: { children: ReactNode }) {
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {c.footerLanguage}
                 </p>
-                <LangDropdown lang={lang} onSelect={switchLang} tone="footer" />
+                <LangDropdown lang={lang} onSelect={switchLang} tone="footer" locationPath={location} />
+                <nav aria-label={c.footerLanguage} className="mt-3">
+                  <ul className="flex flex-wrap gap-x-2.5 gap-y-1">
+                    {LANG_PICKER_OPTIONS.map((l) => {
+                      const active = l.code === lang;
+                      return (
+                        <li key={l.code}>
+                          <Link
+                            href={localeHomePath(l.code)}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                              "text-[11px] leading-snug transition",
+                              active
+                                ? "font-medium text-slate-300"
+                                : "text-slate-500 hover:text-slate-200",
+                            )}
+                            onClick={() => setStoredLangPreference(l.code)}
+                          >
+                            {l.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </nav>
               </div>
             </div>
 

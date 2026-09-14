@@ -5,7 +5,13 @@ import { useTranslation, ensureDict } from "@/i18n/context";
 import { KmcheckLogo } from "@/components/logo";
 import { ChevronUp } from "lucide-react";
 import { setStoredLangPreference } from "@/lib/lang-preference";
-import { LANG_PICKER_OPTIONS, isSupportedLang, type Language } from "@/lib/languages";
+import {
+  LANG_PICKER_OPTIONS,
+  isSupportedLang,
+  localeHomePath,
+  replaceLangInPath,
+  type Language,
+} from "@/lib/languages";
 import { FlagImg, prefetchFlags } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker-list";
@@ -147,8 +153,7 @@ export function Footer() {
   const handleLanguageChange = (lang: string) => {
     if (!isSupportedLang(lang)) return;
     const next: Language = lang;
-    const newPath = location.replace(new RegExp(`^/${language}(/|$)`), `/${next}$1`);
-    const target = newPath === location ? `/${next}` : newPath;
+    const target = replaceLangInPath(location, language, next);
     void ensureDict(next).then(() => {
       setStoredLangPreference(next);
       setLanguage(next);
@@ -240,6 +245,7 @@ export function Footer() {
                             <LangPickerList
                               language={language}
                               tone="footer"
+                              hrefForLanguage={(code) => replaceLangInPath(location, language, code)}
                               onSelect={handleLanguageChange}
                             />
                           </div>
@@ -250,6 +256,35 @@ export function Footer() {
                   document.body,
                 )
                 : null}
+
+              {/* Always-in-DOM locale homes — crawlable cross-lang links (picker is portal-only). */}
+              <nav aria-label={t("footer_language")} className="pt-1">
+                <ul className="flex flex-wrap gap-x-2.5 gap-y-1">
+                  {LANG_PICKER_OPTIONS.map((l) => {
+                    const active = l.code === language;
+                    return (
+                      <li key={l.code}>
+                        <PrefetchLink
+                          href={localeHomePath(l.code)}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "text-[11px] leading-snug transition-colors",
+                            active
+                              ? "font-medium text-white/55"
+                              : "text-white/30 hover:text-white/70",
+                          )}
+                          onClick={() => {
+                            setStoredLangPreference(l.code);
+                            setLanguage(l.code);
+                          }}
+                        >
+                          {l.label}
+                        </PrefetchLink>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
             </div>
           </div>
 

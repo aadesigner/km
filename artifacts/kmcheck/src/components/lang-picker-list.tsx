@@ -1,8 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, type MouseEvent } from "react";
 import { Check } from "lucide-react";
 import { FlagImg, prefetchFlags, type FlagVariant } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
-import { LANG_PICKER_OPTIONS, type Language } from "@/lib/languages";
+import {
+  LANG_PICKER_OPTIONS,
+  localeHomePath,
+  shouldSoftNavigateClick,
+  type Language,
+} from "@/lib/languages";
 import { useTranslation } from "@/i18n/context";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +21,15 @@ export function usePrefetchPickerFlags(open: boolean): void {
 export function LangPickerList({
   language,
   onSelect,
+  hrefForLanguage,
   tone = "nav",
   layout = "default",
   flagVariant = tone === "nav" ? "list" : tone === "footer" ? "list" : "default",
 }: {
   language: Language;
   onSelect: (code: Language) => void;
+  /** Real href per locale so crawlers / middle-click get a usable URL. */
+  hrefForLanguage?: (code: Language) => string;
   tone?: "nav" | "footer";
   /** Mobile navbar — single column, larger touch targets */
   layout?: "default" | "mobile";
@@ -43,13 +51,22 @@ export function LangPickerList({
     >
       {LANG_PICKER_OPTIONS.map((l) => {
         const active = language === l.code;
+        const href = hrefForLanguage?.(l.code) ?? localeHomePath(l.code);
+
+        const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
+          if (!shouldSoftNavigateClick(e)) return;
+          e.preventDefault();
+          onSelect(l.code);
+        };
+
         return (
-          <button
+          <a
             key={l.code}
-            type="button"
+            href={href}
             role="option"
             aria-selected={active}
-            onClick={() => onSelect(l.code)}
+            aria-current={active ? "page" : undefined}
+            onClick={onClick}
             className={cn(
               "flex items-center gap-2.5 rounded-xl text-left min-w-0 transition-colors duration-100 touch-manipulation",
               isMobile ? "px-3 py-2.5" : isFooter ? "px-3 py-2.5" : "px-2.5 py-2",
@@ -76,7 +93,7 @@ export function LangPickerList({
               {l.label}
             </span>
             {active && <Check className={cn("text-primary shrink-0", isMobile ? "h-3.5 w-3.5" : isFooter ? "h-4 w-4" : "h-3 w-3")} />}
-          </button>
+          </a>
         );
       })}
     </div>

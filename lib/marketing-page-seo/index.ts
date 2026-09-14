@@ -52,6 +52,23 @@ export function escapeMarketingHtml(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** Native labels for crawlable locale-home links in marketing SSR HTML. */
+const SSR_LOCALE_HOME_LINKS: ReadonlyArray<{ code: string; label: string }> = [
+  { code: "en", label: "English" },
+  { code: "de", label: "Deutsch" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "sq", label: "Shqip" },
+  { code: "pl", label: "Polski" },
+  { code: "ro", label: "Română" },
+  { code: "bg", label: "Български" },
+  { code: "ka", label: "ქართული" },
+  { code: "ar", label: "العربية" },
+  { code: "uk", label: "Українська" },
+  { code: "ru", label: "Русский" },
+  { code: "zh", label: "中文" },
+];
+
 export function buildMarketingSsrStyleBlock(): string {
   return `<style id="kmcheck-page-ssr-style">
       #root{position:relative;z-index:1;min-height:100vh}
@@ -96,11 +113,23 @@ ${navLinks}
         </nav>`
     : "";
 
+  const localeLinks = SSR_LOCALE_HOME_LINKS.map(
+    ({ code, label }) =>
+      `          <li><a href="/${code}">${escapeMarketingHtml(label)}</a></li>`,
+  ).join("\n");
+
+  const localeNavBlock = `        <nav aria-label="Languages">
+          <ul>
+${localeLinks}
+          </ul>
+        </nav>`;
+
   return `<main id="kmcheck-page-ssr" class="kmcheck-page-ssr">
       <article>
         <h1>${escapeMarketingHtml(content.h1)}</h1>
         <p class="lead">${escapeMarketingHtml(content.lead)}</p>
 ${navBlock}
+${localeNavBlock}
 ${bulletBlock}
 ${sections}
       </article>
