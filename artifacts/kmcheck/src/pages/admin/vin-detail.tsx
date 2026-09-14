@@ -71,8 +71,34 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
 
   const refreshMutation = useAdminRefreshVinCatalog({
     mutation: {
-      onSuccess: () => {
-        setRefreshMsg({ ok: true, text: "Refreshed from Carstat — catalog and all lookups updated." });
+      onSuccess: (result) => {
+        const payload = result as {
+          ok?: boolean;
+          vin?: string;
+          updatedAt?: string;
+          data?: VinCatalogData;
+          ownerHistoryLen?: number;
+        };
+        const ownerLen = payload.ownerHistoryLen
+          ?? (Array.isArray(payload.data?.ownerHistory) ? payload.data.ownerHistory.length : null);
+        setRefreshMsg({
+          ok: true,
+          text: ownerLen != null
+            ? `Refreshed from Carstat — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`
+            : "Refreshed from Carstat — catalog and all lookups updated.",
+        });
+        if (payload.data) {
+          setForm(vinCatalogFormFromData(payload.data));
+          lastHydratedAtRef.current = payload.updatedAt ?? new Date().toISOString();
+          queryClient.setQueryData(
+            getAdminGetVinCatalogByVinQueryKey(vin, { assignedPage }),
+            (prev) => ({
+              ...(prev ?? {}),
+              data: payload.data,
+              ...(payload.updatedAt ? { updatedAt: payload.updatedAt } : {}),
+            }),
+          );
+        }
         queryClient.invalidateQueries({ queryKey: getAdminGetVinCatalogByVinQueryKey(vin) });
         queryClient.invalidateQueries({ queryKey: ["/api/admin/vin-catalog"] });
         queryClient.invalidateQueries({ queryKey: ["/api/admin/vin"] });

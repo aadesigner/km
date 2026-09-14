@@ -655,12 +655,13 @@ export async function enrichVinReportDataForServe(
   const catalogUpdatedAt = catalogEntry?.updatedAt ?? null;
   const primaryUpdatedAt = opts?.primaryUpdatedAt ?? null;
 
-  return pickVinReportDataForServe(
+  const merged = pickVinReportDataForServe(
     catalogData,
     catalogUpdatedAt,
     primaryData,
     primaryUpdatedAt,
   ) ?? primaryData;
+  return applyMissingFloodFlagsForServe(merged) ?? merged;
 }
 
 /** Push stamped catalog report data to every lookup row for a VIN (admin save / publish). */
@@ -2276,8 +2277,9 @@ function resolveOwnerHistoryFromLots(
   auctionOwnerHistory: NonNullable<NormalizedVinData["ownerHistory"]>,
 ): NonNullable<NormalizedVinData["ownerHistory"]> {
   const fromRegistryTimeline = extractKoreanOwnerHistory(lots, insurance);
-  if (fromRegistryTimeline.length > 0) return fromRegistryTimeline;
-  return auctionOwnerHistory;
+  if (fromRegistryTimeline.length === 0) return auctionOwnerHistory;
+  if (auctionOwnerHistory.length === 0) return fromRegistryTimeline;
+  return dedupeOwnerHistory([...fromRegistryTimeline, ...auctionOwnerHistory]);
 }
 
 /** Marketplace relists (Encar, etc.) — not separate auction events. */
@@ -2630,9 +2632,38 @@ function isKoreanOwnershipTitle(title: string): boolean {
   const t = title.toLowerCase().replace(/\s+/g, " ").trim();
   return t === "ownership"
     || /owner change/.test(t)
+    || /change of ownership/.test(t)
+    || /ownership transfer/.test(t)
     // ImportMotor / Encar first registration — counts as ownership timeline entry
     || /first vehicle number/.test(t)
     || /first registration/.test(t);
+}
+
+/** Parse insurance_v2.ownerChanges whether strings or `{ date }` objects. */
+function parseInsuranceOwnerChangeDates(
+  insurance: Record<string, unknown>,
+): string[] {
+  const raw = insurance.ownerChanges;
+  if (!Array.isArray(raw)) return [];
+  const dates: string[] = [];
+  for (const item of raw) {
+    if (typeof item === "string" || typeof item === "number") {
+      const d = normalizeEventDate(str(item));
+      if (d) dates.push(d);
+      continue;
+    }
+    if (item && typeof item === "object") {
+      const o = item as Record<string, unknown>;
+      const d = normalizeEventDate(
+        str(o.date)
+        ?? str(o.changeDate)
+        ?? str(o.ownerChangeDate)
+        ?? str(o.ChangeDate),
+      );
+      if (d) dates.push(d);
+    }
+  }
+  return dates;
 }
 
 function pickLotHistoryBlocks(lots: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
@@ -2962,11 +2993,7 @@ export function extractKoreanOwnerHistory(
 
   // Always merge insurance_v2.ownerChanges — do not stop after history rows
   // (history can be incomplete while ownerChanges has the full transfer list).
-  const dates = Array.isArray(insurance.ownerChanges)
-    ? (insurance.ownerChanges as unknown[])
-      .map((d) => normalizeEventDate(str(d)))
-      .filter((d): d is string => !!d)
-    : [];
+  const dates = parseInsuranceOwnerChangeDates(insurance);
 
   const existingDates = new Set(
     events.map((e) => e.date?.slice(0, 10)).filter((d): d is string => !!d),
@@ -2981,7 +3008,7 @@ export function extractKoreanOwnerHistory(
       location: null,
       mileage: null,
       auctionPrice: null,
-      lotStatus: null,
+      lotStatus: "Owner change",
       condition: null,
     });
   }
@@ -3166,25 +3193,119 @@ export function extractRecallHistoryFromLots(
   return sortHistoryNewestFirst(dedupeRegistryHistoryEvents(events));
 }
 
+/** Read flood flags from one insurance_v2 object (not otherAccident — that is third-party damage). */
+export function readKoreanFloodFlags(insurance: Record<string, unknown> | null | undefined): {
+  isFlooded: boolean | null;
+  floodCount: number | null;
+  floodLossAmount: number | null;
+} {
+  const block = insurance ?? {};
+  const hasInsuranceBlock = Object.keys(block).length > 0;
+  if (!hasInsuranceBlock) {
+    return { isFlooded: null, floodCount: null, floodLossAmount: null };
+  }
+
+  const floodCntRaw = Number(
+    block.floodTotalLossCnt
+    ?? block.floodCnt
+    ?? block.floodDamageCnt
+    ?? NaN,
+  );
+  const floodCnt = Number.isFinite(floodCntRaw) ? floodCntRaw : null;
+  const floodCost = sanitizeKoreanRepairKrwAmount(
+    Number(
+      block.floodTotalLossCost
+      ?? block.floodCost
+      ?? block.floodDamageCost
+      ?? block.floodLossAmount,
+    ) || null,
+  );
+  // Official flood total/partial-loss count. Do NOT use otherAccidentCnt — ImportMotor
+  // / checkcar often mistranslate that summary row as "Flood damage".
+  const isFlooded = floodCnt != null && floodCnt > 0
+    ? true
+    : floodCnt == null && floodCost != null && floodCost > 0;
+  const floodCount = isFlooded
+    ? (floodCnt != null && floodCnt > 0 ? floodCnt : 1)
+    : 0;
+  const floodLossAmount = isFlooded ? floodCost : null;
+  return { isFlooded, floodCount, floodLossAmount };
+}
+
+/**
+ * When a stored KR report has insurance/salvage signals but no flood flag yet
+ * (pre-flood-mapping cache), treat flood as assessed-clear so the report pill shows.
+ */
+export function applyMissingFloodFlagsForServe(
+  data: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null {
+  if (!data) return null;
+  if (data.isFlooded === true || data.isFlooded === false) return data;
+
+  const country = String(data.country ?? "").toLowerCase();
+  const isKr = country === "kr" || country.includes("korea");
+  const hasKrInsuranceSignal =
+    (Array.isArray(data.insuranceClaims) && data.insuranceClaims.length > 0)
+    || (Array.isArray(data.registryHistory) && data.registryHistory.length > 0)
+    || data.isStolen === true
+    || data.isStolen === false
+    || data.isSalvage === true
+    || data.isSalvage === false;
+
+  if (!isKr || !hasKrInsuranceSignal) return data;
+
+  return {
+    ...data,
+    isFlooded: false,
+    floodCount: typeof data.floodCount === "number" && Number.isFinite(data.floodCount)
+      ? data.floodCount
+      : 0,
+  };
+}
+
 /** Pick the richest insurance_v2 block across all lots (any source domain). */
 export function extractInsuranceV2FromLots(lots: Array<Record<string, unknown>>): Record<string, unknown> {
   let best: Record<string, unknown> = {};
   let bestScore = -1;
+  let bestFlood = readKoreanFloodFlags({});
   for (const lot of lots) {
     const details = (lot.details ?? {}) as Record<string, unknown>;
     const insurance = (details.insurance_v2 ?? {}) as Record<string, unknown>;
     const accidents = Array.isArray(insurance.accidents) ? insurance.accidents : [];
+    const flood = readKoreanFloodFlags(insurance);
     const score = accidents.length * 10
       + (Number(insurance.accidentCnt) || 0)
-      + (Number(insurance.ownerChangeCnt) || 0);
+      + (Number(insurance.ownerChangeCnt) || 0)
+      + (Array.isArray(insurance.ownerChanges) ? insurance.ownerChanges.length * 3 : 0)
+      + (flood.floodCount ?? 0) * 5;
     if (score > bestScore) {
       bestScore = score;
       best = insurance;
     }
+    if ((flood.floodCount ?? 0) > (bestFlood.floodCount ?? 0)) {
+      bestFlood = flood;
+    } else if (
+      flood.isFlooded
+      && (flood.floodLossAmount ?? 0) > (bestFlood.floodLossAmount ?? 0)
+    ) {
+      bestFlood = flood;
+    }
   }
-  if (bestScore >= 0) return best;
-  const firstDetails = (lots[0]?.details ?? {}) as Record<string, unknown>;
-  return (firstDetails.insurance_v2 ?? {}) as Record<string, unknown>;
+  if (bestScore < 0) {
+    const firstDetails = (lots[0]?.details ?? {}) as Record<string, unknown>;
+    best = (firstDetails.insurance_v2 ?? {}) as Record<string, unknown>;
+  }
+  // Carry the strongest flood flags onto the chosen block when another lot had them.
+  if (bestFlood.isFlooded && readKoreanFloodFlags(best).isFlooded !== true) {
+    return {
+      ...best,
+      floodTotalLossCnt: bestFlood.floodCount,
+      ...(bestFlood.floodLossAmount != null
+        ? { floodTotalLossCost: bestFlood.floodLossAmount }
+        : {}),
+    };
+  }
+  return best;
 }
 
 function pickLotDetailsWithInspect(lots: Array<Record<string, unknown>>): Record<string, unknown> {
@@ -3214,18 +3335,7 @@ export function resolveVinAccidents(input: {
   const { country, insurance, lotDetails, auctionAccidents, registryHistory = [] } = input;
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
   const totalLossDate = str(insurance.totalLossDate);
-  const hasInsuranceBlock = insurance && Object.keys(insurance).length > 0;
-  const floodCntRaw = Number(insurance.floodTotalLossCnt ?? insurance.floodCnt ?? NaN);
-  const floodCnt = Number.isFinite(floodCntRaw) ? floodCntRaw : null;
-  const floodCost = sanitizeKoreanRepairKrwAmount(
-    Number(insurance.floodTotalLossCost ?? insurance.floodCost ?? insurance.floodDamageCost)
-    || null,
-  );
-  const isFlooded = !hasInsuranceBlock
-    ? null
-    : floodCnt != null && floodCnt > 0;
-  const floodCount = isFlooded ? floodCnt : (hasInsuranceBlock ? 0 : null);
-  const floodLossAmount = isFlooded ? floodCost : null;
+  const { isFlooded, floodCount, floodLossAmount } = readKoreanFloodFlags(insurance);
   const rawRecords = Array.isArray(insurance.accidents)
     ? insurance.accidents as Array<Record<string, unknown>>
     : [];
@@ -3440,15 +3550,17 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
       });
     }
 
-    // Ownership event per lot (auction = change of hands)
-    ownerHistory.push({
-      date: saleD,
-      location: locName,
-      mileage: km,
-      auctionPrice,
-      lotStatus,
-      condition,
-    });
+    // Ownership event per auction lot only — Encar/marketplace listings are not owner changes.
+    if (!isMarketplaceListingLot(l)) {
+      ownerHistory.push({
+        date: saleD,
+        location: locName,
+        mileage: km,
+        auctionPrice,
+        lotStatus,
+        condition,
+      });
+    }
 
     auctionHistory.push({
       date: saleD,
@@ -3500,10 +3612,10 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     resolveOwnerHistoryFromLots(lots, insurance, ownerHistory),
   );
   // Prefer the richer of insurance ownerChangeCnt and actual timeline rows we extracted.
+  // Do not invent ownerCount: 1 when we have no ownership signal.
   const ownerCount = Math.max(
     ownerChanges > 0 ? ownerChanges + 1 : 0,
     resolvedOwnerHistory.length,
-    1,
   );
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
 

@@ -85,7 +85,7 @@ import {
 } from "@/lib/vehicle-attr-options";
 import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-market-value-chart";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
-import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
+import { formatAmountPlain, resolveAmountDisplayCurrency, isKoreanCountry } from "@/lib/korean-currency";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { FloodDamageSection } from "@/components/flood-damage-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
@@ -868,7 +868,7 @@ export default function VinResult({ params }: Props) {
         isStolen={data?.isStolen}
         isTaxi={data?.isTaxi === true}
         isFlooded={data?.isFlooded}
-        hasFloodData={data?.isFlooded != null}
+        hasFloodData={data?.isFlooded != null || isKoreanCountry(data?.country)}
         hasSalvageData={hasSalvageData}
         hasTheftData={hasTheftData}
         marketValue={printMarketValue}
@@ -924,8 +924,8 @@ export default function VinResult({ params }: Props) {
         {hasTheftData
           ? <PassPill ok={data!.isStolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
           : null}
-        {data?.isFlooded != null
-          ? <PassPill ok={data.isFlooded === false} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
+        {data?.isFlooded != null || isKoreanCountry(data?.country)
+          ? <PassPill ok={data?.isFlooded !== true} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
           : null}
         <PassPill ok={data?.isTaxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
           </>

@@ -853,7 +853,7 @@ export default function VinPublic({ params }: Props) {
             isStolen={data.stolen}
             isTaxi={data.taxi === true}
             isFlooded={data.flooded}
-            hasFloodData={data.flooded != null}
+            hasFloodData={data.flooded != null || isKoreanCountry(data.country)}
             hasSalvageData={data.salvage != null}
             hasTheftData={data.stolen != null}
             marketValue={printMarketValue}
@@ -913,8 +913,8 @@ export default function VinPublic({ params }: Props) {
           {data.isUnlocked && data.stolen != null ? (
             <PassPill ok={data.stolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
           ) : null}
-          {data.isUnlocked && data.flooded != null ? (
-            <PassPill ok={data.flooded === false} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
+          {data.isUnlocked && (data.flooded != null || isKoreanCountry(data.country)) ? (
+            <PassPill ok={data.flooded !== true} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
           ) : null}
           {data.isUnlocked ? (
             <PassPill ok={data.taxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />

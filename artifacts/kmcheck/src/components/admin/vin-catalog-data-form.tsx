@@ -74,6 +74,9 @@ export type VinCatalogData = {
   isSalvage?: boolean;
   isStolen?: boolean;
   isTaxi?: boolean;
+  isFlooded?: boolean;
+  floodCount?: number | null;
+  floodLossAmount?: number | null;
   photos?: string[] | null;
   accidents?: unknown;
   insuranceClaims?: unknown;
@@ -105,6 +108,9 @@ export type VinCatalogFormState = {
   isSalvage: boolean;
   isStolen: boolean;
   isTaxi: boolean;
+  isFlooded: boolean;
+  floodCount: string;
+  floodLossAmount: string;
   photos: string[];
   accidents: CatalogAccidentForm[];
   insuranceClaims: CatalogInsuranceClaimForm[];
@@ -136,6 +142,9 @@ export const EMPTY_VIN_CATALOG_FORM: VinCatalogFormState = {
   isSalvage: false,
   isStolen: false,
   isTaxi: false,
+  isFlooded: false,
+  floodCount: "",
+  floodLossAmount: "",
   photos: [],
   accidents: [],
   insuranceClaims: [],
@@ -169,6 +178,9 @@ export function vinCatalogFormFromData(data: VinCatalogData | null | undefined):
     isSalvage: Boolean(d.isSalvage),
     isStolen: Boolean(d.isStolen),
     isTaxi: Boolean(d.isTaxi),
+    isFlooded: Boolean(d.isFlooded),
+    floodCount: d.floodCount != null ? String(d.floodCount) : "",
+    floodLossAmount: d.floodLossAmount != null ? String(d.floodLossAmount) : "",
     photos: Array.isArray(d.photos) ? d.photos.filter(Boolean) : [],
     accidents: normalizeAccidents(d.accidents),
     insuranceClaims: normalizeInsuranceClaims(d.insuranceClaims),
@@ -225,6 +237,9 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     isSalvage: form.isSalvage,
     isStolen: form.isStolen,
     isTaxi: form.isTaxi,
+    isFlooded: form.isFlooded,
+    floodCount: numberOrNull(form.floodCount),
+    floodLossAmount: numberOrNull(form.floodLossAmount),
     photos: form.photos,
     accidents,
     insuranceClaims: insuranceClaimsToPayload(form.insuranceClaims),
@@ -537,6 +552,26 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
           hint="Shown as a warning on reports when this vehicle was used as a taxi"
           checked={form.isTaxi}
           onChange={(v) => set("isTaxi", v)}
+        />
+        <AdminCheckField
+          label="Flood damage"
+          hint="From Korean floodTotalLossCnt (official flood). Not the ImportMotor row labeled Flood damage (that is other-party claims)."
+          checked={form.isFlooded}
+          onChange={(v) => set("isFlooded", v)}
+        />
+        <AdminTextField
+          label="Flood record count"
+          value={form.floodCount}
+          onChange={(v) => set("floodCount", v)}
+          type="number"
+          compact={compact}
+        />
+        <AdminTextField
+          label="Flood loss amount (KRW)"
+          value={form.floodLossAmount}
+          onChange={(v) => set("floodLossAmount", v)}
+          type="number"
+          compact={compact}
         />
       </div>
     </div>

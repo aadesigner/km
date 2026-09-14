@@ -475,6 +475,39 @@ describe("normalizeCarstatResponse", () => {
     expect(normalized.isStolen).toBe(false);
   });
 
+  it("does not treat otherAccidentCnt as flood (ImportMotor mistranslates that row)", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2019,
+      vin: "WDDUG8JB2KA456113",
+      manufacturer: { name: "Benz" },
+      model: { name: "S-Class" },
+      lots: [{
+        domain: { name: "encar_com" },
+        location: { country: { iso: "kr", name: "kr" } },
+        details: {
+          insurance_v2: {
+            floodTotalLossCnt: 0,
+            otherAccidentCnt: 4,
+            otherAccidentCost: 4_060_218,
+            myAccidentCnt: 1,
+            myAccidentCost: 5_928_477,
+            robberCnt: 0,
+            totalLossCnt: 0,
+            accidents: [
+              { date: "2022-12-21", type: "1", insuranceBenefit: 5_928_477 },
+              { date: "2023-06-26", type: "2", insuranceBenefit: 1_398_650 },
+            ],
+          },
+        },
+      }],
+    });
+
+    expect(normalized.isFlooded).toBe(false);
+    expect(normalized.floodCount).toBe(0);
+    expect(normalized.floodLossAmount ?? null).toBeNull();
+    expect(normalized.insuranceClaims?.length).toBeGreaterThan(0);
+  });
+
   it("does not synthesize engine from hp when engine.name is missing", () => {
     const normalized = normalizeCarstatResponse({
       year: 2019,
@@ -774,13 +807,16 @@ describe("extractKoreanOwnerHistory", () => {
     expect(owners[1]?.mileage).toBe(87100);
   });
 
-  it("falls back to insurance_v2.ownerChanges dates when history has no ownership rows", () => {
+  it("parses ownerChanges when Carstat sends date objects", () => {
     const owners = extractKoreanOwnerHistory([{ details: {} }], {
-      ownerChanges: ["2025-01-13", "2024-12-24"],
+      ownerChangeCnt: 2,
+      ownerChanges: [
+        { date: "2024-10-14" },
+        { date: "2023-06-29" },
+      ],
     });
-    expect(owners).toHaveLength(2);
-    expect(owners[0]?.date).toBe("2025-01-13");
-    expect(owners[1]?.date).toBe("2024-12-24");
+    expect(owners.map((o) => o.date)).toEqual(["2024-10-14", "2023-06-29"]);
+    expect(owners.every((o) => o.lotStatus === "Owner change")).toBe(true);
   });
 
   it("merges insurance ownerChanges with history ownership rows (does not drop either)", () => {

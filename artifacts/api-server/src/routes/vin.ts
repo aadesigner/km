@@ -10,6 +10,7 @@ import {
   getCatalogVinPeekHint,
   checkLocalExists,
   enrichVinReportDataForServe,
+  applyMissingFloodFlagsForServe,
   vinHasReportData,
   resolveVinReportForViewer,
   resolveLockedPreviewPhotoSources,
@@ -901,6 +902,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   const { dataSource: d, inCatalog, mediaVersion } = report;
   // Only the purchasing account (or admin) unlocks — share links never bypass payment.
   const isUnlocked = ownsReport;
+  const floodReady = applyMissingFloodFlagsForServe(d as Record<string, unknown>) ?? d;
 
   const catalogPhotos = Array.isArray(d.photos)
     ? (d.photos as string[]).filter(Boolean)
@@ -938,7 +940,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   if (!isUnlocked) {
     // Counts only — never accident/salvage/stolen/odometer values or history arrays.
     response.previewSignals = sanitizeLockedPreviewSignalsForClient(
-      extractLockedPreviewSignals(d as Record<string, unknown>),
+      extractLockedPreviewSignals(floodReady as Record<string, unknown>),
     );
   }
 
@@ -970,9 +972,9 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
       salvage: (d.isSalvage as boolean | null) ?? (d.salvage as boolean | null) ?? null,
       stolen: (d.isStolen as boolean | null) ?? (d.stolen as boolean | null) ?? null,
       taxi: (d.isTaxi as boolean | null) ?? (d.taxi as boolean | null) ?? null,
-      flooded: (d.isFlooded as boolean | null) ?? (d.flooded as boolean | null) ?? null,
-      floodCount: (d.floodCount as number | null) ?? null,
-      floodLossAmount: (d.floodLossAmount as number | null) ?? null,
+      flooded: (floodReady.isFlooded as boolean | null) ?? (floodReady.flooded as boolean | null) ?? null,
+      floodCount: (floodReady.floodCount as number | null) ?? null,
+      floodLossAmount: (floodReady.floodLossAmount as number | null) ?? null,
       titleStatus: (d.titleStatus as string | null) ?? null,
       photos: proxyPhotoUrls(catalogPhotos, mediaVersion),
       ...(catalogPhotosHd.length > 0

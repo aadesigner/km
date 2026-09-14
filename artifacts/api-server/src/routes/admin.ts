@@ -3304,7 +3304,16 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
       ...extractVinPhotoUrls(stampedCatalog),
     ]);
     logger.info({ vin }, "VIN catalog entry refreshed from provider");
-    res.json({ ok: true, vin });
+    res.json({
+      ok: true,
+      vin,
+      updatedAt: new Date().toISOString(),
+      data: stampedCatalog,
+      ownerCount: stampedCatalog.ownerCount ?? null,
+      ownerHistoryLen: Array.isArray(stampedCatalog.ownerHistory)
+        ? stampedCatalog.ownerHistory.length
+        : 0,
+    });
   } catch (err) {
     logger.error({ err, vin }, "VIN catalog refresh failed");
     const reason = err instanceof Error ? err.message : "";
