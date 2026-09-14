@@ -4,6 +4,7 @@
  * Run from repo root. Requires CLIENT_GUARD_TOKEN for Vite embed (same as API).
  */
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -25,9 +26,13 @@ if (!guard && process.env.NODE_ENV === "production") {
   process.exit(1);
 }
 
-console.log("→ pnpm install");
-run("pnpm", ["install", "--frozen-lockfile", "--prod=false"]);
-
+// Nixpacks already runs `pnpm install` in the install phase — skip the duplicate on Railway.
+if (!existsSync(path.join(root, "node_modules"))) {
+  console.log("→ pnpm install");
+  run("pnpm", ["install", "--frozen-lockfile", "--prod=false"]);
+} else {
+  console.log("→ pnpm install (skipped — node_modules already present)");
+}
 console.log("→ typecheck libs");
 run("pnpm", ["run", "typecheck:libs"]);
 
