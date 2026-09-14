@@ -1,0 +1,488 @@
+{
+  "/api-b2b": {
+    "en": {
+      "title": "Sell Car History Reports & Mileage Records | kmcheck API B2B",
+      "description": "Sell car history reports, mileage records and VIN checks on your website. White-label site or developer API. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles."
+    },
+    "de": {
+      "title": "Fahrzeughistorie & Kilometerstände verkaufen | kmcheck API B2B",
+      "description": "Verkaufen Sie Fahrzeughistorie, Kilometerstände und VIN-Checks auf Ihrer Website. White-Label oder API. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge."
+    },
+    "es": {
+      "title": "Vende historial de coches y kilometraje | kmcheck API B2B",
+      "description": "Vende informes de historial, kilometraje y comprobaciones VIN en tu web. Sitio white-label o API. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos."
+    },
+    "fr": {
+      "title": "Vendre historique auto et kilométrage | kmcheck API B2B",
+      "description": "Vendez historiques, relevés km et contrôles VIN sur votre site. White-label ou API. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules."
+    },
+    "sq": {
+      "title": "Shitni historik makinash dhe kilometra | API B2B kmcheck",
+      "description": "Shitni online raporte historiku makinash, kilometra dhe kontroll VIN. Sajt white-label ose API. Mbulim: SHBA, Kanada, Kore, Dubai, Kinë. Rreth 50 milionë makina."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię aut i przebiegi | kmcheck API B2B",
+      "description": "Sprzedawaj raporty historii, przebiegi i kontrole VIN na swojej stronie. White-label lub API. USA, Kanada, Korea, Dubaj, Chiny. ~50 mln pojazdów."
+    },
+    "ro": {
+      "title": "Vinde istoric auto și kilometraj | kmcheck API B2B",
+      "description": "Vinde rapoarte de istoric, kilometraj și verificări VIN pe site. White-label sau API. SUA, Canada, Coreea, Dubai, China. ~50M vehicule."
+    },
+    "bg": {
+      "title": "Продавайте автоистория и километри | kmcheck API B2B",
+      "description": "Продавайте доклади за автоистория, километри и VIN проверки на сайта си. White-label или API. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила."
+    },
+    "ka": {
+      "title": "გაყიდეთ მანქანის ისტორია და გარბენი | kmcheck API B2B",
+      "description": "გაყიდეთ ისტორიის ანგარიშები, გარბენი და VIN შემოწმებები თქვენს საიტზე. White-label ან API. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50 მლნ ავტომობილი."
+    },
+    "ar": {
+      "title": "بِع تاريخ السيارات وسجلات المسافة | واجهة kmcheck B2B",
+      "description": "بِع تقارير تاريخ السيارات والمسافة وفحص VIN على موقعك. موقع بعلامتك أو واجهة برمجية. أمريكا، كندا، كوريا، دبي، الصين. ~50 مليون مركبة."
+    },
+    "uk": {
+      "title": "Продавайте історію авто та пробіг | kmcheck API B2B",
+      "description": "Продавайте звіти історії, пробіг і VIN-перевірки на сайті. White-label або API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+    },
+    "ru": {
+      "title": "Продавайте историю авто и пробег | kmcheck API B2B",
+      "description": "Продавайте отчёты истории, пробег и VIN-проверки на сайте. White-label или API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+    },
+    "zh": {
+      "title": "销售车辆历史报告与里程记录 | kmcheck API B2B",
+      "description": "在网站销售车史报告、里程记录与 VIN 查验。白标站点或开发者 API。覆盖美国、加拿大、韩国、迪拜、中国。约五千万辆车。"
+    }
+  },
+  "/api-b2b/plans": {
+    "en": {
+      "title": "Vehicle History API Pricing & Reseller Websites | kmcheck",
+      "description": "Compare kmcheck plans: REST API for VIN history and mileage, or a managed white-label car history website."
+    },
+    "de": {
+      "title": "API-Preise für Fahrzeughistorie & Reseller-Websites | kmcheck",
+      "description": "kmcheck-Tarife vergleichen: REST-API für VIN-Historie und Kilometer oder betreute White-Label-Website."
+    },
+    "es": {
+      "title": "Precios API de historial y sitios reseller | kmcheck",
+      "description": "Compara planes kmcheck: API REST de historial VIN y kilometraje, o web white-label gestionada."
+    },
+    "fr": {
+      "title": "Tarifs API historique auto et sites revendeur | kmcheck",
+      "description": "Comparez les offres kmcheck : API REST historique VIN / km, ou site white-label géré."
+    },
+    "sq": {
+      "title": "Çmime API historiku makinash dhe faqe rishitësi | kmcheck",
+      "description": "Krahasoni planet kmcheck: API REST për historik VIN dhe kilometra, ose faqe white-label të menaxhuar."
+    },
+    "pl": {
+      "title": "Cennik API historii pojazdów i stron reseller | kmcheck",
+      "description": "Porównaj plany kmcheck: API REST historii VIN i przebiegu albo zarządzaną stronę white-label."
+    },
+    "ro": {
+      "title": "Prețuri API istoric auto și site-uri reseller | kmcheck",
+      "description": "Compară planurile kmcheck: API REST pentru istoric VIN și kilometraj, sau site white-label gestionat."
+    },
+    "bg": {
+      "title": "Цени API автоистория и reseller сайтове | kmcheck",
+      "description": "Сравнете плановете kmcheck: REST API за VIN история и километри или управляван white-label сайт."
+    },
+    "ka": {
+      "title": "ავტომობილის ისტორიის API ფასები და reseller საიტები | kmcheck",
+      "description": "შედარეტ kmcheck გეგმები: REST API VIN ისტორიისა და გარბენისთვის ან მარტული white-label საიტი."
+    },
+    "ar": {
+      "title": "أسعار واجهة تاريخ المركبات ومواقع إعادة البيع | kmcheck",
+      "description": "قارن خطط kmcheck: واجهة REST لتاريخ VIN والمسافة، أو موقع white-label مُدار."
+    },
+    "uk": {
+      "title": "Ціни API історії авто та сайти реселера | kmcheck",
+      "description": "Порівняйте плани kmcheck: REST API історії VIN і пробігу або керований white-label сайт."
+    },
+    "ru": {
+      "title": "Цены API истории авто и сайты реселлера | kmcheck",
+      "description": "Сравните тарифы kmcheck: REST API истории VIN и пробега или управляемый white-label сайт."
+    },
+    "zh": {
+      "title": "车史 API 报价与经销网站 | kmcheck",
+      "description": "对比 kmcheck 方案：VIN 历史与里程 REST API，或托管白标车史网站。"
+    }
+  },
+  "/api-b2b/contact": {
+    "en": {
+      "title": "Contact Sales | Sell Car History Reports with kmcheck",
+      "description": "Talk to kmcheck about selling car history reports and mileage records via API or a managed reseller site. Email info@kmcheck.com."
+    },
+    "de": {
+      "title": "Vertrieb kontaktieren | Fahrzeughistorie mit kmcheck verkaufen",
+      "description": "Sprechen Sie mit kmcheck über den Verkauf von Fahrzeughistorie und Kilometerständen per API oder betreuter Reseller-Site. E-Mail info@kmcheck.com."
+    },
+    "es": {
+      "title": "Contacto comercial | Vende historial de coches con kmcheck",
+      "description": "Habla con kmcheck sobre vender historial y kilometraje por API o sitio reseller. Email info@kmcheck.com."
+    },
+    "fr": {
+      "title": "Contact commercial | Vendre l’historique auto avec kmcheck",
+      "description": "Parlez à kmcheck de la vente d’historiques et kilométrages via API ou site revendeur. E-mail info@kmcheck.com."
+    },
+    "sq": {
+      "title": "Kontakt shitje | Shitni historik makinash me kmcheck",
+      "description": "Flisni me kmcheck për shitjen e historikut të makinave dhe kilometrave me API ose faqe të menaxhuar. Email: info@kmcheck.com."
+    },
+    "pl": {
+      "title": "Kontakt handlowy | Sprzedawaj historię aut z kmcheck",
+      "description": "Porozmawiaj z kmcheck o sprzedaży historii i przebiegów przez API lub stronę reseller. E-mail info@kmcheck.com."
+    },
+    "ro": {
+      "title": "Contact vânzări | Vinde istoric auto cu kmcheck",
+      "description": "Vorbește cu kmcheck despre vânzarea de istoric și kilometraj prin API sau site reseller. Email info@kmcheck.com."
+    },
+    "bg": {
+      "title": "Контакт продажби | Продавайте автоистория с kmcheck",
+      "description": "Говорете с kmcheck за продажба на автоистория и километри чрез API или reseller сайт. Имейл info@kmcheck.com."
+    },
+    "ka": {
+      "title": "გაყიდვების კონტაქტი | გაყიდეთ მანქანის ისტორია kmcheck-იტ",
+      "description": "ესაუბრეტ kmcheck-ს ისტორიისა და გარბენის გაყიდვაზე API-ით ან reseller საიტით. ელფოსტა info@kmcheck.com."
+    },
+    "ar": {
+      "title": "تواصل مع المبيعات | بِع تاريخ السيارات مع kmcheck",
+      "description": "تحدث مع kmcheck عن بيع تاريخ السيارات والمسافة عبر الواجهة أو موقع إعادة البيع. البريد info@kmcheck.com."
+    },
+    "uk": {
+      "title": "Контакт продажів | Продавайте історію авто з kmcheck",
+      "description": "Поговоріть з kmcheck про продаж історії та пробігу через API або сайт реселера. Email info@kmcheck.com."
+    },
+    "ru": {
+      "title": "Контакт продаж | Продавайте историю авто с kmcheck",
+      "description": "Обсудите с kmcheck продажу истории и пробега через API или сайт реселлера. Email info@kmcheck.com."
+    },
+    "zh": {
+      "title": "联系销售 | 使用 kmcheck 销售车史报告",
+      "description": "咨询通过 API 或经销站点销售车史与里程。邮箱 info@kmcheck.com。"
+    }
+  },
+  "/api-b2b/vin-decoder": {
+    "en": {
+      "title": "VIN Decoder API — Makes, Models & Specs | kmcheck B2B",
+      "description": "VIN decoder covering makes, models and detailed specs. Included with the kmcheck API and Reseller Website & Maintenance."
+    },
+    "de": {
+      "title": "VIN-Decoder API — Marken, Modelle & Specs | kmcheck B2B",
+      "description": "VIN-Decoder für Marken und Modelle mit detaillierten Specs. Enthalten in der kmcheck API sowie Reseller-Website & Wartung."
+    },
+    "es": {
+      "title": "API decodificador VIN — marcas, modelos y specs | kmcheck",
+      "description": "Decodificador VIN con specs detalladas. Incluido en la API kmcheck y en Sitio reseller y mantenimiento."
+    },
+    "fr": {
+      "title": "API décodeur VIN — marques, modèles et specs | kmcheck",
+      "description": "Décodeur VIN avec specs détaillées. Inclus dans l’API kmcheck et Site revendeur & maintenance."
+    },
+    "sq": {
+      "title": "API Dekodues VIN — marka, modele dhe specifikime | kmcheck",
+      "description": "Dekodues VIN për markat dhe modelet me specifikime të detajuara. I përfshirë në API kmcheck dhe te Faqe rishitësi & mirëmbajtje."
+    },
+    "pl": {
+      "title": "API dekoder VIN — marki, modele i specs | kmcheck",
+      "description": "Dekoder VIN ze szczegółowymi danymi. W API kmcheck oraz na Stronie resellera i utrzymaniu."
+    },
+    "ro": {
+      "title": "API decoder VIN — mărci, modele și specs | kmcheck",
+      "description": "Decoder VIN cu specs detaliate. Inclus în API kmcheck și Site reseller & mentenanță."
+    },
+    "bg": {
+      "title": "VIN декодер API — марки, модели и specs | kmcheck",
+      "description": "VIN декодер с подробни specs. Включен в kmcheck API и Reseller сайт и поддръжка."
+    },
+    "ka": {
+      "title": "VIN გაშიფვრა API — მარკები, მოდელები და specs | kmcheck",
+      "description": "VIN გაშიფვრა დეტალური მონაცემებიტ. kmcheck API-ში და Reseller საიტსა და მხარდაჭერაში."
+    },
+    "ar": {
+      "title": "واجهة فك شفرة VIN — الماركات والموديلات والمواصفات | kmcheck",
+      "description": "فك VIN بمواصفات مفصّلة. مشمول في واجهة kmcheck وفي موقع إعادة البيع والصيانة."
+    },
+    "uk": {
+      "title": "API VIN-декодер — марки, моделі й specs | kmcheck",
+      "description": "VIN-декодер з детальними specs. Входить до API kmcheck та Сайту реселера і підтримки."
+    },
+    "ru": {
+      "title": "API VIN-декодер — марки, модели и specs | kmcheck",
+      "description": "VIN-декодер с детальными specs. Входит в API kmcheck и Сайт реселлера и поддержку."
+    },
+    "zh": {
+      "title": "VIN 解码 API — 全品牌车型与规格 | kmcheck B2B",
+      "description": "各品牌车型 VIN 解码与详细规格。包含于 kmcheck API 以及经销网站与维护。"
+    }
+  },
+  "/api-b2b/usa-cars": {
+    "en": {
+      "title": "Sell American Cars History and Reports | kmcheck",
+      "description": "Sell American cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "title": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte | kmcheck",
+      "description": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "title": "Vende historial e informes de coches estadounidenses | kmcheck",
+      "description": "Vende historial e informes de coches estadounidenses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "title": "Vendez l'historique et les rapports de voitures américaines | kmcheck",
+      "description": "Vendez l'historique et les rapports de voitures américaines, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "title": "Shit raporte historiku makinash nga SHBA | kmcheck API",
+      "description": "Shitni raporte historiku për SHBA, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię i raporty samochodów amerykańskich | kmcheck",
+      "description": "Sprzedawaj historię i raporty samochodów amerykańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "title": "Vinde istoricul și rapoartele mașinilor americane | kmcheck",
+      "description": "Vinde istoricul și rapoartele mașinilor americane, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "title": "Продавайте история и отчети за американски автомобили | kmcheck",
+      "description": "Продавайте история и отчети за американски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "title": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები | kmcheck",
+      "description": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "title": "بِع تاريخ وتقارير السيارات الأمريكية | kmcheck",
+      "description": "بِع تاريخ وتقارير السيارات الأمريكية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "title": "Продавайте історію та звіти американських автомобілів | kmcheck",
+      "description": "Продавайте історію та звіти американських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "title": "Продавайте историю и отчёты американских автомобилей | kmcheck",
+      "description": "Продавайте историю и отчёты американских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "title": "销售美国车辆历史与报告 | kmcheck",
+      "description": "以您的品牌通过 kmcheck API 销售美国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "/api-b2b/canada-cars": {
+    "en": {
+      "title": "Sell Canadian Cars History and Reports | kmcheck",
+      "description": "Sell Canadian cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "title": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte | kmcheck",
+      "description": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "title": "Vende historial e informes de coches canadienses | kmcheck",
+      "description": "Vende historial e informes de coches canadienses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "title": "Vendez l'historique et les rapports de voitures canadiennes | kmcheck",
+      "description": "Vendez l'historique et les rapports de voitures canadiennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "title": "Shit raporte historiku makinash nga Kanadaja | kmcheck API",
+      "description": "Shitni raporte historiku për Kanadaja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię i raporty samochodów kanadyjskich | kmcheck",
+      "description": "Sprzedawaj historię i raporty samochodów kanadyjskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "title": "Vinde istoricul și rapoartele mașinilor canadiene | kmcheck",
+      "description": "Vinde istoricul și rapoartele mașinilor canadiene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "title": "Продавайте история и отчети за канадски автомобили | kmcheck",
+      "description": "Продавайте история и отчети за канадски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "title": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები | kmcheck",
+      "description": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "title": "بِع تاريخ وتقارير السيارات الكندية | kmcheck",
+      "description": "بِع تاريخ وتقارير السيارات الكندية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "title": "Продавайте історію та звіти канадських автомобілів | kmcheck",
+      "description": "Продавайте історію та звіти канадських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "title": "Продавайте историю и отчёты канадских автомобилей | kmcheck",
+      "description": "Продавайте историю и отчёты канадских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "title": "销售加拿大车辆历史与报告 | kmcheck",
+      "description": "以您的品牌通过 kmcheck API 销售加拿大车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "/api-b2b/korea-cars": {
+    "en": {
+      "title": "Sell Korean Cars History and Reports | kmcheck",
+      "description": "Sell Korean cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "title": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte | kmcheck",
+      "description": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "title": "Vende historial e informes de coches coreanos | kmcheck",
+      "description": "Vende historial e informes de coches coreanos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "title": "Vendez l'historique et les rapports de voitures coréennes | kmcheck",
+      "description": "Vendez l'historique et les rapports de voitures coréennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "title": "Shit raporte historiku makinash nga Koreja | kmcheck API",
+      "description": "Shitni raporte historiku për Koreja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię i raporty samochodów koreańskich | kmcheck",
+      "description": "Sprzedawaj historię i raporty samochodów koreańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "title": "Vinde istoricul și rapoartele mașinilor coreene | kmcheck",
+      "description": "Vinde istoricul și rapoartele mașinilor coreene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "title": "Продавайте история и отчети за корейски автомобили | kmcheck",
+      "description": "Продавайте история и отчети за корейски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "title": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები | kmcheck",
+      "description": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "title": "بِع تاريخ وتقارير السيارات الكورية | kmcheck",
+      "description": "بِع تاريخ وتقارير السيارات الكورية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "title": "Продавайте історію та звіти корейських автомобілів | kmcheck",
+      "description": "Продавайте історію та звіти корейських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "title": "Продавайте историю и отчёты корейских автомобилей | kmcheck",
+      "description": "Продавайте историю и отчёты корейских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "title": "销售韩国车辆历史与报告 | kmcheck",
+      "description": "以您的品牌通过 kmcheck API 销售韩国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "/api-b2b/dubai-cars": {
+    "en": {
+      "title": "Sell UAE Cars History and Reports | kmcheck",
+      "description": "Sell UAE cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "title": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte | kmcheck",
+      "description": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "title": "Vende historial e informes de coches de los EAU | kmcheck",
+      "description": "Vende historial e informes de coches de los EAU, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "title": "Vendez l'historique et les rapports de voitures des EAU | kmcheck",
+      "description": "Vendez l'historique et les rapports de voitures des EAU, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "title": "Shit raporte historiku makinash nga Dubai / Emiratet | kmcheck API",
+      "description": "Shitni raporte historiku për Dubai / Emiratet, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię i raporty samochodów ze ZEA | kmcheck",
+      "description": "Sprzedawaj historię i raporty samochodów ze ZEA, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "title": "Vinde istoricul și rapoartele mașinilor din EAU | kmcheck",
+      "description": "Vinde istoricul și rapoartele mașinilor din EAU, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "title": "Продавайте история и отчети за от ОАЕ автомобили | kmcheck",
+      "description": "Продавайте история и отчети за от ОАЕ автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "title": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები | kmcheck",
+      "description": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "title": "بِع تاريخ وتقارير السيارات الإماراتية | kmcheck",
+      "description": "بِع تاريخ وتقارير السيارات الإماراتية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "title": "Продавайте історію та звіти ОАЕ автомобілів | kmcheck",
+      "description": "Продавайте історію та звіти ОАЕ автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "title": "Продавайте историю и отчёты ОАЭ автомобилей | kmcheck",
+      "description": "Продавайте историю и отчёты ОАЭ автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "title": "销售阿联酋车辆历史与报告 | kmcheck",
+      "description": "以您的品牌通过 kmcheck API 销售阿联酋车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  },
+  "/api-b2b/china-cars": {
+    "en": {
+      "title": "Sell Chinese Cars History and Reports | kmcheck",
+      "description": "Sell Chinese cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+    },
+    "de": {
+      "title": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte | kmcheck",
+      "description": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+    },
+    "es": {
+      "title": "Vende historial e informes de coches chinos | kmcheck",
+      "description": "Vende historial e informes de coches chinos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+    },
+    "fr": {
+      "title": "Vendez l'historique et les rapports de voitures chinoises | kmcheck",
+      "description": "Vendez l'historique et les rapports de voitures chinoises, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+    },
+    "sq": {
+      "title": "Shit raporte historiku makinash nga Kina | kmcheck API",
+      "description": "Shitni raporte historiku për Kina, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+    },
+    "pl": {
+      "title": "Sprzedawaj historię i raporty samochodów chińskich | kmcheck",
+      "description": "Sprzedawaj historię i raporty samochodów chińskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+    },
+    "ro": {
+      "title": "Vinde istoricul și rapoartele mașinilor chineze | kmcheck",
+      "description": "Vinde istoricul și rapoartele mașinilor chineze, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+    },
+    "bg": {
+      "title": "Продавайте история и отчети за китайски автомобили | kmcheck",
+      "description": "Продавайте история и отчети за китайски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+    },
+    "ka": {
+      "title": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები | kmcheck",
+      "description": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+    },
+    "ar": {
+      "title": "بِع تاريخ وتقارير السيارات الصينية | kmcheck",
+      "description": "بِع تاريخ وتقارير السيارات الصينية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+    },
+    "uk": {
+      "title": "Продавайте історію та звіти китайських автомобілів | kmcheck",
+      "description": "Продавайте історію та звіти китайських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+    },
+    "ru": {
+      "title": "Продавайте историю и отчёты китайских автомобилей | kmcheck",
+      "description": "Продавайте историю и отчёты китайских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+    },
+    "zh": {
+      "title": "销售中国车辆历史与报告 | kmcheck",
+      "description": "以您的品牌通过 kmcheck API 销售中国车辆历史与报告、VIN 查验、事故与里程记录。"
+    }
+  }
+}

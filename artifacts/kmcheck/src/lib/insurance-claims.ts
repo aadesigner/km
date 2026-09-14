@@ -5,7 +5,8 @@ import {
 } from "@/lib/korean-provider-text";
 import {
   formatKoreanWonPlain,
-  shouldFormatAccidentLossAsKrw,
+  formatAmountPlain,
+  resolveAmountDisplayCurrency,
 } from "@/lib/korean-currency";
 
 export type InsuranceClaimEntry = {
@@ -16,6 +17,8 @@ export type InsuranceClaimEntry = {
   laborCost?: number | null;
   paintingCost?: number | null;
   description?: string | null;
+  /** Admin-set display currency (KRW | USD | EUR). Absent on provider rows. */
+  currency?: string | null;
 };
 
 const CLAIM_TYPE_KEYS: Record<string, string> = {
@@ -53,20 +56,24 @@ export function formatInsuranceAmount(
   country?: string | null,
   krwPerUsd?: number | null,
   opts?: {
+    currency?: string | null;
     accidentType?: string | null;
+    accidentCountry?: string | null;
     hasKoreanInsuranceClaims?: boolean;
   },
 ): string {
-  const asKrw = shouldFormatAccidentLossAsKrw({
+  const code = resolveAmountDisplayCurrency({
+    currency: opts?.currency,
     vehicleCountry: country,
     accidentType: opts?.accidentType,
+    accidentCountry: opts?.accidentCountry,
     hasKoreanInsuranceClaims: opts?.hasKoreanInsuranceClaims,
   });
 
-  if (asKrw) {
+  if (code === "KRW") {
     return formatKoreanWonPlain(amount, krwPerUsd ?? 0);
   }
-  return `$${amount.toLocaleString()}`;
+  return formatAmountPlain(amount, code);
 }
 
 export function formatInsuranceClaimsCount(t: (key: string) => string, count: number): string {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { GuestCheckoutForm } from "@nebula-ltd/pok-payments-js/react";
 import type { PaymentErrorResponse } from "@nebula-ltd/pok-payments-js";
+import "@nebula-ltd/pok-payments-js/lib/index.css";
 import { useTranslation } from "@/i18n/context";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";

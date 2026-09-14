@@ -256,10 +256,10 @@ if (errors === 0) {
 /** Albanian (sq) keyword alignment — natural search intents */
 const SQ_KEYWORDS = {
   home: ["kontroll kilometrash", "shasi"],
-  pricing: ["çmime", "shasi", "kontroll kilometrash"],
-  free_decoder: ["shasi", "kontroll kilometrash"],
-  how_it_works: ["kontroll", "shasi"],
-  faq: ["kontroll kilometrash", "shasi"],
+  pricing: ["çmime", "shasi", "historiku"],
+  free_decoder: ["shasi", "dekodues"],
+  how_it_works: ["funksionon", "shasi"],
+  faq: ["pyetje", "shasi"],
   country_usa: ["kontroll kilometrash", "shba"],
   country_korea: ["kontroll kilometrash", "koreja"],
   country_canada: ["kontroll kilometrash", "kanadaja"],
@@ -281,13 +281,13 @@ if (sqWarn === 0) {
   console.log("OK — Albanian SEO keywords aligned for indexable pages");
 }
 
-/** English keyword alignment — mileage-check intent + market pages */
+/** English keyword alignment — homepage/country keep mileage-check; other pages use VIN/history */
 const EN_KEYWORDS = {
   home: ["car mileage check", "usa mileage", "korean"],
-  pricing: ["mileage check"],
-  free_decoder: ["mileage check", "vin"],
-  how_it_works: ["mileage check"],
-  faq: ["mileage check"],
+  pricing: ["vin history", "pricing"],
+  free_decoder: ["vin decoder", "vin"],
+  how_it_works: ["how it works", "vin"],
+  faq: ["faq", "vin history"],
   country_usa: ["usa mileage check"],
   country_korea: ["korean mileage check"],
   country_canada: ["canada mileage check"],
@@ -311,10 +311,9 @@ if (enWarn === 0) {
   console.log("OK — English SEO keywords aligned for indexable pages");
 }
 
-/** sq: homepage/country titles use "kontroll kilometrash" */
+/** sq: homepage/country titles use "kontroll kilometrash" (not other marketing pages) */
 const SQ_TITLE_KEYS = [
   "home",
-  "free_decoder",
   "country_usa",
   "country_korea",
   "country_canada",

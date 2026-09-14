@@ -1,4 +1,5 @@
 import seoData from "./seo-data.json";
+import b2bSeoData from "./b2b-seo-data.json";
 import {
   stripAppBasePath,
   SITE_ORIGIN,
@@ -11,9 +12,6 @@ import { resolveFavicons } from "./country-favicons";
 import { resolvePageOgImage } from "./seo-og-images";
 // @ts-expect-error ESM build script — no generated .d.ts
 import { buildCountryPageJsonLd } from "../../scripts/country-page-json-ld.mjs";
-import { getB2bCopy, getRegionHeadlineLabel } from "@/pages/api-b2b/copy";
-import { findApiB2bRegion } from "@/pages/api-b2b/regions";
-import type { Language } from "@/lib/languages";
 
 export type SeoPageKey = keyof typeof seoData;
 
@@ -78,33 +76,15 @@ export function resolvePageKey(rest: string): SeoPageKey {
 function resolveApiB2bSeo(lang: SeoLang, rest: string): {
   title: string;
   description: string;
-  keywords: string;
 } | null {
   if (rest !== "/api-b2b" && !rest.startsWith("/api-b2b/")) return null;
-  const c = getB2bCopy(lang as Language);
-  const tail = rest.replace(/^\/api-b2b/, "") || "";
-  if (!tail || tail === "/") {
-    return { title: c.seoHomeTitle, description: c.seoHomeDesc, keywords: c.seoKeywords };
-  }
-  if (tail === "/plans") {
-    return { title: c.seoPlansTitle, description: c.seoPlansDesc, keywords: c.seoKeywords };
-  }
-  if (tail === "/contact") {
-    return { title: c.seoContactTitle, description: c.seoContactDesc, keywords: c.seoKeywords };
-  }
-  if (tail === "/vin-decoder") {
-    return { title: c.seoDecoderTitle, description: c.seoDecoderDesc, keywords: c.seoKeywords };
-  }
-  const region = findApiB2bRegion(tail.replace(/^\//, ""));
-  if (region) {
-    const label = getRegionHeadlineLabel(c, region.slug, lang as Language);
-    return {
-      title: c.seoRegionTitle.replace(/\{region\}/g, label),
-      description: c.seoRegionDesc.replace(/\{region\}/g, label),
-      keywords: `${c.seoKeywords}, ${label} car history, ${label} mileage records`,
-    };
-  }
-  return { title: c.seoHomeTitle, description: c.seoHomeDesc, keywords: c.seoKeywords };
+  const pages = b2bSeoData as Record<string, Partial<Record<SeoLang, { title: string; description: string }>>>;
+  const pathKey = rest || "/api-b2b";
+  const page = pages[pathKey] ?? pages["/api-b2b"];
+  if (!page) return null;
+  const entry = page[lang] ?? page.en;
+  if (!entry?.title || !entry?.description) return null;
+  return { title: entry.title, description: entry.description };
 }
 
 const NOINDEX_PREFIXES = [
@@ -261,6 +241,5 @@ export function getRouteSeo(
     ogImage,
     ogImageAlt: seo.title,
     jsonLd: apiB2bJsonLd ?? countryJsonLd,
-    keywords: apiB2b?.keywords,
   };
 }

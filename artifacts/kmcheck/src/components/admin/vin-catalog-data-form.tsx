@@ -189,6 +189,22 @@ function numberOrNull(raw: string): number | null {
 }
 
 export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalogData {
+  const accidents = accidentsToPayload(form.accidents);
+  const owners = ownerHistoryToPayload(form.ownerHistory);
+
+  // Suggest counts from history length only when admin left the count empty
+  // (never overwrite an intentional value, including explicit 0).
+  const accidentCount = form.accidentCount.trim()
+    ? numberOrNull(form.accidentCount)
+    : accidents.length > 0
+      ? accidents.length
+      : null;
+  const ownerCount = form.ownerCount.trim()
+    ? numberOrNull(form.ownerCount)
+    : owners.length > 0
+      ? owners.length
+      : null;
+
   return {
     make: form.make.trim() || null,
     model: form.model.trim() || null,
@@ -201,8 +217,8 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     color: form.color.trim() || null,
     country: form.country.trim() || null,
     odometer: numberOrNull(form.odometer),
-    ownerCount: numberOrNull(form.ownerCount),
-    accidentCount: numberOrNull(form.accidentCount),
+    ownerCount,
+    accidentCount,
     hp: numberOrNull(form.hp),
     cylinders: numberOrNull(form.cylinders),
     titleStatus: form.titleStatus.trim() || null,
@@ -210,11 +226,11 @@ export function vinCatalogPayloadFromForm(form: VinCatalogFormState): VinCatalog
     isStolen: form.isStolen,
     isTaxi: form.isTaxi,
     photos: form.photos,
-    accidents: accidentsToPayload(form.accidents),
+    accidents,
     insuranceClaims: insuranceClaimsToPayload(form.insuranceClaims),
     mileageHistory: mileageHistoryToPayload(form.mileageHistory),
     serviceHistory: serviceHistoryToPayload(form.serviceHistory),
-    ownerHistory: ownerHistoryToPayload(form.ownerHistory),
+    ownerHistory: owners,
     auctionHistory: auctionHistoryToPayload(form.auctionHistory),
     registryHistory: registryHistoryToPayload(form.registryHistory),
     marketData: marketDataToPayload(form.marketData),
@@ -417,8 +433,8 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
     ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
     : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4";
   const metricsGrid = compact
-    ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
-    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4";
+    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
+    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4";
 
   const vehicleTab = (
     <div className={vehicleGrid}>
@@ -477,8 +493,22 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
           type="number"
           compact={compact}
         />
-        <AdminTextField label="Owner count" value={form.ownerCount} onChange={(v) => set("ownerCount", v)} type="number" compact={compact} />
-        <AdminTextField label="Accident count" value={form.accidentCount} onChange={(v) => set("accidentCount", v)} type="number" compact={compact} />
+        <AdminTextField
+          label="Owner count"
+          hint={form.ownerCount.trim() ? undefined : "Empty → auto from owner history on save"}
+          value={form.ownerCount}
+          onChange={(v) => set("ownerCount", v)}
+          type="number"
+          compact={compact}
+        />
+        <AdminTextField
+          label="Accident count"
+          hint={form.accidentCount.trim() ? undefined : "Empty → auto from accidents on save"}
+          value={form.accidentCount}
+          onChange={(v) => set("accidentCount", v)}
+          type="number"
+          compact={compact}
+        />
         <AdminTextField label="Horsepower" value={form.hp} onChange={(v) => set("hp", v)} type="number" compact={compact} />
         <AdminTextField label="Cylinders" value={form.cylinders} onChange={(v) => set("cylinders", v)} type="number" compact={compact} />
       </div>
@@ -526,7 +556,12 @@ export const VinCatalogDataForm = forwardRef<VinCatalogDataFormHandle, VinCatalo
   );
 
   const historyTab = showHistorySections ? (
-    <VinCatalogHistorySections form={form} onChange={onChange} compact={compact} />
+    <VinCatalogHistorySections
+      form={form}
+      onChange={onChange}
+      compact={compact}
+      vehicleCountry={form.country}
+    />
   ) : null;
 
   if (compact) {

@@ -10,7 +10,10 @@ import { getB2bCopy, getRegionHeadlineLabel } from "../src/pages/api-b2b/copy";
 import { API_B2B_REGIONS } from "../src/pages/api-b2b/regions";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
+/** Node prerender / seo-bootstrap */
 const outPath = join(__dir, "b2b-seo-data.json");
+/** SPA resolveApiB2bSeo — keep in sync so seo-pages never imports api-b2b/copy.ts */
+const spaOutPath = join(__dir, "../src/lib/b2b-seo-data.json");
 
 type SeoEntry = { title: string; description: string };
 type PageMap = Record<string, Record<string, SeoEntry>>;
@@ -54,5 +57,7 @@ for (const rest of paths) {
   }
 }
 
-writeFileSync(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-console.log(`Wrote ${outPath} (${paths.length} paths × ${SUPPORTED_LANGS.length} langs)`);
+const json = `${JSON.stringify(data, null, 2)}\n`;
+writeFileSync(outPath, json, "utf8");
+writeFileSync(spaOutPath, json, "utf8");
+console.log(`Wrote ${outPath} and ${spaOutPath} (${paths.length} paths × ${SUPPORTED_LANGS.length} langs)`);

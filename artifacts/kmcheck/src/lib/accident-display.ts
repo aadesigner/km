@@ -69,6 +69,7 @@ export function resolveAccidentSeverityForDisplay(
     lossAmount?: number | null;
     type?: string | null;
     country?: string | null;
+    currency?: string | null;
   },
   ctx: AccidentSeverityContext,
 ): string {
@@ -77,6 +78,7 @@ export function resolveAccidentSeverityForDisplay(
 
   if (accident.lossAmount != null && accident.lossAmount > 0) {
     const asKrw = shouldFormatAccidentLossAsKrw({
+      currency: accident.currency,
       vehicleCountry: ctx.vehicleCountry,
       accidentType: accident.type,
       accidentCountry: accident.country,

@@ -342,35 +342,36 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             Edit vehicle data, then publish to add this VIN to the catalog and email purchasers.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0">
+        <div className="flex w-full lg:w-auto gap-2 shrink-0">
           <Button
             variant="outline"
-            className="border-amber-300 text-amber-800 hover:bg-amber-50"
+            className="flex-1 basis-0 min-w-0 border-amber-300 text-amber-800 hover:bg-amber-50 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleCreditAndNotify}
             disabled={saving || publishing || removing || crediting || refunding || (detail.requests ?? []).length === 0}
             title="Adds 1 credit per user, emails them, and removes this pending check"
           >
-            {crediting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Gift className="h-4 w-4 mr-1.5" />}
-            Credit user
+            {crediting ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Gift className="h-4 w-4 sm:mr-1.5 shrink-0" />}
+            <span className="truncate">Credit</span>
           </Button>
           <Button
             variant="outline"
-            className="border-orange-300 text-orange-800 hover:bg-orange-50"
+            className="flex-1 basis-0 min-w-0 border-orange-300 text-orange-800 hover:bg-orange-50 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleRemoveAndRefund}
             disabled={saving || publishing || removing || crediting || refunding}
             title="Removes pending, marks payments refunded (deducts sales), emails customer. Refund PayPal/POK yourself."
           >
-            {refunding ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Banknote className="h-4 w-4 mr-1.5" />}
-            Remove pending + refunded
+            {refunding ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Banknote className="h-4 w-4 sm:mr-1.5 shrink-0" />}
+            <span className="truncate">Refunded</span>
           </Button>
           <Button
             variant="outline"
-            className="text-destructive border-destructive/30 hover:bg-destructive/10"
+            className="flex-1 basis-0 min-w-0 text-destructive border-destructive/30 hover:bg-destructive/10 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleRemove}
             disabled={saving || publishing || removing || crediting || refunding}
+            title="Remove pending"
           >
-            {removing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
-            Remove pending
+            {removing ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Trash2 className="h-4 w-4 sm:mr-1.5 shrink-0" />}
+            <span className="truncate">Remove</span>
           </Button>
         </div>
       </div>

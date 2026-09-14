@@ -41,7 +41,8 @@ export function AdminVinSaveBar({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-30 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 mt-6",
+        // Offset above admin mobile bottom nav (layout uses ~4.5rem fixed bar)
+        "sticky bottom-[4.5rem] md:bottom-0 z-40 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 mt-6",
         "border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
         "flex flex-col sm:flex-row sm:items-center gap-3",
         className,

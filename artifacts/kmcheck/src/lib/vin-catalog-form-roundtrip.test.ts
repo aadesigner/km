@@ -33,13 +33,14 @@ function fullForm(): VinCatalogFormState {
       date: "2022-01-01",
       severity: "minor",
       description: "fender",
-      country: "kr",
+      location: "Seoul",
       type: "collision",
       primaryDamage: "front",
       secondaryDamage: "none",
       airbagDeployed: "no",
       odometerAtLoss: "12000",
       lossAmount: "500",
+      currency: "KRW",
     }],
     insuranceClaims: [{
       date: "2022-02-01",
@@ -49,6 +50,7 @@ function fullForm(): VinCatalogFormState {
       laborCost: "300",
       paintingCost: "100",
       description: "bumper",
+      currency: "KRW",
     }],
     mileageHistory: [{
       date: "2023-03-01",
@@ -161,14 +163,14 @@ describe("vin catalog form save round-trip", () => {
 
     expect(payload.mileageHistory).toEqual([expect.objectContaining({
       source: "encar",
-      primaryDamage: "none",
-      secondaryDamage: "none",
+      unit: "km",
       odometer: 45000,
       location: "Seoul",
       description: "Oil change and brake service",
+      titleStatus: "clean",
     })]);
     expect(restored.mileageHistory[0]?.source).toBe("encar");
-    expect(restored.mileageHistory[0]?.primaryDamage).toBe("none");
+    expect(restored.mileageHistory[0]?.unit).toBe("km");
     expect(restored.mileageHistory[0]?.location).toBe("Seoul");
     expect(restored.mileageHistory[0]?.description).toBe("Oil change and brake service");
 
@@ -208,24 +210,88 @@ describe("vin catalog form save round-trip", () => {
     });
     expect(restored.marketData.currency).toBe("USD");
 
+    expect(restored.accidents[0]?.currency).toBe("KRW");
+    expect(restored.accidents[0]?.location).toBe("Seoul");
     expect(payload.accidents).toEqual([expect.objectContaining({
       airbagDeployed: false,
       primaryDamage: "front",
+      currency: "KRW",
+      lossAmount: 500,
+      location: "Seoul",
     })]);
     expect(restored.accidents[0]?.airbagDeployed).toBe("no");
+    expect(payload.insuranceClaims).toEqual([expect.objectContaining({
+      currency: "KRW",
+      lossAmount: 800,
+    })]);
+    expect(restored.insuranceClaims[0]?.currency).toBe("KRW");
   });
 
   it("clears empty market data and empty history rows", () => {
     const payload = vinCatalogPayloadFromForm({
       ...EMPTY_VIN_CATALOG_FORM,
       accidents: [{
-        date: "", severity: "", description: "", country: "", type: "",
+        date: "", severity: "", description: "", location: "", type: "",
         primaryDamage: "", secondaryDamage: "", airbagDeployed: "",
-        odometerAtLoss: "", lossAmount: "",
+        odometerAtLoss: "", lossAmount: "", currency: "",
       }],
       marketData: { estimatedValue: "", currency: "", lastAuctionPrice: "", lastAuctionDate: "" },
     });
     expect(payload.accidents).toEqual([]);
     expect(payload.marketData).toBeNull();
+  });
+
+  it("auto-suggests accident/owner counts when empty", () => {
+    const payload = vinCatalogPayloadFromForm({
+      ...EMPTY_VIN_CATALOG_FORM,
+      accidentCount: "",
+      ownerCount: "",
+      accidents: [{
+        date: "2022-01-01",
+        severity: "",
+        description: "",
+        location: "",
+        type: "",
+        primaryDamage: "",
+        secondaryDamage: "",
+        airbagDeployed: "",
+        odometerAtLoss: "",
+        lossAmount: "100",
+        currency: "USD",
+      }],
+      ownerHistory: [{
+        date: "2019-01-01",
+        location: "Seoul",
+        mileage: "1000",
+        auctionPrice: "",
+        lotStatus: "",
+        condition: "",
+      }],
+    });
+    expect(payload.accidentCount).toBe(1);
+    expect(payload.ownerCount).toBe(1);
+  });
+
+  it("does not overwrite explicit zero counts", () => {
+    const payload = vinCatalogPayloadFromForm({
+      ...EMPTY_VIN_CATALOG_FORM,
+      accidentCount: "0",
+      ownerCount: "0",
+      accidents: [{
+        date: "2022-01-01",
+        severity: "",
+        description: "",
+        location: "",
+        type: "",
+        primaryDamage: "",
+        secondaryDamage: "",
+        airbagDeployed: "",
+        odometerAtLoss: "",
+        lossAmount: "100",
+        currency: "USD",
+      }],
+    });
+    expect(payload.accidentCount).toBe(0);
+    expect(payload.ownerCount).toBe(0);
   });
 });

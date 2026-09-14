@@ -6,7 +6,7 @@ import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
-import { reportUsesKrwAmounts } from "@/lib/korean-currency";
+import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
 import {
   type InsuranceClaimEntry,
   translateInsuranceClaimType,
@@ -29,6 +29,21 @@ type Props = {
   delay?: number;
 };
 
+function ClaimAmount({
+  amount,
+  currencyCode,
+  krwPerUsd,
+}: {
+  amount: number;
+  currencyCode: ReturnType<typeof resolveAmountDisplayCurrency>;
+  krwPerUsd?: number | null;
+}) {
+  if (currencyCode === "KRW") {
+    return <KoreanWonAmount krw={amount} krwPerUsd={krwPerUsd} />;
+  }
+  return <span className="font-bold">{formatAmountPlain(amount, currencyCode)}</span>;
+}
+
 function ClaimRow({
   claim,
   country,
@@ -38,7 +53,7 @@ function ClaimRow({
   language,
   index,
   total,
-  formatAsKrw,
+  hasKoreanInsuranceClaims,
 }: {
   claim: InsuranceClaimEntry;
   country?: string | null;
@@ -48,12 +63,17 @@ function ClaimRow({
   language: Language;
   index: number;
   total: number;
-  formatAsKrw: boolean;
+  hasKoreanInsuranceClaims: boolean;
 }) {
   const typeLabel = translateInsuranceClaimType(t, claim.type);
   const hasBreakdown = claim.partCost != null || claim.laborCost != null || claim.paintingCost != null;
   const displayDate = localizeInsuranceClaimDate(claim.date, language, vehicleYear, country);
   const displayDescription = translateInsuranceClaimDescription(t, claim.description);
+  const currencyCode = resolveAmountDisplayCurrency({
+    currency: claim.currency,
+    vehicleCountry: country,
+    hasKoreanInsuranceClaims,
+  });
 
   return (
     <div className="relative pl-4">
@@ -77,11 +97,7 @@ function ClaimRow({
             </div>
             {claim.lossAmount != null && (
               <span className="text-[11px] tabular-nums text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 rounded-full px-2 py-0.5 shrink-0">
-                {formatAsKrw ? (
-                  <KoreanWonAmount krw={claim.lossAmount} krwPerUsd={krwPerUsd} />
-                ) : (
-                  <span className="font-bold">${claim.lossAmount.toLocaleString()}</span>
-                )}
+                <ClaimAmount amount={claim.lossAmount} currencyCode={currencyCode} krwPerUsd={krwPerUsd} />
               </span>
             )}
           </div>
@@ -91,11 +107,7 @@ function ClaimRow({
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_part_cost")}</p>
                   <p className="text-[11px] font-medium tabular-nums">
-                    {formatAsKrw ? (
-                      <KoreanWonAmount krw={claim.partCost} krwPerUsd={krwPerUsd} />
-                    ) : (
-                      `$${claim.partCost!.toLocaleString()}`
-                    )}
+                    <ClaimAmount amount={claim.partCost} currencyCode={currencyCode} krwPerUsd={krwPerUsd} />
                   </p>
                 </div>
               )}
@@ -103,11 +115,7 @@ function ClaimRow({
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_labor_cost")}</p>
                   <p className="text-[11px] font-medium tabular-nums">
-                    {formatAsKrw ? (
-                      <KoreanWonAmount krw={claim.laborCost} krwPerUsd={krwPerUsd} />
-                    ) : (
-                      `$${claim.laborCost!.toLocaleString()}`
-                    )}
+                    <ClaimAmount amount={claim.laborCost} currencyCode={currencyCode} krwPerUsd={krwPerUsd} />
                   </p>
                 </div>
               )}
@@ -115,11 +123,7 @@ function ClaimRow({
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_painting_cost")}</p>
                   <p className="text-[11px] font-medium tabular-nums">
-                    {formatAsKrw ? (
-                      <KoreanWonAmount krw={claim.paintingCost} krwPerUsd={krwPerUsd} />
-                    ) : (
-                      `$${claim.paintingCost!.toLocaleString()}`
-                    )}
+                    <ClaimAmount amount={claim.paintingCost} currencyCode={currencyCode} krwPerUsd={krwPerUsd} />
                   </p>
                 </div>
               )}
@@ -151,7 +155,7 @@ function ClaimsList({
 }) {
   const [expanded, setExpanded] = useState(false);
   const visible = sliceForHistoryPreview(claims, expanded);
-  const formatAsKrw = reportUsesKrwAmounts({ country, insuranceClaims: claims });
+  const hasKoreanInsuranceClaims = claims.length > 0;
 
   return (
     <>
@@ -167,7 +171,7 @@ function ClaimsList({
             language={language}
             index={i}
             total={visible.length}
-            formatAsKrw={formatAsKrw}
+            hasKoreanInsuranceClaims={hasKoreanInsuranceClaims}
           />
         ))}
       </div>

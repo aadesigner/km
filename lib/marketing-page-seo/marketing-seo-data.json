@@ -55,8 +55,8 @@
   },
   "pricing": {
     "en": {
-      "title": "Pricing — Car Mileage Check & History Report | kmcheck.com",
-      "description": "One affordable car mileage check covers km verification, accidents, salvage and theft. Instant delivery. No subscription."
+      "title": "Pricing — VIN History Reports | kmcheck.com",
+      "description": "One affordable VIN history report covers km verification, accidents, salvage and theft. Instant delivery. No subscription."
     },
     "ar": {
       "title": "الأسعار — تقارير فحص VIN | kmcheck.com",
@@ -71,8 +71,8 @@
       "description": "Один отчёт VIN: пробег, ДТП, утилизация и угон. Мгновенная доставка. Без подписки."
     },
     "sq": {
-      "title": "Çmimet — kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Një raport i përballueshëm me numrin e shasisë: kontroll kilometrash, aksidente, dëmtim total dhe vjedhje. Dorëzim i menjëhershëm, pa abonim."
+      "title": "Çmimet — raporte historiku me shasi (VIN) | kmcheck.com",
+      "description": "Një raport i përballueshëm me numrin e shasisë: km, aksidente, dëmtim total dhe vjedhje. Dorëzim i menjëhershëm, pa abonim."
     },
     "es": {
       "title": "Precios — Informes de historial VIN | kmcheck.com",
@@ -234,7 +234,7 @@
     },
     "sq": {
       "title": "Raporti VIN | kmcheck.com",
-      "description": "Kontroll kilometrash, aksidentesh dhe dëmtimi total për mjetin. Raport i plotë me shasi në kmcheck.com."
+      "description": "Verifikoni km, aksidentet dhe historikun e plotë të mjetit. Raport i plotë me shasi në kmcheck.com."
     },
     "es": {
       "title": "Informe VIN | kmcheck.com",
@@ -433,8 +433,8 @@
   },
   "free_decoder": {
     "en": {
-      "title": "Free VIN Decoder — Start Your Car Mileage Check | kmcheck.com",
-      "description": "Free VIN decoder for any 17-digit VIN. Get year, make, model and engine — then unlock a full car mileage check for accidents, salvage and theft."
+      "title": "Free VIN Decoder — Year, Make & Model | kmcheck.com",
+      "description": "Free VIN decoder for any 17-digit VIN. Get year, make, model and engine — then unlock a full vehicle history report for accidents, salvage and theft."
     },
     "ar": {
       "title": "فك تشفير VIN مجاني — BMW وAudi وMercedes | kmcheck.com",
@@ -449,8 +449,8 @@
       "description": "Расшифруйте 17-значный VIN бесплатно. BMW, Audi, Mercedes, Toyota. Год, марка, модель — без регистрации."
     },
     "sq": {
-      "title": "Dekodues shasie falas — kontroll kilometrash | kmcheck.com",
-      "description": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni kontrollin e plotë të kilometrash, aksidenteve dhe dëmtimit total."
+      "title": "Dekodues shasie falas — vit, markë dhe model | kmcheck.com",
+      "description": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni raportin e plotë të historikut: aksidente, dëmtim total dhe vjedhje."
     },
     "es": {
       "title": "Decodificador VIN gratis — BMW, Audi, Mercedes | kmcheck.com",
@@ -487,8 +487,8 @@
   },
   "how_it_works": {
     "en": {
-      "title": "How Car Mileage Check Works — 3 Steps | kmcheck.com",
-      "description": "How to run a car mileage check and vehicle history report. Enter your VIN to verify km, accidents, theft and salvage — results in seconds."
+      "title": "How It Works — VIN History Report in 3 Steps | kmcheck.com",
+      "description": "How to get a vehicle history report by VIN. Enter your chassis number to verify km, accidents, theft and salvage — results in seconds."
     },
     "ar": {
       "title": "كيف يعمل فحص VIN — 3 خطوات | kmcheck.com",
@@ -503,8 +503,8 @@
       "description": "Получите отчёт об истории автомобиля. Введите VIN для проверки пробега, аварий, угонов, тотала и владельцев — за секунды из баз поставщиков."
     },
     "sq": {
-      "title": "Si funksionon kontrolli i kilometrash me shasi | kmcheck.com",
-      "description": "Si të bëni kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë për km, aksidente, vjedhje dhe dëmtim total — rezultat për sekonda."
+      "title": "Si funksionon — raport historiku me shasi në 3 hapa | kmcheck.com",
+      "description": "Si të merrni historikun e makinës me numrin e shasisë. Shkruani VIN për km, aksidente, vjedhje dhe dëmtim total — rezultat për sekonda."
     },
     "es": {
       "title": "Cómo comprobar un VIN — 3 pasos | kmcheck.com",
@@ -523,12 +523,12 @@
       "description": "შეიყვანე VIN, გადაიხადე უსაფრთხოდ და მიიღე სრული ისტორია წამებში. გარბენი, ავარიები, სალვაჟი და სხვა."
     },
     "de": {
-      "title": "So funktioniert's — Kilometerstand & VIN prüfen | kmcheck.com",
-      "description": "Fahrzeughistorienbericht für Ihr Auto. VIN eingeben und Kilometerstand, Unfälle, Diebstahl, Totalschaden und Eigentümer prüfen — in Sekunden aus Anbieterdatenbanken."
+      "title": "So funktioniert's — VIN-Bericht in 3 Schritten | kmcheck.com",
+      "description": "Fahrzeughistorienbericht für Ihr Auto. VIN eingeben und Unfälle, Diebstahl, Totalschaden und Eigentümer prüfen — in Sekunden aus Anbieterdatenbanken."
     },
     "fr": {
-      "title": "Comment ça marche — vérifier le kilométrage | kmcheck.com",
-      "description": "Rapport sur l'historique de votre voiture. Saisissez le VIN pour vérifier kilométrage, accidents, vols, épave et propriétaires — en quelques secondes depuis les bases des fournisseurs."
+      "title": "Comment ça marche — rapport VIN en 3 étapes | kmcheck.com",
+      "description": "Rapport sur l'historique de votre voiture. Saisissez le VIN pour vérifier accidents, vols, épave et propriétaires — en quelques secondes depuis les bases des fournisseurs."
     },
     "bg": {
       "title": "Как работи — VIN проверка стъпка по стъпка | kmcheck.com",
@@ -541,8 +541,8 @@
   },
   "faq": {
     "en": {
-      "title": "Car Mileage Check FAQ | kmcheck.com",
-      "description": "FAQ on car mileage checks, VIN reports, USA and Korean cars coverage, data accuracy, delivery, payments and refunds."
+      "title": "FAQ — VIN History Reports | kmcheck.com",
+      "description": "FAQ on VIN history reports, USA and Korean cars coverage, data accuracy, delivery, payments and refunds."
     },
     "ar": {
       "title": "الأسئلة الشائعة — فحص VIN | kmcheck.com",
@@ -557,8 +557,8 @@
       "description": "Ответы о проверке VIN, покрытии, точности данных, доставке, оплате и возвратах."
     },
     "sq": {
-      "title": "Pyetje të shpeshta — kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Përgjigje për kontrollin e kilometrash, mbulimin e të dhënave, saktësinë, dorëzimin, pagesat dhe rimbursimet në kmcheck.com."
+      "title": "Pyetje të shpeshta — raporte historiku me shasi | kmcheck.com",
+      "description": "Përgjigje për raportet VIN, mbulimin e të dhënave, saktësinë, dorëzimin, pagesat dhe rimbursimet në kmcheck.com."
     },
     "es": {
       "title": "Preguntas frecuentes — Comprobación VIN | kmcheck.com",
@@ -577,8 +577,8 @@
       "description": "პასუხები VIN შემოწმებაზე, გარბენზე, ავარიებებზე, სალვაჟზე, გადახდასა და ანგარიშებზე kmcheck.com-ზე."
     },
     "de": {
-      "title": "FAQ — Kilometerstand prüfen & VIN-Bericht | kmcheck.com",
-      "description": "Antworten zu VIN-Checks, Kilometerstand, Unfällen, Totalschaden, Zahlung und Fahrzeughistorienberichten auf kmcheck.com."
+      "title": "FAQ — VIN-Bericht & Fahrzeughistorie | kmcheck.com",
+      "description": "Antworten zu VIN-Checks, Unfällen, Totalschaden, Zahlung und Fahrzeughistorienberichten auf kmcheck.com."
     },
     "fr": {
       "title": "FAQ — historique véhicule & contrôle VIN | kmcheck.com",

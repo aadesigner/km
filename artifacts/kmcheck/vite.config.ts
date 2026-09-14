@@ -2,14 +2,42 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { existsSync, readFileSync } from "node:fs";
 import { seoHtmlPlugin } from "./vite-seo-plugin";
 
-const rawPort = process.env.PORT ?? "5173";
-const port = Number(rawPort);
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+/** Fill API_PORT / VITE_* from workspace root `.env` when the shell did not export them. */
+function loadRootEnvFallbacks() {
+  const rootEnv = path.resolve(import.meta.dirname, "..", "..", ".env");
+  if (!existsSync(rootEnv)) return;
+  for (const line of readFileSync(rootEnv, "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1]!;
+    let val = m[2]!.trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"'))
+      || (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    // Root `.env` PORT belongs to the API (8080/8081) — never use it for Vite.
+    if (key === "PORT") continue;
+    if (process.env[key] == null || process.env[key] === "") {
+      process.env[key] = val;
+    }
+  }
 }
 
+loadRootEnvFallbacks();
+
+// Frontend port — keep separate from API `PORT` in the root `.env`.
+const rawPort = process.env.VITE_DEV_PORT ?? "5173";
+const port = Number(rawPort);
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid VITE_DEV_PORT value: "${rawPort}"`);
+}
+
+const apiPort = process.env.API_PORT ?? "8080";
 const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig(({ command }) => ({
@@ -41,8 +69,10 @@ export default defineConfig(({ command }) => ({
           if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
             return "charts";
           }
+          if (id.includes("node_modules/framer-motion")) {
+            return "motion";
+          }
           if (
-            id.includes("node_modules/framer-motion") ||
             id.includes("node_modules/@radix-ui/") ||
             id.includes("node_modules/class-variance-authority") ||
             id.includes("node_modules/lucide-react") ||
@@ -110,7 +140,7 @@ export default defineConfig(({ command }) => ({
     proxy: {
       // Only real backend routes (`/api`, `/api/...`). Never capture `/api-b2b` marketing.
       "/api": {
-        target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
+        target: `http://localhost:${apiPort}`,
         changeOrigin: true,
         bypass(req) {
           const url = req.url ?? "";

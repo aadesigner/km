@@ -32,6 +32,9 @@ export type TimelineEvent = {
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   lossAmount?: number | null;
+  currency?: string | null;
+  accidentType?: string | null;
+  accidentCountry?: string | null;
   auctionPrice?: number | null;
   finalPrice?: number | null;
   lotStatus?: string | null;
@@ -49,11 +52,15 @@ export type CollectTimelineInput = {
     secondaryDamage?: string | null;
     odometerAtLoss?: number | null;
     lossAmount?: number | null;
+    currency?: string | null;
+    type?: string | null;
+    country?: string | null;
   }>;
   insuranceClaims?: Array<Dated & {
     type?: string | null;
     description?: string | null;
     lossAmount?: number | null;
+    currency?: string | null;
   }>;
   mileageHistory?: Array<Dated & {
     odometer?: number | null;
@@ -195,6 +202,9 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
       primaryDamage: row.primaryDamage,
       secondaryDamage: row.secondaryDamage,
       lossAmount: row.lossAmount,
+      currency: row.currency,
+      accidentType: row.type,
+      accidentCountry: row.country,
     });
   });
 
@@ -210,6 +220,7 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
       title: row.type,
       description: row.description,
       lossAmount: row.lossAmount,
+      currency: row.currency,
     });
   });
 

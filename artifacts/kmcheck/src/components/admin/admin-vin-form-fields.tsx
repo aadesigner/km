@@ -2,6 +2,10 @@ import { useId, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import {
+  formatAdminAmountPreview,
+  type AmountCurrencyCode,
+} from "@/lib/korean-currency";
 
 export function AdminField({
   label,
@@ -129,5 +133,162 @@ export function AdminCheckField({
         {hint ? <span className="block text-[10px] text-muted-foreground mt-1">{hint}</span> : null}
       </span>
     </label>
+  );
+}
+
+export const ADMIN_AMOUNT_CURRENCY_OPTIONS: { value: AmountCurrencyCode; label: string }[] = [
+  { value: "EUR", label: "EUR (€)" },
+  { value: "USD", label: "USD ($)" },
+  { value: "KRW", label: "KRW (₩)" },
+];
+
+/** Amount + currency side-by-side with live preview — visually distinct from plain text fields. */
+export function AdminAmountWithCurrency({
+  label,
+  amount,
+  currency,
+  onAmountChange,
+  onCurrencyChange,
+  krwPerUsd,
+  compact,
+  className,
+  currencyOptions = ADMIN_AMOUNT_CURRENCY_OPTIONS,
+  showCurrencySelect = true,
+}: {
+  label: string;
+  amount: string;
+  currency: string;
+  onAmountChange: (v: string) => void;
+  onCurrencyChange: (v: string) => void;
+  krwPerUsd: number;
+  compact?: boolean;
+  className?: string;
+  currencyOptions?: { value: string; label: string }[];
+  /** When false, amount only (currency controlled elsewhere, e.g. shared market bar). */
+  showCurrencySelect?: boolean;
+}) {
+  const preview = formatAdminAmountPreview(amount, currency, krwPerUsd);
+  const inputClass = compact ? "h-9 text-sm" : "h-10 text-sm";
+  const code = currency || "USD";
+  const options = currencyOptions.some((o) => o.value === code)
+    ? currencyOptions
+    : [...currencyOptions, { value: code, label: code }];
+
+  return (
+    <AdminField label={label} hint={preview ?? undefined} className={className}>
+      <div
+        className={cn(
+          "flex gap-0 min-w-0 overflow-hidden rounded-lg border-2 border-primary/25 bg-primary/5 shadow-sm",
+          "focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20",
+        )}
+      >
+        <Input
+          type="number"
+          value={amount}
+          onChange={(e) => onAmountChange(e.target.value)}
+          placeholder="0"
+          className={cn(
+            inputClass,
+            "flex-1 min-w-0 border-0 bg-transparent rounded-none shadow-none focus-visible:ring-0",
+          )}
+        />
+        {showCurrencySelect ? (
+          <select
+            aria-label="Currency"
+            className={cn(
+              "shrink-0 border-0 border-l-2 border-primary/20 bg-background/80 font-semibold tabular-nums",
+              "focus:outline-none focus:ring-0",
+              compact ? "h-9 text-xs w-[6.5rem] px-2" : "h-10 text-sm w-[7.25rem] px-2.5",
+            )}
+            value={code}
+            onChange={(e) => onCurrencyChange(e.target.value)}
+          >
+            {options.map((o) => (
+              <option key={o.value || "__empty"} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span
+            className={cn(
+              "shrink-0 flex items-center border-l-2 border-primary/20 bg-background/80 px-3 font-semibold tabular-nums text-muted-foreground",
+              compact ? "h-9 text-xs" : "h-10 text-sm",
+            )}
+          >
+            {code}
+          </span>
+        )}
+      </div>
+    </AdminField>
+  );
+}
+
+/** Odometer reading + unit dropdown (default km). */
+export function AdminOdometerWithUnit({
+  label,
+  odometer,
+  unit,
+  onOdometerChange,
+  onUnitChange,
+  compact,
+  className,
+  unitOptions = [
+    { value: "km", label: "Kilometers (km)" },
+    { value: "mi", label: "Miles (mi)" },
+  ],
+}: {
+  label?: string;
+  odometer: string;
+  unit: string;
+  onOdometerChange: (v: string) => void;
+  onUnitChange: (v: string) => void;
+  compact?: boolean;
+  className?: string;
+  unitOptions?: { value: string; label: string }[];
+}) {
+  const inputClass = compact ? "h-9 text-sm" : "h-10 text-sm";
+  const unitValue = unit.trim() || "km";
+
+  return (
+    <AdminField
+      label={label ?? "Odometer"}
+      hint="Default is kilometers — switch to miles if needed"
+      className={className}
+    >
+      <div
+        className={cn(
+          "flex gap-0 min-w-0 overflow-hidden rounded-lg border bg-background shadow-sm",
+          "focus-within:ring-2 focus-within:ring-ring",
+        )}
+      >
+        <Input
+          type="number"
+          value={odometer}
+          onChange={(e) => onOdometerChange(e.target.value)}
+          placeholder="—"
+          className={cn(
+            inputClass,
+            "flex-1 min-w-0 border-0 rounded-none shadow-none focus-visible:ring-0",
+          )}
+        />
+        <select
+          aria-label="Odometer unit"
+          className={cn(
+            "shrink-0 border-0 border-l bg-muted/40 font-medium",
+            "focus:outline-none",
+            compact ? "h-9 text-xs w-[9.5rem] px-2" : "h-10 text-sm w-[10.5rem] px-2.5",
+          )}
+          value={unitValue}
+          onChange={(e) => onUnitChange(e.target.value)}
+        >
+          {unitOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </AdminField>
   );
 }

@@ -85,7 +85,7 @@ import {
 } from "@/lib/vehicle-attr-options";
 import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-market-value-chart";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
-import { shouldFormatAccidentLossAsKrw } from "@/lib/korean-currency";
+import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { RegistryHistorySection } from "@/components/registry-history-section";
@@ -197,12 +197,14 @@ type AccidentEntry = {
   severity?: string | null;
   description?: string | null;
   country?: string | null;
+  location?: string | null;
   type?: string | null;
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   airbagDeployed?: boolean | null;
   odometerAtLoss?: number | null;
   lossAmount?: number | null;
+  currency?: string | null;
 };
 
 type LookupData = {
@@ -782,7 +784,13 @@ export default function VinResult({ params }: Props) {
   const registryPrintRows = buildRegistryPrintRows(registryHistory, t, language, data?.country, krwPerUsd, data?.year);
   const auctionPrintRows = buildAuctionPrintRows(auctionHistory, t, language, data?.year, countryLabels, data?.country);
   const printMarketValue = marketData?.estimatedValue != null
-    ? `${marketData.currency ?? "USD"} ${marketData.estimatedValue.toLocaleString()}`
+    ? formatAmountPlain(
+      marketData.estimatedValue,
+      resolveAmountDisplayCurrency({
+        currency: marketData.currency,
+        vehicleCountry: data?.country,
+      }),
+    )
     : null;
   const printLastAuction = marketData?.lastAuctionPrice != null
     ? [
@@ -1063,21 +1071,30 @@ export default function VinResult({ params }: Props) {
                                   </p>
                                 )}
                                 {sevLabel && <p className={sty.text}>{sevLabel}</p>}
-                                {acc.country && <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" />{fmtCountry(acc.country)}</p>}
+                                {(acc.location || acc.country) && (
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                    <MapPin className="h-3 w-3" />
+                                    {acc.location || fmtCountry(acc.country)}
+                                  </p>
+                                )}
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 {acc.lossAmount != null && (
                                   <span className={cn("text-xs font-bold tabular-nums rounded-full px-2 py-0.5", sty.amount)}>
-                                    {shouldFormatAccidentLossAsKrw({
-                                      vehicleCountry: data?.country,
-                                      accidentType: acc.type,
-                                      accidentCountry: acc.country,
-                                      hasKoreanInsuranceClaims: insuranceClaims.length > 0,
-                                    }) ? (
-                                      <KoreanWonAmount krw={acc.lossAmount} krwPerUsd={krwPerUsd} />
-                                    ) : (
-                                      `$${acc.lossAmount.toLocaleString()}`
-                                    )}
+                                    {(() => {
+                                      const code = resolveAmountDisplayCurrency({
+                                        currency: acc.currency,
+                                        vehicleCountry: data?.country,
+                                        accidentType: acc.type,
+                                        accidentCountry: acc.country,
+                                        hasKoreanInsuranceClaims: insuranceClaims.length > 0,
+                                      });
+                                      return code === "KRW" ? (
+                                        <KoreanWonAmount krw={acc.lossAmount} krwPerUsd={krwPerUsd} />
+                                      ) : (
+                                        formatAmountPlain(acc.lossAmount, code)
+                                      );
+                                    })()}
                                   </span>
                                 )}
                                 <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", isOpen ? "rotate-180" : "")} />
@@ -1127,16 +1144,20 @@ export default function VinResult({ params }: Props) {
                                   <div className="flex gap-2 text-sm">
                                     <span className="text-muted-foreground shrink-0">{t("loss_amount")}:</span>
                                     <span className="font-medium">
-                                      {shouldFormatAccidentLossAsKrw({
-                                        vehicleCountry: data?.country,
-                                        accidentType: acc.type,
-                                        accidentCountry: acc.country,
-                                        hasKoreanInsuranceClaims: insuranceClaims.length > 0,
-                                      }) ? (
-                                        <KoreanWonAmount krw={acc.lossAmount} krwPerUsd={krwPerUsd} />
-                                      ) : (
-                                        `$${acc.lossAmount.toLocaleString()}`
-                                      )}
+                                      {(() => {
+                                        const code = resolveAmountDisplayCurrency({
+                                          currency: acc.currency,
+                                          vehicleCountry: data?.country,
+                                          accidentType: acc.type,
+                                          accidentCountry: acc.country,
+                                          hasKoreanInsuranceClaims: insuranceClaims.length > 0,
+                                        });
+                                        return code === "KRW" ? (
+                                          <KoreanWonAmount krw={acc.lossAmount} krwPerUsd={krwPerUsd} />
+                                        ) : (
+                                          formatAmountPlain(acc.lossAmount, code)
+                                        );
+                                      })()}
                                     </span>
                                   </div>
                                 )}
@@ -1496,7 +1517,13 @@ export default function VinResult({ params }: Props) {
                       <div>
                         <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("estimated_value")}</p>
                         <p className="text-sm font-bold tabular-nums">
-                          {marketData.estimatedValue.toLocaleString()} {marketData.currency ?? "USD"}
+                          {formatAmountPlain(
+                            marketData.estimatedValue,
+                            resolveAmountDisplayCurrency({
+                              currency: marketData.currency,
+                              vehicleCountry: data?.country,
+                            }),
+                          )}
                         </p>
                       </div>
                     </div>
@@ -1509,7 +1536,13 @@ export default function VinResult({ params }: Props) {
                       <div>
                         <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("last_auction_price")}</p>
                         <p className="text-sm font-bold tabular-nums">
-                          {marketData.lastAuctionPrice.toLocaleString()} {marketData.currency ?? "USD"}
+                          {formatAmountPlain(
+                            marketData.lastAuctionPrice,
+                            resolveAmountDisplayCurrency({
+                              currency: marketData.currency,
+                              vehicleCountry: data?.country,
+                            }),
+                          )}
                         </p>
                       </div>
                     </div>

@@ -9,7 +9,6 @@ import {
   ArrowRight, Zap, RotateCcw,
 } from "lucide-react";
 import { HomeStatsStrip } from "@/components/home-stats-strip";
-import { HomeCountriesCoverageSection } from "@/components/home-countries-coverage-section";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +29,11 @@ const WhatWeCheckSection = lazyWithRetry(() =>
   import("@/components/what-we-check-section").then((m) => ({ default: m.WhatWeCheckSection })),
 );
 const HomepageTestimonials = lazyWithRetry(() => import("@/components/homepage-testimonials"));
+const HomeCountriesCoverageSection = lazyWithRetry(() =>
+  import("@/components/home-countries-coverage-section").then((m) => ({
+    default: m.HomeCountriesCoverageSection,
+  })),
+);
 const CoverageMapVisual = lazyWithRetry(() =>
   import("@/components/coverage-map-visual").then((m) => ({ default: m.CoverageMapVisual })),
 );
@@ -260,7 +264,11 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeCountriesCoverageSection />
+      <DeferredSection minHeight={360} rootMargin="400px 0px">
+        <Suspense fallback={<SectionFallback minHeight={360} />}>
+          <HomeCountriesCoverageSection />
+        </Suspense>
+      </DeferredSection>
 
       {/* ── TESTIMONIALS ── */}
       <DeferredSection minHeight={420}>

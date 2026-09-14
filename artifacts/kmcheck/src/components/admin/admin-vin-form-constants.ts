@@ -9,6 +9,23 @@ export {
 
 export const ADMIN_MILEAGE_UNITS = ["km", "mi", "miles"];
 
+/** Canonical damage locations — keys match `damage_val_*` i18n suffixes. */
+export const ADMIN_DAMAGE_VALUES = [
+  "front_end",
+  "rear_end",
+  "side",
+  "minor_dent_scratches",
+  "all_over",
+  "mechanical",
+  "hail",
+  "water_flood",
+  "burn",
+  "rollover",
+  "undercarriage",
+  "frame_damage",
+  "unknown",
+] as const;
+
 /** Flat value lists for legacy datalist sync / tests. */
 export const ADMIN_TRANSMISSION_SUGGESTIONS = [
   "automatic", "manual", "cvt", "dct", "amt", "semi-automatic",

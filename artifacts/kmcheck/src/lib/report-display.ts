@@ -5,7 +5,7 @@
 
 import { isRecallRegistryEvent } from "@/lib/registry-history";
 import { sanitizeReportIsoDate } from "@/lib/encar-date-repair";
-import { isKoreanSourcedAccidentType } from "@/lib/korean-currency";
+import { isKoreanSourcedAccidentType, normalizeAmountCurrency } from "@/lib/korean-currency";
 import {
   normalizeKrwAmountText,
   resolveRegistryDisplayMileage,
@@ -331,9 +331,12 @@ export function sanitizeAccidents<T extends AccidentLike>(
       .filter(isMeaningfulAccidentEntry)
       .map((entry) => ({
         ...entry,
-        lossAmount: isKoreanSourcedAccidentType(entry.type)
-          ? sanitizeKoreanRepairKrwAmount(entry.lossAmount ?? null)
-          : entry.lossAmount,
+        // Keep provider KRW cleanup for Korean-sourced rows without an explicit USD tag.
+        lossAmount:
+          isKoreanSourcedAccidentType(entry.type)
+          && normalizeAmountCurrency(entry.currency) !== "USD"
+            ? sanitizeKoreanRepairKrwAmount(entry.lossAmount ?? null)
+            : entry.lossAmount,
       })),
     vehicleYear,
   );
@@ -360,11 +363,14 @@ export function sanitizeInsuranceClaims<T extends InsuranceClaimLike>(
       .filter(isMeaningfulInsuranceClaim)
       .map((claim) => ({
         ...claim,
-        lossAmount: sanitizeKoreanRepairKrwAmount(claim.lossAmount ?? null, {
-          partCost: claim.partCost,
-          laborCost: claim.laborCost,
-          paintingCost: claim.paintingCost,
-        }),
+        lossAmount:
+          normalizeAmountCurrency(claim.currency) === "USD"
+            ? claim.lossAmount
+            : sanitizeKoreanRepairKrwAmount(claim.lossAmount ?? null, {
+              partCost: claim.partCost,
+              laborCost: claim.laborCost,
+              paintingCost: claim.paintingCost,
+            }),
       })),
     vehicleYear,
   );

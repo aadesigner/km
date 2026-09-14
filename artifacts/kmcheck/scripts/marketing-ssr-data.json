@@ -2557,8 +2557,8 @@
   },
   "free_decoder": {
     "en": {
-      "h1": "Free VIN & mileage decoder",
-      "lead": "Decode any VIN free — year, make, model, engine. Then unlock a full car mileage check for accidents, salvage and theft.",
+      "h1": "Free VIN decoder",
+      "lead": "Decode any VIN free — year, make, model, engine. Then unlock a full vehicle history report for accidents, salvage and theft.",
       "bullets": [
         "100% Free — No Registration"
       ],
@@ -2705,8 +2705,8 @@
       ]
     },
     "sq": {
-      "h1": "Dekodues shasie & kilometrash falas",
-      "lead": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni kontrollin e plotë të kilometrash dhe aksidenteve.",
+      "h1": "Dekodues shasie falas",
+      "lead": "Dekodoni numrin e shasisë (VIN) falas — viti, marka, modeli. Pastaj zhbllokoni raportin e plotë të historikut: aksidente dhe dëmtim total.",
       "bullets": [
         "100% Falas — Pa Regjistrim"
       ],

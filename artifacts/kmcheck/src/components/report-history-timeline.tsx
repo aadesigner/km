@@ -690,6 +690,7 @@ function eventFacts(
     if (event.lossAmount != null && event.lossAmount > 0) {
       return [
         formatInsuranceAmount(event.lossAmount, vehicleCountry, krwPerUsd, {
+          currency: event.currency,
           hasKoreanInsuranceClaims: true,
         }),
       ];
@@ -734,6 +735,9 @@ function eventFacts(
   if (event.lossAmount != null && event.lossAmount > 0) {
     facts.push(
       formatInsuranceAmount(event.lossAmount, vehicleCountry, krwPerUsd, {
+        currency: event.currency,
+        accidentType: event.accidentType,
+        accidentCountry: event.accidentCountry,
         hasKoreanInsuranceClaims: false,
       }),
     );

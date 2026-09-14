@@ -213,6 +213,7 @@ export type AccidentLike = {
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   lossAmount?: number | null;
+  currency?: string | null;
   odometerAtLoss?: number | null;
   airbagDeployed?: boolean | null;
   description?: string | null;
@@ -242,6 +243,7 @@ export type InsuranceClaimLike = {
   date?: string | null;
   type?: string | null;
   lossAmount?: number | null;
+  currency?: string | null;
   partCost?: number | null;
   laborCost?: number | null;
   paintingCost?: number | null;

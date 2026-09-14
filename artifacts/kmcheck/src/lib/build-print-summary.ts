@@ -72,12 +72,14 @@ type AccidentLike = {
   type?: string | null;
   country?: string | null;
   lossAmount?: number | null;
+  currency?: string | null;
 };
 
 type ClaimLike = {
   date?: string | null;
   type?: string | null;
   lossAmount?: number | null;
+  currency?: string | null;
 };
 
 type MileageLike = {
@@ -138,7 +140,9 @@ export function buildAccidentPrintHighlights(
     if (acc.country) parts.push(formatCountryName(acc.country, language, countryLabels));
     if (acc.lossAmount != null) {
       parts.push(formatInsuranceAmount(acc.lossAmount, country ?? acc.country, krwPerUsd, {
+        currency: acc.currency,
         accidentType: acc.type,
+        accidentCountry: acc.country,
         hasKoreanInsuranceClaims,
       }));
     }
@@ -160,7 +164,10 @@ export function buildInsurancePrintHighlights(
   return claims.slice(0, PRINT_INSURANCE_LIMIT).map((claim) => {
     const typeLabel = translateInsuranceClaimType(t, claim.type) ?? t("report_insurance_claims");
     const amount = claim.lossAmount != null
-      ? ` · ${formatInsuranceAmount(claim.lossAmount, country, krwPerUsd, { hasKoreanInsuranceClaims: claims.length > 0 })}`
+      ? ` · ${formatInsuranceAmount(claim.lossAmount, country, krwPerUsd, {
+        currency: claim.currency,
+        hasKoreanInsuranceClaims: claims.length > 0,
+      })}`
       : "";
     return {
       date: claim.date ? localizeProviderDate(claim.date, language, vehicleYear, country) : null,
