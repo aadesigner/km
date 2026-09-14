@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   AdminAmountWithCurrency,
+  AdminDateField,
   AdminOdometerWithUnit,
   AdminSelectField,
   AdminTextField,
@@ -756,7 +757,7 @@ export function VinCatalogHistorySections({
         compact={compact}
         renderItem={(item, _i, update) => (
           <div className={grid}>
-              <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+              <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
               <AdminSelectField
                 label="Severity"
                 value={item.severity}
@@ -814,11 +815,11 @@ export function VinCatalogHistorySections({
               </div>
           </div>
         )}
-      /
+      />
 
       <CatalogListSection
         title="Mileage history"
-        hint="Odometer defaults to kilometers. New rows prefill location from vehicle country."
+        hint="Odometer defaults to km. New rows prefill location from vehicle country."
         items={form.mileageHistory}
         emptyItem={() => ({
           ...EMPTY_MILEAGE,
@@ -829,7 +830,7 @@ export function VinCatalogHistorySections({
         compact={compact}
         renderItem={(item, _i, update) => (
           <div className={grid}>
-            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
             <AdminOdometerWithUnit
               odometer={item.odometer}
               unit={item.unit || "km"}
@@ -838,8 +839,8 @@ export function VinCatalogHistorySections({
               compact={compact}
             />
             <AdminTextField label="Source" value={item.source} onChange={(v) => update({ source: v })} compact={compact} />
-            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
             <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
+            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
             <AdminTextField
               label="Location"
               hint="Prefills from vehicle country — clear or edit anytime"
@@ -857,7 +858,7 @@ export function VinCatalogHistorySections({
             </div>
           </div>
         )}
-      /
+      />
 
       <CatalogListSection
         title="Auction history"
@@ -870,7 +871,7 @@ export function VinCatalogHistorySections({
         compact={compact}
         renderItem={(item, _i, update) => (
           <div className={grid}>
-            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
             <AdminTextField label="City" value={item.city} onChange={(v) => update({ city: v })} compact={compact} />
             <AdminTextField label="State" value={item.state} onChange={(v) => update({ state: v })} compact={compact} />
             <AdminSelectField
@@ -903,7 +904,7 @@ export function VinCatalogHistorySections({
             <AdminTextField label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
           </div>
         )}
-      /
+      />
 
       <CatalogListSection
         title="Registry history"
@@ -918,7 +919,7 @@ export function VinCatalogHistorySections({
         renderItem={(item, _i, update) => (
           <div className="space-y-3">
             <div className={grid}>
-              <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+              <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
               <AdminTextField label="Type" value={item.type} onChange={(v) => update({ type: v })} compact={compact} />
               <AdminTextField label="Mileage" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
               <AdminTextField label="Amount" value={item.amount} onChange={(v) => update({ amount: v })} compact={compact} />
@@ -941,7 +942,7 @@ export function VinCatalogHistorySections({
             />
           </div>
         )}
-      /
+      />
 
       <CatalogListSection
         title="Insurance claims"
@@ -957,7 +958,7 @@ export function VinCatalogHistorySections({
           const claimCurrency = item.currency.trim() || defaultCurrency;
           return (
             <div className={grid}>
-              <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+              <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
               <AdminTextField label="Type" value={item.type} onChange={(v) => update({ type: v })} compact={compact} />
               <AdminAmountWithCurrency
                 label="Loss amount"
@@ -998,7 +999,7 @@ export function VinCatalogHistorySections({
             </div>
           );
         }}
-      /
+      />
 
       <CatalogListSection
         title="Service history (manual only)"
@@ -1009,7 +1010,7 @@ export function VinCatalogHistorySections({
         compact={compact}
         renderItem={(item, _i, update) => (
           <div className={grid}>
-            <AdminTextField label="Date (day/month/year)" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
             <AdminTextField label="Mileage (optional)" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
             <AdminTextField label="Title (e.g. Service)" value={item.title} onChange={(v) => update({ title: v })} compact={compact} />
             <AdminTextField label="Location" value={item.location} onChange={(v) => update({ location: v })} compact={compact} />
@@ -1023,7 +1024,7 @@ export function VinCatalogHistorySections({
             </div>
           </div>
         )}
-      /
+      />
 
       <CatalogListSection
         title="Owner history"
@@ -1033,7 +1034,7 @@ export function VinCatalogHistorySections({
         compact={compact}
         renderItem={(item, _i, update) => (
           <div className={grid}>
-            <AdminTextField label="Date" value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
             <AdminTextField label="Location" value={item.location} onChange={(v) => update({ location: v })} compact={compact} />
             <AdminTextField label="Mileage" value={item.mileage} onChange={(v) => update({ mileage: v })} type="number" compact={compact} />
             <AdminTextField label="Auction price" value={item.auctionPrice} onChange={(v) => update({ auctionPrice: v })} type="number" compact={compact} />
@@ -1041,7 +1042,7 @@ export function VinCatalogHistorySections({
             <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
           </div>
         )}
-      /
+      />
 
       <div className="overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-background shadow-sm">
         <div className="px-4 py-3.5 border-b border-primary/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1086,7 +1087,7 @@ export function VinCatalogHistorySections({
               compact={compact}
               showCurrencySelect={false}
             />
-            <AdminTextField
+            <AdminDateField
               label="Last auction date"
               value={form.marketData.lastAuctionDate}
               onChange={(v) => patchMarketData({ lastAuctionDate: v })}
@@ -1097,3 +1098,4 @@ export function VinCatalogHistorySections({
       </div>
     </div>
   );
+}

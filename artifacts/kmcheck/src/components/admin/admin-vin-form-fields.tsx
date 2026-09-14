@@ -72,6 +72,68 @@ export function AdminTextField({
   );
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/** Show stored ISO (YYYY-MM-DD) as day/month/year in admin inputs. */
+export function adminDateToDisplay(stored: string): string {
+  const t = stored.trim();
+  if (!t) return "";
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
+  if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  return stored;
+}
+
+/**
+ * Map admin day/month/year typing back to storage.
+ * Complete DD/MM/YYYY → YYYY-MM-DD (report-safe). Incomplete / free text kept as typed.
+ */
+export function adminDateFromDisplay(input: string): string {
+  const t = input.trim();
+  if (!t) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  const dmy = /^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/.exec(t);
+  if (dmy) {
+    const day = Number(dmy[1]);
+    const month = Number(dmy[2]);
+    const year = Number(dmy[3]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${year}-${pad2(month)}-${pad2(day)}`;
+    }
+  }
+  return input;
+}
+
+/** Admin date input: UI is day/month/year; complete values stored as YYYY-MM-DD. */
+export function AdminDateField({
+  label = "Date",
+  hint = "day/month/year",
+  value,
+  onChange,
+  compact,
+  className,
+}: {
+  label?: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  compact?: boolean;
+  className?: string;
+}) {
+  return (
+    <AdminTextField
+      label={label}
+      hint={hint}
+      value={adminDateToDisplay(value)}
+      onChange={(v) => onChange(adminDateFromDisplay(v))}
+      placeholder="dd/mm/yyyy"
+      compact={compact}
+      className={className}
+    />
+  );
+}
+
 export function AdminSelectField({
   label,
   hint,
@@ -234,8 +296,8 @@ export function AdminOdometerWithUnit({
   compact,
   className,
   unitOptions = [
-    { value: "km", label: "Kilometers (km)" },
-    { value: "mi", label: "Miles (mi)" },
+    { value: "km", label: "km" },
+    { value: "mi", label: "mi" },
   ],
 }: {
   label?: string;
@@ -248,12 +310,16 @@ export function AdminOdometerWithUnit({
   unitOptions?: { value: string; label: string }[];
 }) {
   const inputClass = compact ? "h-9 text-sm" : "h-10 text-sm";
-  const unitValue = unit.trim() || "km";
+  const rawUnit = unit.trim().toLowerCase();
+  const unitValue =
+    rawUnit === "mi" || rawUnit === "mile" || rawUnit === "miles" || rawUnit === "ml"
+      ? "mi"
+      : rawUnit || "km";
 
   return (
     <AdminField
       label={label ?? "Odometer"}
-      hint="Default is kilometers — switch to miles if needed"
+      hint="Default km — switch to mi if needed"
       className={className}
     >
       <div
@@ -277,7 +343,7 @@ export function AdminOdometerWithUnit({
           className={cn(
             "shrink-0 border-0 border-l bg-muted/40 font-medium",
             "focus:outline-none",
-            compact ? "h-9 text-xs w-[9.5rem] px-2" : "h-10 text-sm w-[10.5rem] px-2.5",
+            compact ? "h-9 text-xs w-[3.75rem] px-1.5" : "h-10 text-sm w-[4.25rem] px-2",
           )}
           value={unitValue}
           onChange={(e) => onUnitChange(e.target.value)}
