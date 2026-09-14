@@ -130,6 +130,62 @@ function sectionToneFromChip(accent: string): VinReportSectionAccent {
   return "primary";
 }
 
+/** Highlight the numeric count inside a localized "{count} found" label. */
+function FoundCountLabel({
+  count,
+  label,
+  className,
+}: {
+  count: number;
+  label?: string;
+  className?: string;
+}) {
+  const text = label ?? String(count);
+  const token = String(count);
+  const idx = text.indexOf(token);
+  if (idx < 0) {
+    return <span className={className}>{text}</span>;
+  }
+  return (
+    <span className={className}>
+      {text.slice(0, idx)}
+      <span className="text-primary font-extrabold tabular-nums">{token}</span>
+      {text.slice(idx + token.length)}
+    </span>
+  );
+}
+
+/** Compact primary pill for section headers — number pops, rest stays quiet. */
+function FoundCountBadge({
+  count,
+  label,
+}: {
+  count: number;
+  label?: string;
+}) {
+  const text = label ?? String(count);
+  const token = String(count);
+  const idx = text.indexOf(token);
+  const prefix = idx > 0 ? text.slice(0, idx).trim() : "";
+  const suffix = idx >= 0 ? text.slice(idx + token.length).trim() : text;
+
+  return (
+    <span
+      className="ml-auto shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 pl-1 pr-2.5 py-0.5 shadow-[inset_0_1px_0_0_hsl(var(--primary)/0.12)]"
+      title={text}
+    >
+      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-extrabold tabular-nums leading-none text-primary-foreground shadow-sm shadow-primary/30">
+        {count}
+      </span>
+      {(prefix || suffix) && (
+        <span className="text-[10px] font-semibold tracking-wide text-primary/80">
+          {prefix ? `${prefix} ${suffix}`.trim() : suffix}
+        </span>
+      )}
+    </span>
+  );
+}
+
 type LockedSectionCardProps = {
   title: string;
   icon?: ElementType;
@@ -177,9 +233,7 @@ export function VinLockedSectionCard({
           )}
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground min-w-0 truncate">{title}</h2>
           {showFound ? (
-            <span className="ml-auto shrink-0 inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-bold tabular-nums text-primary">
-              {foundLabel ?? String(foundCount)}
-            </span>
+            <FoundCountBadge count={foundCount} label={foundLabel} />
           ) : (
             <Lock className="h-3 w-3 text-muted-foreground/50 ml-auto shrink-0" />
           )}
@@ -203,7 +257,11 @@ export function VinLockedHeroStat({
   return (
     <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/80 border border-border/60 px-2.5 py-1 w-full justify-center">
       {showFound ? (
-        <span className="text-[10px] font-bold tabular-nums text-primary shrink-0">{foundLabel ?? foundCount}</span>
+        <FoundCountLabel
+          count={foundCount}
+          label={foundLabel}
+          className="text-[10px] font-bold text-muted-foreground shrink-0"
+        />
       ) : (
         <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
       )}
@@ -291,9 +349,11 @@ export function VinLockedFindingsSummary({
           >
             <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
             <span className="leading-snug min-w-0 truncate flex-1">{label}</span>
-            <span className="shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
-              {t("vin_public_found_count").replace("{count}", String(count))}
-            </span>
+            <FoundCountLabel
+              count={count}
+              label={t("vin_public_found_count").replace("{count}", String(count))}
+              className="shrink-0 text-[11px] font-semibold text-muted-foreground"
+            />
           </li>
         ))}
       </ul>

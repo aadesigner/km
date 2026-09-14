@@ -380,7 +380,7 @@ function HeroPhotoGallery({
               isActive
               onLoaded={() => markLoadedUrl(previewSrc)}
               onFailed={() => markFailedUrl(previewSrc)}
-              className="z-[2] sm:rounded-xl blur-[5px] scale-[1.04] select-none"
+              className="z-[2] sm:rounded-xl blur-[2.5px] scale-[1.02] select-none"
             />
           </>
         ) : (
@@ -397,9 +397,10 @@ function HeroPhotoGallery({
             <span className="text-[10px] font-semibold text-foreground/80">{lockedLabel}</span>
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 z-[3] pointer-events-none bg-gradient-to-t from-black/45 via-black/10 to-transparent px-3 pb-3 pt-10 print:hidden">
-          <p className="text-[11px] font-medium text-white/90 drop-shadow-sm">{lockedLabel}</p>
-        </div>
+        <div
+          className="absolute inset-x-0 bottom-0 z-[3] pointer-events-none h-14 bg-gradient-to-t from-black/25 via-black/5 to-transparent print:hidden"
+          aria-hidden
+        />
       </div>
     );
   }
