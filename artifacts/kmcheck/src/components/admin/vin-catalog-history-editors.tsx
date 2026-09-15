@@ -586,6 +586,51 @@ function CatalogListSection<T>({
   );
 }
 
+/** Accordion shell matching CatalogListSection — for non-list panels (flood, market). */
+function CatalogAccordionPanel({
+  title,
+  hint,
+  badge,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  badge?: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <details
+      className="group overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-background to-muted/20 shadow-sm"
+      open={open}
+      onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
+    >
+      <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+        <div className="min-w-0 flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-tight">{title}</p>
+            {hint && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{hint}</p>}
+          </div>
+        </div>
+        {badge != null ? (
+          <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold tabular-nums">
+            {badge}
+          </Badge>
+        ) : null}
+      </summary>
+      <div className="px-4 pb-4 pt-3 space-y-3 border-t bg-background/60">
+        {children}
+      </div>
+    </details>
+  );
+}
+
 function RegistryDetailsEditor({
   details,
   onChange,
@@ -738,11 +783,18 @@ export function VinCatalogHistorySections({
     onChange({ marketData: next });
   };
 
+  const floodFilled = !!(form.floodCount.trim() || form.floodLossAmount.trim());
+  const marketFilled = !!(
+    form.marketData.estimatedValue.trim()
+    || form.marketData.lastAuctionPrice.trim()
+    || form.marketData.lastAuctionDate.trim()
+  );
+
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 px-3.5 py-2.5">
-        <p className="text-xs text-foreground/80 leading-relaxed">
-          Default for this vehicle: <span className="font-semibold tabular-nums">{defaultCurrency}</span>
+      <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-3.5 py-2.5">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Default for this vehicle: <span className="font-semibold tabular-nums text-foreground">{defaultCurrency}</span>
           {vehicleCountry?.trim() ? ` (${vehicleCountry.trim().toUpperCase()})` : ""}.
         </p>
       </div>
@@ -1001,35 +1053,32 @@ export function VinCatalogHistorySections({
         )}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-sky-500/5 to-background shadow-sm">
-        <div className="px-4 py-3.5 border-b border-border/60">
-          <p className="text-sm font-semibold tracking-tight">Flood history</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-            Count and loss amount for the flood report card. Turn on “Flood damage” under Metrics to show them on the report.
-          </p>
+      <CatalogAccordionPanel
+        title="Flood history"
+        hint="Optional — count and loss for the flood report card. Enable “Flood damage” under Metrics to show on the report."
+        badge={floodFilled ? "set" : "optional"}
+        defaultOpen={false}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <AdminTextField
+            label="Flood record count"
+            value={form.floodCount}
+            onChange={(v) => onChange({ floodCount: v })}
+            type="number"
+            compact={compact}
+          />
+          <AdminAmountWithCurrency
+            label="Flood loss amount"
+            amount={form.floodLossAmount}
+            currency="KRW"
+            onAmountChange={(v) => onChange({ floodLossAmount: v })}
+            onCurrencyChange={() => {}}
+            krwPerUsd={krwPerUsd}
+            compact={compact}
+            showCurrencySelect={false}
+          />
         </div>
-        <div className="px-4 py-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <AdminTextField
-              label="Flood record count"
-              value={form.floodCount}
-              onChange={(v) => onChange({ floodCount: v })}
-              type="number"
-              compact={compact}
-            />
-            <AdminAmountWithCurrency
-              label="Flood loss amount"
-              amount={form.floodLossAmount}
-              currency="KRW"
-              onAmountChange={(v) => onChange({ floodLossAmount: v })}
-              onCurrencyChange={() => {}}
-              krwPerUsd={krwPerUsd}
-              compact={compact}
-              showCurrencySelect={false}
-            />
-          </div>
-        </div>
-      </div>
+      </CatalogAccordionPanel>
 
       <CatalogListSection
         title="Auction history"
@@ -1077,14 +1126,13 @@ export function VinCatalogHistorySections({
         )}
       />
 
-      <div className="overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-background shadow-sm">
-        <div className="px-4 py-3.5 border-b border-primary/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold tracking-tight">Market data</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Estimated value and last auction share one currency.
-            </p>
-          </div>
+      <CatalogAccordionPanel
+        title="Market data"
+        hint="Estimated value and last auction share one currency."
+        badge={marketFilled ? "set" : "0"}
+        defaultOpen={marketFilled}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-1">
           <AdminSelectField
             label="Currency (both prices)"
             value={marketCurrency}
@@ -1098,37 +1146,35 @@ export function VinCatalogHistorySections({
             className="sm:w-48"
           />
         </div>
-        <div className="px-4 py-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <AdminAmountWithCurrency
-              label="Estimated value"
-              amount={form.marketData.estimatedValue}
-              currency={marketCurrency}
-              onAmountChange={(v) => patchMarketData({ estimatedValue: v })}
-              onCurrencyChange={(v) => patchMarketData({ currency: v })}
-              krwPerUsd={krwPerUsd}
-              compact={compact}
-              showCurrencySelect={false}
-            />
-            <AdminAmountWithCurrency
-              label="Last auction price"
-              amount={form.marketData.lastAuctionPrice}
-              currency={marketCurrency}
-              onAmountChange={(v) => patchMarketData({ lastAuctionPrice: v })}
-              onCurrencyChange={(v) => patchMarketData({ currency: v })}
-              krwPerUsd={krwPerUsd}
-              compact={compact}
-              showCurrencySelect={false}
-            />
-            <AdminDateField
-              label="Last auction date"
-              value={form.marketData.lastAuctionDate}
-              onChange={(v) => patchMarketData({ lastAuctionDate: v })}
-              compact={compact}
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <AdminAmountWithCurrency
+            label="Estimated value"
+            amount={form.marketData.estimatedValue}
+            currency={marketCurrency}
+            onAmountChange={(v) => patchMarketData({ estimatedValue: v })}
+            onCurrencyChange={(v) => patchMarketData({ currency: v })}
+            krwPerUsd={krwPerUsd}
+            compact={compact}
+            showCurrencySelect={false}
+          />
+          <AdminAmountWithCurrency
+            label="Last auction price"
+            amount={form.marketData.lastAuctionPrice}
+            currency={marketCurrency}
+            onAmountChange={(v) => patchMarketData({ lastAuctionPrice: v })}
+            onCurrencyChange={(v) => patchMarketData({ currency: v })}
+            krwPerUsd={krwPerUsd}
+            compact={compact}
+            showCurrencySelect={false}
+          />
+          <AdminDateField
+            label="Last auction date"
+            value={form.marketData.lastAuctionDate}
+            onChange={(v) => patchMarketData({ lastAuctionDate: v })}
+            compact={compact}
+          />
         </div>
-      </div>
+      </CatalogAccordionPanel>
     </div>
   );
 }
