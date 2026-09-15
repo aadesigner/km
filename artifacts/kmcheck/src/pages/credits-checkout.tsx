@@ -15,6 +15,7 @@ import {
   shouldResumePaypalCreditPackCapture,
 } from "@/lib/checkout-vin-flow";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
+import { isPublicPaymentSettingsHydrated } from "@/lib/public-settings";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { translateClientError } from "@/lib/translate-client-error";
 import {
@@ -77,6 +78,7 @@ export default function CreditsCheckout({ params }: Props) {
     isLoading: pubSettingsLoading,
     isError: pubSettingsError,
     isFetching: pubSettingsFetching,
+    dataUpdatedAt: pubSettingsUpdatedAt,
     refetch: refetchPubSettings,
   } = useQuery<PublicSettings>({
     queryKey: ["/api/payments/public-settings"],
@@ -89,6 +91,10 @@ export default function CreditsCheckout({ params }: Props) {
   });
   useQueryRecovery(pubSettingsError, pubSettingsFetching, refetchPubSettings);
   usePreloadCheckoutPaymentLogos(true);
+  const paymentSettingsHydrated = isPublicPaymentSettingsHydrated(pubSettings, {
+    isLoading: pubSettingsLoading,
+    dataUpdatedAt: pubSettingsUpdatedAt,
+  });
   const paypalReady = !!pubSettings?.paypalClientId;
   const pokEnabled = !!pubSettings?.pokEnabled;
   const anyPaymentReady = paypalReady || pokEnabled;
@@ -337,7 +343,7 @@ export default function CreditsCheckout({ params }: Props) {
 
   const handleStartPayment = async () => {
     if (!pack) return;
-    if (pubSettingsLoading) return;
+    if (!paymentSettingsHydrated) return;
 
     if (payMethod === "card" && pokEnabled) {
       setStatus("creating");
@@ -369,6 +375,7 @@ export default function CreditsCheckout({ params }: Props) {
     }
 
     if (!paypalReady) {
+      if (!paymentSettingsHydrated) return;
       setErrorMsg(t("checkout_payment_not_configured"));
       setStatus("error");
       return;
@@ -681,11 +688,11 @@ export default function CreditsCheckout({ params }: Props) {
                         disabled={
                           status === "creating"
                           || status === "paying"
-                          || pubSettingsLoading
+                          || !paymentSettingsHydrated
                           || (!anyPaymentReady && !pubSettingsError)
                         }
                       >
-                        {status === "creating" || status === "paying" || pubSettingsLoading ? (
+                        {status === "creating" || status === "paying" || !paymentSettingsHydrated ? (
                           <><Loader2 className="h-4 w-4 animate-spin" />{t("processing")}…</>
                         ) : payMethod === "card" && pokEnabled ? (
                           <><CreditCard className="h-4 w-4" />{t("checkout_pay_by_card")}</>
@@ -695,7 +702,7 @@ export default function CreditsCheckout({ params }: Props) {
                       </Button>
                     )}
 
-                    {!pubSettingsLoading && !anyPaymentReady && (
+                    {paymentSettingsHydrated && !anyPaymentReady && (
                       <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
                         {t("checkout_payment_not_configured")}
                       </div>

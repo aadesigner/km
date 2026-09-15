@@ -95,6 +95,21 @@ export async function fetchPublicSettings(signal?: AbortSignal): Promise<PublicS
   return json;
 }
 
+/**
+ * OAuth session seeds use initialDataUpdatedAt: 0 and omit PayPal/POK fields.
+ * Until a real /public-settings fetch lands (dataUpdatedAt > 0), treat payment
+ * config as still loading — never as "not configured".
+ */
+export function isPublicPaymentSettingsHydrated(
+  settings: { paypalClientId?: string | null; pokEnabled?: boolean } | null | undefined,
+  opts: { isLoading: boolean; dataUpdatedAt: number },
+): boolean {
+  if (opts.isLoading || !settings) return false;
+  if (opts.dataUpdatedAt > 0) return true;
+  // Already have provider fields (e.g. partial cache merge) — safe to proceed.
+  return !!settings.paypalClientId || settings.pokEnabled === true;
+}
+
 export function publicSettingsQueryOptions() {
   const persisted = readPersistedOAuthAsPublicSettings();
   return {

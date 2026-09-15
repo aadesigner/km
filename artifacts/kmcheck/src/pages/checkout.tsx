@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
+import { isPublicPaymentSettingsHydrated } from "@/lib/public-settings";
 import { refreshClientAreaAfterUnlock } from "@/lib/client-area-queries";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import {
@@ -232,7 +233,7 @@ export default function Checkout({ params }: Props) {
   /** Blocks PayPal resume / delivery retry until user explicitly starts payment (post-auth landing). */
   const postAuthPrefillLandingRef = useRef(false);
 
-  const { data: pubSettings, isLoading: pubSettingsLoading, isError: pubSettingsError, isFetching: pubSettingsFetching, refetch: refetchPubSettings } = useQuery<PublicSettings>({
+  const { data: pubSettings, isLoading: pubSettingsLoading, isError: pubSettingsError, isFetching: pubSettingsFetching, dataUpdatedAt: pubSettingsUpdatedAt, refetch: refetchPubSettings } = useQuery<PublicSettings>({
     queryKey: ["/api/payments/public-settings"],
     queryFn: async () => {
       const r = await fetch(`${basePath}/api/payments/public-settings`);
@@ -242,6 +243,10 @@ export default function Checkout({ params }: Props) {
     ...spreadQueryExtras<PublicSettings>(CHECKOUT_QUERY_OPTIONS),
   });
   useQueryRecovery(pubSettingsError && !!pubSettings, pubSettingsFetching, refetchPubSettings);
+  const paymentSettingsHydrated = isPublicPaymentSettingsHydrated(pubSettings, {
+    isLoading: pubSettingsLoading,
+    dataUpdatedAt: pubSettingsUpdatedAt,
+  });
 
   // VIN peek — only fires when VIN is exactly 17 chars, has no invalid chars, and user is signed in
   const normalizedVin = vin.trim().toUpperCase();
@@ -949,6 +954,13 @@ export default function Checkout({ params }: Props) {
   const mountPaypalButtons = useCallback(async (nvin: string, orderId: string): Promise<boolean> => {
     if (!checkoutActiveRef.current) return false;
     if (!pubSettings?.paypalClientId) {
+      // Incomplete OAuth seed — resume effect will retry once API settings hydrate.
+      if (!isPublicPaymentSettingsHydrated(pubSettings, {
+        isLoading: pubSettingsLoading,
+        dataUpdatedAt: pubSettingsUpdatedAt,
+      })) {
+        return false;
+      }
       setErrorMsg(t("checkout_payment_not_configured"));
       setStatus("error");
       setPaymentStarted(false);
@@ -1038,7 +1050,7 @@ export default function Checkout({ params }: Props) {
       setStatus("error");
       return false;
     }
-  }, [pubSettings?.paypalClientId, resolvedTheme, t]);
+  }, [pubSettings?.paypalClientId, pubSettingsLoading, pubSettingsUpdatedAt, resolvedTheme, t]);
 
   useLayoutEffect(() => {
     mountPaypalButtonsRef.current = mountPaypalButtons;
@@ -1214,7 +1226,13 @@ export default function Checkout({ params }: Props) {
     const nvin = validateVin();
     if (!nvin) return;
     if (isFreeCoupon) { await createOrder(nvin); return; }
-    if (!pubSettings?.paypalClientId) { setErrorMsg(t("checkout_payment_not_configured")); setStatus("error"); return; }
+    // OAuth-only public-settings seed has no paypalClientId yet — wait, don't alarm.
+    if (!pubSettings?.paypalClientId) {
+      if (!paymentSettingsHydrated) return;
+      setErrorMsg(t("checkout_payment_not_configured"));
+      setStatus("error");
+      return;
+    }
 
     const orderId = await createOrder(nvin);
     if (!orderId) {
@@ -1496,7 +1514,7 @@ export default function Checkout({ params }: Props) {
     !peekLoadingUi &&
     (peekForVin.vehicleTooOld === true || isVehicleTooOldForLookup(peekForVin.year));
   const paymentAllowed = !vinLookupDisabled && peekForVin?.dataAvailable === true && !peekForVin?.checkUnavailable && !vehicleTooOld;
-  const paymentSettingsReady = !pubSettingsLoading && !!pubSettings;
+  const paymentSettingsReady = paymentSettingsHydrated;
   const checkoutDataReady =
     vinIsValid &&
     !peekLoadingUi &&
@@ -2356,8 +2374,8 @@ export default function Checkout({ params }: Props) {
                     </Button>
                   )}
 
-                  {/* PayPal configured — no footer note */}
-                  {pubSettingsLoading || pubSettings?.paypalClientId || pubSettingsError
+                  {/* PayPal configured — no footer note. Hide until API settings hydrate (OAuth seed has no client id). */}
+                  {!paymentSettingsHydrated || pubSettings?.paypalClientId || pubSettingsError
                     ? null
                     : <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-400 text-center">
                         {t("checkout_payment_not_configured")}
