@@ -864,52 +864,6 @@ export function VinCatalogHistorySections({
       />
 
       <CatalogListSection
-        title="Auction history"
-        items={form.auctionHistory}
-        emptyItem={() => ({
-          ...EMPTY_AUCTION,
-          country: vehicleCountry?.trim() || "",
-        })}
-        onChange={(auctionHistory) => onChange({ auctionHistory })}
-        compact={compact}
-        renderItem={(item, _i, update) => (
-          <div className={grid}>
-            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
-            <AdminTextField label="City" value={item.city} onChange={(v) => update({ city: v })} compact={compact} />
-            <AdminTextField label="State" value={item.state} onChange={(v) => update({ state: v })} compact={compact} />
-            <AdminSelectField
-              label="Country"
-              value={resolveCountrySelectValue(item.country)}
-              onChange={(v) => update({ country: v })}
-              options={countryOptionsFor(item.country)}
-              compact={compact}
-            />
-            <AdminTextField label="Final price" value={item.finalPrice} onChange={(v) => update({ finalPrice: v })} type="number" compact={compact} />
-            <AdminTextField label="Opening bid" value={item.openingBid} onChange={(v) => update({ openingBid: v })} type="number" compact={compact} />
-            <AdminTextField label="Buy now price" value={item.buyNowPrice} onChange={(v) => update({ buyNowPrice: v })} type="number" compact={compact} />
-            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
-            <AdminTextField label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
-            <AdminSelectField
-              label="Primary damage"
-              value={resolveDamageSelectValue(item.primaryDamage)}
-              onChange={(v) => update({ primaryDamage: v })}
-              options={damageSelectOptions(t, item.primaryDamage)}
-              compact={compact}
-            />
-            <AdminSelectField
-              label="Secondary damage"
-              value={resolveDamageSelectValue(item.secondaryDamage)}
-              onChange={(v) => update({ secondaryDamage: v })}
-              options={damageSelectOptions(t, item.secondaryDamage)}
-              compact={compact}
-            />
-            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
-            <AdminTextField label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
-          </div>
-        )}
-      />
-
-      <CatalogListSection
         title="Registry history"
         hint="New rows prefill location from vehicle country."
         items={form.registryHistory}
@@ -1076,6 +1030,52 @@ export function VinCatalogHistorySections({
           </div>
         </div>
       </div>
+
+      <CatalogListSection
+        title="Auction history"
+        items={form.auctionHistory}
+        emptyItem={() => ({
+          ...EMPTY_AUCTION,
+          country: vehicleCountry?.trim() || "",
+        })}
+        onChange={(auctionHistory) => onChange({ auctionHistory })}
+        compact={compact}
+        renderItem={(item, _i, update) => (
+          <div className={grid}>
+            <AdminDateField value={item.date} onChange={(v) => update({ date: v })} compact={compact} />
+            <AdminTextField label="City" value={item.city} onChange={(v) => update({ city: v })} compact={compact} />
+            <AdminTextField label="State" value={item.state} onChange={(v) => update({ state: v })} compact={compact} />
+            <AdminSelectField
+              label="Country"
+              value={resolveCountrySelectValue(item.country)}
+              onChange={(v) => update({ country: v })}
+              options={countryOptionsFor(item.country)}
+              compact={compact}
+            />
+            <AdminTextField label="Final price" value={item.finalPrice} onChange={(v) => update({ finalPrice: v })} type="number" compact={compact} />
+            <AdminTextField label="Opening bid" value={item.openingBid} onChange={(v) => update({ openingBid: v })} type="number" compact={compact} />
+            <AdminTextField label="Buy now price" value={item.buyNowPrice} onChange={(v) => update({ buyNowPrice: v })} type="number" compact={compact} />
+            <AdminTextField label="Condition" value={item.condition} onChange={(v) => update({ condition: v })} compact={compact} />
+            <AdminTextField label="Damage" value={item.damage} onChange={(v) => update({ damage: v })} compact={compact} />
+            <AdminSelectField
+              label="Primary damage"
+              value={resolveDamageSelectValue(item.primaryDamage)}
+              onChange={(v) => update({ primaryDamage: v })}
+              options={damageSelectOptions(t, item.primaryDamage)}
+              compact={compact}
+            />
+            <AdminSelectField
+              label="Secondary damage"
+              value={resolveDamageSelectValue(item.secondaryDamage)}
+              onChange={(v) => update({ secondaryDamage: v })}
+              options={damageSelectOptions(t, item.secondaryDamage)}
+              compact={compact}
+            />
+            <AdminTextField label="Title status" value={item.titleStatus} onChange={(v) => update({ titleStatus: v })} compact={compact} />
+            <AdminTextField label="Lot status" value={item.lotStatus} onChange={(v) => update({ lotStatus: v })} compact={compact} />
+          </div>
+        )}
+      />
 
       <div className="overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-background shadow-sm">
         <div className="px-4 py-3.5 border-b border-primary/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
