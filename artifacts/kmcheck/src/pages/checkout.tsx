@@ -1982,57 +1982,57 @@ export default function Checkout({ params }: Props) {
                   ) : null}
                 </div>
               </div>
-              <div className="px-5 sm:px-6 py-3.5 space-y-3">
+              <div className="px-5 sm:px-6 py-4 space-y-3.5">
                 {/* Price breakdown */}
-                <div className="space-y-1.5 text-sm">
+                <div className="space-y-2 text-sm">
                   {isDiscount && standardPrice != null && promoDiscountAmount > 0 ? (
                     <>
-                      <div className="flex justify-between text-muted-foreground/85 text-[13px]">
+                      <div className="flex justify-between items-baseline gap-3 text-muted-foreground">
                         <span>{t("checkout_standard_price")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
                         ) : (
-                          <span className="line-through">{fmtPrice(standardPrice)}</span>
+                          <span className="line-through tabular-nums">{fmtPrice(standardPrice)}</span>
                         )}
                       </div>
-                      <div className="flex justify-between text-green-600 dark:text-green-400 font-medium text-[13px]">
+                      <div className="flex justify-between items-baseline gap-3 text-green-600 dark:text-green-400 font-medium">
                         <span>{t("pricing_limited_time")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
                         ) : (
-                          <span>−{fmtPrice(promoDiscountAmount)}</span>
+                          <span className="tabular-nums">−{fmtPrice(promoDiscountAmount)}</span>
                         )}
                       </div>
-                      <div className="flex justify-between text-muted-foreground/85 text-[13px]">
+                      <div className="flex justify-between items-baseline gap-3 text-muted-foreground">
                         <span>{t("base_price")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
                         ) : (
-                          <span className="font-medium text-foreground">{fmtPrice(subtotalPrice)}</span>
+                          <span className="font-medium text-foreground tabular-nums">{fmtPrice(subtotalPrice)}</span>
                         )}
                       </div>
                     </>
                   ) : (
-                    <div className="flex justify-between text-muted-foreground/85 text-[13px]">
+                    <div className="flex justify-between items-baseline gap-3 text-muted-foreground">
                       <span>{t("base_price")}</span>
                       {pricingLoading ? (
                         <Skeleton className="h-4 w-14 rounded" />
                       ) : (
-                        <span className="font-medium text-foreground">{fmtPrice(subtotalPrice)}</span>
+                        <span className="font-medium text-foreground tabular-nums">{fmtPrice(subtotalPrice)}</span>
                       )}
                     </div>
                   )}
                   {couponDiscountAmount > 0 && (
-                    <div className="flex justify-between text-green-600 dark:text-green-400 font-medium text-[13px]">
+                    <div className="flex justify-between items-baseline gap-3 text-green-600 dark:text-green-400 font-medium">
                       <span>
                         {t("discount")}
                         {couponResult?.type === "percent" ? ` (${couponResult.value}%)` : ""}
                       </span>
-                      <span>−{fmtPrice(couponDiscountAmount)}</span>
+                      <span className="tabular-nums">−{fmtPrice(couponDiscountAmount)}</span>
                     </div>
                   )}
-                  <div className="rounded-xl bg-primary/[0.06] dark:bg-primary/[0.08] border border-primary/15 px-4 py-3 flex justify-between items-center mt-1 gap-3">
-                    <span className="font-bold text-sm sm:text-[15px]">{t("total")}</span>
+                  <div className="rounded-xl bg-muted/40 border border-border/50 px-4 py-3 flex justify-between items-center mt-1.5 gap-3">
+                    <span className="font-bold text-base">{t("total")}</span>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
                       {!pricingLoading && isDiscount && promoSavePercent > 0 && finalPrice > 0 && (
                         <Badge className="bg-orange-500 text-white border-0 text-[10px] px-2 py-0.5 font-bold">
@@ -2054,12 +2054,12 @@ export default function Checkout({ params }: Props) {
 
                 {/* Coupon — hidden once user proceeds to payment */}
                 {showCouponSection && (
-                <div className="border-t border-border/40 pt-2.5">
+                <div className="border-t border-border/40 pt-2">
                   {!couponResult && (
                     <button
                       type="button"
                       onClick={() => setCouponOpen(o => !o)}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground/80 hover:text-foreground transition-colors w-full pb-1.5"
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground/80 hover:text-foreground transition-colors w-full py-0.5"
                     >
                       <Tag className="h-3 w-3" />
                       <span>{t("coupon_code")}</span>
@@ -2118,7 +2118,7 @@ export default function Checkout({ params }: Props) {
                 )}
 
                 {/* Payment section */}
-                <div className="border-t border-border/40 pt-3 space-y-2.5">
+                <div className="border-t border-border/40 pt-2.5 space-y-2">
                   {showVehicleTooOldNotice && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -2198,7 +2198,7 @@ export default function Checkout({ params }: Props) {
 
                   {/* Payment method tabs — stay visible after PayPal/Card is opened */}
                   {showPaymentMethodTabs && (
-                    <div className="flex rounded-xl border border-border/60 overflow-hidden text-sm font-semibold bg-muted/25 p-1 gap-1 mt-3 mb-1.5">
+                    <div className="flex rounded-xl border border-border/60 overflow-hidden text-sm font-semibold bg-muted/25 p-1 gap-1">
                       <button
                         type="button"
                         className={cn(
