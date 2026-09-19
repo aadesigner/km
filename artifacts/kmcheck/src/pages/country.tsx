@@ -295,7 +295,7 @@ export default function CountryPage({ params }: Props) {
       <SEOHead title={seo.title} description={seo.description} lang={seo.lang} canonicalPath={seo.canonicalPath} ogImage={seo.ogImage} ogImageAlt={seo.ogImageAlt} favicons={seo.favicons} jsonLd={seo.jsonLd} />
 
       {/* ─────────────────────── HERO ─────────────────────── */}
-      <section ref={heroRef} className="relative overflow-x-hidden px-4 -mt-[var(--site-header-offset,84px)] pt-[calc(2rem+var(--site-header-offset,84px))] md:pt-[calc(3.5rem+var(--site-header-offset,84px))] pb-0">
+      <section ref={heroRef} className="relative overflow-x-hidden px-4 -mt-[var(--site-header-offset,72px)] pt-[calc(2rem+var(--site-header-offset,72px))] md:pt-[calc(3.5rem+var(--site-header-offset,72px))] pb-0">
         {/* Base: light = pale green gradient, dark = very dark green-black */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />

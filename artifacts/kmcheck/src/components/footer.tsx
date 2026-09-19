@@ -171,7 +171,7 @@ export function Footer() {
       <div className="pointer-events-none absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-primary/[0.07] blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-10 h-48 w-48 rounded-full bg-sky-500/[0.05] blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-5 py-11 md:py-14">
+      <div className="relative mx-auto w-full max-w-[90rem] xl:max-w-[96rem] px-5 sm:px-6 lg:px-8 xl:px-10 py-11 md:py-14">
         <div className="grid gap-11 lg:grid-cols-12 lg:gap-8">
           <div className="space-y-5 lg:col-span-3">
             <PrefetchLink href={`/${language}`} className="inline-flex group">

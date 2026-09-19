@@ -3,6 +3,7 @@ import {
   convertKrwToUsd,
   DEFAULT_KRW_PER_USD,
   defaultAmountCurrencyForCountry,
+  formatAdminAmountPreview,
   formatKoreanInsuranceAmount,
   formatKoreanWonFromText,
   parseKrwFromText,
@@ -49,6 +50,15 @@ describe("korean-currency", () => {
     expect(defaultAmountCurrencyForCountry("fr")).toBe("EUR");
     expect(defaultAmountCurrencyForCountry("France")).toBe("EUR");
     expect(defaultAmountCurrencyForCountry("South Korea")).toBe("KRW");
+  });
+
+  it("admin USD preview omits won conversion unless vehicle is Korean", () => {
+    expect(formatAdminAmountPreview("5000", "USD", 1415, "us")).toBe("Users see $5,000");
+    expect(formatAdminAmountPreview("5000", "USD", 1415, "ca")).toBe("Users see $5,000");
+    expect(formatAdminAmountPreview("5000", "USD", 1415, "kr")).toBe(
+      "Users see $5,000 · ≈ ₩7,075,000",
+    );
+    expect(formatAdminAmountPreview("5000", "EUR", 1415, "us")).toBe("Users see €5,000");
   });
 });
 

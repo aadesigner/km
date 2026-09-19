@@ -834,6 +834,7 @@ export function VinCatalogHistorySections({
                 onAmountChange={(v) => update({ lossAmount: v })}
                 onCurrencyChange={(v) => update({ currency: v })}
                 krwPerUsd={krwPerUsd}
+                vehicleCountry={vehicleCountry}
                 compact={compact}
               />
               <AdminSelectField
@@ -976,6 +977,7 @@ export function VinCatalogHistorySections({
                 onAmountChange={(v) => update({ lossAmount: v })}
                 onCurrencyChange={(v) => update({ currency: v })}
                 krwPerUsd={krwPerUsd}
+                vehicleCountry={vehicleCountry}
                 compact={compact}
               />
               <AdminTextField
@@ -1074,6 +1076,7 @@ export function VinCatalogHistorySections({
             onAmountChange={(v) => onChange({ floodLossAmount: v })}
             onCurrencyChange={() => {}}
             krwPerUsd={krwPerUsd}
+            vehicleCountry={vehicleCountry}
             compact={compact}
             showCurrencySelect={false}
           />
@@ -1154,6 +1157,7 @@ export function VinCatalogHistorySections({
             onAmountChange={(v) => patchMarketData({ estimatedValue: v })}
             onCurrencyChange={(v) => patchMarketData({ currency: v })}
             krwPerUsd={krwPerUsd}
+            vehicleCountry={vehicleCountry}
             compact={compact}
             showCurrencySelect={false}
           />
@@ -1164,6 +1168,7 @@ export function VinCatalogHistorySections({
             onAmountChange={(v) => patchMarketData({ lastAuctionPrice: v })}
             onCurrencyChange={(v) => patchMarketData({ currency: v })}
             krwPerUsd={krwPerUsd}
+            vehicleCountry={vehicleCountry}
             compact={compact}
             showCurrencySelect={false}
           />

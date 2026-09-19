@@ -195,7 +195,7 @@ export default function Pricing() {
       />
 
       {/* Hero — split layout + premium card */}
-      <section className="relative overflow-hidden border-b border-border/60 -mt-[var(--site-header-offset,84px)] pt-[calc(2.5rem+var(--site-header-offset,84px))] pb-10 sm:pt-[calc(3rem+var(--site-header-offset,84px))] sm:pb-12 md:pt-[calc(4rem+var(--site-header-offset,84px))] md:pb-16 lg:pt-[calc(5rem+var(--site-header-offset,84px))] lg:pb-20">
+      <section className="relative overflow-hidden border-b border-border/60 -mt-[var(--site-header-offset,72px)] pt-[calc(2.5rem+var(--site-header-offset,72px))] pb-10 sm:pt-[calc(3rem+var(--site-header-offset,72px))] sm:pb-12 md:pt-[calc(4rem+var(--site-header-offset,72px))] md:pb-16 lg:pt-[calc(5rem+var(--site-header-offset,72px))] lg:pb-20">
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 via-emerald-50/25 to-background dark:hidden" />
         <div className="absolute inset-0 hidden dark:block bg-[#040d08]" />
         <div className="absolute inset-0 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.06] dark:opacity-[0.18]" />

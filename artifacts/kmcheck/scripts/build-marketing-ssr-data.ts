@@ -75,10 +75,21 @@ function homeContent(t: Dict, lang: Language): MarketingSsrContent {
     ]),
     sections: [
       seoBody
-        ? { title: pick(t, "what_we_check") || "What we check", body: seoBody }
+        ? {
+            title: pick(t, "pricing_seo_product_name") || pick(t, "what_we_check") || "Vehicle history",
+            body: seoBody,
+          }
         : null,
       section(t, "what_we_check", "what_we_check_sub"),
+      section(t, "report_mileage", "feature_mileage_seo"),
+      section(t, "report_accidents", "feature_accidents_seo"),
+      section(t, "report_salvage", "feature_salvage_seo"),
+      section(t, "report_theft", "feature_theft_seo"),
       section(t, "how_it_works", "how_it_works_desc"),
+      section(t, "faq_q1", "faq_a1"),
+      section(t, "faq_q2", "faq_a2"),
+      section(t, "faq_q3", "faq_a3"),
+      section(t, "faq_q7", "faq_a7"),
       seoMarkets
         ? { title: pick(t, "home_stats_from") || "Markets", body: seoMarkets }
         : null,
@@ -92,12 +103,22 @@ function pricingContent(t: Dict, lang: Language): MarketingSsrContent {
     lead: pick(t, "pricing_hero_lead"),
     bullets: bullets(t, [
       "pricing_feature_accidents",
+      "report_mileage",
+      "report_salvage",
+      "report_theft",
       "pricing_seo_value_delivery_title",
       "pricing_guarantee_band_title",
     ]),
     sections: [
       section(t, "pricing_seo_title", "pricing_seo_sub"),
+      section(t, "pricing_seo_value_pay_title", "pricing_seo_value_pay_desc"),
+      section(t, "pricing_seo_value_account_title", "pricing_seo_value_account_desc"),
+      section(t, "pricing_seo_value_delivery_title", "pricing_seo_value_delivery_desc"),
       section(t, "pricing_guarantee_band_title", "pricing_guarantee_band_sub"),
+      section(t, "report_mileage", "feature_mileage_seo"),
+      section(t, "report_accidents", "feature_accidents_seo"),
+      section(t, "faq_q6", "faq_a6"),
+      section(t, "faq_q7", "faq_a7"),
     ].filter((row): row is { title: string; body: string } => row != null),
   });
 }
@@ -107,6 +128,15 @@ function howItWorksContent(t: Dict, lang: Language): MarketingSsrContent {
     h1: pick(t, "how_it_works"),
     lead: pick(t, "how_it_works_desc"),
     bullets: bullets(t, ["step_1_title", "step_2_title", "step_3_title"]),
+    sections: [
+      section(t, "step_1_title", "step_1_desc"),
+      section(t, "step_2_title", "step_2_desc"),
+      section(t, "step_3_title", "step_3_desc"),
+      section(t, "what_we_check", "what_we_check_sub"),
+      section(t, "report_mileage", "feature_mileage_seo"),
+      section(t, "report_accidents", "feature_accidents_seo"),
+      section(t, "faq_q3", "faq_a3"),
+    ].filter((row): row is { title: string; body: string } => row != null),
   });
 }
 
@@ -114,10 +144,29 @@ function faqContent(t: Dict, lang: Language): MarketingSsrContent {
   return withNavLinks(t, lang, {
     h1: pick(t, "faq_title"),
     lead: pick(t, "faq_subtitle"),
-    bullets: bullets(t, ["faq_1_q", "faq_2_q", "faq_3_q"]),
+    bullets: bullets(t, [
+      "faq_q1",
+      "faq_q2",
+      "faq_q3",
+      "faq_q4",
+      "faq_q6",
+      "faq_q7",
+      "faq_1_q",
+      "faq_2_q",
+      "faq_3_q",
+    ]),
     sections: [
+      section(t, "faq_q1", "faq_a1"),
+      section(t, "faq_q2", "faq_a2"),
+      section(t, "faq_q3", "faq_a3"),
+      section(t, "faq_q4", "faq_a4"),
+      section(t, "faq_q5", "faq_a5"),
+      section(t, "faq_q6", "faq_a6"),
+      section(t, "faq_q7", "faq_a7"),
+      section(t, "faq_q8", "faq_a8"),
       section(t, "faq_1_q", "faq_1_a"),
       section(t, "faq_2_q", "faq_2_a"),
+      section(t, "faq_3_q", "faq_3_a"),
     ].filter((row): row is { title: string; body: string } => row != null),
   });
 }
@@ -126,7 +175,20 @@ function freeDecoderContent(t: Dict, lang: Language): MarketingSsrContent {
   return withNavLinks(t, lang, {
     h1: `${pick(t, "free_decoder_title_lead")} ${pick(t, "free_decoder_title_highlight")}`.trim(),
     lead: pick(t, "free_decoder_subtitle"),
-    bullets: bullets(t, ["free_decoder_badge"]),
+    bullets: bullets(t, [
+      "free_decoder_badge",
+      "free_decoder_what_decode",
+      "free_decoder_what_locked",
+      "free_decoder_what_full",
+    ]),
+    sections: [
+      section(t, "free_decoder_what_decode", "free_decoder_what_decode_desc"),
+      section(t, "free_decoder_what_locked", "free_decoder_what_locked_desc"),
+      section(t, "free_decoder_what_full", "free_decoder_what_full_desc"),
+      section(t, "free_decoder_cta_title", "free_decoder_cta_desc"),
+      section(t, "report_mileage", "feature_mileage_seo"),
+      section(t, "report_accidents", "feature_accidents_seo"),
+    ].filter((row): row is { title: string; body: string } => row != null),
   });
 }
 
@@ -149,8 +211,13 @@ function countryContent(t: Dict, lang: Language, prefix: string): MarketingSsrCo
     ]),
     sections: [
       section(t, `${prefix}_issues_sub`, `${prefix}_included_sub`),
+      section(t, "report_mileage", `${prefix}_wwc_mileage_seo`),
+      section(t, "report_accidents", `${prefix}_wwc_accidents_seo`),
+      section(t, "report_salvage", `${prefix}_wwc_salvage_seo`),
+      section(t, "report_theft", `${prefix}_wwc_theft_seo`),
       section(t, `${prefix}_faq_0_q`, `${prefix}_faq_0_a`),
       section(t, `${prefix}_faq_1_q`, `${prefix}_faq_1_a`),
+      section(t, `${prefix}_faq_2_q`, `${prefix}_faq_2_a`),
     ].filter((row): row is { title: string; body: string } => row != null),
   });
 }

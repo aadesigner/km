@@ -138,18 +138,24 @@ export function formatAdminAmountPreview(
   amountRaw: string,
   currency: string,
   krwPerUsd: number,
+  vehicleCountry?: string | null,
 ): string | null {
   const n = Number(String(amountRaw).trim().replace(/,/g, ""));
   if (!Number.isFinite(n) || n <= 0) return null;
   const code = normalizeAmountCurrency(currency) ?? "USD";
   const rate = resolveKrwPerUsd(krwPerUsd);
+  // KRW amounts always preview as won + USD (Korean currency display).
   if (code === "KRW") {
     return `Users see ₩… · ≈ ${formatUsdAmount(convertKrwToUsd(n, rate))} USD`;
   }
   if (code === "EUR") {
     return `Users see €${Math.round(n).toLocaleString()}`;
   }
-  return `Users see $${Math.round(n).toLocaleString()} · ≈ ₩${convertUsdToKrw(n, rate).toLocaleString()}`;
+  // USD: only show won conversion for Korean vehicles — never for US/CA/etc.
+  if (isKoreanCountry(vehicleCountry)) {
+    return `Users see $${Math.round(n).toLocaleString()} · ≈ ₩${convertUsdToKrw(n, rate).toLocaleString()}`;
+  }
+  return `Users see $${Math.round(n).toLocaleString()}`;
 }
 
 /** Parse KRW from provider strings: "2,566,720 won", "136.6 million won", "₩7060220" */

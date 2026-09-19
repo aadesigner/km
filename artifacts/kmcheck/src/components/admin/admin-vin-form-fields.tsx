@@ -222,6 +222,7 @@ export function AdminAmountWithCurrency({
   onAmountChange,
   onCurrencyChange,
   krwPerUsd,
+  vehicleCountry,
   compact,
   className,
   currencyOptions = ADMIN_AMOUNT_CURRENCY_OPTIONS,
@@ -233,13 +234,15 @@ export function AdminAmountWithCurrency({
   onAmountChange: (v: string) => void;
   onCurrencyChange: (v: string) => void;
   krwPerUsd: number;
+  /** When set, USD↔₩ preview only appears for Korean vehicles. */
+  vehicleCountry?: string | null;
   compact?: boolean;
   className?: string;
   currencyOptions?: { value: string; label: string }[];
   /** When false, amount only (currency controlled elsewhere, e.g. shared market bar). */
   showCurrencySelect?: boolean;
 }) {
-  const preview = formatAdminAmountPreview(amount, currency, krwPerUsd);
+  const preview = formatAdminAmountPreview(amount, currency, krwPerUsd, vehicleCountry);
   const inputClass = compact ? "h-9 text-sm" : "h-10 text-sm";
   const code = currency || "USD";
   const options = currencyOptions.some((o) => o.value === code)

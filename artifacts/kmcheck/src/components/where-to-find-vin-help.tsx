@@ -95,16 +95,16 @@ export function WhereToFindVinHelp({ variant = "default", className }: Props) {
           className={cn(
             "inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium transition-colors group text-center max-w-full",
             variant === "on-dark"
-              ? "text-white/55 hover:text-white/90"
-              : "text-muted-foreground hover:text-primary",
+              ? "text-white/40 hover:text-white/75"
+              : "text-muted-foreground/70 hover:text-muted-foreground",
           )}
         >
           <HelpCircle
             className={cn(
               "h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-colors",
               variant === "on-dark"
-                ? "text-white/45 group-hover:text-primary"
-                : "text-primary/70 group-hover:text-primary",
+                ? "text-white/35 group-hover:text-white/60"
+                : "text-muted-foreground/55 group-hover:text-muted-foreground/80",
             )}
           />
           <span className={cn("leading-snug", variant === "default" && "underline-offset-2 group-hover:underline")}>

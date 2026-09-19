@@ -272,7 +272,7 @@ function navDropdownHoverProps(
   timers: MutableRefObject<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>,
   setOpen: Dispatch<SetStateAction<boolean>>,
   closeOthers: () => void,
-  delayMs = 40,
+  delayMs = 0,
 ) {
   return {
     onMouseEnter: () => {
@@ -620,12 +620,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     || isOnPage("forgot-password")
     || isOnPage("reset-password")
     || isOnPage("set-password");
-  const isMarketingTransparentNav = isOnPage("faq") || isOnPage("how-it-works");
   const isDarkNav =
     resolvedTheme === "dark"
     && (
       (isHeroTransparentNav && !heroScrolled)
-      || ((isAuthNavPage || isMarketingTransparentNav) && !scrolled)
+      || (isAuthNavPage && !scrolled)
     );
 
   useEffect(() => {
@@ -639,22 +638,37 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative px-3.5 rounded-xl font-medium transition-colors duration-50 ease-out",
-    scrolled ? "py-1.5 text-sm" : "py-2 text-[15px]",
+    "relative inline-flex items-center gap-1.5 px-3.5 py-2.5 text-[15px] font-medium tracking-wide transition-colors duration-75 outline-none",
     active
       ? isDarkNav
         ? "text-white"
-        : "text-primary"
+        : "text-foreground"
       : isDarkNav
-        ? "text-white/65 hover:text-white"
-        : "text-foreground/75 hover:text-foreground",
-    isDarkNav
-      ? "hover:bg-white/[0.08]"
-      : "hover:bg-primary/[0.06]",
+        ? "text-white/60 hover:text-white"
+        : "text-foreground/65 hover:text-foreground",
+  );
+
+  const navActiveMark = () => (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-3.5 bottom-0 h-[2px] rounded-full bg-primary"
+    />
   );
 
   const dropdownCls = NAV_DROPDOWN_CLS;
-  const utilityClusterCls = cn(
+  /** Right-side controls: color hover only (no wash). Slightly smaller than center links. */
+  const utilityBtnCls = (active = false) => cn(
+    "relative flex h-9 items-center justify-center rounded-lg px-2 transition-colors duration-75",
+    active
+      ? isDarkNav
+        ? "text-white"
+        : "text-foreground"
+      : isDarkNav
+        ? "text-white/55 hover:text-white"
+        : "text-muted-foreground hover:text-foreground",
+  );
+  /** Mobile-only — keep compact cluster; desktop uses plain icon buttons. */
+  const mobileUtilityClusterCls = cn(
     "flex items-center gap-0.5 rounded-full p-0.5",
     isDarkNav
       ? "bg-white/[0.04] border border-white/10"
@@ -666,99 +680,94 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       style={{ top: announcementOffset }}
       className={cn(
       "fixed inset-x-0 z-[100] w-full print:hidden",
-      "transition-[border-color,backdrop-filter,box-shadow,background-color] duration-300",
+      "transition-[border-color,background-color] duration-300",
       scrolled
         ? (isDarkNav
-            ? "bg-[#060a14]/75 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)]"
-            : "bg-background/92 backdrop-blur-xl border-b border-border/50 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)]")
+            ? "bg-[#060a14]/95 border-b border-white/10"
+            : "bg-background/97 border-b border-border/70")
         : isDarkNav
-        ? "bg-gradient-to-b from-black/45 to-black/15 backdrop-blur-md border-b border-white/[0.08]"
+        ? "bg-gradient-to-b from-black/30 to-transparent border-b border-white/[0.06]"
         : (isHeroTransparentNav || isAuthNavPage)
-        ? "bg-background/70 backdrop-blur-md border-b border-border/40"
-        : "bg-background/62 backdrop-blur-md border-b border-border/40",
+        ? "bg-transparent border-b border-border/30"
+        : "bg-background/80 border-b border-border/40",
     )}>
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
-        "md:grid md:grid-cols-[1fr_auto]",
-        "transition-[height,padding] duration-300",
-        scrolled ? "h-[68px]" : "h-[72px] md:h-[84px]",
+        "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
+        "h-[72px]",
       )}>
 
-        {/* ── Logo + nav cluster ── */}
-        <div className="flex items-center gap-6 min-w-0 md:justify-self-start">
-          <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px md:-translate-y-0.5">
+        {/* ── Logo ── */}
+        <div className="flex items-center min-w-0 md:justify-self-start">
+          <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px">
             <KmcheckLogo
-              className={cn(
-                "transition-all duration-300 group-hover:opacity-90",
-                scrolled ? "h-9 md:h-9" : "h-9 md:h-10",
-              )}
+              className="h-9 md:h-10 transition-opacity duration-200 group-hover:opacity-90"
             />
           </PrefetchLink>
+        </div>
 
-          <div className="hidden md:flex items-center gap-0.5">
-          {/* Search by Country — desktop */}
-          <div
-            ref={countryRef}
-            className="relative"
-            {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeLangAndUser)}
-          >
-            <button
-              {...navDropdownTriggerProps(countryOpen, t("nav_country"))}
-              className={cn(navLink(isOnPage("cars")), "flex items-center gap-1.5 outline-none")}
-            >
-              {t("nav_country")}
-              <ChevronDown
-                className={cn(
-                  "h-3 w-3",
-                  isDarkNav ? "text-white/40" : "text-muted-foreground",
-                  countryOpen && "rotate-180",
-                )}
-              />
-              {isOnPage("cars") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
-            </button>
-
+        {/* ── Centered nav links (desktop) — no box ── */}
+        <div className="hidden md:flex items-center justify-center justify-self-center min-w-0">
+          <nav className="inline-flex items-center gap-1" aria-label="Primary">
             <div
-              className={cn(
-                NAV_DROPDOWN_ANCHOR,
-                "left-1/2 -translate-x-1/2",
-                countryOpen ? "visible" : "invisible pointer-events-none",
-              )}
-              aria-hidden={!countryOpen}
+              ref={countryRef}
+              className="relative"
+              {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeLangAndUser)}
             >
-              <div className={cn(NAV_COUNTRY_MEGA_PANEL, "w-[22rem] max-w-[calc(100vw-1.5rem)] p-0")}>
-                <CountryNavMenuGroups
-                  language={language}
-                  isActive={(slug) => isOnPage(`cars/${slug}`)}
-                  onNavigate={() => setCountryOpen(false)}
+              <button
+                {...navDropdownTriggerProps(countryOpen, t("nav_country"))}
+                className={cn(navLink(isOnPage("cars") || countryOpen))}
+              >
+                {t("nav_country")}
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0 transition-transform duration-75",
+                    isDarkNav ? "text-white/35" : "text-muted-foreground/80",
+                    countryOpen && "rotate-180",
+                  )}
                 />
+                {(isOnPage("cars") || countryOpen) && navActiveMark()}
+              </button>
+
+              <div
+                className={cn(
+                  NAV_DROPDOWN_ANCHOR,
+                  "left-1/2 -translate-x-1/2",
+                  countryOpen ? "visible" : "invisible pointer-events-none",
+                )}
+                aria-hidden={!countryOpen}
+              >
+                <div className={cn(NAV_COUNTRY_MEGA_PANEL, "w-[22rem] max-w-[calc(100vw-1.5rem)] p-0")}>
+                  <CountryNavMenuGroups
+                    language={language}
+                    isActive={(slug) => isOnPage(`cars/${slug}`)}
+                    onNavigate={() => setCountryOpen(false)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Primary nav — desktop, beside Country */}
-          <nav className="flex items-center gap-0.5">
             <PrefetchLink href={`/${language}/how-it-works`} className={navLink(isOnPage("how-it-works"))}>
               {t("nav_how_it_works")}
-              {isOnPage("how-it-works") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+              {isOnPage("how-it-works") && navActiveMark()}
             </PrefetchLink>
             <PrefetchLink href={`/${language}/pricing`} className={navLink(isOnPage("pricing"))}>
               {t("pricing")}
-              {isOnPage("pricing") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+              {isOnPage("pricing") && navActiveMark()}
             </PrefetchLink>
             <PrefetchLink href={`/${language}/faq`} className={navLink(isOnPage("faq"))}>
               {t("nav_faq")}
-              {isOnPage("faq") && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-primary" />}
+              {isOnPage("faq") && navActiveMark()}
             </PrefetchLink>
           </nav>
-          </div>
         </div>
 
         {/* ── Right controls ── */}
         <div className="flex items-center gap-1.5 shrink-0 md:justify-self-end">
           <div className="hidden md:flex items-center gap-2">
 
-            <div className={utilityClusterCls}>
-            {/* Language picker */}
+            {/* Language + theme */}
+            <div className="flex items-center gap-0.5">
             <div
               ref={langRef}
               className="relative"
@@ -766,28 +775,18 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             >
               <button
                 {...navDropdownTriggerProps(langOpen, LANGS.find(l => l.code === language)?.label ?? language)}
-                className={cn(
-                  "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out",
-                  scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
-                  langOpen
-                    ? isDarkNav
-                      ? "bg-white/10 text-white"
-                      : "bg-primary/8 text-primary"
-                    : isDarkNav
-                      ? "text-white/75 hover:bg-white/10 hover:text-white"
-                      : "text-foreground hover:bg-primary/[0.06]",
-                )}
+                className={cn(utilityBtnCls(langOpen), "gap-1.5")}
               >
                 <FlagImg
                   code={LANGS.find(l => l.code === language)?.img ?? "gb"}
                   variant="nav"
-                  size={18}
+                  size={20}
                   priority
                   alt={formatImageFlagAlt(LANGS.find(l => l.code === language)?.label ?? language, t)}
                 />
                 <ChevronDown
                   className={cn(
-                    "h-3 w-3 transition-transform duration-100",
+                    "h-3 w-3 transition-transform duration-75",
                     isDarkNav ? "text-white/40" : "text-muted-foreground",
                     langOpen && "rotate-180",
                   )}
@@ -820,29 +819,21 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               </AnimatePresence>
             </div>
 
-            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               title="Toggle theme"
-              className={cn(
-                "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
-                scrolled ? "h-8 w-8" : "h-9 w-9",
-                isDarkNav
-                  ? "text-white/55 hover:text-white hover:bg-white/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
-              )}
+              className={cn(utilityBtnCls(), "w-9 px-0")}
             >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Sun className="h-3.5 w-3.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-3.5 w-3.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </button>
             </div>
 
-            {/* Divider */}
-            <div className={cn("h-4 w-px rounded-full", isDarkNav ? "bg-white/10" : "bg-border/60")} />
+            <div className={cn("h-4 w-px", isDarkNav ? "bg-white/15" : "bg-border/70")} />
 
-            {/* Auth */}
+            {/* Auth / Check VIN */}
             {!isLoaded ? (
-              <div className={cn("rounded-full bg-muted/80 animate-pulse", scrolled ? "h-9 w-24" : "h-10 w-28")} aria-hidden />
+              <div className="h-9 w-24 rounded-lg bg-muted/80 animate-pulse" aria-hidden />
             ) : isSignedIn ? (
               <div
                 ref={userRef}
@@ -852,26 +843,30 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 <button
                   {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full outline-none",
-                    isDarkNav ? "hover:bg-white/[0.07]" : "hover:bg-primary/[0.06]",
+                    "flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg outline-none transition-colors duration-75",
+                    userOpen
+                      ? isDarkNav
+                        ? "text-white"
+                        : "text-foreground"
+                      : isDarkNav
+                        ? "text-white/75 hover:text-white"
+                        : "text-foreground/75 hover:text-foreground",
                   )}
                 >
-                  <Avatar className={cn(scrolled ? "h-7 w-7" : "h-8 w-8")}>
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
+                    <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
                       {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
                   <span className={cn(
-                    "font-medium max-w-[100px] truncate hidden lg:block",
-                    scrolled ? "text-[13px]" : "text-[14px]",
-                    isDarkNav ? "text-white/80" : "text-foreground",
+                    "text-[13px] font-medium tracking-wide max-w-[100px] truncate hidden lg:block",
                   )}>
                     {displayName}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5",
+                      "h-3 w-3 transition-transform duration-75",
                       isDarkNav ? "text-white/40" : "text-muted-foreground",
                       userOpen && "rotate-180",
                     )}
@@ -894,7 +889,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     <Link
                       href={`/${language}/dashboard`}
                       onClick={() => setUserOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] rounded-lg mx-1.5"
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-muted/60 rounded-md mx-1.5"
                     >
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
                       {t("my_reports")}
@@ -903,7 +898,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                       <Link
                         href="/adminx"
                         onClick={closeMenus}
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-primary/[0.06] rounded-lg mx-1.5"
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-muted/60 rounded-md mx-1.5"
                       >
                         <Shield className="h-3.5 w-3.5 text-muted-foreground" />
                         {t("admin")}
@@ -912,7 +907,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                     <div className="border-t border-border/60 mt-1 pt-1 mx-1.5">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 rounded-lg"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/8 rounded-md"
                       >
                         <LogOut className="h-3.5 w-3.5" />
                         {t("logout")}
@@ -922,30 +917,24 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="flex items-center gap-2">
+                <PrefetchLink
+                  href={`/${language}/sign-in`}
                   className={cn(
-                    "font-medium rounded-full transition-colors duration-50 ease-out",
-                    scrolled ? "h-9 px-3.5 text-sm" : "h-10 px-4 text-[15px]",
+                    "inline-flex h-9 items-center px-2.5 text-[13px] font-medium tracking-wide transition-colors duration-75",
                     isDarkNav
-                      ? "text-white/60 hover:text-white hover:bg-white/[0.07]"
+                      ? "text-white/55 hover:text-white"
                       : "text-muted-foreground hover:text-foreground",
                   )}
-                  asChild
                 >
-                  <PrefetchLink href={`/${language}/sign-in`}>{t("sign_in")}</PrefetchLink>
-                </Button>
+                  {t("sign_in")}
+                </PrefetchLink>
                 <Button
                   size="sm"
-                  className={cn(
-                    "font-semibold rounded-full shadow-sm shadow-primary/15 hover:shadow-primary/25 transition-all",
-                    scrolled ? "h-9 px-4 text-sm" : "h-10 px-5 text-[15px]",
-                  )}
+                  className="h-9 px-3.5 text-[13px] font-semibold tracking-wide rounded-lg shadow-none transition-opacity hover:opacity-90"
                   asChild
                 >
-                  <PrefetchLink href={`/${language}/sign-up`}>{t("sign_up")}</PrefetchLink>
+                  <PrefetchLink href={`/${language}`}>{t("check_vin")}</PrefetchLink>
                 </Button>
               </div>
             )}
@@ -953,7 +942,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
           {/* Mobile menu */}
           <div className="md:hidden flex items-center gap-1.5">
-            <div className={utilityClusterCls}>
+            <div className={mobileUtilityClusterCls}>
               <MobileLangPicker
                 language={language}
                 onLanguageChange={handleLanguageChange}
@@ -1143,9 +1132,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const showClientNav = useShowClientMobileNav();
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
     const apply = () => {
-      const navbarHeight = mq.matches ? 84 : 72;
+      // Must match Navbar inner height (`h-[72px]`).
+      const navbarHeight = 72;
       document.documentElement.style.setProperty(
         "--site-header-offset",
         `${navbarHeight + announcementHeight}px`,
@@ -1156,9 +1145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       );
     };
     apply();
-    mq.addEventListener("change", apply);
     return () => {
-      mq.removeEventListener("change", apply);
       document.documentElement.style.removeProperty("--site-header-offset");
       document.documentElement.style.removeProperty("--announcement-bar-height");
     };
@@ -1176,7 +1163,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
         )}
       >
-        <main className="flex-1 overflow-x-hidden pt-[var(--site-header-offset,84px)] print:pt-0">
+        <main className="flex-1 overflow-x-hidden pt-[var(--site-header-offset,72px)] print:pt-0">
           {children}
         </main>
         <Footer />

@@ -704,11 +704,14 @@ export function VinReportHero({
           </div>
 
           {!useLockedPanel && showStatsRow ? (
-          <div className={cn(
-            "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-0 grid gap-1.5 sm:gap-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats [&>*]:flex [&>*]:w-full [&>*]:justify-center print:grid-cols-4 print:gap-1 print:py-1.5 print:px-2",
-            locked ? "grid-cols-1" : "grid-cols-2",
-            showDesktopSummary && !locked && "sm:hidden print:grid",
-          )}>
+          <div
+            className={cn(
+              "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats",
+              "flex flex-wrap justify-center content-start gap-1.5 sm:gap-2",
+              "print:flex print:flex-wrap print:justify-start print:gap-1.5 print:py-1.5 print:px-2",
+              showDesktopSummary && !locked && "sm:hidden print:flex",
+            )}
+          >
             {children}
           </div>
           ) : null}

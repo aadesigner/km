@@ -159,7 +159,7 @@
   "hero_headline_tail": "mileage,",
   "hero_headline_2": "accidents & vehicle history",
   "hero_vin_label": "17-character VIN or chassis number",
-  "hero_subtext": "Instant car mileage check by VIN — spot odometer rollbacks, hidden accidents, salvage titles and theft. Vehicle history for the USA, Korea, Canada, China and Dubai.",
+  "hero_subtext": "Instant car mileage check by VIN — spot odometer rollbacks, hidden accidents, salvage titles and theft. Vehicle history for cars from the USA, Korea, Canada, China and Dubai.",
   "stats_reports": "VIN checks done",
   "stats_countries": "Countries covered",
   "stats_delivery": "Instant delivery",
@@ -475,8 +475,8 @@
   "limited_time": "Limited Time",
   "what_we_check": "What We Check",
   "what_we_check_sub": "Every report includes a car mileage check, accident and damage history, salvage or write-off status, and theft screening — the same layout you see after checkout, built from live data for your VIN.",
-  "seo_home_body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We cover vehicles from the USA, Korea, Canada, China and Dubai — so you can buy used cars with clearer data before you pay.",
-  "seo_home_markets": "Vehicle history for the USA, Korea, Canada, China and Dubai — mileage, accidents, salvage and theft in one report.",
+  "seo_home_body": "kmcheck.com is a car mileage check and vehicle history report service. Enter a 17-character VIN to verify real odometer readings, uncover hidden accidents, salvage titles and theft records. We cover cars from the USA, Korea, Canada, China and Dubai — so you can buy used cars with clearer data before you pay.",
+  "seo_home_markets": "Vehicle history for cars from the USA, Korea, Canada, China and Dubai — mileage, accidents, salvage and theft in one report.",
   "what_we_check_report_shows": "What your report shows",
   "what_we_check_real_example": "Real-world example",
   "feature_mileage_desc": "Km readings cross-checked for rollbacks.",
@@ -1192,7 +1192,7 @@
   "report_not_stolen": "Not reported stolen",
   "report_not_taxi": "Not used as a taxi",
   "taxi_flagged": "Used as a taxi",
-  "report_not_flooded": "No flood damage",
+  "report_not_flooded": "No flood record found",
   "flood_flagged": "Flood damage recorded",
   "report_flood": "Flood damage",
   "report_flood_section": "Flood history",
@@ -1755,5 +1755,6 @@
   "owners_meaning_title": "Why does owner count matter?",
   "owners_meaning_learn": "About owner count",
   "owners_meaning_body": "Many prior owners can mean higher wear, short ownership periods, or gaps in care. It is not proof of a problem on its own, but it raises the need for a thorough service and inspection history before you buy.",
-  "checkout_error_card_validation": "Please check the card number, expiry date, and security code, then try again."
+  "checkout_error_card_validation": "Please check the card number, expiry date, and security code, then try again.",
+  "flood_clear_desc": "No flood damage records were found for this vehicle."
 }
