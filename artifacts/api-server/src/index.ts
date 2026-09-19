@@ -10,6 +10,7 @@ import { refreshVinSitemapShards } from "./lib/sitemapMaintenance.js";
 import { invalidatePublicSettingsCache } from "./routes/payments.js";
 import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
+import { setGetCarApiEnabledCache } from "./lib/getcarApiSettingsCache.js";
 
 process.on("uncaughtException", (err) => {
   logger.error({ err }, "Uncaught exception");
@@ -115,6 +116,13 @@ const server = app.listen(port, "0.0.0.0", async () => {
     logger.warn({ err: e }, "Failed to consolidate system_settings rows"),
   );
   invalidatePublicSettingsCache();
+  void getEffectiveSystemSettings()
+    .then((s) => {
+      if (typeof s?.getcarApiEnabled === "boolean") {
+        setGetCarApiEnabledCache(s.getcarApiEnabled);
+      }
+    })
+    .catch((e) => logger.warn({ err: e }, "Failed to warm GetCarAPI enabled cache"));
   void migrateCarstatBaseUrls().catch((e) =>
     logger.warn({ err: e }, "Failed to migrate Carstat provider base URLs"),
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useAdminGetProviders,
   useAdminCreateProvider,
@@ -6,7 +6,7 @@ import {
   useAdminDeleteProvider,
   useGetCountries,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,9 +122,31 @@ export default function AdminProviders() {
   const [carstatKey, setCarstatKey] = useState("");
   const [carstatSaving, setCarstatSaving] = useState(false);
   const [carstatMsg, setCarstatMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [getcarApiEnabled, setGetcarApiEnabled] = useState(true);
+  const [getcarApiSaving, setGetcarApiSaving] = useState(false);
+  const [getcarApiMsg, setGetcarApiMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [getcarApiKeyPresent, setGetcarApiKeyPresent] = useState<boolean | null>(null);
 
   const { data: providers = [], isLoading } = useAdminGetProviders();
   const { data: countries = [] } = useGetCountries();
+  const { data: adminSettings, isLoading: getcarApiLoading } = useQuery({
+    queryKey: ["/api/admin/settings"],
+    queryFn: async () => {
+      const resp = await fetch(`${basePath}/api/admin/settings`, { credentials: "include" });
+      if (!resp.ok) throw new Error("Failed to load settings");
+      return resp.json() as Promise<{ getcarApiEnabled?: boolean; getcarApiKeyConfigured?: boolean }>;
+    },
+  });
+
+  useEffect(() => {
+    if (typeof adminSettings?.getcarApiEnabled === "boolean") {
+      setGetcarApiEnabled(adminSettings.getcarApiEnabled);
+    }
+    if (typeof adminSettings?.getcarApiKeyConfigured === "boolean") {
+      setGetcarApiKeyPresent(adminSettings.getcarApiKeyConfigured);
+    }
+  }, [adminSettings]);
+
   const createProvider = useAdminCreateProvider({
     mutation: { onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/admin/providers"] }); setCreating(false); } }
   });
@@ -147,6 +169,41 @@ export default function AdminProviders() {
   const carstatProviders = providers.filter(p => p.name === "Carstat");
   const otherProviders = providers.filter(p => p.name !== "Carstat");
   const carstatActiveCount = carstatProviders.filter(p => p.isActive).length;
+
+  async function toggleGetCarApi(next: boolean) {
+    setGetcarApiSaving(true);
+    setGetcarApiMsg(null);
+    const prev = getcarApiEnabled;
+    setGetcarApiEnabled(next);
+    try {
+      const resp = await fetch(`${basePath}/api/admin/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ getcarApiEnabled: next }),
+      });
+      if (!resp.ok) {
+        setGetcarApiEnabled(prev);
+        setGetcarApiMsg({ ok: false, text: "Failed to update GetCarAPI. Try again." });
+        return;
+      }
+      const saved = await resp.json() as { getcarApiEnabled?: boolean; getcarApiKeyConfigured?: boolean };
+      if (typeof saved.getcarApiEnabled === "boolean") setGetcarApiEnabled(saved.getcarApiEnabled);
+      if (typeof saved.getcarApiKeyConfigured === "boolean") setGetcarApiKeyPresent(saved.getcarApiKeyConfigured);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      setGetcarApiMsg({
+        ok: true,
+        text: next
+          ? "GetCarAPI enabled — checks and retrieves will run before Carstat."
+          : "GetCarAPI disabled — lookups skip it (catalog → Carstat → pending).",
+      });
+    } catch {
+      setGetcarApiEnabled(prev);
+      setGetcarApiMsg({ ok: false, text: "Request failed." });
+    } finally {
+      setGetcarApiSaving(false);
+    }
+  }
 
   async function saveCarstatKey(activate: boolean) {
     if (!carstatKey.trim()) return;
@@ -301,6 +358,52 @@ export default function AdminProviders() {
 
           <p className="text-xs text-muted-foreground">
             Base URL: <code className="bg-muted px-1 rounded">https://carstat.dev</code> · Auth: <code className="bg-muted px-1 rounded">x-api-key</code> header · Endpoints: <code className="bg-muted px-1 rounded">/api/local-exists/&#123;vin&#125;</code>, <code className="bg-muted px-1 rounded">/api/local-report/&#123;vin&#125;</code> · Get your key at <a href="https://carstat.dev" target="_blank" rel="noreferrer" className="underline underline-offset-2">carstat.dev</a>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ── GetCarAPI global toggle ─────────────────────────────────────────── */}
+      <Card className="border-2 border-sky-500/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0">
+              <Globe className="h-5 w-5 text-sky-600 shrink-0" />
+              <div className="min-w-0">
+                <CardTitle className="text-lg">GetCarAPI — VIN Data Provider</CardTitle>
+                <CardDescription className="mt-1">
+                  Free existence check + paid retrieve before Carstat. When disabled, lookups skip GetCarAPI
+                  entirely: local catalog → Carstat → pending.
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Badge
+                variant={getcarApiEnabled ? "default" : "secondary"}
+                className={getcarApiEnabled ? "bg-green-100 text-green-800 border-0" : ""}
+              >
+                {getcarApiEnabled ? "Enabled" : "Disabled"}
+              </Badge>
+              <Switch
+                id="getcarapi-enabled"
+                checked={getcarApiEnabled}
+                disabled={getcarApiLoading || getcarApiSaving}
+                onCheckedChange={(v) => void toggleGetCarApi(v)}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {getcarApiMsg && (
+            <p className={`text-sm ${getcarApiMsg.ok ? "text-green-600" : "text-red-500"}`}>{getcarApiMsg.text}</p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            API key from env <code className="bg-muted px-1 rounded">GETCARAPI_API_KEY</code>
+            {getcarApiKeyPresent === true && " (configured)"}
+            {getcarApiKeyPresent === false && " (missing — enable will not call GetCarAPI until the key is set)"}
+            {" "}· Docs:{" "}
+            <a href="https://getcarapi.com/api/" target="_blank" rel="noreferrer" className="underline underline-offset-2">
+              getcarapi.com/api
+            </a>
           </p>
         </CardContent>
       </Card>

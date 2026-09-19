@@ -286,6 +286,8 @@ export function VinLockedFindingsSummary({
   signals,
   t,
   className,
+  /** When true, registryHistory rows are GetCarAPI Events (not Korean registry). */
+  eventsMode = false,
 }: {
   vin?: string;
   signals: {
@@ -298,6 +300,7 @@ export function VinLockedFindingsSummary({
   };
   t: (key: string) => string;
   className?: string;
+  eventsMode?: boolean;
 }) {
   const rows: FindingRow[] = [
     signals.mileageRecordCount > 0 && {
@@ -333,7 +336,7 @@ export function VinLockedFindingsSummary({
     signals.registryRecordCount > 0 && {
       key: "registry",
       count: signals.registryRecordCount,
-      label: t("report_registry_history"),
+      label: t(eventsMode ? "report_events_history" : "report_registry_history"),
       icon: Shield,
     },
   ].filter(Boolean) as FindingRow[];

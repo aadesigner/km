@@ -13,6 +13,7 @@ import {
   markVinImageSessionLoaded,
   warmVinImageNeighbors,
 } from "@/lib/vin-image-cache";
+import { firstAvailablePhotoIndex, nextAvailablePhotoIndex } from "@/lib/report-photos";
 
 export type VinHeroScore = {
   score: string;
@@ -40,6 +41,8 @@ type VinReportHeroProps = {
   country?: string | null;
   trim?: string | null;
   photos?: string[];
+  /** Per-index CDN→source fallback when Cloudflare URLs fail. */
+  photoAlternates?: Array<string | null>;
   /** @deprecated use photos */
   primaryPhoto?: string | null;
   locked?: boolean;
@@ -255,6 +258,8 @@ function HeroPhotoFrame({
 
 type HeroPhotoGalleryProps = {
   photos: string[];
+  /** Per-index CDN→source fallback URLs (same length as photos when present). */
+  photoAlternates?: Array<string | null>;
   photoIdx: number;
   onIndexChange: (next: number) => void;
   vehicleTitle: string;
@@ -269,6 +274,7 @@ type HeroPhotoGalleryProps = {
 
 function HeroPhotoGallery({
   photos,
+  photoAlternates,
   photoIdx,
   onIndexChange,
   vehicleTitle,
@@ -282,7 +288,12 @@ function HeroPhotoGallery({
 }: HeroPhotoGalleryProps) {
   const { t } = useTranslation();
   const touchX = useRef(0);
-  const currentPhoto = photos[photoIdx] ?? photos[0] ?? null;
+  const [urlOverrides, setUrlOverrides] = useState<Record<number, string>>({});
+  const effectivePhotos = useMemo(
+    () => photos.map((url, i) => urlOverrides[i] ?? url),
+    [photos, urlOverrides],
+  );
+  const currentPhoto = effectivePhotos[photoIdx] ?? effectivePhotos[0] ?? null;
   const showNav = photos.length > 1 && !locked;
   const bufferIndices = useMemo(() => {
     const n = photos.length;
@@ -292,7 +303,7 @@ function HeroPhotoGallery({
     const next = (photoIdx + 1) % n;
     return [...new Set([prev, photoIdx, next])];
   }, [photoIdx, photos.length]);
-  const photosKey = photos.join("\0");
+  const photosKey = photos.join("\0") + "\0" + (photoAlternates ?? []).join("\0");
   const [loadedByUrl, setLoadedByUrl] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
     photos.forEach((url) => {
@@ -303,6 +314,7 @@ function HeroPhotoGallery({
   const [failedByUrl, setFailedByUrl] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    setUrlOverrides({});
     setLoadedByUrl((prev) => {
       const next = { ...prev };
       let changed = false;
@@ -319,9 +331,9 @@ function HeroPhotoGallery({
   }, [photosKey]); // eslint-disable-line react-hooks/exhaustive-deps -- photosKey tracks URL identity
 
   useEffect(() => {
-    if (locked || photos.length === 0) return;
-    void warmVinImageNeighbors(photos, photoIdx, 1);
-  }, [locked, photosKey, photoIdx]); // eslint-disable-line react-hooks/exhaustive-deps -- photosKey tracks URL identity
+    if (locked || effectivePhotos.length === 0) return;
+    void warmVinImageNeighbors(effectivePhotos, photoIdx, 1);
+  }, [locked, photosKey, photoIdx, effectivePhotos]);
 
   const markLoadedUrl = useCallback((url: string) => {
     setLoadedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
@@ -337,21 +349,51 @@ function HeroPhotoGallery({
     setFailedByUrl((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
   }, []);
 
-  const go = useCallback(
-    (next: number) => {
-      if (photos.length === 0) return;
-      const target = (next + photos.length) % photos.length;
-      if (target === photoIdx) return;
-      onIndexChange(target);
+  const handlePhotoFailed = useCallback(
+    (index: number, url: string) => {
+      const alt = photoAlternates?.[index];
+      if (
+        alt
+        && alt !== url
+        && urlOverrides[index] !== alt
+        && !failedByUrl[alt]
+      ) {
+        setUrlOverrides((prev) => ({ ...prev, [index]: alt }));
+        return;
+      }
+      markFailedUrl(url);
     },
-    [photoIdx, photos.length, onIndexChange],
+    [photoAlternates, urlOverrides, failedByUrl, markFailedUrl],
+  );
+
+  // Primary (or current) image dead / not mirrored yet → try skip to next working slot.
+  useEffect(() => {
+    if (effectivePhotos.length === 0) return;
+    if (locked) return;
+    const current = effectivePhotos[photoIdx];
+    if (!current || !failedByUrl[current]) return;
+    const next = nextAvailablePhotoIndex(effectivePhotos, photoIdx, failedByUrl, 1);
+    if (next != null && next !== photoIdx) onIndexChange(next);
+  }, [failedByUrl, photoIdx, effectivePhotos, locked, onIndexChange]);
+
+  const go = useCallback(
+    (nextRaw: number) => {
+      if (effectivePhotos.length === 0) return;
+      // Call sites pass photoIdx±1 (may be -1 or length when wrapping).
+      const dir: 1 | -1 = nextRaw >= photoIdx ? 1 : -1;
+      const available = nextAvailablePhotoIndex(effectivePhotos, photoIdx, failedByUrl, dir);
+      if (available == null || available === photoIdx) return;
+      onIndexChange(available);
+    },
+    [photoIdx, effectivePhotos, onIndexChange, failedByUrl],
   );
 
   const navBtnClass =
     "absolute top-1/2 -translate-y-1/2 flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/55 sm:bg-background/90 backdrop-blur-sm border border-white/25 sm:border shadow-sm text-white sm:text-foreground hover:bg-black/70 sm:hover:bg-background active:scale-95 z-10 print:hidden";
 
   if (locked) {
-    const previewSrc = photos[0] ?? null;
+    const previewIdx = firstAvailablePhotoIndex(effectivePhotos, failedByUrl, 0);
+    const previewSrc = previewIdx != null ? (effectivePhotos[previewIdx] ?? null) : null;
     const previewReady = previewSrc
       ? loadedByUrl[previewSrc] && !failedByUrl[previewSrc]
       : false;
@@ -377,7 +419,7 @@ function HeroPhotoGallery({
               priority
               isActive
               onLoaded={() => markLoadedUrl(previewSrc)}
-              onFailed={() => markFailedUrl(previewSrc)}
+              onFailed={() => handlePhotoFailed(previewIdx ?? 0, previewSrc)}
               className="z-[2] blur-[2.5px] scale-[1.02] select-none"
             />
           </>
@@ -426,7 +468,7 @@ function HeroPhotoGallery({
             </div>
           )}
           {bufferIndices.map((i) => {
-            const url = photos[i];
+            const url = effectivePhotos[i];
             if (!url || failedByUrl[url]) return null;
             const isActive = i === photoIdx;
             return (
@@ -437,7 +479,7 @@ function HeroPhotoGallery({
                 priority={isActive}
                 isActive={isActive}
                 onLoaded={() => markLoadedUrl(url)}
-                onFailed={() => markFailedUrl(url)}
+                onFailed={() => handlePhotoFailed(i, url)}
                 className={cn(
                   isActive ? "z-[2] group-hover/gallery:scale-[1.02] transition-transform duration-300" : "z-[1]",
                 )}
@@ -514,6 +556,7 @@ export function VinReportHero({
   country,
   trim,
   photos: photosProp,
+  photoAlternates,
   primaryPhoto,
   locked = false,
   lockedLabel,
@@ -589,6 +632,7 @@ export function VinReportHero({
         <div className="flex min-h-0 flex-col bg-muted/25 p-0.5 sm:border-r border-border/50 print:bg-muted/20 sm:self-stretch">
           <HeroPhotoGallery
             photos={photos}
+            photoAlternates={photoAlternates}
             photoIdx={photoIdx}
             onIndexChange={setPhotoIdx}
             vehicleTitle={vehicleTitle}
@@ -618,20 +662,18 @@ export function VinReportHero({
                 <h1 className="text-lg sm:text-2xl lg:text-[1.65rem] font-bold tracking-tight text-foreground leading-tight">
                   {vehicleTitle}
                 </h1>
-                {trim && (
-                  <div className="mt-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                      {t("trim_generation")}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{trim}</p>
-                  </div>
-                )}
+                <div
+                  className={cn("mt-1.5 min-h-[2.375rem]", !trim && "invisible")}
+                  aria-hidden={!trim}
+                >
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    {t("trim_generation")}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{trim || "\u00A0"}</p>
+                </div>
                 <Badge
                   variant="outline"
-                  className={cn(
-                    "font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/40 border-border/70 text-foreground/90 select-all w-fit",
-                    trim ? "mt-3" : "mt-2",
-                  )}
+                  className="mt-3 font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/40 border-border/70 text-foreground/90 select-all w-fit"
                 >
                   {vin}
                 </Badge>

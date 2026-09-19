@@ -134,6 +134,7 @@ const CASES: BrandCase[] = [
   { vin: "VF3MRHPYWR1234567", label: "Peugeot 3008", make: "Peugeot", modelContains: "3008" },
   { vin: "VF3ZZZABGR1234567", label: "Peugeot 208 EU ZZZ", make: "Peugeot", modelContains: "208" },
   { vin: "VF7ZZZABGR1234567", label: "Citroën C3 EU ZZZ", make: "Citroën", modelContains: "C3" },
+  { vin: "VR7EDYHT3TJ786461", label: "Citroën Berlingo 2026 VR7", make: "Citroën", modelContains: "Berlingo", year: 2026 },
 
   // ── SEAT ──────────────────────────────────────────────────────────────────
   { vin: "VSSZZZ7NZFR123456", label: "SEAT Alhambra EU (7N)", make: "SEAT", modelContains: "Alhambra" },
@@ -157,6 +158,11 @@ const CASES: BrandCase[] = [
   { vin: "JTMB1RFV0KD123456", label: "Toyota RAV4", make: "Toyota", modelContains: "RAV4" },
   { vin: "SB1KB3B00MA123456", label: "Toyota Corolla UK", make: "Toyota", modelContains: "Corolla" },
   { vin: "SB1B93B00MA123456", label: "Toyota C-HR UK", make: "Toyota", modelContains: "C-HR" },
+  { vin: "7MUCAAAG0PV065309", label: "Toyota Corolla Cross US 7MU", make: "Toyota", modelContains: "Corolla Cross", year: 2023 },
+  { vin: "3C4NJDCB6LT149558", label: "Jeep Compass Mexico 2020", make: "Jeep", modelContains: "Compass", year: 2020 },
+  { vin: "KL77LHEP3SC238871", label: "Chevrolet Trax 2025", make: "Chevrolet", modelContains: "Trax", year: 2025 },
+  { vin: "58ABK1GG0GU001619", label: "Lexus ES Kentucky 58A", make: "Lexus", modelContains: "ES" },
+  { vin: "JTHBZ1B14K2003273", label: "Lexus ES 350 Japan", make: "Lexus", modelContains: "ES", year: 2019 },
   { vin: "KNDNB2A28F7123456", label: "Kia Sorento", make: "Kia", modelContains: "Sorento" },
   { vin: "KNDC34LA5P5123456", label: "Kia EV6", make: "Kia", modelContains: "EV6" },
 

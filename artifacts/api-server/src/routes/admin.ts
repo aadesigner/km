@@ -19,7 +19,8 @@ import {
   setAdminUnlockCookie,
 } from "../lib/adminAreaUnlock.js";
 import { clientIpKey } from "../lib/trustedClient.js";
-import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins } from "../lib/vinService";
+import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins, type VinExternalSource } from "../lib/vinService";
+import { GETCARAPI_PROVIDER_NAME, GETCARAPI_DATA_SOURCE, resolveGetCarApiConfig } from "../lib/getcarApi.js";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "../lib/vinImageCache.js";
 import {
   catalogDataFromCsvRecord,
@@ -56,6 +57,10 @@ import { forEachJsonArrayRecord } from "../lib/streamJsonArray.js";
 import { runCleanupJobs } from "../lib/cleanupJobs.js";
 import { invalidateSettingsCache } from "../lib/settingsCache.js";
 import { invalidateFreeDecoderSettingsCache } from "../lib/freeDecoderSettingsCache.js";
+import {
+  invalidateGetCarApiSettingsCache,
+  setGetCarApiEnabledCache,
+} from "../lib/getcarApiSettingsCache.js";
 import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
 import { sanitizeAdminSettings } from "../lib/adminSettings.js";
 import {
@@ -150,6 +155,36 @@ function requireAdminProviderBudget(req: express.Request, res: express.Response)
     return false;
   }
   return true;
+}
+
+/** Prefer GetCarAPI when the row was sourced from it (providerName or data.dataSource). */
+function resolveAdminRefreshSource(
+  providerName: string | null | undefined,
+  data: unknown,
+): VinExternalSource {
+  const pn = String(providerName ?? "").trim().toLowerCase();
+  if (pn === GETCARAPI_PROVIDER_NAME) return "getcarapi";
+  const record = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+  const ds = record?.dataSource;
+  if (typeof ds === "string" && ds.trim().toLowerCase() === GETCARAPI_DATA_SOURCE) {
+    return "getcarapi";
+  }
+  return "carstat";
+}
+
+async function loadActiveCarstatProvider(): Promise<{
+  name: string;
+  baseUrl: string;
+  apiKey: string;
+} | null> {
+  const providers = await db.select().from(providersTable).where(eq(providersTable.isActive, true)).limit(1);
+  const provider = providers[0];
+  if (!provider?.apiKey?.trim()) return null;
+  return {
+    name: provider.name,
+    baseUrl: provider.baseUrl,
+    apiKey: provider.apiKey,
+  };
 }
 
 async function propagateCatalogDataToLookups(
@@ -1457,16 +1492,34 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
   if (!lookup) { res.status(404).json({ error: "VIN lookup not found" }); return; }
   if (!requireAdminProviderBudget(req, res)) return;
 
-  const providers = await db.select().from(providersTable).where(eq(providersTable.isActive, true)).limit(1);
-  const provider = providers[0];
-  if (!provider || !provider.apiKey) {
+  const refreshSource = resolveAdminRefreshSource(lookup.providerName, lookup.data);
+  const carstat = await loadActiveCarstatProvider();
+
+  if (refreshSource === "getcarapi") {
+    if (!(await resolveGetCarApiConfig())) {
+      res.status(503).json({ error: "GetCarAPI is not configured or is disabled" });
+      return;
+    }
+  } else if (!carstat) {
     res.status(503).json({ error: "No active provider configured" });
     return;
   }
 
+  const providerStamp =
+    refreshSource === "getcarapi" ? GETCARAPI_PROVIDER_NAME : (carstat?.name ?? "carstat");
+
   try {
     const oldPhotoUrls = extractVinPhotoUrls(lookup.data);
-    const data = await fetchFromProvider(lookup.vin, provider.baseUrl, provider.apiKey, { force: true });
+    const data = await fetchFromProvider(
+      lookup.vin,
+      carstat?.baseUrl ?? "",
+      carstat?.apiKey ?? "",
+      {
+        force: true,
+        preferredSource: refreshSource,
+        strictSource: true,
+      },
+    );
     const currentRate = await getCurrentKrwPerUsd();
     const existingCatalog = await db.select().from(vinCatalogTable).where(eq(vinCatalogTable.vin, lookup.vin)).limit(1);
     const existingCatalogData = (existingCatalog[0]?.data ?? {}) as Record<string, unknown>;
@@ -1476,14 +1529,20 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
     );
     const [updated] = await db.transaction(async (tx) => {
       const rows = await tx.update(vinLookupsTable)
-        .set({ status: "complete", data: payload, fromCache: false, updatedAt: new Date() })
+        .set({
+          status: "complete",
+          data: payload,
+          providerName: providerStamp,
+          fromCache: false,
+          updatedAt: new Date(),
+        })
         .where(eq(vinLookupsTable.id, id))
         .returning();
       await tx.insert(vinCatalogTable)
-        .values({ vin: lookup.vin, data: payload, providerName: provider.name, updatedAt: new Date() })
+        .values({ vin: lookup.vin, data: payload, providerName: providerStamp, updatedAt: new Date() })
         .onConflictDoUpdate({
           target: vinCatalogTable.vin,
-          set: { data: payload, providerName: provider.name, updatedAt: new Date() },
+          set: { data: payload, providerName: providerStamp, updatedAt: new Date() },
         });
       return rows;
     });
@@ -1493,10 +1552,11 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
     ]);
     res.json(updated);
   } catch (err) {
-    logger.error({ err, id }, "Force refresh failed");
+    logger.error({ err, id, refreshSource }, "Force refresh failed");
     const reason = err instanceof Error ? err.message : "";
+    const label = refreshSource === "getcarapi" ? "GetCarAPI" : "provider";
     res.status(502).json({
-      error: reason ? `Failed to refresh from provider: ${reason}` : "Failed to refresh from provider",
+      error: reason ? `Failed to refresh from ${label}: ${reason}` : `Failed to refresh from ${label}`,
     });
   }
 });
@@ -1693,6 +1753,8 @@ router.get("/admin/settings", requireAdmin, async (_req, res) => {
       recaptchaSiteKey: null, recaptchaSecretKey: null,       maintenanceMode: false,
       maintenanceRestrictions: [], maintenanceMessage: null,
       vinLookupEnabled: true,
+      getcarApiEnabled: true,
+      getcarApiKeyConfigured: !!process.env["GETCARAPI_API_KEY"]?.trim(),
       freeVinDecoderEnabled: true, freeVinDecoderDailyLimit: 0, freeVinDecoderRequireSignIn: false,
       hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasLinkedInSecret: false, hasSmtpPass: false, hasPokSecret: false,
       googleButtonVisible: false, facebookButtonVisible: false, linkedinButtonVisible: false,
@@ -1711,6 +1773,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     maintenanceRestrictions: string[];
     maintenanceMessage: string | null;
     vinLookupEnabled: boolean;
+    getcarApiEnabled: boolean;
     paypalClientId: string | null; paypalClientSecret: string | null;
     paypalSandbox: boolean; paypalEnableCards: boolean;
     pokMerchantId: string | null; pokKeyId: string | null; pokKeySecret: string | null;
@@ -1871,6 +1934,10 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
+    invalidateGetCarApiSettingsCache();
+    if (typeof updates.getcarApiEnabled === "boolean") {
+      setGetCarApiEnabledCache(updates.getcarApiEnabled);
+    }
     if (
       "pokMerchantId" in updates
       || "pokKeyId" in updates
@@ -1891,6 +1958,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       recaptchaSiteKey: updates.recaptchaSiteKey ?? null,
       recaptchaSecretKey: updates.recaptchaSecretKey ?? null,
       maintenanceMode: updates.maintenanceMode ?? false,
+      getcarApiEnabled: updates.getcarApiEnabled ?? true,
       freeVinDecoderEnabled: updates.freeVinDecoderEnabled ?? true,
       freeVinDecoderDailyLimit: updates.freeVinDecoderDailyLimit ?? 0,
       freeVinDecoderRequireSignIn: updates.freeVinDecoderRequireSignIn ?? false,
@@ -1923,6 +1991,10 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidatePublicSettingsCache();
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
+    invalidateGetCarApiSettingsCache();
+    if (typeof updates.getcarApiEnabled === "boolean") {
+      setGetCarApiEnabledCache(updates.getcarApiEnabled);
+    }
     if (
       "pokMerchantId" in updates
       || "pokKeyId" in updates
@@ -3254,19 +3326,40 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
   if (vin.length !== 17) { res.status(400).json({ error: "Invalid VIN" }); return; }
   if (!requireAdminProviderBudget(req, res)) return;
 
-  const providers = await db.select().from(providersTable).where(eq(providersTable.isActive, true)).limit(1);
-  const provider = providers[0];
-  if (!provider || !provider.apiKey) {
+  const [existingEntry] = await db.select().from(vinCatalogTable).where(eq(vinCatalogTable.vin, vin)).limit(1);
+  const refreshSource = resolveAdminRefreshSource(
+    existingEntry?.providerName,
+    existingEntry?.data,
+  );
+  const carstat = await loadActiveCarstatProvider();
+
+  if (refreshSource === "getcarapi") {
+    if (!(await resolveGetCarApiConfig())) {
+      res.status(503).json({ error: "GetCarAPI is not configured or is disabled" });
+      return;
+    }
+  } else if (!carstat) {
     res.status(503).json({ error: "No active provider configured" });
     return;
   }
 
+  const providerStamp =
+    refreshSource === "getcarapi" ? GETCARAPI_PROVIDER_NAME : (carstat?.name ?? "carstat");
+
   try {
-    const [existingEntry] = await db.select().from(vinCatalogTable).where(eq(vinCatalogTable.vin, vin)).limit(1);
     const oldPhotoUrls = extractVinPhotoUrls(existingEntry?.data);
     const existingData = (existingEntry?.data ?? {}) as Record<string, unknown>;
     const existingCatalogRate = readFrozenKrwPerUsd(existingData);
-    const data = await fetchFromProvider(vin, provider.baseUrl, provider.apiKey, { force: true });
+    const data = await fetchFromProvider(
+      vin,
+      carstat?.baseUrl ?? "",
+      carstat?.apiKey ?? "",
+      {
+        force: true,
+        preferredSource: refreshSource,
+        strictSource: true,
+      },
+    );
     const payload = sanitizeCatalogPayload(data as unknown as Record<string, unknown>);
     const currentRate = await getCurrentKrwPerUsd();
     const stampedCatalog = preserveAdminTaxiFlag(
@@ -3279,10 +3372,10 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
     const lookups = await db.select().from(vinLookupsTable).where(eq(vinLookupsTable.vin, vin));
     await db.transaction(async (tx) => {
       await tx.insert(vinCatalogTable)
-        .values({ vin, data: stampedCatalog, providerName: provider.name, updatedAt: new Date() })
+        .values({ vin, data: stampedCatalog, providerName: providerStamp, updatedAt: new Date() })
         .onConflictDoUpdate({
           target: vinCatalogTable.vin,
-          set: { data: stampedCatalog, providerName: provider.name, updatedAt: new Date() },
+          set: { data: stampedCatalog, providerName: providerStamp, updatedAt: new Date() },
         });
       await Promise.all(lookups.map((lookup) => {
         const lookupData = (lookup.data ?? {}) as Record<string, unknown>;
@@ -3295,7 +3388,11 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
           lookupData,
         );
         return tx.update(vinLookupsTable)
-          .set({ data: lookupPayload, updatedAt: new Date() })
+          .set({
+            data: lookupPayload,
+            providerName: providerStamp,
+            updatedAt: new Date(),
+          })
           .where(eq(vinLookupsTable.id, lookup.id));
       }));
     });
@@ -3303,10 +3400,12 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
       ...oldPhotoUrls,
       ...extractVinPhotoUrls(stampedCatalog),
     ]);
-    logger.info({ vin }, "VIN catalog entry refreshed from provider");
+    logger.info({ vin, refreshSource }, "VIN catalog entry refreshed from provider");
     res.json({
       ok: true,
       vin,
+      refreshedFrom: refreshSource,
+      providerName: providerStamp,
       updatedAt: new Date().toISOString(),
       data: stampedCatalog,
       ownerCount: stampedCatalog.ownerCount ?? null,
@@ -3315,10 +3414,11 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
         : 0,
     });
   } catch (err) {
-    logger.error({ err, vin }, "VIN catalog refresh failed");
+    logger.error({ err, vin, refreshSource }, "VIN catalog refresh failed");
     const reason = err instanceof Error ? err.message : "";
+    const label = refreshSource === "getcarapi" ? "GetCarAPI" : "provider";
     res.status(502).json({
-      error: reason ? `Failed to refresh from provider: ${reason}` : "Failed to refresh from provider",
+      error: reason ? `Failed to refresh from ${label}: ${reason}` : `Failed to refresh from ${label}`,
     });
   }
 });

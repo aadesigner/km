@@ -256,6 +256,15 @@ const CITROEN_ZZZ_AT_7: Record<string, string> = {
   Y: "C5 Aircross",
 };
 
+/** Modern Stellantis / PSA Citroën (VR7*) — non-ZZZ VDS, Berlingo III / K9 era. */
+const CITROEN_PREFIX_RULES = compilePrefixRules([
+  { prefix: "VR7EDYH", model: "Berlingo", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "VR7EFYH", model: "Berlingo", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "VR7EDY", model: "Berlingo", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "VR7EFY", model: "Berlingo", yearFrom: 2018, yearTo: 2099 },
+  { prefix: "VR7E", model: "Berlingo", yearFrom: 2018, yearTo: 2099 },
+]);
+
 function decodeZzzEuropeanModel(
   vin: string,
   _wmi: string,
@@ -276,9 +285,18 @@ function decodePeugeotModel(vin: string): string | null {
   return null;
 }
 
+export function matchCitroenRule(vin: string): PrefixRule | null {
+  const upper = vin.toUpperCase().trim();
+  if (!upper.startsWith("VF7") && !upper.startsWith("VR7")) return null;
+  return matchLongestPrefix(upper, CITROEN_PREFIX_RULES);
+}
+
 function decodeCitroenModel(vin: string): string | null {
-  if (!vin.startsWith("VF7")) return null;
-  return decodeZzzEuropeanModel(vin, "VF7", CITROEN_ZZZ_AT_7);
+  if (vin.startsWith("VF7")) {
+    const zzz = decodeZzzEuropeanModel(vin, "VF7", CITROEN_ZZZ_AT_7);
+    if (zzz) return zzz;
+  }
+  return matchCitroenRule(vin)?.model ?? null;
 }
 
 /** Decode model for Škoda, Renault, Fiat, Peugeot, Citroën, and SEAT. */
@@ -291,7 +309,7 @@ export function decodeEuropeanBrandModel(vin: string): string | null {
   if (isRenaultWmi(wmi)) return decodeRenaultModel(upper);
   if (isFiatWmi(wmi)) return decodeFiatModel(upper);
   if (wmi === "VF3") return decodePeugeotModel(upper);
-  if (wmi === "VF7") return decodeCitroenModel(upper);
+  if (wmi === "VF7" || wmi === "VR7") return decodeCitroenModel(upper);
   if ((SEAT_EU_WMIS as readonly string[]).includes(wmi)) return decodeSeatModel(upper);
   if (isVolvoVin(upper)) return decodeVolvoModel(upper);
   if (isOpelVauxhallVin(upper)) return decodeOpelVauxhallModel(upper);

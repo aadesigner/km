@@ -41,6 +41,8 @@ export type TimelineEvent = {
   /** Manual mileage title (admin titleStatus field). */
   titleStatus?: string | null;
   productionYear?: number;
+  /** Registry / Events detail rows (label + value). */
+  details?: Array<{ label: string; value: string }>;
 };
 
 export type CollectTimelineInput = {
@@ -104,6 +106,7 @@ export type CollectTimelineInput = {
     mileage?: number | null;
     location?: string | null;
     amount?: string | null;
+    details?: Array<{ label?: string | null; value?: string | null }> | null;
   }>;
 };
 
@@ -279,6 +282,14 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
   (input.registryHistory ?? []).forEach((row, i) => {
     const dayKey = historyDateDayKey(row.date);
     if (!dayKey || !row.date) return;
+    const details = (row.details ?? [])
+      .map((d) => {
+        const label = d.label?.trim();
+        const value = d.value?.trim();
+        if (!label || !value) return null;
+        return { label, value };
+      })
+      .filter((d): d is { label: string; value: string } => d != null);
     pushEvent(raw, {
       id: `registry-${dayKey}-${i}`,
       type: "registry",
@@ -290,6 +301,7 @@ export function collectReportTimelineEvents(input: CollectTimelineInput): Timeli
       subtitle: row.subtitle,
       location: row.location,
       description: row.amount,
+      ...(details.length > 0 ? { details } : {}),
     });
   });
 
@@ -372,8 +384,30 @@ export function hasManualMileageDetail(event: TimelineEvent): boolean {
   );
 }
 
-export function shouldShowTimelineMarkerGroup(events: TimelineEvent[]): boolean {
-  return events.some((event) => event.type !== "mileage" || hasManualMileageDetail(event));
+/** Calendar day of the chronologically latest mileage reading, if any. */
+export function latestMileageDayKey(events: TimelineEvent[]): string | null {
+  let best: TimelineEvent | null = null;
+  for (const event of events) {
+    if (event.type !== "mileage") continue;
+    if (!best || event.sortKey > best.sortKey) best = event;
+  }
+  return best?.dayKey ?? null;
+}
+
+/**
+ * Notable event markers, plus the latest bare mileage day so the line end
+ * stays clickable. Intermediate bare odometer days stay line-only.
+ */
+export function shouldShowTimelineMarkerGroup(
+  events: TimelineEvent[],
+  opts?: { latestMileageDay?: string | null },
+): boolean {
+  if (events.some((event) => event.type !== "mileage" || hasManualMileageDetail(event))) {
+    return true;
+  }
+  const latest = opts?.latestMileageDay;
+  if (!latest) return false;
+  return events.some((event) => event.type === "mileage" && event.dayKey === latest);
 }
 
 export function shouldShowReportTimeline(events: TimelineEvent[]): boolean {

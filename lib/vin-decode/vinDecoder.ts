@@ -15,7 +15,7 @@ import {
 } from "./european-premium";
 import { isMercedesEuroBaumusterVin } from "./mercedes-baumuster";
 import { bmwEtkOmitsIsoYear, isBmwEuroEtkVin } from "./bmw-etk";
-import { decodeEuropeanBrandModel } from "./european-brands";
+import { decodeEuropeanBrandModel, matchCitroenRule } from "./european-brands";
 import { resolveBrandVinSpec, resolveBrandVinModel } from "./brand-vin-spec";
 import { decodeGlobalBrand, resolveGlobalBrandMake, type GlobalBrandDecode } from "./global-brands";
 import { isAudiHomologationVin } from "./eu-zzz-homologation";
@@ -24,7 +24,7 @@ import { isFordEuWmi, decodeFordEuModel, isFordEuXxLayout, decodeFordEuXxYear } 
 import { decodeFordNaModel, isFordNaVin } from "./ford-na";
 import { decodeGmNaModel, isGmNaVin } from "./gm-na";
 import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin, isOpelVauxhallVin, matchOpelVauxhallRule } from "./opel-vauxhall";
-import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule } from "./asian-eu";
+import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule, matchHyundaiToyotaRule } from "./asian-eu";
 import { decodeUsVdsModel, matchUsVdsRule, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
 import {
@@ -95,11 +95,15 @@ function resolveVinModelYear(
   const globalHit = decodeGlobalBrand(vin);
   const globalChassis = globalHit.chassis;
   const hyRule = isHyundaiVin(vin) ? matchHyundaiRule(vin) : null;
+  const asiaRule = isHyundaiToyotaVin(vin) ? matchHyundaiToyotaRule(vin) : null;
+  const usRule = matchUsVdsRule(vin);
   const series =
     vagHit?.chassis
     ?? premiumChassis
     ?? globalChassis
     ?? hyRule?.chassis
+    ?? asiaRule?.chassis
+    ?? usRule?.chassis
     ?? decodeLocalSeries(vin, model)
     ?? seriesFromDisplayModel(model);
   const chassisWin = chassisProductionWindow(series);
@@ -119,7 +123,12 @@ function resolveVinModelYear(
       to: hyRule.yearTo ?? 2099,
     });
   }
-  const usRule = matchUsVdsRule(vin);
+  if (asiaRule?.yearFrom != null || asiaRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: asiaRule.yearFrom ?? 1980,
+      to: asiaRule.yearTo ?? 2099,
+    });
+  }
   if (usRule?.yearFrom != null || usRule?.yearTo != null) {
     return resolveIsoModelYear(code, {
       from: usRule.yearFrom ?? 1980,
@@ -140,6 +149,13 @@ function resolveVinModelYear(
         to: rule.yearTo ?? 2099,
       });
     }
+  }
+  const citroenRule = matchCitroenRule(vin);
+  if (citroenRule?.yearFrom != null || citroenRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: citroenRule.yearFrom ?? 1980,
+      to: citroenRule.yearTo ?? 2099,
+    });
   }
   // Tesla model lines have verified production floors (no prefer-recent).
   if (make === "Tesla" && model) {
@@ -205,8 +221,15 @@ const WMI_ORIGIN_COUNTRY_PREFIXES: readonly { prefix: string; country: string }[
   { prefix: "VS6", country: "Spain" },
   { prefix: "VSS", country: "Spain" },
   { prefix: "VSK", country: "Spain" },
+  { prefix: "VR7", country: "France" },
   { prefix: "VR1", country: "France" },
   { prefix: "VNK", country: "France" },
+  { prefix: "7MU", country: "United States" },
+  { prefix: "58A", country: "United States" },
+  { prefix: "7SA", country: "United States" },
+  { prefix: "7FC", country: "United States" },
+  { prefix: "7MM", country: "United States" },
+  { prefix: "7G2", country: "United States" },
   { prefix: "WZ1", country: "Austria" },
   { prefix: "VF8", country: "France" },
   { prefix: "VF7", country: "France" },
@@ -280,6 +303,7 @@ export function decodeCountry(vin: string): string | null {
 const WMI_MAP: Record<string, string> = {
   // ── USA ──────────────────────────────────────────────────────────────────
   "1C3": "Chrysler", "1C4": "Chrysler", "1C6": "Ram",
+  "3C4": "Chrysler", // Toluca — Jeep Compass / Pacifica
   "1FA": "Ford", "1FB": "Ford", "1FC": "Ford", "1FD": "Ford", "1FM": "Ford",
   "1FT": "Ford",
   "1G1": "Chevrolet", "1G2": "Pontiac", "1G3": "Oldsmobile",
@@ -308,7 +332,7 @@ const WMI_MAP: Record<string, string> = {
   "3FA": "Ford", "3FE": "Ford", "3FM": "Ford", "3FT": "Ford",
   "3GN": "Chevrolet", "3GK": "GMC", "3GC": "Chevrolet", "3GT": "GMC",
   "3GY": "Cadillac",
-  "3TM": "Toyota", "3MY": "Toyota",
+  "3TM": "Toyota", "3MY": "Toyota", "3TY": "Toyota",
   "3N1": "Nissan", "3N6": "Nissan",
   "3VW": "Volkswagen", "3VV": "Volkswagen",
   // Kia Mexico — NHTSA DecodeWMI CommonName Kia / GetWMIsForManufacturer(kia)
@@ -323,6 +347,8 @@ const WMI_MAP: Record<string, string> = {
   "4F2": "Mazda", "4F4": "Mazda",
   "3MZ": "Mazda", "3MV": "Mazda", "3MD": "Mazda", "3MJ": "Mazda",
   "7MM": "Mazda",
+  "7MU": "Toyota", // MTM Alabama — Corolla Cross
+  "58A": "Lexus",  // TMMK Kentucky — ES
   "JMZ": "Mazda",
   "5FN": "Honda", "5FR": "Honda", "5J6": "Honda", "5J8": "Honda",
   "5L1": "Lincoln",
@@ -398,6 +424,7 @@ const WMI_MAP: Record<string, string> = {
   "YS2": "Scania",
   // ── FRANCE ────────────────────────────────────────────────────────────────
   "VF1": "Renault", "VF2": "Renault", "VF3": "Peugeot", "VF7": "Citroën",
+  "VR7": "Citroën", // Stellantis / PSA modern Citroën (non-ZZZ VDS)
   "VNK": "Toyota", "NMT": "Toyota",
   // ── ITALY ─────────────────────────────────────────────────────────────────
   "ZAM": "Maserati", "ZAP": "Piaggio",
@@ -668,10 +695,11 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Lexus ─────────────────────────────────────────────────────────────────
   "2T2B": "RX",         "2T2H": "NX",         "JTJG": "LX",
   "JTJB": "GX",         "JTJY": "RX",
-  // ── Lexus Japan (JTH* / JTJ*) ────────────────────────────────────────────
-  "JTHB": "ES 300h",    "JTHD": "LS 600h",    "JTHG": "IS 300/350",
+  // ── Lexus Japan (JTH* / JTJ*) / Kentucky ES (58A*) ────────────────────────
+  "JTHB": "ES",         "JTHD": "LS 600h",    "JTHG": "IS 300/350",
   "JTHJ": "RX 450h",    "JTHK": "NX 300h",    "JTHL": "CT 200h",
   "JTHM": "GS 450h",    "JTHN": "RZ 450e",    "JTHE": "IS 500",
+  "58AB": "ES",
   // ── Nissan Japan (JN8*) — JN1* models resolved via global-brands (shared Infiniti)
   "JN8A": "X-Trail",     "JN8B": "Patrol",     "JN8D": "Qashqai",
   "JN8E": "Murano",      "JN8G": "Juke",       "JN8J": "Armada",
@@ -738,9 +766,10 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── More Peugeot (VF3*) ───────────────────────────────────────────────────
   "VF3A": "208",          "VF3D": "308",         "VF3M": "3008",
   "VF3N": "5008",         "VF3E": "2008",
-  // ── More Citroën (VF7*) ───────────────────────────────────────────────────
+  // ── More Citroën (VF7* / VR7*) ────────────────────────────────────────────
   "VF7A": "C3",           "VF7C": "C5",          "VF7U": "C4",
   "VF7B": "Berlingo",     "VF7R": "C3 Aircross",
+  "VR7E": "Berlingo",     "VR7C": "C3",          "VR7A": "C4",
   // ── Opel / Vauxhall (W0L*) ────────────────────────────────────────────────
   "W0LS": "Astra",        "W0LB": "Corsa",       "W0LT": "Insignia",
   "W0LM": "Mokka",        "W0LN": "Grandland",

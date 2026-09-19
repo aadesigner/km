@@ -439,6 +439,15 @@ const CHASSIS_YEAR: Record<string, { from: number; to: number }> = {
   "XL40": { from: 2021, to: 2099 },
   "XL30": { from: 2011, to: 2020 },
   "XG10": { from: 2020, to: 2099 },
+  "XZ10": { from: 2019, to: 2099 }, // Lexus ES 7th gen
+  // GM NA platforms (us-vds / gm-na chassis tokens)
+  "D2XX": { from: 2018, to: 2099 },
+  "SGM": { from: 2023, to: 2099 }, // Trax 2nd gen
+  "C1UL": { from: 2019, to: 2099 },
+  "9BXX": { from: 2021, to: 2099 },
+  "E2XX": { from: 2016, to: 2099 },
+  "Alpha": { from: 2016, to: 2099 },
+  "M300": { from: 2016, to: 2099 },
   "AX20": { from: 2023, to: 2099 },
   "AX10": { from: 2017, to: 2023 },
   "XW60": { from: 2023, to: 2099 },

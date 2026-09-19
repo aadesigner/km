@@ -18,8 +18,12 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "JTMAB3", model: "Yaris", chassis: "XP210" },
   { prefix: "JTMAF3", model: "Yaris", chassis: "XP130" },
   { prefix: "JTME1R", model: "bZ4X" },
-  { prefix: "JTMW1R", model: "Corolla Cross", chassis: "XG10" },
-  { prefix: "JTMDH3", model: "Corolla Cross", chassis: "XG10" },
+  { prefix: "JTMW1R", model: "Corolla Cross", chassis: "XG10", yearFrom: 2020, yearTo: 2099 },
+  { prefix: "JTMDH3", model: "Corolla Cross", chassis: "XG10", yearFrom: 2020, yearTo: 2099 },
+  // MTM Alabama (7MU) — Corolla Cross only
+  { prefix: "7MUCAA", model: "Corolla Cross", chassis: "XG10", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "7MUAAA", model: "Corolla Cross", chassis: "XG10", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "7MU", model: "Corolla Cross", chassis: "XG10", yearFrom: 2022, yearTo: 2099 },
   { prefix: "JTMDA3", model: "Corolla", chassis: "E210" },
   { prefix: "JTMDF3", model: "Corolla", chassis: "E170" },
   { prefix: "JTNB11", model: "Mirai", chassis: "JPD20" },
@@ -133,7 +137,7 @@ function isToyotaExtendedVin(vin: string): boolean {
     || [
       "SB1", "YAR", "WZ1", "5YF", "4T1", "4T3", "4T4", "5TD", "5TF",
       "2T1", "2T3", "3TM", "3MY", "VNK", "NMT", "MR0", "MR1", "MR2",
-      "MHF", "MBJ", "8AJ", "9BR", "AHT", "6T1", "LFM", "LVG",
+      "MHF", "MBJ", "8AJ", "9BR", "AHT", "6T1", "LFM", "LVG", "7MU",
     ].includes(wmi);
 }
 

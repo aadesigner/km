@@ -36,6 +36,7 @@ import { isRegistryAmountLabel } from "@workspace/korean-registry";
 import type { Language } from "@/i18n/context";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { sanitizeRegistryDetailRows } from "@/lib/report-display";
+import { ensureExpandableDetails } from "@/lib/history-event-details";
 import { formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
 
 type Props = {
@@ -46,8 +47,8 @@ type Props = {
   t: (key: string) => string;
   language: Language;
   variant?: "report" | "public";
-  /** Registry timeline vs dedicated recalls section. */
-  kind?: "registry" | "recall";
+  /** Registry timeline vs dedicated recalls section vs GetCarAPI events list. */
+  kind?: "registry" | "recall" | "events";
   className?: string;
   delay?: number;
 };
@@ -72,6 +73,18 @@ const TYPE_VISUAL: Record<string, { icon: LucideIcon; dot: string; ring: string;
     badge: "bg-amber-500/10 text-amber-800 dark:text-amber-300",
   },
   new_car_delivery: {
+    icon: Car,
+    dot: "bg-emerald-500",
+    ring: "ring-emerald-500/30",
+    badge: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
+  },
+  first_registration: {
+    icon: Car,
+    dot: "bg-emerald-500",
+    ring: "ring-emerald-500/30",
+    badge: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
+  },
+  delivery: {
     icon: Car,
     dot: "bg-emerald-500",
     ring: "ring-emerald-500/30",
@@ -127,19 +140,16 @@ function EventDetails({
   if (!rows.length) return null;
 
   return (
-    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 pt-2.5 border-t border-border/60">
+    <dl className="space-y-2 pt-2.5 border-t border-border/50">
       {rows.map((row, i) => (
         <div
           key={`${row.label}-${i}`}
-          className={cn(
-            "rounded-md bg-background/60 px-2.5 py-2 border border-border/40",
-            row.label.toLowerCase().includes("defect") && "sm:col-span-2",
-          )}
+          className={cn("min-w-0", row.label.toLowerCase().includes("defect") && "sm:col-span-2")}
         >
-          <dt className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <dt className="text-[10px] font-normal text-muted-foreground mb-0.5">
             {translateRegistryFieldLabel(t, row.label)}
           </dt>
-          <dd className="text-[11px] text-foreground mt-1 whitespace-pre-wrap break-words leading-snug">
+          <dd className="text-xs font-normal text-foreground mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
             {isKoreanCountry(country) && (textContainsWon(row.value) || isRegistryAmountLabel(row.label)) ? (
               <KoreanWonAmount text={row.value} krwPerUsd={krwPerUsd} amountLabel={row.label} />
             ) : (
@@ -176,12 +186,25 @@ function RegistryEventCard({
   isRecall?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const details = sanitizeRegistryDetailRows(event.details);
+  const expanded = ensureExpandableDetails({
+    title: event.title,
+    details: event.details,
+    date: event.date,
+    subtitle: event.subtitle,
+    mileage: event.mileage,
+    location: event.location,
+    amount: event.amount,
+  });
+  const details = expanded.details;
   const hasDetails = details.length > 0;
   const visual = typeVisual(event.type);
   const TypeIcon = visual.icon;
-  const typeLabel = translateRegistryEventType(t, event.type, event.title, language);
+  const typeLabel = translateRegistryEventType(t, event.type, expanded.title ?? event.title, language);
   const subtitle = localizeRegistrySubtitle(t, language, event.subtitle, country, krwPerUsd);
+  const showSubtitle = Boolean(
+    subtitle
+    && subtitle.toLowerCase() !== typeLabel.toLowerCase(),
+  );
   const countryLabels = countryLabelsFromT(t);
   const location = event.location
     ? formatLocationLabel(event.location, language, countryLabels)
@@ -202,17 +225,17 @@ function RegistryEventCard({
       {!isLast && <div className="absolute left-[4.5px] top-6 bottom-0 w-px bg-border" />}
 
       <div className={cn("pb-3", isLast && "pb-0")}>
-        <div className="relative rounded-lg border bg-muted/25 overflow-hidden shadow-sm">
+        <div className="relative rounded-lg border border-border/70 bg-muted/15 overflow-hidden">
           {recallStatus === "done" && (
             <Badge
-              className="absolute top-2 right-2 z-10 border-0 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] px-1.5 py-0 font-semibold pointer-events-none"
+              className="absolute top-2 right-2 z-10 border-0 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] px-1.5 py-0 font-medium pointer-events-none"
             >
               {t("recall_status_done")}
             </Badge>
           )}
           {recallStatus === "not_done" && (
             <Badge
-              className="absolute top-2 right-2 z-10 border-0 bg-amber-500/15 text-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0 font-semibold pointer-events-none"
+              className="absolute top-2 right-2 z-10 border-0 bg-amber-500/15 text-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0 font-medium pointer-events-none"
             >
               {t("recall_status_not_done")}
             </Badge>
@@ -221,7 +244,7 @@ function RegistryEventCard({
             type="button"
             className={cn(
               "w-full text-left px-3 py-2.5 transition-colors",
-              hasDetails && "hover:bg-muted/40",
+              hasDetails && "hover:bg-muted/35 cursor-pointer",
               !hasDetails && "cursor-default",
               recallStatus && "pr-16",
             )}
@@ -235,18 +258,18 @@ function RegistryEventCard({
               </div>
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 space-y-1">
+                  <div className="min-w-0 space-y-0.5">
                     {date && (
-                      <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                      <p className="text-[10px] font-normal text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3 shrink-0" />
                         {date}
                       </p>
                     )}
-                    <p className="text-xs font-semibold text-foreground leading-snug">{typeLabel}</p>
+                    <p className="text-xs font-medium text-foreground leading-snug">{typeLabel}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     {isLatest && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
                         {t("latest")}
                       </Badge>
                     )}
@@ -261,20 +284,20 @@ function RegistryEventCard({
                   </div>
                 </div>
 
-                {subtitle && (
-                  <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{subtitle}</p>
+                {showSubtitle && (
+                  <p className="text-[11px] font-normal text-muted-foreground leading-snug line-clamp-2">{subtitle}</p>
                 )}
 
                 {(event.mileage != null || event.amount || location) && (
                   <div className="flex flex-wrap gap-1.5 pt-0.5">
                     {event.mileage != null && (
-                      <span className="inline-flex items-center gap-1 text-[10px] bg-background/80 border border-border/60 rounded-full px-2 py-0.5 tabular-nums">
-                        <Gauge className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-normal bg-background/70 border border-border/50 rounded-md px-1.5 py-0.5 tabular-nums text-muted-foreground">
+                        <Gauge className="h-2.5 w-2.5 shrink-0" />
                         {formatRegistryMileage(event.mileage)}
                       </span>
                     )}
                     {event.amount && (
-                      <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 rounded-full px-2 py-0.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-normal bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 rounded-md px-1.5 py-0.5">
                         <Wallet className="h-2.5 w-2.5 shrink-0" />
                         {isKoreanCountry(country) ? (
                           <KoreanWonAmount
@@ -288,8 +311,8 @@ function RegistryEventCard({
                       </span>
                     )}
                     {location && (
-                      <span className="inline-flex items-center gap-1 text-[10px] bg-background/80 border border-border/60 rounded-full px-2 py-0.5 max-w-full">
-                        <MapPin className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-normal bg-background/70 border border-border/50 rounded-md px-1.5 py-0.5 max-w-full text-muted-foreground">
+                        <MapPin className="h-2.5 w-2.5 shrink-0" />
                         <span className="truncate">{location}</span>
                       </span>
                     )}
@@ -301,7 +324,14 @@ function RegistryEventCard({
 
           {hasDetails && open && (
             <div className="px-3 pb-2.5 pt-0">
-              <EventDetails event={event} country={country} vehicleYear={vehicleYear} krwPerUsd={krwPerUsd} t={t} language={language} />
+              <EventDetails
+                event={{ ...event, title: expanded.title ?? event.title, details }}
+                country={country}
+                vehicleYear={vehicleYear}
+                krwPerUsd={krwPerUsd}
+                t={t}
+                language={language}
+              />
             </div>
           )}
         </div>
@@ -329,10 +359,19 @@ export function RegistryHistorySection({
   const sortedEvents = sortHistoryNewestFirst(events);
   const visibleEvents = sliceForHistoryPreview(sortedEvents, expanded);
   const isRecall = kind === "recall";
+  const isEvents = kind === "events";
   const HeaderIcon = isRecall ? FileWarning : ClipboardList;
-  const accent = isRecall ? "rose" as const : "purple" as const;
-  const titleKey = isRecall ? "report_recall_history" : "report_registry_history";
-  const noteKey = isRecall ? "report_recall_history_note" : "report_registry_history_note";
+  const accent = isRecall ? "rose" as const : isEvents ? "sky" as const : "purple" as const;
+  const titleKey = isRecall
+    ? "report_recall_history"
+    : isEvents
+      ? "report_events_history"
+      : "report_registry_history";
+  const noteKey = isRecall
+    ? "report_recall_history_note"
+    : isEvents
+      ? "report_events_history_note"
+      : "report_registry_history_note";
 
   const body = (
     <VinReportSection className={className} accent={accent}>

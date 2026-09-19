@@ -175,9 +175,9 @@ export default function Home() {
 
         <div className="relative max-w-6xl mx-auto z-10">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
             {/* Stable H1 for Google — full keyword phrase, no rotating text. */}
@@ -225,9 +225,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
         <div className="max-w-5xl mx-auto relative">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.3 }}
             className="text-center mb-16 space-y-3"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-semibold text-white/70">
@@ -240,10 +241,10 @@ export default function Home() {
             {STEPS.map(({ n, title, desc, icon: StepIcon }, i) => (
               <motion.div
                 key={n}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
+                transition={{ delay: i * 0.06, duration: 0.28 }}
                 className="relative group"
               >
                 <div className="relative z-10 flex flex-col gap-5 bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-primary/30 hover:bg-white/[0.07] transition-all duration-300">

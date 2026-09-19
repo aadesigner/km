@@ -276,24 +276,73 @@ export type ServiceHistoryLike = {
   title?: string | null;
   location?: string | null;
   description?: string | null;
+  details?: Array<{ label: string; value: string }>;
 };
+
+/** Provider record ids like "record #8026005635" — strongest merge key. */
+export function extractServiceRecordId(
+  ...texts: Array<string | null | undefined>
+): string | null {
+  for (const text of texts) {
+    if (!text) continue;
+    const m = text.match(/record\s*#\s*(\d{5,})/i) ?? text.match(/#(\d{7,})/);
+    if (m?.[1]) return m[1];
+  }
+  return null;
+}
+
+function serviceTitleCore(title: string | null | undefined): string {
+  const t = normalizeToken(title);
+  if (!t) return "";
+  if (/korean\s+performance\s+inspection/.test(t)) return "korean_performance_inspection";
+  // Drop em-dash tails so slight field differences don't fork the key.
+  return t
+    .replace(/\s*[—–]\s*record\s*#\d+.*/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
 
 export function serviceHistoryDedupeKey(
   entry: ServiceHistoryLike,
   vehicleYear?: number | null,
 ): string {
+  const detailText = (entry.details ?? []).flatMap((d) => [d.label, d.value]);
+  const recordId = extractServiceRecordId(entry.title, entry.description, ...detailText);
+  if (recordId) return `rec:${recordId}`;
+
   const date = normalizedDateKey(entry.date, vehicleYear);
-  const title = normalizeToken(entry.title);
   const mileage = entry.mileage ?? -1;
+  const core = serviceTitleCore(entry.title);
+  if (core === "korean_performance_inspection" && date && mileage > 0) {
+    return `kpi:${date}|${mileage}`;
+  }
   const location = normalizeToken(entry.location);
-  return `${date}|${title}|${mileage}|${location}`;
+  return `${date}|${core || normalizeToken(entry.title)}|${mileage}|${location}`;
+}
+
+function mergeServiceHistoryEntries<T extends ServiceHistoryLike>(a: T, b: T): T {
+  const merged = mergeDefinedFields(
+    a as T & Record<string, unknown>,
+    b as T & Record<string, unknown>,
+  ) as T;
+  return {
+    ...merged,
+    title: pickLongerText(a.title, b.title) ?? merged.title,
+    description: pickLongerText(a.description, b.description) ?? merged.description,
+    mileage: a.mileage ?? b.mileage ?? null,
+  };
 }
 
 export function dedupeServiceHistory<T extends ServiceHistoryLike>(
   entries: T[],
   vehicleYear?: number | null,
 ): T[] {
-  return dedupeByKey(entries, (entry) => serviceHistoryDedupeKey(entry, vehicleYear));
+  return dedupeByKey(
+    entries as Array<T & Record<string, unknown>>,
+    (entry) => serviceHistoryDedupeKey(entry, vehicleYear),
+    (a, b) => mergeServiceHistoryEntries(a as T, b as T) as T & Record<string, unknown>,
+  ) as T[];
 }
 
 export type RegistryHistoryLike = {
@@ -327,6 +376,10 @@ export function registryHistoryDedupeKey(
   const type = event.type ?? "other";
   const mileage = event.mileage ?? -1;
   const amount = normalizeToken(event.amount).slice(0, 48);
+  // Empty same-day shells (no title/mileage/amount) collapse regardless of type.
+  if (!title && mileage < 0 && !amount) {
+    return `empty|${date}`;
+  }
   return `${type}|${date}|${title}|${mileage}|${amount}`;
 }
 

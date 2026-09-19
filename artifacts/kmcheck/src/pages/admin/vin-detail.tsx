@@ -69,6 +69,12 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   );
   const userResults = (userSearchResult?.items ?? []) as UserRow[];
 
+  const refreshSourceLabel =
+    detail?.providerName === "getcarapi"
+    || (detail?.data as Record<string, unknown> | undefined)?.dataSource === "getcarapi"
+      ? "GetCarAPI"
+      : "Carstat";
+
   const refreshMutation = useAdminRefreshVinCatalog({
     mutation: {
       onSuccess: (result) => {
@@ -76,14 +82,23 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
           ok?: boolean;
           vin?: string;
           updatedAt?: string;
+          refreshedFrom?: string;
+          providerName?: string;
           data?: VinCatalogData;
           ownerHistoryLen?: number;
         };
+        const fromLabel =
+          payload.refreshedFrom === "getcarapi"
+            ? "GetCarAPI"
+            : payload.refreshedFrom === "carstat"
+              ? "Carstat"
+              : refreshSourceLabel;
         const ownerLen = typeof payload.ownerHistoryLen === "number"
           ? payload.ownerHistoryLen
           : (Array.isArray(payload.data?.ownerHistory) ? payload.data.ownerHistory.length : 0);
         const ownerCount = typeof payload.data?.ownerCount === "number" ? payload.data.ownerCount : null;
-        if (ownerLen <= 0) {
+        const isGetCarApi = fromLabel === "GetCarAPI";
+        if (ownerLen <= 0 && !isGetCarApi) {
           setRefreshMsg({
             ok: false,
             text: ownerCount && ownerCount > 0
@@ -93,7 +108,9 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
         } else {
           setRefreshMsg({
             ok: true,
-            text: `Refreshed from Carstat — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`,
+            text: ownerLen > 0
+              ? `Refreshed from ${fromLabel} — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`
+              : `Refreshed from ${fromLabel}. Catalog and lookups updated.`,
           });
         }
         if (payload.data) {
@@ -104,6 +121,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
             (prev) => ({
               ...(prev ?? {}),
               data: payload.data,
+              ...(payload.providerName ? { providerName: payload.providerName } : {}),
               ...(payload.updatedAt ? { updatedAt: payload.updatedAt } : {}),
             }),
           );
@@ -273,7 +291,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
               {refreshMutation.isPending
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 : <RefreshCw className="h-3.5 w-3.5" />}
-              {refreshMutation.isPending ? "Refreshing…" : "Refresh from Carstat"}
+              {refreshMutation.isPending ? "Refreshing…" : `Refresh from ${refreshSourceLabel}`}
             </Button>
           </div>
         </div>

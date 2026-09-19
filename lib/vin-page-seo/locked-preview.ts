@@ -338,10 +338,14 @@ export function buildLockedHistorySummary(
   lang: LockedPreviewLang | string,
   vehicle: LockedPreviewVehicle,
   signals: LockedPreviewSignals,
+  opts?: { eventsMode?: boolean },
 ): string | null {
   if (!lockedPreviewSignalsHaveFindings(signals)) return null;
 
   const copy = FINDING_COPY[(lang as LockedPreviewLang)] ?? FINDING_COPY.en;
+  const registryTemplate = opts?.eventsMode
+    ? (lang === "en" || !(lang as string) ? "{n} event records" : copy.registry)
+    : copy.registry;
   const parts: string[] = [];
   if (signals.mileageRecordCount > 0) {
     parts.push(fmtFinding(copy.mileage, signals.mileageRecordCount));
@@ -356,7 +360,7 @@ export function buildLockedHistorySummary(
     parts.push(fmtFinding(copy.auctions, signals.auctionRecordCount));
   }
   if (signals.registryRecordCount > 0) {
-    parts.push(fmtFinding(copy.registry, signals.registryRecordCount));
+    parts.push(fmtFinding(registryTemplate, signals.registryRecordCount));
   }
   if (signals.floodRecordCount > 0) {
     parts.push(fmtFinding(copy.flood, signals.floodRecordCount));

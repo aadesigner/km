@@ -16,11 +16,13 @@ import { translateLotStatus } from "@/lib/translate-lot-status";
 import { translateTitleStatus } from "@/lib/translate-title-status";
 import { cleanDisplayText } from "@/lib/report-display";
 import { formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
+import { translateRegistryFieldLabel } from "@/lib/registry-history";
 import type { Language } from "@/i18n/context";
 import {
   TIMELINE_EVENT_TYPES,
   type TimelineEvent,
   type TimelineEventType,
+  latestMileageDayKey,
   shouldShowTimelineMarkerGroup,
 } from "@/lib/report-history-timeline";
 import { historyDateSortKey } from "@/lib/history-sort";
@@ -631,6 +633,31 @@ function formatKmFact(km: number, t: (key: string) => string): string {
   return `${km.toLocaleString()} km ${formatMilesInParens(km, t)}`.trim();
 }
 
+const ACCIDENT_SEVERITY_TIERS = new Set([
+  "minor", "light", "moderate", "major", "severe", "total_loss", "unknown",
+]);
+
+function factDedupeKey(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/^[^:]+:\s*/, "") // strip "Primary Damage:" / similar labels
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function pushUniqueFact(facts: string[], value: string | null | undefined): void {
+  const raw = value?.trim();
+  if (!raw) return;
+  const key = factDedupeKey(raw);
+  if (!key) return;
+  if (facts.some((f) => {
+    const existing = factDedupeKey(f);
+    return existing === key || existing.includes(key) || key.includes(existing);
+  })) {
+    return;
+  }
+  facts.push(raw);
+}
+
 function formatDamageFacts(
   event: Pick<TimelineEvent, "damage" | "primaryDamage" | "secondaryDamage">,
   t: (key: string) => string,
@@ -709,40 +736,83 @@ function eventFacts(
 
   const facts: string[] = [];
   if (event.mileage != null && event.mileage > 0) {
-    facts.push(
+    pushUniqueFact(
+      facts,
       `${event.mileage.toLocaleString()} km ${formatMilesInParens(event.mileage, t)}`.trim(),
     );
   }
+
+  if (event.type === "accident") {
+    // Only real severity tiers — skip GCA "primary"/"secondary" category leftovers.
+    if (event.severity) {
+      const sevKey = event.severity.toLowerCase().trim().replace(/\s+/g, "_");
+      if (ACCIDENT_SEVERITY_TIERS.has(sevKey)) {
+        const sev = translateMappedValue(event.severity, ACCIDENT_SEVERITY_I18N_KEYS, t) ?? event.severity;
+        pushUniqueFact(facts, sev);
+      }
+    }
+    for (const d of formatDamageFacts(event, t)) pushUniqueFact(facts, d);
+    if (event.lossAmount != null && event.lossAmount > 0) {
+      pushUniqueFact(
+        facts,
+        formatInsuranceAmount(event.lossAmount, vehicleCountry, krwPerUsd, {
+          currency: event.currency,
+          accidentType: event.accidentType,
+          accidentCountry: event.accidentCountry,
+          hasKoreanInsuranceClaims: false,
+        }),
+      );
+    }
+    if (event.description) {
+      const desc = formatAccidentDescription(t, language, event.description);
+      // Skip generic "Accident" / damage text already covered by Primary Damage.
+      if (
+        desc
+        && !/^accident$/i.test(desc.trim())
+        && !/^primary|secondary$/i.test(desc.trim())
+      ) {
+        pushUniqueFact(facts, desc);
+      }
+    }
+    return facts.slice(0, 6);
+  }
+
   if (event.severity) {
     const sev = translateMappedValue(event.severity, ACCIDENT_SEVERITY_I18N_KEYS, t) ?? event.severity;
-    if (sev) facts.push(sev);
+    pushUniqueFact(facts, sev);
   }
   if (event.title) {
-    const title = localizeTimelineText(t, language, event.title);
-    if (title) facts.push(title);
+    pushUniqueFact(facts, localizeTimelineText(t, language, event.title));
   }
   if (event.subtitle) {
-    const sub = localizeTimelineText(t, language, event.subtitle);
-    if (sub) facts.push(sub);
+    pushUniqueFact(facts, localizeTimelineText(t, language, event.subtitle));
+  }
+  if (event.type === "registry" && event.details?.length) {
+    for (const row of event.details.slice(0, 5)) {
+      const label = translateRegistryFieldLabel(t, row.label);
+      const value = localizeTimelineText(t, language, row.value);
+      pushUniqueFact(facts, `${label}: ${value}`);
+    }
   }
   if (event.location) {
     const loc = formatLocationLabel(event.location, language, countryLabelsFromT(t))
       || localizeTimelineText(t, language, event.location);
-    if (loc) facts.push(loc);
+    pushUniqueFact(facts, loc);
   }
   if (event.condition) {
     const cond = translateLotStatus(t, event.condition)
       ?? localizeTimelineText(t, language, event.condition);
-    if (cond) facts.push(cond);
+    pushUniqueFact(facts, cond);
   }
-  facts.push(...formatDamageFacts(event, t));
+  for (const d of formatDamageFacts(event, t)) pushUniqueFact(facts, d);
   if (event.lotStatus) {
     const lot = translateLotStatus(t, event.lotStatus)
       ?? localizeTimelineText(t, language, event.lotStatus);
-    if (lot) facts.push(lot);
+    pushUniqueFact(facts, lot);
   }
   if (event.lossAmount != null && event.lossAmount > 0) {
-    facts.push(
+    pushUniqueFact(
+      facts,
       formatInsuranceAmount(event.lossAmount, vehicleCountry, krwPerUsd, {
         currency: event.currency,
         accidentType: event.accidentType,
@@ -753,15 +823,12 @@ function eventFacts(
   }
   const price = event.finalPrice ?? event.auctionPrice;
   if (price != null && price > 0) {
-    facts.push(`$${price.toLocaleString()}`);
+    pushUniqueFact(facts, `$${price.toLocaleString()}`);
   }
   if (event.description) {
-    const desc = event.type === "accident"
-      ? formatAccidentDescription(t, language, event.description)
-      : localizeTimelineText(t, language, event.description);
-    if (desc) facts.push(desc);
+    pushUniqueFact(facts, localizeTimelineText(t, language, event.description));
   }
-  return [...new Set(facts)]
+  return facts
     .map((fact) => translateInsuranceClaimDescription(t, fact) ?? fact)
     .map(humanizeLeftoverSlug)
     .filter(Boolean)
@@ -1165,8 +1232,9 @@ export function ReportHistoryTimeline({
         ? `${lineD} L ${linePts[linePts.length - 1]!.x.toFixed(1)} ${baselineY} L ${linePts[0]!.x.toFixed(1)} ${baselineY} Z`
         : "";
 
+    const latestMileageDay = latestMileageDayKey(events);
     const markers: PlotMarker[] = clusterTimelineEvents(events)
-      .filter(shouldShowTimelineMarkerGroup)
+      .filter((group) => shouldShowTimelineMarkerGroup(group, { latestMileageDay }))
       .map((group) => {
         const lead = group[0]!;
         const km =
@@ -1197,6 +1265,7 @@ export function ReportHistoryTimeline({
 
   const displayMarkers = useMemo(() => {
     if (!layout) return [];
+    const latestMileageDay = latestMileageDayKey(events);
     const filtered = layout.markers
       .map((marker) => {
         const kept = marker.events.filter((e) => {
@@ -1212,12 +1281,12 @@ export function ReportHistoryTimeline({
           );
           if (!originallyQuiet) return null;
         }
-        if (!shouldShowTimelineMarkerGroup(kept)) return null;
+        if (!shouldShowTimelineMarkerGroup(kept, { latestMileageDay })) return null;
         return { ...marker, events: kept, id: kept.map((e) => e.id).join("+") };
       })
       .filter((m): m is PlotMarker => m != null);
     return mergeMarkersByProximity(filtered, chartZoomUi.zoom.scale);
-  }, [layout, enabledTypes, chartZoomUi.zoom.scale]);
+  }, [layout, events, enabledTypes, chartZoomUi.zoom.scale]);
 
   if (!layout || events.length === 0) return null;
 

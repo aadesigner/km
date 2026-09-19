@@ -12,14 +12,12 @@ import { fireNoinfoRefundEmail } from "./noinfoRefundEmail.js";
 import {
   getCatalogVin,
   upsertVinCatalog,
-  checkLocalExists,
   syncStampedCatalogToAllLookups,
 } from "./vinService.js";
 import { sanitizeCatalogPayload, catalogHasDeliverableReport, applyCatalogAdminPatch } from "./vinCatalogImport.js";
 import { decodeVinPeek, isTrustworthyVinIdentity } from "./vinDecodePreview.js";
 import { validateCheckDigit } from "@workspace/vin-decode";
 import { logger } from "./logger.js";
-import { providersTable } from "@workspace/db";
 import { transformVinPhotoData } from "./imageProxy.js";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
@@ -110,24 +108,18 @@ export async function isVinEligibleForManualPending(vin: string): Promise<boolea
   return isTrustworthyVinIdentity(identity, normalized);
 }
 
-/** Whether post-payment should use manual pending flow (not in catalog / local-exists). */
+/** Whether post-payment should use manual pending flow (not in catalog / external archives). */
 export async function resolveVinFulfillmentMode(vin: string): Promise<VinFulfillmentMode> {
   const normalized = vin.trim().toUpperCase();
   const catalog = await getCatalogVin(normalized);
   if (catalog?.data && catalogHasDeliverableReport(catalog.data)) return "standard";
 
-  const [provider] = await db.select().from(providersTable)
-    .where(eq(providersTable.isActive, true))
-    .orderBy(providersTable.id)
-    .limit(1);
-
-  if (provider?.apiKey?.trim()) {
-    const exists = await checkLocalExists(normalized, provider.baseUrl, provider.apiKey);
-    if (exists.status === "exists") return "standard";
-    if (exists.status === "unavailable") {
-      // Provider down — still allow manual if decode is trustworthy
-      return (await isVinEligibleForManualPending(normalized)) ? "manual_pending" : "standard";
-    }
+  const { probeExternalVinAvailability } = await import("./vinService.js");
+  const probe = await probeExternalVinAvailability(normalized);
+  if (probe.status === "exists") return "standard";
+  if (probe.status === "unavailable") {
+    // Provider down — still allow manual if decode is trustworthy
+    return (await isVinEligibleForManualPending(normalized)) ? "manual_pending" : "standard";
   }
 
   return (await isVinEligibleForManualPending(normalized)) ? "manual_pending" : "standard";

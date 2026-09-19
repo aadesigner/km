@@ -155,7 +155,7 @@ function CreateVinModal({ onClose, onCreated }: CreateVinModalProps) {
           <div>
             <h2 className="text-lg font-semibold">Create VIN Entry</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Full report fields — same shape as provider normalization. Use Refresh from Carstat on the detail page to auto-fill.
+              Full report fields — same shape as provider normalization. Use Refresh on the detail page to auto-fill from the VIN’s source provider (Carstat or GetCarAPI).
             </p>
           </div>
           <button onClick={onClose} className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">

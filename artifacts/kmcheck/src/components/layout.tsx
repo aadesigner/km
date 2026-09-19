@@ -196,19 +196,17 @@ const MobileMenuToggle = forwardRef<
   HTMLButtonElement,
   ButtonHTMLAttributes<HTMLButtonElement> & {
     open: boolean;
-    scrolled: boolean;
     isDarkNav: boolean;
     label: string;
   }
->(({ open, scrolled, isDarkNav, label, className, ...props }, ref) => (
+>(({ open, isDarkNav, label, className, ...props }, ref) => (
   <button
     ref={ref}
     type="button"
     aria-label={label}
     aria-expanded={open}
     className={cn(
-      "md:hidden relative inline-flex shrink-0 items-center justify-center rounded-full touch-manipulation transition-[color,background-color,transform] duration-150 active:scale-95",
-      scrolled ? "h-9 w-9" : "h-10 w-10",
+      "md:hidden relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full touch-manipulation transition-colors duration-75 active:scale-95",
       open
         ? "bg-primary/12 text-primary"
         : isDarkNav
@@ -221,19 +219,19 @@ const MobileMenuToggle = forwardRef<
     <span className="relative block h-3.5 w-[17px]" aria-hidden>
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
           open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
         )}
       />
       <span
         className={cn(
-          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
-          open ? "scale-x-0 opacity-0" : "opacity-100",
+          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-opacity duration-75",
+          open ? "opacity-0" : "opacity-100",
         )}
       />
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-all duration-150 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
           open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
         )}
       />
@@ -303,13 +301,11 @@ function MobileLangPicker({
   language,
   onLanguageChange,
   isDarkNav,
-  scrolled,
   mobileMenuOpen = false,
 }: {
   language: string;
   onLanguageChange: (code: string) => void;
   isDarkNav: boolean;
-  scrolled: boolean;
   mobileMenuOpen?: boolean;
 }) {
   const { t } = useTranslation();
@@ -480,8 +476,7 @@ function MobileLangPicker({
         aria-expanded={open}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out",
-          scrolled ? "h-8 text-sm" : "h-9 text-[15px]",
+          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out h-9 text-[15px]",
           open
             ? isDarkNav
               ? "bg-white/10 text-white"
@@ -657,7 +652,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative inline-flex items-center gap-1.5 px-3.5 py-2.5 text-[15px] font-medium tracking-wide transition-colors duration-75 outline-none",
+    "relative inline-flex items-center gap-1.5 font-medium tracking-wide transition-colors duration-75 outline-none",
+    scrolled ? "px-3 py-2 text-[15px]" : "px-3.5 py-2.5 text-[15px]",
     active
       ? isDarkNav
         ? "text-white"
@@ -686,7 +682,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       style={{ top: announcementOffset }}
       className={cn(
       "fixed inset-x-0 z-[100] w-full print:hidden",
-      "transition-[border-color,background-color] duration-200",
+      "transition-[border-color,background-color,box-shadow] duration-150",
       scrolled
         ? (isDarkNav
             ? "bg-[#060a14]/95 border-b border-white/10"
@@ -700,14 +696,19 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
-        "h-[72px]",
+        // Mild shrink only; skip height tween on small screens (route scroll-reset flicker).
+        "h-[72px] md:transition-[height] md:duration-150 md:ease-out",
+        scrolled && "md:h-16",
       )}>
 
         {/* ── Logo ── */}
         <div className="flex items-center min-w-0 md:justify-self-start">
           <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px">
             <KmcheckLogo
-              className="h-9 md:h-10 transition-opacity duration-200 group-hover:opacity-90"
+              className={cn(
+                "w-auto max-w-none object-contain transition-[height,opacity] duration-150 ease-out group-hover:opacity-90",
+                scrolled ? "h-8 md:h-9" : "h-9 md:h-10",
+              )}
             />
           </PrefetchLink>
         </div>
@@ -776,7 +777,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               language={language}
               onLanguageChange={handleLanguageChange}
               isDarkNav={isDarkNav}
-              scrolled={scrolled}
               mobileMenuOpen={mobileOpen}
             />
             <button
@@ -785,8 +785,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               title="Toggle theme"
               aria-label="Toggle theme"
               className={cn(
-                "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
-                scrolled ? "h-8 w-8" : "h-9 w-9",
+                "relative h-9 w-9 rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
                 isDarkNav
                   ? "text-white/55 hover:text-white hover:bg-white/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
@@ -812,8 +811,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 <button
                   {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2 rounded-lg outline-none transition-[color,height,padding] duration-150",
-                    scrolled ? "h-8 py-0.5" : "h-9 py-1",
+                    "flex items-center gap-2 pl-1 pr-2 rounded-lg outline-none transition-colors duration-75 h-9 py-1",
                     userOpen
                       ? isDarkNav
                         ? "text-white"
@@ -823,22 +821,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                         : "text-foreground/75 hover:text-foreground",
                   )}
                 >
-                  <Avatar className={cn(
-                    "transition-[width,height] duration-150",
-                    scrolled ? "h-7 w-7" : "h-8 w-8",
-                  )}>
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
-                    <AvatarFallback className={cn(
-                      "bg-primary/10 text-primary font-bold transition-[font-size] duration-150",
-                      scrolled ? "text-[11px]" : "text-xs",
-                    )}>
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
                       {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
-                  <span className={cn(
-                    "font-medium tracking-wide max-w-[7.5rem] truncate hidden lg:block transition-[font-size] duration-150",
-                    scrolled ? "text-sm" : "text-[15px]",
-                  )}>
+                  <span className="font-medium tracking-wide max-w-[7.5rem] truncate hidden lg:block text-[15px]">
                     {displayName}
                   </span>
                   <ChevronDown
@@ -898,7 +887,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 <PrefetchLink
                   href={`/${language}/sign-in`}
                   className={cn(
-                    "inline-flex h-9 items-center px-2.5 text-[13px] font-medium tracking-wide transition-colors duration-75",
+                    "inline-flex items-center px-2.5 h-9 text-[13px] font-medium tracking-wide transition-colors duration-75",
                     isDarkNav
                       ? "text-white/55 hover:text-white"
                       : "text-muted-foreground hover:text-foreground",
@@ -908,7 +897,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 </PrefetchLink>
                 <Button
                   size="sm"
-                  className="h-9 px-3.5 text-[13px] font-semibold tracking-wide rounded-lg shadow-none transition-opacity hover:opacity-90"
+                  className="h-9 px-3.5 text-[13px] font-semibold tracking-wide rounded-lg shadow-none transition-opacity duration-75 hover:opacity-90"
                   asChild
                 >
                   <PrefetchLink href={`/${language}`}>{t("check_vin")}</PrefetchLink>
@@ -923,7 +912,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               <SheetTrigger asChild>
                 <MobileMenuToggle
                   open={mobileOpen}
-                  scrolled={scrolled}
                   isDarkNav={isDarkNav}
                   label={mobileOpen ? t("nav_close_menu") : t("nav_open_menu")}
                   onPointerDown={prefetchNavMenuAssets}

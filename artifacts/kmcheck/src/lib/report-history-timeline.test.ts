@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   collectReportTimelineEvents,
   hasManualMileageDetail,
+  latestMileageDayKey,
   shouldShowReportTimeline,
   shouldShowTimelineMarkerGroup,
 } from "./report-history-timeline";
@@ -97,13 +98,46 @@ describe("shouldShowReportTimeline", () => {
     expect(shouldShowReportTimeline(events)).toBe(true);
   });
 
-  it("hides bare mileage markers but keeps them on the line", () => {
+  it("hides intermediate bare mileage markers but keeps the latest", () => {
     const events = collectReportTimelineEvents({
       year: 2018,
+      mileageHistory: [
+        { odometer: 10_000, date: "2020-01-01" },
+        { odometer: 42_000, date: "2024-06-01" },
+      ],
+    });
+    const earlier = events.find((e) => e.type === "mileage" && e.dayKey === "2020-01-01")!;
+    const latest = events.find((e) => e.type === "mileage" && e.dayKey === "2024-06-01")!;
+    const latestDay = latestMileageDayKey(events);
+    expect(hasManualMileageDetail(earlier)).toBe(false);
+    expect(hasManualMileageDetail(latest)).toBe(false);
+    expect(shouldShowTimelineMarkerGroup([earlier], { latestMileageDay: latestDay })).toBe(false);
+    expect(shouldShowTimelineMarkerGroup([latest], { latestMileageDay: latestDay })).toBe(true);
+  });
+
+  it("marks a lone bare dated mileage reading when it is the latest", () => {
+    const events = collectReportTimelineEvents({
+      year: 2018,
+      accidents: [{ date: "2021-03-15", severity: "minor" }],
       mileageHistory: [{ odometer: 42_000, date: "2024-06-01" }],
     });
     const mileage = events.find((e) => e.type === "mileage")!;
-    expect(hasManualMileageDetail(mileage)).toBe(false);
-    expect(shouldShowTimelineMarkerGroup([mileage])).toBe(false);
+    const latestDay = latestMileageDayKey(events);
+    expect(shouldShowTimelineMarkerGroup([mileage], { latestMileageDay: latestDay })).toBe(true);
+  });
+
+  it("carries registry/event details onto timeline markers", () => {
+    const events = collectReportTimelineEvents({
+      year: 2014,
+      registryHistory: [{
+        date: "2014-01-15",
+        title: "First registration",
+        type: "first_registration",
+        details: [{ label: "First registration date", value: "January 2014" }],
+      }],
+    });
+    const registry = events.find((e) => e.type === "registry")!;
+    expect(registry.title).toBe("First registration");
+    expect(registry.details?.[0]?.label).toMatch(/First registration/i);
   });
 });

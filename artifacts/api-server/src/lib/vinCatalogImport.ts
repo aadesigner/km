@@ -101,6 +101,7 @@ const JSON_META_KEYS = new Set([
 
 /** Scalar fields stored on normalized catalog `data` (matches vinService NormalizedVinData). */
 export const CATALOG_SCALAR_KEYS = [
+  "dataSource",
   "make",
   "model",
   "year",
@@ -149,6 +150,7 @@ export const CATALOG_JSON_KEYS = [
   "registryHistory",
   "recallHistory",
   "serviceHistory",
+  "vehicleExtras",
   "marketData",
 ] as const;
 

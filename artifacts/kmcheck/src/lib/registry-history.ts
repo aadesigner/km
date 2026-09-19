@@ -1,6 +1,7 @@
 import type { Language } from "@/i18n/context";
 import {
   localizeProviderDate,
+  looksLikeProviderDate,
   translateKoreanProviderPhrase,
   translateKoreanProviderText,
   translateProviderAmount,
@@ -22,6 +23,8 @@ export type RegistryHistoryEntry = {
 
 const TYPE_KEYS: Record<string, string> = {
   new_car_delivery: "registry_type_new_car_delivery",
+  first_registration: "registry_field_first_registration",
+  delivery: "registry_field_first_registration",
   inspection: "registry_type_inspection",
   registration_change: "registry_type_registration_change",
   owner_change: "registry_type_owner_change",
@@ -30,6 +33,8 @@ const TYPE_KEYS: Record<string, string> = {
   recall: "registry_type_recall",
   other: "registry_type_other",
 };
+
+const GENERIC_EVENT_TYPES = new Set(["other", "event", "unknown"]);
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
   "production country": "registry_field_production_country",
@@ -77,7 +82,47 @@ const FIELD_LABEL_KEYS: Record<string, string> = {
   "correction method": "registry_field_correction_method",
   "correction period": "registry_field_correction_period",
   "contact us": "registry_field_contact",
+  "license plate": "registry_field_license_plate",
+  "vehicle number": "registry_field_license_plate",
+  "car number": "registry_field_license_plate",
+  diagnosis: "registry_field_diagnosis",
+  date: "registry_field_occurrence_date",
+  details: "report_details",
+  location: "registry_field_location",
+  amount: "registry_field_amount",
 };
+
+/** True when the string is only a date (no event name like "First registration"). */
+export function isDateOnlyRegistryTitle(text: string | null | undefined): boolean {
+  if (!text?.trim()) return false;
+  const trimmed = text.replace(/\n/g, " ").trim();
+  if (!looksLikeProviderDate(trimmed)) return false;
+  const leftover = trimmed
+    .replace(/\d+/g, " ")
+    .replace(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/gi, " ")
+    .replace(/[.,/\-:()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return leftover.length === 0;
+}
+
+function formatRegistryEventTitle(
+  t: (key: string) => string,
+  rawTitle: string,
+  language?: Language,
+): string {
+  const fromPhrase = translateKoreanProviderPhrase(t, rawTitle)
+    ?? translateKoreanProviderText(t, rawTitle);
+  const base = fromPhrase && fromPhrase !== rawTitle ? fromPhrase : rawTitle;
+
+  if (!language) return base;
+
+  if (isDateOnlyRegistryTitle(base)) {
+    return localizeProviderDate(base, language) ?? base;
+  }
+
+  return translateProviderDateInText(base, language) ?? base;
+}
 
 export function translateRegistryEventType(
   t: (key: string) => string,
@@ -85,6 +130,19 @@ export function translateRegistryEventType(
   fallbackTitle?: string | null,
   language?: Language,
 ): string {
+  const rawTitle = fallbackTitle?.replace(/\n/g, " ").trim() || null;
+  const typeIsGeneric = !type || GENERIC_EVENT_TYPES.has(type);
+
+  // Prefer real titles (e.g. "Maintenance/repair history", "First registration")
+  // over generic "Registry event" / date-only labels.
+  if (rawTitle && typeIsGeneric) {
+    return formatRegistryEventTitle(t, rawTitle, language);
+  }
+
+  if (rawTitle && /^first\s+registration\b/i.test(rawTitle)) {
+    return formatRegistryEventTitle(t, rawTitle, language);
+  }
+
   if (type) {
     const key = TYPE_KEYS[type];
     if (key) {
@@ -92,21 +150,9 @@ export function translateRegistryEventType(
       if (translated !== key) return translated;
     }
   }
-  const rawTitle = fallbackTitle?.replace(/\n/g, " ").trim();
+
   if (rawTitle) {
-    const fromPhrase = translateKoreanProviderPhrase(t, rawTitle)
-      ?? translateKoreanProviderText(t, rawTitle);
-    if (fromPhrase && fromPhrase !== rawTitle) {
-      if (language && language !== "en") {
-        return translateProviderDateInText(fromPhrase, language) ?? fromPhrase;
-      }
-      return fromPhrase;
-    }
-    if (language) {
-      const localized = localizeProviderDate(rawTitle, language);
-      if (localized) return localized;
-    }
-    return rawTitle;
+    return formatRegistryEventTitle(t, rawTitle, language);
   }
   return t("registry_type_other");
 }

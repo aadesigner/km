@@ -8,7 +8,7 @@ import {
   getCachedVinForPreview,
   getCatalogVin,
   getCatalogVinPeekHint,
-  checkLocalExists,
+  probeExternalVinAvailability,
   enrichVinReportDataForServe,
   applyMissingFloodFlagsForServe,
   vinHasReportData,
@@ -782,14 +782,12 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const providers = await db.select().from(providersTable).where(eq(providersTable.isActive, true)).limit(1);
   const provider = providers[0];
+  const { resolveGetCarApiConfig, GETCARAPI_PROVIDER_NAME } = await import("../lib/getcarApi.js");
+  const getCarConfigured = !!(await resolveGetCarApiConfig());
+  const carstatReady = !!provider?.apiKey?.trim();
 
-  if (!provider) {
-    await refundCreditRedemption(resolvedPaymentId, "VIN_CHECK_UNAVAILABLE");
-    res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
-    return;
-  }
-
-  if (!provider.apiKey?.trim()) {
+  // Standard delivery can use GetCarAPI alone — do not require Carstat when GCA is configured.
+  if (!carstatReady && !getCarConfigured) {
     await refundCreditRedemption(resolvedPaymentId, "VIN_CHECK_UNAVAILABLE");
     res.status(503).json({ error: "VIN check is temporarily unavailable. Please try again later.", code: "VIN_CHECK_UNAVAILABLE" });
     return;
@@ -808,12 +806,19 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
     freeCouponPaymentId,
     freeCouponCode,
     resolvedPayment,
-    provider: {
-      id: provider.id,
-      name: provider.name,
-      baseUrl: provider.baseUrl,
-      apiKey: provider.apiKey,
-    },
+    provider: carstatReady
+      ? {
+          id: provider!.id,
+          name: provider!.name,
+          baseUrl: provider!.baseUrl,
+          apiKey: provider!.apiKey!,
+        }
+      : {
+          id: 0,
+          name: GETCARAPI_PROVIDER_NAME,
+          baseUrl: "",
+          apiKey: "",
+        },
     user: user[0],
   });
 
@@ -1388,38 +1393,23 @@ router.get("/vin/peek/:vin", vinPeekLimiter, requireAuth, async (req, res) => {
     dataAvailable = true;
   } else {
   try {
-    const [provider] = await db.select().from(providersTable)
-      .where(eq(providersTable.isActive, true))
-      .orderBy(providersTable.id)
-      .limit(1);
-    if (!provider?.apiKey?.trim()) {
+    const probe = await probeExternalVinAvailability(vin);
+    if (probe.status === "exists") {
+      dataAvailable = true;
+    } else if (probe.status === "not_found") {
+      if (await isVinEligibleForManualPending(vin)) {
+        dataAvailable = true;
+        manualPending = true;
+      } else {
+        dataAvailable = false;
+      }
+    } else {
       if (await isVinEligibleForManualPending(vin)) {
         dataAvailable = true;
         manualPending = true;
       } else {
         checkUnavailable = true;
-        checkUnavailableCode = "PROVIDER_NOT_CONFIGURED";
-      }
-      logger.warn({ msg: "peek_no_provider", vin, manualPending });
-    } else {
-      const exists = await checkLocalExists(vin, provider.baseUrl, provider.apiKey);
-      if (exists.status === "exists") {
-        dataAvailable = true;
-      } else if (exists.status === "not_found") {
-        if (await isVinEligibleForManualPending(vin)) {
-          dataAvailable = true;
-          manualPending = true;
-        } else {
-          dataAvailable = false;
-        }
-      } else {
-        if (await isVinEligibleForManualPending(vin)) {
-          dataAvailable = true;
-          manualPending = true;
-        } else {
-          checkUnavailable = true;
-          checkUnavailableCode = "PROVIDER_UNAVAILABLE";
-        }
+        checkUnavailableCode = "PROVIDER_UNAVAILABLE";
       }
     }
   } catch (err) {

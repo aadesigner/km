@@ -1509,7 +1509,13 @@ export default function Checkout({ params }: Props) {
   const isBusy = status === "creating" || status === "paying";
   const vehicleTitle = peekForVin ? formatVehicleTitle(peekForVin) : null;
   const showDecoderPreview = !!peekForVin && !peekLoadingUi && !!vehicleTitle;
-  const showVinQualityWarning = vinIsValid && !!peekForVin && !peekLoadingUi && !isTrustworthyVinDecode(peekForVin);
+  const showVinQualityWarning =
+    vinIsValid
+    && !!peekForVin
+    && !peekLoadingUi
+    && !isTrustworthyVinDecode(peekForVin)
+    // Archive confirmed the chassis — don't scare the user when free decode lacks WMI/make.
+    && peekForVin.dataAvailable !== true;
   const showVinPendingDoubleCheck = vinIsValid && !!peekForVin && !peekLoadingUi && shouldShowPendingVinDoubleCheck(peekForVin);
   const vehicleTooOld =
     vinIsValid &&
@@ -1649,7 +1655,7 @@ export default function Checkout({ params }: Props) {
                       )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
-                      <div className="flex flex-col items-center gap-1 w-[3.5rem] sm:w-[4.5rem] shrink-0">
+                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-[3.5rem] sm:w-[4.5rem] shrink-0">
                         <motion.div
                           initial={false}
                           animate={{

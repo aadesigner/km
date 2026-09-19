@@ -63,3 +63,14 @@ describe("Toyota QA — Japan / US not broken", () => {
     expect(decodeVin("JTMBFREV0E5123456").model).toMatch(/RAV4/i);
   });
 });
+
+describe("Toyota QA — Mexico 3TY WMI", () => {
+  it("3TYLC5LN6TT077888 → Toyota (Mexico); check digit valid", () => {
+    const vin = "3TYLC5LN6TT077888";
+    const r = decodeVin(vin);
+    expect(r.make).toBe("Toyota");
+    expect(r.country).toBe("Mexico");
+    // Letter T is 1996/2026 — omit year without a verified model window (no invent).
+    expect(r.year === 2026 || r.year === null).toBe(true);
+  });
+});

@@ -15,12 +15,13 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "1C4HJ", model: "Wrangler", yearFrom: 2018, yearTo: 2099 },
   { prefix: "1C4BJ", model: "Wrangler", yearFrom: 2018, yearTo: 2099 },
   { prefix: "1C4NJ", model: "Compass", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "3C4NJ", model: "Compass", yearFrom: 2017, yearTo: 2099 },
   { prefix: "1C4PJ", model: "Cherokee", yearFrom: 2014, yearTo: 2099 },
   { prefix: "1C6SR", model: "Ram 1500" },
   { prefix: "1C6RR", model: "Ram 1500" },
   { prefix: "2C3CD", model: "Charger" },
   { prefix: "2C3CM", model: "Challenger" },
-  { prefix: "3C4PD", model: "Pacifica" },
+  { prefix: "3C4PD", model: "Pacifica", yearFrom: 2017, yearTo: 2099 },
   { prefix: "3C6UR", model: "Ram 2500/3500" },
   // Honda / Acura US
   { prefix: "1HGCV1", model: "Accord", chassis: "10th gen" },
@@ -69,6 +70,12 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "2T2BZM", model: "Lexus RX" },
   { prefix: "2T2AUD", model: "Lexus NX" },
   { prefix: "JTJBAR", model: "Lexus NX", chassis: "AZ20" },
+  // Lexus ES — Japan (JTH*) + Kentucky TMMK (58A*)
+  { prefix: "58ABK", model: "ES", chassis: "XZ10", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "58AB", model: "ES", chassis: "XZ10", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "JTHBZ", model: "ES 350", chassis: "XZ10", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "JTHB1", model: "ES 300h", chassis: "XZ10", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "JTHB2", model: "ES 300h", chassis: "XZ10", yearFrom: 2019, yearTo: 2099 },
 ]);
 
 export function matchUsVdsRule(vin: string): PrefixRule | null {

@@ -84,12 +84,41 @@ const RED = {
     "bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(239,68,68,0.04),transparent_68%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(248,113,113,0.045),transparent_68%)]",
 };
 
+/** Ignore tiny same-year odometer dips (listing republish noise). */
+export const MILEAGE_ROLLBACK_IGNORE_MAX_KM = 50;
+
+function readingYear(date: string | null | undefined): number | null {
+  if (!date) return null;
+  const iso = date.trim().slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}/.test(iso)) {
+    const y = Number(iso.slice(0, 4));
+    return Number.isFinite(y) ? y : null;
+  }
+  const y = Date.parse(date);
+  if (!Number.isFinite(y)) return null;
+  return new Date(y).getUTCFullYear();
+}
+
+/**
+ * True when a later dated reading is meaningfully lower than an earlier one.
+ * Drops of ≤50 km within the same calendar year are ignored (common listing noise).
+ */
 export function hasMileageRollback(history: VinScoreMileageEntry[]): boolean {
   const dated = [...history]
     .filter((e) => e.odometer != null && e.date)
     .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
   for (let i = 1; i < dated.length; i++) {
-    if ((dated[i].odometer ?? 0) < (dated[i - 1].odometer ?? 0)) return true;
+    const prev = dated[i - 1]!;
+    const curr = dated[i]!;
+    const prevKm = prev.odometer ?? 0;
+    const currKm = curr.odometer ?? 0;
+    if (currKm >= prevKm) continue;
+    const drop = prevKm - currKm;
+    const prevY = readingYear(prev.date);
+    const currY = readingYear(curr.date);
+    const sameYear = prevY != null && currY != null && prevY === currY;
+    if (sameYear && drop <= MILEAGE_ROLLBACK_IGNORE_MAX_KM) continue;
+    return true;
   }
   return false;
 }

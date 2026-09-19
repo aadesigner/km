@@ -5,6 +5,7 @@ import {
   buildMarketChartPoints,
   formatMarketCurrency,
   marketCurrencySymbol,
+  marketValuesAreKrw,
   type MarketChartPoint,
 } from "@/lib/market-chart-data";
 
@@ -26,6 +27,7 @@ type MarketValueChartProps = {
   t: (key: string) => string;
   language: Language;
   vehicleCountry?: string | null;
+  krwPerUsd?: number | null;
   className?: string;
 };
 
@@ -34,12 +36,35 @@ function tooltipLabel(kind: MarketChartPoint["kind"], t: (key: string) => string
   return t("last_auction_price");
 }
 
-export function MarketValueChart({ marketData, auctionHistory, t, language, vehicleCountry, className }: MarketValueChartProps) {
-  const points = buildMarketChartPoints(marketData, auctionHistory, t, language, vehicleCountry);
+export function MarketValueChart({
+  marketData,
+  auctionHistory,
+  t,
+  language,
+  vehicleCountry,
+  krwPerUsd,
+  className,
+}: MarketValueChartProps) {
+  const points = buildMarketChartPoints(
+    marketData,
+    auctionHistory,
+    t,
+    language,
+    vehicleCountry,
+    krwPerUsd,
+  );
   if (points.length === 0) return null;
 
-  const symbol = marketCurrencySymbol(marketData?.currency);
-  const currency = marketData?.currency ?? "USD";
+  const sample =
+    marketData?.estimatedValue
+    ?? marketData?.lastAuctionPrice
+    ?? auctionHistory?.find((a) => a.finalPrice != null)?.finalPrice
+    ?? null;
+  // Korean market figures are converted to USD for the chart.
+  const displayCurrency = marketValuesAreKrw(marketData?.currency, vehicleCountry, sample)
+    ? "USD"
+    : (marketData?.currency ?? "USD");
+  const symbol = marketCurrencySymbol(displayCurrency);
 
   return (
     <div className={cn("h-36 print-hide-chart", className)}>
@@ -56,7 +81,7 @@ export function MarketValueChart({ marketData, auctionHistory, t, language, vehi
           <Tooltip
             formatter={(v: number, _name, item) => {
               const kind = (item.payload as MarketChartPoint).kind;
-              return [formatMarketCurrency(v, currency), tooltipLabel(kind, t)];
+              return [formatMarketCurrency(v, displayCurrency), tooltipLabel(kind, t)];
             }}
             contentStyle={{ fontSize: 11, borderRadius: 8 }}
           />

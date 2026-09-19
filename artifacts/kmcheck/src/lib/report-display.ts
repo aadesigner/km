@@ -113,21 +113,23 @@ export function sanitizeRegistryHistoryEvent<T extends RegistryHistoryLike>(
 
   let subtitle = stripRegistrySubtitleNoise(cleanDisplayText(event.subtitle), displayMileage);
 
-  const hasContent = Boolean(
-    title
+  const titleIsGeneric = !title || /^(event|no information|n\/a|unknown|-|registry event)$/i.test(title);
+  const typeIsGeneric = !event.type || /^(event|other|unknown)$/i.test(String(event.type));
+  const hasMeaningfulContent = Boolean(
+    (title && !titleIsGeneric)
     || subtitle
-    || date
     || displayMileage != null
     || amount
     || location
     || details.length > 0
-    || event.type,
+    // Keep typed Korean-style rows that only have a specific type + date.
+    || (!typeIsGeneric && date),
   );
-  if (!hasContent) return null;
+  if (!hasMeaningfulContent) return null;
 
   return {
     ...event,
-    title,
+    title: titleIsGeneric ? null : title,
     subtitle,
     amount,
     location,
@@ -262,7 +264,8 @@ export function isMeaningfulServiceHistoryEntry(entry: ServiceHistoryLike): bool
     || cleanDisplayText(entry.title)
     || cleanDisplayText(entry.location)
     || cleanDisplayText(entry.description)
-    || (entry.mileage != null && Number(entry.mileage) > 0),
+    || (entry.mileage != null && Number(entry.mileage) > 0)
+    || (entry.details?.length ?? 0) > 0,
   );
 }
 
@@ -276,6 +279,7 @@ export function sanitizeServiceHistory<T extends ServiceHistoryLike>(
         const raw = entry.mileage;
         const mileage =
           raw == null || (typeof raw === "string" && raw === "") ? null : Number(raw);
+        const details = sanitizeRegistryDetailRows(entry.details);
         return {
           ...entry,
           mileage: mileage != null && Number.isFinite(mileage) && mileage > 0 ? mileage : null,
@@ -283,6 +287,7 @@ export function sanitizeServiceHistory<T extends ServiceHistoryLike>(
           title: cleanDisplayText(entry.title),
           location: cleanDisplayText(entry.location),
           description: cleanDisplayText(entry.description),
+          details: details.length > 0 ? details : undefined,
         };
       })
       .filter(isMeaningfulServiceHistoryEntry),

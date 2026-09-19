@@ -21,6 +21,8 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
   } = settings as SettingsRow & { pokKeySecret?: string | null };
   return {
     ...safe,
+    getcarApiEnabled: (settings as SettingsRow & { getcarApiEnabled?: boolean }).getcarApiEnabled ?? true,
+    getcarApiKeyConfigured: !!process.env["GETCARAPI_API_KEY"]?.trim(),
     hasPaypalSecret: !!paypalClientSecret?.trim(),
     hasRecaptchaSecret: !!recaptchaSecretKey?.trim(),
     hasGoogleSecret: !!googleClientSecret?.trim(),

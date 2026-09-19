@@ -72,6 +72,11 @@ export function dedupeRegistryHistoryEvents(
 }
 
 export interface NormalizedVinData {
+  /**
+   * Opaque report origin stamp. `"getcarapi"` switches Events UI (not Korean registry).
+   * Carstat / local catalog leave this unset.
+   */
+  dataSource?: "getcarapi" | null;
   make?: string | null;
   model?: string | null;
   year?: number | null;
@@ -101,6 +106,11 @@ export interface NormalizedVinData {
   photos?: string[];
   /** Full-resolution gallery for lightbox; falls back to photos when absent. */
   photosHd?: string[];
+  /**
+   * Optional per-index alternate URL (e.g. dealer/source when Cloudflare CDN is primary).
+   * Same length as `photos` when present; null entries mean no fallback for that slot.
+   */
+  photoAlternates?: Array<string | null>;
   /** Copart/IAAI 360° exterior frames (ordered spin). */
   photos360Exterior?: string[];
   /** Copart/IAAI 360° interior frames (ordered spin). */
@@ -125,6 +135,7 @@ export interface NormalizedVinData {
     airbagDeployed?: boolean | null;
     odometerAtLoss?: number | null;
     lossAmount?: number | null;
+    currency?: string | null;
   }>;
   /** Korean / regional insurance payout history — not the same as collision accidents. */
   insuranceClaims?: Array<{
@@ -154,8 +165,9 @@ export interface NormalizedVinData {
     description?: string | null;
   }>;
   /**
-   * Manual admin workshop / service visits only.
-   * Never produced by provider normalize / Carstat fetch.
+   * Workshop / service / inspection visits.
+   * Carstat normalize never fills this (admin-only for Carstat).
+   * GetCarAPI may populate from inspection-typed events.
    */
   serviceHistory?: Array<{
     date?: string | null;
@@ -163,6 +175,7 @@ export interface NormalizedVinData {
     title?: string | null;
     location?: string | null;
     description?: string | null;
+    details?: Array<{ label: string; value: string }>;
   }>;
   ownerHistory?: Array<{
     date?: string | null;
@@ -215,6 +228,16 @@ export interface NormalizedVinData {
     amount?: string | null;
     location?: string | null;
     details?: Array<{ label: string; value: string }>;
+  }>;
+  /**
+   * GetCarAPI Extra tab — listing attribute cards (doors, stock number, …).
+   * Never merged into Events / registryHistory.
+   */
+  vehicleExtras?: Array<{
+    key?: string | null;
+    label: string;
+    value: string;
+    observedAt?: string | null;
   }>;
 }
 
@@ -393,7 +416,7 @@ export async function resolveLockedPreviewPhotoSources(
   const fromCatalog = Array.isArray(dataSource.photos)
     ? (dataSource.photos as string[]).map((p) => p.trim()).filter(Boolean)
     : [];
-  if (fromCatalog.length > 0) return fromCatalog.slice(0, 1);
+  if (fromCatalog.length > 0) return fromCatalog.slice(0, 4);
 
   const [lookup] = await db
     .select({ data: vinLookupsTable.data })
@@ -412,7 +435,7 @@ export async function resolveLockedPreviewPhotoSources(
   const fromLookup = lookupData && Array.isArray(lookupData.photos)
     ? (lookupData.photos as string[]).map((p) => p.trim()).filter(Boolean)
     : [];
-  return fromLookup.slice(0, 1);
+  return fromLookup.slice(0, 4);
 }
 
 function readOdometerScalar(data: Record<string, unknown> | null | undefined): number | null {
@@ -1321,6 +1344,63 @@ export type LocalExistsResult =
 export const PUBLIC_VIN_CHECK_UNAVAILABLE =
   "VIN check is temporarily unavailable. Please try again later.";
 
+/** Which external archive has the VIN (after local catalog miss). */
+export type VinExternalSource = "getcarapi" | "carstat";
+
+export type VinExternalProbeResult =
+  | { status: "exists"; source: VinExternalSource }
+  | { status: "not_found" }
+  | { status: "unavailable"; reason: string };
+
+/**
+ * Cascade (free checks only): GetCarAPI → Carstat.
+ * If GetCarAPI has the VIN, Carstat is never called.
+ */
+export async function probeExternalVinAvailability(vin: string): Promise<VinExternalProbeResult> {
+  const { checkGetCarApiExists, resolveGetCarApiConfig } = await import("./getcarApi.js");
+  const normalized = vin.trim().toUpperCase();
+
+  let getCarMissed = true;
+  let getCarDown = false;
+
+  // Admin disable / missing key → skip entirely (catalog → Carstat → pending).
+  if (await resolveGetCarApiConfig()) {
+    const gca = await checkGetCarApiExists(normalized);
+    if (gca.status === "exists") {
+      return { status: "exists", source: "getcarapi" };
+    }
+    if (gca.status === "not_found") {
+      getCarMissed = true;
+    } else {
+      getCarDown = true;
+      getCarMissed = false;
+      logger.warn({ msg: "getcarapi_probe_unavailable", vin: normalized, reason: gca.reason });
+    }
+  }
+
+  const [provider] = await db.select().from(providersTable)
+    .where(and(eq(providersTable.isActive, true)))
+    .orderBy(providersTable.id)
+    .limit(1);
+
+  if (provider?.apiKey?.trim()) {
+    const exists = await checkLocalExists(normalized, provider.baseUrl, provider.apiKey);
+    if (exists.status === "exists") {
+      return { status: "exists", source: "carstat" };
+    }
+    if (exists.status === "not_found") {
+      return { status: "not_found" };
+    }
+    // Carstat down: if GetCarAPI already said not_found, treat as not_found → pending path.
+    if (getCarMissed) return { status: "not_found" };
+    return { status: "unavailable", reason: exists.reason || PUBLIC_VIN_CHECK_UNAVAILABLE };
+  }
+
+  if (getCarMissed) return { status: "not_found" };
+  if (getCarDown) return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
+  return { status: "not_found" };
+}
+
 function parseProviderReportError(status: number, text: string): LocalExistsResult | null {
   if (status === 403) {
     try {
@@ -1549,7 +1629,12 @@ export async function fetchFromProvider(
   vin: string,
   providerBaseUrl: string,
   apiKey: string,
-  opts?: { force?: boolean },
+  opts?: {
+    force?: boolean;
+    preferredSource?: VinExternalSource | null;
+    /** When true with preferredSource, never fall back to the other provider (admin refresh). */
+    strictSource?: boolean;
+  },
 ): Promise<NormalizedVinData> {
   const normalized = vin.trim().toUpperCase();
   return withGlobalVinProviderLock(normalized, async () => {
@@ -1559,19 +1644,83 @@ export async function fetchFromProvider(
       const catalogEntry = await getCatalogVin(normalized);
       const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
       if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
-        return normalizeCarstatResponse(catalogData);
+        // Catalog stores NormalizedVinData (or legacy Carstat raw with lots).
+        if (Array.isArray(catalogData.lots)) {
+          return normalizeCarstatResponse(catalogData);
+        }
+        if (catalogData.vehicle && typeof catalogData.vehicle === "object" && catalogData.make == null) {
+          const { normalizeGetCarApiResponse } = await import("./getcarApi.js");
+          return normalizeGetCarApiResponse(catalogData);
+        }
+        return catalogData as unknown as NormalizedVinData;
       }
     }
 
-    const base = normalizeProviderBaseUrl(providerBaseUrl);
+    const { fetchGetCarApiReport, normalizeGetCarApiResponse, resolveGetCarApiConfig } =
+      await import("./getcarApi.js");
 
-    try {
-      const body = await fetchLocalReport(normalized, base, apiKey);
-      return normalizeCarstatResponse(body);
-    } catch (err) {
-      logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
-      throw err;
+    let source: VinExternalSource | null = opts?.preferredSource ?? null;
+    if (!source) {
+      const probe = await probeExternalVinAvailability(normalized);
+      if (probe.status === "exists") source = probe.source;
     }
+
+    const getCarCfg = await resolveGetCarApiConfig();
+
+    // GetCarAPI hit → try retrieve; on rate-limit/credits/transient, fall through to Carstat if configured.
+    if (source === "getcarapi" && getCarCfg) {
+      try {
+        const body = await fetchGetCarApiReport(normalized);
+        return normalizeGetCarApiResponse(body);
+      } catch (err) {
+        const code = err && typeof err === "object" && "code" in err
+          ? String((err as { code?: unknown }).code ?? "")
+          : "";
+        const canFallbackToCarstat =
+          !opts?.strictSource
+          && !!apiKey?.trim()
+          && code !== "VIN_NO_DATA"
+          && (
+            code === "PROVIDER_RATE_LIMIT"
+            || code === "PROVIDER_CREDITS"
+            || (err instanceof Error && /rate limited|credits exhausted|timeout|fetch failed|network/i.test(err.message))
+          );
+        if (canFallbackToCarstat) {
+          logger.warn(
+            { err, vin: normalized },
+            "GetCarAPI retrieve failed — falling back to Carstat",
+          );
+        } else {
+          logger.error({ err, vin: normalized }, "Error fetching from GetCarAPI");
+          throw err;
+        }
+      }
+    } else if (source === "getcarapi" && opts?.strictSource) {
+      throw new Error("GetCarAPI is not configured");
+    }
+
+    // Carstat path (or GetCarAPI miss / retrieve fallback / not configured).
+    // Strict GetCarAPI admin refresh must never overwrite with Carstat.
+    if (opts?.strictSource && opts.preferredSource === "getcarapi") {
+      throw new Error("GetCarAPI refresh did not return data");
+    }
+    if (source === "carstat" || source === "getcarapi" || !source) {
+      if (!apiKey?.trim()) {
+        throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
+          code: "VIN_NO_DATA",
+        });
+      }
+      const base = normalizeProviderBaseUrl(providerBaseUrl);
+      try {
+        const body = await fetchLocalReport(normalized, base, apiKey);
+        return normalizeCarstatResponse(body);
+      } catch (err) {
+        logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
+        throw err;
+      }
+    }
+
+    throw new Error("No vehicle history data found for this VIN in our database.");
   });
 }
 
@@ -1628,24 +1777,19 @@ export async function ensureVinPayableForPayment(userId: string, vin: string): P
     return { ok: true, mode: "standard" };
   }
 
-  const [provider] = await db.select().from(providersTable)
-    .where(and(eq(providersTable.isActive, true)))
-    .orderBy(providersTable.id)
-    .limit(1);
-  if (!provider?.apiKey?.trim()) {
-    return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
-  }
-
-  const exists = await checkLocalExists(normalizedVin, provider.baseUrl, provider.apiKey);
-  if (exists.status === "exists") return { ok: true, mode: "standard" };
+  const probe = await probeExternalVinAvailability(normalizedVin);
+  if (probe.status === "exists") return { ok: true, mode: "standard" };
 
   const { isVinEligibleForManualPending } = await import("./pendingVinService.js");
-  if (exists.status === "not_found" && await isVinEligibleForManualPending(normalizedVin)) {
+  const eligiblePending = await isVinEligibleForManualPending(normalizedVin);
+
+  // not_found OR providers down/timeout → pending when decode is trustworthy (do not hard-fail checkout).
+  if ((probe.status === "not_found" || probe.status === "unavailable") && eligiblePending) {
     return { ok: true, mode: "manual_pending" };
   }
 
-  if (exists.status === "not_found") return { ok: false, code: "VIN_NO_DATA" };
-  return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
+  if (probe.status === "not_found") return { ok: false, code: "VIN_NO_DATA" };
+  return { ok: false, code: "VIN_CHECK_UNAVAILABLE", reason: probe.reason || PUBLIC_VIN_CHECK_UNAVAILABLE };
 }
 
 // Parse a date value that may arrive as:
@@ -3249,17 +3393,23 @@ function sanitizeRegistryHistoryEvent(event: RegistryHistoryEvent): RegistryHist
     date: event.date && isMeaningfulProviderText(event.date) ? event.date : null,
     details: details.length > 0 ? details : undefined,
   };
-  const hasContent = Boolean(
-    cleaned.title
+  const titleIsGeneric = !cleaned.title
+    || /^(event|no information|n\/a|unknown|-|registry event)$/i.test(cleaned.title);
+  const typeIsGeneric = !cleaned.type || /^(event|other|unknown)$/i.test(String(cleaned.type));
+  const hasMeaningfulContent = Boolean(
+    (cleaned.title && !titleIsGeneric)
     || cleaned.subtitle
-    || cleaned.date
     || cleaned.mileage != null
     || cleaned.amount
     || cleaned.location
     || (cleaned.details?.length ?? 0) > 0
-    || cleaned.type,
+    || (!typeIsGeneric && cleaned.date),
   );
-  return hasContent ? cleaned : null;
+  if (!hasMeaningfulContent) return null;
+  return {
+    ...cleaned,
+    title: titleIsGeneric ? null : cleaned.title,
+  };
 }
 
 /** Pick the richest details.history block across Korean marketplace lots. */

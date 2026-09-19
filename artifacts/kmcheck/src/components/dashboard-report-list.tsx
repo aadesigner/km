@@ -71,16 +71,21 @@ function StatusBadge({ status }: { status: VinLookupStatus | string }) {
 
 type DeleteMutation = UseMutationResult<unknown, unknown, { id: number }, unknown>;
 
-function resolveReportPhotoUrl(data: VinLookup["data"]): string | undefined {
+function resolveReportPhotoCandidates(data: VinLookup["data"]): string[] {
   const vd = data as { photos?: string[]; thumbnailUrl?: string | null } | null | undefined;
-  if (!vd) return undefined;
-  if (Array.isArray(vd.photos) && vd.photos[0]) return vd.photos[0];
-  if (typeof vd.thumbnailUrl === "string" && vd.thumbnailUrl) return vd.thumbnailUrl;
-  return undefined;
+  if (!vd) return [];
+  const fromPhotos = Array.isArray(vd.photos)
+    ? vd.photos.filter((p): p is string => typeof p === "string" && p.length > 0)
+    : [];
+  if (fromPhotos.length > 0) return fromPhotos.slice(0, 4);
+  if (typeof vd.thumbnailUrl === "string" && vd.thumbnailUrl) return [vd.thumbnailUrl];
+  return [];
 }
 
-function ReportListThumbnail({ src, alt }: { src?: string; alt: string }) {
+function ReportListThumbnail({ sources, alt }: { sources: string[]; alt: string }) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const [srcIndex, setSrcIndex] = useState(0);
+  const src = sources[srcIndex];
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(() => (src ? isVinImageSessionLoaded(src) : false));
 
@@ -90,6 +95,12 @@ function ReportListThumbnail({ src, alt }: { src?: string; alt: string }) {
     setReady(true);
     setFailed(false);
   }, [src]);
+
+  useEffect(() => {
+    setSrcIndex(0);
+    setFailed(false);
+    setReady(sources[0] ? isVinImageSessionLoaded(sources[0]) : false);
+  }, [sources.join("\0")]); // eslint-disable-line react-hooks/exhaustive-deps -- URL identity
 
   useEffect(() => {
     setFailed(false);
@@ -122,7 +133,13 @@ function ReportListThumbnail({ src, alt }: { src?: string; alt: string }) {
         loading="lazy"
         decoding="async"
         onLoad={markReady}
-        onError={() => setFailed(true)}
+        onError={() => {
+          if (srcIndex + 1 < sources.length) {
+            setSrcIndex((i) => i + 1);
+            return;
+          }
+          setFailed(true);
+        }}
       />
       {!ready && (
         <div className="report-list-thumb-fallback absolute inset-0 h-11 w-11 sm:h-14 sm:w-14 bg-primary/10 flex items-center justify-center">
@@ -186,13 +203,13 @@ function ReportCard({
       : isSalvage
         ? t("badge_salvage")
         : t("dashboard_no_accidents");
-  const photoUrl = resolveReportPhotoUrl(vd ?? undefined);
+  const photoCandidates = resolveReportPhotoCandidates(vd ?? undefined);
   const reportHref = `/${language}/vin/${lookup.vin}`;
   const viewable = isViewableReportStatus(lookup.status);
 
   const thumbnail = (
     <div className="relative shrink-0">
-      <ReportListThumbnail src={photoUrl} alt={vehicleName ?? lookup.vin} />
+      <ReportListThumbnail sources={photoCandidates} alt={vehicleName ?? lookup.vin} />
     </div>
   );
 

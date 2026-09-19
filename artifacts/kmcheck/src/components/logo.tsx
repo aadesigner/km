@@ -52,7 +52,7 @@ export function KmcheckLogo({
       width={160}
       height={40}
       fetchPriority="high"
-      className={cn("h-auto w-auto max-w-none object-contain", className)}
+      className={cn("w-auto max-w-none object-contain", className)}
       decoding={syncDecode ? "sync" : "async"}
     />
   );

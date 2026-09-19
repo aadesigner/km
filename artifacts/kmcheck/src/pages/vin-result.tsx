@@ -55,7 +55,7 @@ import {
 } from "@/lib/resolve-latest-odometer";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
-import { formatMarketAuctionDate } from "@/lib/market-chart-data";
+import { formatMarketAuctionDate, marketValuesAreKrw } from "@/lib/market-chart-data";
 import {
   formatAccidentDescription,
   formatAccidentType,
@@ -91,6 +91,7 @@ import { FloodDamageSection } from "@/components/flood-damage-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { RegistryHistorySection } from "@/components/registry-history-section";
 import { ServiceHistorySection } from "@/components/service-history-section";
+import { VehicleExtrasSection } from "@/components/vehicle-extras-section";
 import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
@@ -99,6 +100,7 @@ import { collectReportTimelineEvents, shouldShowReportTimeline } from "@/lib/rep
 import type { InsuranceClaimEntry } from "@/lib/insurance-claims";
 import type { RegistryHistoryEntry } from "@/lib/registry-history";
 import type { ServiceHistoryEntry } from "@/components/service-history-section";
+import type { VehicleExtraEntry } from "@/components/vehicle-extras-section";
 import {
   cleanDisplayStr,
   hasMeaningfulMarketData,
@@ -231,10 +233,13 @@ type LookupData = {
   isFlooded?: boolean | null;
   floodCount?: number | null;
   floodLossAmount?: number | null;
+  /** Opaque: `"getcarapi"` → Events section (not Korean registry). */
+  dataSource?: "getcarapi" | null;
   accidentCount?: number | null;
   titleStatus?: string;
   photos?: string[];
   photosHd?: string[];
+  photoAlternates?: Array<string | null>;
   photos360Exterior?: string[];
   photos360Interior?: string[];
   photos360EmbedUrl?: string | null;
@@ -253,6 +258,7 @@ type LookupData = {
   registryHistory?: RegistryHistoryEntry[];
   recallHistory?: RegistryHistoryEntry[];
   serviceHistory?: ServiceHistoryEntry[];
+  vehicleExtras?: VehicleExtraEntry[];
   krwPerUsd?: number | null;
   fulfillmentPending?: boolean;
 };
@@ -655,6 +661,7 @@ export default function VinResult({ params }: Props) {
   }
 
   const data = lookup.data as LookupData | null | undefined;
+  const isGetCarApi = data?.dataSource === "getcarapi";
   const insuranceClaims = sortHistoryNewestFirst(
     sanitizeInsuranceClaims(repairDatedRecords(data?.insuranceClaims, data?.year), data?.year),
   );
@@ -671,7 +678,7 @@ export default function VinResult({ params }: Props) {
   );
   // Do not useMemo here — this runs after early returns; conditional hooks crash the page
   // when loading → pending_manual/complete (e.g. right after PayPal redirect).
-  const { photos, photosHd } = resolveReportPhotoSets(data);
+  const { photos, photosHd, photoAlternates } = resolveReportPhotoSets(data);
   const mileageHistory = sortHistoryNewestFirst(
     sanitizeMileageHistory(repairDatedRecords(data?.mileageHistory, data?.year), data?.year),
   );
@@ -694,6 +701,7 @@ export default function VinResult({ params }: Props) {
   const serviceHistory = sortHistoryNewestFirst(
     sanitizeServiceHistory(repairDatedRecords(data?.serviceHistory, data?.year), data?.year),
   );
+  const vehicleExtras = data?.vehicleExtras ?? [];
   const timelineEvents = collectReportTimelineEvents({
     year: data?.year,
     accidents,
@@ -758,6 +766,10 @@ export default function VinResult({ params }: Props) {
   const hasSalvageData = data?.isSalvage !== undefined && data?.isSalvage !== null;
   const hasTheftData   = data?.isStolen  !== undefined && data?.isStolen  !== null;
   const showAccidentsSection = accidents.length > 0;
+  const showAccidentsClear =
+    !isPendingManual
+    && accidents.length === 0
+    && (isGetCarApi || data?.accidentCount === 0);
   const showMileageSection = hasMileageData(odometer, mileageHistory);
   const showOwnershipSection = hasOwnershipData(ownerHistory, data?.ownerCount);
   const showAuctionSection = auctionHistory.length > 0;
@@ -899,6 +911,7 @@ export default function VinResult({ params }: Props) {
         country={isPendingManual ? null : data?.country}
         trim={isPendingManual ? undefined : data?.trim}
         photos={isPendingManual ? [] : photos}
+        photoAlternates={isPendingManual ? undefined : photoAlternates}
         scoreData={displayScoreData}
         summaryItems={displayHeroSummary}
         accidentCount={isPendingManual ? 0 : accidentSignals}
@@ -924,19 +937,23 @@ export default function VinResult({ params }: Props) {
           <div className="!hidden print:!inline-flex">
             <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
           </div>
+        ) : showAccidentsClear ? (
+          <PassPill ok labelOk={t("no_accidents")} labelFail="" />
         ) : null}
-        {hasSalvageData
-          ? (
-            <div className="inline-flex items-center gap-1 max-w-full">
-              <PassPill ok={data!.isSalvage === false} labelOk={t("report_no_salvage")} labelFail={t("salvage_flagged")} />
-              {data!.isSalvage === true ? <SalvageMeaningHint className="shrink-0" /> : null}
-            </div>
-          )
-          : null}
-        {hasTheftData
-          ? <PassPill ok={data!.isStolen === false} labelOk={t("report_not_stolen")} labelFail={t("theft_flagged")} />
-          : null}
-        {data?.isFlooded != null || isKoreanCountry(data?.country)
+        <div className="inline-flex items-center gap-1 max-w-full">
+          <PassPill
+            ok={data?.isSalvage !== true}
+            labelOk={t("report_no_salvage")}
+            labelFail={t("salvage_flagged")}
+          />
+          {data?.isSalvage === true ? <SalvageMeaningHint className="shrink-0" /> : null}
+        </div>
+        <PassPill
+          ok={data?.isStolen !== true}
+          labelOk={t("report_not_stolen")}
+          labelFail={t("theft_flagged")}
+        />
+        {data?.isFlooded != null || isKoreanCountry(data?.country) || isGetCarApi
           ? <PassPill ok={data?.isFlooded !== true} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
           : null}
         <PassPill ok={data?.isTaxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
@@ -1075,7 +1092,18 @@ export default function VinResult({ params }: Props) {
                     {(() => {
                       const sty = accidentSeverityStyle(acc.severity);
                       const isOpen = expandedAccidents.has(i);
-                      const sevLabel = translateValue(acc.severity, SEVERITY_KEYS, t) ?? acc.severity;
+                      const sevKey = (acc.severity ?? "").toLowerCase().trim();
+                      const isTierSev = ["minor", "light", "moderate", "major", "severe", "total_loss", "unknown"].includes(sevKey);
+                      const tierLabel = isTierSev
+                        ? (translateValue(acc.severity, SEVERITY_KEYS, t) ?? acc.severity)
+                        : null;
+                      const headerLabel = tierLabel
+                        || formatAccidentDescription(t, language, acc.description)
+                        || (acc.type && !/^\d+$/.test(acc.type) ? formatAccidentType(t, acc.type) : null)
+                        || (!isTierSev && acc.severity
+                          ? acc.severity.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+                          : null)
+                        || null;
                       return (
                         <>
                           <div className={`absolute left-0 top-3 h-2.5 w-2.5 rounded-full shrink-0 ${sty.dot}`} />
@@ -1093,7 +1121,7 @@ export default function VinResult({ params }: Props) {
                                     {localizeAccidentDate(acc.date, language, data?.year, data?.country)}
                                   </p>
                                 )}
-                                {sevLabel && <p className={sty.text}>{sevLabel}</p>}
+                                {headerLabel && <p className={sty.text}>{headerLabel}</p>}
                                 {(acc.location || acc.country) && (
                                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                     <MapPin className="h-3 w-3" />
@@ -1201,6 +1229,36 @@ export default function VinResult({ params }: Props) {
                 ))}
               </div>
           </div>
+          </VinReportSection>
+        </motion.div>
+        )}
+
+        {!isPendingManual && showAccidentsClear && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14 }}
+        >
+          <VinReportSection accent="emerald">
+            <VinReportSectionHeader
+              icon={ShieldCheck}
+              accent="emerald"
+              title={t("accident_history")}
+              trailing={<PassPill ok labelOk={t("no_accidents")} labelFail="" />}
+            />
+            <div className="px-6 py-5">
+              <div className="rounded-xl p-4 flex items-start gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/40">
+                <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-green-100 dark:bg-green-900/40">
+                  <ShieldCheck className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-green-700 dark:text-green-400">{t("no_accidents")}</p>
+                  <p className="text-xs text-muted-foreground/80 mt-0.5 leading-snug">
+                    {t("print_summary_no_accidents")}
+                  </p>
+                </div>
+              </div>
+            </div>
           </VinReportSection>
         </motion.div>
         )}
@@ -1519,6 +1577,7 @@ export default function VinResult({ params }: Props) {
             t={t}
             language={language}
             variant="report"
+            kind={isGetCarApi ? "events" : "registry"}
             delay={0.09}
           />
           </>
@@ -1532,6 +1591,16 @@ export default function VinResult({ params }: Props) {
             language={language}
             variant="report"
             delay={0.095}
+          />
+
+          <VehicleExtrasSection
+            extras={vehicleExtras}
+            vehicleYear={data?.year}
+            vehicleCountry={data?.country}
+            t={t}
+            language={language}
+            variant="report"
+            delay={0.098}
           />
 
           {/* Market Data */}
@@ -1551,6 +1620,7 @@ export default function VinResult({ params }: Props) {
                   t={t}
                   language={language}
                   vehicleCountry={data?.country}
+                  krwPerUsd={krwPerUsd}
                   className="mb-4"
                 />
                 <div className="space-y-4">
@@ -1562,12 +1632,16 @@ export default function VinResult({ params }: Props) {
                       <div>
                         <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("estimated_value")}</p>
                         <p className="text-sm font-bold tabular-nums">
-                          {formatAmountPlain(
-                            marketData.estimatedValue,
-                            resolveAmountDisplayCurrency({
-                              currency: marketData.currency,
-                              vehicleCountry: data?.country,
-                            }),
+                          {marketValuesAreKrw(marketData.currency, data?.country, marketData.estimatedValue) ? (
+                            <KoreanWonAmount krw={marketData.estimatedValue} krwPerUsd={krwPerUsd} />
+                          ) : (
+                            formatAmountPlain(
+                              marketData.estimatedValue,
+                              resolveAmountDisplayCurrency({
+                                currency: marketData.currency,
+                                vehicleCountry: data?.country,
+                              }),
+                            )
                           )}
                         </p>
                       </div>
@@ -1581,12 +1655,16 @@ export default function VinResult({ params }: Props) {
                       <div>
                         <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("last_auction_price")}</p>
                         <p className="text-sm font-bold tabular-nums">
-                          {formatAmountPlain(
-                            marketData.lastAuctionPrice,
-                            resolveAmountDisplayCurrency({
-                              currency: marketData.currency,
-                              vehicleCountry: data?.country,
-                            }),
+                          {marketValuesAreKrw(marketData.currency, data?.country, marketData.lastAuctionPrice) ? (
+                            <KoreanWonAmount krw={marketData.lastAuctionPrice} krwPerUsd={krwPerUsd} />
+                          ) : (
+                            formatAmountPlain(
+                              marketData.lastAuctionPrice,
+                              resolveAmountDisplayCurrency({
+                                currency: marketData.currency,
+                                vehicleCountry: data?.country,
+                              }),
+                            )
                           )}
                         </p>
                       </div>

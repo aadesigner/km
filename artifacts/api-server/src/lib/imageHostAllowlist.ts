@@ -13,6 +13,8 @@ const ALLOWED_HOST_SUFFIXES = [
   "googleusercontent.com",
   "wp.com",
   "imgix.net",
+  "getcarapi.com",
+  "imgsv.getcarapi.com",
 ];
 
 export function isAllowedImageHost(hostname: string): boolean {

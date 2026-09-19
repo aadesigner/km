@@ -33,6 +33,11 @@ export const systemSettingsTable = pgTable("system_settings", {
   maintenanceMode: boolean("maintenance_mode").notNull().default(false),
   /** When false, blocks new paid VIN lookups and checkout (admins exempt). */
   vinLookupEnabled: boolean("vin_lookup_enabled").notNull().default(true),
+  /**
+   * When false, skip GetCarAPI check + retrieve entirely.
+   * Cascade becomes catalog → Carstat → pending (same as no API key).
+   */
+  getcarApiEnabled: boolean("getcar_api_enabled").notNull().default(true),
   /** Partial blocks when maintenanceMode is false: free_decoder | checkout | vin_reports */
   maintenanceRestrictions: jsonb("maintenance_restrictions").$type<string[]>().notNull().default([]),
   maintenanceMessage: text("maintenance_message"),

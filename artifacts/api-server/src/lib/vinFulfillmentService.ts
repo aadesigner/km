@@ -14,12 +14,14 @@ import {
   upsertVinCatalog,
   enrichVinReportDataForServe,
   isStaleCachedReport,
+  probeExternalVinAvailability,
 } from "./vinService.js";
 import { catalogHasDeliverableReport } from "./vinCatalogImport.js";
 import {
   fulfillManualPendingVinLookup,
   isVinEligibleForManualPending,
 } from "./pendingVinService.js";
+import { GETCARAPI_PROVIDER_NAME, resolveGetCarApiConfig } from "./getcarApi.js";
 import { finalizePaymentOnFulfillment } from "./recordedPayments.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
 import {
@@ -96,14 +98,15 @@ async function fetchFromProviderWithRetry(
   vin: string,
   baseUrl: string,
   apiKey: string,
+  preferredSource?: "getcarapi" | "carstat" | null,
 ): Promise<Awaited<ReturnType<typeof fetchFromProvider>>> {
   try {
-    return await fetchFromProvider(vin, baseUrl, apiKey);
+    return await fetchFromProvider(vin, baseUrl, apiKey, { preferredSource });
   } catch (err) {
     if (!isTransientProviderError(err)) throw err;
-    logger.warn({ err, vin }, "Transient provider error — retrying local-report once");
+    logger.warn({ err, vin }, "Transient provider error — retrying report once");
     await new Promise((r) => setTimeout(r, 2000));
-    return await fetchFromProvider(vin, baseUrl, apiKey);
+    return await fetchFromProvider(vin, baseUrl, apiKey, { preferredSource });
   }
 }
 
@@ -218,21 +221,38 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           return;
         }
 
-        if (!provider.apiKey?.trim()) {
+        if (!provider.apiKey?.trim() && !(await resolveGetCarApiConfig())) {
           throw new Error("Provider API key not configured");
         }
 
-        const data = await fetchFromProviderWithRetry(normalizedVin, provider.baseUrl, provider.apiKey);
+        const probe = await probeExternalVinAvailability(normalizedVin);
+        const preferredSource = probe.status === "exists" ? probe.source : null;
+        // GetCarAPI-only installs: never call Carstat with an empty key.
+        if (!preferredSource && !provider.apiKey?.trim() && (await resolveGetCarApiConfig())) {
+          throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
+            code: "VIN_NO_DATA",
+          });
+        }
+        const data = await fetchFromProviderWithRetry(
+          normalizedVin,
+          provider.baseUrl,
+          provider.apiKey ?? "",
+          preferredSource,
+        );
+        const reportProviderName =
+          preferredSource === "getcarapi"
+            ? GETCARAPI_PROVIDER_NAME
+            : (provider.name || GETCARAPI_PROVIDER_NAME);
         const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
         await db.update(vinLookupsTable).set({
           status: "complete",
           data: stampedData,
-          providerName: provider.name,
+          providerName: reportProviderName,
           fromCache: false,
           updatedAt: new Date(),
         }).where(eq(vinLookupsTable.id, lookupId));
         await finalizePaymentOnFulfillment(resolvedPaymentId, lookupId);
-        void upsertVinCatalog(normalizedVin, provider.name, stampedData);
+        void upsertVinCatalog(normalizedVin, reportProviderName, stampedData);
         if (freeCouponPaymentId && freeCouponCode) {
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
@@ -243,10 +263,17 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
     logger.error({ err, vin: normalizedVin, userId, lookupId }, "Async VIN provider fulfillment failed");
 
     let errorCode: string | undefined;
+    const errCode = err && typeof err === "object" && "code" in err
+      ? String((err as { code?: unknown }).code ?? "")
+      : "";
     if (err instanceof Error) {
-      if (/no vehicle history data found|vin not found/i.test(err.message)) {
+      if (errCode === "VIN_NO_DATA" || /no vehicle history data found|vin not found/i.test(err.message)) {
         errorCode = "VIN_NO_DATA";
-      } else if (/provider subscription|empty lots|balance is insufficient|not available|access denied/i.test(err.message)) {
+      } else if (
+        errCode === "PROVIDER_CREDITS"
+        || errCode === "PROVIDER_RATE_LIMIT"
+        || /provider subscription|empty lots|balance is insufficient|not available|access denied|credits exhausted|rate limited/i.test(err.message)
+      ) {
         errorCode = "VIN_CHECK_UNAVAILABLE";
       }
     }

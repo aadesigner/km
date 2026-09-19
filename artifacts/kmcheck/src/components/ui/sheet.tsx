@@ -22,8 +22,9 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     className={cn(
       "fixed inset-0 z-50 bg-black/80",
+      // Fast (mobile nav): no opacity fade — fade was the open flicker on phones.
       fast
-        ? "transition-opacity ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=closed]:duration-100 data-[state=open]:duration-140"
+        ? null
         : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
@@ -34,7 +35,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg will-change-transform",
+  "fixed z-50 gap-4 bg-background p-6 shadow-lg",
   {
     variants: {
       side: {
@@ -48,11 +49,10 @@ const sheetVariants = cva(
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         ),
-        // Mobile nav: short slide + fade (keep paint cheap — no scale)
+        // Mobile nav: short slide only — no opacity / will-change (both caused open flash).
         fast: cn(
-          "transition-[transform,opacity] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
-          "data-[state=closed]:duration-120 data-[state=open]:duration-160",
-          "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
+          "transition-transform ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "data-[state=closed]:duration-150 data-[state=open]:duration-180",
           "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
         ),
       },

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
 import { isVinImageSessionLoaded, markVinImageSessionLoaded, warmVinImageNeighbors } from "@/lib/vin-image-cache";
+import { nextAvailablePhotoIndex } from "@/lib/report-photos";
 
 type PhotoLightboxProps = {
   photos: string[];
@@ -71,6 +72,8 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
     isVinImageSessionLoaded(photos[index] ?? ""),
   );
   const [activeFailed, setActiveFailed] = useState(false);
+  const failedUrlsRef = useRef<Set<string>>(new Set());
+  const skipAttemptsRef = useRef(0);
 
   const bufferIndices = useMemo(() => {
     const n = photos.length;
@@ -94,6 +97,24 @@ export function PhotoLightbox({ photos, index, onClose, onNav }: PhotoLightboxPr
       setActiveFailed(true);
     }
   }, [photos, index]);
+
+  useEffect(() => {
+    failedUrlsRef.current = new Set();
+    skipAttemptsRef.current = 0;
+  }, [photos.join("\0")]); // eslint-disable-line react-hooks/exhaustive-deps -- URL identity
+
+  // Dead active frame → auto-advance to the next URL that still loads.
+  useEffect(() => {
+    if (!activeFailed || photos.length <= 1) return;
+    const src = photos[index] ?? "";
+    if (src) failedUrlsRef.current.add(src);
+    if (skipAttemptsRef.current >= photos.length) return;
+    skipAttemptsRef.current += 1;
+    const failedMap: Record<string, boolean> = {};
+    for (const u of failedUrlsRef.current) failedMap[u] = true;
+    const next = nextAvailablePhotoIndex(photos, index, failedMap, 1);
+    if (next != null && next !== index) onNav(next);
+  }, [activeFailed, photos, index, onNav]);
 
   /** Stop infinite spinner if upstream image hangs without firing onError. */
   useEffect(() => {
