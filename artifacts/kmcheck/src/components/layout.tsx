@@ -143,44 +143,51 @@ function CountryNavMenuGroups({
   }
 
   return (
-    <div role="menu" className="px-2 pb-2 pt-3">
-      <p className="px-2 pb-2.5 text-center text-sm font-semibold tracking-tight text-foreground">
-        {t("nav_search_by_country")}
-      </p>
-      <ul className="grid grid-cols-2 gap-0.5">
-        {COUNTRY_LINKS.map(({ slug, img, labelKey }, index) => {
-          const active = isActive(slug);
-          const label = t(labelKey);
-          const aloneOnLastRow =
-            index === COUNTRY_LINKS.length - 1 && COUNTRY_LINKS.length % 2 === 1;
-          return (
-            <li key={slug} role="none" className={aloneOnLastRow ? "col-span-2" : undefined}>
-              <Link
-                href={`/${language}/cars/${slug}`}
-                role="menuitem"
-                onClick={onNavigate}
-                className={cn(
-                  "flex h-full flex-col items-center justify-center gap-2 rounded-xl px-1.5 py-3.5 text-center",
-                  active
-                    ? "bg-primary/[0.08] text-primary"
-                    : "text-foreground hover:bg-muted/60 dark:hover:bg-white/[0.05]",
-                )}
-              >
-                <FlagImg
-                  code={img}
-                  size={28}
-                  priority
-                  className="h-[1.125rem] w-[1.6875rem] shrink-0 rounded-[2px] object-cover"
-                  alt={formatImageFlagAlt(label, t)}
-                />
-                <span className="text-[13px] font-medium leading-snug tracking-tight">
-                  {label}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <div role="menu" className="p-2">
+      {groups.map((group, groupIndex) => (
+        <div key={group.continent} className={cn(groupIndex > 0 && "mt-1.5 border-t border-border/50 pt-1.5")}>
+          <p className="px-2.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+            {t(CONTINENT_LABEL_KEY[group.continent])}
+          </p>
+          <ul className="space-y-0.5">
+            {group.items.map(({ slug, img, labelKey }) => {
+              const active = isActive(slug);
+              const label = t(labelKey);
+              return (
+                <li key={slug} role="none">
+                  <Link
+                    href={`/${language}/cars/${slug}`}
+                    role="menuitem"
+                    onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm font-medium tracking-tight",
+                      "transition-colors duration-75",
+                      active
+                        ? "bg-primary/[0.09] text-primary"
+                        : "text-foreground/85 hover:bg-muted/70 hover:text-foreground dark:hover:bg-white/[0.06]",
+                    )}
+                  >
+                    <FlagImg
+                      code={img}
+                      size={22}
+                      priority
+                      className="h-3.5 w-[1.375rem] shrink-0 rounded-[2px] object-cover ring-1 ring-black/5 dark:ring-white/10"
+                      alt={formatImageFlagAlt(label, t)}
+                    />
+                    <span className="min-w-0 flex-1 truncate leading-none">{label}</span>
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0",
+                        active ? "text-primary/70" : "text-muted-foreground/50",
+                      )}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
@@ -235,14 +242,9 @@ const MobileMenuToggle = forwardRef<
 ));
 MobileMenuToggle.displayName = "MobileMenuToggle";
 
-const NAV_DROPDOWN_PANEL = cn(
-  "min-w-[9.5rem] rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10",
-  "overflow-hidden",
-);
-
-/** Country mega panel — solid fill, no blur (blur makes wide panels feel laggy on open). */
-const NAV_COUNTRY_MEGA_PANEL = cn(
-  "rounded-2xl border border-border/80 bg-background shadow-xl shadow-black/10",
+/** Country dropdown — compact list panel (solid fill, no blur). */
+const NAV_COUNTRY_PANEL = cn(
+  "rounded-xl border border-border/80 bg-background shadow-lg shadow-black/8",
   "overflow-hidden",
 );
 
@@ -255,17 +257,7 @@ const NAV_USER_MENU_PANEL = cn(
 /** Positions panel below trigger; pt-2 bridges the gap for hover travel. */
 const NAV_DROPDOWN_ANCHOR = "absolute top-full z-[110] pt-2";
 
-const NAV_DROPDOWN_MOTION = {
-  initial: { opacity: 0, y: -2, scale: 0.99 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -2, scale: 0.99 },
-  transition: { duration: 0.07, ease: [0.22, 1, 0.36, 1] },
-} as const;
-
-/** Dropdown panel shell — motion handles enter/exit; avoid tailwind animate-in (double animation). */
-const NAV_DROPDOWN_CLS = NAV_DROPDOWN_PANEL;
-
-type NavDropdownKey = "country" | "lang" | "user";
+type NavDropdownKey = "country" | "user";
 
 function navDropdownHoverProps(
   key: NavDropdownKey,
@@ -325,9 +317,15 @@ function MobileLangPicker({
   const [mounted, setMounted] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const hoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
 
-  const close = useCallback(() => setOpen(false), []);
+  const clearHoverClose = useCallback(() => {
+    if (hoverCloseTimer.current) {
+      clearTimeout(hoverCloseTimer.current);
+      hoverCloseTimer.current = null;
+    }
+  }, []);
 
   const updateMenuPosition = useCallback(() => {
     const btn = btnRef.current;
@@ -335,14 +333,39 @@ function MobileLangPicker({
     const rect = btn.getBoundingClientRect();
     const margin = 12;
     const width = Math.min(288, window.innerWidth - margin * 2);
+    // Center under the language trigger, clamped to the viewport.
+    const centerX = rect.left + rect.width / 2;
+    let left = centerX - width / 2;
+    left = Math.min(Math.max(left, margin), window.innerWidth - margin - width);
     setMenuStyle({
       position: "fixed",
       top: rect.bottom + 8,
-      right: margin,
+      left,
       width,
       zIndex: 130,
     });
   }, []);
+
+  const close = useCallback(() => {
+    clearHoverClose();
+    setOpen(false);
+  }, [clearHoverClose]);
+
+  const openMenu = useCallback(() => {
+    clearHoverClose();
+    updateMenuPosition();
+    setOpen(true);
+  }, [clearHoverClose, updateMenuPosition]);
+
+  const scheduleClose = useCallback(() => {
+    clearHoverClose();
+    hoverCloseTimer.current = setTimeout(() => {
+      hoverCloseTimer.current = null;
+      setOpen(false);
+    }, 120);
+  }, [clearHoverClose]);
+
+  useEffect(() => () => clearHoverClose(), [clearHoverClose]);
 
   useEffect(() => {
     if (mobileMenuOpen) close();
@@ -394,8 +417,12 @@ function MobileLangPicker({
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!open) updateMenuPosition();
-    setOpen((v) => !v);
+    if (!open) {
+      updateMenuPosition();
+      setOpen(true);
+    } else {
+      close();
+    }
   };
 
   const current = LANGS.find((l) => l.code === language);
@@ -412,12 +439,13 @@ function MobileLangPicker({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
                 transition={{ duration: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                style={{ ...menuStyle, transformOrigin: "top right" }}
+                style={{ ...menuStyle, transformOrigin: "top center" }}
                 className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
+                onMouseEnter={openMenu}
+                onMouseLeave={scheduleClose}
               >
                 <LangPickerList
                   language={language as Language}
-                  layout="mobile"
                   hrefForLanguage={(code) =>
                     replaceLangInPath(
                       typeof window !== "undefined" ? window.location.pathname : `/${language}`,
@@ -438,7 +466,11 @@ function MobileLangPicker({
     : null;
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onMouseEnter={openMenu}
+      onMouseLeave={scheduleClose}
+    >
       <button
         ref={btnRef}
         type="button"
@@ -482,30 +514,20 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const [heroScrolled, setHeroScrolled] = useState(false);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
-  const [langOpen, setLangOpen]       = useState(false);
   const [userOpen, setUserOpen]       = useState(false);
   const countryRef = useRef<HTMLDivElement>(null);
-  const langRef    = useRef<HTMLDivElement>(null);
   const userRef    = useRef<HTMLDivElement>(null);
   const hoverCloseTimers = useRef<Record<NavDropdownKey, ReturnType<typeof setTimeout> | null>>({
     country: null,
-    lang: null,
     user: null,
   });
 
-  const closeCountryAndLang = useCallback(() => {
-    setCountryOpen(false);
-    setLangOpen(false);
-  }, []);
-
-  const closeLangAndUser = useCallback(() => {
-    setLangOpen(false);
+  const closeUser = useCallback(() => {
     setUserOpen(false);
   }, []);
 
-  const closeCountryAndUser = useCallback(() => {
+  const closeCountry = useCallback(() => {
     setCountryOpen(false);
-    setUserOpen(false);
   }, []);
 
   useEffect(() => () => {
@@ -514,8 +536,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       if (timer) clearTimeout(timer);
     }
   }, []);
-
-  usePrefetchPickerFlags(langOpen);
 
   useEffect(() => {
     prefetchNavMenuAssets();
@@ -555,8 +575,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY;
-        setScrolled(y > 60);
-        setHeroScrolled(y > 240);
+        // Solid bar early so mobile doesn't stay transparent mid-scroll.
+        setScrolled(y > 16);
+        setHeroScrolled(y > 72);
         ticking = false;
       });
     };
@@ -572,7 +593,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   useEffect(() => {
     const close = (e: globalThis.MouseEvent) => {
       if (countryRef.current && !countryRef.current.contains(e.target as Node)) setCountryOpen(false);
-      if (langRef.current    && !langRef.current.contains(e.target as Node))    setLangOpen(false);
       if (userRef.current    && !userRef.current.contains(e.target as Node))    setUserOpen(false);
     };
     document.addEventListener("mousedown", close);
@@ -592,7 +612,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         setLanguage(next);
         setLocation(target);
         setMobileOpen(false);
-        setLangOpen(false);
       });
   };
 
@@ -655,20 +674,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     />
   );
 
-  const dropdownCls = NAV_DROPDOWN_CLS;
-  /** Right-side controls: color hover only (no wash). Slightly smaller than center links. */
-  const utilityBtnCls = (active = false) => cn(
-    "relative flex h-9 items-center justify-center rounded-lg px-2 transition-colors duration-75",
-    active
-      ? isDarkNav
-        ? "text-white"
-        : "text-foreground"
-      : isDarkNav
-        ? "text-white/55 hover:text-white"
-        : "text-muted-foreground hover:text-foreground",
-  );
-  /** Mobile-only — keep compact cluster; desktop uses plain icon buttons. */
-  const mobileUtilityClusterCls = cn(
+  const utilityClusterCls = cn(
     "flex items-center gap-0.5 rounded-full p-0.5",
     isDarkNav
       ? "bg-white/[0.04] border border-white/10"
@@ -680,7 +686,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       style={{ top: announcementOffset }}
       className={cn(
       "fixed inset-x-0 z-[100] w-full print:hidden",
-      "transition-[border-color,background-color] duration-300",
+      "transition-[border-color,background-color] duration-200",
       scrolled
         ? (isDarkNav
             ? "bg-[#060a14]/95 border-b border-white/10"
@@ -712,7 +718,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <div
               ref={countryRef}
               className="relative"
-              {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeLangAndUser)}
+              {...navDropdownHoverProps("country", hoverCloseTimers, setCountryOpen, closeUser)}
             >
               <button
                 {...navDropdownTriggerProps(countryOpen, t("nav_country"))}
@@ -737,7 +743,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 )}
                 aria-hidden={!countryOpen}
               >
-                <div className={cn(NAV_COUNTRY_MEGA_PANEL, "w-[22rem] max-w-[calc(100vw-1.5rem)] p-0")}>
+                <div className={cn(NAV_COUNTRY_PANEL, "w-[15rem] max-w-[calc(100vw-1.5rem)] p-0")}>
                   <CountryNavMenuGroups
                     language={language}
                     isActive={(slug) => isOnPage(`cars/${slug}`)}
@@ -764,71 +770,34 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
         {/* ── Right controls ── */}
         <div className="flex items-center gap-1.5 shrink-0 md:justify-self-end">
-          <div className="hidden md:flex items-center gap-2">
-
-            {/* Language + theme */}
-            <div className="flex items-center gap-0.5">
-            <div
-              ref={langRef}
-              className="relative"
-              {...navDropdownHoverProps("lang", hoverCloseTimers, setLangOpen, closeCountryAndUser)}
-            >
-              <button
-                {...navDropdownTriggerProps(langOpen, LANGS.find(l => l.code === language)?.label ?? language)}
-                className={cn(utilityBtnCls(langOpen), "gap-1.5")}
-              >
-                <FlagImg
-                  code={LANGS.find(l => l.code === language)?.img ?? "gb"}
-                  variant="nav"
-                  size={20}
-                  priority
-                  alt={formatImageFlagAlt(LANGS.find(l => l.code === language)?.label ?? language, t)}
-                />
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 transition-transform duration-75",
-                    isDarkNav ? "text-white/40" : "text-muted-foreground",
-                    langOpen && "rotate-180",
-                  )}
-                />
-              </button>
-
-              <AnimatePresence>
-                {langOpen && (
-                  <div className={cn(NAV_DROPDOWN_ANCHOR, "left-1/2 -translate-x-1/2")}>
-                    <motion.div
-                      {...NAV_DROPDOWN_MOTION}
-                      style={{ transformOrigin: "top center" }}
-                    >
-                      <div className={cn(dropdownCls, "w-[18.5rem] max-w-[calc(100vw-1.5rem)] p-1.5")}>
-                        <LangPickerList
-                          language={language}
-                          hrefForLanguage={(code) =>
-                            replaceLangInPath(
-                              typeof window !== "undefined" ? window.location.pathname : `/${language}`,
-                              language,
-                              code,
-                            )
-                          }
-                          onSelect={(code) => handleLanguageChange(code)}
-                        />
-                      </div>
-                    </motion.div>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
-
+          {/* Lang + theme — same cluster layout on all breakpoints */}
+          <div className={utilityClusterCls}>
+            <MobileLangPicker
+              language={language}
+              onLanguageChange={handleLanguageChange}
+              isDarkNav={isDarkNav}
+              scrolled={scrolled}
+              mobileMenuOpen={mobileOpen}
+            />
             <button
+              type="button"
               onClick={toggleTheme}
               title="Toggle theme"
-              className={cn(utilityBtnCls(), "w-9 px-0")}
+              aria-label="Toggle theme"
+              className={cn(
+                "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
+                scrolled ? "h-8 w-8" : "h-9 w-9",
+                isDarkNav
+                  ? "text-white/55 hover:text-white hover:bg-white/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+              )}
             >
-              <Sun className="h-3.5 w-3.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-3.5 w-3.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </button>
-            </div>
+          </div>
 
+          <div className="hidden md:flex items-center gap-2">
             <div className={cn("h-4 w-px", isDarkNav ? "bg-white/15" : "bg-border/70")} />
 
             {/* Auth / Check VIN */}
@@ -838,12 +807,13 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               <div
                 ref={userRef}
                 className="relative"
-                {...navDropdownHoverProps("user", hoverCloseTimers, setUserOpen, closeCountryAndLang)}
+                {...navDropdownHoverProps("user", hoverCloseTimers, setUserOpen, closeCountry)}
               >
                 <button
                   {...navDropdownTriggerProps(userOpen, displayName || t("my_reports"))}
                   className={cn(
-                    "flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg outline-none transition-colors duration-75",
+                    "flex items-center gap-2 pl-1 pr-2 rounded-lg outline-none transition-[color,height,padding] duration-150",
+                    scrolled ? "h-8 py-0.5" : "h-9 py-1",
                     userOpen
                       ? isDarkNav
                         ? "text-white"
@@ -853,14 +823,21 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                         : "text-foreground/75 hover:text-foreground",
                   )}
                 >
-                  <Avatar className="h-7 w-7">
+                  <Avatar className={cn(
+                    "transition-[width,height] duration-150",
+                    scrolled ? "h-7 w-7" : "h-8 w-8",
+                  )}>
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? ""} />
-                    <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                    <AvatarFallback className={cn(
+                      "bg-primary/10 text-primary font-bold transition-[font-size] duration-150",
+                      scrolled ? "text-[11px]" : "text-xs",
+                    )}>
                       {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
                   <span className={cn(
-                    "text-[13px] font-medium tracking-wide max-w-[100px] truncate hidden lg:block",
+                    "font-medium tracking-wide max-w-[7.5rem] truncate hidden lg:block transition-[font-size] duration-150",
+                    scrolled ? "text-sm" : "text-[15px]",
                   )}>
                     {displayName}
                   </span>
@@ -942,31 +919,6 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
           {/* Mobile menu */}
           <div className="md:hidden flex items-center gap-1.5">
-            <div className={mobileUtilityClusterCls}>
-              <MobileLangPicker
-                language={language}
-                onLanguageChange={handleLanguageChange}
-                isDarkNav={isDarkNav}
-                scrolled={scrolled}
-                mobileMenuOpen={mobileOpen}
-              />
-              <button
-                type="button"
-                onClick={toggleTheme}
-                title="Toggle theme"
-                aria-label="Toggle theme"
-                className={cn(
-                  "relative rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
-                  scrolled ? "h-8 w-8" : "h-9 w-9",
-                  isDarkNav
-                    ? "text-white/55 hover:text-white hover:bg-white/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
-                )}
-              >
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              </button>
-            </div>
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <MobileMenuToggle
@@ -1163,7 +1115,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
         )}
       >
-        <main className="flex-1 overflow-x-hidden pt-[var(--site-header-offset,72px)] print:pt-0">
+        <main className="overflow-x-hidden pt-[var(--site-header-offset,72px)] print:pt-0">
           {children}
         </main>
         <Footer />

@@ -313,12 +313,13 @@ export default function Home() {
                   const [line1, ...rest] = t("cta_title").split(/\.\s+/);
                   const line2 = rest.join(". ").trim();
                   return (
-                    <div className="space-y-2">
-                      <h2 className="text-[1.9rem] sm:text-[2.35rem] md:text-[2.6rem] font-extrabold text-white leading-[1.1] tracking-tight">
+                    <div className="space-y-1.5 lg:space-y-2">
+                      {/* Mobile: supporting first line. Desktop: original large first line. */}
+                      <p className="text-2xl font-bold text-white/90 leading-snug tracking-tight lg:text-[2.35rem] xl:text-[2.6rem] lg:font-extrabold lg:text-white lg:leading-[1.1]">
                         {line1}.
-                      </h2>
+                      </p>
                       {line2 ? (
-                        <p className="text-base sm:text-lg text-emerald-200/75 font-medium leading-snug">
+                        <p className="text-[1.75rem] font-extrabold text-white leading-[1.1] tracking-tight lg:text-lg lg:font-medium lg:text-emerald-200/75 lg:leading-snug">
                           {line2.endsWith(".") ? line2 : `${line2}.`}
                         </p>
                       ) : null}

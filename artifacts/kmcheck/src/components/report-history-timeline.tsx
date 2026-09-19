@@ -48,10 +48,14 @@ const TYPE_DOT: Record<TimelineEventType, string> = {
   registry: "bg-teal-500",
 };
 
+function defaultEnabledTypes(present: TimelineEventType[]): Set<TimelineEventType> {
+  return new Set(present);
+}
+
 const VIEW_W = 1000;
 const VIEW_H = 240;
 /** Tight plot inset — left room for in-chart mileage labels. */
-const PAD = { l: 44, r: 18, t: 28, b: 16 };
+const PAD = { l: 48, r: 20, t: 26, b: 18 };
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 6;
 const ZOOM_FACTOR = 1.25;
@@ -340,22 +344,22 @@ function ChartZoomControls({
   onReset: () => void;
 }) {
   return (
-    <div className="inline-flex items-center overflow-hidden rounded-lg border border-border/80 bg-muted/30 shadow-sm">
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-background p-0.5 shadow-sm">
       <button
         type="button"
-        className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-35"
         aria-label={t("report_timeline_zoom_out")}
         disabled={zoom.scale <= MIN_ZOOM}
         onClick={onZoomOut}
       >
         <Minus className="h-3.5 w-3.5" />
       </button>
-      <span className="min-w-[2.5rem] border-x border-border/60 px-1 text-center text-[11px] font-semibold tabular-nums text-foreground/80">
+      <span className="min-w-[2.25rem] px-0.5 text-center text-[10px] font-semibold tabular-nums text-foreground/70">
         {`${Number.isInteger(zoom.scale) ? zoom.scale.toFixed(0) : zoom.scale.toFixed(1)}×`}
       </span>
       <button
         type="button"
-        className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-35"
         aria-label={t("report_timeline_zoom_in")}
         disabled={zoom.scale >= MAX_ZOOM}
         onClick={onZoomIn}
@@ -364,12 +368,12 @@ function ChartZoomControls({
       </button>
       <button
         type="button"
-        className="flex h-8 w-8 items-center justify-center border-l border-border/60 text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-35"
         aria-label={t("report_timeline_zoom_reset")}
         disabled={!zoomed}
         onClick={onReset}
       >
-        <RotateCcw className="h-3.5 w-3.5" />
+        <RotateCcw className="h-3 w-3" />
       </button>
     </div>
   );
@@ -513,10 +517,10 @@ function clusterTimelineEvents(events: TimelineEvent[]): TimelineEvent[][] {
 }
 
 /**
- * Merge day-markers only when their dates sit almost on top of each other on the
- * time axis (visual overlap at default zoom). Zooming in shrinks the gap so they split.
+ * Pull visually close dates into one bubble at default zoom.
+ * Zooming in drops the threshold quickly so different days separate when there is space.
  */
-const PROXIMITY_X_THRESHOLD = 18;
+const PROXIMITY_X_THRESHOLD = 14;
 
 type PlotMarker = {
   id: string;
@@ -529,15 +533,20 @@ type PlotMarker = {
 
 function mergeMarkersByProximity(markers: PlotMarker[], zoomScale: number): PlotMarker[] {
   if (markers.length <= 1) return markers;
-  const threshold = PROXIMITY_X_THRESHOLD / Math.max(zoomScale, 0.01);
+  // Quadratic falloff — by ~1.5–2× nearby dates already split if there is room.
+  const threshold = PROXIMITY_X_THRESHOLD / Math.pow(Math.max(zoomScale, 1), 2);
   const sorted = [...markers].sort((a, b) => a.x - b.x || a.y - b.y || a.id.localeCompare(b.id));
   const groups: PlotMarker[][] = [[sorted[0]!]];
 
   for (let i = 1; i < sorted.length; i++) {
     const marker = sorted[i]!;
     const group = groups[groups.length - 1]!;
+    const first = group[0]!;
     const prev = group[group.length - 1]!;
-    if (marker.x - prev.x < threshold) group.push(marker);
+    // Near the previous point AND within the cluster window — avoids chaining a long run of days.
+    const nearPrev = marker.x - prev.x < threshold;
+    const withinSpan = marker.x - first.x < threshold;
+    if (nearPrev && withinSpan) group.push(marker);
     else groups.push([marker]);
   }
 
@@ -875,7 +884,7 @@ function TimelineMarker({
           return true;
         });
       }
-      facts = facts.slice(0, 8);
+      facts = facts.slice(0, 5);
       if (hideMileageType && facts.length === 0) return [];
       return [{ type, label: t(TYPE_LABEL_KEY[type]), facts }];
     });
@@ -929,17 +938,18 @@ function TimelineMarker({
         >
           <span
             className={cn(
-              "relative flex items-center justify-center rounded-full shadow-[0_1px_2px_rgba(15,23,42,0.2)]",
-              "ring-2 ring-background transition-transform duration-150 sm:ring-[2.5px]",
+              "relative flex items-center justify-center rounded-full",
+              "ring-[2.5px] ring-background shadow-md shadow-black/10",
+              "transition-transform duration-150",
               open ? "scale-110" : "group-hover:scale-105",
               clustered
                 ? "h-5 w-5 sm:h-6 sm:w-6 bg-primary"
                 : accident
-                  ? "h-3 w-3 sm:h-4 sm:w-4"
+                  ? "h-3.5 w-3.5 sm:h-4 sm:w-4"
                   : markerType === "production"
-                    ? "h-2 w-2 sm:h-3 sm:w-3 ring-slate-400/80 dark:ring-slate-500"
-                    : "h-2.5 w-2.5 sm:h-3.5 sm:w-3.5",
-              !clustered && TYPE_DOT[markerType],
+                    ? "h-2.5 w-2.5 sm:h-3 sm:w-3 bg-slate-400 dark:bg-slate-300"
+                    : "h-3 w-3 sm:h-3.5 sm:w-3.5",
+              !clustered && markerType !== "production" && TYPE_DOT[markerType],
             )}
           >
             {clustered ? (
@@ -953,9 +963,12 @@ function TimelineMarker({
       <PopoverContent
         side="top"
         align="center"
-        sideOffset={10}
+        sideOffset={12}
         collisionPadding={16}
-        className="z-[80] w-[min(20rem,calc(100vw-1.25rem))] max-h-[min(22rem,72vh)] overflow-y-auto rounded-xl border border-border/70 p-0 pb-1 shadow-lg"
+        className={cn(
+          "z-[80] w-[min(17.5rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto",
+          "rounded-2xl border border-border/60 bg-background p-0 shadow-xl shadow-black/10",
+        )}
         onPointerEnter={(e) => {
           if (e.pointerType === "mouse") openNow();
         }}
@@ -963,26 +976,41 @@ function TimelineMarker({
           if (e.pointerType === "mouse") closeSoon();
         }}
       >
-        <div className="space-y-2.5 border-b border-border/50 bg-muted/25 px-4 py-3.5">
-          <span className="inline-flex items-center rounded-full bg-background px-2.5 py-0.5 text-[11px] font-semibold tabular-nums tracking-wide text-foreground/80 shadow-sm ring-1 ring-border/70">
-            {dateLabel}
-          </span>
+        {/* Header */}
+        <div className="px-3.5 pt-3.5 pb-3">
           {headline ? (
-            <p className="text-[15px] font-semibold leading-snug text-foreground">{headline}</p>
+            <div className="flex items-start gap-2">
+              <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", TYPE_DOT[markerType])} />
+              <p className="text-sm font-semibold leading-snug text-foreground">{headline}</p>
+            </div>
           ) : clustered ? (
-            <p className="text-[13px] font-medium leading-snug text-foreground/85">{typeLabels.join(" · ")}</p>
-          ) : null}
-          {kmShort && !multiDay ? (
-            <p className="inline-flex items-center rounded-md bg-background/90 px-2 py-0.5 text-[12px] font-semibold tabular-nums text-foreground shadow-sm ring-1 ring-border/60">
-              {kmShort}
+            <p className="text-sm font-semibold leading-snug text-foreground">
+              {typeLabels.join(" · ")}
             </p>
-          ) : null}
+          ) : (
+            <div className="flex items-start gap-2">
+              <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", TYPE_DOT[markerType])} />
+              <p className="text-sm font-semibold leading-snug text-foreground">
+                {t(TYPE_LABEL_KEY[markerType])}
+              </p>
+            </div>
+          )}
+          <div
+            className={cn(
+              "mt-2",
+              (headline || !clustered) && "pl-4",
+            )}
+          >
+            <span className="inline-flex items-center rounded-md bg-foreground px-2 py-0.5 text-[11px] font-semibold tabular-nums text-background">
+              {[dateLabel, !multiDay ? kmShort : null].filter(Boolean).join(" · ")}
+            </span>
+          </div>
         </div>
 
         {multiDay ? (
-          <div className="divide-y divide-border/50 pb-2">
+          <div className="border-t border-border/50">
             {dayGroups.map((day) => {
-              const sections = buildSections(day.events, false)
+              const sections = buildSections(day.events, true)
                 .map((section) => {
                   const dayTitle = resolveMileageTitle(day.events);
                   if (section.type === "mileage" && dayTitle) {
@@ -993,72 +1021,62 @@ function TimelineMarker({
                 .filter((section) => section.facts.length > 0 || section.type !== "mileage");
               const dayKm = clusterRecordedKm(day.events);
               const dayKmShort = dayKm > 0 ? `${dayKm.toLocaleString()} km` : null;
-              const dayTitle = resolveMileageTitle(day.events);
-              const dayHeadline = dayTitle
-                || (sections.length === 1 ? sections[0]!.label : null);
               return (
-                <div key={day.dayKey} className="space-y-2.5 px-4 py-3.5 last:pb-5">
-                  <div className="space-y-1.5">
-                    <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums tracking-wide text-foreground/80 ring-1 ring-border/60">
-                      {formatDayLabel(day.events)}
-                    </span>
-                    {dayHeadline ? (
-                      <p className="text-[13px] font-semibold leading-snug text-foreground">{dayHeadline}</p>
-                    ) : null}
-                    {dayKmShort ? (
-                      <p className="inline-flex rounded-md bg-muted/60 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-foreground/90">
-                        {dayKmShort}
-                      </p>
-                    ) : null}
+                <div
+                  key={day.dayKey}
+                  className="border-b border-border/40 px-3.5 py-3 last:border-b-0"
+                >
+                  <span className="inline-flex items-center rounded-md bg-foreground px-2 py-0.5 text-[11px] font-semibold tabular-nums text-background">
+                    {[formatDayLabel(day.events), dayKmShort].filter(Boolean).join(" · ")}
+                  </span>
+                  <div className="mt-2 space-y-2.5">
+                    {sections.map((section) => (
+                      <div key={`${day.dayKey}-${section.type}`}>
+                        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-foreground/80">
+                          <span className={cn("h-1.5 w-1.5 rounded-full", TYPE_DOT[section.type])} />
+                          {section.label}
+                        </p>
+                        {section.facts.length > 0 ? (
+                          <ul className="mt-1 space-y-1 pl-0.5">
+                            {section.facts.map((fact) => (
+                              <li key={fact} className="flex gap-2 text-[12px] leading-snug text-muted-foreground">
+                                <span className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-foreground/25" />
+                                <span>{fact}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    ))}
                   </div>
-                  {sections.length > 0 ? (
-                    <div className={cn(sections.length > 1 ? "space-y-2.5" : "")}>
-                      {sections.map((section) => (
-                        <div key={`${day.dayKey}-${section.type}`}>
-                          {(sections.length > 1 || !dayHeadline) ? (
-                            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
-                              <span className={cn("h-1.5 w-1.5 rounded-full", TYPE_DOT[section.type])} />
-                              {section.label}
-                            </p>
-                          ) : null}
-                          {section.facts.length > 0 ? (
-                            <ul className={cn("space-y-1 text-[13px] leading-snug text-foreground/85", (sections.length > 1 || !dayHeadline) && "mt-1")}>
-                              {section.facts.map((fact) => (
-                                <li key={fact}>{fact}</li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
                 </div>
               );
             })}
           </div>
         ) : bodySections.length > 0 ? (
-          <div className={cn("px-4 pt-3.5 pb-5", bodySections.length > 1 ? "space-y-3" : "")}>
+          <div className="border-t border-border/50 px-3.5 py-3 space-y-2.5">
             {bodySections.map((section) => (
               <div key={section.type}>
                 {showSectionLabels ? (
-                  <p className="mb-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+                  <p className="mb-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-foreground/80">
                     <span className={cn("h-1.5 w-1.5 rounded-full", TYPE_DOT[section.type])} />
                     {section.label}
                   </p>
                 ) : null}
                 {section.facts.length > 0 ? (
-                  <ul className="space-y-1 text-[13px] leading-snug text-foreground/85">
+                  <ul className={cn("space-y-1", showSectionLabels && "pl-0.5")}>
                     {section.facts.map((fact) => (
-                      <li key={fact}>{fact}</li>
+                      <li key={fact} className="flex gap-2 text-[12.5px] leading-snug text-muted-foreground">
+                        <span className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-foreground/25" />
+                        <span>{fact}</span>
+                      </li>
                     ))}
                   </ul>
                 ) : null}
               </div>
             ))}
           </div>
-        ) : (
-          <div className="pb-3" aria-hidden />
-        )}
+        ) : null}
       </PopoverContent>
     </Popover>
   );
@@ -1076,6 +1094,42 @@ export function ReportHistoryTimeline({
   const fillId = useId().replace(/:/g, "");
   const chartZoom = useChartZoom(true);
   const { resetZoom, ...chartZoomUi } = chartZoom;
+
+  const presentTypes = useMemo(
+    () =>
+      TIMELINE_EVENT_TYPES.filter(
+        (type) => type !== "mileage" && type !== "production" && events.some((e) => e.type === type),
+      ),
+    [events],
+  );
+
+  /** null = use lean defaults derived from presentTypes */
+  const [enabledOverride, setEnabledOverride] = useState<Set<TimelineEventType> | null>(null);
+
+  useEffect(() => {
+    setEnabledOverride(null);
+  }, [events]);
+
+  const enabledTypes = useMemo(
+    () => enabledOverride ?? defaultEnabledTypes(presentTypes),
+    [enabledOverride, presentTypes],
+  );
+
+  const toggleType = useCallback(
+    (type: TimelineEventType) => {
+      setEnabledOverride((prev) => {
+        const next = new Set(prev ?? defaultEnabledTypes(presentTypes));
+        if (next.has(type)) {
+          if (next.size <= 1) return next;
+          next.delete(type);
+        } else {
+          next.add(type);
+        }
+        return next;
+      });
+    },
+    [presentTypes],
+  );
 
   const layout = useMemo(() => {
     if (events.length === 0) return null;
@@ -1141,16 +1195,31 @@ export function ReportHistoryTimeline({
     };
   }, [events]);
 
-  const displayMarkers = useMemo(
-    () => (layout ? mergeMarkersByProximity(layout.markers, chartZoomUi.zoom.scale) : []),
-    [layout, chartZoomUi.zoom.scale],
-  );
+  const displayMarkers = useMemo(() => {
+    if (!layout) return [];
+    const filtered = layout.markers
+      .map((marker) => {
+        const kept = marker.events.filter((e) => {
+          if (e.type === "mileage" || e.type === "production") return true;
+          return enabledTypes.has(e.type);
+        });
+        const hasSelectedType = kept.some(
+          (e) => e.type !== "mileage" && e.type !== "production",
+        );
+        if (!hasSelectedType) {
+          const originallyQuiet = marker.events.every(
+            (e) => e.type === "mileage" || e.type === "production",
+          );
+          if (!originallyQuiet) return null;
+        }
+        if (!shouldShowTimelineMarkerGroup(kept)) return null;
+        return { ...marker, events: kept, id: kept.map((e) => e.id).join("+") };
+      })
+      .filter((m): m is PlotMarker => m != null);
+    return mergeMarkersByProximity(filtered, chartZoomUi.zoom.scale);
+  }, [layout, enabledTypes, chartZoomUi.zoom.scale]);
 
   if (!layout || events.length === 0) return null;
-
-  const presentTypes = TIMELINE_EVENT_TYPES.filter(
-    (type) => type !== "mileage" && type !== "production" && events.some((e) => e.type === type),
-  );
 
   const renderChart = (opts: {
     gradientId: string;
@@ -1177,20 +1246,23 @@ export function ReportHistoryTimeline({
           >
             <defs>
               <linearGradient id={opts.gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
               </linearGradient>
             </defs>
-            {layout.yTicks.map((tick, i) => (
+
+            {/* Soft horizontal guides — skip baseline (drawn separately) */}
+            {layout.yTicks.slice(1).map((tick) => (
               <line
                 key={tick.km}
                 x1={PAD.l}
                 x2={VIEW_W - PAD.r}
                 y1={(tick.topPct / 100) * VIEW_H}
                 y2={(tick.topPct / 100) * VIEW_H}
-                className="stroke-border/80"
+                className="stroke-border/35"
                 strokeWidth="1"
-                strokeDasharray={i === 0 || i === layout.yTicks.length - 1 ? undefined : "4 6"}
+                strokeDasharray="2 8"
                 vectorEffect="non-scaling-stroke"
               />
             ))}
@@ -1200,8 +1272,8 @@ export function ReportHistoryTimeline({
               x2={VIEW_W - PAD.r}
               y1={layout.baselineY}
               y2={layout.baselineY}
-              className="stroke-foreground/25"
-              strokeWidth="1.5"
+              className="stroke-foreground/12"
+              strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
 
@@ -1213,8 +1285,8 @@ export function ReportHistoryTimeline({
                   x1={x}
                   x2={x}
                   y1={layout.baselineY}
-                  y2={layout.baselineY + 7}
-                  className="stroke-foreground/30"
+                  y2={layout.baselineY + 5}
+                  className="stroke-foreground/18"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -1223,15 +1295,26 @@ export function ReportHistoryTimeline({
 
             {layout.areaD ? <path d={layout.areaD} fill={`url(#${opts.gradientId})`} /> : null}
             {layout.lineD ? (
-              <path
-                d={layout.lineD}
-                className="stroke-primary"
-                fill="none"
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
+              <>
+                <path
+                  d={layout.lineD}
+                  className="stroke-primary/25"
+                  fill="none"
+                  strokeWidth="6"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d={layout.lineD}
+                  className="stroke-primary"
+                  fill="none"
+                  strokeWidth="2.25"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
             ) : null}
           </svg>
 
@@ -1240,7 +1323,7 @@ export function ReportHistoryTimeline({
               <span
                 key={tick.km}
                 className={cn(
-                  "absolute left-1 rounded-sm bg-background/85 px-1 py-0.5 text-[10px] font-semibold tabular-nums leading-none tracking-tight text-foreground/80 shadow-sm backdrop-blur-[2px] sm:left-2 sm:px-1.5 sm:text-xs sm:text-foreground/85",
+                  "absolute left-1.5 text-[10px] font-medium tabular-nums leading-none tracking-tight text-muted-foreground/80 sm:left-2.5 sm:text-[11px]",
                   opts.labelClass,
                 )}
                 style={yAxisLabelStyle(tick.topPct, i, layout.yTicks.length)}
@@ -1267,7 +1350,7 @@ export function ReportHistoryTimeline({
           ))}
         </div>
 
-        <div className="relative h-6 min-w-0 w-full shrink-0 overflow-visible sm:h-6">
+        <div className="relative mt-0.5 h-5 min-w-0 w-full shrink-0 overflow-visible sm:h-5">
           {layout.years.map(({ year, leftPct }, i) => {
             const align =
               i === 0
@@ -1279,7 +1362,7 @@ export function ReportHistoryTimeline({
               <span
                 key={year}
                 className={cn(
-                  "absolute top-1 text-[10px] font-medium tabular-nums leading-none text-foreground/65 sm:text-xs",
+                  "absolute top-0.5 text-[10px] font-medium tabular-nums leading-none text-muted-foreground/75 sm:text-[11px]",
                   align,
                 )}
                 style={{ left: `${leftPct}%` }}
@@ -1320,17 +1403,36 @@ export function ReportHistoryTimeline({
   };
 
   const legend = presentTypes.length > 0 ? (
-    <ul className="flex flex-wrap gap-x-3.5 gap-y-2 border-t border-border/60 bg-muted/20 px-3 py-2.5 sm:gap-x-5 sm:px-5 sm:py-3">
-      {presentTypes.map((type) => (
-        <li
-          key={type}
-          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70 sm:text-xs"
-        >
-          <span className={cn("h-2 w-2 shrink-0 rounded-full ring-2 ring-background shadow-sm", TYPE_DOT[type])} />
-          {t(TYPE_LABEL_KEY[type])}
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-wrap items-center gap-1.5 border-t border-border/40 px-3 py-2.5 sm:gap-2 sm:px-5">
+      <p className="sr-only">{t("report_timeline_filter_hint")}</p>
+      {presentTypes.map((type) => {
+        const on = enabledTypes.has(type);
+        return (
+          <button
+            key={type}
+            type="button"
+            aria-pressed={on}
+            onClick={() => toggleType(type)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
+              "text-[11px] font-medium transition-colors sm:text-xs",
+              on
+                ? "bg-muted/70 text-foreground ring-1 ring-border/70"
+                : "text-muted-foreground/50 hover:bg-muted/40 hover:text-muted-foreground",
+            )}
+          >
+            <span
+              className={cn(
+                "h-2 w-2 shrink-0 rounded-full transition-opacity",
+                TYPE_DOT[type],
+                !on && "opacity-30",
+              )}
+            />
+            {t(TYPE_LABEL_KEY[type])}
+          </button>
+        );
+      })}
+    </div>
   ) : null;
 
   return (
@@ -1341,7 +1443,7 @@ export function ReportHistoryTimeline({
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2.5 sm:px-5 sm:py-3 bg-primary/[0.03]">
+      <div className="flex items-center justify-between gap-3 border-b border-border/40 px-3 py-2.5 sm:px-5 sm:py-3">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
           {t("report_timeline_title")}
         </h2>
@@ -1355,10 +1457,10 @@ export function ReportHistoryTimeline({
         />
       </div>
 
-      <div className="w-full min-w-0 px-1.5 pb-2 pt-2 sm:px-3 sm:pb-3 sm:pt-3">
+      <div className="w-full min-w-0 pt-2 pb-1 sm:pt-2.5 sm:pb-1.5">
         {renderChart({
           gradientId: fillId,
-          heightClass: "h-[14rem] sm:h-[17rem] lg:h-[19rem]",
+          heightClass: "h-[14rem] sm:h-[16.5rem] lg:h-[18rem]",
           zoom: {
             viewportRef: chartZoomUi.viewportRef,
             zoom: chartZoomUi.zoom,

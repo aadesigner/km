@@ -758,7 +758,7 @@
   "compare_disclaimer": "კონკურენტების ფასი მიახლოებითია და განსხვავდება გეგმის/რეგიონის მიხედვით. Carfax €39,99/ანგარიში, CarVertical 25,99 €/ანგარიში.",
   "compare_disclaimer_home": "კონკურენტების ფასი სავარაუდოა და განსხვავდება გეგმის მიხედვით. Carfax €39,99/ანგარიში, AutoCheck 29,99 €/ანგარიში.",
   "compare_disclaimer_usa": "კონკურენტების ფასი სავარაუდოა და განსხვავდება გეგმის მიხედვით. Carfax €39,99/ანგარიში, CarVertical €25,99/ანგარიში, AutoCheck 29,99 €/ანგარიში.",
-  "testimonials_subtitle": "ზოგი მოშორდა. ზოგიერთმა მაინც იყიდა. ბრმად არავინ გადაიხადა.",
+  "testimonials_subtitle": "ზოგი წავიდა, ზოგმა მშვიდად იყიდა. არავინ გადაიხადა უცოდინრად.",
   "testimonials_trust_badge": "4.9/5 საშუალო შეფასება",
   "market_value": "საბაზრო ღირებულება",
   "country_data_sources": "მონაცემთა წყაროები",
@@ -1756,5 +1756,11 @@
   "vin_public_preview_locked_badge": "გადახედვა",
   "vin_public_preview_for_vin": "VIN-ისთვის",
   "vin_public_preview_unlock_hint": "განბლოკეთ სრული ანგარიში თარიღების, ღირებულებებისა და ყველა დეტალისთვის.",
-  "flood_clear_desc": "ამ მანქანისთვის წყალდიდობის დაზიანების ჩანაწერები არ მოიძებნა."
+  "flood_clear_desc": "ამ მანქანისთვის წყალდიდობის დაზიანების ჩანაწერები არ მოიძებნა.",
+  "recall_status_done": "შესრულებული",
+  "recall_status_not_done": "შეუსრულებელი",
+  "provider_recall_required": "გახსენება საჭიროა",
+  "report_timeline_hint": "გარბენი დროში · შეეხეთ წერტილს დეტალებისთვის · ლეგენდით გაფილტრეთ",
+  "report_timeline_show_all": "ყველას ჩვენება",
+  "report_timeline_filter_hint": "ქრონოლოგიის მოვლენების ტიპების გაფილტვრა"
 }

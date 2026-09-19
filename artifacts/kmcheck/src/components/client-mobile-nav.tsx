@@ -47,6 +47,7 @@ export function useShowClientMobileNav(): boolean {
   return isLoaded && !!isSignedIn && !isClientMobileNavExcluded(location);
 }
 
+/** Extra space for the raised Check VIN control above the bar. */
 export const CLIENT_MOBILE_NAV_PADDING = "pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))]";
 
 type NavItem = {
@@ -77,11 +78,11 @@ export function ClientMobileNav() {
 
   const items: NavItem[] = [
     {
-      id: "reports",
-      icon: FileText,
-      label: t("my_reports"),
-      href: dashboardPath(language),
-      active: isDashboard && dashboardView === "reports",
+      id: "help",
+      icon: HelpCircle,
+      label: t("help"),
+      href: dashboardPath(language, "help"),
+      active: isDashboard && dashboardView === "help",
     },
     {
       id: "offers",
@@ -98,18 +99,18 @@ export function ClientMobileNav() {
       active: isHome,
     },
     {
+      id: "reports",
+      icon: FileText,
+      label: t("my_reports"),
+      href: dashboardPath(language),
+      active: isDashboard && dashboardView === "reports",
+    },
+    {
       id: "account",
       icon: User,
       label: t("account"),
       href: dashboardPath(language, "account"),
       active: isDashboard && dashboardView === "account",
-    },
-    {
-      id: "help",
-      icon: HelpCircle,
-      label: t("help"),
-      href: dashboardPath(language, "help"),
-      active: isDashboard && dashboardView === "help",
     },
   ];
 
@@ -126,40 +127,54 @@ export function ClientMobileNav() {
   const nav = (
     <nav
       aria-label="Main navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.35)] print:hidden"
+      className={cn(
+        "md:hidden fixed bottom-0 inset-x-0 z-40 print:hidden",
+        "border-t border-border/60 bg-background/92 backdrop-blur-md",
+      )}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <div className="grid grid-cols-5 items-end">
+      <div className="relative mx-auto flex h-14 max-w-lg items-stretch px-1">
         {items.map(({ id, icon: Icon, label, href, active }) => {
           const isCheckVin = id === "check-vin";
 
           if (isCheckVin) {
             return (
-              <button
-                key={id}
-                type="button"
-                aria-current={active ? "page" : undefined}
-                aria-label={label}
-                className="relative -mt-4 flex min-h-[3rem] flex-col items-center justify-end gap-1 px-0.5 pb-1.5 touch-manipulation select-none"
-                onPointerDown={() => {
-                  prefetchRouteFromHref(href, { isSignedIn });
-                }}
-                onClick={() => navigateTo(href)}
-              >
-                <span
+              <div key={id} className="relative flex min-w-0 flex-1 items-end justify-center">
+                <button
+                  type="button"
+                  aria-current={active ? "page" : undefined}
+                  aria-label={label}
                   className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95",
-                    "bg-gradient-to-br from-primary to-[hsl(158,72%,34%)] text-primary-foreground",
-                    "ring-4 ring-background",
-                    active && "ring-primary/25 shadow-primary/30",
+                    "absolute bottom-2 z-10 flex flex-col items-center gap-1",
+                    "touch-manipulation select-none",
+                    "transition-transform duration-75 active:scale-[0.97]",
                   )}
+                  onPointerDown={() => {
+                    prefetchRouteFromHref(href, { isSignedIn });
+                  }}
+                  onClick={() => navigateTo(href)}
                 >
-                  <Icon className="h-5 w-5 shrink-0 pointer-events-none" />
-                </span>
-                <span className="text-[9px] font-semibold leading-tight text-center pointer-events-none text-primary max-w-full truncate px-0.5">
-                  {label}
-                </span>
-              </button>
+                  {/* Icon-only circle raised above the bar; label sits below, outside the fill */}
+                  <span
+                    className={cn(
+                      "-mt-3 flex h-11 w-11 items-center justify-center rounded-full",
+                      "bg-primary text-primary-foreground",
+                      "shadow-md shadow-primary/25",
+                      active && "ring-2 ring-primary/20",
+                    )}
+                  >
+                    <Icon className="h-5 w-5 shrink-0 pointer-events-none" strokeWidth={2.25} />
+                  </span>
+                  <span
+                    className={cn(
+                      "max-w-[5.75rem] truncate text-center text-[10px] font-semibold leading-tight pointer-events-none",
+                      active ? "text-primary" : "text-foreground",
+                    )}
+                  >
+                    {label}
+                  </span>
+                </button>
+              </div>
             );
           }
 
@@ -168,18 +183,35 @@ export function ClientMobileNav() {
               key={id}
               type="button"
               aria-current={active ? "page" : undefined}
+              aria-label={label}
               className={cn(
-                "flex min-h-[3rem] flex-col items-center justify-center gap-0.5 px-0.5 pt-1 pb-2 touch-manipulation select-none",
-                "active:bg-muted/60 transition-colors",
-                active ? "text-primary" : "text-muted-foreground",
+                "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5",
+                "touch-manipulation select-none transition-colors duration-75",
+                active ? "text-primary" : "text-muted-foreground active:text-foreground",
               )}
               onPointerDown={() => {
                 prefetchRouteFromHref(href, { isSignedIn });
               }}
               onClick={() => navigateTo(href)}
             >
-              <Icon className="h-5 w-5 shrink-0 pointer-events-none" />
-              <span className="text-[9px] font-medium leading-tight text-center pointer-events-none max-w-full truncate px-0.5">{label}</span>
+              {active && (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-3 top-0 h-[2px] rounded-full bg-primary"
+                />
+              )}
+              <Icon
+                className="h-[18px] w-[18px] shrink-0 pointer-events-none"
+                strokeWidth={active ? 2.25 : 1.75}
+              />
+              <span
+                className={cn(
+                  "max-w-full truncate px-0.5 text-center text-[10px] leading-tight pointer-events-none",
+                  active ? "font-semibold" : "font-medium",
+                )}
+              >
+                {label}
+              </span>
             </button>
           );
         })}

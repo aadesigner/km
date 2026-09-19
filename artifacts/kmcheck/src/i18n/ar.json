@@ -700,7 +700,7 @@
   "compare_disclaimer": "أسعار المنافسين تقريبية وتتفاوت. Carfax €39.99/تقرير، CarVertical €25.99/تقرير.",
   "compare_disclaimer_home": "أسعار المنافسين تقريبية. Carfax €39.99/تقرير، AutoCheck €29.99/تقرير.",
   "compare_disclaimer_usa": "أسعار المنافسين تقريبية. Carfax €39.99/تقرير، CarVertical €25.99/تقرير، AutoCheck €29.99/تقرير.",
-  "testimonials_subtitle": "بعضهم انصرف. بعضهم اشترى براحة. ما أحد دفع وهو ما يدري.",
+  "testimonials_subtitle": "بعضهم انصرف، وبعضهم اشترى براحة. ما أحد دفع وهو لا يعلم.",
   "testimonials_trust_badge": "متوسط التقييم 4.9/5",
   "market_value": "القيمة السوقية",
   "country_data_sources": "مصادر البيانات",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "معاينة",
   "vin_public_preview_for_vin": "لـ VIN",
   "vin_public_preview_unlock_hint": "افتح التقرير الكامل للتواريخ والقيم وجميع التفاصيل.",
-  "flood_clear_desc": "لم يتم العثور على سجلات أضرار فيضانات لهذه المركبة."
+  "flood_clear_desc": "لم يتم العثور على سجلات أضرار فيضانات لهذه المركبة.",
+  "recall_status_done": "مكتمل",
+  "recall_status_not_done": "غير مكتمل",
+  "provider_recall_required": "استدعاء مطلوب",
+  "report_timeline_hint": "المسافة عبر الزمن · اضغط نقطة للتفاصيل · اضغط المفتاح للتصفية",
+  "report_timeline_show_all": "عرض الكل",
+  "report_timeline_filter_hint": "تصفية أنواع أحداث المخطط الزمني"
 }

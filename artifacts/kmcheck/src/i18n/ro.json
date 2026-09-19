@@ -701,7 +701,7 @@
   "compare_disclaimer": "Prețurile concurenților sunt aproximative și variază după plan/regiune. Carfax €39,99/raport, CarVertical €25,99/raport.",
   "compare_disclaimer_home": "Prețurile concurenților sunt aproximative și variază după plan. Carfax €39,99/raport, AutoCheck €29,99/raport.",
   "compare_disclaimer_usa": "Prețurile concurenților sunt aproximative și variază după plan. Carfax €39,99/raport, CarVertical €25,99/raport, AutoCheck €29,99/raport.",
-  "testimonials_subtitle": "Unii au renunțat. Unii au cumpărat liniștiți. Nimeni n-a plătit pe nevăzute.",
+  "testimonials_subtitle": "Unii au renunțat, alții au cumpărat liniștiți. Nimeni n-a plătit fără să știe.",
   "testimonials_trust_badge": "Rating mediu 4,9/5",
   "market_value": "Valoare de piață",
   "country_data_sources": "Surse de date",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "Previzualizare",
   "vin_public_preview_for_vin": "Pentru VIN",
   "vin_public_preview_unlock_hint": "Deblocați raportul complet pentru date, valori și toate detaliile.",
-  "flood_clear_desc": "Nu au fost găsite înregistrări de daune prin inundație pentru acest vehicul."
+  "flood_clear_desc": "Nu au fost găsite înregistrări de daune prin inundație pentru acest vehicul.",
+  "recall_status_done": "Finalizat",
+  "recall_status_not_done": "Nefinalizat",
+  "provider_recall_required": "Rechemare necesară",
+  "report_timeline_hint": "Kilometraj în timp · atinge un punct pentru detalii · atinge legenda pentru filtrare",
+  "report_timeline_show_all": "Arată tot",
+  "report_timeline_filter_hint": "Filtrează tipurile de evenimente din cronologie"
 }

@@ -700,7 +700,7 @@
   "compare_disclaimer": "Ціни конкурентів приблизні та варіюються. Carfax €39.99/звіт, CarVertical €25.99/звіт.",
   "compare_disclaimer_home": "Ціни конкурентів приблизні. Carfax €39.99/звіт, AutoCheck €29.99/звіт.",
   "compare_disclaimer_usa": "Ціни конкурентів приблизні. Carfax €39.99/звіт, CarVertical €25.99/звіт, AutoCheck €29.99/звіт.",
-  "testimonials_subtitle": "Хтось відмовився. Хтось купив спокійно. Ніхто не платив навмання.",
+  "testimonials_subtitle": "Хтось відмовився, хтось купив спокійно. Ніхто не платив, не знаючи.",
   "testimonials_trust_badge": "Середня оцінка 4,9/5",
   "market_value": "Ринкова вартість",
   "country_data_sources": "Джерела даних",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "Перегляд",
   "vin_public_preview_for_vin": "Для VIN",
   "vin_public_preview_unlock_hint": "Розблокуйте повний звіт для дат, значень і всіх деталей.",
-  "flood_clear_desc": "Для цього автомобіля не знайдено записів про пошкодження від затоплення."
+  "flood_clear_desc": "Для цього автомобіля не знайдено записів про пошкодження від затоплення.",
+  "recall_status_done": "Виконано",
+  "recall_status_not_done": "Не виконано",
+  "provider_recall_required": "Потрібне відкликання",
+  "report_timeline_hint": "Пробіг у часі · торкніться точки для деталей · торкніться легенди для фільтра",
+  "report_timeline_show_all": "Показати все",
+  "report_timeline_filter_hint": "Фільтр типів подій на шкалі часу"
 }

@@ -701,7 +701,7 @@
   "compare_disclaimer": "Цените на конкурентите са приблизителни и варират по план/регион. Carfax €39.99/отчет, CarVertical €25.99/отчет.",
   "compare_disclaimer_home": "Цените на конкурентите са приблизителни и варират по план. Carfax €39.99/отчет, AutoCheck €29.99/отчет.",
   "compare_disclaimer_usa": "Цените на конкурентите са приблизителни и варират по план. Carfax €39.99/отчет, CarVertical €25.99/отчет, AutoCheck €29.99/отчет.",
-  "testimonials_subtitle": "Някои си тръгнаха. Някои купиха все пак. Никой не плати на сляпо.",
+  "testimonials_subtitle": "Някои си тръгнаха, някои купиха спокойно. Никой не плати, без да знае.",
   "testimonials_trust_badge": "Средна оценка 4.9/5",
   "market_value": "Пазарна стойност",
   "country_data_sources": "Източници на данни",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "Преглед",
   "vin_public_preview_for_vin": "За VIN",
   "vin_public_preview_unlock_hint": "Отключете пълния доклад за дати, стойности и всички подробности.",
-  "flood_clear_desc": "Не са намерени записи за щети от наводнение за този автомобил."
+  "flood_clear_desc": "Не са намерени записи за щети от наводнение за този автомобил.",
+  "recall_status_done": "Изпълнен",
+  "recall_status_not_done": "Неизпълнен",
+  "provider_recall_required": "Необходимо отзоваване",
+  "report_timeline_hint": "Пробег във времето · докоснете точка за подробности · докоснете легендата за филтър",
+  "report_timeline_show_all": "Покажи всички",
+  "report_timeline_filter_hint": "Филтриране на типовете събития в хронологията"
 }

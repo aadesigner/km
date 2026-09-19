@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 /** Non-blocking route placeholder — layout chrome without a centered spinner. */
 export function RouteShellFallback({ className }: { className?: string }) {
   return (
-    <div className={cn("min-h-screen bg-background", className)} aria-hidden>
+    <div className={cn("bg-background", className)} aria-hidden>
       <div className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="h-8 w-28 rounded-lg bg-muted/70 animate-pulse" />

@@ -785,7 +785,7 @@
   "compare_disclaimer": "Competitor pricing is approximate and varies by plan/region. Carfax €39.99/report, CarVertical €25.99/report.",
   "compare_disclaimer_home": "Competitor pricing is approximate and varies by plan. Carfax €39.99/report, AutoCheck €29.99/report.",
   "compare_disclaimer_usa": "Competitor pricing is approximate and varies by plan. Carfax €39.99/report, CarVertical €25.99/report, AutoCheck €29.99/report.",
-  "testimonials_subtitle": "Some walked away. Some bought anyway. Nobody paid blind.",
+  "testimonials_subtitle": "Some walked away, some bought with ease. Nobody paid without knowing.",
   "testimonials_trust_badge": "4.9/5 average rating",
   "market_value": "Market value",
   "country_data_sources": "Data Sources",
@@ -1756,5 +1756,11 @@
   "owners_meaning_learn": "About owner count",
   "owners_meaning_body": "Many prior owners can mean higher wear, short ownership periods, or gaps in care. It is not proof of a problem on its own, but it raises the need for a thorough service and inspection history before you buy.",
   "checkout_error_card_validation": "Please check the card number, expiry date, and security code, then try again.",
-  "flood_clear_desc": "No flood damage records were found for this vehicle."
+  "flood_clear_desc": "No flood damage records were found for this vehicle.",
+  "recall_status_done": "Done",
+  "recall_status_not_done": "Not done",
+  "provider_recall_required": "Recall required",
+  "report_timeline_hint": "Mileage over time · tap a point for details · tap legend to filter",
+  "report_timeline_show_all": "Show all",
+  "report_timeline_filter_hint": "Filter timeline event types"
 }

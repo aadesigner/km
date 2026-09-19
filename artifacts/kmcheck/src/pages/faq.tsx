@@ -35,10 +35,11 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   show: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.06, duration: 0.4, ease: "easeOut" },
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.35, ease: "easeOut" },
   }),
 } as unknown as Variants;
 
@@ -68,7 +69,7 @@ function ReportIncludesAnswer() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       <p className="text-sm leading-relaxed">{t("faq_a5")}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {items.map(({ icon: Icon, label, color, bg }) => (
@@ -83,6 +84,7 @@ function ReportIncludesAnswer() {
           </div>
         ))}
       </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{t("faq_a5_note")}</p>
     </div>
   );
 }
@@ -154,6 +156,12 @@ export default function FAQ() {
 
   let itemIndex = 0;
 
+  const scrollToCategory = (id: string) => {
+    const el = document.getElementById(`faq-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <>
       <SEOHead
@@ -164,53 +172,74 @@ export default function FAQ() {
         jsonLd={faqJsonLd}
       />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-28 px-5 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(var(--primary)/0.12),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
+      {/* Hero — same spacing rhythm as How it works / similar marketing pages */}
+      <section className="relative overflow-hidden border-b border-border/60 px-5 py-14 md:py-20 text-center">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-15%,hsl(var(--primary)/0.14),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px)] [background-size:22px_22px] opacity-60" />
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative max-w-2xl mx-auto"
+          transition={{ duration: 0.4 }}
+          className="relative max-w-2xl mx-auto space-y-5"
         >
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary bg-primary/10 border border-primary/15 px-3 py-1 rounded-full mb-5">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary bg-primary/10 border border-primary/15 px-2.5 py-1 rounded-full">
             <MessageCircle className="h-3 w-3" />
             {t("faq_badge")}
           </span>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-[2.65rem] font-extrabold tracking-tight leading-[1.12]">
             {t("faq_title")}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
             {t("faq_subtitle")}
           </p>
         </motion.div>
       </section>
 
-      {/* FAQ by category */}
-      <section className="max-w-3xl mx-auto px-5 pb-24 pt-4 space-y-10">
+      {/* Category jump + FAQ list */}
+      <section className="max-w-3xl mx-auto px-5 pt-6 pb-16 md:pt-8 md:pb-20 space-y-8">
+        <nav
+          aria-label={t("faq_title")}
+          className="flex flex-wrap items-center justify-center sm:justify-start gap-2"
+        >
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => scrollToCategory(category.id)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1.5",
+                "text-xs font-semibold text-muted-foreground transition-colors",
+                "hover:border-primary/35 hover:text-primary hover:bg-primary/[0.04]",
+              )}
+            >
+              <category.icon className="h-3.5 w-3.5 shrink-0" />
+              {category.label}
+            </button>
+          ))}
+        </nav>
+
         {categories.map((category, catIdx) => (
           <motion.div
             key={category.id}
+            id={`faq-${category.id}`}
             custom={catIdx}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-40px" }}
             variants={fadeUp}
-            className="space-y-4"
+            className="scroll-mt-28 space-y-3"
           >
             <div className="flex items-center gap-2.5">
-              <span className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center">
-                <category.icon className="h-4 w-4 text-foreground" />
+              <span className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <category.icon className="h-3.5 w-3.5 text-primary" />
               </span>
-              <div>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  {category.label}
-                </h2>
-              </div>
+              <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                {category.label}
+              </h2>
             </div>
 
-            <Accordion type="single" collapsible className="space-y-3">
+            <Accordion type="single" collapsible className="space-y-2.5">
               {category.items.map((item) => {
                 const idx = itemIndex++;
                 const value = `item-${idx}`;
@@ -218,9 +247,9 @@ export default function FAQ() {
                   <AccordionItem
                     key={value}
                     value={value}
-                    className="border rounded-2xl px-4 sm:px-5 bg-background shadow-sm data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
+                    className="border border-border/70 rounded-xl px-3.5 sm:px-4 bg-background shadow-sm data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
                   >
-                    <AccordionTrigger className="text-left font-semibold text-[15px] py-4 hover:no-underline gap-3">
+                    <AccordionTrigger className="text-left font-semibold text-[15px] py-3.5 hover:no-underline gap-3">
                       <span className="flex items-center gap-3 min-w-0">
                         <span className="h-8 w-8 rounded-lg bg-muted/80 flex items-center justify-center shrink-0">
                           <item.icon className="h-4 w-4 text-primary" />
@@ -228,7 +257,7 @@ export default function FAQ() {
                         <span className="min-w-0">{item.q}</span>
                       </span>
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed pb-4 text-sm pl-11">
+                    <AccordionContent className="text-muted-foreground leading-relaxed pb-3.5 text-sm pl-11">
                       {item.rich === "report" ? <ReportIncludesAnswer /> : item.a}
                     </AccordionContent>
                   </AccordionItem>
@@ -237,11 +266,10 @@ export default function FAQ() {
             </Accordion>
           </motion.div>
         ))}
-
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-16 md:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(142,80%,26%)] via-primary to-[hsl(158,76%,28%)] dark:from-[hsl(142,72%,20%)] dark:via-[hsl(142,72%,30%)] dark:to-[hsl(158,70%,24%)] px-4 py-14 md:py-16">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
 
@@ -250,7 +278,7 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
-          className="relative z-10 max-w-2xl mx-auto text-center space-y-7"
+          className="relative z-10 max-w-2xl mx-auto text-center space-y-6"
         >
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">

@@ -84,10 +84,13 @@ function paypalHostedFieldStyles(): Record<string, Record<string, string>> {
   };
 }
 
-const PREVIEW_ROW = "px-5 py-3 flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.05] last:border-0";
-const PREVIEW_LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/40";
-const PREVIEW_ICO = "h-3.5 w-3.5 shrink-0 text-muted-foreground/50 dark:text-white/25";
-const PREVIEW_BLUR = "text-[12px] font-semibold tabular-nums text-foreground/80 select-none blur-[3.5px]";
+const CHECKOUT_PANEL =
+  "rounded-2xl border border-border/70 bg-card/95 dark:bg-card/80 backdrop-blur-sm overflow-hidden shadow-sm shadow-black/[0.04] dark:shadow-black/30 ring-1 ring-black/[0.02] dark:ring-white/[0.05]";
+const PREVIEW_ROW =
+  "px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border-b border-border/40 dark:border-white/[0.05] last:border-0";
+const PREVIEW_LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/45";
+const PREVIEW_ICO = "h-3.5 w-3.5 shrink-0 text-muted-foreground/45 dark:text-white/30";
+const PREVIEW_BLUR = "text-[12px] font-semibold tabular-nums text-foreground/75 select-none blur-[3.5px]";
 
 type PaypalHostedFieldsInstance = {
   submit: (opts?: { contingencies?: string[] }) => Promise<{ orderId: string; liabilityShifted?: boolean }>;
@@ -1583,32 +1586,32 @@ export default function Checkout({ params }: Props) {
         lang={seoLang}
         noIndex
       />
-    <div className="relative min-h-[80vh] py-8 sm:py-12 px-3 sm:px-4 pb-24 sm:pb-12 overflow-hidden">
-      {/* Ambient background — single top-center glow, full viewport width */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.05] dark:opacity-[0.12]" />
-      <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-screen -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(34,197,94,0.22),transparent)]" />
+    <div className="relative min-h-[80vh] py-5 sm:py-8 px-3 sm:px-4 pb-20 sm:pb-12 overflow-hidden">
+      {/* Ambient — quiet top wash; dots barely visible */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(#16a34a_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.025] dark:opacity-[0.06]" />
+      <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-screen -z-10 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(34,197,94,0.07),transparent)] dark:bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
 
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
+        transition={{ duration: 0.32 }}
         className="max-w-5xl xl:max-w-6xl mx-auto"
       >
-        <VinLookupDisabledBanner className="mb-6" />
+        <VinLookupDisabledBanner className="mb-4 sm:mb-5" />
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-10 px-1">
+        <div className="text-center mb-6 sm:mb-8 px-1">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.05 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 dark:bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-4 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/80 dark:bg-white/[0.03] backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-3.5"
           >
             <Lock className="h-3.5 w-3.5" />
             {t("checkout_badge")}
           </motion.div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">{t("checkout_title")}</h1>
-          <p className="text-muted-foreground text-sm sm:text-base mt-2 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-primary/70 shrink-0" />
+          <p className="text-muted-foreground text-sm sm:text-base mt-2 flex items-center justify-center gap-1.5 max-w-lg mx-auto leading-snug">
+            <ShieldCheck className="h-4 w-4 text-primary/65 shrink-0" />
             {t("checkout_subtitle")}
           </p>
         </div>
@@ -1627,7 +1630,7 @@ export default function Checkout({ params }: Props) {
           return (
             <nav
               aria-label={t("checkout_title")}
-              className="mb-6 sm:mb-10 mx-auto w-full max-w-sm sm:max-w-lg px-3 sm:px-6"
+              className="mb-6 sm:mb-8 mx-auto w-full max-w-sm sm:max-w-lg px-3 sm:px-6"
             >
               <ol className="flex items-start justify-center sm:justify-stretch w-full">
                 {steps.map((step, i) => {
@@ -1655,16 +1658,16 @@ export default function Checkout({ params }: Props) {
                           transition={{ type: "spring", stiffness: 400, damping: 28 }}
                           className={cn(
                             "relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-shadow duration-300",
-                            isComplete && "bg-primary text-primary-foreground shadow-md shadow-primary/20",
-                            isCurrent && !isComplete && "bg-primary/12 text-primary ring-2 ring-primary/80 ring-offset-1 sm:ring-offset-2 ring-offset-background shadow-[0_0_0_1px_hsl(var(--primary)/0.12)]",
-                            isUpcoming && "bg-muted/50 text-muted-foreground/70 ring-1 ring-border/80",
+                            isComplete && "bg-primary text-primary-foreground shadow-sm shadow-primary/25",
+                            isCurrent && !isComplete && "bg-primary/10 text-primary ring-2 ring-primary/70 ring-offset-1 sm:ring-offset-2 ring-offset-background",
+                            isUpcoming && "bg-muted/40 text-muted-foreground/60 ring-1 ring-border/60",
                           )}
                         >
                           {isCurrent && !isComplete && (
                             <motion.span
-                              className="absolute inset-0 rounded-full ring-2 ring-primary/30"
-                              animate={{ scale: [1, 1.18, 1], opacity: [0.55, 0, 0.55] }}
-                              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                              className="absolute inset-0 rounded-full ring-2 ring-primary/25"
+                              animate={{ scale: [1, 1.15, 1], opacity: [0.45, 0, 0.45] }}
+                              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
                               aria-hidden
                             />
                           )}
@@ -1676,7 +1679,7 @@ export default function Checkout({ params }: Props) {
                             <StepIcon
                               className={cn(
                                 "h-4 w-4 sm:h-[18px] sm:w-[18px]",
-                                isCurrent ? "stroke-[2.25px]" : "stroke-2 opacity-80",
+                                isCurrent ? "stroke-[2.25px]" : "stroke-2 opacity-75",
                               )}
                               aria-hidden
                             />
@@ -1684,10 +1687,10 @@ export default function Checkout({ params }: Props) {
                         </motion.div>
                         <span
                           className={cn(
-                            "text-[10px] sm:text-xs text-center leading-tight max-w-[4rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
+                            "text-[11px] sm:text-xs text-center leading-tight max-w-[4rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
                             isComplete && "font-semibold text-foreground/85",
                             isCurrent && "font-bold text-primary",
-                            isUpcoming && "font-medium text-muted-foreground",
+                            isUpcoming && "font-medium text-muted-foreground/75",
                           )}
                         >
                           {t(step.labelKey)}
@@ -1696,14 +1699,14 @@ export default function Checkout({ params }: Props) {
 
                       {i < steps.length - 1 && (
                         <div
-                          className="relative mt-4 sm:mt-5 w-6 sm:w-auto sm:mx-2 h-0.5 sm:h-1 sm:flex-1 sm:min-w-[1.5rem] rounded-full bg-muted/90 overflow-hidden shrink-0"
+                          className="relative mt-4 sm:mt-5 w-6 sm:w-auto sm:mx-2 h-0.5 sm:h-1 sm:flex-1 sm:min-w-[1.5rem] rounded-full bg-muted/70 overflow-hidden shrink-0"
                           aria-hidden
                         >
                           <motion.div
-                            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-primary to-primary/75"
+                            className="absolute inset-y-0 left-0 rounded-full bg-primary/80"
                             initial={false}
                             animate={{ width: i < currentStep ? "100%" : "0%" }}
-                            transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+                            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                           />
                         </div>
                       )}
@@ -1715,22 +1718,21 @@ export default function Checkout({ params }: Props) {
           );
         })()}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_460px] gap-5 sm:gap-6 lg:gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_440px] gap-4 sm:gap-5 lg:gap-7 items-start">
 
           {/* ── LEFT: Vehicle Preview Card ──────────────────────── */}
           <div className={cn(
-            "rounded-2xl border overflow-hidden order-2 lg:order-1 isolate [transform:translateZ(0)]",
-            showLockedPreview
-              ? "border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0d1117] shadow-[0_8px_40px_rgba(34,197,94,0.10)] dark:shadow-[0_8px_40px_rgba(34,197,94,0.18)]"
-              : "border-border/80 bg-background/90 backdrop-blur-sm shadow-md shadow-black/[0.03] dark:shadow-black/20 ring-1 ring-black/[0.03] dark:ring-white/[0.04]",
+            CHECKOUT_PANEL,
+            "order-2 lg:order-1 isolate [transform:translateZ(0)] mt-1 lg:mt-0",
+            showLockedPreview && "border-primary/15 dark:border-primary/20 shadow-[0_6px_28px_rgba(34,197,94,0.06)] dark:shadow-[0_6px_28px_rgba(34,197,94,0.12)]",
           )}>
             {showLockedPreview && (
-              <div className="h-[3px] bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+              <div className="h-0.5 bg-gradient-to-r from-primary via-primary/40 to-transparent" />
             )}
 
             {/* VIN input row */}
-            <div className="px-5 sm:px-6 py-5 border-b bg-gradient-to-r from-muted/50 via-muted/30 to-transparent">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2.5">{t("checkout_vin_label")}</label>
+            <div className="px-5 sm:px-6 py-4 border-b border-border/50 bg-muted/25 dark:bg-white/[0.02]">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 block mb-2">{t("checkout_vin_label")}</label>
               <div className="relative group" dir="ltr">
                 <Input
                   dir="ltr"
@@ -1811,11 +1813,11 @@ export default function Checkout({ params }: Props) {
             {/* Vehicle identity — only when decoder result looks valid */}
             <div className={cn(!showLockedPreview && "border-b")}>
               {!vinIsValid ? (
-                <div className="flex flex-col items-center justify-center px-5 sm:px-6 py-10 sm:py-8 text-center text-muted-foreground gap-3">
-                  <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-muted/80 to-muted/40 flex items-center justify-center ring-1 ring-border/50">
-                    <Car className="h-8 w-8 opacity-35" />
+                <div className="flex flex-col items-center justify-center px-5 sm:px-6 py-8 sm:py-7 text-center text-muted-foreground gap-2.5">
+                  <div className="h-14 w-14 rounded-2xl bg-muted/50 flex items-center justify-center ring-1 ring-border/40">
+                    <Car className="h-7 w-7 opacity-30" />
                   </div>
-                  <p className="text-sm sm:text-base font-medium max-w-xs leading-snug">{t("checkout_enter_vin_prompt")}</p>
+                  <p className="text-sm font-medium max-w-xs leading-snug text-muted-foreground/90">{t("checkout_enter_vin_prompt")}</p>
                 </div>
               ) : peekLoadingUi ? (
                 <div className="space-y-2.5 px-5 sm:px-6 py-5">
@@ -1828,18 +1830,18 @@ export default function Checkout({ params }: Props) {
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="px-5 pt-4 pb-3"
+                  className="px-5 sm:px-6 pt-4 pb-3"
                 >
-                  <h2 className="text-foreground dark:text-white font-bold text-[17px] sm:text-lg leading-tight break-words">
+                  <h2 className="text-foreground dark:text-white font-bold text-base sm:text-lg leading-tight break-words">
                     {vehicleTitle}
                   </h2>
-                  <p className="text-muted-foreground/60 dark:text-white/25 text-[10px] sm:text-[11px] font-mono tracking-wide mt-1 break-all">
+                  <p className="text-muted-foreground/55 dark:text-white/25 text-[10px] sm:text-[11px] font-mono tracking-wide mt-1 break-all">
                     {peekForVin.vin}
                   </p>
                 </motion.div>
               ) : peekForVin && vinIsValid && !peekLoadingUi ? (
-                <div className="flex flex-col items-center text-center gap-3 px-5 sm:px-6 py-4 sm:py-2">
-                  <div className="inline-flex items-center gap-2 rounded-xl border bg-muted/40 px-3 py-2 max-w-full">
+                <div className="flex flex-col items-center text-center gap-2.5 px-5 sm:px-6 py-4 sm:py-3">
+                  <div className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2 max-w-full">
                     <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                     <span className="font-mono text-xs sm:text-sm tracking-wider break-all">{peekForVin.vin}</span>
                   </div>
@@ -1849,7 +1851,7 @@ export default function Checkout({ params }: Props) {
                   </div>
                 </div>
               ) : peekError ? (
-                <div className="flex items-center gap-3 py-2">
+                <div className="flex items-center gap-3 px-5 sm:px-6 py-4">
                   <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
                     <AlertTriangle className="h-5 w-5 text-amber-500" />
                   </div>
@@ -1863,7 +1865,7 @@ export default function Checkout({ params }: Props) {
 
             {/* Locked data rows — demo-card style */}
             {showLockedPreview && (
-            <div className="border-t border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.025]">
+            <div className="border-t border-border/40 dark:border-white/[0.05] bg-muted/15 dark:bg-white/[0.015]">
               {LOCKED_ROWS.map(({ icon: Icon, labelKey, blur, blurKey }, i) => (
                 <motion.div
                   key={labelKey}
@@ -1886,14 +1888,14 @@ export default function Checkout({ params }: Props) {
                           <span className={cn(PREVIEW_BLUR, "max-w-[100px] sm:max-w-none truncate")} aria-hidden>
                             {blur}
                           </span>
-                          <div className="h-5 w-5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-center">
-                            <Lock className="h-2.5 w-2.5 text-muted-foreground/70" />
+                          <div className="h-5 w-5 rounded-full bg-muted/80 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.08] flex items-center justify-center">
+                            <Lock className="h-2.5 w-2.5 text-muted-foreground/65" />
                           </div>
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-muted/80 dark:bg-white/8 overflow-hidden">
                         <div
-                          className="h-1.5 rounded-full bg-primary/60 blur-[1.5px] w-[58%] select-none"
+                          className="h-1.5 rounded-full bg-primary/50 blur-[1.5px] w-[58%] select-none"
                           aria-hidden
                         />
                       </div>
@@ -1908,8 +1910,8 @@ export default function Checkout({ params }: Props) {
                         <span className={cn(PREVIEW_BLUR, "max-w-[100px] sm:max-w-none truncate")} aria-hidden>
                           {blurKey ? t(blurKey) : blur}
                         </span>
-                        <div className="h-5 w-5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-center">
-                          <Lock className="h-2.5 w-2.5 text-muted-foreground/70" />
+                        <div className="h-5 w-5 rounded-full bg-muted/80 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.08] flex items-center justify-center">
+                          <Lock className="h-2.5 w-2.5 text-muted-foreground/65" />
                         </div>
                       </div>
                     </>
@@ -1921,14 +1923,14 @@ export default function Checkout({ params }: Props) {
 
             {/* Unlock CTA at bottom of preview */}
             {showLockedPreview && (
-            <div className="px-5 py-3.5 bg-black/[0.02] dark:bg-white/[0.02] border-t border-black/[0.05] dark:border-white/[0.05] flex items-center justify-between gap-3">
+            <div className="px-5 sm:px-6 py-3 bg-muted/20 dark:bg-white/[0.02] border-t border-border/40 dark:border-white/[0.05] flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground min-w-0">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Zap className="h-3.5 w-3.5 text-primary" />
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Zap className="h-3 w-3 text-primary" />
                 </div>
-                <span className="leading-snug font-medium">{t("checkout_instant_delivery")}</span>
+                <span className="leading-snug font-medium text-foreground/75">{t("checkout_instant_delivery")}</span>
               </div>
-              <Badge variant="secondary" className="text-[10px] px-2.5 py-0.5 font-bold shrink-0 bg-primary/10 text-primary border-primary/20">
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-bold shrink-0 bg-primary/8 text-primary border-primary/15">
                 {t("checkout_checks_badge").replace("{n}", String(LOCKED_ROWS.length))}
               </Badge>
             </div>
@@ -1936,27 +1938,27 @@ export default function Checkout({ params }: Props) {
           </div>
 
           {/* ── RIGHT: Order Summary + Payment ──────────────────── */}
-          <div className="space-y-5 order-1 lg:order-2 lg:sticky lg:top-24">
+          <div className="space-y-3.5 sm:space-y-4 order-1 lg:order-2 lg:sticky lg:top-24">
 
             {/* Unified payment panel */}
-            <div className="rounded-2xl border border-border/80 bg-background/90 backdrop-blur-sm overflow-hidden shadow-md shadow-black/[0.03] dark:shadow-black/20 ring-1 ring-black/[0.03] dark:ring-white/[0.04]">
-              <div className="px-5 sm:px-6 py-3.5 border-b bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-transparent">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{t("order_summary")}</p>
-                <p className="font-bold text-base">{t("checkout_report_title")}</p>
+            <div className={CHECKOUT_PANEL}>
+              <div className="px-5 sm:px-6 py-3.5 border-b border-border/50 bg-muted/20 dark:bg-white/[0.02]">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-0.5">{t("order_summary")}</p>
+                <p className="font-bold text-base sm:text-lg tracking-tight">{t("checkout_report_title")}</p>
 
                 {/* Mobile — vehicle identity under report line (desktop shows full card below) */}
-                <div className="lg:hidden mt-3">
+                <div className="lg:hidden mt-2.5">
                   {vinIsValid && peekLoadingUi ? (
-                    <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3 space-y-2">
+                    <div className="rounded-lg border border-border/50 bg-background/50 px-3 py-2.5 space-y-2">
                       <Skeleton className="h-4 w-32 rounded" />
                       <Skeleton className="h-3.5 w-44 rounded" />
                     </div>
                   ) : vinIsValid && peekForVin ? (
-                    <div className="rounded-lg border border-primary/15 bg-background/70 dark:bg-background/40 px-3.5 py-3">
+                    <div className="rounded-lg border border-border/50 bg-background/60 dark:bg-background/30 px-3 py-2.5">
                       {vehicleTitle ? (
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-8 w-8 rounded-lg bg-primary/10 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
-                            <Car className="h-4 w-4 text-primary" />
+                          <div className="h-7 w-7 rounded-md bg-primary/10 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
+                            <Car className="h-3.5 w-3.5 text-primary" />
                           </div>
                           <p className="font-semibold text-sm leading-snug text-foreground truncate min-w-0 flex-1">
                             {vehicleTitle}
@@ -1966,13 +1968,13 @@ export default function Checkout({ params }: Props) {
                       <div
                         className={cn(
                           "flex items-center gap-2 min-w-0",
-                          vehicleTitle && "mt-2.5 pt-2.5 border-t border-border/50",
+                          vehicleTitle && "mt-2 pt-2 border-t border-border/40",
                         )}
                       >
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">
                           {t("vin_label")}
                         </span>
-                        <span className="font-mono text-[11px] tracking-wide text-foreground/75 truncate">
+                        <span className="font-mono text-[11px] tracking-wide text-foreground/70 truncate">
                           {peekForVin.vin}
                         </span>
                       </div>
@@ -1980,12 +1982,12 @@ export default function Checkout({ params }: Props) {
                   ) : null}
                 </div>
               </div>
-              <div className="px-5 sm:px-6 py-3 space-y-3">
+              <div className="px-5 sm:px-6 py-3.5 space-y-3">
                 {/* Price breakdown */}
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1.5 text-sm">
                   {isDiscount && standardPrice != null && promoDiscountAmount > 0 ? (
                     <>
-                      <div className="flex justify-between text-muted-foreground">
+                      <div className="flex justify-between text-muted-foreground/85 text-[13px]">
                         <span>{t("checkout_standard_price")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
@@ -1993,7 +1995,7 @@ export default function Checkout({ params }: Props) {
                           <span className="line-through">{fmtPrice(standardPrice)}</span>
                         )}
                       </div>
-                      <div className="flex justify-between text-green-600 dark:text-green-400 font-medium">
+                      <div className="flex justify-between text-green-600 dark:text-green-400 font-medium text-[13px]">
                         <span>{t("pricing_limited_time")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
@@ -2001,7 +2003,7 @@ export default function Checkout({ params }: Props) {
                           <span>−{fmtPrice(promoDiscountAmount)}</span>
                         )}
                       </div>
-                      <div className="flex justify-between text-muted-foreground">
+                      <div className="flex justify-between text-muted-foreground/85 text-[13px]">
                         <span>{t("base_price")}</span>
                         {pricingLoading ? (
                           <Skeleton className="h-4 w-14 rounded" />
@@ -2011,7 +2013,7 @@ export default function Checkout({ params }: Props) {
                       </div>
                     </>
                   ) : (
-                    <div className="flex justify-between text-muted-foreground">
+                    <div className="flex justify-between text-muted-foreground/85 text-[13px]">
                       <span>{t("base_price")}</span>
                       {pricingLoading ? (
                         <Skeleton className="h-4 w-14 rounded" />
@@ -2021,7 +2023,7 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
                   {couponDiscountAmount > 0 && (
-                    <div className="flex justify-between text-green-600 dark:text-green-400 font-medium">
+                    <div className="flex justify-between text-green-600 dark:text-green-400 font-medium text-[13px]">
                       <span>
                         {t("discount")}
                         {couponResult?.type === "percent" ? ` (${couponResult.value}%)` : ""}
@@ -2029,15 +2031,15 @@ export default function Checkout({ params }: Props) {
                       <span>−{fmtPrice(couponDiscountAmount)}</span>
                     </div>
                   )}
-                  <div className="rounded-xl bg-muted/40 border border-border/50 px-4 py-2.5 flex justify-between items-center mt-1.5 gap-3">
-                    <span className="font-bold text-base">{t("total")}</span>
+                  <div className="rounded-xl bg-primary/[0.06] dark:bg-primary/[0.08] border border-primary/15 px-4 py-3 flex justify-between items-center mt-1 gap-3">
+                    <span className="font-bold text-sm sm:text-[15px]">{t("total")}</span>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
                       {!pricingLoading && isDiscount && promoSavePercent > 0 && finalPrice > 0 && (
                         <Badge className="bg-orange-500 text-white border-0 text-[10px] px-2 py-0.5 font-bold">
                           {t("pricing_save").replace("{n}", String(promoSavePercent))}
                         </Badge>
                       )}
-                      <span className="text-xl sm:text-2xl font-black text-primary tabular-nums">
+                      <span className="text-xl sm:text-2xl font-black text-primary tabular-nums tracking-tight">
                         {pricingLoading ? (
                           <Skeleton className="h-7 w-20 rounded inline-block" />
                         ) : couponResult && finalPrice === 0 ? (
@@ -2052,12 +2054,12 @@ export default function Checkout({ params }: Props) {
 
                 {/* Coupon — hidden once user proceeds to payment */}
                 {showCouponSection && (
-                <div className="border-t border-border/60 pt-2">
+                <div className="border-t border-border/40 pt-2.5">
                   {!couponResult && (
                     <button
                       type="button"
                       onClick={() => setCouponOpen(o => !o)}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors w-full pb-2"
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground/80 hover:text-foreground transition-colors w-full pb-1.5"
                     >
                       <Tag className="h-3 w-3" />
                       <span>{t("coupon_code")}</span>
@@ -2071,7 +2073,7 @@ export default function Checkout({ params }: Props) {
                         initial={{ opacity: 0, scale: 0.96 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800"
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-green-50/80 dark:bg-green-950/35 border border-green-200/80 dark:border-green-800/70"
                       >
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
@@ -2116,7 +2118,7 @@ export default function Checkout({ params }: Props) {
                 )}
 
                 {/* Payment section */}
-                <div className="border-t border-border/60 pt-2 space-y-2">
+                <div className="border-t border-border/40 pt-3 space-y-2.5">
                   {showVehicleTooOldNotice && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30">
                       <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -2155,21 +2157,21 @@ export default function Checkout({ params }: Props) {
 
                   {/* Credits first when available (hidden once PayPal/Card payment is opened) */}
                   {showCreditsOption && (
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                       <button
                         type="button"
                         onClick={() => void handlePayWithCredits()}
                         disabled={isBusy}
                         className={cn(
-                          "w-full rounded-xl border border-primary/25 bg-gradient-to-b from-primary/[0.09] to-primary/[0.03]",
+                          "w-full rounded-xl border border-primary/20 bg-primary/[0.05]",
                           "px-3 py-2.5 text-left transition-colors",
-                          "hover:from-primary/[0.13] hover:to-primary/[0.05] hover:border-primary/40",
+                          "hover:bg-primary/[0.09] hover:border-primary/35",
                           "disabled:opacity-60 disabled:pointer-events-none",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35",
                         )}
                       >
                         <span className="flex items-center gap-2.5">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
                             {isBusy
                               ? <Loader2 className="h-4 w-4 animate-spin" />
                               : <Coins className="h-4 w-4" />}
@@ -2185,27 +2187,27 @@ export default function Checkout({ params }: Props) {
                         </span>
                       </button>
                       <div className="relative flex items-center gap-3 py-0.5" aria-hidden>
-                        <div className="h-px flex-1 bg-border/70" />
-                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        <div className="h-px flex-1 bg-border/60" />
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
                           {t("or")}
                         </span>
-                        <div className="h-px flex-1 bg-border/70" />
+                        <div className="h-px flex-1 bg-border/60" />
                       </div>
                     </div>
                   )}
 
                   {/* Payment method tabs — stay visible after PayPal/Card is opened */}
                   {showPaymentMethodTabs && (
-                    <div className="flex rounded-xl border border-border/80 overflow-hidden text-sm font-semibold bg-muted/30 p-1 gap-1 mt-4 mb-2">
+                    <div className="flex rounded-xl border border-border/60 overflow-hidden text-sm font-semibold bg-muted/25 p-1 gap-1 mt-3 mb-1.5">
                       <button
                         type="button"
                         className={cn(
                           "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
                           payMethod === "paypal"
                             ? paymentStarted
-                              ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
-                              : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
-                            : "text-muted-foreground hover:text-foreground",
+                              ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                              : "bg-background text-foreground shadow-sm ring-1 ring-border/50"
+                            : "text-muted-foreground/80 hover:text-foreground hover:bg-background/50",
                         )}
                         onClick={() => {
                           if (payMethod === "paypal") return;
@@ -2232,9 +2234,9 @@ export default function Checkout({ params }: Props) {
                           "flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200",
                           payMethod === "card"
                             ? paymentStarted
-                              ? "bg-primary/75 text-primary-foreground shadow-sm shadow-primary/15 border border-primary/40"
-                              : "bg-background text-foreground shadow-sm ring-1 ring-border/60"
-                            : "text-muted-foreground hover:text-foreground",
+                              ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                              : "bg-background text-foreground shadow-sm ring-1 ring-border/50"
+                            : "text-muted-foreground/80 hover:text-foreground hover:bg-background/50",
                         )}
                         onClick={() => {
                           if (payMethod === "card") return;
@@ -2298,7 +2300,7 @@ export default function Checkout({ params }: Props) {
                               <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_number")}</p>
                               <div
                                 id="hf-card-number"
-                                className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                                className="h-11 rounded-lg border border-border/60 bg-muted/20 px-3 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30"
                               />
                               {cardErrors.number && <p className="text-xs text-destructive">{cardErrors.number}</p>}
                             </div>
@@ -2307,7 +2309,7 @@ export default function Checkout({ params }: Props) {
                                 <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_expiry")}</p>
                                 <div
                                   id="hf-expiry"
-                                  className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                                  className="h-11 rounded-lg border border-border/60 bg-muted/20 px-3 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30"
                                 />
                                 {cardErrors.expirationDate && <p className="text-xs text-destructive">{cardErrors.expirationDate}</p>}
                               </div>
@@ -2315,7 +2317,7 @@ export default function Checkout({ params }: Props) {
                                 <p className="text-xs font-semibold text-muted-foreground">{t("checkout_card_cvv")}</p>
                                 <div
                                   id="hf-cvv"
-                                  className="h-11 rounded-lg border border-border/80 bg-background px-3 focus-within:ring-2 focus-within:ring-primary/25"
+                                  className="h-11 rounded-lg border border-border/60 bg-muted/20 px-3 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30"
                                 />
                                 {cardErrors.cvv && <p className="text-xs text-destructive">{cardErrors.cvv}</p>}
                               </div>
@@ -2359,7 +2361,7 @@ export default function Checkout({ params }: Props) {
                   {/* Proceed / Pay by Card / Free button */}
                   {showProceedButton && (
                     <Button
-                      className="mt-2.5 w-full h-12 sm:h-[52px] text-base font-bold rounded-xl gap-2 shadow-md shadow-primary/15 hover:shadow-primary/25 transition-shadow"
+                      className="mt-1.5 w-full h-11 sm:h-12 text-[15px] font-bold rounded-xl gap-2 shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/15 transition-shadow"
                       onClick={(!isFreeCoupon && payMethod === "card") ? handleCardPayment : handleProceedToPayment}
                       disabled={isBusy || (!isFreeCoupon && payMethod === "card" && !pubSettings?.pokEnabled && (!hostedFieldsReady || cardEligible === "no"))}
                     >
@@ -2387,8 +2389,9 @@ export default function Checkout({ params }: Props) {
 
             {showPaymentLogos && (
               <div className={cn(
-                "rounded-2xl border border-border/60 bg-background px-4",
-                payMethod === "paypal" ? "pt-3 pb-1.5" : "py-3",
+                CHECKOUT_PANEL,
+                "px-4 border-border/50 shadow-none",
+                payMethod === "paypal" ? "pt-2.5 pb-1" : "py-2.5",
               )}>
                 <CheckoutPaymentLogos provider={payMethod === "card" ? "pok" : "paypal"} />
               </div>

@@ -90,7 +90,10 @@ export interface NormalizedVinData {
   isSalvage?: boolean | null;
   isStolen?: boolean | null;
   isTaxi?: boolean | null;
-  /** Korean insurance_v2.floodTotalLossCnt > 0 (null = unknown / not assessed). */
+  /**
+   * Flood damage flag (null = unknown / not assessed).
+   * KR: insurance_v2.floodTotalLossCnt/Cost. NA: title/certificate, auction damage, or accident flood tokens.
+   */
   isFlooded?: boolean | null;
   floodCount?: number | null;
   floodLossAmount?: number | null;
@@ -2207,6 +2210,60 @@ export function isSalvageTitle(title: string | null | undefined): boolean {
   return /salvage|rebuilt|junk|total\s*loss|non[- ]?repair|certificate\s+of\s+destruction|scrap|write[- ]?off/i.test(title);
 }
 
+/** Auction damage strings: Water/Flood, water damage, flood, etc. */
+export function textIndicatesFlood(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const t = value.trim();
+  if (!t) return false;
+  return /water\s*\/\s*flood|water\s*[- ]?\s*flood|water\s+damage|\bflood(?:ed|ing)?\b/i.test(t);
+}
+
+/** Title / certificate brands that explicitly mention flood (not bare salvage). */
+export function titleIndicatesFlood(title: string | null | undefined): boolean {
+  if (!title) return false;
+  return /\bflood(?:ed|ing)?\b/i.test(title);
+}
+
+export function damageIndicatesFlood(
+  primary?: string | null,
+  secondary?: string | null,
+  combined?: string | null,
+): boolean {
+  return textIndicatesFlood(primary)
+    || textIndicatesFlood(secondary)
+    || textIndicatesFlood(combined);
+}
+
+/** Accident type / primaryDamage flood tokens, or flood wording in damage/description. */
+export function accidentIndicatesFlood(accident: {
+  type?: string | null;
+  primaryDamage?: string | null;
+  secondaryDamage?: string | null;
+  description?: string | null;
+}): boolean {
+  const type = (accident.type ?? "").trim().toLowerCase();
+  if (type === "flood" || type === "water_flood" || /\bflood\b/.test(type)) return true;
+  const primary = (accident.primaryDamage ?? "").trim().toLowerCase();
+  if (primary === "flood" || primary === "water_flood") return true;
+  return damageIndicatesFlood(accident.primaryDamage, accident.secondaryDamage)
+    || textIndicatesFlood(accident.description);
+}
+
+export function mergeKoreanAndNaFloodFlags(
+  korean: { isFlooded: boolean | null; floodCount: number | null; floodLossAmount: number | null },
+  naFloodCount: number,
+): { isFlooded: boolean | null; floodCount: number | null; floodLossAmount: number | null } {
+  if (korean.isFlooded === true) return korean;
+  if (naFloodCount > 0) {
+    return {
+      isFlooded: true,
+      floodCount: naFloodCount,
+      floodLossAmount: null,
+    };
+  }
+  return korean;
+}
+
 function isNorthAmericanAuctionLot(lot: Record<string, unknown>): boolean {
   const loc = (lot.location ?? {}) as Record<string, unknown>;
   const countryObj = (loc.country ?? {}) as Record<string, unknown>;
@@ -3404,6 +3461,8 @@ export function resolveVinAccidents(input: {
   lotDetails: Record<string, unknown>;
   auctionAccidents: NonNullable<NormalizedVinData["accidents"]>;
   registryHistory?: RegistryHistoryEvent[];
+  /** Lots whose title/certificate or auction damage text indicates flood. */
+  naLotFloodCount?: number;
 }): {
   accidents: NonNullable<NormalizedVinData["accidents"]>;
   insuranceClaims: NonNullable<NormalizedVinData["insuranceClaims"]>;
@@ -3412,10 +3471,17 @@ export function resolveVinAccidents(input: {
   floodCount: number | null;
   floodLossAmount: number | null;
 } {
-  const { country, insurance, lotDetails, auctionAccidents, registryHistory = [] } = input;
+  const {
+    country,
+    insurance,
+    lotDetails,
+    auctionAccidents,
+    registryHistory = [],
+    naLotFloodCount = 0,
+  } = input;
   const totalLoss = Number(insurance.totalLossCnt ?? 0);
   const totalLossDate = str(insurance.totalLossDate);
-  const { isFlooded, floodCount, floodLossAmount } = readKoreanFloodFlags(insurance);
+  const koreanFlood = readKoreanFloodFlags(insurance);
   const rawRecords = Array.isArray(insurance.accidents)
     ? insurance.accidents as Array<Record<string, unknown>>
     : [];
@@ -3487,8 +3553,15 @@ export function resolveVinAccidents(input: {
     accidents = dedupeAccidents([...accidents, ...auctionAccidents]);
   }
 
+  // Insurance accident flood tokens (auction flood is counted via naLotFloodCount to avoid double-count).
+  const insuranceFloodHits = standardAccidents.filter(accidentIndicatesFlood).length;
+  const { isFlooded, floodCount, floodLossAmount } = mergeKoreanAndNaFloodFlags(
+    koreanFlood,
+    naLotFloodCount + insuranceFloodHits,
+  );
+
   // Keep flood out of accident history — shown in its own report section / header pill.
-  accidents = accidents.filter((a) => a.type !== "flood" && a.primaryDamage !== "water_flood");
+  accidents = accidents.filter((a) => !accidentIndicatesFlood(a));
 
   const accidentCount = accidents.length;
   return {
@@ -3563,6 +3636,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   const auctionAccidents: NonNullable<NormalizedVinData["accidents"]> = [];
   let titleStatus: string | null = null;
   let isSalvageFromLots = false;
+  let naLotFloodCount = 0;
   const seenMarketplaceDomains = new Set<string>();
 
   for (const l of lots) {
@@ -3597,6 +3671,13 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     if (lotTitle) {
       if (!titleStatus) titleStatus = lotTitle;
       if (isSalvageTitle(lotTitle)) isSalvageFromLots = true;
+    }
+
+    if (
+      titleIndicatesFlood(lotTitle)
+      || damageIndicatesFlood(primaryDamage, secondaryDamage, damage)
+    ) {
+      naLotFloodCount += 1;
     }
 
     const loc = (l.location ?? {}) as Record<string, unknown>;
@@ -3733,6 +3814,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     lotDetails,
     auctionAccidents,
     registryHistory,
+    naLotFloodCount,
   });
 
   const hp = Number(raw.hp) || null;

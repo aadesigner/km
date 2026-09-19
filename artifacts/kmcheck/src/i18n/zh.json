@@ -724,7 +724,7 @@
   "compare_disclaimer": "竞品价格为近似值，因套餐/地区而异。Carfax €39.99/报告，CarVertical €25.99/报告。",
   "compare_disclaimer_home": "竞品价格为近似值，因套餐而异。Carfax €39.99/报告，AutoCheck €29.99/报告。",
   "compare_disclaimer_usa": "竞品价格为近似值，因套餐而异。Carfax €39.99/报告，CarVertical €25.99/报告，AutoCheck €29.99/报告。",
-  "testimonials_subtitle": "有人转身离开。有人仍然购买。没人盲目付款。",
+  "testimonials_subtitle": "有人转身离开，有人安心购买。没有人在不知情时付款。",
   "testimonials_trust_badge": "平均评分 4.9/5",
   "market_value": "市场价值",
   "country_data_sources": "数据来源",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "预览",
   "vin_public_preview_for_vin": "针对 VIN",
   "vin_public_preview_unlock_hint": "解锁完整报告可查看日期、数值与全部详情。",
-  "flood_clear_desc": "未发现该车辆的水浸损坏记录。"
+  "flood_clear_desc": "未发现该车辆的水浸损坏记录。",
+  "recall_status_done": "已完成",
+  "recall_status_not_done": "未完成",
+  "provider_recall_required": "需要召回",
+  "report_timeline_hint": "里程随时间变化 · 点按查看详情 · 点按图例筛选",
+  "report_timeline_show_all": "显示全部",
+  "report_timeline_filter_hint": "筛选时间线事件类型"
 }

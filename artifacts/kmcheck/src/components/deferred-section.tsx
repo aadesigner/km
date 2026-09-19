@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { SectionFallback } from "@/components/section-fallback";
 
 type Props = {
   children: ReactNode;
@@ -47,7 +48,9 @@ export function DeferredSection({
       className={cn(className)}
       style={!visible && minHeight != null ? { minHeight } : undefined}
     >
-      {visible ? children : null}
+      {visible ? children : minHeight != null ? (
+        <SectionFallback minHeight={minHeight} className="rounded-none bg-muted/15" />
+      ) : null}
     </div>
   );
 }

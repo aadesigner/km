@@ -308,7 +308,7 @@ export default function CountryPage({ params }: Props) {
         {/* Fade to background */}
         <div className="absolute bottom-0 left-0 right-0 h-40 -z-10 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="max-w-7xl mx-auto pb-20 relative z-10 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-center">
+        <div className="max-w-7xl mx-auto pb-8 md:pb-12 lg:pb-20 relative z-10 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-center">
 
           {/* Left */}
           <motion.div
@@ -390,21 +390,53 @@ export default function CountryPage({ params }: Props) {
       </section>
 
       {/* ─────────────────────── BRANDS BAR ─────────────────────── */}
-      <div className="border-y bg-muted/25 dark:bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest shrink-0 mr-1">
-            {t("popular_brands")}
-          </span>
-          {meta.popularBrands.map((brand) => (
-            <button
-              key={brand}
-              type="button"
-              onClick={focusVin}
-              className="text-xs bg-background border rounded-full px-3.5 py-1.5 font-medium hover:border-primary hover:text-primary hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
-            >
-              {brand}
-            </button>
-          ))}
+      <div className="relative border-y border-border/50 bg-background/70 supports-[backdrop-filter]:backdrop-blur-sm dark:bg-background/40">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-3 sm:gap-5 py-3 md:py-3.5">
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/90">
+              {t("popular_brands")}
+            </span>
+            <span
+              aria-hidden
+              className="hidden sm:block h-3.5 w-px shrink-0 bg-border/80"
+            />
+            <div className="relative min-w-0 flex-1">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-0 z-10 w-5 bg-gradient-to-r from-background to-transparent dark:from-background sm:hidden"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 right-0 z-10 w-5 bg-gradient-to-l from-background to-transparent dark:from-background sm:hidden"
+              />
+              <ul className="flex items-center gap-0 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {meta.popularBrands.map((brand, i) => (
+                  <li key={brand} className="flex shrink-0 items-center">
+                    {i > 0 && (
+                      <span
+                        aria-hidden
+                        className="mx-2.5 h-[3px] w-[3px] rounded-full bg-foreground/20 md:mx-3.5"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={focusVin}
+                      className={cn(
+                        "relative whitespace-nowrap py-1 text-[13px] md:text-sm font-medium tracking-tight",
+                        "text-foreground/65 transition-colors duration-100",
+                        "hover:text-primary active:text-primary",
+                        "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-150",
+                        "hover:after:scale-x-100",
+                      )}
+                    >
+                      {brand}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 

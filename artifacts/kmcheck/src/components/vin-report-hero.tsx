@@ -139,9 +139,8 @@ function HeroPhotoPlaceholder({
     return (
       <div
         className={cn(
-          "relative w-full overflow-hidden rounded-xl",
-          "bg-gradient-to-br from-muted/55 to-muted/30",
-          "aspect-[4/3] max-h-[250px] sm:max-h-none sm:min-h-[260px] sm:h-full",
+          "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo",
+          "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
           className,
         )}
       >
@@ -170,7 +169,7 @@ function HeroPhotoPlaceholder({
     <div
       className={cn(
         "w-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-muted/50 px-4",
-        "aspect-[4/3] max-h-[250px] sm:max-h-none sm:min-h-[260px] sm:h-full",
+        "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
         className,
       )}
     >
@@ -240,8 +239,7 @@ function HeroPhotoFrame({
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
       className={cn(
-        "absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-150",
-        "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+        "absolute inset-0 w-full h-full object-cover object-[center_62%] transition-opacity duration-150",
         isActive && ready ? "opacity-100" : "opacity-0",
         !isActive && "pointer-events-none",
         className,
@@ -361,8 +359,8 @@ function HeroPhotoGallery({
     return (
       <div
         className={cn(
-          "relative w-full rounded-xl overflow-hidden bg-muted/40 print-vin-hero-photo",
-          "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+          "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo",
+          "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
           className,
         )}
       >
@@ -380,7 +378,7 @@ function HeroPhotoGallery({
               isActive
               onLoaded={() => markLoadedUrl(previewSrc)}
               onFailed={() => markFailedUrl(previewSrc)}
-              className="z-[2] sm:rounded-xl blur-[2.5px] scale-[1.02] select-none"
+              className="z-[2] blur-[2.5px] scale-[1.02] select-none"
             />
           </>
         ) : (
@@ -408,8 +406,8 @@ function HeroPhotoGallery({
   return (
     <div
       className={cn(
-        "relative w-full rounded-xl overflow-hidden bg-muted/40 print-vin-hero-photo group/gallery",
-        "aspect-[4/3] max-h-[230px] sm:min-h-[260px] sm:max-h-[320px] sm:h-full",
+        "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo group/gallery",
+        "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
         photoClickable && "cursor-zoom-in",
         className,
       )}
@@ -441,7 +439,7 @@ function HeroPhotoGallery({
                 onLoaded={() => markLoadedUrl(url)}
                 onFailed={() => markFailedUrl(url)}
                 className={cn(
-                  isActive ? "z-[2] sm:rounded-xl group-hover/gallery:scale-[1.02] transition-transform duration-300" : "z-[1]",
+                  isActive ? "z-[2] group-hover/gallery:scale-[1.02] transition-transform duration-300" : "z-[1]",
                 )}
               />
             );
@@ -588,7 +586,7 @@ export function VinReportHero({
       ) : null}
       <div className="relative z-[2] sm:grid sm:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] sm:items-stretch">
         {/* Left — photo gallery */}
-        <div className="p-2.5 sm:p-5 bg-muted/25 sm:border-r border-border/50 print:p-2 print:bg-muted/20">
+        <div className="flex min-h-0 flex-col bg-muted/25 p-0.5 sm:border-r border-border/50 print:bg-muted/20 sm:self-stretch">
           <HeroPhotoGallery
             photos={photos}
             photoIdx={photoIdx}
@@ -600,6 +598,7 @@ export function VinReportHero({
             onPhotoClick={onPhotoClick}
             photoPlaceholderLabel={photoPlaceholderLabel}
             pendingPhotoScan={pendingPhotoScan}
+            className="sm:flex-1 rounded-[3px] overflow-hidden"
           />
         </div>
 

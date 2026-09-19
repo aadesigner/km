@@ -166,7 +166,7 @@ export function Footer() {
     "text-[13px] leading-snug text-white/45 transition-colors hover:text-white/90";
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-white/[0.07] bg-[#060a12] text-white print:hidden">
+    <footer className="relative overflow-hidden border-t border-white/[0.07] bg-[#060a12] text-white print:hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
       <div className="pointer-events-none absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-primary/[0.07] blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-10 h-48 w-48 rounded-full bg-sky-500/[0.05] blur-3xl" />

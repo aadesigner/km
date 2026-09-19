@@ -701,7 +701,7 @@
   "compare_disclaimer": "Los precios de la competencia son aproximados y varían según plan/región. Carfax 39,99 €/informe, CarVertical 25,99 €/informe.",
   "compare_disclaimer_home": "Los precios de la competencia son aproximados y varían según el plan. Carfax 39,99 €/informe, AutoCheck 29,99 €/informe.",
   "compare_disclaimer_usa": "Los precios de la competencia son aproximados y varían según el plan. Carfax 39,99 €/informe, CarVertical 25,99 €/informe, AutoCheck 29,99 €/informe.",
-  "testimonials_subtitle": "Algunos se echaron atrás. Otros compraron tranquilo. Nadie pagó a ciegas.",
+  "testimonials_subtitle": "Algunos se echaron atrás, otros compraron con tranquilidad. Nadie pagó sin saber.",
   "testimonials_trust_badge": "4,9/5 de media",
   "market_value": "Valor de mercado",
   "country_data_sources": "Fuentes de datos",
@@ -1753,5 +1753,11 @@
   "vin_public_preview_locked_badge": "Vista previa",
   "vin_public_preview_for_vin": "Para el VIN",
   "vin_public_preview_unlock_hint": "Desbloquee el informe completo para fechas, valores y todos los detalles.",
-  "flood_clear_desc": "No se encontraron registros de daños por inundación para este vehículo."
+  "flood_clear_desc": "No se encontraron registros de daños por inundación para este vehículo.",
+  "recall_status_done": "Hecho",
+  "recall_status_not_done": "Pendiente",
+  "provider_recall_required": "Retirada pendiente",
+  "report_timeline_hint": "Kilometraje en el tiempo · toca un punto para ver detalles · toca la leyenda para filtrar",
+  "report_timeline_show_all": "Ver todo",
+  "report_timeline_filter_hint": "Filtrar tipos de eventos de la línea de tiempo"
 }

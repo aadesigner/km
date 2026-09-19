@@ -18,6 +18,9 @@ import {
   extractRecallHistoryFromLots,
   isKoreanInsuranceClaimRecord,
   isSalvageTitle,
+  titleIndicatesFlood,
+  textIndicatesFlood,
+  accidentIndicatesFlood,
   normalizeCarstatResponse,
   parseKoreanInspectAccident,
   parseLotOdometerKm,
@@ -194,6 +197,107 @@ describe("isSalvageTitle", () => {
   it("does not treat Alberta bill-of-sale codes as salvage", () => {
     expect(isSalvageTitle("Ab - Bos")).toBe(false);
     expect(isSalvageTitle("CA - Clean Title")).toBe(false);
+  });
+});
+
+describe("NA flood text detection", () => {
+  it("matches damage and title flood wording", () => {
+    expect(textIndicatesFlood("Water/Flood")).toBe(true);
+    expect(textIndicatesFlood("Water / Flood")).toBe(true);
+    expect(textIndicatesFlood("water damage")).toBe(true);
+    expect(textIndicatesFlood("Front End")).toBe(false);
+    expect(titleIndicatesFlood("La - Cert Of Title-Flood")).toBe(true);
+    expect(titleIndicatesFlood("Flood Salvage")).toBe(true);
+    expect(titleIndicatesFlood("La - Cert Of Title-Salvage")).toBe(false);
+    expect(accidentIndicatesFlood({ type: "flood" })).toBe(true);
+    expect(accidentIndicatesFlood({ primaryDamage: "water_flood" })).toBe(true);
+    expect(accidentIndicatesFlood({ primaryDamage: "Front End" })).toBe(false);
+  });
+});
+
+describe("normalizeCarstatResponse NA flood flags", () => {
+  it("flags flood from auction Water/Flood damage", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2018,
+      vin: "1HGCM82633A004352",
+      manufacturer: { name: "Honda" },
+      model: { name: "Accord" },
+      lots: [{
+        sale_date: "2024-05-01",
+        title: { name: "CA - Clean Title" },
+        damage: { main: { name: "Water/Flood" }, second: null },
+        domain: { name: "copart_com" },
+        location: { country: { iso: "us", name: "United States" } },
+        odometer: { mi: 80_000 },
+        status: { name: "sold" },
+      }],
+    });
+
+    expect(normalized.isFlooded).toBe(true);
+    expect(normalized.floodCount).toBe(1);
+    expect(normalized.accidents?.some((a) => textIndicatesFlood(a.primaryDamage))).toBe(false);
+  });
+
+  it("flags flood from title/certificate flood brand, not bare salvage", () => {
+    const flooded = normalizeCarstatResponse({
+      year: 2017,
+      vin: "1HGCM82633A004353",
+      manufacturer: { name: "Honda" },
+      model: { name: "Civic" },
+      lots: [{
+        sale_date: "2023-08-12",
+        detailed_title: { name: "La - Cert Of Title-Flood" },
+        domain: { name: "copart_com" },
+        location: { country: { iso: "us", name: "United States" } },
+        odometer: { mi: 90_000 },
+        status: { name: "sold" },
+      }],
+    });
+    expect(flooded.isFlooded).toBe(true);
+    expect(flooded.floodCount).toBe(1);
+
+    const salvageOnly = normalizeCarstatResponse({
+      year: 2017,
+      vin: "1HGCM82633A004354",
+      manufacturer: { name: "Honda" },
+      model: { name: "Civic" },
+      lots: [{
+        sale_date: "2023-08-12",
+        detailed_title: { name: "La - Cert Of Title-Salvage" },
+        domain: { name: "copart_com" },
+        location: { country: { iso: "us", name: "United States" } },
+        odometer: { mi: 90_000 },
+        status: { name: "sold" },
+      }],
+    });
+    expect(salvageOnly.isSalvage).toBe(true);
+    expect(salvageOnly.isFlooded ?? null).toBeNull();
+  });
+
+  it("flags flood from insurance accident type / primaryDamage", () => {
+    const normalized = normalizeCarstatResponse({
+      year: 2016,
+      vin: "1HGCM82633A004355",
+      manufacturer: { name: "Honda" },
+      model: { name: "Fit" },
+      lots: [{
+        domain: { name: "copart_com" },
+        location: { country: { iso: "us", name: "United States" } },
+        details: {
+          insurance_v2: {
+            accidents: [
+              { date: "2022-01-15", type: "flood", primary_damage: "water_flood" },
+              { date: "2021-06-01", type: "collision", primary_damage: "Front End" },
+            ],
+          },
+        },
+      }],
+    });
+
+    expect(normalized.isFlooded).toBe(true);
+    expect(normalized.floodCount).toBe(1);
+    expect(normalized.accidents?.some((a) => a.type === "flood")).toBe(false);
+    expect(normalized.accidents?.some((a) => a.primaryDamage === "Front End")).toBe(true);
   });
 });
 

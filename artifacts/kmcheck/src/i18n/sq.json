@@ -703,7 +703,7 @@
   "compare_disclaimer": "Çmimet e konkurrentëve janë afërsisht. Carfax €39.99/raport, CarVertical €25.99/raport.",
   "compare_disclaimer_home": "Çmimet e konkurrentëve janë afërsisht. Carfax €39.99/raport, AutoCheck €29.99/raport.",
   "compare_disclaimer_usa": "Çmimet e konkurrentëve janë afërsisht. Carfax €39.99/raport, CarVertical €25.99/raport, AutoCheck €29.99/raport.",
-  "testimonials_subtitle": "Disa u larguan. Disa e blenë gjithsesi. Askush nuk paguajti me frikë.",
+  "testimonials_subtitle": "Disa u larguan, disa blenë me qetësi. Askush nuk paguajti pa ditur.",
   "testimonials_trust_badge": "Vlerësim mesatar 4,9/5",
   "market_value": "Vlera e tregut",
   "country_data_sources": "Burime të Dhënave",
@@ -1756,5 +1756,11 @@
   "vin_public_preview_locked_badge": "Pamje",
   "vin_public_preview_for_vin": "Për VIN",
   "vin_public_preview_unlock_hint": "Zhbllokoni raportin e plotë për datat, vlerat dhe të gjitha detajet.",
-  "flood_clear_desc": "Nuk u gjetën regjistra dëmtimesh nga përmbytja për këtë makinë."
+  "flood_clear_desc": "Nuk u gjetën regjistra dëmtimesh nga përmbytja për këtë makinë.",
+  "recall_status_done": "Përfunduar",
+  "recall_status_not_done": "I papërfunduar",
+  "provider_recall_required": "Rikujtim i nevojshëm",
+  "report_timeline_hint": "Kilometrazhi në kohë · prek një pikë për detaje · prek legjendën për të filtruar",
+  "report_timeline_show_all": "Shfaq të gjitha",
+  "report_timeline_filter_hint": "Filtro llojet e ngjarjeve të afatit kohor"
 }

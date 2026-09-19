@@ -25,6 +25,7 @@ import {
   type RegistryHistoryEntry,
   formatRegistryEventsCount,
   formatRegistryMileage,
+  getRecallCompletionStatus,
   localizeRegistryDate,
   localizeRegistrySubtitle,
   translateRegistryDetailValue,
@@ -161,6 +162,7 @@ function RegistryEventCard({
   index,
   total,
   isLatest,
+  isRecall,
 }: {
   event: RegistryHistoryEntry;
   country?: string | null;
@@ -171,6 +173,7 @@ function RegistryEventCard({
   index: number;
   total: number;
   isLatest: boolean;
+  isRecall?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const details = sanitizeRegistryDetailRows(event.details);
@@ -185,6 +188,7 @@ function RegistryEventCard({
     : null;
   const date = localizeRegistryDate(language, event.date, vehicleYear, country);
   const isLast = index === total - 1;
+  const recallStatus = isRecall ? getRecallCompletionStatus(event) : null;
 
   return (
     <div className="relative pl-5">
@@ -198,13 +202,28 @@ function RegistryEventCard({
       {!isLast && <div className="absolute left-[4.5px] top-6 bottom-0 w-px bg-border" />}
 
       <div className={cn("pb-3", isLast && "pb-0")}>
-        <div className="rounded-lg border bg-muted/25 overflow-hidden shadow-sm">
+        <div className="relative rounded-lg border bg-muted/25 overflow-hidden shadow-sm">
+          {recallStatus === "done" && (
+            <Badge
+              className="absolute top-2 right-2 z-10 border-0 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] px-1.5 py-0 font-semibold pointer-events-none"
+            >
+              {t("recall_status_done")}
+            </Badge>
+          )}
+          {recallStatus === "not_done" && (
+            <Badge
+              className="absolute top-2 right-2 z-10 border-0 bg-amber-500/15 text-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0 font-semibold pointer-events-none"
+            >
+              {t("recall_status_not_done")}
+            </Badge>
+          )}
           <button
             type="button"
             className={cn(
               "w-full text-left px-3 py-2.5 transition-colors",
               hasDetails && "hover:bg-muted/40",
               !hasDetails && "cursor-default",
+              recallStatus && "pr-16",
             )}
             onClick={() => hasDetails && setOpen((v) => !v)}
             disabled={!hasDetails}
@@ -346,6 +365,7 @@ export function RegistryHistorySection({
               index={i}
               total={visibleEvents.length}
               isLatest={i === 0 && sortedEvents.length > 1}
+              isRecall={isRecall}
             />
           ))}
         </div>

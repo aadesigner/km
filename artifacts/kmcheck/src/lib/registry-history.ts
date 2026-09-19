@@ -183,3 +183,39 @@ export function isRecallRegistryEvent(event: RegistryHistoryEntry): boolean {
 export function excludeRecallRegistryEvents<T extends RegistryHistoryEntry>(events: T[]): T[] {
   return events.filter((event) => !isRecallRegistryEvent(event));
 }
+
+/** Korean Encar/KOTSA recall status from provider `sub` / subtitle. */
+export type RecallCompletionStatus = "done" | "not_done" | null;
+
+/**
+ * Returns done / not_done when the provider clearly states recall status.
+ * Returns null when there is no completion signal (no badge).
+ */
+export function getRecallCompletionStatus(event: RegistryHistoryEntry): RecallCompletionStatus {
+  const text = (event.subtitle ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return null;
+
+  if (
+    /recall\s+complet(ed|ion)/.test(text)
+    || /^(complet(ed|ion))$/.test(text)
+    || /리콜\s*완료/.test(text)
+    || text === "완료"
+  ) {
+    return "done";
+  }
+
+  if (
+    /recall\s+required/.test(text)
+    || /^(required)$/.test(text)
+    || /not\s+complet(ed|ion)/.test(text)
+    || /리콜\s*필요/.test(text)
+    || /미조치|미완료|미실시/.test(text)
+  ) {
+    return "not_done";
+  }
+
+  return null;
+}
