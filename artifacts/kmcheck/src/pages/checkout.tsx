@@ -1630,7 +1630,7 @@ export default function Checkout({ params }: Props) {
           return (
             <nav
               aria-label={t("checkout_title")}
-              className="mb-6 sm:mb-8 mx-auto w-full max-w-sm sm:max-w-lg px-3 sm:px-6"
+              className="mb-5 sm:mb-7 mx-auto w-full max-w-xs sm:max-w-sm px-2 sm:px-4"
             >
               <ol className="flex items-start justify-center sm:justify-stretch w-full">
                 {steps.map((step, i) => {
@@ -1649,7 +1649,7 @@ export default function Checkout({ params }: Props) {
                       )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
-                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-[4rem] sm:w-[5.5rem] shrink-0">
+                      <div className="flex flex-col items-center gap-1 w-[3.5rem] sm:w-[4.5rem] shrink-0">
                         <motion.div
                           initial={false}
                           animate={{
@@ -1657,10 +1657,10 @@ export default function Checkout({ params }: Props) {
                           }}
                           transition={{ type: "spring", stiffness: 400, damping: 28 }}
                           className={cn(
-                            "relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-shadow duration-300",
+                            "relative flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full transition-shadow duration-300",
                             isComplete && "bg-primary text-primary-foreground shadow-sm shadow-primary/25",
-                            isCurrent && !isComplete && "bg-primary/10 text-primary ring-2 ring-primary/70 ring-offset-1 sm:ring-offset-2 ring-offset-background",
-                            isUpcoming && "bg-muted/40 text-muted-foreground/60 ring-1 ring-border/60",
+                            isCurrent && !isComplete && "bg-primary/10 text-primary ring-2 ring-primary/65 ring-offset-1 ring-offset-background",
+                            isUpcoming && "bg-muted/40 text-muted-foreground/55 ring-1 ring-border/60",
                           )}
                         >
                           {isCurrent && !isComplete && (
@@ -1672,13 +1672,13 @@ export default function Checkout({ params }: Props) {
                             />
                           )}
                           {isComplete ? (
-                            <Check className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2.75} aria-hidden />
+                            <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.75} aria-hidden />
                           ) : showPaySpinner ? (
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
                           ) : (
                             <StepIcon
                               className={cn(
-                                "h-4 w-4 sm:h-[18px] sm:w-[18px]",
+                                "h-3 w-3 sm:h-3.5 sm:w-3.5",
                                 isCurrent ? "stroke-[2.25px]" : "stroke-2 opacity-75",
                               )}
                               aria-hidden
@@ -1687,7 +1687,7 @@ export default function Checkout({ params }: Props) {
                         </motion.div>
                         <span
                           className={cn(
-                            "text-[11px] sm:text-xs text-center leading-tight max-w-[4rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
+                            "text-[10px] sm:text-[11px] text-center leading-tight max-w-[3.5rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
                             isComplete && "font-semibold text-foreground/85",
                             isCurrent && "font-bold text-primary",
                             isUpcoming && "font-medium text-muted-foreground/75",
@@ -1699,7 +1699,7 @@ export default function Checkout({ params }: Props) {
 
                       {i < steps.length - 1 && (
                         <div
-                          className="relative mt-4 sm:mt-5 w-6 sm:w-auto sm:mx-2 h-0.5 sm:h-1 sm:flex-1 sm:min-w-[1.5rem] rounded-full bg-muted/70 overflow-hidden shrink-0"
+                          className="relative mt-3 sm:mt-3.5 w-4 sm:w-auto sm:mx-1.5 h-0.5 sm:flex-1 sm:min-w-[1rem] rounded-full bg-muted/70 overflow-hidden shrink-0"
                           aria-hidden
                         >
                           <motion.div
