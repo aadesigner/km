@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { FileText, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
@@ -16,6 +15,7 @@ import {
 } from "@/lib/insurance-claims";
 import type { Language } from "@/i18n/context";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
+import { ReportReveal } from "@/components/report-reveal";
 
 type Props = {
   claims: InsuranceClaimEntry[];
@@ -204,12 +204,7 @@ export function InsuranceClaimsSection({
 
   if (variant === "public") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-        className={className}
-      >
+      <ReportReveal delay={delay} y={12} className={className}>
         <VinReportSection accent="sky">
           <VinReportSectionHeader
             variant="public"
@@ -227,18 +222,13 @@ export function InsuranceClaimsSection({
             <ClaimsList claims={sortedClaims} country={country} vehicleYear={vehicleYear} krwPerUsd={krwPerUsd} t={t} language={language} />
           </div>
         </VinReportSection>
-      </motion.div>
+      </ReportReveal>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35, delay }}
-      className={className}
-    >
+    <ReportReveal delay={delay} y={16} inView className={className}>
+
       <VinReportSection accent="sky">
         <VinReportSectionHeader
           icon={FileText}
@@ -255,6 +245,6 @@ export function InsuranceClaimsSection({
           <ClaimsList claims={sortedClaims} country={country} vehicleYear={vehicleYear} krwPerUsd={krwPerUsd} t={t} language={language} />
         </div>
       </VinReportSection>
-    </motion.div>
+    </ReportReveal>
   );
 }

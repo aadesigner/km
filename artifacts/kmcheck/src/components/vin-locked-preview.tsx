@@ -13,9 +13,9 @@ import {
   Droplets,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { VinReportSection, ACCENT_HEADER_WASH, type VinReportSectionAccent } from "@/components/vin-report-section";
+import { ReportReveal } from "@/components/report-reveal";
 
 /** Blurred placeholder body shown inside locked report sections. */
 export function VinLockedSectionBody({
@@ -214,12 +214,7 @@ export function VinLockedSectionCard({
   const tone = sectionToneFromChip(accent);
   const showFound = foundCount != null && foundCount > 0;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.35 }}
-      className={className}
-    >
+    <ReportReveal delay={delay} y={14} className={className}>
       <VinReportSection accent={tone}>
         <div
           className={cn(
@@ -241,7 +236,7 @@ export function VinLockedSectionCard({
         </div>
         <VinLockedSectionBody hint={hint} variant={variant} />
       </VinReportSection>
-    </motion.div>
+    </ReportReveal>
   );
 }
 
@@ -385,12 +380,7 @@ type VinLockedTimelinePreviewProps = {
 /** Full-width locked history graph teaser (decorative, no real report data). */
 export function VinLockedTimelinePreview({ t, priceLabel, onUnlock }: VinLockedTimelinePreviewProps) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.08, duration: 0.35 }}
-      className="print:hidden"
-    >
+    <ReportReveal delay={0.08} y={12} className="print:hidden">
       <VinReportSection>
       <div className="flex items-center justify-between gap-3 px-3 pt-3 sm:px-5 sm:pt-4">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
@@ -453,7 +443,7 @@ export function VinLockedTimelinePreview({ t, priceLabel, onUnlock }: VinLockedT
         </div>
       </div>
       </VinReportSection>
-    </motion.section>
+    </ReportReveal>
   );
 }
 
@@ -606,11 +596,7 @@ type VinLockedIntroBannerProps = {
 
 export function VinLockedIntroBanner({ t, priceLabel, onUnlock }: VinLockedIntroBannerProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="print:hidden relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card px-4 py-4 sm:px-5 sm:py-4"
-    >
+    <ReportReveal y={8} className="print:hidden relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card px-4 py-4 sm:px-5 sm:py-4">
       <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
       <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <div className="h-10 w-10 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
@@ -634,6 +620,6 @@ export function VinLockedIntroBanner({ t, priceLabel, onUnlock }: VinLockedIntro
           <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
-    </motion.div>
+    </ReportReveal>
   );
 }

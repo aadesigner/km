@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   ClipboardList,
   Gauge,
@@ -18,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
+import { ReportReveal } from "@/components/report-reveal";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { KoreanWonAmount, textContainsWon } from "@/components/korean-won-amount";
 import { isKoreanCountry } from "@/lib/korean-currency";
@@ -421,24 +421,15 @@ export function RegistryHistorySection({
 
   if (variant === "public") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-      >
+      <ReportReveal delay={delay} y={12}>
         {body}
-      </motion.div>
+      </ReportReveal>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35, delay }}
-    >
+    <ReportReveal delay={delay} y={16} inView>
       {body}
-    </motion.div>
+    </ReportReveal>
   );
 }

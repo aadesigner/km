@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   Wrench,
   Calendar,
@@ -14,6 +13,7 @@ import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
+import { ReportReveal } from "@/components/report-reveal";
 import {
   localizeProviderDate,
   translateKoreanProviderPhrase,
@@ -317,12 +317,7 @@ export function ServiceHistorySection({
 
   if (variant === "public") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-        className={className}
-      >
+      <ReportReveal delay={delay} y={12} className={className}>
         <VinReportSection accent="emerald">
           <VinReportSectionHeader
             variant="public"
@@ -347,18 +342,12 @@ export function ServiceHistorySection({
             />
           </div>
         </VinReportSection>
-      </motion.div>
+      </ReportReveal>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35, delay }}
-      className={className}
-    >
+    <ReportReveal delay={delay} y={16} inView className={className}>
       <VinReportSection accent="emerald">
         <VinReportSectionHeader
           icon={Wrench}
@@ -382,6 +371,6 @@ export function ServiceHistorySection({
           />
         </div>
       </VinReportSection>
-    </motion.div>
+    </ReportReveal>
   );
 }

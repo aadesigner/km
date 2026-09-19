@@ -1368,6 +1368,8 @@
     );
   }
 
+  /* Soft corner wash is desktop-only; skip on phones for paint cost.
+   * Does not remove locked-preview blurs (those use blur-[4px], not blur-2xl). */
   @media (min-width: 640px) {
     .vin-report-section--decorated::after {
       content: "";
@@ -1380,6 +1382,14 @@
         color-mix(in srgb, var(--vr-accent) 6%, transparent),
         transparent 55%
       );
+    }
+  }
+
+  /* Phones: drop decorative glow blobs only — keep intentional locked-content blur. */
+  @media (max-width: 767px), (pointer: coarse) {
+    .vin-report-screen .blur-2xl {
+      filter: none !important;
+      -webkit-filter: none !important;
     }
   }
 

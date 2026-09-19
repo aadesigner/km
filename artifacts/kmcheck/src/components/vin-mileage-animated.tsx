@@ -3,16 +3,19 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { mileageColor } from "@/lib/mileage-color";
 import { formatMilesInParens } from "@/lib/format-km-with-miles";
+import { useLightMotion } from "@/hooks/use-light-motion";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 /** Fast count-up on each mount (re-runs when odometer value changes). */
 export function useCountUp(target: number, durationMs = 880): number {
   const reduced = useReducedMotion();
-  const [value, setValue] = useState(reduced ? target : 0);
+  const light = useLightMotion();
+  const skip = !!(reduced || light);
+  const [value, setValue] = useState(skip ? target : 0);
 
   useEffect(() => {
-    if (reduced) {
+    if (skip) {
       setValue(target);
       return;
     }
@@ -29,7 +32,7 @@ export function useCountUp(target: number, durationMs = 880): number {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target, durationMs, reduced]);
+  }, [target, durationMs, skip]);
 
   return value;
 }
@@ -43,9 +46,10 @@ type AnimatedMileageKmProps = {
 /** Odometer digits that count up + optional slide-in from the left. */
 export function AnimatedMileageKm({ value, className, animateSlide = true }: AnimatedMileageKmProps) {
   const reduced = useReducedMotion();
+  const light = useLightMotion();
   const display = useCountUp(value);
 
-  if (reduced || !animateSlide) {
+  if (reduced || light || !animateSlide) {
     return <span className={className}>{display.toLocaleString()}</span>;
   }
 
@@ -85,6 +89,8 @@ export function VinMileageGauge({
   recordedDate,
 }: VinMileageGaugeProps) {
   const reduced = useReducedMotion();
+  const light = useLightMotion();
+  const skipMotion = !!(reduced || light);
   const odoCol = mileageColor(odometer);
   const odoPct = Math.min(100, (odometer / odoMax) * 100);
   const displayKm = useCountUp(odometer);
@@ -93,7 +99,7 @@ export function VinMileageGauge({
   return (
     <motion.div
       className={cn(className)}
-      initial={reduced ? false : { opacity: 0, x: -24 }}
+      initial={skipMotion ? false : { opacity: 0, x: -24 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.48, ease: EASE_OUT }}
     >
@@ -126,9 +132,9 @@ export function VinMileageGauge({
         <div className={cn("w-full rounded-full bg-muted overflow-hidden", isLg ? "h-2.5" : "h-2")}>
           <motion.div
             className={cn("h-full rounded-full origin-left", odoCol.bar)}
-            initial={reduced ? { scaleX: odoPct / 100 } : { scaleX: 0 }}
+            initial={skipMotion ? { scaleX: odoPct / 100 } : { scaleX: 0 }}
             animate={{ scaleX: odoPct / 100 }}
-            transition={{ duration: 0.95, ease: EASE_OUT, delay: reduced ? 0 : 0.1 }}
+            transition={{ duration: 0.95, ease: EASE_OUT, delay: skipMotion ? 0 : 0.1 }}
             style={{ width: "100%" }}
           />
         </div>
@@ -160,6 +166,7 @@ export function AnimatedMileageBadge({
 }: AnimatedMileageBadgeProps) {
   const display = useCountUp(odometer);
   const reduced = useReducedMotion();
+  const light = useLightMotion();
 
   const content = (
     <>
@@ -172,7 +179,7 @@ export function AnimatedMileageBadge({
     </>
   );
 
-  if (reduced) {
+  if (reduced || light) {
     return <span className={className}>{content}</span>;
   }
 

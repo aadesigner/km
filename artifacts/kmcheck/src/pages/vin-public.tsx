@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { ReportReveal } from "@/components/report-reveal";
 import {
   Lock, Car, ArrowLeft,
   CheckCircle2, XCircle, Users, Gauge,
@@ -1035,11 +1036,7 @@ export default function VinPublic({ params }: Props) {
 
             {/* Accident History */}
             {showAccidentsSection && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
+            <ReportReveal delay={0.15} y={12}>
               <VinReportSection accent="rose">
                 <VinReportSectionHeader
                   variant="public"
@@ -1187,15 +1184,11 @@ export default function VinPublic({ params }: Props) {
                     </div>
               </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
             {showAccidentsClear && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
+            <ReportReveal delay={0.15} y={12}>
               <VinReportSection accent="emerald">
                 <VinReportSectionHeader
                   variant="public"
@@ -1218,16 +1211,12 @@ export default function VinPublic({ params }: Props) {
                   </div>
                 </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
             {/* Safety Status — Salvage & Theft */}
             {showSafetySection && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18 }}
-            >
+            <ReportReveal delay={0.18} y={12}>
               <VinReportSection accent={safetySectionAccent(data.salvage, data.stolen)}>
                 <VinReportSectionHeader
                   variant="public"
@@ -1293,7 +1282,7 @@ export default function VinPublic({ params }: Props) {
                 )}
               </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
             {/* Recalls — Korean manufacturer recalls */}
@@ -1313,11 +1302,7 @@ export default function VinPublic({ params }: Props) {
 
             {/* Auction History */}
             {showAuctionSection && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.19 }}
-            >
+            <ReportReveal delay={0.19} y={12}>
               <VinReportSection accent="emerald">
                 <VinReportSectionHeader
                   variant="public"
@@ -1334,16 +1319,12 @@ export default function VinPublic({ params }: Props) {
                 <AuctionHistoryTimeline history={auctionHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
             {/* Mileage Timeline */}
             {showMileageSection && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            <ReportReveal delay={0.2} y={12}>
               <VinReportSection accent="orange">
                 <VinReportSectionHeader
                   variant="public"
@@ -1388,16 +1369,12 @@ export default function VinPublic({ params }: Props) {
                 <MileageTimeline history={mileageHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
             {/* Owner History */}
             {showOwnershipSection && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.22 }}
-            >
+            <ReportReveal delay={0.22} y={12}>
               <VinReportSection accent={ownershipSectionAccent(data.ownerCount)}>
                 <VinReportSectionHeader
                   variant="public"
@@ -1421,7 +1398,7 @@ export default function VinPublic({ params }: Props) {
                 </div>
               ) : null}
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
             )}
 
               </>
@@ -1433,11 +1410,7 @@ export default function VinPublic({ params }: Props) {
           <div className="space-y-4 sm:space-y-6 min-w-0 order-1 lg:order-1 print:order-1 overflow-hidden">
 
             {/* Vehicle Specs */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <ReportReveal delay={0.1} y={12}>
               <VinReportSection accent="sky">
                 <VinReportSectionHeader
                   variant="public"
@@ -1453,15 +1426,10 @@ export default function VinPublic({ params }: Props) {
                   </VehicleSpecsGrid>
                 </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
 
             {data.isUnlocked && data.flooded != null ? (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35 }}
-              >
+              <ReportReveal y={16} inView>
                 <FloodDamageSection
                   isFlooded={data.flooded}
                   floodCount={data.floodCount}
@@ -1472,7 +1440,7 @@ export default function VinPublic({ params }: Props) {
                   language={language}
                   variant="public"
                 />
-              </motion.div>
+              </ReportReveal>
             ) : null}
 
             {data.isUnlocked ? (
@@ -1597,11 +1565,7 @@ export default function VinPublic({ params }: Props) {
 
             {/* Market Data */}
             {showMarketDataSection && marketData && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 }}
-              >
+              <ReportReveal delay={0.12} y={12}>
                 <VinReportSection accent="emerald">
                   <VinReportSectionHeader
                     variant="public"
@@ -1682,7 +1646,7 @@ export default function VinPublic({ params }: Props) {
                 </div>
                 </div>
                 </VinReportSection>
-              </motion.div>
+              </ReportReveal>
             )}
 
               </>

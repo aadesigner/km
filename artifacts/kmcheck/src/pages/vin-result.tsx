@@ -18,7 +18,8 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Fuel, Box,
   X, Zap, Settings2, Loader2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { ReportReveal } from "@/components/report-reveal";
 
 import { translateDamageLabel } from "@/lib/translate-damage-label";
 import { translateTitleStatus } from "@/lib/translate-title-status";
@@ -984,11 +985,7 @@ export default function VinResult({ params }: Props) {
 
         {/* Mileage + pending search */}
         {showMileageSection && !isPendingManual ? (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <ReportReveal delay={0.1} y={16}>
           <VinReportSection accent="orange">
             <VinReportSectionHeader
               icon={Gauge}
@@ -1061,16 +1058,12 @@ export default function VinResult({ params }: Props) {
             ) : null}
           </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         ) : null}
 
         {/* Accident History */}
         {!isPendingManual && showAccidentsSection && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14 }}
-        >
+        <ReportReveal delay={0.14} y={16}>
           <VinReportSection accent="rose">
             <VinReportSectionHeader
               icon={AlertTriangle}
@@ -1081,12 +1074,8 @@ export default function VinResult({ params }: Props) {
           <div className="px-6 py-5">
               <div className="space-y-4">
                 {accidents.map((acc, i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    initial={{ opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08 }}
                     className="relative pl-5"
                   >
                     {(() => {
@@ -1225,20 +1214,16 @@ export default function VinResult({ params }: Props) {
                         </>
                       );
                     })()}
-                  </motion.div>
+                  </div>
                 ))}
               </div>
           </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         )}
 
         {!isPendingManual && showAccidentsClear && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14 }}
-        >
+        <ReportReveal delay={0.14} y={16}>
           <VinReportSection accent="emerald">
             <VinReportSectionHeader
               icon={ShieldCheck}
@@ -1260,17 +1245,12 @@ export default function VinResult({ params }: Props) {
               </div>
             </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         )}
 
         {/* Safety Status — Salvage & Theft combined */}
         {!isPendingManual && showSafetySection && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.35 }}
-        >
+        <ReportReveal y={16} inView>
           <VinReportSection accent={safetySectionAccent(data?.isSalvage, data?.isStolen)}>
             <VinReportSectionHeader
               icon={ShieldCheck}
@@ -1364,7 +1344,7 @@ export default function VinResult({ params }: Props) {
             )}
           </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         )}
 
         {/* Recalls — Korean manufacturer recalls (separate from registry timeline) */}
@@ -1383,12 +1363,7 @@ export default function VinResult({ params }: Props) {
 
         {/* Auction History */}
         {showAuctionSection && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.35 }}
-        >
+        <ReportReveal y={16} inView>
           <VinReportSection accent="emerald">
             <VinReportSectionHeader
               icon={DollarSign}
@@ -1406,17 +1381,12 @@ export default function VinResult({ params }: Props) {
             <AuctionHistoryTimeline history={auctionHistory} t={t} language={language} vehicleYear={data?.year} vehicleCountry={data?.country} />
           </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         )}
 
         {/* Ownership */}
         {showOwnershipSection && !isPendingManual && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.35 }}
-        >
+        <ReportReveal y={16} inView>
           <VinReportSection accent={ownershipSectionAccent(data?.ownerCount)}>
             <VinReportSectionHeader
               icon={Users}
@@ -1477,7 +1447,7 @@ export default function VinResult({ params }: Props) {
             ) : null}
           </div>
           </VinReportSection>
-        </motion.div>
+        </ReportReveal>
         )}
 
         </div>{/* END LEFT COLUMN */}
@@ -1487,11 +1457,7 @@ export default function VinResult({ params }: Props) {
 
           {/* Vehicle Info — hidden while manual report is pending */}
           {!isPendingManual ? (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-          >
+          <ReportReveal delay={0.05} y={16}>
             <VinReportSection accent="sky">
               <VinReportSectionHeader icon={Car} accent="sky" title={t("vehicle_info")} />
             <div className="px-5 py-4">
@@ -1522,16 +1488,11 @@ export default function VinResult({ params }: Props) {
               </VehicleSpecsGrid>
             </div>
             </VinReportSection>
-          </motion.div>
+          </ReportReveal>
           ) : null}
 
           {!isPendingManual && data?.isFlooded != null ? (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35 }}
-            >
+            <ReportReveal y={16} inView>
               <FloodDamageSection
                 isFlooded={data.isFlooded}
                 floodCount={data.floodCount}
@@ -1542,7 +1503,7 @@ export default function VinResult({ params }: Props) {
                 language={language}
                 variant="report"
               />
-            </motion.div>
+            </ReportReveal>
           ) : null}
 
           {!isPendingManual ? (
@@ -1605,12 +1566,7 @@ export default function VinResult({ params }: Props) {
 
           {/* Market Data */}
           {showMarketDataSection && marketData && !isPendingManual && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35 }}
-            >
+            <ReportReveal y={16} inView>
               <VinReportSection accent="emerald">
                 <VinReportSectionHeader icon={TrendingUp} accent="emerald" title={t("market_data")} />
               <div className="px-6 py-5">
@@ -1686,7 +1642,7 @@ export default function VinResult({ params }: Props) {
                 </div>
               </div>
               </VinReportSection>
-            </motion.div>
+            </ReportReveal>
           )}
 
         </div>{/* END RIGHT COLUMN */}
