@@ -366,18 +366,18 @@
     },
     "sq": {
       "h1": "Kontroll kilometrash, aksidente dhe historiku i makinës",
-      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Historik për makina nga SHBA, Koreja, Kanadaja, Kinës, Japonisë dhe Dubait.",
+      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai.",
       "bullets": [
         "aksidentesh",
         "dëmtim total",
         "km origjinale",
         "vjedhjesh",
-        "Historik për makina nga SHBA, Koreja, Kanadaja, Kinës, Japonisë dhe Dubait — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
+        "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
       ],
       "sections": [
         {
           "title": "Raport i plotë historiku VIN",
-          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Mbulojmë makina nga SHBA, Koreja, Kanadaja, Kinës, Japonisë dhe Dubait — që të blini me më shumë informacion para pagesës."
+          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Mbulojmë makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — që të blini me më shumë informacion para pagesës."
         },
         {
           "title": "Çfarë kontrollojmë",
@@ -421,7 +421,7 @@
         },
         {
           "title": "Kontrollo makina nga:",
-          "body": "Historik për makina nga SHBA, Koreja, Kanadaja, Kinës, Japonisë dhe Dubait — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
+          "body": "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
         }
       ],
       "links": [
@@ -9132,7 +9132,7 @@
   },
   "country_japan": {
     "en": {
-      "h1": "Japan mileage check for Japanese cars",
+      "h1": "Japan mileage check for cars from Japan",
       "lead": "Japan mileage check — verify odometer readings, auction history, accidents and export records on Japanese cars before you buy or import.",
       "bullets": [
         "Auction and marketplace listing records",
@@ -9208,36 +9208,36 @@
       ]
     },
     "de": {
-      "h1": "Japan Kilometercheck für japanische Autos",
+      "h1": "Prüfen Sie Kilometerstand von Autos aus Japan",
       "lead": "Japan-Kilometercheck — prüfen Sie Tachostand, Auktionshistorie, Unfälle und Exportdaten japanischer Autos vor Kauf oder Import.",
       "bullets": [
         "Auktions- und Marktplatzdaten",
-        "Versicherungs- und Kollisionsindikatoren",
+        "Versicherungs- und Kollisionshistorie",
         "Zulassungs- und Eigentumswechsel",
         "Salvage-, Totalschaden- und Rebuild-Flags",
-        "Unfälle & Reparaturen",
+        "Unfälle",
         "Auktionshistorie"
       ],
       "sections": [
         {
           "title": "Die häufigsten Warnsignale bei gebrauchten japanischen Fahrzeugen — vor der Anzahlung.",
-          "body": "Jeder Bericht nutzt Auktions-, Zulassungs- und Service-Signale aus Japans wichtigsten Märkten und Exportkanälen."
+          "body": "Jeder Bericht zieht Auktions-, Zulassungs- und Marktplatzsignale aus Japans wichtigsten Märkten und Exportkanälen."
         },
         {
           "title": "Kilometerstandsprüfung (KM)",
-          "body": "Wir gleichen Tachostände mit Zulassungssignalen, Service- und Marktdaten in ganz Japan ab."
+          "body": "Wir gleichen Tachostände mit Zulassungssignalen, Servicenachweisen und Marktdaten in ganz Japan ab."
         },
         {
           "title": "Unfall- & Schadenshistorie",
-          "body": "Wir zeigen Kollisions- und Versicherungsdaten — inkl. versteckter Karosseriereparaturen."
+          "body": "Wir decken Kollisions- und Versicherungshistorie auf — einschließlich versteckter Karosseriearbeiten."
         },
         {
           "title": "Salvage- & Totalschadenstatus",
-          "body": "Wir kennzeichnen Salvage-, Totalschaden- und Flutrisiko-Fahrzeuge."
+          "body": "Wir markieren Salvage-, Totalschaden- und Flutrisiko — einschließlich nach Totalschaden erneut inserierter Autos."
         },
         {
           "title": "Diebstahl- & Polizeidaten",
-          "body": "Wir prüfen Diebstahl-/Wiederfindungsdaten sowie Export-/Importsignale."
+          "body": "Wir prüfen Diebstahl-/Wiederauffindungs- und Export-/Importsignale."
         },
         {
           "title": "Was bedeutet eine japanische FIN mit „J“?",
@@ -9284,24 +9284,24 @@
       ]
     },
     "es": {
-      "h1": "Japón chequeo de kilometraje para coches japoneses",
-      "lead": "Chequeo de kilometraje Japón — verifique odómetro, historial de subastas, accidentes e historial de exportación antes de comprar o importar.",
+      "h1": "Verifique kilometraje de coches de Japón",
+      "lead": "Chequeo de kilometraje de coches de Japón — verifique odómetro, subastas, accidentes e historial de exportación antes de comprar o importar.",
       "bullets": [
         "Registros de subastas y listados de mercado",
-        "Indicadores de seguros y colisiones",
-        "Registro y transferencia de propiedad",
-        "Marcas de salvamento, baja y reconstrucción",
-        "accidentes y reparaciones",
+        "Historial de seguros y colisiones",
+        "Indicadores de matriculación y transferencia",
+        "Alertas de salvamento, siniestro total y reconstrucción",
+        "accidentes",
         "historial de subastas"
       ],
       "sections": [
         {
           "title": "Las señales de alerta más comunes en usados japoneses — antes del depósito.",
-          "body": "Cada informe combina señales de subasta, registro y servicio en los principales mercados y canales de exportación de Japón."
+          "body": "Cada informe reúne señales de subasta, matriculación y mercado en los principales canales de Japón."
         },
         {
           "title": "Verificación de kilometraje (KM)",
-          "body": "Cruzamos lecturas del odómetro con señales de registro, servicio y datos de mercado en Japón."
+          "body": "Cruzamos lecturas del odómetro con matriculación, servicio y datos de mercado en Japón."
         },
         {
           "title": "Historial de accidentes y daños",
@@ -9309,7 +9309,7 @@
         },
         {
           "title": "Estado de siniestro total y daño total",
-          "body": "Marcamos salvamento, baja y riesgo de inundación — incluidos coches revendidos tras pérdida total."
+          "body": "Marcamos salvamento, siniestro total y riesgo de inundación — incluidos coches revendidos tras pérdida total."
         },
         {
           "title": "Registros de robo y policía",
@@ -9321,7 +9321,7 @@
         },
         {
           "title": "¿Están cubiertos Toyota, Honda y Nissan?",
-          "body": "Sí. Cubrimos marcas japonesas principales como Toyota, Honda, Nissan, Mazda, Subaru, Lexus, Suzuki y Mitsubishi, además de importados registrados en Japón."
+          "body": "Sí. Cubrimos marcas japonesas principales como Toyota, Honda, Nissan, Mazda, Subaru, Lexus, Suzuki y Mitsubishi, además de importados matriculados en Japón."
         },
         {
           "title": "¿Puedo revisar un coche japonés antes de importarlo?",
@@ -9360,20 +9360,20 @@
       ]
     },
     "fr": {
-      "h1": "Japon contrôle kilométrique pour voitures japonaises",
-      "lead": "Contrôle kilométrique Japon — vérifiez compteur, historique d'enchères, accidents et historique d'export avant achat ou import.",
+      "h1": "Vérifiez le kilométrage des voitures du Japon",
+      "lead": "Contrôle kilométrique des voitures du Japon — vérifiez compteur, enchères, accidents et historique d'export avant achat ou import.",
       "bullets": [
         "Registres d'enchères et d'annonces marché",
-        "Indicateurs d'assurance et collisions",
-        "Immatriculation et transferts de propriété",
-        "Flags salvage, épave et reconstruit",
-        "accidents et réparations",
-        "historique d'enchères"
+        "Historique d'assurances et de collisions",
+        "Indicateurs d'immatriculation et de transfert",
+        "Alertes salvage, perte totale et reconstruction",
+        "les accidents",
+        "l'historique d'enchères"
       ],
       "sections": [
         {
           "title": "Les signaux d'alerte les plus courants sur les occasions japonaises — avant l'acompte.",
-          "body": "Chaque rapport croise enchères, immatriculation et entretien sur les principaux marchés et canaux d'export du Japon."
+          "body": "Chaque rapport croise enchères, immatriculation et marché sur les principaux canaux d'export du Japon."
         },
         {
           "title": "Vérification du kilométrage (KM)",
@@ -9381,11 +9381,11 @@
         },
         {
           "title": "Historique des accidents et dommages",
-          "body": "Nous exposons collisions et sinistres — y compris réparations de carrosserie cachées."
+          "body": "Nous montrons l'historique de collisions et d'assurances — y compris les réparations de carrosserie cachées."
         },
         {
           "title": "Statut salvage et perte totale",
-          "body": "Nous signalons salvage, épave et risque d'inondation."
+          "body": "Nous signalons salvage, perte totale et risque d'inondation — y compris les voitures revendues après total."
         },
         {
           "title": "Registres de vol et de police",
@@ -9400,7 +9400,7 @@
           "body": "Oui. Nos rapports couvrent Toyota, Honda, Nissan, Mazda, Subaru, Lexus, Suzuki et Mitsubishi, ainsi que les importés immatriculés au Japon."
         },
         {
-          "title": "Puis-je vérifier une voiture japonaise avant import ?",
+          "title": "Puis-je vérifier une voiture japonaise avant de l'importer ?",
           "body": "Oui. Faites un contrôle VIN avant l'export pour détecter fraude au compteur, dommages d'enchères et réparations cachées."
         }
       ],
@@ -9436,7 +9436,7 @@
       ]
     },
     "sq": {
-      "h1": "Japoni kilometrash për makina nga Japonia",
+      "h1": "Kontroll kilometrash për makina nga Japonia",
       "lead": "Kontroll kilometrash makinash nga Japonia — manipulim km, dëmtime nga ankandet, aksidente të fshehura dhe histori eksporti. Kontrollo me shasi (VIN) para blerjes ose importit.",
       "bullets": [
         "Regjistra ankandesh dhe listimesh në tregje",
@@ -9444,7 +9444,7 @@
         "Shenja regjistrimi dhe transferimi pronësie",
         "Shenja dëmtim total, humbje totale dhe tituj rindërtimi",
         "aksidentesh",
-        "ankandesh"
+        "historinë e ankandit"
       ],
       "sections": [
         {
@@ -9512,20 +9512,20 @@
       ]
     },
     "pl": {
-      "h1": "Japonia sprawdzenie przebiegu dla aut japońskich",
-      "lead": "Sprawdzenie przebiegu Japonia — zweryfikuj licznik, historię aukcji, wypadki i eksport przed zakupem lub importem.",
+      "h1": "Sprawdź przebieg samochodów z Japonii",
+      "lead": "Sprawdzenie przebiegu samochodów z Japonii — zweryfikuj licznik, historię aukcji, wypadki i eksport przed zakupem lub importem.",
       "bullets": [
         "Rejestry aukcji i ogłoszeń rynkowych",
-        "Wskaźniki ubezpieczeń i kolizji",
-        "Rejestracja i przeniesienie własności",
+        "Historia ubezpieczeń i kolizji",
+        "Wskaźniki rejestracji i przeniesienia własności",
         "Flagi szkody całkowitej, spisania i odbudowy",
-        "wypadki i naprawy",
-        "historia aukcji"
+        "wypadki",
+        "historię aukcji"
       ],
       "sections": [
         {
           "title": "Najczęstsze czerwone flagi przy japońskich używanych autach — przed zaliczką.",
-          "body": "Każdy raport łączy sygnały aukcyjne, rejestracyjne i serwisowe z głównych rynków Japonii i kanałów eksportu."
+          "body": "Każdy raport łączy sygnały aukcyjne, rejestracyjne i rynkowe z głównych kanałów eksportu Japonii."
         },
         {
           "title": "Weryfikacja przebiegu (km)",
@@ -9588,20 +9588,20 @@
       ]
     },
     "ro": {
-      "h1": "Japonia verificare kilometraj pentru mașini japoneze",
-      "lead": "Verificare kilometraj Japonia — verificați odometrul, istoricul de licitații, accidentele și exportul înainte de cumpărare sau import.",
+      "h1": "Verificați kilometrajul ale mașinilor din Japonia",
+      "lead": "Verificare kilometraj pentru mașini din Japonia — verificați odometrul, licitațiile, accidentele și exportul înainte de cumpărare sau import.",
       "bullets": [
         "Registre de licitații și anunțuri pe piață",
-        "Indicatori de asigurări și coliziuni",
-        "Înregistrare și transfer de proprietate",
+        "Istoric de asigurări și coliziuni",
+        "Indicatori de înregistrare și transfer de proprietate",
         "Indicatoare de daună totală, radiere și reconstrucție",
-        "accidente și reparații",
-        "istoric licitații"
+        "accidentele",
+        "istoricul de licitații"
       ],
       "sections": [
         {
           "title": "Cele mai comune semnale de alarmă la second-hand japonez — înainte de avans.",
-          "body": "Fiecare raport combină semnale de licitație, înregistrare și service din piețele majore ale Japoniei și canalele de export."
+          "body": "Fiecare raport combină semnale de licitație, înregistrare și piață din canalele majore de export ale Japoniei."
         },
         {
           "title": "Verificare kilometraj (KM)",
@@ -9664,20 +9664,20 @@
       ]
     },
     "bg": {
-      "h1": "Япония проверка на километраж за японски автомобили",
-      "lead": "Проверка на пробег Япония — проверете километража, аукционната история, катастрофите и експорта преди покупка или внос.",
+      "h1": "Проверете пробега на автомобили от Япония",
+      "lead": "Проверка на пробег на автомобили от Япония — проверете километража, аукционната история, катастрофите и експорта преди покупка или внос.",
       "bullets": [
         "Аукционни и пазарни записи",
-        "Индикатори за застраховки и сблъсъци",
-        "Регистрация и прехвърляне на собственост",
+        "История на застраховки и сблъсъци",
+        "Индикатори за регистрация и прехвърляне",
         "Флагове за тотал, отписване и възстановяване",
-        "катастрофи и ремонти",
-        "аукционна история"
+        "катастрофите",
+        "аукционната история"
       ],
       "sections": [
         {
           "title": "Най-честите червени флагове при японски употребявани коли — преди депозита.",
-          "body": "Всеки доклад събира аукционни, регистрационни и сервизни сигнали от основните японски пазари и експортни канали."
+          "body": "Всеки доклад събира аукционни, регистрационни и пазарни сигнали от основните експортни канали на Япония."
         },
         {
           "title": "Верификация на пробега (км)",
@@ -9740,20 +9740,20 @@
       ]
     },
     "ka": {
-      "h1": "იაპონია გარბენის შემოწმება იაპონური მანქანებისთვის",
-      "lead": "გარბენის შემოწმება იაპონია — შეამოწმეთ ოდომეტრი, აუქციონის ისტორია, ავარიები და ექსპორტი ყიდვამდე ან იმპორტამდე.",
+      "h1": "შეამოწმეთ გარბენი იაპონიიდან მანქანების",
+      "lead": "იაპონიიდან მანქანების გარბენის შემოწმება — შეამოწმეთ ოდომეტრი, აუქციონი, ავარიები და ექსპორტი ყიდვამდე ან იმპორტამდე.",
       "bullets": [
         "აუქციონისა და ბაზრის ჩანაწერები",
-        "დაზღვევისა და შეჯახების ინდიკატორები",
-        "რეგისტრაცია და საკუთრების გადაცემა",
+        "დაზღვევისა და შეჯახების ისტორია",
+        "რეგისტრაციისა და საკუთრების გადაცემის სიგნალები",
         "სალვაჟის, ჩამოწერისა და აღდგენის ნიშნები",
-        "ავარიები და რემონტი",
+        "ავარიები",
         "აუქციონის ისტორია"
       ],
       "sections": [
         {
           "title": "იაპონური მეორადი მანქანების ყველაზე გავრცელებული გაფრთხილებები — დეპოზიტამდე.",
-          "body": "ყოველი ანგარიში აერთიანებს აუქციონის, რეგისტრაციისა და სერვისის სიგნალებს იაპონიის ძირითადი ბაზრებიდან და ექსპორტის არხებიდან."
+          "body": "ყოველი ანგარიში აერთიანებს აუქციონის, რეგისტრაციისა და ბაზრის სიგნალებს იაპონიის ექსპორტის არხებიდან."
         },
         {
           "title": "გარბენის (კმ) შემოწმება",
@@ -9816,28 +9816,28 @@
       ]
     },
     "ar": {
-      "h1": "اليابان فحص الكيلومترات للسيارات اليابانية",
-      "lead": "فحص الكيلومترات اليابان — تحقق من العداد وسجل المزاد والحوادث والتصدير قبل الشراء أو الاستيراد.",
+      "h1": "تحقق من الكيلومترات لسيارات من اليابان",
+      "lead": "فحص كيلومترات سيارات من اليابان — تحقق من العداد وسجل المزاد والحوادث والتصدير قبل الشراء أو الاستيراد.",
       "bullets": [
         "سجلات المزادات وقوائم السوق",
-        "مؤشرات مطالبات التأمين والاصطدام",
+        "سجل التأمين والاصطدام",
         "إشارات التسجيل ونقل الملكية",
-        "علامات الخسارة الكلية والإعادة للبناء عند التوفر",
-        "الحوادث والإصلاحات",
+        "علامات الخسارة الكلية والإعادة للبناء",
+        "الحوادث",
         "سجل المزادات"
       ],
       "sections": [
         {
           "title": "أبرز علامات التحذير في السيارات اليابانية المستعملة — قبل دفع العربون.",
-          "body": "كل تقرير يجمع إشارات المزاد والتسجيل والصيانة عبر أسواق اليابان الرئيسية وقنوات التصدير."
+          "body": "كل تقرير يجمع إشارات المزاد والتسجيل والسوق عبر قنوات التصدير الرئيسية في اليابان."
         },
         {
           "title": "التحقق من المسافة (كم)",
-          "body": "نطابق قراءات العداد مع إشارات التسجيل والصيانة وبيانات السوق في اليابان."
+          "body": "نطابق قراءات العداد مع التسجيل والصيانة وبيانات السوق في اليابان."
         },
         {
           "title": "تاريخ الحوادث والأضرار",
-          "body": "نُظهر سجل الاصطدام ومطالبات التأمين — بما في ذلك إصلاحات الهيكل المخفية."
+          "body": "نُظهر سجل الاصطدام والتأمين — بما في ذلك إصلاحات الهيكل المخفية."
         },
         {
           "title": "حالة المصدوم والمرمم",
@@ -9845,11 +9845,11 @@
         },
         {
           "title": "سجلات السرقة والشرطة",
-          "body": "نتحقق من سجلات السرقة والاسترداد وإشارات التصدير/الاستيراد حتى لا يبقى التاريخ عبر الحدود مخفياً."
+          "body": "نتحقق من سجلات السرقة والاسترداد وإشارات التصدير/الاستيراد."
         },
         {
           "title": "ماذا يعني VIN ياباني يبدأ بـ «J»؟",
-          "body": "أرقام VIN التي تبدأ بـ «J» تُخصص للمركبات المصنّعة في اليابان. يؤكد ذلك المنشأ لا السجل النظيف — تحقق دائماً من الكيلومترات ودرجات المزاد والحوادث."
+          "body": "أرقام VIN التي تبدأ بـ «J» تُخصص للمركبات المصنّعة في اليابان. يؤكد ذلك المنشأ لا السجل النظيف — تحقق دائماً من الكيلومترات والمزاد والحوادث."
         },
         {
           "title": "هل تُغطى تويوتا وهوندا ونيسان؟",
@@ -9857,7 +9857,7 @@
         },
         {
           "title": "هل يمكنني فحص سيارة يابانية قبل استيرادها؟",
-          "body": "نعم. نفّذ فحص VIN قبل التصدير لكشف تلاعب العداد ودرجات أضرار المزاد والإصلاحات المخفية التي قد لا تظهر في بلد الوجهة."
+          "body": "نعم. نفّذ فحص VIN قبل التصدير لكشف تلاعب العداد وأضرار المزاد والإصلاحات المخفية."
         }
       ],
       "links": [
@@ -9892,20 +9892,20 @@
       ]
     },
     "uk": {
-      "h1": "Японія перевірка пробігу для японських авто",
-      "lead": "Перевірка пробігу Японія — перевірте одометр, історію аукціонів, ДТП та експорт перед покупкою або імпортом.",
+      "h1": "Перевір пробіг автомобілів з Японії",
+      "lead": "Перевірка пробігу автомобілів з Японії — перевірте одометр, аукціони, ДТП та експорт перед покупкою або імпортом.",
       "bullets": [
         "Записи аукціонів і ринкових оголошень",
-        "Індикатори страхових випадків і зіткнень",
-        "Реєстрація та зміна власника",
+        "Історія страхових випадків і зіткнень",
+        "Індикатори реєстрації та зміни власника",
         "Прапорці тоталу, списання та відновлення",
-        "аварії та ремонт",
-        "історія аукціонів"
+        "аварії",
+        "історію аукціонів"
       ],
       "sections": [
         {
           "title": "Найчастіші червоні прапорці в японських б/в авто — до завдатку.",
-          "body": "Кожен звіт об’єднує аукціонні, реєстраційні та сервісні сигнали з основних ринків Японії та каналів експорту."
+          "body": "Кожен звіт об’єднує аукціонні, реєстраційні та ринкові сигнали з основних експортних каналів Японії."
         },
         {
           "title": "Перевірка пробігу (км)",
@@ -9968,20 +9968,20 @@
       ]
     },
     "ru": {
-      "h1": "Япония проверка пробега для японских авто",
-      "lead": "Проверка пробега Япония — проверьте одометр, историю аукционов, аварии и экспорт перед покупкой или импортом.",
+      "h1": "Проверь пробег автомобилей из Японии",
+      "lead": "Проверка пробега автомобилей из Японии — проверьте одометр, аукционы, аварии и экспорт перед покупкой или импортом.",
       "bullets": [
         "Записи аукционов и рыночных объявлений",
-        "Индикаторы страховых случаев и столкновений",
-        "Регистрация и смена собственника",
+        "История страховых случаев и столкновений",
+        "Индикаторы регистрации и смены собственника",
         "Флаги тотала, списания и восстановления",
-        "аварии и ремонт",
-        "история аукционов"
+        "аварии",
+        "историю аукционов"
       ],
       "sections": [
         {
           "title": "Самые частые красные флаги у японских б/у авто — до задатка.",
-          "body": "Каждый отчёт объединяет аукционные, регистрационные и сервисные сигналы с основных рынков Японии и каналов экспорта."
+          "body": "Каждый отчёт объединяет аукционные, регистрационные и рыночные сигналы с основных экспортных каналов Японии."
         },
         {
           "title": "Проверка пробега (км)",
@@ -10044,20 +10044,20 @@
       ]
     },
     "zh": {
-      "h1": "日本 里程核查 日系车",
-      "lead": "日本里程核查 — 在购买或进口前核实里程表、拍卖历史、事故与出口记录。",
+      "h1": "查询 里程 来自日本的汽车",
+      "lead": "日本汽车里程核查 — 在购买或进口前核实里程表、拍卖历史、事故与出口记录。",
       "bullets": [
         "拍卖与市场挂牌记录",
-        "保险理赔与碰撞历史指标",
+        "保险理赔与碰撞历史",
         "注册与所有权转移信号",
-        "报废、注销与重建标记（如有）",
-        "事故与维修",
+        "报废、注销与重建标记",
+        "事故",
         "拍卖历史"
       ],
       "sections": [
         {
           "title": "日系二手车最常见的风险信号 — 付定金前先看清。",
-          "body": "每份报告汇总日本主要市场与出口渠道的拍卖、注册与保养信号。"
+          "body": "每份报告汇总日本主要出口渠道的拍卖、注册与市场信号。"
         },
         {
           "title": "里程（公里）核实",
@@ -10073,11 +10073,11 @@
         },
         {
           "title": "盗抢与警方记录",
-          "body": "核查失窃/找回记录以及进出口信号，避免跨境历史被隐藏。"
+          "body": "核查失窃/找回记录以及进出口信号。"
         },
         {
           "title": "以「J」开头的日本 VIN 是什么意思？",
-          "body": "以「J」开头的 VIN 分配给日本制造的车辆。这确认产地，不代表历史干净 — 务必核查里程、拍卖评级与事故。"
+          "body": "以「J」开头的 VIN 分配给日本制造的车辆。这确认产地，不代表历史干净 — 务必核查里程、拍卖与事故。"
         },
         {
           "title": "是否覆盖丰田、本田和日产？",
@@ -10085,7 +10085,7 @@
         },
         {
           "title": "进口前可以检查日本车吗？",
-          "body": "可以。在出口前进行 VIN 核查，可发现里程欺诈、拍卖损伤评级和目的国可能看不到的隐藏维修。"
+          "body": "可以。在出口前进行 VIN 核查，可发现里程欺诈、拍卖损伤和隐藏维修。"
         }
       ],
       "links": [
@@ -11112,488 +11112,488 @@
   },
   "api_b2b": {
     "en": {
-      "h1": "Sell Car History Reports & Mileage Records | kmcheck API B2B",
-      "lead": "Sell car history reports, mileage records and VIN checks on your website. White-label site or developer API. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles."
+      "h1": "Vehicle History API & White-Label Reseller Platform | kmcheck B2B",
+      "lead": "B2B vehicle-history API and managed white-label reseller sites for developers and partners. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles."
     },
     "de": {
-      "h1": "Fahrzeughistorie & Kilometerstände verkaufen | kmcheck API B2B",
-      "lead": "Verkaufen Sie Fahrzeughistorie, Kilometerstände und VIN-Checks auf Ihrer Website. White-Label oder API. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge."
+      "h1": "Fahrzeughistorie-API & White-Label für Reseller | kmcheck B2B",
+      "lead": "B2B-API und verwaltete White-Label-Reseller-Sites für Entwickler und Partner. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge."
     },
     "es": {
-      "h1": "Vende historial de coches y kilometraje | kmcheck API B2B",
-      "lead": "Vende informes de historial, kilometraje y comprobaciones VIN en tu web. Sitio white-label o API. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos."
+      "h1": "API de historial y plataforma white-label | kmcheck B2B",
+      "lead": "API B2B y sitios white-label para desarrolladores y partners. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos."
     },
     "fr": {
-      "h1": "Vendre historique auto et kilométrage | kmcheck API B2B",
-      "lead": "Vendez historiques, relevés km et contrôles VIN sur votre site. White-label ou API. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules."
+      "h1": "API historique véhicule & white-label revendeur | kmcheck B2B",
+      "lead": "API B2B et sites white-label gérés pour développeurs et partenaires. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules."
     },
     "sq": {
-      "h1": "Shitni historik makinash dhe kilometra | API B2B kmcheck",
-      "lead": "Shitni online raporte historiku makinash, kilometra dhe kontroll VIN. Sajt white-label ose API. Mbulim: SHBA, Kanada, Kore, Dubai, Kinë. Rreth 50 milionë makina."
+      "h1": "API historiku automjetesh & white-label për rishitës | kmcheck B2B",
+      "lead": "API B2B dhe faqe white-label për zhvillues e partnerë. SHBA, Kanada, Kore, Dubai, Kinë. ~50M automjete."
     },
     "pl": {
-      "h1": "Sprzedawaj historię aut i przebiegi | kmcheck API B2B",
-      "lead": "Sprzedawaj raporty historii, przebiegi i kontrole VIN na swojej stronie. White-label lub API. USA, Kanada, Korea, Dubaj, Chiny. ~50 mln pojazdów."
+      "h1": "API historii pojazdów i white-label dla resellerów | kmcheck B2B",
+      "lead": "API B2B i zarządzane strony white-label dla deweloperów i partnerów. USA, Kanada, Korea, Dubaj, Chiny. ~50M pojazdów."
     },
     "ro": {
-      "h1": "Vinde istoric auto și kilometraj | kmcheck API B2B",
-      "lead": "Vinde rapoarte de istoric, kilometraj și verificări VIN pe site. White-label sau API. SUA, Canada, Coreea, Dubai, China. ~50M vehicule."
+      "h1": "API istoric auto & white-label pentru reselleri | kmcheck B2B",
+      "lead": "API B2B și site-uri white-label pentru dezvoltatori și parteneri. SUA, Canada, Coreea, Dubai, China. ~50M vehicule."
     },
     "bg": {
-      "h1": "Продавайте автоистория и километри | kmcheck API B2B",
-      "lead": "Продавайте доклади за автоистория, километри и VIN проверки на сайта си. White-label или API. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила."
+      "h1": "API за автоистория и white-label за реселъри | kmcheck B2B",
+      "lead": "B2B API и white-label сайтове за разработчици и партньори. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила."
     },
     "ka": {
-      "h1": "გაყიდეთ მანქანის ისტორია და გარბენი | kmcheck API B2B",
-      "lead": "გაყიდეთ ისტორიის ანგარიშები, გარბენი და VIN შემოწმებები თქვენს საიტზე. White-label ან API. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50 მლნ ავტომობილი."
+      "h1": "ავტომობილის ისტორიის API და white-label რესელერებისთვის | kmcheck B2B",
+      "lead": "B2B API და white-label საიტები დეველოპერებისა და პარტნიორებისთვის. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50M მანქანა."
     },
     "ar": {
-      "h1": "بِع تاريخ السيارات وسجلات المسافة | واجهة kmcheck B2B",
-      "lead": "بِع تقارير تاريخ السيارات والمسافة وفحص VIN على موقعك. موقع بعلامتك أو واجهة برمجية. أمريكا، كندا، كوريا، دبي، الصين. ~50 مليون مركبة."
+      "h1": "واجهة برمجة تاريخ المركبات ومنصة White-Label | kmcheck B2B",
+      "lead": "واجهة B2B ومواقع white-label للمطوّرين والشركاء. الولايات المتحدة وكندا وكوريا ودبي والصين. نحو 50 مليون مركبة."
     },
     "uk": {
-      "h1": "Продавайте історію авто та пробіг | kmcheck API B2B",
-      "lead": "Продавайте звіти історії, пробіг і VIN-перевірки на сайті. White-label або API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+      "h1": "API історії авто та white-label для реселерів | kmcheck B2B",
+      "lead": "B2B API та white-label сайти для розробників і партнерів. США, Канада, Корея, Дубай, Китай. ~50M авто."
     },
     "ru": {
-      "h1": "Продавайте историю авто и пробег | kmcheck API B2B",
-      "lead": "Продавайте отчёты истории, пробег и VIN-проверки на сайте. White-label или API. США, Канада, Корея, Дубай, Китай. ~50M авто."
+      "h1": "API истории авто и white-label для реселлеров | kmcheck B2B",
+      "lead": "B2B API и white-label сайты для разработчиков и партнёров. США, Канада, Корея, Дубай, Китай. ~50M авто."
     },
     "zh": {
-      "h1": "销售车辆历史报告与里程记录 | kmcheck API B2B",
-      "lead": "在网站销售车史报告、里程记录与 VIN 查验。白标站点或开发者 API。覆盖美国、加拿大、韩国、迪拜、中国。约五千万辆车。"
+      "h1": "车辆历史 API 与白标分销平台 | kmcheck B2B",
+      "lead": "面向开发者与合作伙伴的 B2B API 与托管白标站点。覆盖美国、加拿大、韩国、迪拜、中国。约 5000 万辆车。"
     }
   },
   "api_b2b_api-b2b_plans": {
     "en": {
-      "h1": "Vehicle History API Pricing & Reseller Websites | kmcheck",
-      "lead": "Compare kmcheck plans: REST API for VIN history and mileage, or a managed white-label car history website."
+      "h1": "B2B API & White-Label Plans | kmcheck Partners",
+      "lead": "Compare kmcheck partner plans: REST API access or a managed white-label reseller website for your business."
     },
     "de": {
-      "h1": "API-Preise für Fahrzeughistorie & Reseller-Websites | kmcheck",
-      "lead": "kmcheck-Tarife vergleichen: REST-API für VIN-Historie und Kilometer oder betreute White-Label-Website."
+      "h1": "B2B-API- & White-Label-Tarife | kmcheck Partner",
+      "lead": "Vergleichen Sie kmcheck-Partnerpläne: REST-API oder verwaltete White-Label-Reseller-Website."
     },
     "es": {
-      "h1": "Precios API de historial y sitios reseller | kmcheck",
-      "lead": "Compara planes kmcheck: API REST de historial VIN y kilometraje, o web white-label gestionada."
+      "h1": "Planes API B2B y white-label | Partners kmcheck",
+      "lead": "Compare planes partner de kmcheck: acceso API REST o sitio white-label gestionado."
     },
     "fr": {
-      "h1": "Tarifs API historique auto et sites revendeur | kmcheck",
-      "lead": "Comparez les offres kmcheck : API REST historique VIN / km, ou site white-label géré."
+      "h1": "Offres API B2B & white-label | Partenaires kmcheck",
+      "lead": "Comparez les offres partenaires kmcheck : API REST ou site white-label géré."
     },
     "sq": {
-      "h1": "Çmime API historiku makinash dhe faqe rishitësi | kmcheck",
-      "lead": "Krahasoni planet kmcheck: API REST për historik VIN dhe kilometra, ose faqe white-label të menaxhuar."
+      "h1": "Planet API B2B & white-label | Partnerët kmcheck",
+      "lead": "Krahasoni planet partner të kmcheck: API REST ose faqe white-label e menaxhuar."
     },
     "pl": {
-      "h1": "Cennik API historii pojazdów i stron reseller | kmcheck",
-      "lead": "Porównaj plany kmcheck: API REST historii VIN i przebiegu albo zarządzaną stronę white-label."
+      "h1": "Plany API B2B i white-label | Partnerzy kmcheck",
+      "lead": "Porównaj plany partnerskie kmcheck: dostęp REST API lub zarządzana strona white-label."
     },
     "ro": {
-      "h1": "Prețuri API istoric auto și site-uri reseller | kmcheck",
-      "lead": "Compară planurile kmcheck: API REST pentru istoric VIN și kilometraj, sau site white-label gestionat."
+      "h1": "Planuri API B2B & white-label | Parteneri kmcheck",
+      "lead": "Comparați planurile partner kmcheck: acces API REST sau site white-label gestionat."
     },
     "bg": {
-      "h1": "Цени API автоистория и reseller сайтове | kmcheck",
-      "lead": "Сравнете плановете kmcheck: REST API за VIN история и километри или управляван white-label сайт."
+      "h1": "B2B API и white-label планове | Партньори kmcheck",
+      "lead": "Сравнете партньорските планове на kmcheck: REST API или управляван white-label сайт."
     },
     "ka": {
-      "h1": "ავტომობილის ისტორიის API ფასები და reseller საიტები | kmcheck",
-      "lead": "შედარეტ kmcheck გეგმები: REST API VIN ისტორიისა და გარბენისთვის ან მარტული white-label საიტი."
+      "h1": "B2B API და white-label გეგმები | kmcheck პარტნიორები",
+      "lead": "შეადარეთ kmcheck პარტნიორის გეგმები: REST API ან მართული white-label საიტი."
     },
     "ar": {
-      "h1": "أسعار واجهة تاريخ المركبات ومواقع إعادة البيع | kmcheck",
-      "lead": "قارن خطط kmcheck: واجهة REST لتاريخ VIN والمسافة، أو موقع white-label مُدار."
+      "h1": "خطط واجهة B2B وWhite-Label | شركاء kmcheck",
+      "lead": "قارن خطط شركاء kmcheck: وصول REST API أو موقع white-label مُدار."
     },
     "uk": {
-      "h1": "Ціни API історії авто та сайти реселера | kmcheck",
-      "lead": "Порівняйте плани kmcheck: REST API історії VIN і пробігу або керований white-label сайт."
+      "h1": "Тарифи B2B API та white-label | Партнери kmcheck",
+      "lead": "Порівняйте партнерські плани kmcheck: REST API або керований white-label сайт."
     },
     "ru": {
-      "h1": "Цены API истории авто и сайты реселлера | kmcheck",
-      "lead": "Сравните тарифы kmcheck: REST API истории VIN и пробега или управляемый white-label сайт."
+      "h1": "Тарифы B2B API и white-label | Партнёры kmcheck",
+      "lead": "Сравните партнёрские планы kmcheck: REST API или управляемый white-label сайт."
     },
     "zh": {
-      "h1": "车史 API 报价与经销网站 | kmcheck",
-      "lead": "对比 kmcheck 方案：VIN 历史与里程 REST API，或托管白标车史网站。"
+      "h1": "B2B API 与白标方案 | kmcheck 合作伙伴",
+      "lead": "比较 kmcheck 合作伙伴方案：REST API 或托管白标分销网站。"
     }
   },
   "api_b2b_api-b2b_contact": {
     "en": {
-      "h1": "Contact Sales | Sell Car History Reports with kmcheck",
-      "lead": "Talk to kmcheck about selling car history reports and mileage records via API or a managed reseller site. Email info@kmcheck.com."
+      "h1": "Contact kmcheck B2B Sales | Partner API & White-Label",
+      "lead": "Talk to kmcheck about partner API access or a managed reseller website. Email info@kmcheck.com."
     },
     "de": {
-      "h1": "Vertrieb kontaktieren | Fahrzeughistorie mit kmcheck verkaufen",
-      "lead": "Sprechen Sie mit kmcheck über den Verkauf von Fahrzeughistorie und Kilometerständen per API oder betreuter Reseller-Site. E-Mail info@kmcheck.com."
+      "h1": "kmcheck B2B-Vertrieb kontaktieren | Partner-API",
+      "lead": "Sprechen Sie mit kmcheck über Partner-API oder White-Label-Reseller-Website. E-Mail info@kmcheck.com."
     },
     "es": {
-      "h1": "Contacto comercial | Vende historial de coches con kmcheck",
-      "lead": "Habla con kmcheck sobre vender historial y kilometraje por API o sitio reseller. Email info@kmcheck.com."
+      "h1": "Contacto comercial B2B kmcheck | API y white-label",
+      "lead": "Hable con kmcheck sobre API partner o sitio reseller. Email info@kmcheck.com."
     },
     "fr": {
-      "h1": "Contact commercial | Vendre l’historique auto avec kmcheck",
-      "lead": "Parlez à kmcheck de la vente d’historiques et kilométrages via API ou site revendeur. E-mail info@kmcheck.com."
+      "h1": "Contact commercial B2B kmcheck | API & white-label",
+      "lead": "Parlez à kmcheck d’un accès API partenaire ou d’un site revendeur. Email info@kmcheck.com."
     },
     "sq": {
-      "h1": "Kontakt shitje | Shitni historik makinash me kmcheck",
-      "lead": "Flisni me kmcheck për shitjen e historikut të makinave dhe kilometrave me API ose faqe të menaxhuar. Email: info@kmcheck.com."
+      "h1": "Kontakt shitje B2B kmcheck | API & white-label",
+      "lead": "Flisni me kmcheck për API partner ose faqe rishitësi. Email info@kmcheck.com."
     },
     "pl": {
-      "h1": "Kontakt handlowy | Sprzedawaj historię aut z kmcheck",
-      "lead": "Porozmawiaj z kmcheck o sprzedaży historii i przebiegów przez API lub stronę reseller. E-mail info@kmcheck.com."
+      "h1": "Kontakt handlowy B2B kmcheck | API i white-label",
+      "lead": "Porozmawiaj z kmcheck o API partnerskim lub stronie resellera. Email info@kmcheck.com."
     },
     "ro": {
-      "h1": "Contact vânzări | Vinde istoric auto cu kmcheck",
-      "lead": "Vorbește cu kmcheck despre vânzarea de istoric și kilometraj prin API sau site reseller. Email info@kmcheck.com."
+      "h1": "Contact vânzări B2B kmcheck | API & white-label",
+      "lead": "Discutați cu kmcheck despre API partener sau site reseller. Email info@kmcheck.com."
     },
     "bg": {
-      "h1": "Контакт продажби | Продавайте автоистория с kmcheck",
-      "lead": "Говорете с kmcheck за продажба на автоистория и километри чрез API или reseller сайт. Имейл info@kmcheck.com."
+      "h1": "Контакт B2B продажби kmcheck | API и white-label",
+      "lead": "Говорете с kmcheck за партньорски API или reseller сайт. Email info@kmcheck.com."
     },
     "ka": {
-      "h1": "გაყიდვების კონტაქტი | გაყიდეთ მანქანის ისტორია kmcheck-იტ",
-      "lead": "ესაუბრეტ kmcheck-ს ისტორიისა და გარბენის გაყიდვაზე API-ით ან reseller საიტით. ელფოსტა info@kmcheck.com."
+      "h1": "კონტაქტი B2B გაყიდვები kmcheck | API და white-label",
+      "lead": "ისაუბრეთ kmcheck-თან პარტნიორის API ან რესელერის საიტზე. Email info@kmcheck.com."
     },
     "ar": {
-      "h1": "تواصل مع المبيعات | بِع تاريخ السيارات مع kmcheck",
-      "lead": "تحدث مع kmcheck عن بيع تاريخ السيارات والمسافة عبر الواجهة أو موقع إعادة البيع. البريد info@kmcheck.com."
+      "h1": "تواصل مبيعات B2B مع kmcheck | واجهة وWhite-Label",
+      "lead": "تحدث مع kmcheck عن واجهة شريك أو موقع إعادة بيع. البريد info@kmcheck.com."
     },
     "uk": {
-      "h1": "Контакт продажів | Продавайте історію авто з kmcheck",
-      "lead": "Поговоріть з kmcheck про продаж історії та пробігу через API або сайт реселера. Email info@kmcheck.com."
+      "h1": "Контакт B2B продажів kmcheck | API та white-label",
+      "lead": "Обговоріть з kmcheck партнерський API або сайт реселера. Email info@kmcheck.com."
     },
     "ru": {
-      "h1": "Контакт продаж | Продавайте историю авто с kmcheck",
-      "lead": "Обсудите с kmcheck продажу истории и пробега через API или сайт реселлера. Email info@kmcheck.com."
+      "h1": "Контакт B2B продаж kmcheck | API и white-label",
+      "lead": "Обсудите с kmcheck партнёрский API или сайт реселлера. Email info@kmcheck.com."
     },
     "zh": {
-      "h1": "联系销售 | 使用 kmcheck 销售车史报告",
-      "lead": "咨询通过 API 或经销站点销售车史与里程。邮箱 info@kmcheck.com。"
+      "h1": "联系 kmcheck B2B 销售 | API 与白标",
+      "lead": "咨询合作伙伴 API 或分销网站。邮箱 info@kmcheck.com。"
     }
   },
   "api_b2b_api-b2b_vin-decoder": {
     "en": {
-      "h1": "VIN Decoder API — Makes, Models & Specs | kmcheck B2B",
-      "lead": "VIN decoder covering makes, models and detailed specs. Included with the kmcheck API and Reseller Website & Maintenance."
+      "h1": "VIN Decode API for Developers & Resellers | kmcheck B2B",
+      "lead": "Developer VIN decode API (make, model, specs). Included with kmcheck partner API and managed reseller websites."
     },
     "de": {
-      "h1": "VIN-Decoder API — Marken, Modelle & Specs | kmcheck B2B",
-      "lead": "VIN-Decoder für Marken und Modelle mit detaillierten Specs. Enthalten in der kmcheck API sowie Reseller-Website & Wartung."
+      "h1": "VIN-Decode-API für Entwickler & Reseller | kmcheck B2B",
+      "lead": "VIN-Decode-API (Marke, Modell, Specs) für Partner — Teil von API und White-Label-Reseller."
     },
     "es": {
-      "h1": "API decodificador VIN — marcas, modelos y specs | kmcheck",
-      "lead": "Decodificador VIN con specs detalladas. Incluido en la API kmcheck y en Sitio reseller y mantenimiento."
+      "h1": "API de decodificación VIN para developers | kmcheck B2B",
+      "lead": "API de decode VIN (marca, modelo, specs) para partners — incluida en API y white-label."
     },
     "fr": {
-      "h1": "API décodeur VIN — marques, modèles et specs | kmcheck",
-      "lead": "Décodeur VIN avec specs détaillées. Inclus dans l’API kmcheck et Site revendeur & maintenance."
+      "h1": "API décodage VIN pour développeurs | kmcheck B2B",
+      "lead": "API de décodage VIN (marque, modèle, specs) pour partenaires — incluse dans API et white-label."
     },
     "sq": {
-      "h1": "API Dekodues VIN — marka, modele dhe specifikime | kmcheck",
-      "lead": "Dekodues VIN për markat dhe modelet me specifikime të detajuara. I përfshirë në API kmcheck dhe te Faqe rishitësi & mirëmbajtje."
+      "h1": "API dekodimi VIN për zhvillues | kmcheck B2B",
+      "lead": "API dekodimi VIN (markë, model, specs) për partnerë — e përfshirë në API dhe white-label."
     },
     "pl": {
-      "h1": "API dekoder VIN — marki, modele i specs | kmcheck",
-      "lead": "Dekoder VIN ze szczegółowymi danymi. W API kmcheck oraz na Stronie resellera i utrzymaniu."
+      "h1": "API dekodowania VIN dla deweloperów | kmcheck B2B",
+      "lead": "API dekodowania VIN (marka, model, specs) dla partnerów — w API i white-label."
     },
     "ro": {
-      "h1": "API decoder VIN — mărci, modele și specs | kmcheck",
-      "lead": "Decoder VIN cu specs detaliate. Inclus în API kmcheck și Site reseller & mentenanță."
+      "h1": "API decodare VIN pentru developeri | kmcheck B2B",
+      "lead": "API decodare VIN (marcă, model, specs) pentru parteneri — inclus în API și white-label."
     },
     "bg": {
-      "h1": "VIN декодер API — марки, модели и specs | kmcheck",
-      "lead": "VIN декодер с подробни specs. Включен в kmcheck API и Reseller сайт и поддръжка."
+      "h1": "VIN decode API за разработчици | kmcheck B2B",
+      "lead": "VIN decode API (марка, модел, specs) за партньори — в API и white-label."
     },
     "ka": {
-      "h1": "VIN გაშიფვრა API — მარკები, მოდელები და specs | kmcheck",
-      "lead": "VIN გაშიფვრა დეტალური მონაცემებიტ. kmcheck API-ში და Reseller საიტსა და მხარდაჭერაში."
+      "h1": "VIN decode API დეველოპერებისთვის | kmcheck B2B",
+      "lead": "VIN decode API (მარკა, მოდელი, specs) პარტნიორებისთვის — API-სა და white-label-ში."
     },
     "ar": {
-      "h1": "واجهة فك شفرة VIN — الماركات والموديلات والمواصفات | kmcheck",
-      "lead": "فك VIN بمواصفات مفصّلة. مشمول في واجهة kmcheck وفي موقع إعادة البيع والصيانة."
+      "h1": "واجهة فك VIN للمطوّرين | kmcheck B2B",
+      "lead": "واجهة فك VIN (الماركة والموديل والمواصفات) للشركاء — ضمن الواجهة وwhite-label."
     },
     "uk": {
-      "h1": "API VIN-декодер — марки, моделі й specs | kmcheck",
-      "lead": "VIN-декодер з детальними specs. Входить до API kmcheck та Сайту реселера і підтримки."
+      "h1": "API декодування VIN для розробників | kmcheck B2B",
+      "lead": "API декодування VIN (марка, модель, specs) для партнерів — в API та white-label."
     },
     "ru": {
-      "h1": "API VIN-декодер — марки, модели и specs | kmcheck",
-      "lead": "VIN-декодер с детальными specs. Входит в API kmcheck и Сайт реселлера и поддержку."
+      "h1": "API декодирования VIN для разработчиков | kmcheck B2B",
+      "lead": "API декодирования VIN (марка, модель, specs) для партнёров — в API и white-label."
     },
     "zh": {
-      "h1": "VIN 解码 API — 全品牌车型与规格 | kmcheck B2B",
-      "lead": "各品牌车型 VIN 解码与详细规格。包含于 kmcheck API 以及经销网站与维护。"
+      "h1": "面向开发者的 VIN 解码 API | kmcheck B2B",
+      "lead": "合作伙伴 VIN 解码 API（品牌、车型、规格）— 包含在 API 与白标方案中。"
     }
   },
   "api_b2b_api-b2b_usa-cars": {
     "en": {
-      "h1": "Sell American Cars History and Reports | kmcheck",
-      "lead": "Sell American cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+      "h1": "American Vehicle Data API for Resellers | kmcheck B2B",
+      "lead": "Reseller API access for American vehicle data under your brand — white-label site or developer integration with kmcheck."
     },
     "de": {
-      "h1": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte | kmcheck",
-      "lead": "Verkaufen Sie amerikanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+      "h1": "amerikanische Fahrzeugdaten-API für Reseller | kmcheck B2B",
+      "lead": "Reseller-API für amerikanische-Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration."
     },
     "es": {
-      "h1": "Vende historial e informes de coches estadounidenses | kmcheck",
-      "lead": "Vende historial e informes de coches estadounidenses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+      "h1": "API de datos de vehículos estadounidenses para resellers | kmcheck B2B",
+      "lead": "API reseller para datos de vehículos estadounidenses bajo su marca — white-label o integración para developers."
     },
     "fr": {
-      "h1": "Vendez l'historique et les rapports de voitures américaines | kmcheck",
-      "lead": "Vendez l'historique et les rapports de voitures américaines, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+      "h1": "API données véhicules américaines pour revendeurs | kmcheck B2B",
+      "lead": "API revendeur pour données véhicules américaines sous votre marque — white-label ou intégration développeur."
     },
     "sq": {
-      "h1": "Shit raporte historiku makinash nga SHBA | kmcheck API",
-      "lead": "Shitni raporte historiku për SHBA, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+      "h1": "API të dhënash automjetesh SHBA për rishitës | kmcheck B2B",
+      "lead": "API rishitësi për të dhëna automjetesh SHBA nën markën tuaj — white-label ose integrim zhvilluesi."
     },
     "pl": {
-      "h1": "Sprzedawaj historię i raporty samochodów amerykańskich | kmcheck",
-      "lead": "Sprzedawaj historię i raporty samochodów amerykańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+      "h1": "API danych pojazdów amerykańskich dla resellerów | kmcheck B2B",
+      "lead": "API resellera dla danych pojazdów amerykańskich pod Twoją marką — white-label lub integracja dla deweloperów."
     },
     "ro": {
-      "h1": "Vinde istoricul și rapoartele mașinilor americane | kmcheck",
-      "lead": "Vinde istoricul și rapoartele mașinilor americane, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+      "h1": "API date vehicule americane pentru reselleri | kmcheck B2B",
+      "lead": "API reseller pentru date vehicule americane sub brandul dvs. — white-label sau integrare developer."
     },
     "bg": {
-      "h1": "Продавайте история и отчети за американски автомобили | kmcheck",
-      "lead": "Продавайте история и отчети за американски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+      "h1": "API за данни за американски автомобили за реселъри | kmcheck B2B",
+      "lead": "Reseller API за данни за американски автомобили под вашата марка — white-label или developer интеграция."
     },
     "ka": {
-      "h1": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები | kmcheck",
-      "lead": "გაყიდეთ ამერიკული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+      "h1": "ამერიკული მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
+      "lead": "რესელერის API ამერიკული მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია."
     },
     "ar": {
-      "h1": "بِع تاريخ وتقارير السيارات الأمريكية | kmcheck",
-      "lead": "بِع تاريخ وتقارير السيارات الأمريكية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+      "h1": "واجهة بيانات مركبات الأمريكية للبائعين | kmcheck B2B",
+      "lead": "واجهة إعادة بيع لبيانات مركبات الأمريكية تحت علامتك — white-label أو تكامل للمطوّرين."
     },
     "uk": {
-      "h1": "Продавайте історію та звіти американських автомобілів | kmcheck",
-      "lead": "Продавайте історію та звіти американських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+      "h1": "API даних авто американських для реселерів | kmcheck B2B",
+      "lead": "Reseller API для даних авто американських під вашим брендом — white-label або інтеграція для розробників."
     },
     "ru": {
-      "h1": "Продавайте историю и отчёты американских автомобилей | kmcheck",
-      "lead": "Продавайте историю и отчёты американских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+      "h1": "API данных авто американских для реселлеров | kmcheck B2B",
+      "lead": "Reseller API для данных авто американских под вашим брендом — white-label или интеграция для разработчиков."
     },
     "zh": {
-      "h1": "销售美国车辆历史与报告 | kmcheck",
-      "lead": "以您的品牌通过 kmcheck API 销售美国车辆历史与报告、VIN 查验、事故与里程记录。"
+      "h1": "美国 车辆数据 API（分销商）| kmcheck B2B",
+      "lead": "以您的品牌提供 美国 车辆数据的分销 API — 白标站点或开发者集成。"
     }
   },
   "api_b2b_api-b2b_canada-cars": {
     "en": {
-      "h1": "Sell Canadian Cars History and Reports | kmcheck",
-      "lead": "Sell Canadian cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+      "h1": "Canadian Vehicle Data API for Resellers | kmcheck B2B",
+      "lead": "Reseller API access for Canadian vehicle data under your brand — white-label site or developer integration with kmcheck."
     },
     "de": {
-      "h1": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte | kmcheck",
-      "lead": "Verkaufen Sie kanadische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+      "h1": "kanadische Fahrzeugdaten-API für Reseller | kmcheck B2B",
+      "lead": "Reseller-API für kanadische-Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration."
     },
     "es": {
-      "h1": "Vende historial e informes de coches canadienses | kmcheck",
-      "lead": "Vende historial e informes de coches canadienses, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+      "h1": "API de datos de vehículos canadienses para resellers | kmcheck B2B",
+      "lead": "API reseller para datos de vehículos canadienses bajo su marca — white-label o integración para developers."
     },
     "fr": {
-      "h1": "Vendez l'historique et les rapports de voitures canadiennes | kmcheck",
-      "lead": "Vendez l'historique et les rapports de voitures canadiennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+      "h1": "API données véhicules canadiennes pour revendeurs | kmcheck B2B",
+      "lead": "API revendeur pour données véhicules canadiennes sous votre marque — white-label ou intégration développeur."
     },
     "sq": {
-      "h1": "Shit raporte historiku makinash nga Kanadaja | kmcheck API",
-      "lead": "Shitni raporte historiku për Kanadaja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+      "h1": "API të dhënash automjetesh Kanadaja për rishitës | kmcheck B2B",
+      "lead": "API rishitësi për të dhëna automjetesh Kanadaja nën markën tuaj — white-label ose integrim zhvilluesi."
     },
     "pl": {
-      "h1": "Sprzedawaj historię i raporty samochodów kanadyjskich | kmcheck",
-      "lead": "Sprzedawaj historię i raporty samochodów kanadyjskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+      "h1": "API danych pojazdów kanadyjskich dla resellerów | kmcheck B2B",
+      "lead": "API resellera dla danych pojazdów kanadyjskich pod Twoją marką — white-label lub integracja dla deweloperów."
     },
     "ro": {
-      "h1": "Vinde istoricul și rapoartele mașinilor canadiene | kmcheck",
-      "lead": "Vinde istoricul și rapoartele mașinilor canadiene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+      "h1": "API date vehicule canadiene pentru reselleri | kmcheck B2B",
+      "lead": "API reseller pentru date vehicule canadiene sub brandul dvs. — white-label sau integrare developer."
     },
     "bg": {
-      "h1": "Продавайте история и отчети за канадски автомобили | kmcheck",
-      "lead": "Продавайте история и отчети за канадски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+      "h1": "API за данни за канадски автомобили за реселъри | kmcheck B2B",
+      "lead": "Reseller API за данни за канадски автомобили под вашата марка — white-label или developer интеграция."
     },
     "ka": {
-      "h1": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები | kmcheck",
-      "lead": "გაყიდეთ კანადური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+      "h1": "კანადური მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
+      "lead": "რესელერის API კანადური მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია."
     },
     "ar": {
-      "h1": "بِع تاريخ وتقارير السيارات الكندية | kmcheck",
-      "lead": "بِع تاريخ وتقارير السيارات الكندية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+      "h1": "واجهة بيانات مركبات الكندية للبائعين | kmcheck B2B",
+      "lead": "واجهة إعادة بيع لبيانات مركبات الكندية تحت علامتك — white-label أو تكامل للمطوّرين."
     },
     "uk": {
-      "h1": "Продавайте історію та звіти канадських автомобілів | kmcheck",
-      "lead": "Продавайте історію та звіти канадських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+      "h1": "API даних авто канадських для реселерів | kmcheck B2B",
+      "lead": "Reseller API для даних авто канадських під вашим брендом — white-label або інтеграція для розробників."
     },
     "ru": {
-      "h1": "Продавайте историю и отчёты канадских автомобилей | kmcheck",
-      "lead": "Продавайте историю и отчёты канадских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+      "h1": "API данных авто канадских для реселлеров | kmcheck B2B",
+      "lead": "Reseller API для данных авто канадских под вашим брендом — white-label или интеграция для разработчиков."
     },
     "zh": {
-      "h1": "销售加拿大车辆历史与报告 | kmcheck",
-      "lead": "以您的品牌通过 kmcheck API 销售加拿大车辆历史与报告、VIN 查验、事故与里程记录。"
+      "h1": "加拿大 车辆数据 API（分销商）| kmcheck B2B",
+      "lead": "以您的品牌提供 加拿大 车辆数据的分销 API — 白标站点或开发者集成。"
     }
   },
   "api_b2b_api-b2b_korea-cars": {
     "en": {
-      "h1": "Sell Korean Cars History and Reports | kmcheck",
-      "lead": "Sell Korean cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+      "h1": "Korean Vehicle Data API for Resellers | kmcheck B2B",
+      "lead": "Reseller API access for Korean vehicle data under your brand — white-label site or developer integration with kmcheck."
     },
     "de": {
-      "h1": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte | kmcheck",
-      "lead": "Verkaufen Sie koreanische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+      "h1": "koreanische Fahrzeugdaten-API für Reseller | kmcheck B2B",
+      "lead": "Reseller-API für koreanische-Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration."
     },
     "es": {
-      "h1": "Vende historial e informes de coches coreanos | kmcheck",
-      "lead": "Vende historial e informes de coches coreanos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+      "h1": "API de datos de vehículos coreanos para resellers | kmcheck B2B",
+      "lead": "API reseller para datos de vehículos coreanos bajo su marca — white-label o integración para developers."
     },
     "fr": {
-      "h1": "Vendez l'historique et les rapports de voitures coréennes | kmcheck",
-      "lead": "Vendez l'historique et les rapports de voitures coréennes, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+      "h1": "API données véhicules coréennes pour revendeurs | kmcheck B2B",
+      "lead": "API revendeur pour données véhicules coréennes sous votre marque — white-label ou intégration développeur."
     },
     "sq": {
-      "h1": "Shit raporte historiku makinash nga Koreja | kmcheck API",
-      "lead": "Shitni raporte historiku për Koreja, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+      "h1": "API të dhënash automjetesh Koreja për rishitës | kmcheck B2B",
+      "lead": "API rishitësi për të dhëna automjetesh Koreja nën markën tuaj — white-label ose integrim zhvilluesi."
     },
     "pl": {
-      "h1": "Sprzedawaj historię i raporty samochodów koreańskich | kmcheck",
-      "lead": "Sprzedawaj historię i raporty samochodów koreańskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+      "h1": "API danych pojazdów koreańskich dla resellerów | kmcheck B2B",
+      "lead": "API resellera dla danych pojazdów koreańskich pod Twoją marką — white-label lub integracja dla deweloperów."
     },
     "ro": {
-      "h1": "Vinde istoricul și rapoartele mașinilor coreene | kmcheck",
-      "lead": "Vinde istoricul și rapoartele mașinilor coreene, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+      "h1": "API date vehicule coreene pentru reselleri | kmcheck B2B",
+      "lead": "API reseller pentru date vehicule coreene sub brandul dvs. — white-label sau integrare developer."
     },
     "bg": {
-      "h1": "Продавайте история и отчети за корейски автомобили | kmcheck",
-      "lead": "Продавайте история и отчети за корейски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+      "h1": "API за данни за корейски автомобили за реселъри | kmcheck B2B",
+      "lead": "Reseller API за данни за корейски автомобили под вашата марка — white-label или developer интеграция."
     },
     "ka": {
-      "h1": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები | kmcheck",
-      "lead": "გაყიდეთ კორეული მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+      "h1": "კორეული მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
+      "lead": "რესელერის API კორეული მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია."
     },
     "ar": {
-      "h1": "بِع تاريخ وتقارير السيارات الكورية | kmcheck",
-      "lead": "بِع تاريخ وتقارير السيارات الكورية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+      "h1": "واجهة بيانات مركبات الكورية للبائعين | kmcheck B2B",
+      "lead": "واجهة إعادة بيع لبيانات مركبات الكورية تحت علامتك — white-label أو تكامل للمطوّرين."
     },
     "uk": {
-      "h1": "Продавайте історію та звіти корейських автомобілів | kmcheck",
-      "lead": "Продавайте історію та звіти корейських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+      "h1": "API даних авто корейських для реселерів | kmcheck B2B",
+      "lead": "Reseller API для даних авто корейських під вашим брендом — white-label або інтеграція для розробників."
     },
     "ru": {
-      "h1": "Продавайте историю и отчёты корейских автомобилей | kmcheck",
-      "lead": "Продавайте историю и отчёты корейских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+      "h1": "API данных авто корейских для реселлеров | kmcheck B2B",
+      "lead": "Reseller API для данных авто корейских под вашим брендом — white-label или интеграция для разработчиков."
     },
     "zh": {
-      "h1": "销售韩国车辆历史与报告 | kmcheck",
-      "lead": "以您的品牌通过 kmcheck API 销售韩国车辆历史与报告、VIN 查验、事故与里程记录。"
+      "h1": "韩国 车辆数据 API（分销商）| kmcheck B2B",
+      "lead": "以您的品牌提供 韩国 车辆数据的分销 API — 白标站点或开发者集成。"
     }
   },
   "api_b2b_api-b2b_dubai-cars": {
     "en": {
-      "h1": "Sell UAE Cars History and Reports | kmcheck",
-      "lead": "Sell UAE cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+      "h1": "UAE Vehicle Data API for Resellers | kmcheck B2B",
+      "lead": "Reseller API access for UAE vehicle data under your brand — white-label site or developer integration with kmcheck."
     },
     "de": {
-      "h1": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte | kmcheck",
-      "lead": "Verkaufen Sie VAE- Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+      "h1": "VAE- Fahrzeugdaten-API für Reseller | kmcheck B2B",
+      "lead": "Reseller-API für VAE--Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration."
     },
     "es": {
-      "h1": "Vende historial e informes de coches de los EAU | kmcheck",
-      "lead": "Vende historial e informes de coches de los EAU, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+      "h1": "API de datos de vehículos de los EAU para resellers | kmcheck B2B",
+      "lead": "API reseller para datos de vehículos de los EAU bajo su marca — white-label o integración para developers."
     },
     "fr": {
-      "h1": "Vendez l'historique et les rapports de voitures des EAU | kmcheck",
-      "lead": "Vendez l'historique et les rapports de voitures des EAU, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+      "h1": "API données véhicules des EAU pour revendeurs | kmcheck B2B",
+      "lead": "API revendeur pour données véhicules des EAU sous votre marque — white-label ou intégration développeur."
     },
     "sq": {
-      "h1": "Shit raporte historiku makinash nga Dubai / Emiratet | kmcheck API",
-      "lead": "Shitni raporte historiku për Dubai / Emiratet, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+      "h1": "API të dhënash automjetesh Dubai / Emiratet për rishitës | kmcheck B2B",
+      "lead": "API rishitësi për të dhëna automjetesh Dubai / Emiratet nën markën tuaj — white-label ose integrim zhvilluesi."
     },
     "pl": {
-      "h1": "Sprzedawaj historię i raporty samochodów ze ZEA | kmcheck",
-      "lead": "Sprzedawaj historię i raporty samochodów ze ZEA, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+      "h1": "API danych pojazdów ze ZEA dla resellerów | kmcheck B2B",
+      "lead": "API resellera dla danych pojazdów ze ZEA pod Twoją marką — white-label lub integracja dla deweloperów."
     },
     "ro": {
-      "h1": "Vinde istoricul și rapoartele mașinilor din EAU | kmcheck",
-      "lead": "Vinde istoricul și rapoartele mașinilor din EAU, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+      "h1": "API date vehicule din EAU pentru reselleri | kmcheck B2B",
+      "lead": "API reseller pentru date vehicule din EAU sub brandul dvs. — white-label sau integrare developer."
     },
     "bg": {
-      "h1": "Продавайте история и отчети за от ОАЕ автомобили | kmcheck",
-      "lead": "Продавайте история и отчети за от ОАЕ автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+      "h1": "API за данни за от ОАЕ автомобили за реселъри | kmcheck B2B",
+      "lead": "Reseller API за данни за от ОАЕ автомобили под вашата марка — white-label или developer интеграция."
     },
     "ka": {
-      "h1": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები | kmcheck",
-      "lead": "გაყიდეთ არეს მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+      "h1": "არეს მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
+      "lead": "რესელერის API არეს მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია."
     },
     "ar": {
-      "h1": "بِع تاريخ وتقارير السيارات الإماراتية | kmcheck",
-      "lead": "بِع تاريخ وتقارير السيارات الإماراتية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+      "h1": "واجهة بيانات مركبات الإماراتية للبائعين | kmcheck B2B",
+      "lead": "واجهة إعادة بيع لبيانات مركبات الإماراتية تحت علامتك — white-label أو تكامل للمطوّرين."
     },
     "uk": {
-      "h1": "Продавайте історію та звіти ОАЕ автомобілів | kmcheck",
-      "lead": "Продавайте історію та звіти ОАЕ автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+      "h1": "API даних авто ОАЕ для реселерів | kmcheck B2B",
+      "lead": "Reseller API для даних авто ОАЕ під вашим брендом — white-label або інтеграція для розробників."
     },
     "ru": {
-      "h1": "Продавайте историю и отчёты ОАЭ автомобилей | kmcheck",
-      "lead": "Продавайте историю и отчёты ОАЭ автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+      "h1": "API данных авто ОАЭ для реселлеров | kmcheck B2B",
+      "lead": "Reseller API для данных авто ОАЭ под вашим брендом — white-label или интеграция для разработчиков."
     },
     "zh": {
-      "h1": "销售阿联酋车辆历史与报告 | kmcheck",
-      "lead": "以您的品牌通过 kmcheck API 销售阿联酋车辆历史与报告、VIN 查验、事故与里程记录。"
+      "h1": "阿联酋 车辆数据 API（分销商）| kmcheck B2B",
+      "lead": "以您的品牌提供 阿联酋 车辆数据的分销 API — 白标站点或开发者集成。"
     }
   },
   "api_b2b_api-b2b_china-cars": {
     "en": {
-      "h1": "Sell Chinese Cars History and Reports | kmcheck",
-      "lead": "Sell Chinese cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API."
+      "h1": "Chinese Vehicle Data API for Resellers | kmcheck B2B",
+      "lead": "Reseller API access for Chinese vehicle data under your brand — white-label site or developer integration with kmcheck."
     },
     "de": {
-      "h1": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte | kmcheck",
-      "lead": "Verkaufen Sie chinesische Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API."
+      "h1": "chinesische Fahrzeugdaten-API für Reseller | kmcheck B2B",
+      "lead": "Reseller-API für chinesische-Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration."
     },
     "es": {
-      "h1": "Vende historial e informes de coches chinos | kmcheck",
-      "lead": "Vende historial e informes de coches chinos, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck."
+      "h1": "API de datos de vehículos chinos para resellers | kmcheck B2B",
+      "lead": "API reseller para datos de vehículos chinos bajo su marca — white-label o integración para developers."
     },
     "fr": {
-      "h1": "Vendez l'historique et les rapports de voitures chinoises | kmcheck",
-      "lead": "Vendez l'historique et les rapports de voitures chinoises, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck."
+      "h1": "API données véhicules chinoises pour revendeurs | kmcheck B2B",
+      "lead": "API revendeur pour données véhicules chinoises sous votre marque — white-label ou intégration développeur."
     },
     "sq": {
-      "h1": "Shit raporte historiku makinash nga Kina | kmcheck API",
-      "lead": "Shitni raporte historiku për Kina, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API."
+      "h1": "API të dhënash automjetesh Kina për rishitës | kmcheck B2B",
+      "lead": "API rishitësi për të dhëna automjetesh Kina nën markën tuaj — white-label ose integrim zhvilluesi."
     },
     "pl": {
-      "h1": "Sprzedawaj historię i raporty samochodów chińskich | kmcheck",
-      "lead": "Sprzedawaj historię i raporty samochodów chińskich, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API."
+      "h1": "API danych pojazdów chińskich dla resellerów | kmcheck B2B",
+      "lead": "API resellera dla danych pojazdów chińskich pod Twoją marką — white-label lub integracja dla deweloperów."
     },
     "ro": {
-      "h1": "Vinde istoricul și rapoartele mașinilor chineze | kmcheck",
-      "lead": "Vinde istoricul și rapoartele mașinilor chineze, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API."
+      "h1": "API date vehicule chineze pentru reselleri | kmcheck B2B",
+      "lead": "API reseller pentru date vehicule chineze sub brandul dvs. — white-label sau integrare developer."
     },
     "bg": {
-      "h1": "Продавайте история и отчети за китайски автомобили | kmcheck",
-      "lead": "Продавайте история и отчети за китайски автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API."
+      "h1": "API за данни за китайски автомобили за реселъри | kmcheck B2B",
+      "lead": "Reseller API за данни за китайски автомобили под вашата марка — white-label или developer интеграция."
     },
     "ka": {
-      "h1": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები | kmcheck",
-      "lead": "გაყიდეთ ჩინური მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით."
+      "h1": "ჩინური მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
+      "lead": "რესელერის API ჩინური მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია."
     },
     "ar": {
-      "h1": "بِع تاريخ وتقارير السيارات الصينية | kmcheck",
-      "lead": "بِع تاريخ وتقارير السيارات الصينية، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API."
+      "h1": "واجهة بيانات مركبات الصينية للبائعين | kmcheck B2B",
+      "lead": "واجهة إعادة بيع لبيانات مركبات الصينية تحت علامتك — white-label أو تكامل للمطوّرين."
     },
     "uk": {
-      "h1": "Продавайте історію та звіти китайських автомобілів | kmcheck",
-      "lead": "Продавайте історію та звіти китайських автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API."
+      "h1": "API даних авто китайських для реселерів | kmcheck B2B",
+      "lead": "Reseller API для даних авто китайських під вашим брендом — white-label або інтеграція для розробників."
     },
     "ru": {
-      "h1": "Продавайте историю и отчёты китайских автомобилей | kmcheck",
-      "lead": "Продавайте историю и отчёты китайских автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API."
+      "h1": "API данных авто китайских для реселлеров | kmcheck B2B",
+      "lead": "Reseller API для данных авто китайских под вашим брендом — white-label или интеграция для разработчиков."
     },
     "zh": {
-      "h1": "销售中国车辆历史与报告 | kmcheck",
-      "lead": "以您的品牌通过 kmcheck API 销售中国车辆历史与报告、VIN 查验、事故与里程记录。"
+      "h1": "中国 车辆数据 API（分销商）| kmcheck B2B",
+      "lead": "以您的品牌提供 中国 车辆数据的分销 API — 白标站点或开发者集成。"
     }
   }
 }

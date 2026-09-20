@@ -407,7 +407,7 @@ const HERO_PATCH = {
   de: [/China und Dubai/i, "China, Japan und Dubai"],
   es: [/China y Dubái/i, "China, Japón y Dubái"],
   fr: [/Chine et Dubaï|China et Dubaï/i, "Chine, Japon et Dubaï"],
-  sq: [/Kinës dhe Dubait|Kina dhe Dubai/i, "Kinës, Japonisë dhe Dubait"],
+  sq: [/Kinës dhe Dubait|Kina dhe Dubai|Kinës, Japonisë dhe Dubait/i, "Kina, Japonia dhe Dubai"],
   pl: [/Chin i Dubaju/i, "Chin, Japonii i Dubaju"],
   ro: [/China și Dubai/i, "China, Japonia și Dubai"],
   bg: [/Китай и Дубай/i, "Китай, Япония и Дубай"],
