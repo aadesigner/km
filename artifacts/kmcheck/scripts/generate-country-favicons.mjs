@@ -18,6 +18,7 @@ const FLAG_CODES = {
   korea: "kr",
   canada: "ca",
   china: "cn",
+  japan: "jp",
   uae: "ae",
 };
 

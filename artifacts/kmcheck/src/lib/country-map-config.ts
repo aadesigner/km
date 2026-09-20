@@ -1,4 +1,4 @@
-export type CountryMarket = "usa" | "korea" | "canada" | "china" | "uae";
+export type CountryMarket = "usa" | "korea" | "canada" | "china" | "japan" | "uae";
 
 export type CountryMapConfig = {
   geographyName: string;
@@ -13,7 +13,7 @@ export type CountryMapConfig = {
     rotate?: [number, number];
     parallels?: [number, number];
   };
-  flagCode: "us" | "ca" | "kr" | "cn" | "ae";
+  flagCode: "us" | "ca" | "kr" | "cn" | "jp" | "ae";
   markerCoordinates: [number, number];
   liveCityIds: string[];
 };
@@ -62,6 +62,15 @@ const COUNTRY_MAP_CONFIGS: Record<CountryMarket, CountryMapConfig> = {
     flagCode: "cn",
     markerCoordinates: [104, 35],
     liveCityIds: ["shanghai", "beijing", "guangzhou", "shenzhen", "chengdu"],
+  },
+  japan: {
+    geographyName: "Japan",
+    nearbyGeographyNames: ["South Korea", "North Korea", "China", "Taiwan", "Russia"],
+    extendedGeographyNames: ["Philippines", "Mongolia"],
+    projection: { type: "geoNaturalEarth1", scale: 2200, center: [138, 36] },
+    flagCode: "jp",
+    markerCoordinates: [138.5, 36],
+    liveCityIds: ["tokyo", "osaka", "nagoya", "yokohama", "fukuoka"],
   },
   uae: {
     geographyName: "United Arab Emirates",

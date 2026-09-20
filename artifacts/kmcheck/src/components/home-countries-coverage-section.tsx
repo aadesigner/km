@@ -60,6 +60,16 @@ function useHomeCountries(t: (k: string) => string): CountryConfig[] {
       highlights: ["home_country_china_h0", "home_country_china_h1", "home_country_china_h2"],
     },
     {
+      slug: "japan",
+      flagCode: "jp",
+      name: t("country_japan_name"),
+      count: t("country_japan_count"),
+      accentFrom: "from-slate-700",
+      accentTo: "to-red-600",
+      tint: "from-slate-500/[0.07] via-transparent to-red-500/[0.05]",
+      highlights: ["home_country_japan_h0", "home_country_japan_h1", "home_country_japan_h2"],
+    },
+    {
       slug: "uae",
       flagCode: "ae",
       name: t("country_uae_name"),
@@ -75,18 +85,14 @@ function useHomeCountries(t: (k: string) => string): CountryConfig[] {
 function CountryCardLink({
   country,
   language,
-  variant,
   t,
   index,
 }: {
   country: CountryConfig;
   language: string;
-  variant: "featured" | "compact";
   t: (k: string) => string;
   index: number;
 }) {
-  const isFeatured = variant === "featured";
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -105,15 +111,10 @@ function CountryCardLink({
         <div className={cn("h-1 bg-gradient-to-r", country.accentFrom, country.accentTo)} />
         <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", country.tint)} />
 
-        <div
-          className={cn(
-            "relative z-10 flex flex-1 flex-col",
-            isFeatured ? "p-5 md:p-6 lg:p-7" : "p-4 md:p-5",
-          )}
-        >
-          {isFeatured ? (
-            <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-5 flex-1">
-              <div className="flex items-start gap-3.5 min-w-0 md:max-w-[42%]">
+        <div className="relative z-10 flex flex-1 flex-col p-4 md:p-5">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5 mb-1.5">
                 <img
                   src={`https://flagcdn.com/${country.flagCode}.svg`}
                   alt={formatImageFlagAlt(country.name, t)}
@@ -121,67 +122,24 @@ function CountryCardLink({
                   height={32}
                   loading="lazy"
                   decoding="async"
-                  className="h-9 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10 shrink-0"
+                  className="h-7 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
                 />
-                <div className="min-w-0">
-                  <h3 className="text-xl md:text-2xl font-bold tracking-tight leading-tight">{country.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {country.count} {t("country_registered_vehicles")}
-                  </p>
-                </div>
+                <h3 className="text-lg font-bold tracking-tight">{country.name}</h3>
               </div>
-
-              <ul className="flex-1 grid sm:grid-cols-1 gap-2 md:gap-2.5 md:pt-0.5">
-                {country.highlights.map((key) => (
-                  <li key={key} className="flex items-start gap-2 text-sm text-muted-foreground leading-snug">
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                    <span>{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div
-                className={cn(
-                  "hidden md:flex h-11 w-11 rounded-xl bg-gradient-to-br items-center justify-center shrink-0 shadow-sm self-start",
-                  country.accentFrom,
-                  country.accentTo,
-                )}
-              >
-                <Globe className="h-5 w-5 text-white" />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                {country.count} {t("country_registered_vehicles")}
+              </p>
             </div>
-          ) : (
-            <>
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5 mb-1.5">
-                    <img
-                      src={`https://flagcdn.com/${country.flagCode}.svg`}
-                      alt={formatImageFlagAlt(country.name, t)}
-                      width={43}
-                      height={32}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-7 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                    />
-                    <h3 className="text-lg font-bold tracking-tight">{country.name}</h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {country.count} {t("country_registered_vehicles")}
-                  </p>
-                </div>
-              </div>
+          </div>
 
-              <ul className="space-y-2 mb-4 flex-1">
-                {country.highlights.map((key) => (
-                  <li key={key} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                    <span className="line-clamp-2">{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+          <ul className="space-y-2 mb-4 flex-1">
+            {country.highlights.map((key) => (
+              <li key={key} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
+                <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                <span className="line-clamp-2">{t(key)}</span>
+              </li>
+            ))}
+          </ul>
 
           <div
             className={cn(
@@ -201,8 +159,6 @@ function CountryCardLink({
 export function HomeCountriesCoverageSection() {
   const { t, language } = useTranslation();
   const countries = useHomeCountries(t);
-  const featured = countries.slice(0, 2);
-  const regional = countries.slice(2);
 
   return (
     <section className="pt-16 md:pt-24 pb-10 md:pb-12 px-4">
@@ -221,32 +177,16 @@ export function HomeCountriesCoverageSection() {
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
         </motion.div>
 
-        <div className="space-y-4 md:space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-            {featured.map((country, i) => (
-              <CountryCardLink
-                key={country.slug}
-                country={country}
-                language={language}
-                variant="featured"
-                t={t}
-                index={i}
-              />
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {regional.map((country, i) => (
-              <CountryCardLink
-                key={country.slug}
-                country={country}
-                language={language}
-                variant="compact"
-                t={t}
-                index={i + 2}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+          {countries.map((country, i) => (
+            <CountryCardLink
+              key={country.slug}
+              country={country}
+              language={language}
+              t={t}
+              index={i}
+            />
+          ))}
         </div>
 
         <motion.div

@@ -20,6 +20,7 @@ const COVERAGE_NAMES = new Set([
   "Canada",
   "South Korea",
   "China",
+  "Japan",
   "United Arab Emirates",
 ]);
 
@@ -27,6 +28,7 @@ const MARKERS = [
   { code: "ca" as const, coordinates: [-96, 62] as [number, number], side: "left" as const },
   { code: "us" as const, coordinates: [-98, 39] as [number, number], side: "left" as const },
   { code: "kr" as const, coordinates: [127.5, 36.5] as [number, number], side: "right" as const },
+  { code: "jp" as const, coordinates: [138.5, 36] as [number, number], side: "right" as const },
   { code: "cn" as const, coordinates: [104, 35] as [number, number], side: "right" as const },
   { code: "ae" as const, coordinates: [55.3, 25.2] as [number, number], side: "right" as const },
 ];

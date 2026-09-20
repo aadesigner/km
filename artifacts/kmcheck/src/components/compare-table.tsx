@@ -15,7 +15,7 @@ type CompareRow = {
 };
 
 type Props = {
-  market?: "default" | "home" | "usa" | "korea" | "canada" | "china" | "uae";
+  market?: "default" | "home" | "usa" | "korea" | "canada" | "china" | "japan" | "uae";
 };
 
 /** Tailwind must see full class strings at build time — no runtime template literals. */
@@ -167,6 +167,18 @@ export function CompareTable({ market = "default" }: Props) {
     { labelKey: "compare_row_ownership", values: [true, true, true, true] },
   ];
 
+  const japanRows: CompareRow[] = [
+    { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "€29.99"] },
+    { labelKey: "compare_row_japanese", highlight: true, badgeKey: "compare_row_us_focus", values: [true, partial, false, false] },
+    { labelKey: "compare_row_korean", highlight: true, badgeKey: "compare_row_only_us", values: [true, false, false, false] },
+    { labelKey: "compare_row_us", values: [true, true, partial, true] },
+    { labelKey: "compare_row_mileage", values: [true, true, true, true] },
+    { labelKey: "compare_row_accident", values: [true, true, true, true] },
+    { labelKey: "compare_row_salvage", values: [true, true, true, true] },
+    { labelKey: "compare_row_theft", values: [true, "US/CA", "EU only", "US only"] },
+    { labelKey: "compare_row_ownership", values: [true, true, true, true] },
+  ];
+
   const uaeRows: CompareRow[] = [
     { labelKey: "compare_row_price", special: "price", values: [null, "€39.99", "€25.99", "€29.99"] },
     { labelKey: "compare_row_uae", highlight: true, badgeKey: "compare_row_us_focus", values: [true, partial, false, false] },
@@ -186,11 +198,13 @@ export function CompareTable({ market = "default" }: Props) {
         ? canadaRows
         : market === "china"
           ? chinaRows
-          : market === "uae"
-            ? uaeRows
-            : market === "home"
-              ? homeRows
-              : koreaRows;
+          : market === "japan"
+            ? japanRows
+            : market === "uae"
+              ? uaeRows
+              : market === "home"
+                ? homeRows
+                : koreaRows;
 
   const descKey = market === "usa"
     ? "compare_desc_usa"
@@ -200,12 +214,14 @@ export function CompareTable({ market = "default" }: Props) {
         ? "compare_desc_canada"
         : market === "china"
           ? "compare_desc_china"
-          : market === "uae"
-            ? "compare_desc_uae"
-            : "compare_desc";
+          : market === "japan"
+            ? "compare_desc_japan"
+            : market === "uae"
+              ? "compare_desc_uae"
+              : "compare_desc";
 
   const competitors =
-    market === "home" || market === "usa" || market === "canada" || market === "china" || market === "uae"
+    market === "home" || market === "usa" || market === "canada" || market === "china" || market === "japan" || market === "uae"
       ? [
           { name: "Carfax", subKey: "compare_comp_carfax" },
           { name: "CarVertical", subKey: "compare_comp_carvertical" },

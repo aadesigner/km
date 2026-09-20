@@ -84,6 +84,14 @@ const COUNTRY_LINKS = [
     nameKey: "country_china_name" as const,
     countKey: "country_china_count" as const,
   },
+  {
+    slug: "japan",
+    img: "jp",
+    continent: "asia" as const,
+    labelKey: "country_japan_label" as const,
+    nameKey: "country_japan_name" as const,
+    countKey: "country_japan_count" as const,
+  },
 ] as const;
 
 const NAV_COUNTRY_FLAGS = COUNTRY_LINKS.map((link) => link.img);
@@ -143,10 +151,10 @@ function CountryNavMenuGroups({
   }
 
   return (
-    <div role="menu" className="p-2">
+    <div role="menu" className="p-2.5">
       {groups.map((group, groupIndex) => (
-        <div key={group.continent} className={cn(groupIndex > 0 && "mt-1.5 border-t border-border/50 pt-1.5")}>
-          <p className="px-2.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+        <div key={group.continent} className={cn(groupIndex > 0 && "mt-2 border-t border-border/50 pt-2")}>
+          <p className="px-3 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
             {t(CONTINENT_LABEL_KEY[group.continent])}
           </p>
           <ul className="space-y-0.5">
@@ -160,7 +168,7 @@ function CountryNavMenuGroups({
                     role="menuitem"
                     onClick={onNavigate}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm font-medium tracking-tight",
+                      "flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium tracking-tight",
                       "transition-colors duration-75",
                       active
                         ? "bg-primary/[0.09] text-primary"
@@ -169,15 +177,15 @@ function CountryNavMenuGroups({
                   >
                     <FlagImg
                       code={img}
-                      size={22}
+                      size={24}
                       priority
-                      className="h-3.5 w-[1.375rem] shrink-0 rounded-[2px] object-cover ring-1 ring-black/5 dark:ring-white/10"
+                      className="h-4 w-6 shrink-0 rounded-[2px] object-cover ring-1 ring-black/5 dark:ring-white/10"
                       alt={formatImageFlagAlt(label, t)}
                     />
                     <span className="min-w-0 flex-1 truncate leading-none">{label}</span>
                     <ChevronRight
                       className={cn(
-                        "h-3.5 w-3.5 shrink-0",
+                        "h-4 w-4 shrink-0",
                         active ? "text-primary/70" : "text-muted-foreground/50",
                       )}
                     />
@@ -476,14 +484,14 @@ function MobileLangPicker({
         aria-expanded={open}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1 px-2 rounded-full font-medium transition-colors duration-50 ease-out h-9 text-[15px]",
+          "flex items-center gap-1 px-2 font-medium tracking-wide transition-colors duration-75 outline-none h-9 text-[15px]",
           open
             ? isDarkNav
-              ? "bg-white/10 text-white"
-              : "bg-primary/10 text-primary"
+              ? "text-white"
+              : "text-foreground"
             : isDarkNav
-              ? "text-white/75 hover:bg-white/10 hover:text-white"
-              : "text-foreground hover:bg-primary/[0.06]",
+              ? "text-white/60 hover:text-white"
+              : "text-foreground/65 hover:text-foreground",
         )}
       >
         <FlagImg code={current?.img ?? "gb"} variant="nav" size={18} priority alt={formatImageFlagAlt(current?.label ?? language, t)} />
@@ -653,7 +661,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
   const navLink = (active: boolean) => cn(
     "relative inline-flex items-center gap-1.5 font-medium tracking-wide transition-colors duration-75 outline-none",
-    scrolled ? "px-3 py-2 text-[15px]" : "px-3.5 py-2.5 text-[15px]",
+    scrolled ? "px-3.5 py-2 text-[16px]" : "px-4 py-2.5 text-[16px]",
     active
       ? isDarkNav
         ? "text-white"
@@ -670,12 +678,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
     />
   );
 
-  const utilityClusterCls = cn(
-    "flex items-center gap-0.5 rounded-full p-0.5",
-    isDarkNav
-      ? "bg-white/[0.04] border border-white/10"
-      : "bg-muted/35 border border-border/55",
-  );
+  const utilityClusterCls = "flex items-center gap-0.5";
 
   return (
     <header
@@ -697,7 +700,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
         // Mild shrink only; skip height tween on small screens (route scroll-reset flicker).
-        "h-[72px] md:transition-[height] md:duration-150 md:ease-out",
+        "h-[76px] md:transition-[height] md:duration-150 md:ease-out",
         scrolled && "md:h-16",
       )}>
 
@@ -715,7 +718,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
         {/* ── Centered nav links (desktop) — no box ── */}
         <div className="hidden md:flex items-center justify-center justify-self-center min-w-0">
-          <nav className="inline-flex items-center gap-1" aria-label="Primary">
+          <nav className="inline-flex items-center gap-1.5" aria-label="Primary">
             <div
               ref={countryRef}
               className="relative"
@@ -728,7 +731,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 {t("nav_country")}
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition-transform duration-75",
+                    "h-4 w-4 shrink-0 transition-transform duration-75",
                     isDarkNav ? "text-white/35" : "text-muted-foreground/80",
                     countryOpen && "rotate-180",
                   )}
@@ -744,7 +747,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 )}
                 aria-hidden={!countryOpen}
               >
-                <div className={cn(NAV_COUNTRY_PANEL, "w-[15rem] max-w-[calc(100vw-1.5rem)] p-0")}>
+                <div className={cn(NAV_COUNTRY_PANEL, "w-[17rem] max-w-[calc(100vw-1.5rem)] p-0")}>
                   <CountryNavMenuGroups
                     language={language}
                     isActive={(slug) => isOnPage(`cars/${slug}`)}
@@ -785,10 +788,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               title="Toggle theme"
               aria-label="Toggle theme"
               className={cn(
-                "relative h-9 w-9 rounded-full flex items-center justify-center transition-colors duration-50 ease-out",
+                "relative h-9 w-9 flex items-center justify-center transition-colors duration-75 outline-none",
                 isDarkNav
-                  ? "text-white/55 hover:text-white hover:bg-white/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]",
+                  ? "text-white/60 hover:text-white"
+                  : "text-foreground/65 hover:text-foreground",
               )}
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -922,11 +925,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
               side="right"
               speed="fast"
               overlayClassName="z-[110]"
-              className="z-[110] w-[min(288px,86vw)] p-0 flex flex-col h-full max-h-[100dvh] border-l border-border/50 shadow-xl shadow-black/20 dark:shadow-black/35"
+              className="z-[110] w-[min(288px,86vw)] gap-0 p-0 flex flex-col overflow-hidden h-[100dvh] max-h-[100dvh] border-l border-border/50 shadow-xl shadow-black/20 dark:shadow-black/35"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
-              {/* Mobile header */}
-              <div className="flex h-full flex-col">
+              {/* Constrained column: nav scrolls, auth stays pinned to the bottom of the viewport */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <div className="flex items-center justify-between px-5 h-16 border-b shrink-0">
                 <Link
                   href={`/${language}`}
@@ -993,12 +996,24 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
               </nav>
 
-              {/* Mobile auth footer */}
+              {/* Mobile auth footer — pinned; does not sit below the country list */}
               <div className="border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 shrink-0 bg-background">
                 {!isLoaded ? (
                   <div className="h-9 rounded-xl bg-muted/80 animate-pulse" aria-hidden />
                 ) : isSignedIn ? (
                   <>
+                    <div className="flex items-center gap-3 px-1 py-1">
+                      <Avatar className="h-9 w-9 shrink-0">
+                        <AvatarImage src={user?.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                          {avatarInitial}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
@@ -1020,31 +1035,28 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                           <Link href="/adminx" onClick={closeMenus}>{t("admin")}</Link>
                         </Button>
                       ) : (
-                        <div />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 rounded-xl gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/8"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          {t("logout")}
+                        </Button>
                       )}
                     </div>
-
-                    <div className="flex items-center gap-3 px-1 py-1">
-                      <Avatar className="h-9 w-9 shrink-0">
-                        <AvatarImage src={user?.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
-                          {avatarInitial}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2 h-9 text-destructive border-destructive/30 hover:bg-destructive/8"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      {t("logout")}
-                    </Button>
+                    {isAdmin ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2 h-9 text-destructive border-destructive/30 hover:bg-destructive/8"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        {t("logout")}
+                      </Button>
+                    ) : null}
                   </>
                 ) : (
                   <div className="flex gap-2">
@@ -1073,8 +1085,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const apply = () => {
-      // Must match Navbar inner height (`h-[72px]`).
-      const navbarHeight = 72;
+      // Must match Navbar static height (`h-[76px]`).
+      const navbarHeight = 76;
       document.documentElement.style.setProperty(
         "--site-header-offset",
         `${navbarHeight + announcementHeight}px`,
@@ -1103,7 +1115,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
         )}
       >
-        <main className="overflow-x-hidden pt-[var(--site-header-offset,72px)] print:pt-0">
+        <main className="overflow-x-hidden pt-[var(--site-header-offset,80px)] print:pt-0">
           {children}
         </main>
         <Footer />

@@ -109,6 +109,39 @@ const CARS = [
     out: "zeekr-001.jpg",
     wiki: ["Zeekr 001.jpg", "Zeekr 001 front.jpg"],
   },
+  // Japan — domestic auction / export demos
+  {
+    out: "toyota-prius.jpg",
+    wiki: [
+      "2024 Toyota Prius XLE AWD, front right, 06-01-2024.jpg",
+      "2025 Toyota Prius LE, front right, 09-06-2025.jpg",
+      "2015-2018 Toyota Prius S.jpg",
+    ],
+  },
+  {
+    out: "honda-civic.jpg",
+    wiki: [
+      "2022 Honda Civic LX Sedan, front right, 11-02-2022.jpg",
+      "2017 Honda Civic parked in SMB II International Airport (2).jpg",
+      "Honda Civic (EF) LX sedan front.jpg",
+    ],
+  },
+  {
+    out: "nissan-qashqai.jpg",
+    wiki: [
+      "2014 Nissan Qashqai Front On.jpg",
+      "Nissan Qashqai, 2021, in Nissan Global HQ Gallery, front.jpg",
+      "Nissan Qashqai, Bj. 2008 - Front (2008-09-21 ret).jpg",
+    ],
+  },
+  {
+    out: "subaru-forester.jpg",
+    wiki: [
+      "2019 Subaru Forester 2.5i Premium, front 10.6.19.jpg",
+      "2019 Subaru Forester 2.5i Touring AWD front 3.17.19.jpg",
+      "2019 Subaru Forester Sport AWD front NYIAS 2019.jpg",
+    ],
+  },
   // UAE — luxury import demos (incl. Dubai supercar scene)
   {
     out: "audi-r8.jpg",

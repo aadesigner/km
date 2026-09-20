@@ -5,6 +5,7 @@ const FLAG_COUNTRY_I18N: Record<string, string> = {
   ae: "country_uae_name",
   kr: "country_korea_name",
   cn: "country_china_name",
+  jp: "country_japan_name",
   gb: "flag_country_gb",
   au: "flag_country_au",
   mx: "flag_country_mx",

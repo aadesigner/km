@@ -4,6 +4,7 @@ export const COUNTRY_PAGE_FAVICON_SLUGS = {
   country_korea: "korea",
   country_canada: "canada",
   country_china: "china",
+  country_japan: "japan",
   country_uae: "uae",
 };
 

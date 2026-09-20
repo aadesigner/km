@@ -11,6 +11,7 @@ export const SEO_OG_PAGES = [
   { pageKey: "country_korea", rest: "/cars/korea" },
   { pageKey: "country_canada", rest: "/cars/canada" },
   { pageKey: "country_china", rest: "/cars/china" },
+  { pageKey: "country_japan", rest: "/cars/japan" },
   { pageKey: "country_uae", rest: "/cars/uae" },
 ];
 

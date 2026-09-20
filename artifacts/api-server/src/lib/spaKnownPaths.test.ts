@@ -7,6 +7,7 @@ describe("isKnownSpaPath", () => {
     expect(isKnownSpaPath("/en")).toBe(true);
     expect(isKnownSpaPath("/sq/pricing")).toBe(true);
     expect(isKnownSpaPath("/en/cars/usa")).toBe(true);
+    expect(isKnownSpaPath("/en/cars/japan")).toBe(true);
     expect(isKnownSpaPath("/de/sign-in")).toBe(true);
     expect(isKnownSpaPath("/adminx")).toBe(true);
     expect(isKnownSpaPath("/adminx/users")).toBe(true);

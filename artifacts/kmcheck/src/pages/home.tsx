@@ -123,7 +123,7 @@ export default function Home() {
       />
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,72px)] pt-[calc(3.75rem+var(--site-header-offset,72px))] pb-12 md:pt-[calc(5.25rem+var(--site-header-offset,72px))] md:pb-16 lg:pt-[calc(7.25rem+var(--site-header-offset,72px))] lg:pb-20">
+      <section className="relative overflow-hidden px-4 -mt-[var(--site-header-offset,76px)] pt-[calc(3.75rem+var(--site-header-offset,76px))] pb-12 md:pt-[calc(5.25rem+var(--site-header-offset,76px))] md:pb-16 lg:pt-[calc(7.25rem+var(--site-header-offset,76px))] lg:pb-20">
         {/* Base layers */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
@@ -154,7 +154,7 @@ export default function Home() {
         {/* Large maps pinned to viewport left / right — not centered */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-4 top-[calc(1.5rem+var(--site-header-offset,72px))] bottom-0 z-0 hidden lg:flex w-[min(58vw,720px)] max-w-[720px] -translate-y-8 xl:-translate-y-10 opacity-95 dark:opacity-90"
+          className="pointer-events-none absolute -left-4 top-[calc(1.5rem+var(--site-header-offset,76px))] bottom-0 z-0 hidden lg:flex w-[min(58vw,720px)] max-w-[720px] -translate-y-8 xl:-translate-y-10 opacity-95 dark:opacity-90"
         >
           {heroMapsEnabled && (
             <Suspense fallback={null}>
@@ -164,7 +164,7 @@ export default function Home() {
         </div>
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-6 top-[calc(1.75rem+var(--site-header-offset,72px))] bottom-0 z-0 hidden lg:flex w-[min(70vw,900px)] max-w-[900px] translate-x-[5%] -translate-y-7 xl:translate-x-[7%] xl:-translate-y-9 opacity-95 dark:opacity-90"
+          className="pointer-events-none absolute -right-6 top-[calc(1.75rem+var(--site-header-offset,76px))] bottom-0 z-0 hidden lg:flex w-[min(70vw,900px)] max-w-[900px] translate-x-[5%] -translate-y-7 xl:translate-x-[7%] xl:-translate-y-9 opacity-95 dark:opacity-90"
         >
           {heroMapsEnabled && (
             <Suspense fallback={null}>

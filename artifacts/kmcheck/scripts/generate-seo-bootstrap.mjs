@@ -57,7 +57,7 @@ const js = `/* auto-generated — do not edit */
   var HREFLANG = ${JSON.stringify(HREFLANG_MAP)};
   var NOINDEX = ${JSON.stringify(NOINDEX)};
   var NOINDEX_PREFIXES = ${JSON.stringify(NOINDEX_PREFIXES)};
-  var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada", "china", "uae"])};
+  var VALID_COUNTRY_SLUGS = ${JSON.stringify(["usa", "korea", "canada", "china", "japan", "uae"])};
   var BASE = ${JSON.stringify(basePath)};
   var DEFAULT_FAVICONS = ${JSON.stringify(DEFAULT_FAVICONS)};
   var COUNTRY_PAGE_FAVICONS = ${JSON.stringify(countryPageFavicons)};
@@ -75,6 +75,7 @@ const js = `/* auto-generated — do not edit */
         if (slug === "korea") return "country_korea";
         if (slug === "canada") return "country_canada";
         if (slug === "china") return "country_china";
+        if (slug === "japan") return "country_japan";
         if (slug === "uae") return "country_uae";
         return "country_usa";
       }
@@ -86,6 +87,7 @@ const js = `/* auto-generated — do not edit */
 
   function isNoIndexPath(rest, pageKey) {
     if (pageKey === "not_found") return true;
+    if (rest.indexOf("/api-b2b/") === 0) return true;
     if (pageKey === "api_b2b") return false;
     // VIN URLs: safe default noindex (server/React set index only when catalog report exists).
     if (VIN_INDEX_RE.test(rest)) return true;
@@ -171,7 +173,7 @@ const js = `/* auto-generated — do not edit */
   }
 
   var OG_PAGE_KEYS = ${JSON.stringify(Object.fromEntries(
-    ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_uae"].map((k) => [k, true]),
+    ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_japan", "country_uae"].map((k) => [k, true]),
   ))};
 
   function applyFavicons(pageKey) {

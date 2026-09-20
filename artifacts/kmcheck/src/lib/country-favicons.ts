@@ -1,4 +1,4 @@
-export type CountryFaviconSlug = "usa" | "korea" | "canada" | "china" | "uae";
+export type CountryFaviconSlug = "usa" | "korea" | "canada" | "china" | "japan" | "uae";
 
 export interface FaviconSet {
   icon16: string;
@@ -11,6 +11,7 @@ const PAGE_KEY_TO_SLUG: Record<string, CountryFaviconSlug> = {
   country_korea: "korea",
   country_canada: "canada",
   country_china: "china",
+  country_japan: "japan",
   country_uae: "uae",
 };
 

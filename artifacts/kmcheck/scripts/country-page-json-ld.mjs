@@ -3,13 +3,14 @@
  * Used by prerender (seo-inject) and the client bundle (via Vite import).
  */
 
-const COUNTRY_PAGE_KEYS = new Set(["country_usa", "country_korea", "country_canada", "country_china", "country_uae"]);
+const COUNTRY_PAGE_KEYS = new Set(["country_usa", "country_korea", "country_canada", "country_china", "country_japan", "country_uae"]);
 
 const AREA_SERVED = {
   country_usa: "United States",
   country_korea: "South Korea",
   country_canada: "Canada",
   country_china: "China",
+  country_japan: "Japan",
   country_uae: "United Arab Emirates",
 };
 

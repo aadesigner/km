@@ -50,7 +50,7 @@ const CountryRisksIncludedSection = lazyWithRetry(() =>
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Severity = "high" | "medium" | "low";
-type CountryMarket = "usa" | "korea" | "canada" | "china" | "uae";
+type CountryMarket = "usa" | "korea" | "canada" | "china" | "japan" | "uae";
 
 interface CountryMeta {
   flagImg: string;
@@ -101,6 +101,16 @@ const COUNTRY_META: Record<string, CountryMeta> = {
     totalVehicles: "350M+",
     topRisk: "Odometer fraud",
     popularBrands: ["BYD", "NIO", "XPeng", "Zeekr", "Geely", "Li Auto", "Chery", "GAC"],
+    issueIndices: [0, 1, 2],
+    issueSeverities: ["high", "high", "medium"],
+  },
+  japan: {
+    flagImg: "jp",
+    gradient: "from-slate-900 via-red-900 to-slate-950",
+    vinPrefix: "J",
+    totalVehicles: "78M+",
+    topRisk: "Auction damage grades",
+    popularBrands: ["Toyota", "Honda", "Nissan", "Mazda", "Subaru", "Lexus", "Suzuki", "Mitsubishi"],
     issueIndices: [0, 1, 2],
     issueSeverities: ["high", "high", "medium"],
   },
@@ -222,9 +232,10 @@ export default function CountryPage({ params }: Props) {
     slug === "korea" ? "country_korea"
       : slug === "canada" ? "country_canada"
         : slug === "china" ? "country_china"
-          : slug === "uae" ? "country_uae"
-            : slug === "usa" ? "country_usa"
-              : "not_found";
+          : slug === "japan" ? "country_japan"
+            : slug === "uae" ? "country_uae"
+              : slug === "usa" ? "country_usa"
+                : "not_found";
   const seo = usePageSeo(countryKey);
 
   const {
@@ -295,7 +306,7 @@ export default function CountryPage({ params }: Props) {
       <SEOHead title={seo.title} description={seo.description} lang={seo.lang} canonicalPath={seo.canonicalPath} ogImage={seo.ogImage} ogImageAlt={seo.ogImageAlt} favicons={seo.favicons} jsonLd={seo.jsonLd} />
 
       {/* ─────────────────────── HERO ─────────────────────── */}
-      <section ref={heroRef} className="relative overflow-x-hidden px-4 -mt-[var(--site-header-offset,72px)] pt-[calc(2rem+var(--site-header-offset,72px))] md:pt-[calc(3.5rem+var(--site-header-offset,72px))] pb-0">
+      <section ref={heroRef} className="relative overflow-x-hidden px-4 -mt-[var(--site-header-offset,76px)] pt-[calc(2rem+var(--site-header-offset,76px))] md:pt-[calc(3.5rem+var(--site-header-offset,76px))] pb-0">
         {/* Base: light = pale green gradient, dark = very dark green-black */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-background dark:hidden" />
         <div className="absolute inset-0 -z-20 hidden dark:block" style={{ background: "#040d08" }} />
@@ -513,8 +524,9 @@ export default function CountryPage({ params }: Props) {
             slug === "korea" ? "korea"
               : slug === "canada" ? "canada"
                 : slug === "china" ? "china"
-                  : slug === "uae" ? "uae"
-                    : "usa"
+                  : slug === "japan" ? "japan"
+                    : slug === "uae" ? "uae"
+                      : "usa"
           } />
         </Suspense>
       </DeferredSection>

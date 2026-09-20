@@ -21,6 +21,7 @@ export const MARKETING_SSR_PAGE_KEYS = [
   "country_korea",
   "country_canada",
   "country_china",
+  "country_japan",
   "country_uae",
   "api_b2b",
 ] as const;

@@ -31,7 +31,7 @@ const KNOWN_LANG_RESTS = new Set([
   "vin/processing",
 ]);
 
-const VALID_COUNTRY = new Set(["usa", "korea", "canada", "china", "uae"]);
+const VALID_COUNTRY = new Set(["usa", "korea", "canada", "china", "japan", "uae"]);
 
 /** Exact B2B marketing routes (keep aligned with kmcheck INDEXABLE_PATHS / App.tsx). */
 const KNOWN_API_B2B_RESTS = new Set([

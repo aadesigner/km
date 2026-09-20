@@ -490,20 +490,20 @@ const en = {
   useCase1: "Importers & exporters embedding VIN history into listing or checkout flows.",
   useCase2: "Dealerships and marketplaces monetizing pre-purchase confidence checks.",
   useCase3: "Agencies launching a branded Carfax-style site without building a data stack.",
-  seoHomeTitle: "Sell Car History Reports & Mileage Records | kmcheck API B2B",
+  seoHomeTitle: "Vehicle History API & White-Label Reseller Platform | kmcheck B2B",
   seoHomeDesc:
-    "Sell car history reports, mileage records and VIN checks on your website. White-label site or developer API. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles.",
-  seoPlansTitle: "Vehicle History API Pricing & Reseller Websites | kmcheck",
+    "B2B vehicle-history API and managed white-label reseller sites for developers and partners. Coverage: USA, Canada, Korea, Dubai, China. ~50M vehicles.",
+  seoPlansTitle: "B2B API & White-Label Plans | kmcheck Partners",
   seoPlansDesc:
-    "Compare kmcheck plans: REST API for VIN history and mileage, or a managed white-label car history website.",
-  seoContactTitle: "Contact Sales | Sell Car History Reports with kmcheck",
+    "Compare kmcheck partner plans: REST API access or a managed white-label reseller website for your business.",
+  seoContactTitle: "Contact kmcheck B2B Sales | Partner API & White-Label",
   seoContactDesc:
-    "Talk to kmcheck about selling car history reports and mileage records via API or a managed reseller site. Email info@kmcheck.com.",
-  seoRegionTitle: "Sell {region} Cars History and Reports | kmcheck",
+    "Talk to kmcheck about partner API access or a managed reseller website. Email info@kmcheck.com.",
+  seoRegionTitle: "{region} Vehicle Data API for Resellers | kmcheck B2B",
   seoRegionDesc:
-    "Sell {region} cars history and reports, VIN checks, accident history and mileage records under your brand with kmcheck API.",
-  seoDecoderTitle: "VIN Decoder API — Makes, Models & Specs | kmcheck B2B",
-  seoDecoderDesc: "VIN decoder covering makes, models and detailed specs. Included with the kmcheck API and Reseller Website & Maintenance.",
+    "Reseller API access for {region} vehicle data under your brand — white-label site or developer integration with kmcheck.",
+  seoDecoderTitle: "VIN Decode API for Developers & Resellers | kmcheck B2B",
+  seoDecoderDesc: "Developer VIN decode API (make, model, specs). Included with kmcheck partner API and managed reseller websites.",
   decoderPageHeroTitle: "VIN decoder for every make, model and spec",
   decoderPageHeroSub: "Pull detailed vehicle identity from any VIN — then sell full history reports through the API or a reseller site we maintain.",
   decoderPageLead: "kmcheck returns deep VIN identity data: make, model, year, trim cues, body style, engine, plant and more — for essentially all passenger cars your buyers look up. It is part of the same B2B platform you use to sell accident history and mileage records.",
@@ -529,7 +529,7 @@ const en = {
   decoderBrandsChinaLabel: "Chinese & EV brands",
   decoderBrandSuffix: "VIN decoder",
   seoKeywords:
-    "sell car history reports, car mileage records, VIN history API, vehicle history reseller, odometer check API, white-label Carfax alternative, sell VIN reports, kmcheck API"
+    "vehicle history API, white-label reseller, B2B VIN API, kmcheck partners, developer API"
 } satisfies B2bCopy;
 
 const de = {
@@ -779,19 +779,19 @@ const de = {
   useCase1: "Importeure & Exporteure, die Historie in Listings oder Checkout einbinden.",
   useCase2: "Händler und Marktplätze, die Pre-Purchase-Checks monetarisieren.",
   useCase3: "Agenturen, die eine gebrandete Carfax-ähnliche Site ohne eigenen Datenstack launchen.",
-  seoHomeTitle: "Fahrzeughistorie & Kilometerstände verkaufen | kmcheck API B2B",
+  seoHomeTitle: "Fahrzeughistorie-API & White-Label für Reseller | kmcheck B2B",
   seoHomeDesc:
-    "Verkaufen Sie Fahrzeughistorie, Kilometerstände und VIN-Checks auf Ihrer Website. White-Label oder API. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge.",
-  seoPlansTitle: "API-Preise für Fahrzeughistorie & Reseller-Websites | kmcheck",
+    "B2B-API und verwaltete White-Label-Reseller-Sites für Entwickler und Partner. USA, Kanada, Korea, Dubai, China. ~50 Mio. Fahrzeuge.",
+  seoPlansTitle: "B2B-API- & White-Label-Tarife | kmcheck Partner",
   seoPlansDesc:
-    "kmcheck-Tarife vergleichen: REST-API für VIN-Historie und Kilometer oder betreute White-Label-Website.",
-  seoContactTitle: "Vertrieb kontaktieren | Fahrzeughistorie mit kmcheck verkaufen",
-  seoContactDesc: "Sprechen Sie mit kmcheck über den Verkauf von Fahrzeughistorie und Kilometerständen per API oder betreuter Reseller-Site. E-Mail info@kmcheck.com.",
-  seoRegionTitle: "Verkaufen Sie {region} Fahrzeughistorie und Berichte | kmcheck",
+    "Vergleichen Sie kmcheck-Partnerpläne: REST-API oder verwaltete White-Label-Reseller-Website.",
+  seoContactTitle: "kmcheck B2B-Vertrieb kontaktieren | Partner-API",
+  seoContactDesc: "Sprechen Sie mit kmcheck über Partner-API oder White-Label-Reseller-Website. E-Mail info@kmcheck.com.",
+  seoRegionTitle: "{region} Fahrzeugdaten-API für Reseller | kmcheck B2B",
   seoRegionDesc:
-    "Verkaufen Sie {region} Fahrzeughistorie und Berichte, VIN-Checks, Unfallhistorie und Kilometerstände unter Ihrer Marke mit der kmcheck API.",
-  seoDecoderTitle: "VIN-Decoder API — Marken, Modelle & Specs | kmcheck B2B",
-  seoDecoderDesc: "VIN-Decoder für Marken und Modelle mit detaillierten Specs. Enthalten in der kmcheck API sowie Reseller-Website & Wartung.",
+    "Reseller-API für {region}-Fahrzeugdaten unter Ihrer Marke — White-Label oder Entwickler-Integration.",
+  seoDecoderTitle: "VIN-Decode-API für Entwickler & Reseller | kmcheck B2B",
+  seoDecoderDesc: "VIN-Decode-API (Marke, Modell, Specs) für Partner — Teil von API und White-Label-Reseller.",
   decoderPageHeroTitle: "VIN-Decoder für jede Marke, jedes Modell und Spec",
   decoderPageHeroSub: "Detaillierte Fahrzeugidentität aus jeder FIN — Historie danach per API oder Reseller-Website verkaufen.",
   decoderPageLead: "kmcheck liefert tiefe VIN-Identitätsdaten: Marke, Modell, Jahr, Trim, Karosserie, Motor, Werk und mehr — für praktisch alle Pkw. Teil derselben B2B-Plattform für Unfallhistorie und Kilometerstände.",
@@ -817,7 +817,7 @@ const de = {
   decoderBrandsChinaLabel: "Chinesische und EV-Marken",
   decoderBrandSuffix: "VIN-Decoder",
   seoKeywords:
-    "Fahrzeughistorie verkaufen, Kilometerstände, VIN Historie API, Fahrzeughistorie Reseller, White-Label Carfax Alternative, kmcheck API"
+    "Fahrzeughistorie API, White-Label Reseller, B2B VIN API, kmcheck Partner"
 } satisfies B2bCopy;
 
 const es = {
@@ -1067,19 +1067,19 @@ const es = {
   useCase1: "Importadores y exportadores que integran historial VIN en listings o checkout.",
   useCase2: "Concesionarios y marketplaces que monetizan chequeos previos a la compra.",
   useCase3: "Agencias que lanzan un sitio tipo Carfax con marca propia sin construir un stack de datos.",
-  seoHomeTitle: "Vende historial de coches y kilometraje | kmcheck API B2B",
+  seoHomeTitle: "API de historial y plataforma white-label | kmcheck B2B",
   seoHomeDesc:
-    "Vende informes de historial, kilometraje y comprobaciones VIN en tu web. Sitio white-label o API. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos.",
-  seoPlansTitle: "Precios API de historial y sitios reseller | kmcheck",
+    "API B2B y sitios white-label para desarrolladores y partners. EE. UU., Canadá, Corea, Dubái, China. ~50M vehículos.",
+  seoPlansTitle: "Planes API B2B y white-label | Partners kmcheck",
   seoPlansDesc:
-    "Compara planes kmcheck: API REST de historial VIN y kilometraje, o web white-label gestionada.",
-  seoContactTitle: "Contacto comercial | Vende historial de coches con kmcheck",
-  seoContactDesc: "Habla con kmcheck sobre vender historial y kilometraje por API o sitio reseller. Email info@kmcheck.com.",
-  seoRegionTitle: "Vende historial e informes de coches {region} | kmcheck",
+    "Compare planes partner de kmcheck: acceso API REST o sitio white-label gestionado.",
+  seoContactTitle: "Contacto comercial B2B kmcheck | API y white-label",
+  seoContactDesc: "Hable con kmcheck sobre API partner o sitio reseller. Email info@kmcheck.com.",
+  seoRegionTitle: "API de datos de vehículos {region} para resellers | kmcheck B2B",
   seoRegionDesc:
-    "Vende historial e informes de coches {region}, comprobaciones VIN, historial de accidentes y registros de kilometraje bajo tu marca con la API kmcheck.",
-  seoDecoderTitle: "API decodificador VIN — marcas, modelos y specs | kmcheck",
-  seoDecoderDesc: "Decodificador VIN con specs detalladas. Incluido en la API kmcheck y en Sitio reseller y mantenimiento.",
+    "API reseller para datos de vehículos {region} bajo su marca — white-label o integración para developers.",
+  seoDecoderTitle: "API de decodificación VIN para developers | kmcheck B2B",
+  seoDecoderDesc: "API de decode VIN (marca, modelo, specs) para partners — incluida en API y white-label.",
   decoderPageHeroTitle: "Decodificador VIN para cada marca, modelo y spec",
   decoderPageHeroSub: "Identidad detallada desde cualquier VIN — vende el historial con la API o un sitio reseller que mantenemos.",
   decoderPageLead: "kmcheck devuelve identidad VIN profunda: marca, modelo, año, acabado, carrocería, motor, planta y más — para prácticamente todos los turismos. Misma plataforma B2B de historial y kilometraje.",
@@ -1105,7 +1105,7 @@ const es = {
   decoderBrandsChinaLabel: "Marcas chinas y EV",
   decoderBrandSuffix: "Decodificador VIN",
   seoKeywords:
-    "vender historial de coches, kilometraje coche, API historial VIN, revendedor historial, alternativa Carfax white-label, kmcheck"
+    "API historial vehículos, white-label reseller, API VIN B2B, partners kmcheck"
 } satisfies B2bCopy;
 
 const fr = {
@@ -1355,19 +1355,19 @@ const fr = {
   useCase1: "Importateurs et exportateurs intégrant l’historique VIN aux listings ou au checkout.",
   useCase2: "Concessionnaires et marketplaces qui monétisent les contrôles pré-achat.",
   useCase3: "Agences lançant un site type Carfax white-label sans stack de données interne.",
-  seoHomeTitle: "Vendre historique auto et kilométrage | kmcheck API B2B",
+  seoHomeTitle: "API historique véhicule & white-label revendeur | kmcheck B2B",
   seoHomeDesc:
-    "Vendez historiques, relevés km et contrôles VIN sur votre site. White-label ou API. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules.",
-  seoPlansTitle: "Tarifs API historique auto et sites revendeur | kmcheck",
+    "API B2B et sites white-label gérés pour développeurs et partenaires. USA, Canada, Corée, Dubaï, Chine. ~50M véhicules.",
+  seoPlansTitle: "Offres API B2B & white-label | Partenaires kmcheck",
   seoPlansDesc:
-    "Comparez les offres kmcheck : API REST historique VIN / km, ou site white-label géré.",
-  seoContactTitle: "Contact commercial | Vendre l’historique auto avec kmcheck",
-  seoContactDesc: "Parlez à kmcheck de la vente d’historiques et kilométrages via API ou site revendeur. E-mail info@kmcheck.com.",
-  seoRegionTitle: "Vendez l'historique et les rapports de voitures {region} | kmcheck",
+    "Comparez les offres partenaires kmcheck : API REST ou site white-label géré.",
+  seoContactTitle: "Contact commercial B2B kmcheck | API & white-label",
+  seoContactDesc: "Parlez à kmcheck d’un accès API partenaire ou d’un site revendeur. Email info@kmcheck.com.",
+  seoRegionTitle: "API données véhicules {region} pour revendeurs | kmcheck B2B",
   seoRegionDesc:
-    "Vendez l'historique et les rapports de voitures {region}, contrôles VIN, historique d'accidents et relevés kilométriques sous votre marque avec l'API kmcheck.",
-  seoDecoderTitle: "API décodeur VIN — marques, modèles et specs | kmcheck",
-  seoDecoderDesc: "Décodeur VIN avec specs détaillées. Inclus dans l’API kmcheck et Site revendeur & maintenance.",
+    "API revendeur pour données véhicules {region} sous votre marque — white-label ou intégration développeur.",
+  seoDecoderTitle: "API décodage VIN pour développeurs | kmcheck B2B",
+  seoDecoderDesc: "API de décodage VIN (marque, modèle, specs) pour partenaires — incluse dans API et white-label.",
   decoderPageHeroTitle: "Décodeur VIN pour chaque marque, modèle et spec",
   decoderPageHeroSub: "Identité détaillée depuis tout VIN — vendez ensuite l’historique via l’API ou un site revendeur que nous maintenons.",
   decoderPageLead: "kmcheck renvoie une identité VIN riche : marque, modèle, année, finition, carrosserie, moteur, usine… pour quasiment tous les véhicules. Même plateforme B2B pour historique et kilométrage.",
@@ -1393,7 +1393,7 @@ const fr = {
   decoderBrandsChinaLabel: "Marques chinoises et EV",
   decoderBrandSuffix: "Décodeur VIN",
   seoKeywords:
-    "vendre historique auto, relevés kilométriques, API historique VIN, revendeur historique, alternative Carfax white-label, kmcheck"
+    "API historique véhicule, white-label revendeur, API VIN B2B, partenaires kmcheck"
 } satisfies B2bCopy;
 
 const sq = {
@@ -1643,19 +1643,19 @@ const sq = {
   useCase1: "Importues & eksportues që futen historikun VIN në lista ose checkout.",
   useCase2: "Dealership dhe marketplace që monetizojnë kontrolle para blerjes.",
   useCase3: "Agjenci që nisin një faqe të stilit Carfax me markë pa stack të dhënash.",
-  seoHomeTitle: "Shitni historik makinash dhe kilometra | API B2B kmcheck",
+  seoHomeTitle: "API historiku automjetesh & white-label për rishitës | kmcheck B2B",
   seoHomeDesc:
-    "Shitni online raporte historiku makinash, kilometra dhe kontroll VIN. Sajt white-label ose API. Mbulim: SHBA, Kanada, Kore, Dubai, Kinë. Rreth 50 milionë makina.",
-  seoPlansTitle: "Çmime API historiku makinash dhe faqe rishitësi | kmcheck",
+    "API B2B dhe faqe white-label për zhvillues e partnerë. SHBA, Kanada, Kore, Dubai, Kinë. ~50M automjete.",
+  seoPlansTitle: "Planet API B2B & white-label | Partnerët kmcheck",
   seoPlansDesc:
-    "Krahasoni planet kmcheck: API REST për historik VIN dhe kilometra, ose faqe white-label të menaxhuar.",
-  seoContactTitle: "Kontakt shitje | Shitni historik makinash me kmcheck",
-  seoContactDesc: "Flisni me kmcheck për shitjen e historikut të makinave dhe kilometrave me API ose faqe të menaxhuar. Email: info@kmcheck.com.",
-  seoRegionTitle: "Shit raporte historiku makinash nga {region} | kmcheck API",
+    "Krahasoni planet partner të kmcheck: API REST ose faqe white-label e menaxhuar.",
+  seoContactTitle: "Kontakt shitje B2B kmcheck | API & white-label",
+  seoContactDesc: "Flisni me kmcheck për API partner ose faqe rishitësi. Email info@kmcheck.com.",
+  seoRegionTitle: "API të dhënash automjetesh {region} për rishitës | kmcheck B2B",
   seoRegionDesc:
-    "Shitni raporte historiku për {region}, kontroll VIN, aksidente dhe kilometra me markën tuaj — me kmcheck API.",
-  seoDecoderTitle: "API Dekodues VIN — marka, modele dhe specifikime | kmcheck",
-  seoDecoderDesc: "Dekodues VIN për markat dhe modelet me specifikime të detajuara. I përfshirë në API kmcheck dhe te Faqe rishitësi & mirëmbajtje.",
+    "API rishitësi për të dhëna automjetesh {region} nën markën tuaj — white-label ose integrim zhvilluesi.",
+  seoDecoderTitle: "API dekodimi VIN për zhvillues | kmcheck B2B",
+  seoDecoderDesc: "API dekodimi VIN (markë, model, specs) për partnerë — e përfshirë në API dhe white-label.",
   decoderPageHeroTitle: "Dekodues VIN për çdo markë, model dhe specifikim",
   decoderPageHeroSub: "Merrni identitetin e makinës nga çdo VIN — pastaj shitni historikun përmes API-së ose faqes rishitësi që e mirëmbajmë ne.",
   decoderPageLead: "kmcheck kthen të dhëna të qarta nga VIN: markë, model, vit, trim, karroceri, motor, fabrika — pothuajse për çdo makinë. Po e njëjta platformë B2B për historik dhe kilometra.",
@@ -1681,7 +1681,7 @@ const sq = {
   decoderBrandsChinaLabel: "Marka kineze dhe EV",
   decoderBrandSuffix: "Dekodues VIN",
   seoKeywords:
-    "shit historik makinash, raporte VIN, kilometra makinash, API historiku, rishitës historiku automjetesh, alternativë Carfax, kmcheck API"
+    "API historik automjetesh, white-label rishitës, API VIN B2B, partnerë kmcheck"
 } satisfies B2bCopy;
 
 const pl = {
@@ -1931,19 +1931,19 @@ const pl = {
   useCase1: "Importerzy i eksporterzy włączający historię VIN w listingi lub checkout.",
   useCase2: "Dealery i marketplace monetyzujące sprawdzenia przed zakupem.",
   useCase3: "Agencje uruchamiające stronę w stylu Carfax bez własnego stacku danych.",
-  seoHomeTitle: "Sprzedawaj historię aut i przebiegi | kmcheck API B2B",
+  seoHomeTitle: "API historii pojazdów i white-label dla resellerów | kmcheck B2B",
   seoHomeDesc:
-    "Sprzedawaj raporty historii, przebiegi i kontrole VIN na swojej stronie. White-label lub API. USA, Kanada, Korea, Dubaj, Chiny. ~50 mln pojazdów.",
-  seoPlansTitle: "Cennik API historii pojazdów i stron reseller | kmcheck",
+    "API B2B i zarządzane strony white-label dla deweloperów i partnerów. USA, Kanada, Korea, Dubaj, Chiny. ~50M pojazdów.",
+  seoPlansTitle: "Plany API B2B i white-label | Partnerzy kmcheck",
   seoPlansDesc:
-    "Porównaj plany kmcheck: API REST historii VIN i przebiegu albo zarządzaną stronę white-label.",
-  seoContactTitle: "Kontakt handlowy | Sprzedawaj historię aut z kmcheck",
-  seoContactDesc: "Porozmawiaj z kmcheck o sprzedaży historii i przebiegów przez API lub stronę reseller. E-mail info@kmcheck.com.",
-  seoRegionTitle: "Sprzedawaj historię i raporty samochodów {region} | kmcheck",
+    "Porównaj plany partnerskie kmcheck: dostęp REST API lub zarządzana strona white-label.",
+  seoContactTitle: "Kontakt handlowy B2B kmcheck | API i white-label",
+  seoContactDesc: "Porozmawiaj z kmcheck o API partnerskim lub stronie resellera. Email info@kmcheck.com.",
+  seoRegionTitle: "API danych pojazdów {region} dla resellerów | kmcheck B2B",
   seoRegionDesc:
-    "Sprzedawaj historię i raporty samochodów {region}, kontrole VIN, historię wypadków i przebiegi pod swoją marką z kmcheck API.",
-  seoDecoderTitle: "API dekoder VIN — marki, modele i specs | kmcheck",
-  seoDecoderDesc: "Dekoder VIN ze szczegółowymi danymi. W API kmcheck oraz na Stronie resellera i utrzymaniu.",
+    "API resellera dla danych pojazdów {region} pod Twoją marką — white-label lub integracja dla deweloperów.",
+  seoDecoderTitle: "API dekodowania VIN dla deweloperów | kmcheck B2B",
+  seoDecoderDesc: "API dekodowania VIN (marka, model, specs) dla partnerów — w API i white-label.",
   decoderPageHeroTitle: "Dekoder VIN dla każdej marki, modelu i specyfikacji",
   decoderPageHeroSub: "Szczegółowa tożsamość z każdego VIN — potem sprzedawaj historię przez API lub stronę resellera.",
   decoderPageLead: "kmcheck zwraca głębokie dane tożsamości VIN: marka, model, rok, wersja, nadwozie, silnik, fabryka — dla praktycznie każdego auta. Ta sama platforma B2B historii i przebiegu.",
@@ -1969,7 +1969,7 @@ const pl = {
   decoderBrandsChinaLabel: "Marki chińskie i EV",
   decoderBrandSuffix: "dekoder VIN",
   seoKeywords:
-    "sprzedawaj historię aut, przebieg samochodu, API historii VIN, reseller historii pojazdów, alternatywa Carfax white-label, kmcheck"
+    "API historii pojazdów, white-label reseller, API VIN B2B, partnerzy kmcheck"
 } satisfies B2bCopy;
 
 const ka = {
@@ -2236,21 +2236,21 @@ const ka = {
   useCase2: "დილერები და marketplace-ები, რომლებიც მონეტიზებენ შესყიდვამდე შემოწმებებს.",
   useCase3:
     "სააგენტოები, რომლებიც უშვებენ Carfax-სტილის საიტს საკუტარი მონაცემტა stack-ის გარეშე.",
-  seoHomeTitle: "გაყიდეთ მანქანის ისტორია და გარბენი | kmcheck API B2B",
+  seoHomeTitle: "ავტომობილის ისტორიის API და white-label რესელერებისთვის | kmcheck B2B",
   seoHomeDesc:
-    "გაყიდეთ ისტორიის ანგარიშები, გარბენი და VIN შემოწმებები თქვენს საიტზე. White-label ან API. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50 მლნ ავტომობილი.",
-  seoPlansTitle: "ავტომობილის ისტორიის API ფასები და reseller საიტები | kmcheck",
+    "B2B API და white-label საიტები დეველოპერებისა და პარტნიორებისთვის. აშშ, კანადა, კორეა, დუბაი, ჩინეთი. ~50M მანქანა.",
+  seoPlansTitle: "B2B API და white-label გეგმები | kmcheck პარტნიორები",
   seoPlansDesc:
-    "შედარეტ kmcheck გეგმები: REST API VIN ისტორიისა და გარბენისთვის ან მარტული white-label საიტი.",
-  seoContactTitle: "გაყიდვების კონტაქტი | გაყიდეთ მანქანის ისტორია kmcheck-იტ",
+    "შეადარეთ kmcheck პარტნიორის გეგმები: REST API ან მართული white-label საიტი.",
+  seoContactTitle: "კონტაქტი B2B გაყიდვები kmcheck | API და white-label",
   seoContactDesc:
-    "ესაუბრეტ kmcheck-ს ისტორიისა და გარბენის გაყიდვაზე API-ით ან reseller საიტით. ელფოსტა info@kmcheck.com.",
-  seoRegionTitle: "გაყიდეთ {region} მანქანების ისტორია და ანგარიშები | kmcheck",
+    "ისაუბრეთ kmcheck-თან პარტნიორის API ან რესელერის საიტზე. Email info@kmcheck.com.",
+  seoRegionTitle: "{region} მანქანების მონაცემების API რესელერებისთვის | kmcheck B2B",
   seoRegionDesc:
-    "გაყიდეთ {region} მანქანების ისტორია და ანგარიშები, VIN შემოწმებები, ავარიის ისტორია და გარბენი თქვენი ბრენდით kmcheck API-ით.",
-  seoDecoderTitle: "VIN გაშიფვრა API — მარკები, მოდელები და specs | kmcheck",
+    "რესელერის API {region} მანქანების მონაცემებისთვის თქვენი ბრენდით — white-label ან დეველოპერის ინტეგრაცია.",
+  seoDecoderTitle: "VIN decode API დეველოპერებისთვის | kmcheck B2B",
   seoDecoderDesc:
-    "VIN გაშიფვრა დეტალური მონაცემებიტ. kmcheck API-ში და Reseller საიტსა და მხარდაჭერაში.",
+    "VIN decode API (მარკა, მოდელი, specs) პარტნიორებისთვის — API-სა და white-label-ში.",
   decoderPageHeroTitle: "VIN გაშიფვრა ყველა მარკის, მოდელისა და სპეციფიკაციისთვის",
   decoderPageHeroSub:
     "დეტალური იდენტობა ნებისიერი VIN-დან — შემდეგ გაყიდეთ ისტორია API-ით ან reseller საიტით.",
@@ -2280,7 +2280,7 @@ const ka = {
   decoderBrandsChinaLabel: "ჩინური და EV მარკები",
   decoderBrandSuffix: "VIN გაშიფვრა",
   seoKeywords:
-    "გაყიდეთ მანქანის ისტორია, ავტომობილის გარბენი, VIN ისტორიის API, ავტომობილის ისტორიის reseller, Carfax white-label ალტერნატივა, kmcheck",
+    "ავტომობილის ისტორიის API, white-label რესელერი, B2B VIN API, kmcheck პარტნიორები",
 } satisfies B2bCopy;
 
 const ro = {
@@ -2530,19 +2530,19 @@ const ro = {
   useCase1: "Importatori & exportatori care integrează istoricul VIN în listing sau checkout.",
   useCase2: "Dealership-uri și marketplace-uri care monetizează verificări pre-cumpărare.",
   useCase3: "Agenții care lansează un site tip Carfax fără stack propriu de date.",
-  seoHomeTitle: "Vinde istoric auto și kilometraj | kmcheck API B2B",
+  seoHomeTitle: "API istoric auto & white-label pentru reselleri | kmcheck B2B",
   seoHomeDesc:
-    "Vinde rapoarte de istoric, kilometraj și verificări VIN pe site. White-label sau API. SUA, Canada, Coreea, Dubai, China. ~50M vehicule.",
-  seoPlansTitle: "Prețuri API istoric auto și site-uri reseller | kmcheck",
+    "API B2B și site-uri white-label pentru dezvoltatori și parteneri. SUA, Canada, Coreea, Dubai, China. ~50M vehicule.",
+  seoPlansTitle: "Planuri API B2B & white-label | Parteneri kmcheck",
   seoPlansDesc:
-    "Compară planurile kmcheck: API REST pentru istoric VIN și kilometraj, sau site white-label gestionat.",
-  seoContactTitle: "Contact vânzări | Vinde istoric auto cu kmcheck",
-  seoContactDesc: "Vorbește cu kmcheck despre vânzarea de istoric și kilometraj prin API sau site reseller. Email info@kmcheck.com.",
-  seoRegionTitle: "Vinde istoricul și rapoartele mașinilor {region} | kmcheck",
+    "Comparați planurile partner kmcheck: acces API REST sau site white-label gestionat.",
+  seoContactTitle: "Contact vânzări B2B kmcheck | API & white-label",
+  seoContactDesc: "Discutați cu kmcheck despre API partener sau site reseller. Email info@kmcheck.com.",
+  seoRegionTitle: "API date vehicule {region} pentru reselleri | kmcheck B2B",
   seoRegionDesc:
-    "Vinde istoricul și rapoartele mașinilor {region}, verificări VIN, istoric de accidente și kilometraj sub brandul tău cu kmcheck API.",
-  seoDecoderTitle: "API decoder VIN — mărci, modele și specs | kmcheck",
-  seoDecoderDesc: "Decoder VIN cu specs detaliate. Inclus în API kmcheck și Site reseller & mentenanță.",
+    "API reseller pentru date vehicule {region} sub brandul dvs. — white-label sau integrare developer.",
+  seoDecoderTitle: "API decodare VIN pentru developeri | kmcheck B2B",
+  seoDecoderDesc: "API decodare VIN (marcă, model, specs) pentru parteneri — inclus în API și white-label.",
   decoderPageHeroTitle: "Decoder VIN pentru fiecare marcă, model și spec",
   decoderPageHeroSub: "Identitate detaliată din orice VIN — apoi vinde istoricul prin API sau site reseller pe care îl mentinem.",
   decoderPageLead: "kmcheck returnează identitate VIN bogată: marcă, model, an, echipare, caroserie, motor, uzină — pentru aproape toate mașinile. Aceeași platformă B2B pentru istoric și kilometraj.",
@@ -2568,7 +2568,7 @@ const ro = {
   decoderBrandsChinaLabel: "Mărci chineze și EV",
   decoderBrandSuffix: "Decodor VIN",
   seoKeywords:
-    "vinde istoric auto, kilometraj mașină, API istoric VIN, reseller istoric, alternativă Carfax white-label, kmcheck"
+    "API istoric auto, white-label reseller, API VIN B2B, parteneri kmcheck"
 } satisfies B2bCopy;
 
 const bg = {
@@ -2818,19 +2818,19 @@ const bg = {
   useCase1: "Импортъори и експортъори, вграждащи VIN история в listing или checkout.",
   useCase2: "Дилъри и marketplace, монетизиращи проверки преди покупка.",
   useCase3: "Агенции, стартиращи сайт като Carfax без собствен data stack.",
-  seoHomeTitle: "Продавайте автоистория и километри | kmcheck API B2B",
+  seoHomeTitle: "API за автоистория и white-label за реселъри | kmcheck B2B",
   seoHomeDesc:
-    "Продавайте доклади за автоистория, километри и VIN проверки на сайта си. White-label или API. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила.",
-  seoPlansTitle: "Цени API автоистория и reseller сайтове | kmcheck",
+    "B2B API и white-label сайтове за разработчици и партньори. САЩ, Канада, Корея, Дубай, Китай. ~50M автомобила.",
+  seoPlansTitle: "B2B API и white-label планове | Партньори kmcheck",
   seoPlansDesc:
-    "Сравнете плановете kmcheck: REST API за VIN история и километри или управляван white-label сайт.",
-  seoContactTitle: "Контакт продажби | Продавайте автоистория с kmcheck",
-  seoContactDesc: "Говорете с kmcheck за продажба на автоистория и километри чрез API или reseller сайт. Имейл info@kmcheck.com.",
-  seoRegionTitle: "Продавайте история и отчети за {region} автомобили | kmcheck",
+    "Сравнете партньорските планове на kmcheck: REST API или управляван white-label сайт.",
+  seoContactTitle: "Контакт B2B продажби kmcheck | API и white-label",
+  seoContactDesc: "Говорете с kmcheck за партньорски API или reseller сайт. Email info@kmcheck.com.",
+  seoRegionTitle: "API за данни за {region} автомобили за реселъри | kmcheck B2B",
   seoRegionDesc:
-    "Продавайте история и отчети за {region} автомобили, VIN проверки, история на аварии и километри под вашата марка с kmcheck API.",
-  seoDecoderTitle: "VIN декодер API — марки, модели и specs | kmcheck",
-  seoDecoderDesc: "VIN декодер с подробни specs. Включен в kmcheck API и Reseller сайт и поддръжка.",
+    "Reseller API за данни за {region} автомобили под вашата марка — white-label или developer интеграция.",
+  seoDecoderTitle: "VIN decode API за разработчици | kmcheck B2B",
+  seoDecoderDesc: "VIN decode API (марка, модел, specs) за партньори — в API и white-label.",
   decoderPageHeroTitle: "VIN декодер за всяка марка, модел и spec",
   decoderPageHeroSub: "Подробна идентичност от всеки VIN — продавайте историята чрез API или reseller сайт, който поддържаме.",
   decoderPageLead: "kmcheck връща дълбоки VIN данни: марка, модел, година, оборудване, каросерия, двигател, завод — за почти всички коли. Същата B2B платформа за история и километри.",
@@ -2856,7 +2856,7 @@ const bg = {
   decoderBrandsChinaLabel: "Китайски и EV марки",
   decoderBrandSuffix: "VIN декодер",
   seoKeywords:
-    "продавай автоистория, километри кола, VIN история API, reseller автоистория, white-label Carfax алтернатива, kmcheck"
+    "API автоистория, white-label реселър, B2B VIN API, партньори kmcheck"
 } satisfies B2bCopy;
 
 const ar = {
@@ -3106,19 +3106,19 @@ const ar = {
   useCase1: "مستوردون ومصدّرون يدمجون تاريخ VIN في القوائم أو الدفع.",
   useCase2: "وكالات ومعارض تسوّق تحققات الثقة قبل الشراء.",
   useCase3: "وكالات تطلق موقعًا بأسلوب Carfax بعلامتها دون بناء مكدس بيانات.",
-  seoHomeTitle: "بِع تاريخ السيارات وسجلات المسافة | واجهة kmcheck B2B",
+  seoHomeTitle: "واجهة برمجة تاريخ المركبات ومنصة White-Label | kmcheck B2B",
   seoHomeDesc:
-    "بِع تقارير تاريخ السيارات والمسافة وفحص VIN على موقعك. موقع بعلامتك أو واجهة برمجية. أمريكا، كندا، كوريا، دبي، الصين. ~50 مليون مركبة.",
-  seoPlansTitle: "أسعار واجهة تاريخ المركبات ومواقع إعادة البيع | kmcheck",
+    "واجهة B2B ومواقع white-label للمطوّرين والشركاء. الولايات المتحدة وكندا وكوريا ودبي والصين. نحو 50 مليون مركبة.",
+  seoPlansTitle: "خطط واجهة B2B وWhite-Label | شركاء kmcheck",
   seoPlansDesc:
-    "قارن خطط kmcheck: واجهة REST لتاريخ VIN والمسافة، أو موقع white-label مُدار.",
-  seoContactTitle: "تواصل مع المبيعات | بِع تاريخ السيارات مع kmcheck",
-  seoContactDesc: "تحدث مع kmcheck عن بيع تاريخ السيارات والمسافة عبر الواجهة أو موقع إعادة البيع. البريد info@kmcheck.com.",
-  seoRegionTitle: "بِع تاريخ وتقارير السيارات {region} | kmcheck",
+    "قارن خطط شركاء kmcheck: وصول REST API أو موقع white-label مُدار.",
+  seoContactTitle: "تواصل مبيعات B2B مع kmcheck | واجهة وWhite-Label",
+  seoContactDesc: "تحدث مع kmcheck عن واجهة شريك أو موقع إعادة بيع. البريد info@kmcheck.com.",
+  seoRegionTitle: "واجهة بيانات مركبات {region} للبائعين | kmcheck B2B",
   seoRegionDesc:
-    "بِع تاريخ وتقارير السيارات {region}، وفحوصات VIN، وسجل الحوادث والمسافة تحت علامتك مع kmcheck API.",
-  seoDecoderTitle: "واجهة فك شفرة VIN — الماركات والموديلات والمواصفات | kmcheck",
-  seoDecoderDesc: "فك VIN بمواصفات مفصّلة. مشمول في واجهة kmcheck وفي موقع إعادة البيع والصيانة.",
+    "واجهة إعادة بيع لبيانات مركبات {region} تحت علامتك — white-label أو تكامل للمطوّرين.",
+  seoDecoderTitle: "واجهة فك VIN للمطوّرين | kmcheck B2B",
+  seoDecoderDesc: "واجهة فك VIN (الماركة والموديل والمواصفات) للشركاء — ضمن الواجهة وwhite-label.",
   decoderPageHeroTitle: "فك شفرة VIN لكل ماركة وموديل ومواصفة",
   decoderPageHeroSub: "هوية مفصّلة من أي VIN — ثم بِع التاريخ عبر الواجهة أو موقع إعادة البيع الذي نديره.",
   decoderPageLead: "يعيد kmcheck هوية VIN عميقة: الماركة، الموديل، السنة، التجهيز، الهيكل، المحرك، المصنع — لمعظم السيارات. نفس منصة B2B للتاريخ والمسافة.",
@@ -3144,7 +3144,7 @@ const ar = {
   decoderBrandsChinaLabel: "علامات صينية وكهربائية",
   decoderBrandSuffix: "فك تشفير VIN",
   seoKeywords:
-    "بيع تاريخ السيارات, سجلات المسافة, واجهة تاريخ VIN, إعادة بيع تاريخ المركبات, بديل Carfax بعلامة بيضاء, kmcheck"
+    "واجهة تاريخ المركبات, white-label, واجهة VIN B2B, شركاء kmcheck"
 } satisfies B2bCopy;
 
 const uk = {
@@ -3394,19 +3394,19 @@ const uk = {
   useCase1: "Імпортери й експортери, що вбудовують VIN-історію в лістинги чи checkout.",
   useCase2: "Дилери та маркетплейси, що монетизують перевірки перед покупкою.",
   useCase3: "Агенції, що запускають сайт у стилі Carfax без власного data stack.",
-  seoHomeTitle: "Продавайте історію авто та пробіг | kmcheck API B2B",
+  seoHomeTitle: "API історії авто та white-label для реселерів | kmcheck B2B",
   seoHomeDesc:
-    "Продавайте звіти історії, пробіг і VIN-перевірки на сайті. White-label або API. США, Канада, Корея, Дубай, Китай. ~50M авто.",
-  seoPlansTitle: "Ціни API історії авто та сайти реселера | kmcheck",
+    "B2B API та white-label сайти для розробників і партнерів. США, Канада, Корея, Дубай, Китай. ~50M авто.",
+  seoPlansTitle: "Тарифи B2B API та white-label | Партнери kmcheck",
   seoPlansDesc:
-    "Порівняйте плани kmcheck: REST API історії VIN і пробігу або керований white-label сайт.",
-  seoContactTitle: "Контакт продажів | Продавайте історію авто з kmcheck",
-  seoContactDesc: "Поговоріть з kmcheck про продаж історії та пробігу через API або сайт реселера. Email info@kmcheck.com.",
-  seoRegionTitle: "Продавайте історію та звіти {region} автомобілів | kmcheck",
+    "Порівняйте партнерські плани kmcheck: REST API або керований white-label сайт.",
+  seoContactTitle: "Контакт B2B продажів kmcheck | API та white-label",
+  seoContactDesc: "Обговоріть з kmcheck партнерський API або сайт реселера. Email info@kmcheck.com.",
+  seoRegionTitle: "API даних авто {region} для реселерів | kmcheck B2B",
   seoRegionDesc:
-    "Продавайте історію та звіти {region} автомобілів, перевірки VIN, історію аварій та пробіг під вашим брендом з kmcheck API.",
-  seoDecoderTitle: "API VIN-декодер — марки, моделі й specs | kmcheck",
-  seoDecoderDesc: "VIN-декодер з детальними specs. Входить до API kmcheck та Сайту реселера і підтримки.",
+    "Reseller API для даних авто {region} під вашим брендом — white-label або інтеграція для розробників.",
+  seoDecoderTitle: "API декодування VIN для розробників | kmcheck B2B",
+  seoDecoderDesc: "API декодування VIN (марка, модель, specs) для партнерів — в API та white-label.",
   decoderPageHeroTitle: "VIN-декодер для кожної марки, моделі й специфікації",
   decoderPageHeroSub: "Детальна ідентичність з будь-якого VIN — далі продавайте історію через API або сайт реселера.",
   decoderPageLead: "kmcheck повертає глибокі дані VIN: марка, модель, рік, комплектація, кузов, двигун, завод — майже для всіх авто. Та сама B2B-платформа історії та пробігу.",
@@ -3432,7 +3432,7 @@ const uk = {
   decoderBrandsChinaLabel: "Китайські та EV бренди",
   decoderBrandSuffix: "VIN-декодер",
   seoKeywords:
-    "продавати історію авто, пробіг автомобіля, API історії VIN, реселер історії авто, альтернатива Carfax white-label, kmcheck"
+    "API історії авто, white-label реселер, B2B VIN API, партнери kmcheck"
 } satisfies B2bCopy;
 
 const ru = {
@@ -3682,19 +3682,19 @@ const ru = {
   useCase1: "Импортёры и экспортёры, встраивающие VIN-историю в листинги или checkout.",
   useCase2: "Дилеры и маркетплейсы, монетизирующие проверки перед покупкой.",
   useCase3: "Агентства, запускающие сайт в стиле Carfax без собственного data stack.",
-  seoHomeTitle: "Продавайте историю авто и пробег | kmcheck API B2B",
+  seoHomeTitle: "API истории авто и white-label для реселлеров | kmcheck B2B",
   seoHomeDesc:
-    "Продавайте отчёты истории, пробег и VIN-проверки на сайте. White-label или API. США, Канада, Корея, Дубай, Китай. ~50M авто.",
-  seoPlansTitle: "Цены API истории авто и сайты реселлера | kmcheck",
+    "B2B API и white-label сайты для разработчиков и партнёров. США, Канада, Корея, Дубай, Китай. ~50M авто.",
+  seoPlansTitle: "Тарифы B2B API и white-label | Партнёры kmcheck",
   seoPlansDesc:
-    "Сравните тарифы kmcheck: REST API истории VIN и пробега или управляемый white-label сайт.",
-  seoContactTitle: "Контакт продаж | Продавайте историю авто с kmcheck",
-  seoContactDesc: "Обсудите с kmcheck продажу истории и пробега через API или сайт реселлера. Email info@kmcheck.com.",
-  seoRegionTitle: "Продавайте историю и отчёты {region} автомобилей | kmcheck",
+    "Сравните партнёрские планы kmcheck: REST API или управляемый white-label сайт.",
+  seoContactTitle: "Контакт B2B продаж kmcheck | API и white-label",
+  seoContactDesc: "Обсудите с kmcheck партнёрский API или сайт реселлера. Email info@kmcheck.com.",
+  seoRegionTitle: "API данных авто {region} для реселлеров | kmcheck B2B",
   seoRegionDesc:
-    "Продавайте историю и отчёты {region} автомобилей, проверки VIN, историю аварий и пробег под вашим брендом с kmcheck API.",
-  seoDecoderTitle: "API VIN-декодер — марки, модели и specs | kmcheck",
-  seoDecoderDesc: "VIN-декодер с детальными specs. Входит в API kmcheck и Сайт реселлера и поддержку.",
+    "Reseller API для данных авто {region} под вашим брендом — white-label или интеграция для разработчиков.",
+  seoDecoderTitle: "API декодирования VIN для разработчиков | kmcheck B2B",
+  seoDecoderDesc: "API декодирования VIN (марка, модель, specs) для партнёров — в API и white-label.",
   decoderPageHeroTitle: "VIN-декодер для каждой марки, модели и спецификации",
   decoderPageHeroSub: "Подробная идентичность из любого VIN — затем продавайте историю через API или сайт реселлера.",
   decoderPageLead: "kmcheck возвращает глубокие данные VIN: марка, модель, год, комплектация, кузов, двигатель, завод — почти для всех авто. Та же B2B-платформа истории и пробега.",
@@ -3720,7 +3720,7 @@ const ru = {
   decoderBrandsChinaLabel: "Китайские и EV бренды",
   decoderBrandSuffix: "VIN-декодер",
   seoKeywords:
-    "продавать историю авто, пробег автомобиля, API истории VIN, реселлер истории авто, альтернатива Carfax white-label, kmcheck"
+    "API истории авто, white-label реселлер, B2B VIN API, партнёры kmcheck"
 } satisfies B2bCopy;
 
 const zh = {
@@ -3968,19 +3968,19 @@ const zh = {
   useCase1: "进出口商将 VIN 历史嵌入列表或结账流程。",
   useCase2: "经销商与市场平台变现购前信心检查。",
   useCase3: "代理机构上线贴牌类 Carfax 站点，无需自建数据栈。",
-  seoHomeTitle: "销售车辆历史报告与里程记录 | kmcheck API B2B",
+  seoHomeTitle: "车辆历史 API 与白标分销平台 | kmcheck B2B",
   seoHomeDesc:
-    "在网站销售车史报告、里程记录与 VIN 查验。白标站点或开发者 API。覆盖美国、加拿大、韩国、迪拜、中国。约五千万辆车。",
-  seoPlansTitle: "车史 API 报价与经销网站 | kmcheck",
+    "面向开发者与合作伙伴的 B2B API 与托管白标站点。覆盖美国、加拿大、韩国、迪拜、中国。约 5000 万辆车。",
+  seoPlansTitle: "B2B API 与白标方案 | kmcheck 合作伙伴",
   seoPlansDesc:
-    "对比 kmcheck 方案：VIN 历史与里程 REST API，或托管白标车史网站。",
-  seoContactTitle: "联系销售 | 使用 kmcheck 销售车史报告",
-  seoContactDesc: "咨询通过 API 或经销站点销售车史与里程。邮箱 info@kmcheck.com。",
-  seoRegionTitle: "销售{region}车辆历史与报告 | kmcheck",
+    "比较 kmcheck 合作伙伴方案：REST API 或托管白标分销网站。",
+  seoContactTitle: "联系 kmcheck B2B 销售 | API 与白标",
+  seoContactDesc: "咨询合作伙伴 API 或分销网站。邮箱 info@kmcheck.com。",
+  seoRegionTitle: "{region} 车辆数据 API（分销商）| kmcheck B2B",
   seoRegionDesc:
-    "以您的品牌通过 kmcheck API 销售{region}车辆历史与报告、VIN 查验、事故与里程记录。",
-  seoDecoderTitle: "VIN 解码 API — 全品牌车型与规格 | kmcheck B2B",
-  seoDecoderDesc: "各品牌车型 VIN 解码与详细规格。包含于 kmcheck API 以及经销网站与维护。",
+    "以您的品牌提供 {region} 车辆数据的分销 API — 白标站点或开发者集成。",
+  seoDecoderTitle: "面向开发者的 VIN 解码 API | kmcheck B2B",
+  seoDecoderDesc: "合作伙伴 VIN 解码 API（品牌、车型、规格）— 包含在 API 与白标方案中。",
   decoderPageHeroTitle: "覆盖全品牌、车型与规格的 VIN 解码",
   decoderPageHeroSub: "从任一 VIN 解析详细车辆身份 — 再通过 API 或我们维护的经销站销售完整历史。",
   decoderPageLead: "kmcheck 返回深度 VIN 身份数据：品牌、车型、年份、配置、车身、发动机、工厂等 — 覆盖几乎所有乘用车。与事故史、里程销售同一套 B2B 平台。",
@@ -4006,7 +4006,7 @@ const zh = {
   decoderBrandsChinaLabel: "中国与新能源品牌",
   decoderBrandSuffix: "VIN 解码器",
   seoKeywords:
-    "销售车辆历史报告, 车辆里程记录, VIN历史API, 车史经销, 白标Carfax替代, kmcheck API"
+    "车辆历史 API, 白标分销, B2B VIN API, kmcheck 合作伙伴"
 } satisfies B2bCopy;
 
 export const B2B_COPY: Record<Language, B2bCopy> = {

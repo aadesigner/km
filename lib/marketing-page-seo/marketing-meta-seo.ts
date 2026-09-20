@@ -48,6 +48,7 @@ const PATH_TO_PAGE_KEY: Record<string, string> = {
   "/cars/korea": "country_korea",
   "/cars/canada": "country_canada",
   "/cars/china": "country_china",
+  "/cars/japan": "country_japan",
   "/cars/uae": "country_uae",
 };
 
@@ -57,10 +58,11 @@ const OG_PAGE_KEYS = new Set([
   "country_korea",
   "country_canada",
   "country_china",
+  "country_japan",
   "country_uae",
 ]);
 
-const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "uae"]);
+const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "japan", "uae"]);
 
 type SeoEntry = { title: string; description: string };
 
@@ -88,6 +90,7 @@ function resolvePageKey(rest: string): string | null {
       if (slug === "korea") return "country_korea";
       if (slug === "canada") return "country_canada";
       if (slug === "china") return "country_china";
+      if (slug === "japan") return "country_japan";
       if (slug === "uae") return "country_uae";
       return "country_usa";
     }
@@ -221,7 +224,7 @@ export function resolveMarketingMetaSeo(reqPath: string, siteOrigin: string): Ma
     description: seo.description,
     pageKey,
     rest,
-    noIndex: false,
+    noIndex: rest.startsWith("/api-b2b/"),
     canonicalPath,
     canonicalUrl: `${origin}${canonicalPath}`,
     ogImage,

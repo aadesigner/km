@@ -17,7 +17,7 @@ export interface DemoCar {
   vin: string;
   name: string;
   year: number;
-  origin: "USA" | "Korea" | "Germany" | "China" | "UAE";
+  origin: "USA" | "Korea" | "Germany" | "China" | "Japan" | "UAE";
   flagImg: string;
   photo: string;
   score: number;
@@ -329,6 +329,72 @@ export const ALL_CARS: DemoCar[] = [
     stolen: false,
   },
 
+  /* Japan — domestic auction / export market */
+  {
+    vin: "JTDKN3DU5A0123456",
+    name: "Toyota Prius",
+    year: 2021,
+    origin: "Japan",
+    flagImg: "jp",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("toyota-prius.jpg"),
+    score: 9.1,
+    mileage: 42_600,
+    accidents: 0,
+    owners: 1,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "JHMCG5650C0123456",
+    name: "Honda Civic",
+    year: 2020,
+    origin: "Japan",
+    flagImg: "jp",
+    unit: "km",
+    condition: "CLEAN",
+    photo: demoCarPhotoUrl("honda-civic.jpg"),
+    score: 8.7,
+    mileage: 58_200,
+    accidents: 0,
+    owners: 2,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "JN1BJ1CW5LW123456",
+    name: "Nissan Qashqai",
+    year: 2022,
+    origin: "Japan",
+    flagImg: "jp",
+    unit: "km",
+    condition: "CAUTION",
+    photo: demoCarPhotoUrl("nissan-qashqai.jpg"),
+    score: 6.5,
+    mileage: 91_400,
+    accidents: 1,
+    owners: 2,
+    salvage: false,
+    stolen: false,
+  },
+  {
+    vin: "JF1VA2L65G9823456",
+    name: "Subaru Forester",
+    year: 2019,
+    origin: "Japan",
+    flagImg: "jp",
+    unit: "km",
+    condition: "RISK",
+    photo: demoCarPhotoUrl("subaru-forester.jpg"),
+    score: 4.1,
+    mileage: 148_000,
+    accidents: 2,
+    owners: 3,
+    salvage: true,
+    stolen: false,
+  },
+
   /* UAE — luxury imports */
   {
     vin: "WUAZZZFX7LN012345",
@@ -480,7 +546,7 @@ function DemoVinBlurredTail({ vin, className }: { vin: string; className?: strin
   );
 }
 
-function carsForCountry(country?: "usa" | "korea" | "canada" | "china" | "uae"): DemoCar[] {
+function carsForCountry(country?: "usa" | "korea" | "canada" | "china" | "japan" | "uae"): DemoCar[] {
   if (!country) return ALL_CARS;
   if (country === "korea") {
     return ALL_CARS.filter((c) => c.origin === "Korea" || c.origin === "Germany");
@@ -490,6 +556,9 @@ function carsForCountry(country?: "usa" | "korea" | "canada" | "china" | "uae"):
   }
   if (country === "china") {
     return ALL_CARS.filter((c) => c.origin === "China");
+  }
+  if (country === "japan") {
+    return ALL_CARS.filter((c) => c.origin === "Japan");
   }
   if (country === "uae") {
     return ALL_CARS.filter((c) => c.origin === "UAE");
@@ -505,9 +574,11 @@ function demoCardSubtitle(car: DemoCar, t: (key: string) => string): string {
         ? "demo_card_origin_germany"
         : car.origin === "China"
           ? "demo_card_origin_china"
-          : car.origin === "UAE"
-            ? "demo_card_origin_uae"
-            : "demo_card_origin_usa";
+          : car.origin === "Japan"
+            ? "demo_card_origin_japan"
+            : car.origin === "UAE"
+              ? "demo_card_origin_uae"
+              : "demo_card_origin_usa";
   return t(originKey);
 }
 
@@ -845,7 +916,7 @@ export function VinDemoCard({
   livePing,
   countryPage = false,
 }: {
-  country?: "usa" | "korea" | "canada" | "china" | "uae";
+  country?: "usa" | "korea" | "canada" | "china" | "japan" | "uae";
   showcase?: boolean;
   /** Single static preview — no carousel, transitions, or dot nav. */
   frozen?: boolean;

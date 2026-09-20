@@ -114,6 +114,17 @@ const MARKET_DEMOS: Partial<Record<WhatWeCheckMarket, Partial<WwcDemoReport>>> =
     photoUrl: demoCarPhotoUrl("byd-han-ev.jpg"),
     vin: "LC0C76C45N0123456",
   },
+  japan: {
+    vehicleTitle: "Toyota Prius",
+    make: "Toyota",
+    model: "Prius",
+    year: 2021,
+    trim: "S",
+    engine: "1.8 Hybrid",
+    originKey: "country_japan_name",
+    photoUrl: demoCarPhotoUrl("toyota-prius.jpg"),
+    vin: "JTDKN3DU5A0123456",
+  },
   uae: {
     vehicleTitle: "2019 Mercedes-Benz C200",
     make: "Mercedes-Benz",

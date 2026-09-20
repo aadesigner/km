@@ -43,10 +43,11 @@ export const INDEXABLE_PRERENDER_PATHS = JSON.parse(
 );
 
 const b2bInIndexable = INDEXABLE_PRERENDER_PATHS.filter((p) => p.startsWith("/api-b2b")).sort();
-const b2bInData = [...B2B_PRERENDER_PATHS].sort();
-if (JSON.stringify(b2bInIndexable) !== JSON.stringify(b2bInData)) {
+const b2bInData = new Set(B2B_PRERENDER_PATHS);
+// Indexable B2B routes must be a subset of b2b-seo-data paths (hub-only is OK — secondary pages stay noindex).
+if (!b2bInIndexable.every((p) => b2bInData.has(p))) {
   throw new Error(
-    "indexable-paths.json B2B routes out of sync with b2b-seo-data.json — update both files",
+    "indexable-paths.json B2B routes must exist in b2b-seo-data.json — update both files",
   );
 }
 
@@ -62,6 +63,7 @@ export const PATH_TO_SEO_KEY = {
   "/cars/korea": "country_korea",
   "/cars/canada": "country_canada",
   "/cars/china": "country_china",
+  "/cars/japan": "country_japan",
   "/cars/uae": "country_uae",
   "/sign-in": "auth",
   "/sign-up": "sign_up",
@@ -73,7 +75,7 @@ export const PATH_TO_SEO_KEY = {
   "/reset-password": "reset_password",
 };
 
-const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "uae"]);
+const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "japan", "uae"]);
 
 const NOINDEX_EXACT = new Set([
   "/sign-in",
@@ -120,6 +122,7 @@ export function resolvePageKey(rest) {
       if (slug === "korea") return "country_korea";
       if (slug === "canada") return "country_canada";
       if (slug === "china") return "country_china";
+      if (slug === "japan") return "country_japan";
       if (slug === "uae") return "country_uae";
       return "country_usa";
     }
@@ -133,6 +136,8 @@ export function resolvePageKey(rest) {
 
 export function isNoIndexPath(rest, pageKey) {
   if (pageKey === "not_found") return true;
+  // Secondary B2B URLs: noindex (hub /api-b2b stays indexable with partner-intent meta).
+  if (rest.startsWith("/api-b2b/")) return true;
   if (pageKey === "api_b2b") return false;
   // VIN report URLs: default noindex in static bootstrap. Catalog pages that should
   // rank get index/follow from server inject + React when report data exists.

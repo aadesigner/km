@@ -7,6 +7,7 @@ const OG_PAGE_KEYS = new Set<SeoPageKey>([
   "country_korea",
   "country_canada",
   "country_china",
+  "country_japan",
   "country_uae",
 ]);
 

@@ -88,6 +88,7 @@ const SEARCH_ALIASES: Record<string, string[]> = {
   KP: ["north korea", "dprk"],
   RU: ["russia", "russian federation"],
   CN: ["china", "prc"],
+  JP: ["japan", "nippon", "nihon"],
   TW: ["taiwan", "roc"],
   CZ: ["czech", "czechia", "czech republic"],
   NL: ["holland", "netherlands"],

@@ -45,7 +45,7 @@ for (const key of indexableKeys) {
       console.warn(`WARN ${key}.${lang}: title missing brand`);
     }
     if (
-      ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_uae"].includes(key)
+      ["home", "country_usa", "country_korea", "country_canada", "country_china", "country_japan", "country_uae"].includes(key)
       && entry?.title
       && entry.title.length > 60
     ) {
@@ -338,7 +338,7 @@ if (existsSync(sqI18nPath)) {
     console.warn("WARN sq.json: hero_headline_2 should mention aksidente");
     sqWarn++;
   }
-  for (const slug of ["usa", "korea", "canada", "china", "uae"]) {
+  for (const slug of ["usa", "korea", "canada", "china", "japan", "uae"]) {
     if (sqI18n[`country_${slug}_headline_verb`] !== "Kontroll") {
       console.warn(`WARN sq.json: country_${slug}_headline_verb should be Kontroll`);
       sqWarn++;

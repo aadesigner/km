@@ -19,7 +19,7 @@ export const SEO_DATA = seoData as {
   [K in SeoPageKey]: Record<SeoLang, { title: string; description: string }>;
 };
 
-const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "uae"]);
+const VALID_COUNTRY_SLUGS = new Set(["usa", "korea", "canada", "china", "japan", "uae"]);
 
 /** Map URL path (without lang prefix) → SEO_DATA key */
 export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
@@ -34,6 +34,7 @@ export const PATH_TO_SEO_KEY: Record<string, SeoPageKey> = {
   "/cars/korea": "country_korea",
   "/cars/canada": "country_canada",
   "/cars/china": "country_china",
+  "/cars/japan": "country_japan",
   "/cars/uae": "country_uae",
   "/sign-in": "auth",
   "/sign-up": "sign_up",
@@ -62,6 +63,7 @@ export function resolvePageKey(rest: string): SeoPageKey {
       if (slug === "korea") return "country_korea";
       if (slug === "canada") return "country_canada";
       if (slug === "china") return "country_china";
+      if (slug === "japan") return "country_japan";
       if (slug === "uae") return "country_uae";
       return "country_usa";
     }
@@ -103,6 +105,8 @@ const NOINDEX_PREFIXES = [
 
 export function isNoIndexPath(rest: string, pageKey: SeoPageKey): boolean {
   if (pageKey === "not_found") return true;
+  // Secondary B2B URLs stay crawlable but out of the index (avoid cannibalizing consumer pages).
+  if (rest.startsWith("/api-b2b/")) return true;
   if (isIndexableVinRest(rest)) return false;
   if (NOINDEX_PREFIXES.some((p) => rest === p || rest.startsWith(`${p}/`))) return true;
   if (rest === "/vin/processing" || rest.startsWith("/vin/processing/")) return true;
@@ -174,7 +178,7 @@ export function getRouteSeo(
 
   const countryJsonLd =
     !apiB2b && (pageKey === "country_usa" || pageKey === "country_korea" || pageKey === "country_canada"
-      || pageKey === "country_china" || pageKey === "country_uae")
+      || pageKey === "country_china" || pageKey === "country_japan" || pageKey === "country_uae")
       ? buildCountryPageJsonLd({
           pageKey,
           title: seo.title,
@@ -185,7 +189,7 @@ export function getRouteSeo(
         })
       : undefined;
 
-  const apiB2bJsonLd = apiB2b
+  const apiB2bJsonLd = apiB2b && resolved.rest === "/api-b2b"
     ? [
         {
           "@context": "https://schema.org",
@@ -195,26 +199,6 @@ export function getRouteSeo(
           url: canonicalUrl,
           inLanguage: HREFLANG_MAP[resolved.lang],
           isPartOf: { "@type": "WebSite", name: "kmcheck API", url: `${SITE_ORIGIN}/${resolved.lang}/api-b2b` },
-        },
-        {
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: "kmcheck Vehicle History API",
-          applicationCategory: "BusinessApplication",
-          operatingSystem: "Web",
-          description: apiB2b.description,
-          offers: {
-            "@type": "Offer",
-            category: "B2B API / White-label",
-            url: `${SITE_ORIGIN}/${resolved.lang}/api-b2b/plans`,
-          },
-          provider: {
-            "@type": "Organization",
-            name: "kmcheck",
-            url: SITE_ORIGIN,
-            email: "info@kmcheck.com",
-          },
-          areaServed: ["US", "CA", "KR", "AE", "CN"],
         },
         {
           "@context": "https://schema.org",
@@ -236,7 +220,9 @@ export function getRouteSeo(
     ...seo,
     lang: resolved.lang,
     canonicalPath,
-    noIndex: apiB2b ? false : (resolved.noIndex || pageKey === "not_found"),
+    noIndex: apiB2b
+      ? resolved.rest.startsWith("/api-b2b/")
+      : (resolved.noIndex || pageKey === "not_found"),
     favicons: resolveFavicons(pageKey, basePath),
     ogImage,
     ogImageAlt: seo.title,

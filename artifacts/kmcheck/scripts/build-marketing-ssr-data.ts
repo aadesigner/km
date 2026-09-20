@@ -258,6 +258,7 @@ const PAGE_BUILDERS: Record<string, (t: Dict, lang: Language) => MarketingSsrCon
   country_korea: (t, lang) => countryContent(t, lang, "country_korea"),
   country_canada: (t, lang) => countryContent(t, lang, "country_canada"),
   country_china: (t, lang) => countryContent(t, lang, "country_china"),
+  country_japan: (t, lang) => countryContent(t, lang, "country_japan"),
   country_uae: (t, lang) => countryContent(t, lang, "country_uae"),
 };
 

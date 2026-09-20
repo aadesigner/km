@@ -3,6 +3,7 @@ export const COVERAGE_COUNTRY_NAME_KEYS = [
   "country_korea_name",
   "country_canada_name",
   "country_china_name",
+  "country_japan_name",
   "country_uae_name",
 ] as const;
 

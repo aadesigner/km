@@ -30,6 +30,9 @@ const EXTERNAL_URL = process.env.SEO_CAPTURE_URL?.replace(/\/$/, "");
 const CAPTURE_LANGS = process.env.SEO_CAPTURE_LANGS
   ? process.env.SEO_CAPTURE_LANGS.split(",").map((s) => s.trim()).filter(Boolean)
   : null;
+const CAPTURE_PAGES = process.env.SEO_CAPTURE_PAGES
+  ? process.env.SEO_CAPTURE_PAGES.split(",").map((s) => s.trim()).filter(Boolean)
+  : null;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -118,8 +121,15 @@ async function main() {
     console.error("No languages matched SEO_CAPTURE_LANGS");
     process.exit(1);
   }
+  const pages = CAPTURE_PAGES?.length
+    ? SEO_OG_PAGES.filter((p) => CAPTURE_PAGES.includes(p.pageKey))
+    : SEO_OG_PAGES;
+  if (pages.length === 0) {
+    console.error("No pages matched SEO_CAPTURE_PAGES");
+    process.exit(1);
+  }
   try {
-    for (const { pageKey, rest } of SEO_OG_PAGES) {
+    for (const { pageKey, rest } of pages) {
       for (const lang of langs) {
         const urlPath = rest ? `/${lang}${rest}` : `/${lang}`;
         const url = `${baseUrl}${urlPath}`;

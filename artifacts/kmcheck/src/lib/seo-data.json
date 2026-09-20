@@ -2,55 +2,55 @@
   "home": {
     "en": {
       "title": "Car Mileage Check & Vehicle History Report | kmcheck.com",
-      "description": "Car mileage check by VIN — verify real km, accidents, salvage and theft. Vehicle history for cars from the USA, Korea, Canada, China and Dubai."
+      "description": "Car mileage check by VIN — verify real km, accidents, salvage and theft. Vehicle history for cars from the USA, Korea, Canada, China, Japan and Dubai."
     },
     "ar": {
       "title": "فحص VIN — الكيلومترات والحوادث والإتلاف | kmcheck.com",
-      "description": "فحص VIN: الكيلومترات والحوادث والإتلاف. سجل سيارات من الولايات المتحدة وكوريا الجنوبية وكندا والصين ودبي."
+      "description": "فحص VIN: الكيلومترات والحوادث والإتلاف. سجل سيارات من الولايات المتحدة وكوريا الجنوبية وكندا والصين واليابان ودبي."
     },
     "uk": {
       "title": "Перевірка VIN авто — пробіг, ДТП та історія | kmcheck.com",
-      "description": "Перевірка VIN: пробіг, ДТП і тоталі. Історія для авто зі США, Південної Кореї, Канади, Китаю та Дубая."
+      "description": "Перевірка VIN: пробіг, ДТП і тоталі. Історія для авто зі США, Південної Кореї, Канади, Китаю, Японії та Дубая."
     },
     "ru": {
       "title": "Проверка VIN — пробег, ДТП и история | kmcheck.com",
-      "description": "Проверка VIN: пробег, ДТП и тоталы. История для автомобилей из США, Южной Кореи, Канады, Китая и Дубая."
+      "description": "Проверка VIN: пробег, ДТП и тоталы. История для автомобилей из США, Южной Кореи, Канады, Китая, Японии и Дубая."
     },
     "sq": {
       "title": "Kontroll kilometrash me shasi | kmcheck.com",
-      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidente dhe historikun e makinës. Historik për makina nga SHBA, Koreja, Kanadaja, Kina dhe Dubai."
+      "description": "Kontroll kilometrash me numrin e shasisë — verifikoni km origjinale, aksidente dhe historikun e makinës. Historia e automjeteve nga SHBA, Koreja, Kanadaja, Kina, Japonia dhe Dubai."
     },
     "es": {
       "title": "Comprobar VIN — kilometraje y accidentes | kmcheck.com",
-      "description": "Informe VIN: kilometraje, accidentes y siniestro total. Historial para coches de EE. UU., Corea del Sur, Canadá, China y Dubái."
+      "description": "Informe VIN: kilometraje, accidentes y siniestro total. Historial para coches de EE. UU., Corea del Sur, Canadá, China, Japón y Dubái."
     },
     "ro": {
       "title": "Verificare VIN — kilometraj, accidente, total | kmcheck.com",
-      "description": "Verificare VIN: kilometraj, accidente și daună totală. Istoric pentru mașini din SUA, Coreea de Sud, Canada, China și Dubai."
+      "description": "Verificare VIN: kilometraj, accidente și daună totală. Istoric pentru mașini din SUA, Coreea de Sud, Canada, China, Japonia și Dubai."
     },
     "pl": {
       "title": "VIN — przebieg, wypadki i szkoda całkowita | kmcheck.com",
-      "description": "Sprawdzenie VIN: przebieg, wypadki i szkoda całkowita. Historia pojazdów z USA, Korei Południowej, Kanady, Chin i Dubaju."
+      "description": "Sprawdzenie VIN: przebieg, wypadki i szkoda całkowita. Historia pojazdów z USA, Korei Południowej, Kanady, Chin, Japonii i Dubaju."
     },
     "ka": {
       "title": "VIN შემოწმება — გარბენი, ავარიები და სალვაჟი | kmcheck.com",
-      "description": "VIN შემოწმება: გარბენი, ავარიები და სალვაჟი. მანქანების ისტორია აშშ-დან, სამხრეთ კორეიდან, კანადიდან, ჩინეთიდან და დუბაიდან."
+      "description": "VIN შემოწმება: გარბენი, ავარიები და სალვაჟი. მანქანების ისტორია აშშ-დან, სამხრეთ კორეიდან, კანადიდან, ჩინეთიდან, იაპონიიდან და დუბაიდან."
     },
     "de": {
       "title": "Kilometerstand prüfen — Unfälle & Totalschaden | kmcheck.com",
-      "description": "VIN-Check: Kilometerstand, Unfälle und Totalschaden prüfen. Fahrzeughistorie für Autos aus den USA, Südkorea, Kanada, China und Dubai."
+      "description": "VIN-Check: Kilometerstand, Unfälle und Totalschaden prüfen. Fahrzeughistorie für Autos aus den USA, Korea, Kanada, China, Japan und Dubai."
     },
     "fr": {
       "title": "Vérifier le kilométrage — accidents & épave | kmcheck.com",
-      "description": "Contrôle VIN : kilométrage, accidents et épave. Historique pour les voitures des États-Unis, de Corée du Sud, du Canada, de Chine et de Dubaï."
+      "description": "Contrôle VIN : kilométrage, accidents et épave. Historique pour les voitures des États-Unis, de Corée, du Canada, de Chine, du Japon et de Dubaï."
     },
     "bg": {
       "title": "VIN проверка — пробег, катастрофи, тотал | kmcheck.com",
-      "description": "VIN проверка: пробег, катастрофи и тотал. История за автомобили от САЩ, Южна Корея, Канада, Китай и Дубай."
+      "description": "VIN проверка: пробег, катастрофи и тотал. История за автомобили от САЩ, Южна Корея, Канада, Китай, Япония и Дубай."
     },
     "zh": {
       "title": "汽车VIN查询 — 里程、事故与报废 | kmcheck.com",
-      "description": "VIN 查询：核实里程、事故与报废。美国、韩国、加拿大、中国与迪拜车辆的历史报告。"
+      "description": "VIN 查询：核实里程、事故与报废。美国、韩国、加拿大、中国、日本与迪拜车辆的历史报告。"
     }
   },
   "pricing": {
@@ -1131,6 +1131,60 @@
     "zh": {
       "title": "阿联酋汽车 — 里程、事故与进口历史 | kmcheck.com",
       "description": "查询阿联酋汽车的里程、事故、水淹损伤和进口历史。丰田、日产、奔驰、宝马、雷克萨斯即时VIN报告，覆盖迪拜及海合会。"
+    }
+  },
+  "country_japan": {
+    "en": {
+      "title": "Japan Mileage Check — Japanese Cars | kmcheck.com",
+      "description": "Japan mileage check for Japanese cars. Verify km, auction history, accidents and salvage — Toyota, Honda, Nissan, Mazda, Subaru and Lexus."
+    },
+    "de": {
+      "title": "Japan-Kilometercheck — Autos aus Japan | kmcheck.com",
+      "description": "Japanische Fahrzeuge per VIN prüfen: Kilometerstand, Auktionshistorie, Unfälle und Salvage. Bericht für Toyota, Honda, Nissan, Mazda, Subaru und Lexus."
+    },
+    "es": {
+      "title": "Chequeo kilometraje Japón — coches de Japón | kmcheck.com",
+      "description": "Verifique kilometraje, subastas, accidentes y salvamento en coches de Japón. Informe VIN para Toyota, Honda, Nissan, Mazda, Subaru y Lexus."
+    },
+    "fr": {
+      "title": "Contrôle kilométrique Japon — voitures du Japon | kmcheck.com",
+      "description": "Vérifiez un véhicule du Japon par VIN : kilométrage, enchères, accidents et épave. Rapport pour Toyota, Honda, Nissan, Mazda, Subaru et Lexus."
+    },
+    "sq": {
+      "title": "Kontroll kilometrash Japoni — makina nga Japonia | kmcheck.com",
+      "description": "Kontrolloni kilometrazhin, ankandet, aksidentet dhe dëmtimin total për makina nga Japonia. Raport VIN për Toyota, Honda, Nissan, Mazda, Subaru dhe Lexus."
+    },
+    "pl": {
+      "title": "Sprawdzenie przebiegu Japonia — auta z Japonii | kmcheck.com",
+      "description": "Sprawdź auto z Japonii po VIN: przebieg, aukcje, wypadki i szkoda całkowita. Raport dla Toyota, Honda, Nissan, Mazda, Subaru i Lexus."
+    },
+    "ka": {
+      "title": "იაპონური მანქანები — გარბენი და ისტორია | kmcheck.com",
+      "description": "შეამოწმეთ იაპონიიდან მანქანის გარბენი, აუქციონი, ავარიები და სალვაჟი. VIN ანგარიში Toyota, Honda, Nissan, Mazda, Subaru და Lexus-ისთვის."
+    },
+    "ro": {
+      "title": "Verificare kilometraj Japonia — mașini din Japonia | kmcheck.com",
+      "description": "Verificați mașini din Japonia după VIN: kilometraj, licitații, accidente și daună totală. Raport pentru Toyota, Honda, Nissan, Mazda, Subaru și Lexus."
+    },
+    "bg": {
+      "title": "Проверка на пробег Япония — автомобили от Япония | kmcheck.com",
+      "description": "Проверете автомобил от Япония по VIN: километраж, аукциони, катастрофи и тотал. Доклад за Toyota, Honda, Nissan, Mazda, Subaru и Lexus."
+    },
+    "ar": {
+      "title": "فحص كيلومترات اليابان — سيارات من اليابان | kmcheck.com",
+      "description": "تحقق من سيارات اليابان عبر VIN: العداد والمزاد والحوادث والخسارة الكلية. تقرير لتويوتا وهوندا ونيسان ومازدا وسوبارو ولكزس."
+    },
+    "uk": {
+      "title": "Перевірка пробігу Японія — авто з Японії | kmcheck.com",
+      "description": "Перевірте авто з Японії за VIN: пробіг, аукціони, ДТП і тотал. Звіт для Toyota, Honda, Nissan, Mazda, Subaru і Lexus."
+    },
+    "ru": {
+      "title": "Проверка пробега Япония — авто из Японии | kmcheck.com",
+      "description": "Проверьте авто из Японии по VIN: пробег, аукционы, аварии и тотал. Отчёт для Toyota, Honda, Nissan, Mazda, Subaru и Lexus."
+    },
+    "zh": {
+      "title": "日本里程核查 — 日本汽车 | kmcheck.com",
+      "description": "按 VIN 核查日本汽车：里程、拍卖、事故与报废。覆盖丰田、本田、日产、马自达、斯巴鲁与雷克萨斯。"
     }
   }
 }
