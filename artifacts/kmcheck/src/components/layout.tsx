@@ -699,9 +699,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
-        // Mild shrink only; skip height tween on small screens (route scroll-reset flicker).
+        // Mild shrink when scrolled (all breakpoints). Height tween only on md+ to avoid
+        // route scroll-reset flicker on mobile.
         "h-[76px] md:transition-[height] md:duration-150 md:ease-out",
-        scrolled && "md:h-16",
+        scrolled && "h-16",
       )}>
 
         {/* ── Logo ── */}
