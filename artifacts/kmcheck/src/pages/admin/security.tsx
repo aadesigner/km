@@ -372,14 +372,14 @@ export default function AdminSecurity() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl min-w-0 w-full">
       <div>
         <h1 className="text-2xl font-extrabold">Security</h1>
         <p className="text-muted-foreground mt-1">Login thresholds, rate limits, and live monitoring</p>
       </div>
 
       <Tabs defaultValue="thresholds">
-        <TabsList className="w-full grid grid-cols-6 h-auto">
+        <TabsList className="w-full h-auto gap-1 p-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="thresholds" className="text-xs py-2">Thresholds</TabsTrigger>
           <TabsTrigger value="ratelimits" className="text-xs py-2">Rate Limits</TabsTrigger>
           <TabsTrigger value="recaptcha" className="text-xs py-2">reCAPTCHA</TabsTrigger>
@@ -508,22 +508,23 @@ export default function AdminSecurity() {
               <CardDescription>Deny all public API access from this IP (login, VIN, checkout).</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 min-w-0">
                 <Input
                   placeholder="203.0.113.10"
                   value={newIp}
                   onChange={(e) => setNewIp(e.target.value)}
-                  className="font-mono max-w-[220px]"
+                  className="font-mono w-full sm:max-w-[220px] min-w-0"
                 />
                 <Input
                   placeholder="Reason (optional)"
                   value={newIpReason}
                   onChange={(e) => setNewIpReason(e.target.value)}
-                  className="flex-1 min-w-[160px]"
+                  className="flex-1 min-w-0 w-full sm:min-w-[160px]"
                 />
                 <Button
                   disabled={blockSaving || !newIp.trim()}
                   onClick={() => void addIpBlock(newIp.trim(), newIpReason.trim())}
+                  className="w-full sm:w-auto shrink-0"
                 >
                   Block IP
                 </Button>
@@ -597,23 +598,24 @@ export default function AdminSecurity() {
               <CardDescription>ISO 3166-1 alpha-2 code (e.g. RU, CN). Requires CDN country header or GeoIP.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 min-w-0">
                 <Input
                   placeholder="RU"
                   value={newCountry}
                   onChange={(e) => setNewCountry(e.target.value.toUpperCase())}
-                  className="font-mono max-w-[100px] uppercase"
+                  className="font-mono w-full sm:max-w-[100px] uppercase min-w-0"
                   maxLength={2}
                 />
                 <Input
                   placeholder="Reason (optional)"
                   value={newCountryReason}
                   onChange={(e) => setNewCountryReason(e.target.value)}
-                  className="flex-1 min-w-[160px]"
+                  className="flex-1 min-w-0 w-full sm:min-w-[160px]"
                 />
                 <Button
                   disabled={blockSaving || newCountry.trim().length !== 2}
                   onClick={() => void addCountryBlock()}
+                  className="w-full sm:w-auto shrink-0"
                 >
                   Block country
                 </Button>
@@ -859,8 +861,8 @@ export default function AdminSecurity() {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="relative flex-1 min-w-44">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end min-w-0">
+            <div className="relative flex-1 min-w-0 w-full sm:min-w-44">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search messages..."
@@ -870,7 +872,7 @@ export default function AdminSecurity() {
               />
             </div>
             <Select value={logLevel} onValueChange={(v) => { setLogLevel(v as "all" | AdminGetLogsLevel); setLogPage(1); }}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Level" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Level" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All levels</SelectItem>
                 <SelectItem value={AdminGetLogsLevel.info}>Info</SelectItem>
@@ -878,13 +880,13 @@ export default function AdminSecurity() {
                 <SelectItem value={AdminGetLogsLevel.error}>Error</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">From</span>
-              <Input type="date" className="w-[160px]" value={logFrom} onChange={(e) => { setLogFrom(e.target.value); setLogPage(1); }} />
+            <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+              <span className="text-sm text-muted-foreground whitespace-nowrap shrink-0">From</span>
+              <Input type="date" className="w-full sm:w-[160px] min-w-0" value={logFrom} onChange={(e) => { setLogFrom(e.target.value); setLogPage(1); }} />
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">To</span>
-              <Input type="date" className="w-[160px]" value={logTo} onChange={(e) => { setLogTo(e.target.value); setLogPage(1); }} />
+            <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+              <span className="text-sm text-muted-foreground whitespace-nowrap shrink-0">To</span>
+              <Input type="date" className="w-full sm:w-[160px] min-w-0" value={logTo} onChange={(e) => { setLogTo(e.target.value); setLogPage(1); }} />
             </div>
             {hasLogFilters && (
               <Button variant="ghost" size="sm" onClick={() => { setLogLevel("all"); setLogSearch(""); setLogFrom(""); setLogTo(""); setLogPage(1); }}>

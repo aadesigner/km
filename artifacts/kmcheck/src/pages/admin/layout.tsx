@@ -81,8 +81,10 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
   const isAdmin = user?.isAdmin === true;
   useAdminThemeDocumentSync(isLoaded && isSignedIn && isAdmin);
+  /** Hide revenue mood chip + atmosphere on pending VIN work pages. */
+  const isPendingVinPage = navPath.startsWith("/adminx/pending-vin-checks");
   const { mood, revenueToday, ready: moodReady } = useAdminRevenueMood(
-    isLoaded && isSignedIn && isAdmin,
+    isLoaded && isSignedIn && isAdmin && !isPendingVinPage,
   );
 
   const { data: pendingCount } = useQuery({
@@ -212,7 +214,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     <>
       <SEOHead title="Admin — kmcheck.com" description="kmcheck administration panel" lang="en" noIndex />
     <div
-      className="admin-shell flex min-h-screen"
+      className="admin-shell flex min-h-screen max-w-[100vw] overflow-x-clip"
       data-admin-theme={themeId}
     >
       <aside className="admin-sidebar hidden md:flex fixed inset-y-0 left-0 z-30 w-64 border-r border-border/60 flex-col">
@@ -271,8 +273,8 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="admin-main flex-1 overflow-auto pb-[4.5rem] md:pb-0">
-          <div className="p-3 sm:p-4 lg:p-6 max-w-[88rem] mx-auto md:pb-24">
+        <main className="admin-main flex-1 min-w-0 overflow-y-auto overflow-x-clip pb-[4.5rem] md:pb-0">
+          <div className="p-3 sm:p-4 lg:p-6 w-full min-w-0 max-w-[88rem] mx-auto md:pb-24">
             {children}
           </div>
         </main>

@@ -593,14 +593,14 @@ export default function Dashboard() {
             >
               <div className="rounded-2xl border bg-background shadow-sm overflow-hidden">
                 {/* Profile header */}
-                <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-6 flex items-center gap-5">
-                  <Avatar className="h-16 w-16 border-4 border-background shadow-md">
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 sm:px-6 py-5 sm:py-6 flex items-center gap-3 sm:gap-5 min-w-0">
+                  <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-4 border-background shadow-md shrink-0">
                     <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name || ""} />
                     <AvatarFallback className="text-xl"><User className="h-8 w-8" /></AvatarFallback>
                   </Avatar>
-                  <div className="space-y-0.5">
-                    <p className="text-xl font-bold leading-tight">{user?.name || "User"}</p>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <p className="text-lg sm:text-xl font-bold leading-tight truncate">{user?.name || "User"}</p>
+                    <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                     {user?.createdAt && (
                       <p className="text-xs text-muted-foreground">
                         {t("member_since")}{" "}
@@ -625,9 +625,9 @@ export default function Dashboard() {
 
                 {/* Profile: country + phone */}
                 <div className={cn(
-                  "px-5 sm:px-6 py-5 border-t",
+                  "px-4 sm:px-6 py-5 border-t min-w-0",
                 )}>
-                  <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5 space-y-5">
+                  <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5 space-y-5 min-w-0">
                     {(!user?.countryCode || !user?.phonePrefix || !user?.phoneNational) && (
                       <div
                         role="status"
@@ -762,7 +762,7 @@ export default function Dashboard() {
                           {t("account_phone_label")}
                         </p>
                         {formatPhoneDisplay(user?.phonePrefix, user?.phoneNational) ? (
-                          <span className="shrink-0 rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm tabular-nums">
+                          <span className="shrink-0 max-w-[55%] truncate rounded-full bg-background border border-border/70 px-2.5 py-1 text-[11px] font-medium shadow-sm tabular-nums">
                             {formatPhoneDisplay(user?.phonePrefix, user?.phoneNational)}
                           </span>
                         ) : (

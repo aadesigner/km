@@ -534,21 +534,21 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   }
 
   return (
-    <div className="space-y-4 md:space-y-5 lg:space-y-6 max-w-5xl">
-      <Panel className="overflow-hidden">
-        <div className="p-3.5 md:p-5">
+    <div className="space-y-4 md:space-y-5 lg:space-y-6 max-w-5xl min-w-0 w-full">
+      <Panel className="overflow-hidden min-w-0">
+        <div className="p-3.5 md:p-5 min-w-0">
           <Link href="/adminx/users">
             <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 mb-3 h-8 px-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Users
             </Button>
           </Link>
-          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 min-w-0">
             <div className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-lg md:text-xl font-bold ring-2 ring-primary/10">
               {userInitials(user)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate max-w-full">
                   {user.name || user.email}
                 </h1>
                 <Badge
@@ -666,12 +666,12 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   emptyLabel="Not set"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5" />
-                  Phone
+              <div className="space-y-1.5 min-w-0">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5 min-w-0">
+                  <Phone className="h-3.5 w-3.5 shrink-0" />
+                  <span className="shrink-0">Phone</span>
                   {formatPhoneDisplay(user.phonePrefix, user.phoneNational) && (
-                    <span className="ml-auto font-normal tabular-nums text-foreground">
+                    <span className="ml-auto font-normal tabular-nums text-foreground truncate min-w-0">
                       {formatPhoneDisplay(user.phonePrefix, user.phoneNational)}
                     </span>
                   )}

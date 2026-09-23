@@ -41,10 +41,10 @@ export function AdminVinSaveBar({
   return (
     <div
       className={cn(
-        // Offset above admin mobile bottom nav (layout uses ~4.5rem fixed bar)
-        "sticky bottom-[4.5rem] md:bottom-0 z-40 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 mt-6",
+        // Match admin-main padding (p-3 / sm:p-4 / lg:p-6); offset above mobile bottom nav
+        "sticky bottom-[4.5rem] md:bottom-0 z-40 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 py-3 mt-6",
         "border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
-        "flex flex-col sm:flex-row sm:items-center gap-3",
+        "flex flex-col sm:flex-row sm:items-center gap-3 max-w-[100vw]",
         className,
       )}
     >

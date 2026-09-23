@@ -61,7 +61,7 @@ export function KoreanWonAmount({
     <span className={cn("tabular-nums inline-flex items-baseline gap-1 flex-wrap", className)}>
       <span className={cn("font-semibold", usdClassName)}>{usd}</span>
       <span className={cn("text-muted-foreground/50 font-normal text-[0.92em]", wonClassName)}>
-        (₩{resolvedKrw.toLocaleString()})
+        (₩{Math.round(resolvedKrw).toLocaleString()})
       </span>
     </span>
   );

@@ -61,8 +61,8 @@ export default function AdminLogs() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="relative flex-1 min-w-48">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end min-w-0">
+        <div className="relative flex-1 min-w-0 w-full sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search messages..."
@@ -76,7 +76,7 @@ export default function AdminLogs() {
           value={level}
           onValueChange={(v) => { setLevel(v as "all" | AdminGetLogsLevel); setPage(1); }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue placeholder="Level" />
           </SelectTrigger>
           <SelectContent>
@@ -87,21 +87,21 @@ export default function AdminLogs() {
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">From</span>
+        <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+          <span className="text-sm text-muted-foreground whitespace-nowrap shrink-0">From</span>
           <Input
             type="date"
-            className="w-[160px]"
+            className="w-full sm:w-[160px] min-w-0"
             value={from}
             onChange={(e) => { setFrom(e.target.value); setPage(1); }}
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">To</span>
+        <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+          <span className="text-sm text-muted-foreground whitespace-nowrap shrink-0">To</span>
           <Input
             type="date"
-            className="w-[160px]"
+            className="w-full sm:w-[160px] min-w-0"
             value={to}
             onChange={(e) => { setTo(e.target.value); setPage(1); }}
           />

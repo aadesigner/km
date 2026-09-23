@@ -26,15 +26,15 @@ function cleanStr(v: string | null | undefined): string | null {
 }
 
 function formatUsd(amount: number): string {
-  return `$${amount.toLocaleString()}`;
+  return `$${Math.round(amount).toLocaleString()}`;
 }
 
-function MetaChip({ label, value }: { label: string; value: string }) {
+function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <span className="text-[11px] text-muted-foreground">
+    <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug">
       <span className="text-muted-foreground/70">{label}: </span>
-      <span className="text-foreground/85">{value}</span>
-    </span>
+      <span className="text-foreground/90">{value}</span>
+    </p>
   );
 }
 
@@ -77,14 +77,13 @@ function AuctionLotCard({
   const hasDetails = !!(cond || primaryDmg || secondaryDmg || titleLabel || hasBids || locationStr);
 
   return (
-    <div className="rounded-lg border border-border/50">
+    <div className="rounded-lg border border-border/60">
       <button
         type="button"
         onClick={() => hasDetails && setOpen((v) => !v)}
         className={cn(
-          "w-full text-left px-3.5 py-3 sm:px-4 transition-colors",
-          hasDetails && "cursor-pointer hover:bg-muted/25",
-          open && "bg-muted/15",
+          "w-full text-left px-3.5 py-3 sm:px-4",
+          hasDetails && "cursor-pointer hover:bg-muted/20",
         )}
         aria-expanded={hasDetails ? open : undefined}
       >
@@ -95,37 +94,35 @@ function AuctionLotCard({
                 {t("auction_record_n")} #{lotNumber}
               </p>
               {isLatest ? (
-                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-medium">
+                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium">
                   {t("latest")}
                 </Badge>
               ) : null}
               {status ? (
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  · {status}
-                </span>
+                <span className="text-[10px] text-muted-foreground">· {status}</span>
               ) : null}
             </div>
             {displayDate ? (
               <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">{displayDate}</p>
             ) : null}
             {locationStr && !open ? (
-              <p className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+              <p className="mt-1 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
                 <span className="truncate">{locationStr}</span>
               </p>
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex shrink-0 items-center gap-2">
             {entry.finalPrice != null ? (
-              <p className="text-sm font-semibold tabular-nums text-foreground">
+              <p className="text-sm font-semibold tabular-nums text-primary">
                 {formatUsd(entry.finalPrice)}
               </p>
             ) : null}
             {hasDetails ? (
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 text-muted-foreground/70 transition-transform duration-200",
+                  "h-4 w-4 text-muted-foreground/60 transition-transform duration-200",
                   open && "rotate-180",
                 )}
                 aria-hidden
@@ -136,25 +133,25 @@ function AuctionLotCard({
       </button>
 
       {open && hasDetails ? (
-        <div className="space-y-2.5 border-t border-border/40 px-3.5 py-3 sm:px-4">
+        <div className="space-y-2.5 border-t border-border/50 px-3.5 py-3 sm:px-4">
           {locationStr ? (
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5 leading-snug">
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground leading-snug">
               <MapPin className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
               {locationStr}
             </p>
           ) : null}
 
           {(cond || primaryDmg || secondaryDmg || titleLabel) ? (
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              {cond ? <MetaChip label={t("condition")} value={cond} /> : null}
-              {primaryDmg ? <MetaChip label={t("primary_damage")} value={primaryDmg} /> : null}
-              {secondaryDmg ? <MetaChip label={t("secondary_damage")} value={secondaryDmg} /> : null}
-              {titleLabel ? <MetaChip label={t("title_status")} value={titleLabel} /> : null}
+            <div className="space-y-1">
+              {cond ? <MetaRow label={t("condition")} value={cond} /> : null}
+              {primaryDmg ? <MetaRow label={t("primary_damage")} value={primaryDmg} /> : null}
+              {secondaryDmg ? <MetaRow label={t("secondary_damage")} value={secondaryDmg} /> : null}
+              {titleLabel ? <MetaRow label={t("title_status")} value={titleLabel} /> : null}
             </div>
           ) : null}
 
           {hasBids ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 pt-1">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 pt-0.5">
               {entry.openingBid != null ? (
                 <div>
                   <p className="text-[10px] text-muted-foreground">{t("auction_opening_bid")}</p>
@@ -169,8 +166,8 @@ function AuctionLotCard({
               ) : null}
               {entry.finalPrice != null ? (
                 <div>
-                  <p className="text-[10px] text-muted-foreground">{t("auction_final_price")}</p>
-                  <p className="text-sm font-semibold tabular-nums">{formatUsd(entry.finalPrice)}</p>
+                  <p className="text-[10px] font-medium text-primary">{t("auction_final_price")}</p>
+                  <p className="text-sm font-semibold tabular-nums text-primary">{formatUsd(entry.finalPrice)}</p>
                 </div>
               ) : null}
             </div>

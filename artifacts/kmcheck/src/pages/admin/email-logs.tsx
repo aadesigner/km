@@ -209,8 +209,8 @@ export default function AdminEmailLogs({
         </CardHeader>
       </Card>
 
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="relative flex-1 min-w-48">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end min-w-0">
+        <div className="relative flex-1 min-w-0 w-full sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search recipient…"
@@ -221,7 +221,7 @@ export default function AdminEmailLogs({
         </div>
 
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[180px] h-9">
+          <SelectTrigger className="w-full sm:w-[180px] h-9">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -233,7 +233,7 @@ export default function AdminEmailLogs({
         </Select>
 
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[130px] h-9">
+          <SelectTrigger className="w-full sm:w-[130px] h-9">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -243,13 +243,13 @@ export default function AdminEmailLogs({
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm text-muted-foreground">From</span>
-          <Input type="date" className="w-[150px] h-9" value={from} onChange={(e) => setFrom(e.target.value)} />
+        <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+          <span className="text-sm text-muted-foreground shrink-0">From</span>
+          <Input type="date" className="w-full sm:w-[150px] h-9 min-w-0" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm text-muted-foreground">To</span>
-          <Input type="date" className="w-[150px] h-9" value={to} onChange={(e) => setTo(e.target.value)} />
+        <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+          <span className="text-sm text-muted-foreground shrink-0">To</span>
+          <Input type="date" className="w-full sm:w-[150px] h-9 min-w-0" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
 
         {hasFilters && (

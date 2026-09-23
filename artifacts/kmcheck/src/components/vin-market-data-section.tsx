@@ -75,13 +75,20 @@ function MoneyValue({
 function Stat({
   label,
   children,
+  labelClassName,
 }: {
   label: string;
   children: ReactNode;
+  labelClassName?: string;
 }) {
   return (
     <div className="min-w-0 flex flex-col gap-0.5">
-      <span className="text-[10px] sm:text-[11px] text-muted-foreground leading-none truncate">
+      <span
+        className={cn(
+          "text-[10px] sm:text-[11px] text-muted-foreground leading-none truncate",
+          labelClassName,
+        )}
+      >
         {label}
       </span>
       <div className="min-w-0 leading-snug">{children}</div>
@@ -131,37 +138,46 @@ export function VinMarketDataSection({
   const stats = hasStats ? (
     <div
       className={cn(
-        "flex flex-wrap gap-x-5 gap-y-2.5",
+        "flex flex-wrap items-stretch gap-2.5 sm:gap-3",
         hasChart && "pt-3.5 border-t border-border/60",
       )}
     >
       {hasEstimate ? (
-        <Stat label={estLabel}>
-          <MoneyValue
-            amount={marketData.estimatedValue!}
-            currency={marketData.currency}
-            vehicleCountry={vehicleCountry}
-            krwPerUsd={krwPerUsd}
-            className="text-emerald-700 dark:text-emerald-400"
-          />
-        </Stat>
+        <div className="min-w-0 flex-1 basis-[8.5rem] rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
+          <Stat label={estLabel}>
+            <MoneyValue
+              amount={marketData.estimatedValue!}
+              currency={marketData.currency}
+              vehicleCountry={vehicleCountry}
+              krwPerUsd={krwPerUsd}
+            />
+          </Stat>
+        </div>
       ) : null}
       {hasAuction ? (
-        <Stat label={auctionLabel}>
-          <MoneyValue
-            amount={marketData.lastAuctionPrice!}
-            currency={marketData.currency}
-            vehicleCountry={vehicleCountry}
-            krwPerUsd={krwPerUsd}
-          />
-        </Stat>
+        <div className="min-w-0 flex-1 basis-[9.5rem] rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-3 py-2.5 dark:border-emerald-400/20 dark:bg-emerald-400/[0.08]">
+          <Stat
+            label={auctionLabel}
+            labelClassName="font-medium text-emerald-700 dark:text-emerald-400"
+          >
+            <MoneyValue
+              amount={marketData.lastAuctionPrice!}
+              currency={marketData.currency}
+              vehicleCountry={vehicleCountry}
+              krwPerUsd={krwPerUsd}
+              className="text-foreground"
+            />
+          </Stat>
+        </div>
       ) : null}
       {auctionDate ? (
-        <Stat label={dateLabel}>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            {auctionDate}
-          </span>
-        </Stat>
+        <div className="min-w-0 flex-1 basis-[8rem] rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
+          <Stat label={dateLabel}>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              {auctionDate}
+            </span>
+          </Stat>
+        </div>
       ) : null}
     </div>
   ) : null;

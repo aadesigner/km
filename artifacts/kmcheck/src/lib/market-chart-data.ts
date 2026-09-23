@@ -50,10 +50,13 @@ export function toMarketDisplayUsd(
     krwPerUsd?: number | null;
   },
 ): number {
-  if (!marketValuesAreKrw(opts.currency, opts.vehicleCountry, value)) return value;
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  if (!marketValuesAreKrw(opts.currency, opts.vehicleCountry, value)) {
+    return Math.round(value);
+  }
   const rate = resolveKrwPerUsd(opts.krwPerUsd);
   const usd = convertKrwToUsd(value, rate);
-  return usd > 0 ? Math.round(usd) : value;
+  return usd > 0 ? Math.round(usd) : Math.round(value);
 }
 
 export function buildMarketChartPoints(
@@ -117,9 +120,12 @@ export function formatMarketAuctionDate(
 }
 
 export function formatMarketCurrency(value: number, currency?: string | null): string {
-  const code = currency ?? "USD";
-  if (code === "USD") return `$${value.toLocaleString()}`;
-  return `${code} ${value.toLocaleString()}`;
+  const n = Math.round(Number.isFinite(value) ? value : 0);
+  const code = (currency ?? "USD").toUpperCase();
+  if (code === "USD" || code === "$") return `$${n.toLocaleString()}`;
+  if (code === "EUR" || code === "€") return `€${n.toLocaleString()}`;
+  if (code === "KRW" || code === "WON" || code === "₩") return `₩${n.toLocaleString()}`;
+  return `${code} ${n.toLocaleString()}`;
 }
 
 export function marketCurrencySymbol(currency?: string | null): string {

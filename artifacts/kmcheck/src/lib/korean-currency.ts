@@ -188,7 +188,7 @@ export function parseKrwFromText(text: string | null | undefined): number | null
 export function formatKoreanWonPlain(krw: number, krwPerUsd: number): string {
   const rate = krwPerUsd > 0 ? krwPerUsd : DEFAULT_KRW_PER_USD;
   const usd = convertKrwToUsd(krw, rate);
-  return `${formatUsdAmount(usd)} (₩${krw.toLocaleString()})`;
+  return `${formatUsdAmount(usd)} (₩${Math.round(krw).toLocaleString()})`;
 }
 
 /** @deprecated use formatKoreanWonPlain */

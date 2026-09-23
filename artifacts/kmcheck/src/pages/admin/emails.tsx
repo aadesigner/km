@@ -390,10 +390,10 @@ export default function AdminEmails() {
       </Card>
 
       <Tabs defaultValue="templates">
-        <TabsList>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="general">General &amp; Triggers</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
+        <TabsList className="w-full h-auto gap-1 p-1 grid grid-cols-1 sm:grid-cols-3">
+          <TabsTrigger value="templates" className="text-xs sm:text-sm">Templates</TabsTrigger>
+          <TabsTrigger value="general" className="text-xs sm:text-sm">General &amp; Triggers</TabsTrigger>
+          <TabsTrigger value="logs" className="text-xs sm:text-sm">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="mt-4 space-y-4">

@@ -295,7 +295,7 @@ export default function AdminCoupons() {
             <CardDescription>Redemptions from completed payments</CardDescription>
           </div>
           <Select value={String(statsDays)} onValueChange={(v) => setStatsDays(Number(v))}>
-            <SelectTrigger className="w-[140px] h-9">
+            <SelectTrigger className="w-full sm:w-[140px] h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

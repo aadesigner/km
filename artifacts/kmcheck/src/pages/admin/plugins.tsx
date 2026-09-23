@@ -252,7 +252,7 @@ export default function AdminPlugins() {
                       value={rule.language}
                       onValueChange={(v) => updateRule(ruleIndex, { language: v as GeoLanguageRuleForm["language"] })}
                     >
-                      <SelectTrigger className="w-[200px] h-9">
+                      <SelectTrigger className="w-full sm:w-[200px] h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

@@ -825,7 +825,7 @@ export default function VinResult({ params }: Props) {
     : null;
   const printLastAuction = marketData?.lastAuctionPrice != null
     ? [
-        `$${marketData.lastAuctionPrice.toLocaleString()}`,
+        `$${Math.round(marketData.lastAuctionPrice).toLocaleString()}`,
         marketData.lastAuctionDate
           ? formatMarketAuctionDate(marketData.lastAuctionDate, language, data?.year, data?.country)
           : null,

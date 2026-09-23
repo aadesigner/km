@@ -214,7 +214,7 @@ function FailedTxnCleanup() {
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-3">
         <Select value={String(purgeDays)} onValueChange={(v) => { setPurgeDays(Number(v)); setPurgeResult(null); }}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

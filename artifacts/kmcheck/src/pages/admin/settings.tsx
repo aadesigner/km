@@ -628,7 +628,7 @@ export default function AdminSettings() {
   };
 
   const settingsSkeleton = (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl min-w-0 w-full">
       <div>
         <h1 className="text-2xl font-extrabold">Settings</h1>
         <p className="text-muted-foreground mt-1">System configuration</p>
@@ -651,7 +651,7 @@ export default function AdminSettings() {
       message="Failed to load settings"
       skeleton={settingsSkeleton}
     >
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl min-w-0 w-full min-w-0 w-full">
       <div>
         <h1 className="text-2xl font-extrabold">Settings</h1>
         <p className="text-muted-foreground mt-1">System configuration</p>

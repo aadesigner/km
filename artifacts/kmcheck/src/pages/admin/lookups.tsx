@@ -260,8 +260,8 @@ export default function AdminLookups() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[180px] max-w-sm">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 min-w-0">
+        <div className="relative flex-1 min-w-0 w-full sm:min-w-[180px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Filter by VIN..."
@@ -275,7 +275,7 @@ export default function AdminLookups() {
           value={statusFilter || "all"}
           onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -292,7 +292,7 @@ export default function AdminLookups() {
           value={fromCacheFilter === "" ? "all" : fromCacheFilter}
           onValueChange={(v) => { setFromCacheFilter(v === "all" ? "" : v); setPage(1); }}
         >
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-full sm:w-[150px]">
             <SelectValue placeholder="Source" />
           </SelectTrigger>
           <SelectContent>
@@ -306,7 +306,7 @@ export default function AdminLookups() {
           value={providerFilter || "all"}
           onValueChange={(v) => { setProviderFilter(v === "all" ? "" : v); setPage(1); }}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Provider" />
           </SelectTrigger>
           <SelectContent>
