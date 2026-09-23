@@ -752,6 +752,10 @@ html.admin-theme-active .admin-sidebar::after {
   z-index: 0;
 }
 
+html.admin-theme-active[data-admin-theme="studio"] .admin-sidebar::after {
+  display: none;
+}
+
 html.admin-theme-active .admin-sidebar > *:not(.admin-sidebar-close) {
   position: relative;
   z-index: 1;
@@ -774,7 +778,42 @@ html.admin-theme-active .admin-sidebar .admin-nav-group-label {
 }
 
 html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-nav-group-label {
-  color: hsl(190 40% 88% / 0.55);
+  color: hsl(142 30% 88% / 0.55);
+}
+
+/* Orbit rail is always dark — never inherit light-shell foreground/muted for labels */
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .text-foreground,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar [class*="text-foreground"] {
+  color: hsl(var(--sidebar-foreground) / 0.92) !important;
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .hover\:text-foreground:hover {
+  color: hsl(var(--sidebar-foreground)) !important;
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .hover\:bg-muted:hover {
+  background: hsl(140 30% 100% / 0.07) !important;
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip {
+  border-color: hsl(142 40% 70% / 0.22);
+  background:
+    linear-gradient(145deg, hsl(160 20% 14% / 0.95), hsl(160 22% 10% / 0.92));
+  box-shadow:
+    0 1px 0 hsl(142 40% 70% / 0.08) inset,
+    0 8px 24px hsl(0 0% 0% / 0.25);
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__title {
+  color: hsl(142 55% 62%);
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__amount {
+  color: hsl(var(--sidebar-foreground));
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__sub {
+  color: hsl(var(--sidebar-foreground) / 0.62);
 }
 
 html.admin-theme-active .admin-sidebar .admin-nav-link:not(.admin-nav-link--active) {
@@ -873,7 +912,7 @@ html.admin-theme-active[data-admin-theme="studio"] .admin-shell {
   --admin-sidebar-border: hsl(214 12% 82%);
   --admin-sidebar-shadow: 6px 0 28px hsl(215 20% 50% / 0.04);
   --admin-sidebar-header-bg: linear-gradient(180deg, hsl(142 40% 96% / 0.9), transparent);
-  --admin-sidebar-accent-line: linear-gradient(180deg, hsl(142 50% 55% / 0.15), hsl(142 55% 38% / 0.55), hsl(142 50% 55% / 0.15));
+  --admin-sidebar-accent-line: none;
   --admin-nav-active-bg: hsl(142 40% 95%);
   --admin-nav-active-fg: hsl(142 45% 28%);
   --admin-nav-active-shadow: inset 3px 0 0 hsl(142 55% 42%);
@@ -927,127 +966,127 @@ html.dark.admin-theme-active[data-admin-theme="studio"] .admin-shell {
   --admin-nav-hover-bg: hsl(220 10% 14%);
 }
 
-/* ========== ORBIT — glass ink rail · cyan aurora ========== */
+/* ========== ORBIT — glass ink rail · green aurora ========== */
 html.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   --admin-font-sans: "Outfit", "Inter Variable", system-ui, sans-serif;
   --admin-font-display: "Outfit", "Inter Variable", system-ui, sans-serif;
   --admin-tracking: -0.015em;
   --admin-card-radius: 1rem;
   --admin-nav-radius: 0.85rem;
-  --background: 210 28% 97%;
+  --background: 150 18% 97%;
   --foreground: 222 28% 12%;
-  --border: 210 18% 88%;
+  --border: 150 12% 88%;
   --card: 0 0% 100%;
   --card-foreground: 222 28% 12%;
-  --card-border: 210 20% 90%;
-  --muted: 210 22% 94%;
+  --card-border: 150 14% 90%;
+  --muted: 150 14% 94%;
   --muted-foreground: 215 14% 42%;
-  --secondary: 210 22% 94%;
+  --secondary: 150 14% 94%;
   --secondary-foreground: 222 20% 22%;
   --popover: 0 0% 100%;
   --popover-foreground: 222 28% 12%;
-  --popover-border: 210 18% 88%;
-  --input: 210 16% 84%;
-  --primary: 187 92% 38%;
+  --popover-border: 150 12% 88%;
+  --input: 150 10% 84%;
+  --primary: 142 55% 38%;
   --primary-foreground: 0 0% 100%;
-  --accent: 187 55% 94%;
-  --accent-foreground: 187 70% 24%;
-  --ring: 187 92% 38%;
-  --sidebar: 222 32% 8%;
-  --sidebar-foreground: 200 30% 92%;
-  --sidebar-border: 210 28% 16%;
-  --sidebar-primary: 187 92% 48%;
-  --sidebar-primary-foreground: 222 40% 6%;
-  --sidebar-accent: 210 28% 14%;
-  --sidebar-accent-foreground: 187 80% 72%;
-  --sidebar-ring: 187 92% 48%;
-  --chart-1: 187 92% 38%;
+  --accent: 142 40% 94%;
+  --accent-foreground: 142 45% 24%;
+  --ring: 142 55% 38%;
+  --sidebar: 160 22% 8%;
+  --sidebar-foreground: 140 20% 92%;
+  --sidebar-border: 150 18% 16%;
+  --sidebar-primary: 142 55% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 150 18% 14%;
+  --sidebar-accent-foreground: 142 50% 72%;
+  --sidebar-ring: 142 55% 48%;
+  --chart-1: 142 55% 38%;
 }
 
 html.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   --admin-card-shadow:
-    0 0 0 1px hsl(210 30% 70% / 0.08),
-    0 8px 28px hsl(210 40% 30% / 0.06),
+    0 0 0 1px hsl(150 20% 70% / 0.08),
+    0 8px 28px hsl(160 30% 30% / 0.06),
     0 1px 0 hsl(0 0% 100% / 0.8) inset;
   --admin-sidebar-bg:
-    radial-gradient(120% 80% at 0% 0%, hsl(187 90% 45% / 0.22), transparent 52%),
-    radial-gradient(90% 60% at 100% 100%, hsl(250 60% 40% / 0.12), transparent 55%),
-    linear-gradient(165deg, hsl(222 36% 10%) 0%, hsl(222 40% 6%) 48%, hsl(210 36% 7%) 100%);
-  --admin-sidebar-border: hsl(190 40% 70% / 0.18);
+    radial-gradient(120% 80% at 0% 0%, hsl(142 70% 42% / 0.28), transparent 52%),
+    radial-gradient(90% 60% at 100% 100%, hsl(160 40% 28% / 0.2), transparent 55%),
+    linear-gradient(165deg, hsl(160 24% 10%) 0%, hsl(160 28% 6%) 48%, hsl(150 24% 7%) 100%);
+  --admin-sidebar-border: hsl(142 30% 70% / 0.18);
   --admin-sidebar-blur: blur(18px) saturate(1.25);
   --admin-sidebar-shadow:
-    12px 0 40px hsl(222 40% 8% / 0.35),
-    inset -1px 0 0 hsl(187 80% 60% / 0.12);
+    12px 0 40px hsl(160 30% 8% / 0.35),
+    inset -1px 0 0 hsl(142 60% 50% / 0.14);
   --admin-sidebar-header-bg:
-    linear-gradient(180deg, hsl(187 80% 50% / 0.18), transparent 72%);
+    linear-gradient(180deg, hsl(142 55% 42% / 0.22), transparent 72%);
   --admin-sidebar-accent-line:
-    linear-gradient(180deg, transparent 8%, hsl(187 95% 55% / 0.85) 42%, hsl(200 90% 60% / 0.55) 68%, transparent 92%);
-  --admin-nav-active-bg: linear-gradient(110deg, hsl(187 70% 42% / 0.28), hsl(210 40% 30% / 0.35));
-  --admin-nav-active-fg: hsl(187 95% 78%);
+    linear-gradient(180deg, transparent 8%, hsl(142 70% 48% / 0.9) 42%, hsl(150 55% 42% / 0.5) 68%, transparent 92%);
+  --admin-nav-active-bg: linear-gradient(110deg, hsl(142 55% 38% / 0.32), hsl(160 30% 28% / 0.4));
+  --admin-nav-active-fg: hsl(142 60% 78%);
   --admin-nav-active-shadow:
-    inset 3px 0 0 hsl(187 95% 55%),
-    0 0 24px hsl(187 90% 50% / 0.18);
-  --admin-nav-hover-bg: hsl(210 30% 100% / 0.06);
+    inset 3px 0 0 hsl(142 65% 48%),
+    0 0 24px hsl(142 60% 42% / 0.2);
+  --admin-nav-hover-bg: hsl(140 30% 100% / 0.06);
   --admin-shell-bg:
-    radial-gradient(ellipse 70% 50% at 100% -10%, hsl(187 80% 70% / 0.14), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 0% 100%, hsl(210 60% 70% / 0.1), transparent 50%),
-    linear-gradient(180deg, hsl(210 30% 98%) 0%, hsl(210 24% 96%) 100%);
+    radial-gradient(ellipse 70% 50% at 100% -10%, hsl(142 55% 55% / 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, hsl(150 40% 60% / 0.08), transparent 50%),
+    linear-gradient(180deg, hsl(150 20% 98%) 0%, hsl(150 16% 96%) 100%);
   --admin-main-glow:
-    radial-gradient(ellipse 45% 35% at 85% 8%, hsl(187 90% 55% / 0.1), transparent 60%);
+    radial-gradient(ellipse 45% 35% at 85% 8%, hsl(142 55% 48% / 0.1), transparent 60%);
 }
 
 html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
-  --background: 222 28% 6%;
-  --foreground: 200 20% 94%;
-  --border: 210 18% 16%;
-  --card: 222 24% 9%;
-  --card-foreground: 200 20% 94%;
-  --card-border: 210 18% 16%;
-  --muted: 222 18% 12%;
-  --muted-foreground: 210 12% 58%;
-  --secondary: 222 18% 12%;
-  --secondary-foreground: 200 16% 88%;
-  --popover: 222 24% 9%;
-  --popover-foreground: 200 20% 94%;
-  --popover-border: 210 18% 16%;
-  --input: 210 16% 22%;
-  --primary: 187 90% 48%;
-  --primary-foreground: 222 40% 6%;
-  --accent: 187 40% 14%;
-  --accent-foreground: 187 80% 72%;
-  --ring: 187 90% 48%;
-  --sidebar: 222 32% 5%;
-  --sidebar-foreground: 200 28% 92%;
-  --sidebar-border: 210 24% 14%;
-  --sidebar-primary: 187 90% 50%;
-  --sidebar-primary-foreground: 222 40% 6%;
-  --sidebar-accent: 210 24% 12%;
-  --sidebar-accent-foreground: 187 80% 72%;
-  --sidebar-ring: 187 90% 50%;
-  --chart-1: 187 90% 48%;
+  --background: 160 20% 6%;
+  --foreground: 140 16% 94%;
+  --border: 150 12% 16%;
+  --card: 160 18% 9%;
+  --card-foreground: 140 16% 94%;
+  --card-border: 150 12% 16%;
+  --muted: 160 14% 12%;
+  --muted-foreground: 150 10% 58%;
+  --secondary: 160 14% 12%;
+  --secondary-foreground: 140 12% 88%;
+  --popover: 160 18% 9%;
+  --popover-foreground: 140 16% 94%;
+  --popover-border: 150 12% 16%;
+  --input: 150 12% 22%;
+  --primary: 142 52% 46%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 142 28% 14%;
+  --accent-foreground: 142 50% 72%;
+  --ring: 142 52% 46%;
+  --sidebar: 160 22% 5%;
+  --sidebar-foreground: 140 18% 92%;
+  --sidebar-border: 150 14% 14%;
+  --sidebar-primary: 142 52% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 150 14% 12%;
+  --sidebar-accent-foreground: 142 50% 72%;
+  --sidebar-ring: 142 52% 48%;
+  --chart-1: 142 52% 46%;
 }
 
 html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   --admin-card-bg: hsl(var(--card));
-  --admin-card-border: hsl(190 30% 70% / 0.1);
+  --admin-card-border: hsl(142 25% 70% / 0.1);
   --admin-card-shadow:
-    0 0 0 1px hsl(187 60% 50% / 0.06),
+    0 0 0 1px hsl(142 50% 45% / 0.06),
     0 12px 36px hsl(0 0% 0% / 0.4);
   --admin-sidebar-bg:
-    radial-gradient(110% 70% at 0% 0%, hsl(187 90% 45% / 0.2), transparent 50%),
-    radial-gradient(80% 50% at 100% 110%, hsl(250 50% 35% / 0.14), transparent 50%),
-    linear-gradient(165deg, hsl(222 36% 8%) 0%, hsl(222 40% 4%) 100%);
-  --admin-sidebar-border: hsl(190 40% 70% / 0.14);
+    radial-gradient(110% 70% at 0% 0%, hsl(142 60% 40% / 0.24), transparent 50%),
+    radial-gradient(80% 50% at 100% 110%, hsl(160 35% 22% / 0.18), transparent 50%),
+    linear-gradient(165deg, hsl(160 24% 8%) 0%, hsl(160 28% 4%) 100%);
+  --admin-sidebar-border: hsl(142 35% 78% / 0.28);
   --admin-sidebar-header-bg:
-    linear-gradient(180deg, hsl(187 80% 45% / 0.16), transparent 70%);
+    linear-gradient(180deg, hsl(142 50% 40% / 0.18), transparent 70%);
   --admin-shell-bg:
-    radial-gradient(ellipse 55% 40% at 100% 0%, hsl(187 70% 40% / 0.12), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 100% 0%, hsl(142 50% 36% / 0.12), transparent 55%),
     hsl(var(--background));
-  --admin-nav-active-bg: linear-gradient(110deg, hsl(187 70% 40% / 0.32), hsl(210 40% 22% / 0.4));
-  --admin-nav-active-fg: hsl(187 95% 78%);
-  --admin-nav-hover-bg: hsl(210 30% 100% / 0.05);
+  --admin-nav-active-bg: linear-gradient(110deg, hsl(142 55% 38% / 0.34), hsl(160 30% 20% / 0.42));
+  --admin-nav-active-fg: hsl(142 55% 78%);
+  --admin-nav-hover-bg: hsl(140 30% 100% / 0.05);
   --admin-main-glow:
-    radial-gradient(ellipse 40% 30% at 90% 5%, hsl(187 80% 45% / 0.1), transparent 55%);
+    radial-gradient(ellipse 40% 30% at 90% 5%, hsl(142 55% 40% / 0.1), transparent 55%);
 }
 
 /* ========== Revenue mood chip (floating — not sidebar) ========== */
@@ -1084,6 +1123,40 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   text-transform: uppercase;
   color: hsl(var(--primary));
   line-height: 1.1;
+}
+
+/* Dark UI: mood primaries (Warm-up etc.) are too dark as raw title color */
+html.dark .admin-mood-chip__title {
+  color: color-mix(in oklab, hsl(var(--primary)) 55%, white);
+}
+
+html.dark .admin-mood-chip__sub {
+  color: hsl(var(--muted-foreground) / 0.95);
+}
+
+html.dark .admin-mood-chip {
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.06) inset,
+    0 10px 28px hsl(0 0% 0% / 0.35);
+}
+
+/* Orbit dark main pane — keep Warm-up chip readable on ink cards */
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip {
+  border-color: hsl(142 40% 55% / 0.28);
+  background:
+    linear-gradient(145deg, hsl(160 18% 12% / 0.96), hsl(160 20% 9% / 0.94));
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__title {
+  color: hsl(142 58% 64%);
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__amount {
+  color: hsl(140 16% 94%);
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__sub {
+  color: hsl(140 12% 72%);
 }
 
 .admin-mood-chip__amount {

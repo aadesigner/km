@@ -24,8 +24,8 @@ export const ADMIN_THEMES: AdminThemeMeta[] = [
   {
     id: "orbit",
     name: "Orbit",
-    vibe: "Glass ink · cyan aurora",
-    swatches: ["#22d3ee", "#0a0f1a", "#e8f7ff"],
+    vibe: "Glass ink · green aurora",
+    swatches: ["#22c55e", "#0a1210", "#eef8f1"],
     googleFonts: ["Outfit:wght@400;500;600;700"],
   },
 ];

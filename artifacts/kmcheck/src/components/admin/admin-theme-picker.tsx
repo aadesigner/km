@@ -36,7 +36,7 @@ export function AdminThemePicker({
         >
           <Palette className="h-4 w-4 shrink-0" />
           {!toolbar ? (
-            <span className="flex-1 min-w-0 text-left truncate text-foreground/90">{theme.name}</span>
+            <span className="flex-1 min-w-0 text-left truncate">{theme.name}</span>
           ) : null}
         </button>
       </DropdownMenuTrigger>
