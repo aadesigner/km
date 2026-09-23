@@ -138,6 +138,27 @@ describe("history comment / location split", () => {
     expect(description.toLowerCase()).not.toMatch(/^source/);
   });
 
+  it("keeps dealer card junk out of title/description; Source → location", () => {
+    const rest =
+      "11 mi Doral Volkswagen 305-477-6666 doralvw.com/ 4.5 / 5.0 230 Customer Favorites Vehicle serviced";
+    expect(extractHistoryLocation(rest)).toMatch(/Doral Volkswagen/i);
+    expect(extractHistoryLocation(rest)).not.toMatch(/305|doralvw|4\.5|Favorites/i);
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus).toMatch(/Vehicle serviced/i);
+    expect(titleStatus).not.toMatch(/Doral|305|doralvw/i);
+    expect(description).not.toMatch(/doralvw|fbclid|Customer Favorites|305/i);
+  });
+
+  it("strips tirecraft url junk from Gc Tire service row", () => {
+    const rest =
+      "164,714 mi Gc Tire And Auto Brampton, ON 905-456-2610 tirecraft.com/tirecraft-brampton/? fbclid=iwar2vzrsznpmisjfx Vehicle serviced";
+    expect(extractHistoryLocation(rest)).toMatch(/Gc Tire/i);
+    expect(extractHistoryLocation(rest)).not.toMatch(/tirecraft|fbclid|905/i);
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus).toMatch(/Vehicle serviced/i);
+    expect(description).not.toMatch(/tirecraft|fbclid|456/i);
+  });
+
   it("strips mileage bleed from model names", () => {
     expect(cleanModelName("Tiguan S 164", "Volkswagen")).toBe("Tiguan S");
     expect(cleanModelName("Volkswagen Tiguan S 164", "Volkswagen")).toBe("Tiguan S");

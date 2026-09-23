@@ -398,15 +398,36 @@ function parseTitleStatus(scope: string): string {
   return "";
 }
 
+/** Strip phones, URLs, star ratings, fbclid — dealer-card junk from Carfax Source column. */
+export function stripDealerCardJunk(raw: string): string {
+  let s = raw.replace(/\s+/g, " ").trim();
+  s = s.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, " ");
+  s = s.replace(/\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, " ");
+  s = s.replace(/\b[\w.-]+\.(?:com|ca|net|org|io)(?:\/[\w.?=&%/-]*)?/gi, " ");
+  s = s.replace(/\bfbclid=\S+/gi, " ");
+  s = s.replace(/\b\d+(?:\.\d+)?\s*\/\s*\d+(?:\.\d+)?\b/g, " ");
+  s = s.replace(/\b\d+\s+Customer\s+Favorites?\b/gi, " ");
+  s = s.replace(/\bCustomer\s+Favorites?\b/gi, " ");
+  s = s.replace(/\bTitle\s*#\s*[A-Z0-9-]+\b/gi, " ");
+  s = s.replace(/[/?&=]+/g, " ");
+  s = s.replace(/\s{2,}/g, " ").trim();
+  return s;
+}
+
 /** Strip dates, mileages, and location noise from notes — keep service / event info. */
 export function cleanHistoryNote(raw: string): string {
-  let s = raw.replace(/\s+/g, " ").trim();
+  let s = stripDealerCardJunk(raw);
   s = s.replace(new RegExp(DATE_TOKEN, "gi"), " ");
   s = s.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)\b/gi, " ");
+  s = s.replace(/\bnot\s+reported\b/gi, " ");
   s = s.replace(/\bSource\s*[:#]?\s*[^|;\n]+/gi, " ");
   s = s.replace(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*(?:[A-Z]{2}|Ontario|Quebec|Canada)\b/g, " ");
+  s = s.replace(
+    /\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan|Canada)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?)\b/gi,
+    " ",
+  );
   s = s.replace(/\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan|Canada)\b/gi, " ");
-  s = s.replace(/\b(?:odometer|mileage)\s*(?:reading)?\b/gi, " ");
+  s = s.replace(/\b(?:Florida|Motor Vehicle Dept\.?|DMV|NICB|Vehicle Manufacturer|Vehicle Importer|Service Facility)\b/gi, " ");
   s = s.replace(/\s*[-–—|:]\s*/g, " · ");
   s = s.replace(/(?:\s*·\s*)+/g, " · ").replace(/^\s*·\s*|\s*·\s*$/g, "");
   s = s.replace(/\s{2,}/g, " ").trim();
@@ -414,37 +435,84 @@ export function cleanHistoryNote(raw: string): string {
   return s.slice(0, 200);
 }
 
-/** PDF "Source" / place → our location field (never description). */
+/** Known Carfax Comments-column starters (after Source). */
+const CARFAX_COMMENT_START =
+  /\b(Vehicle\s+serviced|Vehicle\s+purchase\s+reported|Vehicle\s+sold|Vehicle\s+manufactured|Vehicle\s+exported|Vehicle\s+declared|Title\s+issued|Title\s+or\s+registration\s+issued|Registration\s+issued|Odometer\s+reading\s+reported|Odometer\s+reported|Passed\s+Ontario|Passed\s+safety|New\s+owner\s+reported|First\s+owner\s+reported|Pre-delivery\s+inspection|Maintenance\s+inspection|Oil\s+and\s+filter|Brake\s+(?:pads|rotor|caliper)|Undercoating|Registered\s+as|Titled\s+or\s+registered|Four\s+tires|Tire\(s\)|Spark\s+plug|Ignition\s+coil|Water\s+pump|Thermostat|Engine\s+timing|Serpentine\s+belt|Cabin\s+air|Brakes\s+checked|Brakes\s+serviced)\b/i;
+
+/** PDF Source column → location (never description). */
 export function extractHistoryLocation(rest: string): string {
-  const src = rest.match(/\bSource\s*[:#]?\s*([^|;\n]{2,90})/i);
-  if (src?.[1]) {
-    return src[1]
-      .replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b/gi, "")
+  const labeled = rest.match(/\bSource\s*[:#]?\s*([^|;\n]{2,90})/i);
+  if (labeled?.[1]) {
+    return stripDealerCardJunk(labeled[1]).slice(0, 80);
+  }
+
+  // Carfax: after mileage, Source runs until a known Comments starter
+  let afterOdo = rest.replace(
+    /^\s*(?:[\d,]{1,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)|not\s+reported)\b\s*/i,
+    "",
+  );
+  const cm = afterOdo.match(CARFAX_COMMENT_START);
+  const sourceBlob =
+    cm && cm.index != null && cm.index > 0
+      ? afterOdo.slice(0, cm.index)
+      : "";
+
+  if (sourceBlob) {
+    const cleaned = stripDealerCardJunk(sourceBlob)
       .replace(new RegExp(DATE_TOKEN, "gi"), "")
       .replace(/\s{2,}/g, " ")
-      .trim()
-      .slice(0, 80);
+      .trim();
+    if (cleaned.length >= 3) return cleaned.slice(0, 80);
   }
+
   const cityProv = rest.match(
     /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*(ON|QC|BC|AB|MB|SK|NS|NB|NL|PE|YT|NT|NU|[A-Z]{2})\b/,
   );
   if (cityProv) return `${cityProv[1]}, ${cityProv[2]}`;
   const ontarioDept = rest.match(
-    /\b((?:Ontario|Quebec|Alberta|British Columbia)[^,\n]{0,50}(?:Motor Vehicle|Ministry|DMV|Registry|Service|Dealer)[^,\n]{0,40})/i,
+    /\b((?:Ontario|Quebec|Alberta|British Columbia)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?))/i,
   );
   if (ontarioDept?.[1]) return ontarioDept[1].trim().slice(0, 80);
+  if (/\bFlorida\s+Motor Vehicle Dept/i.test(rest)) return "Florida Motor Vehicle Dept.";
   if (/\bOntario\b/i.test(rest)) return "Ontario";
   return "";
 }
 
 /**
- * Bold/event title → titleStatus; remaining detail → description.
- * Location never goes into description.
+ * Comments column → titleStatus (event) + description (detail bullets).
+ * Dealer/source never goes into these fields.
  */
 export function splitEventComment(rest: string): { titleStatus: string; description: string } {
-  const cleaned = cleanHistoryNote(rest);
-  if (!cleaned) return { titleStatus: "", description: "" };
-  const parts = cleaned.split(/\s*·\s*|\s*\/\s+/).map((p) => p.trim()).filter(Boolean);
+  let afterOdo = rest.replace(
+    /^\s*(?:[\d,]{1,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)|not\s+reported)\b\s*/i,
+    "",
+  );
+  const cm = afterOdo.match(CARFAX_COMMENT_START);
+  let comments = cm && cm.index != null ? afterOdo.slice(cm.index) : afterOdo;
+
+  // Drop leading source leftovers if comment starter wasn't found
+  comments = stripDealerCardJunk(comments);
+  comments = cleanHistoryNote(comments);
+  if (!comments) return { titleStatus: "", description: "" };
+
+  // Prefer first meaningful event phrase as title
+  const eventHit = comments.match(CARFAX_COMMENT_START);
+  if (eventHit && eventHit.index != null && eventHit.index < 40) {
+    const title = (eventHit[1] ?? eventHit[0] ?? "").replace(/\s+/g, " ").trim();
+    let restDesc = comments.slice((eventHit.index ?? 0) + (eventHit[0]?.length ?? 0)).trim();
+    restDesc = restDesc.replace(/^[\s·\-–—|,]+/, "").trim();
+    // Bullet fragments often joined with ·
+    const bullets = restDesc
+      .split(/\s*·\s*/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 2 && !/^[\d.]+$/.test(p));
+    return {
+      titleStatus: title.slice(0, 80),
+      description: bullets.join(" · ").slice(0, 200),
+    };
+  }
+
+  const parts = comments.split(/\s*·\s*/).map((p) => p.trim()).filter(Boolean);
   if (parts.length === 0) return { titleStatus: "", description: "" };
   if (parts.length === 1) return { titleStatus: parts[0]!.slice(0, 80), description: "" };
   return {
@@ -504,11 +572,29 @@ export function extractHistoryOdometerKm(
 }
 
 function parseHistoryBlocks(text: string): HistoryHit[] {
+  // Prefer Detailed History; drop glossary / FAQ noise at the end
+  let scope = text;
+  const detailedIdx = text.search(/\bDetailed\s+History\b/i);
+  if (detailedIdx >= 0) scope = text.slice(detailedIdx);
+  const cut = scope.search(
+    /\b(?:Full\s+Glossary|Have Questions\?|I have reviewed and received|©\s*\d{4}\s+CARFAX)\b/i,
+  );
+  if (cut > 200) scope = scope.slice(0, cut);
+
   const hits: HistoryHit[] = [];
-  const lineRe = new RegExp(`(${DATE_TOKEN})\\s+(.{8,200})`, "gi");
-  for (const m of text.matchAll(lineRe)) {
-    const date = toIsoDate(m[1]!);
-    const rest = m[2]!.trim();
+  const dateRe = new RegExp(`(${DATE_TOKEN})`, "gi");
+  const dates = [...scope.matchAll(dateRe)];
+  for (let i = 0; i < dates.length; i++) {
+    const dm = dates[i]!;
+    const dateRaw = dm[1]!;
+    const date = toIsoDate(dateRaw);
+    const start = (dm.index ?? 0) + dateRaw.length;
+    const end = i + 1 < dates.length ? (dates[i + 1]!.index ?? scope.length) : scope.length;
+    let rest = scope.slice(start, end).replace(/\s+/g, " ").trim();
+    if (rest.length < 4) continue;
+    // Cap per-row so deferred comment blobs from PDF column reordering don't explode
+    if (rest.length > 420) rest = rest.slice(0, 420);
+
     const odometerKm = extractHistoryOdometerKm(rest, date);
     const location = extractHistoryLocation(rest);
     const { titleStatus, description } = splitEventComment(rest);
@@ -537,8 +623,65 @@ function isMileageEvent(raw: string, odometerKm: string): boolean {
   );
 }
 
+/** Strong ownership signals only — not every title/registration renewal. */
 function isOwnerish(raw: string): boolean {
-  return /\b(owner|purchased|sold|title\s+issued|registration\s+issued|first\s+owner|personal|lease|fleet|ownership)\b/i.test(raw);
+  return /\b(?:new\s+owner\s+reported|first\s+owner\s+reported|vehicle\s+purchase\s+reported)\b/i.test(
+    raw,
+  );
+}
+
+/** Prefer Carfax "Owner N Purchased: YEAR" section headers. */
+function parseOwnerSections(text: string): CatalogOwnerForm[] {
+  const rows: CatalogOwnerForm[] = [];
+  for (const m of text.matchAll(/\bOwner\s+(\d+)\s+Purchased:\s*((?:19|20)\d{2})\b/gi)) {
+    const year = m[2]!;
+    rows.push({
+      ...EMPTY_OWNER,
+      date: `${year}-01-01`,
+      location: "",
+      mileage: "",
+      condition: "",
+      lotStatus: "",
+    });
+  }
+  return rows;
+}
+
+/** Build owner rows from section headers, else strong signals, capped at ownerCount. */
+function buildOwners(
+  text: string,
+  hits: HistoryHit[],
+  ownerCount: string,
+): CatalogOwnerForm[] {
+  const fromSections = parseOwnerSections(text);
+  if (fromSections.length > 0) {
+    const cap = Number(ownerCount) || fromSections.length;
+    return fromSections.slice(0, Math.min(Math.max(cap, fromSections.length), 20));
+  }
+
+  const rows = hits
+    .filter((h) => isOwnerish(h.raw))
+    .map((h) => ({
+      ...EMPTY_OWNER,
+      date: h.date,
+      location: h.location,
+      mileage: h.odometerKm,
+      condition: "",
+      lotStatus: "",
+    }));
+
+  const seen = new Set<string>();
+  const unique = rows.filter((r) => {
+    const k = `${r.date}|${r.mileage}|${r.location}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+
+  const cap = Number(ownerCount);
+  const limited =
+    Number.isFinite(cap) && cap > 0 ? unique.slice(0, cap) : unique.slice(0, 20);
+  return sortHistoryNewestFirst(limited);
 }
 
 function buildAccidents(hits: HistoryHit[], text: string): CatalogAccidentForm[] {
@@ -627,23 +770,6 @@ function buildServices(hits: HistoryHit[]): CatalogServiceForm[] {
   return sortHistoryNewestFirst(rows).slice(0, 50);
 }
 
-function buildOwners(hits: HistoryHit[], ownerCount: string): CatalogOwnerForm[] {
-  const rows = hits
-    .filter((h) => isOwnerish(h.raw))
-    .map((h) => ({
-      ...EMPTY_OWNER,
-      date: h.date,
-      location: h.location,
-      mileage: h.odometerKm,
-      condition: "",
-      lotStatus: "",
-    }));
-
-  if (rows.length > 0) return sortHistoryNewestFirst(rows).slice(0, 20);
-  void ownerCount;
-  return [];
-}
-
 /** Latest = highest odometer among header + history readings. */
 export function resolveLatestOdometerKm(
   headerKm: string,
@@ -661,12 +787,18 @@ export function resolveLatestOdometerKm(
 
 function parseOwnerCount(text: string): string {
   const head = vehicleHeader(text);
+  const prev = head.match(/\b(\d{1,2})\s+Previous\s+Owners?\b/i);
+  if (prev?.[1]) return prev[1];
   const m = head.match(
     /(?:number\s+of\s+owners|owner\s+count|owners?\s*(?:reported)?)\s*[:#]?\s*(\d{1,2})\b/i,
   );
   if (m?.[1]) return m[1];
   const alt = head.match(/\b(\d{1,2})\s+owners?\b/i);
-  return alt?.[1] ?? "";
+  if (alt?.[1]) return alt[1];
+  // Count Owner N Purchased headers
+  const sections = [...text.matchAll(/\bOwner\s+(\d+)\s+Purchased:/gi)];
+  if (sections.length > 0) return String(sections.length);
+  return "";
 }
 
 function parseAccidentCount(text: string, accidents: CatalogAccidentForm[]): string {
@@ -759,7 +891,7 @@ export function parseProviderPdfText(
   const accidentCount = parseAccidentCount(text, accidents);
   const mileageHistory = buildMileage(hits, odometerHeader);
   const serviceHistory = buildServices(hits);
-  const ownerHistory = buildOwners(hits, ownerCount);
+  const ownerHistory = buildOwners(text, hits, ownerCount);
   const odometer = resolveLatestOdometerKm(odometerHeader, mileageHistory);
 
   const isSalvage = boolFlag(text, [
