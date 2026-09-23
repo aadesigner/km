@@ -649,7 +649,7 @@
   --chart-5: 0 72% 55%;
 }
 
-/* --- Admin area themes: Studio + Command — tokens scoped to .admin-shell only --- */
+/* --- Admin area themes: Studio + Orbit — tokens scoped to .admin-shell only --- */
 .admin-shell h1,
 .admin-shell h2,
 .admin-shell h3,
@@ -752,9 +752,16 @@ html.admin-theme-active .admin-sidebar::after {
   z-index: 0;
 }
 
-html.admin-theme-active .admin-sidebar > * {
+html.admin-theme-active .admin-sidebar > *:not(.admin-sidebar-close) {
   position: relative;
   z-index: 1;
+}
+
+html.admin-theme-active .admin-sidebar-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.75rem;
+  z-index: 5;
 }
 
 html.admin-theme-active .admin-sidebar .text-muted-foreground {
@@ -766,8 +773,8 @@ html.admin-theme-active .admin-sidebar .admin-nav-group-label {
   letter-spacing: 0.14em;
 }
 
-html.admin-theme-active[data-admin-theme="command"] .admin-sidebar .admin-nav-group-label {
-  color: hsl(210 25% 92% / 0.52);
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-nav-group-label {
+  color: hsl(190 40% 88% / 0.55);
 }
 
 html.admin-theme-active .admin-sidebar .admin-nav-link:not(.admin-nav-link--active) {
@@ -920,99 +927,127 @@ html.dark.admin-theme-active[data-admin-theme="studio"] .admin-shell {
   --admin-nav-hover-bg: hsl(220 10% 14%);
 }
 
-/* ========== COMMAND — dark rail always ========== */
-html.admin-theme-active[data-admin-theme="command"] .admin-shell {
-  --admin-font-sans: "IBM Plex Sans", "Inter Variable", system-ui, sans-serif;
-  --admin-font-display: "IBM Plex Sans", "Inter Variable", system-ui, sans-serif;
-  --admin-tracking: -0.005em;
-  --background: 210 16% 97%;
-  --foreground: 222 18% 18%;
-  --border: 214 12% 88%;
+/* ========== ORBIT — glass ink rail · cyan aurora ========== */
+html.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
+  --admin-font-sans: "Outfit", "Inter Variable", system-ui, sans-serif;
+  --admin-font-display: "Outfit", "Inter Variable", system-ui, sans-serif;
+  --admin-tracking: -0.015em;
+  --admin-card-radius: 1rem;
+  --admin-nav-radius: 0.85rem;
+  --background: 210 28% 97%;
+  --foreground: 222 28% 12%;
+  --border: 210 18% 88%;
   --card: 0 0% 100%;
-  --card-foreground: 222 18% 18%;
-  --card-border: 214 12% 90%;
-  --muted: 210 12% 94%;
-  --muted-foreground: 215 10% 42%;
-  --secondary: 210 12% 94%;
-  --secondary-foreground: 222 14% 24%;
+  --card-foreground: 222 28% 12%;
+  --card-border: 210 20% 90%;
+  --muted: 210 22% 94%;
+  --muted-foreground: 215 14% 42%;
+  --secondary: 210 22% 94%;
+  --secondary-foreground: 222 20% 22%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 18% 18%;
-  --popover-border: 214 12% 88%;
-  --input: 214 12% 82%;
-  --primary: 142 48% 40%;
+  --popover-foreground: 222 28% 12%;
+  --popover-border: 210 18% 88%;
+  --input: 210 16% 84%;
+  --primary: 187 92% 38%;
   --primary-foreground: 0 0% 100%;
-  --accent: 142 30% 94%;
-  --accent-foreground: 142 35% 26%;
-  --ring: 142 48% 40%;
-  --sidebar: 222 18% 16%;
-  --sidebar-foreground: 210 14% 88%;
-  --sidebar-border: 222 14% 22%;
-  --sidebar-primary: 142 48% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 222 14% 22%;
-  --sidebar-accent-foreground: 142 40% 70%;
-  --sidebar-ring: 142 48% 48%;
-  --chart-1: 142 48% 40%;
+  --accent: 187 55% 94%;
+  --accent-foreground: 187 70% 24%;
+  --ring: 187 92% 38%;
+  --sidebar: 222 32% 8%;
+  --sidebar-foreground: 200 30% 92%;
+  --sidebar-border: 210 28% 16%;
+  --sidebar-primary: 187 92% 48%;
+  --sidebar-primary-foreground: 222 40% 6%;
+  --sidebar-accent: 210 28% 14%;
+  --sidebar-accent-foreground: 187 80% 72%;
+  --sidebar-ring: 187 92% 48%;
+  --chart-1: 187 92% 38%;
 }
 
-html.admin-theme-active[data-admin-theme="command"] .admin-shell {
-  --admin-card-shadow: 0 1px 2px hsl(222 20% 40% / 0.04), 0 6px 18px hsl(222 20% 40% / 0.04);
-  --admin-sidebar-bg: linear-gradient(175deg, hsl(222 18% 18%) 0%, hsl(222 20% 13%) 55%, hsl(210 16% 12%) 100%);
-  --admin-sidebar-border: hsl(222 14% 22%);
-  --admin-sidebar-shadow: 10px 0 36px hsl(222 25% 20% / 0.12);
-  --admin-sidebar-header-bg: linear-gradient(180deg, hsl(142 35% 28% / 0.22), transparent 70%);
-  --admin-sidebar-accent-line: linear-gradient(180deg, transparent, hsl(142 48% 48% / 0.65), transparent);
-  --admin-nav-active-bg: hsl(142 28% 22%);
-  --admin-nav-active-fg: hsl(142 45% 72%);
-  --admin-nav-active-shadow: inset 3px 0 0 hsl(142 48% 48%);
-  --admin-nav-hover-bg: hsl(222 14% 22%);
-  --admin-shell-bg: linear-gradient(90deg, hsl(210 14% 95%) 0%, hsl(210 16% 97%) 24%, hsl(210 16% 97%) 100%);
-  --admin-main-glow: linear-gradient(90deg, hsl(222 20% 30% / 0.04), transparent 16%);
+html.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
+  --admin-card-shadow:
+    0 0 0 1px hsl(210 30% 70% / 0.08),
+    0 8px 28px hsl(210 40% 30% / 0.06),
+    0 1px 0 hsl(0 0% 100% / 0.8) inset;
+  --admin-sidebar-bg:
+    radial-gradient(120% 80% at 0% 0%, hsl(187 90% 45% / 0.22), transparent 52%),
+    radial-gradient(90% 60% at 100% 100%, hsl(250 60% 40% / 0.12), transparent 55%),
+    linear-gradient(165deg, hsl(222 36% 10%) 0%, hsl(222 40% 6%) 48%, hsl(210 36% 7%) 100%);
+  --admin-sidebar-border: hsl(190 40% 70% / 0.18);
+  --admin-sidebar-blur: blur(18px) saturate(1.25);
+  --admin-sidebar-shadow:
+    12px 0 40px hsl(222 40% 8% / 0.35),
+    inset -1px 0 0 hsl(187 80% 60% / 0.12);
+  --admin-sidebar-header-bg:
+    linear-gradient(180deg, hsl(187 80% 50% / 0.18), transparent 72%);
+  --admin-sidebar-accent-line:
+    linear-gradient(180deg, transparent 8%, hsl(187 95% 55% / 0.85) 42%, hsl(200 90% 60% / 0.55) 68%, transparent 92%);
+  --admin-nav-active-bg: linear-gradient(110deg, hsl(187 70% 42% / 0.28), hsl(210 40% 30% / 0.35));
+  --admin-nav-active-fg: hsl(187 95% 78%);
+  --admin-nav-active-shadow:
+    inset 3px 0 0 hsl(187 95% 55%),
+    0 0 24px hsl(187 90% 50% / 0.18);
+  --admin-nav-hover-bg: hsl(210 30% 100% / 0.06);
+  --admin-shell-bg:
+    radial-gradient(ellipse 70% 50% at 100% -10%, hsl(187 80% 70% / 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, hsl(210 60% 70% / 0.1), transparent 50%),
+    linear-gradient(180deg, hsl(210 30% 98%) 0%, hsl(210 24% 96%) 100%);
+  --admin-main-glow:
+    radial-gradient(ellipse 45% 35% at 85% 8%, hsl(187 90% 55% / 0.1), transparent 60%);
 }
 
-html.dark.admin-theme-active[data-admin-theme="command"] .admin-shell {
-  --background: 222 16% 7%;
-  --foreground: 210 12% 90%;
-  --border: 222 12% 16%;
-  --card: 222 14% 10%;
-  --card-foreground: 210 12% 90%;
-  --card-border: 222 12% 16%;
-  --muted: 222 12% 13%;
-  --muted-foreground: 215 8% 56%;
-  --secondary: 222 12% 13%;
-  --secondary-foreground: 210 10% 84%;
-  --popover: 222 14% 10%;
-  --popover-foreground: 210 12% 90%;
-  --popover-border: 222 12% 16%;
-  --input: 222 10% 20%;
-  --primary: 142 45% 48%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 142 22% 16%;
-  --accent-foreground: 142 40% 72%;
-  --ring: 142 45% 48%;
-  --sidebar: 222 18% 9%;
-  --sidebar-foreground: 210 12% 88%;
-  --sidebar-border: 222 12% 15%;
-  --sidebar-primary: 142 45% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 222 12% 15%;
-  --sidebar-accent-foreground: 142 40% 70%;
-  --sidebar-ring: 142 45% 48%;
-  --chart-1: 142 45% 48%;
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
+  --background: 222 28% 6%;
+  --foreground: 200 20% 94%;
+  --border: 210 18% 16%;
+  --card: 222 24% 9%;
+  --card-foreground: 200 20% 94%;
+  --card-border: 210 18% 16%;
+  --muted: 222 18% 12%;
+  --muted-foreground: 210 12% 58%;
+  --secondary: 222 18% 12%;
+  --secondary-foreground: 200 16% 88%;
+  --popover: 222 24% 9%;
+  --popover-foreground: 200 20% 94%;
+  --popover-border: 210 18% 16%;
+  --input: 210 16% 22%;
+  --primary: 187 90% 48%;
+  --primary-foreground: 222 40% 6%;
+  --accent: 187 40% 14%;
+  --accent-foreground: 187 80% 72%;
+  --ring: 187 90% 48%;
+  --sidebar: 222 32% 5%;
+  --sidebar-foreground: 200 28% 92%;
+  --sidebar-border: 210 24% 14%;
+  --sidebar-primary: 187 90% 50%;
+  --sidebar-primary-foreground: 222 40% 6%;
+  --sidebar-accent: 210 24% 12%;
+  --sidebar-accent-foreground: 187 80% 72%;
+  --sidebar-ring: 187 90% 50%;
+  --chart-1: 187 90% 48%;
 }
 
-html.dark.admin-theme-active[data-admin-theme="command"] .admin-shell {
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   --admin-card-bg: hsl(var(--card));
-  --admin-card-border: hsl(var(--card-border));
-  --admin-card-shadow: 0 8px 28px hsl(0 0% 0% / 0.28);
-  --admin-sidebar-bg: linear-gradient(175deg, hsl(222 18% 11%) 0%, hsl(222 20% 8%) 100%);
-  --admin-sidebar-border: hsl(222 12% 15%);
-  --admin-sidebar-header-bg: linear-gradient(180deg, hsl(142 30% 22% / 0.28), transparent 70%);
-  --admin-shell-bg: hsl(var(--background));
-  --admin-nav-active-bg: hsl(142 26% 18%);
-  --admin-nav-active-fg: hsl(142 45% 70%);
-  --admin-nav-hover-bg: hsl(222 12% 15%);
-  --admin-main-glow: none;
+  --admin-card-border: hsl(190 30% 70% / 0.1);
+  --admin-card-shadow:
+    0 0 0 1px hsl(187 60% 50% / 0.06),
+    0 12px 36px hsl(0 0% 0% / 0.4);
+  --admin-sidebar-bg:
+    radial-gradient(110% 70% at 0% 0%, hsl(187 90% 45% / 0.2), transparent 50%),
+    radial-gradient(80% 50% at 100% 110%, hsl(250 50% 35% / 0.14), transparent 50%),
+    linear-gradient(165deg, hsl(222 36% 8%) 0%, hsl(222 40% 4%) 100%);
+  --admin-sidebar-border: hsl(190 40% 70% / 0.14);
+  --admin-sidebar-header-bg:
+    linear-gradient(180deg, hsl(187 80% 45% / 0.16), transparent 70%);
+  --admin-shell-bg:
+    radial-gradient(ellipse 55% 40% at 100% 0%, hsl(187 70% 40% / 0.12), transparent 55%),
+    hsl(var(--background));
+  --admin-nav-active-bg: linear-gradient(110deg, hsl(187 70% 40% / 0.32), hsl(210 40% 22% / 0.4));
+  --admin-nav-active-fg: hsl(187 95% 78%);
+  --admin-nav-hover-bg: hsl(210 30% 100% / 0.05);
+  --admin-main-glow:
+    radial-gradient(ellipse 40% 30% at 90% 5%, hsl(187 80% 45% / 0.1), transparent 55%);
 }
 
 /* ========== Revenue mood chip (floating — not sidebar) ========== */

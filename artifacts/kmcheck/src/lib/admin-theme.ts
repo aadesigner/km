@@ -1,6 +1,6 @@
 export const ADMIN_THEME_STORAGE_KEY = "kmcheck-admin-theme";
 
-export const ADMIN_THEME_IDS = ["studio", "command"] as const;
+export const ADMIN_THEME_IDS = ["studio", "orbit"] as const;
 
 export type AdminThemeId = (typeof ADMIN_THEME_IDS)[number];
 
@@ -22,11 +22,11 @@ export const ADMIN_THEMES: AdminThemeMeta[] = [
     swatches: ["#16a34a", "#f7faf8", "#ffffff"],
   },
   {
-    id: "command",
-    name: "Command",
-    vibe: "Dark rail · ops contrast",
-    swatches: ["#22c55e", "#0b1220", "#f4f6f8"],
-    googleFonts: ["IBM+Plex+Sans:wght@400;500;600;700"],
+    id: "orbit",
+    name: "Orbit",
+    vibe: "Glass ink · cyan aurora",
+    swatches: ["#22d3ee", "#0a0f1a", "#e8f7ff"],
+    googleFonts: ["Outfit:wght@400;500;600;700"],
   },
 ];
 
@@ -35,13 +35,14 @@ const LEGACY_THEME_MAP: Record<string, AdminThemeId> = {
   classic: "studio",
   aurora: "studio",
   ledger: "studio",
-  midnight: "command",
-  terminal: "command",
-  signal: "command",
-  noir: "command",
+  midnight: "orbit",
+  terminal: "orbit",
+  signal: "orbit",
+  noir: "orbit",
   editorial: "studio",
   atelier: "studio",
-  velocity: "command",
+  velocity: "orbit",
+  command: "orbit",
 };
 
 export function isAdminThemeId(value: unknown): value is AdminThemeId {

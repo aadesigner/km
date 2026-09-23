@@ -127,11 +127,11 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
   const SidebarContent = ({ mobile }: { mobile?: boolean }) => (
     <>
-      <div className="px-5 py-5 border-b border-border/60">
+      <div className={cn("px-5 py-4 border-b border-border/60", mobile && "pr-12")}>
         <Link href="/en" className="flex items-center">
           <KmcheckLogo
             className="h-8"
-            variant={themeId === "command" ? "dark" : undefined}
+            variant={themeId === "orbit" ? "dark" : undefined}
             syncDecode
           />
         </Link>
@@ -227,7 +227,8 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <button
-          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+          type="button"
+          className="admin-sidebar-close flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-white/10"
           onClick={() => setSidebarOpen(false)}
           aria-label="Close menu"
         >
