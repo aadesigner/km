@@ -2,11 +2,15 @@ import { describe, expect, it } from "vitest";
 import { milesToKm, readingToKm, parseOdometerNumber } from "./provider-pdf-miles";
 import {
   cleanHistoryNote,
+  cleanModelName,
   detectProviderPdfKind,
+  extractHistoryLocation,
   extractHistoryOdometerKm,
   extractVinsFromText,
   parseEngine,
   parseProviderPdfText,
+  parseVehicleCountry,
+  splitEventComment,
 } from "./provider-pdf-parse";
 import { applyProviderPdfToForm } from "./provider-pdf-apply";
 import { EMPTY_VIN_CATALOG_FORM } from "@/components/admin/vin-catalog-data-form";
@@ -14,6 +18,7 @@ import { EMPTY_VIN_CATALOG_FORM } from "@/components/admin/vin-catalog-data-form
 const SAMPLE_VIN = "1HGCM82633A004352";
 const OTHER_VIN = "5YJSA1E14HF000001";
 const AUDI_VIN = "WAUZZZ4G0DN000001";
+const TIGUAN_VIN = "3VV0B7AX5KM000001";
 
 const CARFAX_FIXTURE = `
 CARFAX Vehicle History Report
@@ -78,6 +83,24 @@ Detailed Vehicle History
 06/15/2025 90,000 miles Service oil change
 `;
 
+const CANADA_TIGUAN_FIXTURE = `
+CARFAX Canada Vehicle History Report
+VIN: ${TIGUAN_VIN}
+Year: 2019
+Make: Volkswagen
+Model: Tiguan S 164
+Engine: 2.0L I4 F DOHC 16V Gasoline
+Transmission Automatic
+Fuel Type: Gasoline
+Body Style: SUV
+Ontario Motor Vehicle Dept.
+Detailed Vehicle History
+01/10/2019 Title / Registration 12 km Source: Ontario Ministry of Transportation
+06/15/2021 Service performed Oil change 80,000 km Source: Ontario Dealer
+03/20/2024 Odometer reading 164,532 km Source: Ontario Motor Vehicle Dept.
+Toronto, ON registration renewal
+`;
+
 describe("provider-pdf-miles", () => {
   it("converts miles to km", () => {
     expect(milesToKm(1000)).toBe(1609);
@@ -101,6 +124,35 @@ describe("cleanHistoryNote", () => {
     expect(note.toLowerCase()).toContain("oil change");
     expect(note).not.toMatch(/28,?400/);
     expect(note).not.toMatch(/05\/12\/2020/);
+  });
+});
+
+describe("history comment / location split", () => {
+  it("maps Source to location and title to titleStatus", () => {
+    const rest =
+      "Title / Registration 12 km Source: Ontario Ministry of Transportation Clear title issued";
+    expect(extractHistoryLocation(rest)).toMatch(/Ontario Ministry/i);
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus.toLowerCase()).toMatch(/title|registration|clear/i);
+    expect(description.toLowerCase()).not.toMatch(/ontario ministry/i);
+    expect(description.toLowerCase()).not.toMatch(/^source/);
+  });
+
+  it("strips mileage bleed from model names", () => {
+    expect(cleanModelName("Tiguan S 164", "Volkswagen")).toBe("Tiguan S");
+    expect(cleanModelName("Volkswagen Tiguan S 164", "Volkswagen")).toBe("Tiguan S");
+  });
+
+  it("strips fuel words from engine", () => {
+    const eng = parseEngine("Engine: 2.0L I4 F DOHC 16V Gasoline");
+    expect(eng).toMatch(/2\.0L/i);
+    expect(eng).toMatch(/I4/i);
+    expect(eng).not.toMatch(/gasoline/i);
+    expect(eng).not.toMatch(/\bF\b/);
+  });
+
+  it("selects Canada when Ontario appears", () => {
+    expect(parseVehicleCountry(CANADA_TIGUAN_FIXTURE)).toBe("ca");
   });
 });
 
@@ -132,8 +184,9 @@ describe("provider-pdf-parse", () => {
     expect(r.form.make).toBe("Honda");
     expect(r.form.model).toMatch(/Civic/i);
     expect(r.form.engine).toMatch(/2\.0L/i);
-    expect(r.form.fuelType).toMatch(/Gas/i);
-    expect(r.form.bodyType).toMatch(/Sedan/i);
+    expect(r.form.fuelType).toBe("gasoline");
+    expect(r.form.transmission).toBe("automatic");
+    expect(r.form.bodyType).toBe("sedan");
     expect(r.form.color).toBe("");
     expect(r.form.odometer).toBe(String(milesToKm(45230)));
     expect(r.form.mileageHistory.every((m) => m.source === "")).toBe(true);
@@ -143,6 +196,25 @@ describe("provider-pdf-parse", () => {
     // Service rows
     expect(r.form.serviceHistory.length).toBeGreaterThanOrEqual(1);
     expect(r.form.serviceHistory[0]!.description.toLowerCase()).not.toMatch(/miles/);
+  });
+
+  it("parses Canada Tiguan: model, engine, fuel, transmission, country, latest km, location", () => {
+    const r = parseProviderPdfText(CANADA_TIGUAN_FIXTURE, TIGUAN_VIN);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.form.make).toMatch(/Volkswagen/i);
+    expect(r.form.model).toBe("Tiguan S");
+    expect(r.form.model).not.toMatch(/164/);
+    expect(r.form.engine).not.toMatch(/gasoline/i);
+    expect(r.form.fuelType).toBe("gasoline");
+    expect(r.form.transmission).toBe("automatic");
+    expect(r.form.country).toBe("ca");
+    expect(r.form.odometer).toBe("164532");
+    expect(r.form.mileageHistory.some((m) => m.location.toLowerCase().includes("ontario"))).toBe(true);
+    expect(
+      r.form.mileageHistory.every((m) => !/ontario/i.test(m.description)),
+    ).toBe(true);
+    expect(r.form.mileageHistory.some((m) => m.titleStatus.length > 0)).toBe(true);
   });
 
   it("uses labeled model year; keeps 2012/2025 history dates with real miles (not year-as-odo)", () => {
@@ -197,6 +269,7 @@ describe("provider-pdf-parse", () => {
     expect(r.form.make).toMatch(/Toyota/i);
     expect(r.form.isSalvage).toBe(true);
     expect(r.form.color).toBe("");
+    expect(r.form.transmission).toBe("automatic");
   });
 });
 

@@ -15,6 +15,12 @@ import {
   type CatalogServiceForm,
 } from "@/components/admin/vin-catalog-history-editors";
 import type { VinCatalogFormState } from "@/components/admin/vin-catalog-data-form";
+import {
+  resolveBodySelectValue,
+  resolveCountrySelectValue,
+  resolveFuelSelectValue,
+  resolveTransmissionSelectValue,
+} from "@/lib/vehicle-attr-options";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import {
   parseOdometerNumber,
@@ -180,10 +186,7 @@ function parseMake(scope: string): string {
 
 function parseModel(scope: string, make: string): string {
   const labeled = fieldAfterLabel(scope, ["Model(?:\\s*name)?"], 60);
-  if (labeled) {
-    // Keep multi-word like "A6 Prestige", "Camry SE"
-    return labeled.slice(0, 60);
-  }
+  if (labeled) return cleanModelName(labeled, make);
 
   if (make) {
     const re = new RegExp(
@@ -193,9 +196,8 @@ function parseModel(scope: string, make: string): string {
     const m = scope.match(re);
     if (m?.[1]) {
       let model = cleanSpecValue(m[1]);
-      // Drop leading year if captured
       model = model.replace(/^(?:19|20)\d{2}\s+/, "");
-      return model.slice(0, 60);
+      return cleanModelName(model, make);
     }
   }
 
@@ -205,77 +207,130 @@ function parseModel(scope: string, make: string): string {
       "i",
     ),
   );
-  if (ymm?.[2]) return cleanSpecValue(ymm[2]).slice(0, 60);
+  if (ymm?.[2]) return cleanModelName(cleanSpecValue(ymm[2]), ymm[1] ?? make);
   return "";
+}
+
+/** Drop duplicated make, trailing mileage digits, and junk. */
+export function cleanModelName(raw: string, make?: string): string {
+  let m = raw.replace(/\s+/g, " ").trim();
+  if (make) {
+    const makeRe = new RegExp(`^${escapeRe(make)}\\s+`, "i");
+    m = m.replace(makeRe, "");
+  }
+  // Strip trailing bare numbers (mileage bleed like "Tiguan S 164")
+  m = m.replace(/\s+\d{1,6}$/g, "");
+  m = m.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b/gi, "");
+  m = m.replace(/\s*[-–—]\s*(vehicle|car|noted|reported).*$/i, "");
+  return m.replace(/\s{2,}/g, " ").trim().slice(0, 60);
 }
 
 function parseFuel(scope: string): string {
   const labeled = fieldAfterLabel(scope, ["Fuel\\s*type", "Fuel"]);
-  if (labeled) {
-    const l = labeled.toLowerCase();
-    if (/diesel|tdi/.test(l)) return "Diesel";
-    if (/electric|ev\b|battery/.test(l)) return "Electric";
-    if (/hybrid|phev|plug.?in/.test(l)) return "Hybrid";
-    if (/gas|petrol|unleaded|flex/.test(l)) return "Gasoline";
-    return labeled.slice(0, 40);
-  }
-  if (/\bdiesel\b/i.test(scope.slice(0, 2500))) return "Diesel";
-  if (/\belectric\b/i.test(scope.slice(0, 2500))) return "Electric";
-  if (/\bhybrid\b/i.test(scope.slice(0, 2500))) return "Hybrid";
-  if (/\b(?:gasoline|petrol)\b/i.test(scope.slice(0, 2500))) return "Gasoline";
-  return "";
+  let raw = "";
+  if (labeled) raw = labeled;
+  else if (/\bdiesel\b/i.test(scope.slice(0, 2500))) raw = "diesel";
+  else if (/\belectric\b/i.test(scope.slice(0, 2500))) raw = "electric";
+  else if (/\bhybrid\b/i.test(scope.slice(0, 2500))) raw = "hybrid";
+  else if (/\b(?:gasoline|petrol|gas)\b/i.test(scope.slice(0, 2500))) raw = "gasoline";
+  if (!raw) return "";
+  return resolveFuelSelectValue(raw);
 }
 
 function parseBody(scope: string): string {
   const labeled = fieldAfterLabel(scope, ["Body\\s*style", "Body\\s*type", "Body"]);
-  if (labeled) {
-    const l = labeled.toLowerCase();
-    if (/suv|crossover|sport.?utility/.test(l)) return "SUV";
-    if (/sedan|saloon/.test(l)) return "Sedan";
-    if (/coupe|coupé/.test(l)) return "Coupe";
-    if (/hatch/.test(l)) return "Hatchback";
-    if (/wagon|estate/.test(l)) return "Wagon";
-    if (/pickup|truck/.test(l)) return "Pickup";
-    if (/van|minivan/.test(l)) return "Van";
-    if (/convertible|cabriolet/.test(l)) return "Convertible";
-    return labeled.slice(0, 40);
+  let raw = labeled ?? "";
+  if (!raw) {
+    const head = scope.slice(0, 2500);
+    if (/\bSUV\b|\bcrossover\b/i.test(head)) raw = "suv";
+    else if (/\bsedan\b/i.test(head)) raw = "sedan";
+    else if (/\bcoupe\b/i.test(head)) raw = "coupe";
+    else if (/\bhatch/i.test(head)) raw = "hatchback";
   }
-  const head = scope.slice(0, 2500);
-  if (/\bSUV\b|\bcrossover\b/i.test(head)) return "SUV";
-  if (/\bsedan\b/i.test(head)) return "Sedan";
-  if (/\bcoupe\b/i.test(head)) return "Coupe";
+  if (!raw) return "";
+  return resolveBodySelectValue(raw);
+}
+
+function classifyTransmission(blob: string): string {
+  const l = blob.toLowerCase();
+  if (/\bmanual\b|\bstick\b/.test(l)) return "manual";
+  if (/\bcvt\b/.test(l)) return "cvt";
+  if (/\bdct\b|\bdsg\b|\bdual[-\s]?clutch\b|\bpdk\b/.test(l)) return "dct";
+  if (/\bamt\b/.test(l)) return "amt";
+  if (/\bsemi[-\s]?automatic\b/.test(l)) return "semi-automatic";
+  if (/\bauto(?:matic)?\b|\btiptronic\b|\bs[-\s]?tronic\b|\ba\/t\b/.test(l)) return "automatic";
   return "";
 }
 
 function parseTransmission(scope: string): string {
-  const labeled = fieldAfterLabel(scope, ["Transmission", "Trans"]);
-  if (labeled) {
-    const l = labeled.toLowerCase();
-    if (/manual|stick/.test(l)) return "Manual";
-    if (/cvt/.test(l)) return "CVT";
-    if (/auto|tiptronic|dsg|s.?tronic|pdk/.test(l)) return "Automatic";
-    return labeled.slice(0, 40);
+  const labeled = fieldAfterLabel(scope, ["Transmission", "Trans(?:mission)?\\s*type"]);
+  let raw = labeled ? classifyTransmission(labeled) : "";
+  if (!raw) {
+    const head = scope.slice(0, 3000);
+    // Prefer labeled-ish phrases over accidental "Transmission" in service history
+    if (
+      /\b\d[\d-]*\s*speed\s+automatic\b|\bautomatic\s+transmission\b|\btransmission\s*[:#]?\s*automatic\b|\btransmission\s+automatic\b|\ba\/t\b/i.test(head)
+    ) {
+      raw = "automatic";
+    } else if (/\bmanual\s+transmission\b|\btransmission\s*[:#]?\s*manual\b/i.test(head)) {
+      raw = "manual";
+    } else if (/\bCVT\b/i.test(head)) {
+      raw = "cvt";
+    } else {
+      raw = classifyTransmission(head);
+    }
   }
-  if (/\bmanual\b/i.test(scope.slice(0, 2500))) return "Manual";
-  if (/\bautomatic\b/i.test(scope.slice(0, 2500))) return "Automatic";
-  return "";
+  if (!raw) return "";
+  return resolveTransmissionSelectValue(raw);
 }
 
-/** Full engine string e.g. "3.0L V6 TFSI", "2.0L I4 Turbo". */
+const FUEL_WORDS_RE =
+  /\b(?:gasoline|petrol|diesel|electric|hybrid|flex(?:\s*fuel)?|unleaded|e85|cng|lpg|hydrogen)\b/gi;
+
+/** Engine displacement/config only — fuel belongs in fuelType. */
 export function parseEngine(scope: string): string {
   const labeled = fieldAfterLabel(scope, ["Engine(?:\\s*(?:size|type|displacement))?"], 90);
+  let eng = "";
   if (labeled) {
-    // Prefer keeping displacement + config from the label value
     const rich = labeled.match(
-      /(\d(?:\.\d)?\s*L(?:iter)?(?:\s*[IVW]?\d)?(?:\s*[A-Za-z0-9+\-\/]{0,24}){0,6})/i,
+      /(\d(?:\.\d)?\s*L(?:iter)?(?:\s*[IVWH]?\d)?(?:\s*(?:DOHC|SOHC|Turbo|Supercharged|TFSI|TDI|TSI|EcoBoost|FSI|MPI|GDI|16V|24V|32V|[A-Z]{1,4})){0,8})/i,
     );
-    if (rich?.[1]) return cleanSpecValue(rich[1]).slice(0, 80);
-    return labeled.slice(0, 80);
+    eng = rich?.[1] ? cleanSpecValue(rich[1]) : cleanSpecValue(labeled);
+  } else {
+    const m = scope.slice(0, 3500).match(
+      /\b(\d(?:\.\d)?\s*L(?:iter)?(?:\s*(?:I|V|W|H)?\d)?(?:\s*(?:Turbo|Supercharged|TFSI|TDI|TSI|EcoBoost|DOHC|SOHC|16V|24V))?(?:\s*[A-Za-z0-9+\-]{0,8}){0,4})\b/i,
+    );
+    eng = m?.[1] ? cleanSpecValue(m[1]) : "";
   }
-  const m = scope.slice(0, 3500).match(
-    /\b(\d(?:\.\d)?\s*L(?:iter)?(?:\s*(?:I|V|W|H)?\d)?(?:\s*(?:Turbo|Supercharged|TFSI|TDI|TSI|EcoBoost|Hybrid|DOHC|SOHC))?(?:\s*[A-Za-z0-9+\-]{0,12}){0,4})\b/i,
-  );
-  return m?.[1] ? cleanSpecValue(m[1]).slice(0, 80) : "";
+  eng = eng.replace(FUEL_WORDS_RE, " ").replace(/\s{2,}/g, " ").trim();
+  // Drop lone junk letters left from "I4 F DOHC" fuel bleed markers mid-string carefully
+  eng = eng.replace(/\s+F\s+/gi, " ").replace(/\s{2,}/g, " ").trim();
+  return eng.slice(0, 80);
+}
+
+/** Detect Canada from Ontario / Canada mentions; default US. */
+export function parseVehicleCountry(text: string): string {
+  const t = text.slice(0, 20000);
+  // Any clear Canadian province / Canada mention wins over default US
+  if (
+    /\bCanada\b/i.test(t)
+    || /\bCanadian\b/i.test(t)
+    || /\bOntario\b/i.test(t)
+    || /\bQuebec\b/i.test(t)
+    || /\bAlberta\b/i.test(t)
+    || /\bManitoba\b/i.test(t)
+    || /\bSaskatchewan\b/i.test(t)
+    || /\bBritish Columbia\b/i.test(t)
+    || /\bNova Scotia\b/i.test(t)
+    || /\bNew Brunswick\b/i.test(t)
+    || /\b,\s*(?:ON|QC|BC|AB|MB|SK|NS|NB|NL|PE|YT|NT|NU)\b/.test(t)
+  ) {
+    return resolveCountrySelectValue("ca");
+  }
+  if (/\bUnited States\b/i.test(t) || /\bU\.S\.A\.?\b/i.test(t) || /\bUSA\b/.test(t)) {
+    return resolveCountrySelectValue("us");
+  }
+  return resolveCountrySelectValue("us");
 }
 
 function parseHp(scope: string): string {
@@ -299,16 +354,28 @@ function parseIntField(scope: string, labels: string[]): string {
 function parseOdometerKm(text: string): string {
   const head = vehicleHeader(text);
   const patterns = [
-    /(?:last\s+reported\s+)?(?:odometer|mileage)[^0-9\n]{0,40}([\d,]{3,7})\s*(miles?|mi|km|kilometers?|kilometres?)?/i,
+    /(?:last\s+reported\s+)?(?:odometer|mileage)(?:\s*reading)?[^0-9\n]{0,40}([\d,]{3,7})\s*(miles?|mi|km|kilometers?|kilometres?)?/i,
   ];
+  let best = 0;
   for (const re of patterns) {
     const m = head.match(re) ?? text.match(re);
     if (!m?.[1]) continue;
     const n = parseOdometerNumber(m[1]);
     if (n == null || n <= 0) continue;
-    return String(readingToKm(n, m[2] ?? unitHintFromSnippet(m[0] ?? "")));
+    const km = readingToKm(n, m[2] ?? unitHintFromSnippet(m[0] ?? ""));
+    if (km > best) best = km;
   }
-  return "";
+  // Also take highest unit-backed reading anywhere (latest mileage often only in history)
+  for (const m of text.matchAll(/\b([\d,]{3,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/gi)) {
+    const n = parseOdometerNumber(m[1] ?? "");
+    if (n == null || n <= 0) continue;
+    const rawNum = (m[1] ?? "").replace(/,/g, "");
+    // Skip bare calendar years mistaken as odo
+    if (/^(?:19|20)\d{2}$/.test(rawNum) && n <= 2100 && !String(m[1]).includes(",")) continue;
+    const km = readingToKm(n, m[2] ?? unitHintFromSnippet(m[0] ?? ""));
+    if (km > best) best = km;
+  }
+  return best > 0 ? String(best) : "";
 }
 
 function boolFlag(text: string, patterns: RegExp[]): boolean {
@@ -336,7 +403,9 @@ export function cleanHistoryNote(raw: string): string {
   let s = raw.replace(/\s+/g, " ").trim();
   s = s.replace(new RegExp(DATE_TOKEN, "gi"), " ");
   s = s.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)\b/gi, " ");
-  s = s.replace(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*[A-Z]{2}\b/g, " ");
+  s = s.replace(/\bSource\s*[:#]?\s*[^|;\n]+/gi, " ");
+  s = s.replace(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*(?:[A-Z]{2}|Ontario|Quebec|Canada)\b/g, " ");
+  s = s.replace(/\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan|Canada)\b/gi, " ");
   s = s.replace(/\b(?:odometer|mileage)\s*(?:reading)?\b/gi, " ");
   s = s.replace(/\s*[-–—|:]\s*/g, " · ");
   s = s.replace(/(?:\s*·\s*)+/g, " · ").replace(/^\s*·\s*|\s*·\s*$/g, "");
@@ -345,9 +414,49 @@ export function cleanHistoryNote(raw: string): string {
   return s.slice(0, 200);
 }
 
+/** PDF "Source" / place → our location field (never description). */
+export function extractHistoryLocation(rest: string): string {
+  const src = rest.match(/\bSource\s*[:#]?\s*([^|;\n]{2,90})/i);
+  if (src?.[1]) {
+    return src[1]
+      .replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b/gi, "")
+      .replace(new RegExp(DATE_TOKEN, "gi"), "")
+      .replace(/\s{2,}/g, " ")
+      .trim()
+      .slice(0, 80);
+  }
+  const cityProv = rest.match(
+    /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*(ON|QC|BC|AB|MB|SK|NS|NB|NL|PE|YT|NT|NU|[A-Z]{2})\b/,
+  );
+  if (cityProv) return `${cityProv[1]}, ${cityProv[2]}`;
+  const ontarioDept = rest.match(
+    /\b((?:Ontario|Quebec|Alberta|British Columbia)[^,\n]{0,50}(?:Motor Vehicle|Ministry|DMV|Registry|Service|Dealer)[^,\n]{0,40})/i,
+  );
+  if (ontarioDept?.[1]) return ontarioDept[1].trim().slice(0, 80);
+  if (/\bOntario\b/i.test(rest)) return "Ontario";
+  return "";
+}
+
+/**
+ * Bold/event title → titleStatus; remaining detail → description.
+ * Location never goes into description.
+ */
+export function splitEventComment(rest: string): { titleStatus: string; description: string } {
+  const cleaned = cleanHistoryNote(rest);
+  if (!cleaned) return { titleStatus: "", description: "" };
+  const parts = cleaned.split(/\s*·\s*|\s*\/\s+/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return { titleStatus: "", description: "" };
+  if (parts.length === 1) return { titleStatus: parts[0]!.slice(0, 80), description: "" };
+  return {
+    titleStatus: parts[0]!.slice(0, 80),
+    description: parts.slice(1).join(" · ").slice(0, 200),
+  };
+}
+
 type HistoryHit = {
   date: string;
-  note: string;
+  titleStatus: string;
+  description: string;
   odometerKm: string;
   location: string;
   raw: string;
@@ -401,10 +510,9 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
     const date = toIsoDate(m[1]!);
     const rest = m[2]!.trim();
     const odometerKm = extractHistoryOdometerKm(rest, date);
-    const locationM = rest.match(/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Z]{2})\b/);
-    const location = locationM ? `${locationM[1]}, ${locationM[2]}` : "";
-    const note = cleanHistoryNote(rest);
-    hits.push({ date, note, odometerKm, location, raw: rest });
+    const location = extractHistoryLocation(rest);
+    const { titleStatus, description } = splitEventComment(rest);
+    hits.push({ date, titleStatus, description, odometerKm, location, raw: rest });
     if (hits.length >= 80) break;
   }
   return hits;
@@ -439,7 +547,7 @@ function buildAccidents(hits: HistoryHit[], text: string): CatalogAccidentForm[]
     .map((h) => ({
       ...EMPTY_ACCIDENT,
       date: h.date,
-      description: h.note || "Accident / damage reported",
+      description: [h.titleStatus, h.description].filter(Boolean).join(" · ") || "Accident / damage reported",
       location: h.location,
       type: /flood|water/i.test(h.raw) ? "flood" : "collision",
       severity: /severe|major|structural/i.test(h.raw)
@@ -465,7 +573,6 @@ function sortMileageHighestFirst(rows: CatalogMileageForm[]): CatalogMileageForm
     const oa = Number(a.odometer) || 0;
     const ob = Number(b.odometer) || 0;
     if (ob !== oa) return ob - oa;
-    // tie-break: newer date first
     return sortHistoryNewestFirst([a, b])[0] === a ? -1 : 1;
   });
 }
@@ -480,12 +587,13 @@ function buildMileage(hits: HistoryHit[], latestKm: string): CatalogMileageForm[
       unit: "km",
       source: "",
       location: h.location,
-      description: isServiceish(h.raw) ? h.note : (h.note && !/^\d+$/.test(h.note) ? h.note : ""),
+      titleStatus: h.titleStatus,
+      description: h.description,
     }));
 
   const seen = new Set<string>();
   const unique = rows.filter((r) => {
-    const k = `${r.date}|${r.odometer}`;
+    const k = `${r.date}|${r.odometer}|${r.titleStatus}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
@@ -510,11 +618,11 @@ function buildServices(hits: HistoryHit[]): CatalogServiceForm[] {
       ...EMPTY_SERVICE,
       date: h.date,
       mileage: h.odometerKm,
-      title: "Service",
+      title: h.titleStatus || "Service",
       location: h.location,
-      description: h.note,
+      description: h.description,
     }))
-    .filter((r) => r.description || r.mileage);
+    .filter((r) => r.description || r.mileage || r.title);
 
   return sortHistoryNewestFirst(rows).slice(0, 50);
 }
@@ -532,10 +640,23 @@ function buildOwners(hits: HistoryHit[], ownerCount: string): CatalogOwnerForm[]
     }));
 
   if (rows.length > 0) return sortHistoryNewestFirst(rows).slice(0, 20);
-
-  // Do not invent empty owner rows — only count field
   void ownerCount;
   return [];
+}
+
+/** Latest = highest odometer among header + history readings. */
+export function resolveLatestOdometerKm(
+  headerKm: string,
+  mileageRows: CatalogMileageForm[],
+): string {
+  let max = 0;
+  const header = Number(headerKm);
+  if (Number.isFinite(header) && header > max) max = header;
+  for (const row of mileageRows) {
+    const n = Number(row.odometer);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  return max > 0 ? String(max) : (headerKm || "");
 }
 
 function parseOwnerCount(text: string): string {
@@ -569,7 +690,7 @@ function emptyFormWithoutPhotos(): Omit<VinCatalogFormState, "photos"> {
     fuelType: "",
     bodyType: "",
     color: "",
-    country: "us",
+    country: "",
     odometer: "",
     ownerCount: "",
     accidentCount: "",
@@ -629,18 +750,17 @@ export function parseProviderPdfText(
   const fuelType = parseFuel(head);
   const bodyType = parseBody(head);
   const engine = parseEngine(head);
+  const country = parseVehicleCountry(text);
 
-  const odometer = parseOdometerKm(text);
+  const odometerHeader = parseOdometerKm(text);
   const hits = parseHistoryBlocks(text);
   const accidents = buildAccidents(hits, text);
   const ownerCount = parseOwnerCount(text) || parseIntField(head, ["Owners?"]);
   const accidentCount = parseAccidentCount(text, accidents);
-  const mileageHistory = buildMileage(hits, odometer);
+  const mileageHistory = buildMileage(hits, odometerHeader);
   const serviceHistory = buildServices(hits);
   const ownerHistory = buildOwners(hits, ownerCount);
-
-  // Latest odometer from mileage table if header missing
-  const topOdo = mileageHistory[0]?.odometer || odometer;
+  const odometer = resolveLatestOdometerKm(odometerHeader, mileageHistory);
 
   const isSalvage = boolFlag(text, [
     /\bsalvage\s+title\b/i,
@@ -668,12 +788,12 @@ export function parseProviderPdfText(
     model: model.slice(0, 60),
     trim: "",
     engine,
-    transmission: transmission.slice(0, 40),
-    fuelType: fuelType.slice(0, 40),
-    bodyType: bodyType.slice(0, 40),
-    color: "", // never extract color — PDF noise ("White - vehicle")
-    country: "us",
-    odometer: topOdo,
+    transmission,
+    fuelType,
+    bodyType,
+    color: "",
+    country,
+    odometer,
     ownerCount,
     accidentCount,
     hp: parseHp(head),
