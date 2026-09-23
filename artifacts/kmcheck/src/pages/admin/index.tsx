@@ -25,8 +25,8 @@ import {
   fmtCompact,
   PERIOD_LABELS,
   PERIOD_COMPARE_LABEL,
+  previousComparePeriod,
   slicePeriodBreakdown,
-  PAYMENT_METHOD_LABELS,
 } from "@/lib/admin-dashboard-stats";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
@@ -501,9 +501,22 @@ export default function AdminOverview() {
     const activeChart = CHART_METRICS.find((m) => m.id === chartMetric)!;
     const compareLabel = PERIOD_COMPARE_LABEL[period];
     const chartTotal = chartData.reduce((sum, row) => sum + row.value, 0);
+    const comparePeriod = previousComparePeriod(period);
+    const breakdownCompareHint = comparePeriod
+      ? `Bar length = ${PERIOD_LABELS[period].toLowerCase()} · color/Δ vs ${PERIOD_LABELS[comparePeriod].toLowerCase()}`
+      : null;
     const countrySignupRows = slicePeriodBreakdown(stats.signupsByCountry, period);
     const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
     const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
+    const countrySignupPrev = comparePeriod
+      ? slicePeriodBreakdown(stats.signupsByCountry, comparePeriod)
+      : undefined;
+    const countryPurchasePrev = comparePeriod
+      ? slicePeriodBreakdown(stats.purchasesByCountry, comparePeriod)
+      : undefined;
+    const methodPrev = comparePeriod
+      ? slicePeriodBreakdown(stats.paymentsByMethod, comparePeriod)
+      : undefined;
 
     return {
       periodMetrics,
@@ -511,9 +524,13 @@ export default function AdminOverview() {
       chartTotal,
       activeChart,
       compareLabel,
+      breakdownCompareHint,
       countrySignupRows,
       countryPurchaseRows,
       methodRows,
+      countrySignupPrev,
+      countryPurchasePrev,
+      methodPrev,
       pendingOpen: stats.pendingVinChecksOpen ?? 0,
       recentPending: stats.recentPendingVinChecks ?? [],
       totalRevStr: fmtEuro(Number(stats.totalRevenue) || 0),
@@ -714,9 +731,11 @@ export default function AdminOverview() {
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
               <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
                   <AdminCountrySignupsChart
                     data={derived?.countrySignupRows ?? []}
+                    previousData={derived?.countrySignupPrev}
+                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
@@ -731,9 +750,11 @@ export default function AdminOverview() {
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
               <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
                   <AdminCountryPurchasesChart
                     data={derived?.countryPurchaseRows ?? []}
+                    previousData={derived?.countryPurchasePrev}
+                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
@@ -748,22 +769,14 @@ export default function AdminOverview() {
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
               <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-lg" />}>
+                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
                   <AdminPaymentMethodsChart
                     data={derived?.methodRows ?? []}
+                    previousData={derived?.methodPrev}
+                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
-              {(derived?.methodRows?.length ?? 0) > 0 && (
-                <div className="px-3.5 pb-3 md:px-4 md:pb-3.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground border-t border-border/30 pt-2">
-                  {(derived?.methodRows ?? []).map((row) => (
-                    <span key={row.method} className="tabular-nums">
-                      <span className="font-medium text-foreground">{PAYMENT_METHOD_LABELS[row.method]}</span>
-                      {" · "}{fmtCompact(row.revenue)}
-                    </span>
-                  ))}
-                </div>
-              )}
             </Panel>
           </div>
         </section>

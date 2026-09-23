@@ -89,6 +89,18 @@ export function slicePeriodBreakdown<T>(
   return maps[period] ?? [];
 }
 
+/** Prior period used for country / method Δ on the dashboard breakdowns. */
+export function previousComparePeriod(period: DashboardPeriod): DashboardPeriod | null {
+  switch (period) {
+    case "today":
+      return "yesterday";
+    case "month":
+      return "lastMonth";
+    default:
+      return null;
+  }
+}
+
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodStat["method"], string> = {
   paypal: "PayPal",
   pok: "POK",

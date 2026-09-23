@@ -1,6 +1,7 @@
 /**
- * Parse Carfax / AutoCheck PDF text into pending VIN form fields.
+ * Parse vehicle-history PDF text into pending VIN form fields.
  * Miles → km. Does not touch photos (handled by apply helper).
+ * Customer-facing strings never keep provider brand names.
  */
 
 import {
@@ -398,13 +399,19 @@ function parseTitleStatus(scope: string): string {
   return "";
 }
 
-/** Strip phones, URLs, star ratings, fbclid — dealer-card junk from Carfax Source column. */
+/** Strip phones, URLs, star ratings, fbclid — dealer-card junk from Source column. */
 export function stripDealerCardJunk(raw: string): string {
   let s = raw.replace(/\s+/g, " ").trim();
   s = s.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, " ");
   s = s.replace(/\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, " ");
-  s = s.replace(/\b[\w.-]+\.(?:com|ca|net|org|io)(?:\/[\w.?=&%/-]*)?/gi, " ");
+  // Full and broken URLs (PDF often inserts spaces inside the path/query)
+  s = s.replace(/\b[\w.-]+\.(?:com|ca|net|org|io)\S*/gi, " ");
+  s = s.replace(/\b[\w.-]+\.(?:com|ca|net|org|io)(?:\s*\/[\w.?=&%/\-\s]*)?/gi, " ");
   s = s.replace(/\bfbclid=\S+/gi, " ");
+  s = s.replace(/\bfbclid\b/gi, " ");
+  // Opaque URL/query leftovers (lowercase hashes only — never "Volkswagen")
+  s = s.replace(/\b[a-z0-9]*_[a-z0-9_]{6,}\b/g, " ");
+  s = s.replace(/\b[a-z0-9]{16,}\b/g, " ");
   s = s.replace(/\b\d+(?:\.\d+)?\s*\/\s*\d+(?:\.\d+)?\b/g, " ");
   s = s.replace(/\b\d+\s+Customer\s+Favorites?\b/gi, " ");
   s = s.replace(/\bCustomer\s+Favorites?\b/gi, " ");
@@ -414,111 +421,321 @@ export function stripDealerCardJunk(raw: string): string {
   return s;
 }
 
+/**
+ * Remove provider brand names from any text that can appear on our report.
+ * "No total loss reported to CARFAX." → "No total loss reported."
+ */
+export function sanitizeCustomerFacingText(raw: string): string {
+  let s = raw.replace(/\s+/g, " ").trim();
+  if (!s) return "";
+  s = s.replace(/\b(?:to|by|from|via|on)\s+CARFAX\b/gi, "");
+  s = s.replace(/\bCARFAX(?:\s+(?:Vehicle History Report|Canada|Inc\.?))?\b/gi, "");
+  s = s.replace(/\b(?:Experian\s+)?AutoCheck\b/gi, "");
+  s = s.replace(/\breported\s+to\s*$/i, "reported");
+  s = s.replace(/\breported\s+to\s*\./gi, "reported.");
+  s = s.replace(/\s{2,}/g, " ");
+  s = s.replace(/\s+([.,;:])/g, "$1");
+  s = s.replace(/\.\s*\./g, ".");
+  return s.trim();
+}
+
+const TABLE_HEADER_NOISE =
+  /^(?:date|mileage|source|comments|service|owner|glossary)$/i;
+
+/** Finalize a location: dealer/city or agency only — never URL junk or table headers. */
+export function cleanHistoryLocation(raw: string): string {
+  let s = stripDealerCardJunk(raw);
+  s = sanitizeCustomerFacingText(s);
+  s = s.replace(/\b(?:Date|Mileage|Source|Comments)\b/gi, " ").replace(/\s{2,}/g, " ").trim();
+
+  const cm = s.match(HISTORY_COMMENT_START);
+  if (cm?.index != null && cm.index > 0) s = s.slice(0, cm.index).trim();
+  else if (cm?.index === 0) return "";
+
+  if (TABLE_HEADER_NOISE.test(s)) return "";
+
+  // Official registries: keep only the agency name
+  const agency = s.match(
+    /\b((?:Ontario|Quebec|Alberta|British Columbia|Manitoba|Saskatchewan)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?)|(?:Florida|California|Texas|New York|[A-Z][a-z]+)\s+Motor Vehicle Dept\.?|NICB|Vehicle Manufacturer|Vehicle Importer|Service Facility)\b/i,
+  );
+  if (agency?.[1]) {
+    return agency[1].replace(/\s+/g, " ").trim().slice(0, 80);
+  }
+
+  // City, ST/province — hard stop; drop anything after (URL leftovers, next tokens)
+  const cityProv = s.match(
+    /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*(ON|QC|BC|AB|MB|SK|NS|NB|NL|PE|YT|NT|NU|[A-Z]{2})\b/,
+  );
+  if (cityProv && cityProv.index != null) {
+    const before = s.slice(0, cityProv.index).trim()
+      .replace(/\b(?:Ontario|Quebec|Florida)\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    // Drop duplicate city name sitting before "City, ST" (e.g. "… Brampton Brampton, ON")
+    const city = cityProv[1]!;
+    const dealer = before
+      .replace(new RegExp(`\\b${city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (dealer.length >= 3 && dealer.length <= 50 && !/\d{3}/.test(dealer) && !TABLE_HEADER_NOISE.test(dealer)) {
+      return `${dealer} ${city}, ${cityProv[2]}`.replace(/\s+/g, " ").trim().slice(0, 80);
+    }
+    return `${city}, ${cityProv[2]}`;
+  }
+
+  s = s.replace(/\breported\b/gi, " ");
+  s = s.replace(/\b\d{3}\b/g, " ");
+  s = s.replace(/\b[a-z0-9]{10,}\b/g, " "); // lowercase junk only
+  s = s.replace(/\s{2,}/g, " ").trim();
+  if (s.length < 3 || TABLE_HEADER_NOISE.test(s)) return "";
+  if (HISTORY_COMMENT_START.test(s)) return "";
+  return s.slice(0, 80);
+}
+
 /** Strip dates, mileages, and location noise from notes — keep service / event info. */
 export function cleanHistoryNote(raw: string): string {
   let s = stripDealerCardJunk(raw);
+  s = sanitizeCustomerFacingText(s);
   s = s.replace(new RegExp(DATE_TOKEN, "gi"), " ");
   s = s.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)\b/gi, " ");
   s = s.replace(/\bnot\s+reported\b/gi, " ");
   s = s.replace(/\bSource\s*[:#]?\s*[^|;\n]+/gi, " ");
-  s = s.replace(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*(?:[A-Z]{2}|Ontario|Quebec|Canada)\b/g, " ");
+  s = s.replace(/\b(?:Date|Mileage|Source|Comments)\b/gi, " ");
+  // City, ST only — do NOT strip "Ontario" inside "Passed Ontario safety…"
+  s = s.replace(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*(?:[A-Z]{2}|ON|QC|BC|AB)\b/g, " ");
   s = s.replace(
-    /\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan|Canada)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?)\b/gi,
+    /\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?)\b/gi,
     " ",
   );
-  s = s.replace(/\b(?:Ontario|Quebec|Alberta|Manitoba|Saskatchewan|Canada)\b/gi, " ");
-  s = s.replace(/\b(?:Florida|Motor Vehicle Dept\.?|DMV|NICB|Vehicle Manufacturer|Vehicle Importer|Service Facility)\b/gi, " ");
+  s = s.replace(/\b(?:Florida|California|Texas)\s+Motor Vehicle Dept\.?\b/gi, " ");
+  s = s.replace(/\b(?:DMV|NICB|Vehicle Manufacturer|Vehicle Importer|Service Facility)\b/gi, " ");
   s = s.replace(/\s*[-–—|:]\s*/g, " · ");
   s = s.replace(/(?:\s*·\s*)+/g, " · ").replace(/^\s*·\s*|\s*·\s*$/g, "");
   s = s.replace(/\s{2,}/g, " ").trim();
   if (s.length < 3) return "";
-  return s.slice(0, 200);
+  return sanitizeCustomerFacingText(s).slice(0, 400);
 }
 
-/** Known Carfax Comments-column starters (after Source). */
-const CARFAX_COMMENT_START =
-  /\b(Vehicle\s+serviced|Vehicle\s+purchase\s+reported|Vehicle\s+sold|Vehicle\s+manufactured|Vehicle\s+exported|Vehicle\s+declared|Title\s+issued|Title\s+or\s+registration\s+issued|Registration\s+issued|Odometer\s+reading\s+reported|Odometer\s+reported|Passed\s+Ontario|Passed\s+safety|New\s+owner\s+reported|First\s+owner\s+reported|Pre-delivery\s+inspection|Maintenance\s+inspection|Oil\s+and\s+filter|Brake\s+(?:pads|rotor|caliper)|Undercoating|Registered\s+as|Titled\s+or\s+registered|Four\s+tires|Tire\(s\)|Spark\s+plug|Ignition\s+coil|Water\s+pump|Thermostat|Engine\s+timing|Serpentine\s+belt|Cabin\s+air|Brakes\s+checked|Brakes\s+serviced)\b/i;
+/**
+ * Known Comments-column starters — longer phrases first so we don't split
+ * "Registration issued or renewed" into title + "or renewed".
+ */
+const HISTORY_COMMENT_START =
+  /\b(Registration\s+issued\s+or\s+renewed|Title\s+issued\s+or\s+updated|Title\s+or\s+registration\s+issued|Passed\s+Ontario\s+safety\s+standards\s+inspection|Passed\s+safety\s+inspection|Vehicle\s+purchase\s+reported|Vehicle\s+manufactured(?:\s+and\s+shipped\s+to\s+original\s+dealer)?|Vehicle\s+exported(?:\s+from\s+\w+(?:\s+\w+)?)?(?:\s+and\s+imported\s+to\s+\w+)?|Vehicle\s+declared(?:\s+to\s+meet[^.]{0,60})?|Odometer\s+reading\s+reported|Odometer\s+reported(?:\s+as\s+[\d,]+\s+kilometers?)?|New\s+owner\s+reported|First\s+owner\s+reported|Pre-delivery\s+inspection(?:\s+completed)?|Maintenance\s+inspection(?:\s+completed)?|Vehicle\s+serviced|Vehicle\s+sold|Undercoating(?:\/rustproofing)?(?:\s+applied)?|Registered\s+as(?:\s+personal(?:\s+lease)?\s+vehicle)?|Titled\s+or\s+registered(?:\s+as\s+personal(?:\s+lease)?\s+vehicle)?|Oil\s+and\s+filter\s+changed|Brake\s+pads?\s+replaced|Rear\s+brake\s+pads?\s+replaced|Rear\s+brake\s+rotor\(s\)\s+replaced|Brakes?\s+checked|Brakes?\s+serviced|Tire\(s\)\s+changed|Tire\(s\)\s+mounted|Four\s+tires\s+mounted|Spark\s+plug\(s\)\s+replaced|Ignition\s+coil\(s\)\s+replaced|Water\s+pump(?:\s+gasket)?\s+replaced|Thermostat\s+replaced|Engine\s+timing\/front\s+cover\s+gasket\s+replaced|Serpentine\s+belt\s+replaced|Cabin\s+air\s+filter\s+replaced\/cleaned|Registration\s+issued|Title\s+issued)\b/i;
 
-/** PDF Source column → location (never description). */
+/** PDF Source column → location (never description / never next-row dealer). */
 export function extractHistoryLocation(rest: string): string {
-  const labeled = rest.match(/\bSource\s*[:#]?\s*([^|;\n]{2,90})/i);
+  // Table header "Source Comments" must not become location "Comments"
+  const labeled = rest.match(/\bSource\s*[:#]?\s*([^\n]{2,90})/i);
   if (labeled?.[1]) {
-    return stripDealerCardJunk(labeled[1]).slice(0, 80);
+    const cand = labeled[1].trim();
+    if (!TABLE_HEADER_NOISE.test(cand.split(/\s+/)[0] ?? "")) {
+      const loc = cleanHistoryLocation(cand);
+      if (loc) return loc;
+    }
   }
 
-  // Carfax: after mileage, Source runs until a known Comments starter
   let afterOdo = rest.replace(
     /^\s*(?:[\d,]{1,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)|not\s+reported)\b\s*/i,
     "",
   );
-  const cm = afterOdo.match(CARFAX_COMMENT_START);
+  const cm = afterOdo.match(HISTORY_COMMENT_START);
   const sourceBlob =
     cm && cm.index != null && cm.index > 0
       ? afterOdo.slice(0, cm.index)
       : "";
 
   if (sourceBlob) {
-    const cleaned = stripDealerCardJunk(sourceBlob)
-      .replace(new RegExp(DATE_TOKEN, "gi"), "")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-    if (cleaned.length >= 3) return cleaned.slice(0, 80);
+    return cleanHistoryLocation(sourceBlob);
   }
 
-  const cityProv = rest.match(
-    /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*(ON|QC|BC|AB|MB|SK|NS|NB|NL|PE|YT|NT|NU|[A-Z]{2})\b/,
-  );
-  if (cityProv) return `${cityProv[1]}, ${cityProv[2]}`;
-  const ontarioDept = rest.match(
-    /\b((?:Ontario|Quebec|Alberta|British Columbia)\s+(?:Ministry of Transportation|Motor Vehicle Dept\.?))/i,
-  );
-  if (ontarioDept?.[1]) return ontarioDept[1].trim().slice(0, 80);
-  if (/\bFlorida\s+Motor Vehicle Dept/i.test(rest)) return "Florida Motor Vehicle Dept.";
-  if (/\bOntario\b/i.test(rest)) return "Ontario";
-  return "";
+  return cleanHistoryLocation(afterOdo);
 }
 
 /**
- * Comments column → titleStatus (event) + description (detail bullets).
- * Dealer/source never goes into these fields.
+ * Comments column → titleStatus + description.
+ * Only "Vehicle serviced" uses titleStatus; other events go entirely into description.
  */
 export function splitEventComment(rest: string): { titleStatus: string; description: string } {
   let afterOdo = rest.replace(
     /^\s*(?:[\d,]{1,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)|not\s+reported)\b\s*/i,
     "",
   );
-  const cm = afterOdo.match(CARFAX_COMMENT_START);
-  let comments = cm && cm.index != null ? afterOdo.slice(cm.index) : afterOdo;
+  const cm = afterOdo.match(HISTORY_COMMENT_START);
+  let commentsRaw = cm && cm.index != null ? afterOdo.slice(cm.index) : afterOdo;
+  commentsRaw = stripDealerCardJunk(commentsRaw);
 
-  // Drop leading source leftovers if comment starter wasn't found
-  comments = stripDealerCardJunk(comments);
-  comments = cleanHistoryNote(comments);
-  if (!comments) return { titleStatus: "", description: "" };
+  // Match event on raw text BEFORE cleanHistoryNote (which must not destroy "Ontario")
+  const hitRaw = commentsRaw.match(HISTORY_COMMENT_START);
+  const rawBullets = commentsRaw
+    .split(/\s*-\s+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 2);
 
-  // Prefer first meaningful event phrase as title
-  const eventHit = comments.match(CARFAX_COMMENT_START);
-  if (eventHit && eventHit.index != null && eventHit.index < 40) {
-    const title = (eventHit[1] ?? eventHit[0] ?? "").replace(/\s+/g, " ").trim();
-    let restDesc = comments.slice((eventHit.index ?? 0) + (eventHit[0]?.length ?? 0)).trim();
-    restDesc = restDesc.replace(/^[\s·\-–—|,]+/, "").trim();
-    // Bullet fragments often joined with ·
-    const bullets = restDesc
-      .split(/\s*·\s*/)
-      .map((p) => p.trim())
-      .filter((p) => p.length > 2 && !/^[\d.]+$/.test(p));
+  if (hitRaw && hitRaw.index != null && hitRaw.index < 80) {
+    let eventPhrase = sanitizeCustomerFacingText(
+      (hitRaw[1] ?? hitRaw[0] ?? "").replace(/\s+/g, " ").trim(),
+    );
+    if (/^registration\s+issued$/i.test(eventPhrase) && /\bregistration\s+issued\s+or\s+renewed\b/i.test(rest)) {
+      eventPhrase = "Registration issued or renewed";
+    }
+    if (/^title\s+issued$/i.test(eventPhrase) && /\btitle\s+issued\s+or\s+updated\b/i.test(rest)) {
+      eventPhrase = "Title issued or updated";
+    }
+    if (/^passed\s+ontario\b/i.test(eventPhrase) || /^passed\s+safety\b/i.test(eventPhrase)) {
+      if (/\bpassed\s+ontario\s+safety\s+standards\s+inspection\b/i.test(rest)) {
+        eventPhrase = "Passed Ontario safety standards inspection";
+      } else if (/\bpassed\s+safety\s+inspection\b/i.test(rest)) {
+        eventPhrase = "Passed safety inspection";
+      }
+    }
+
+    const afterEvent = commentsRaw.slice((hitRaw.index ?? 0) + (hitRaw[0]?.length ?? 0));
+    const detailBullets = uniqueBullets(
+      [
+        ...afterEvent.split(/\s*-\s+/),
+        ...rawBullets.slice(1),
+      ]
+        .map((p) => sanitizeCustomerFacingText(stripDealerCardJunk(p.replace(/\s+/g, " ").trim())))
+        .filter((p) => isUsefulDetailBullet(p) && !isNonServiceNoiseBullet(p)),
+    );
+
+    // Vehicle serviced → short title + work details in description
+    if (/^vehicle\s+serviced$/i.test(eventPhrase)) {
+      return {
+        titleStatus: "Vehicle serviced",
+        description: filterServiceWorkBullets(detailBullets).join(" · ").slice(0, 400),
+      };
+    }
+
+    // Everything else (inspection, registration, import, owner…) → description only
+    const descParts = uniqueBullets([
+      eventPhrase,
+      ...detailBullets.filter((p) => !isNonServiceNoiseBullet(p) || /odometer reading|registration|passed|title issued/i.test(eventPhrase)),
+    ]);
+    // For non-service events, keep the event phrase; drop ownership/import pile-ons
+    const cleaned = descParts.filter((p, i) => {
+      if (i === 0) return true;
+      return !isNonServiceNoiseBullet(p);
+    });
     return {
-      titleStatus: title.slice(0, 80),
-      description: bullets.join(" · ").slice(0, 200),
+      titleStatus: "",
+      description: cleaned.join(" · ").slice(0, 400),
     };
   }
 
-  const parts = comments.split(/\s*·\s*/).map((p) => p.trim()).filter(Boolean);
-  if (parts.length === 0) return { titleStatus: "", description: "" };
-  if (parts.length === 1) return { titleStatus: parts[0]!.slice(0, 80), description: "" };
-  return {
-    titleStatus: parts[0]!.slice(0, 80),
-    description: parts.slice(1).join(" · ").slice(0, 200),
-  };
+  const cleaned = cleanHistoryNote(commentsRaw);
+  if (!cleaned) return { titleStatus: "", description: "" };
+  return { titleStatus: "", description: cleaned.slice(0, 400) };
+}
+
+/** Ownership / title / import lines — never "what was serviced". */
+function isNonServiceNoiseBullet(p: string): boolean {
+  return /\b(?:vehicle\s+importer|vehicle\s+manufacturer|vehicle\s+exported|vehicle\s+imported|imported\s+to|exported\s+from|from\s+michigan|new\s+owner\s+reported|first\s+owner\s+reported|title\s+issued|title\s+or\s+registration|registration\s+issued|titled\s+or\s+registered|registered\s+as\s+personal|vehicle\s+purchase\s+reported|vehicle\s+sold|vehicle\s+manufactured|vehicle\s+declared|pre-?delivery\s+inspection|personal\s+lease)\b/i.test(
+    p,
+  );
+}
+
+function filterServiceWorkBullets(bullets: string[]): string[] {
+  return bullets.filter(
+    (p) =>
+      !isNonServiceNoiseBullet(p)
+      && /\b(?:brake|tire|oil|filter|spark|ignition|water\s+pump|thermostat|serpentine|cabin|undercoat|washed|mounted|replaced|changed|checked|serviced|gasket|coil|rotor|pad|alignment|battery|fluid)\b/i.test(
+        p,
+      ),
+  );
+}
+
+function isUsefulDetailBullet(p: string): boolean {
+  if (!p || p.length < 3) return false;
+  if (/^[\d.]+$/.test(p)) return false;
+  if (TABLE_HEADER_NOISE.test(p)) return false;
+  if (/^or\s+renewed$/i.test(p) || /^or\s+updated$/i.test(p)) return false;
+  if (/^(?:have questions|consumers|dealers|this report|follow us)\b/i.test(p)) return false;
+  // Drop pure odometer restatements from description when they're the only content
+  if (/^odometer\s+reported\s+as\b/i.test(p)) return false;
+  if (/^vehicle\s+color\s+noted\b/i.test(p)) return false;
+  return true;
+}
+
+function uniqueBullets(items: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of items) {
+    const k = item.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(item);
+  }
+  return out;
+}
+
+/** Recent Service Highlights → date → detail bullets (PDF dumps these separately). */
+export function parseRecentServiceHighlights(text: string): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  const start = text.search(/\bRecent\s+Service\s+Highlights\b/i);
+  if (start < 0) return map;
+  const endMatch = text.slice(start).search(/\bAdditional\s+History\b|\bDetailed\s+History\b/i);
+  const scope = text.slice(start, endMatch > 0 ? start + endMatch : start + 1200);
+
+  const KNOWN = [
+    "Brakes checked",
+    "Brake pads replaced",
+    "Rear brake pads replaced",
+    "Rear brake rotor(s) replaced",
+    "Front brake pads replaced",
+    "Front brakes replaced",
+    "Tire(s) changed",
+    "Tire(s) mounted",
+    "Four tires mounted",
+    "Oil and filter changed",
+    "Spark plug(s) replaced",
+    "Undercoating/rustproofing applied",
+  ];
+
+  for (const m of scope.matchAll(new RegExp(`(${DATE_TOKEN})`, "gi"))) {
+    const date = toIsoDate(m[1]!);
+    const before = scope.slice(Math.max(0, (m.index ?? 0) - 220), m.index ?? 0);
+    const found = KNOWN.filter((d) => new RegExp(escapeRe(d), "i").test(before));
+    if (found.length > 0) {
+      map.set(date, uniqueBullets([...(map.get(date) ?? []), ...found]));
+    }
+  }
+  return map;
+}
+
+/** Trailing " - " service bullets dumped after dates (PDF column reorder). */
+export function extractDeferredServiceBullets(text: string): string[] {
+  const detailedIdx = text.search(/\bDetailed\s+History\b/i);
+  const scope = detailedIdx >= 0 ? text.slice(detailedIdx) : text;
+  const gloss = scope.search(/\bFull\s+Glossary\b|\bI have reviewed and received\b/i);
+  const body = gloss > 0 ? scope.slice(0, gloss) : scope;
+
+  // Only the end dump (after Have Questions or last ~900 chars) — not every historic " - " line
+  let tail = body;
+  const hq = body.search(/\bHave Questions\?/i);
+  if (hq >= 0) {
+    tail = body.slice(hq);
+  } else {
+    tail = body.slice(Math.max(0, body.length - 900));
+  }
+
+  const chunks = tail.split(/\s*-\s+/);
+  const SERVICE_LINE =
+    /\b(?:brakes?\s+checked|brakes?\s+serviced|brake\s+pads?|rear\s+brake|front\s+brake|tire\(s\)|oil\s+and\s+filter|spark\s+plug|ignition\s+coil|water\s+pump|thermostat|serpentine|cabin\s+air|undercoating|engine\s+timing|four\s+tires|vehicle\s+washed)\b/i;
+
+  return uniqueBullets(
+    chunks
+      .map((c) => sanitizeCustomerFacingText(stripDealerCardJunk(c.replace(/\s+/g, " ").trim())))
+      .filter(
+        (c) =>
+          c.length >= 5
+          && c.length <= 90
+          && SERVICE_LINE.test(c)
+          && isUsefulDetailBullet(c)
+          && !isNonServiceNoiseBullet(c),
+      ),
+  );
 }
 
 type HistoryHit = {
@@ -572,35 +789,82 @@ export function extractHistoryOdometerKm(
 }
 
 function parseHistoryBlocks(text: string): HistoryHit[] {
-  // Prefer Detailed History; drop glossary / FAQ noise at the end
+  // Prefer Detailed History; drop glossary noise at the end (after harvesting deferred bullets)
   let scope = text;
   const detailedIdx = text.search(/\bDetailed\s+History\b/i);
   if (detailedIdx >= 0) scope = text.slice(detailedIdx);
+
+  const highlights = parseRecentServiceHighlights(text);
+  const deferredBullets = extractDeferredServiceBullets(text);
+
   const cut = scope.search(
-    /\b(?:Full\s+Glossary|Have Questions\?|I have reviewed and received|©\s*\d{4}\s+CARFAX)\b/i,
+    /\b(?:Full\s+Glossary|I have reviewed and received|©\s*\d{4}\s+CARFAX)\b/i,
   );
-  if (cut > 200) scope = scope.slice(0, cut);
+  // Keep "Have Questions?" region — deferred service bullets often sit after it
+  const parseScope = cut > 200 ? scope.slice(0, cut) : scope;
 
   const hits: HistoryHit[] = [];
   const dateRe = new RegExp(`(${DATE_TOKEN})`, "gi");
-  const dates = [...scope.matchAll(dateRe)];
+  const dates = [...parseScope.matchAll(dateRe)];
   for (let i = 0; i < dates.length; i++) {
     const dm = dates[i]!;
     const dateRaw = dm[1]!;
     const date = toIsoDate(dateRaw);
     const start = (dm.index ?? 0) + dateRaw.length;
-    const end = i + 1 < dates.length ? (dates[i + 1]!.index ?? scope.length) : scope.length;
-    let rest = scope.slice(start, end).replace(/\s+/g, " ").trim();
+    const end = i + 1 < dates.length ? (dates[i + 1]!.index ?? parseScope.length) : parseScope.length;
+    let rest = parseScope.slice(start, end).replace(/\s+/g, " ").trim();
     if (rest.length < 4) continue;
-    // Cap per-row so deferred comment blobs from PDF column reordering don't explode
     if (rest.length > 420) rest = rest.slice(0, 420);
 
     const odometerKm = extractHistoryOdometerKm(rest, date);
     const location = extractHistoryLocation(rest);
-    const { titleStatus, description } = splitEventComment(rest);
+    let { titleStatus, description } = splitEventComment(rest);
+
+    // Merge Recent Service Highlights for this date
+    const highlightBullets = highlights.get(date) ?? [];
+    if (highlightBullets.length > 0) {
+      if (!titleStatus || /^vehicle\s+serviced$/i.test(titleStatus)) {
+        titleStatus = titleStatus || "Vehicle serviced";
+      }
+      description = uniqueBullets([
+        ...description.split(/\s*·\s*/).filter(Boolean),
+        ...highlightBullets,
+      ]).join(" · ").slice(0, 400);
+    }
+
     hits.push({ date, titleStatus, description, odometerKm, location, raw: rest });
     if (hits.length >= 80) break;
   }
+
+  // Attach orphaned deferred service bullets to the best matching Vehicle serviced row
+  if (deferredBullets.length > 0) {
+    let target: HistoryHit | undefined;
+    // Prefer a serviced row that already has highlight details (same visit)
+    for (const date of highlights.keys()) {
+      const h = hits.find(
+        (x) => x.date === date && /vehicle\s+serviced/i.test(`${x.titleStatus} ${x.raw}`),
+      );
+      if (h) {
+        target = h;
+        break;
+      }
+    }
+    if (!target) {
+      for (let i = hits.length - 1; i >= 0; i--) {
+        const h = hits[i]!;
+        if (/vehicle\s+serviced/i.test(`${h.titleStatus} ${h.raw}`)) {
+          target = h;
+          break;
+        }
+      }
+    }
+    if (target) {
+      const existing = target.description.split(/\s*·\s*/).filter(Boolean);
+      target.description = uniqueBullets([...existing, ...deferredBullets]).join(" · ").slice(0, 400);
+      if (!target.titleStatus) target.titleStatus = "Vehicle serviced";
+    }
+  }
+
   return hits;
 }
 
@@ -609,16 +873,16 @@ function isAccidentish(raw: string): boolean {
 }
 
 function isServiceish(raw: string): boolean {
-  return /\b(service|serviced|oil\s+change|maintenance|tire|brake|replace|replaced|repair|inspected|inspection|filter|fluid|alignment|battery|spark\s+plug|timing|transmission\s+service|dealer\s+service)\b/i.test(raw)
-    && !isAccidentish(raw);
+  if (isNonServiceNoiseBullet(raw)) return false;
+  if (/\bvehicle\s+serviced\b/i.test(raw)) return true;
+  return false;
 }
 
 function isMileageEvent(raw: string, odometerKm: string): boolean {
   if (!odometerKm) return false;
-  // Only rows with a real unit-backed reading (already required to set odometerKm)
   return (
     isServiceish(raw)
-    || /\b(odometer|mileage|inspection|registration|renewal|emission|smog|title\/registration|reported|reading)\b/i.test(raw)
+    || /\b(odometer|mileage|inspection|registration|renewal|emission|smog|title\/registration|reported|reading|passed\s+ontario|passed\s+safety)\b/i.test(raw)
     || /\b[\d,]{1,7}\s*(miles?|mi|km|kilometers?)\b/i.test(raw)
   );
 }
@@ -630,58 +894,35 @@ function isOwnerish(raw: string): boolean {
   );
 }
 
-/** Prefer Carfax "Owner N Purchased: YEAR" section headers. */
-function parseOwnerSections(text: string): CatalogOwnerForm[] {
-  const rows: CatalogOwnerForm[] = [];
-  for (const m of text.matchAll(/\bOwner\s+(\d+)\s+Purchased:\s*((?:19|20)\d{2})\b/gi)) {
-    const year = m[2]!;
-    rows.push({
-      ...EMPTY_OWNER,
-      date: `${year}-01-01`,
-      location: "",
-      mileage: "",
-      condition: "",
-      lotStatus: "",
-    });
-  }
-  return rows;
-}
-
-/** Build owner rows from section headers, else strong signals, capped at ownerCount. */
+/**
+ * Owner history: leave empty unless we have a real dated ownership event.
+ * Never invent YYYY-01-01 from "Owner N Purchased: YEAR". ownerCount is enough.
+ */
 function buildOwners(
-  text: string,
+  _text: string,
   hits: HistoryHit[],
   ownerCount: string,
 ): CatalogOwnerForm[] {
-  const fromSections = parseOwnerSections(text);
-  if (fromSections.length > 0) {
-    const cap = Number(ownerCount) || fromSections.length;
-    return fromSections.slice(0, Math.min(Math.max(cap, fromSections.length), 20));
-  }
-
+  void ownerCount;
   const rows = hits
-    .filter((h) => isOwnerish(h.raw))
+    .filter((h) => isOwnerish(h.raw) && Boolean(h.date))
     .map((h) => ({
       ...EMPTY_OWNER,
       date: h.date,
-      location: h.location,
+      location: cleanHistoryLocation(h.location),
       mileage: h.odometerKm,
       condition: "",
       lotStatus: "",
     }));
 
-  const seen = new Set<string>();
-  const unique = rows.filter((r) => {
-    const k = `${r.date}|${r.mileage}|${r.location}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
+  // Prefer empty — "new owner reported" without clear purchase context is noisy
+  if (rows.length === 0) return [];
+  // Still skip inventing rows; only keep hits that also look like purchase (not every new owner line)
+  const purchases = rows.filter((r) => {
+    const hit = hits.find((h) => h.date === r.date && h.odometerKm === r.mileage);
+    return hit && /\bvehicle\s+purchase\s+reported\b/i.test(hit.raw);
   });
-
-  const cap = Number(ownerCount);
-  const limited =
-    Number.isFinite(cap) && cap > 0 ? unique.slice(0, cap) : unique.slice(0, 20);
-  return sortHistoryNewestFirst(limited);
+  return sortHistoryNewestFirst(purchases).slice(0, 10);
 }
 
 function buildAccidents(hits: HistoryHit[], text: string): CatalogAccidentForm[] {
@@ -690,8 +931,10 @@ function buildAccidents(hits: HistoryHit[], text: string): CatalogAccidentForm[]
     .map((h) => ({
       ...EMPTY_ACCIDENT,
       date: h.date,
-      description: [h.titleStatus, h.description].filter(Boolean).join(" · ") || "Accident / damage reported",
-      location: h.location,
+      description: sanitizeCustomerFacingText(
+        [h.titleStatus, h.description].filter(Boolean).join(" · ") || "Accident / damage reported",
+      ),
+      location: cleanHistoryLocation(h.location),
       type: /flood|water/i.test(h.raw) ? "flood" : "collision",
       severity: /severe|major|structural/i.test(h.raw)
         ? "major"
@@ -729,9 +972,9 @@ function buildMileage(hits: HistoryHit[], latestKm: string): CatalogMileageForm[
       odometer: h.odometerKm,
       unit: "km",
       source: "",
-      location: h.location,
-      titleStatus: h.titleStatus,
-      description: h.description,
+      location: cleanHistoryLocation(h.location),
+      titleStatus: sanitizeCustomerFacingText(h.titleStatus),
+      description: sanitizeCustomerFacingText(h.description),
     }));
 
   const seen = new Set<string>();
@@ -756,16 +999,48 @@ function buildMileage(hits: HistoryHit[], latestKm: string): CatalogMileageForm[
 
 function buildServices(hits: HistoryHit[]): CatalogServiceForm[] {
   const rows = hits
-    .filter((h) => isServiceish(h.raw))
-    .map((h) => ({
-      ...EMPTY_SERVICE,
-      date: h.date,
-      mileage: h.odometerKm,
-      title: h.titleStatus || "Service",
-      location: h.location,
-      description: h.description,
-    }))
-    .filter((r) => r.description || r.mileage || r.title);
+    .filter((h) => {
+      if (/\bvehicle\s+serviced\b/i.test(`${h.titleStatus} ${h.raw}`)) return true;
+      if (isNonServiceNoiseBullet(h.raw)) return false;
+      return /\b(?:oil\s+(?:change|and\s+filter)|brake\s+pads?\s+replaced|tire\(s\)\s+(?:changed|mounted)|spark\s+plug)/i.test(
+        h.raw,
+      );
+    })
+    .map((h) => {
+      const isVehicleServiced = /\bvehicle\s+serviced\b/i.test(`${h.titleStatus} ${h.raw}`);
+      const work = filterServiceWorkBullets(
+        [
+          ...h.description.split(/\s*·\s*/),
+          ...(isVehicleServiced ? [] : [cleanHistoryNote(h.raw) || h.titleStatus]),
+        ]
+          .map((p) => sanitizeCustomerFacingText(String(p).replace(/\s+/g, " ").trim()))
+          .filter(Boolean),
+      );
+      // Pull a short title from the work line when PDF didn't say "Vehicle serviced"
+      let title = isVehicleServiced ? "Vehicle serviced" : "";
+      let description = work.join(" · ");
+      if (!title && work.length > 0) {
+        title = work[0]!.slice(0, 80);
+        description = work.slice(1).join(" · ");
+      }
+      if (!title) title = "Service";
+
+      return {
+        ...EMPTY_SERVICE,
+        date: h.date,
+        mileage: h.odometerKm,
+        title,
+        location: cleanHistoryLocation(h.location),
+        description: description.slice(0, 400),
+      };
+    })
+    .filter((r) => {
+      if (/vehicle\s+importer|vehicle\s+exported|from\s+michigan/i.test(`${r.location} ${r.description} ${r.title}`)) {
+        return false;
+      }
+      if (!r.date) return false;
+      return Boolean(r.mileage || r.description || /^vehicle\s+serviced$/i.test(r.title));
+    });
 
   return sortHistoryNewestFirst(rows).slice(0, 50);
 }
@@ -858,7 +1133,7 @@ export function parseProviderPdfText(
   if (text.replace(/\s+/g, "").length < 40) {
     return {
       ok: false,
-      error: "Could not read text from this PDF (it may be a scanned image). Use a text-based Carfax or AutoCheck PDF.",
+      error: "Could not read text from this PDF (it may be a scanned image). Use a text-based vehicle history PDF.",
     };
   }
 
@@ -943,7 +1218,7 @@ export function parseProviderPdfText(
   };
 
   const summary: string[] = [];
-  if (provider !== "unknown") summary.push(`Detected ${provider === "carfax" ? "Carfax" : "AutoCheck"}`);
+  if (provider !== "unknown") summary.push("Detected vehicle history PDF");
   else summary.push("Provider not clearly detected — best-effort parse");
   if (form.year || form.make || form.model) {
     summary.push([form.year, form.make, form.model].filter(Boolean).join(" "));

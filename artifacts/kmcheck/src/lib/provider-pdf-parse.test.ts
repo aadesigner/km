@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { milesToKm, readingToKm, parseOdometerNumber } from "./provider-pdf-miles";
 import {
+  cleanHistoryLocation,
   cleanHistoryNote,
   cleanModelName,
   detectProviderPdfKind,
@@ -10,6 +11,7 @@ import {
   parseEngine,
   parseProviderPdfText,
   parseVehicleCountry,
+  sanitizeCustomerFacingText,
   splitEventComment,
 } from "./provider-pdf-parse";
 import { applyProviderPdfToForm } from "./provider-pdf-apply";
@@ -128,12 +130,13 @@ describe("cleanHistoryNote", () => {
 });
 
 describe("history comment / location split", () => {
-  it("maps Source to location and title to titleStatus", () => {
+  it("maps Source to location; event text to description", () => {
     const rest =
       "Title / Registration 12 km Source: Ontario Ministry of Transportation Clear title issued";
     expect(extractHistoryLocation(rest)).toMatch(/Ontario Ministry/i);
     const { titleStatus, description } = splitEventComment(rest);
-    expect(titleStatus.toLowerCase()).toMatch(/title|registration|clear/i);
+    // Non-service events live in description
+    expect(`${titleStatus} ${description}`.toLowerCase()).toMatch(/title|registration|clear/i);
     expect(description.toLowerCase()).not.toMatch(/ontario ministry/i);
     expect(description.toLowerCase()).not.toMatch(/^source/);
   });
@@ -149,14 +152,70 @@ describe("history comment / location split", () => {
     expect(description).not.toMatch(/doralvw|fbclid|Customer Favorites|305/i);
   });
 
+  it("does not merge ministry + next dealer into location", () => {
+    const rest =
+      "163,420 mi Ontario Ministry of Transportation Odometer reading reported";
+    expect(extractHistoryLocation(rest)).toBe("Ontario Ministry of Transportation");
+    expect(extractHistoryLocation(rest)).not.toMatch(/Gc Tire|905|reported/i);
+    const bleed =
+      "Ontario Ministry of Transportation reported Gc Tire And Auto 905-456-2610";
+    expect(cleanHistoryLocation(bleed)).toBe("Ontario Ministry of Transportation");
+  });
+
+  it("strips provider brand from customer-facing phrases", () => {
+    expect(sanitizeCustomerFacingText("No total loss reported to CARFAX.")).toBe(
+      "No total loss reported.",
+    );
+    expect(sanitizeCustomerFacingText("No accidents or damage reported to CARFAX")).toBe(
+      "No accidents or damage reported",
+    );
+    expect(sanitizeCustomerFacingText("Vehicle serviced at dealer")).not.toMatch(/carfax/i);
+  });
+
   it("strips tirecraft url junk from Gc Tire service row", () => {
     const rest =
-      "164,714 mi Gc Tire And Auto Brampton, ON 905-456-2610 tirecraft.com/tirecraft-brampton/? fbclid=iwar2vzrsznpmisjfx Vehicle serviced";
-    expect(extractHistoryLocation(rest)).toMatch(/Gc Tire/i);
-    expect(extractHistoryLocation(rest)).not.toMatch(/tirecraft|fbclid|905/i);
+      "164,714 mi Gc Tire And Auto Brampton, ON 905-456-2610 tirecraft.com/tirecraft- brampton/? fbclid=iwar2vzrsznpmisjfx j4yteh8aub9t8fgbypq_xzv 0gi7tisfxd6osa92tng4 Vehicle serviced";
+    expect(extractHistoryLocation(rest)).toBe("Gc Tire And Auto Brampton, ON");
+    expect(extractHistoryLocation(rest)).not.toMatch(/tirecraft|fbclid|905|j4yte|brampton \?/i);
     const { titleStatus, description } = splitEventComment(rest);
     expect(titleStatus).toMatch(/Vehicle serviced/i);
     expect(description).not.toMatch(/tirecraft|fbclid|456/i);
+  });
+
+  it("keeps Registration issued or renewed intact", () => {
+    const rest = "not reported Ontario Ministry of Transportation Registration issued or renewed";
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus).toBe("");
+    expect(description).toBe("Registration issued or renewed");
+    expect(extractHistoryLocation(rest)).toBe("Ontario Ministry of Transportation");
+  });
+
+  it("puts Passed Ontario safety inspection entirely in description", () => {
+    const rest =
+      "3,572 mi Ontario Ministry of Transportation Passed Ontario safety standards inspection";
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus).toBe("");
+    expect(description).toBe("Passed Ontario safety standards inspection");
+    expect(description).not.toMatch(/^Passed Ontario$/i);
+  });
+
+  it("does not use table header Comments as location", () => {
+    expect(cleanHistoryLocation("Comments")).toBe("");
+    expect(extractHistoryLocation("Source Comments 3,572 mi Ontario Ministry of Transportation Odometer reading reported")).toBe(
+      "Ontario Ministry of Transportation",
+    );
+  });
+
+  it("Vehicle serviced keeps work in description, not import/title noise", () => {
+    const svc = splitEventComment("11 mi Doral Volkswagen Vehicle serviced");
+    expect(svc.titleStatus).toBe("Vehicle serviced");
+
+    const importRow = splitEventComment(
+      "not reported Vehicle Importer Vehicle exported from Michigan and imported to Ontario",
+    );
+    expect(importRow.titleStatus).toBe("");
+    expect(importRow.description).toMatch(/Vehicle exported/i);
+    expect(importRow.description).not.toMatch(/Vehicle serviced/i);
   });
 
   it("strips mileage bleed from model names", () => {
@@ -235,7 +294,11 @@ describe("provider-pdf-parse", () => {
     expect(
       r.form.mileageHistory.every((m) => !/ontario/i.test(m.description)),
     ).toBe(true);
-    expect(r.form.mileageHistory.some((m) => m.titleStatus.length > 0)).toBe(true);
+    expect(
+      r.form.mileageHistory.some(
+        (m) => m.titleStatus.length > 0 || m.description.length > 0,
+      ),
+    ).toBe(true);
   });
 
   it("uses labeled model year; keeps 2012/2025 history dates with real miles (not year-as-odo)", () => {

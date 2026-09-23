@@ -204,7 +204,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const handlePdfPickClick = () => {
     if (!detail || pdfImporting) return;
     if (!confirm(
-      "Fill from Carfax / AutoCheck PDF?\n\nThis replaces all draft fields except photos. The PDF stays on your device (not uploaded). Miles are converted to km. Review and Save draft when done.",
+      "Fill from vehicle history PDF?\n\nThis replaces all draft fields except photos. The PDF stays on your device (not uploaded). Miles are converted to km. Review and Save draft when done.",
     )) return;
     pdfInputRef.current?.click();
   };
@@ -489,7 +489,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
               className="shrink-0 gap-1.5"
               onClick={handlePdfPickClick}
               disabled={saving || publishing || removing || crediting || refunding || pdfImporting}
-              title="Read Carfax or AutoCheck PDF on this device — nothing is uploaded"
+              title="Read vehicle history PDF on this device — nothing is uploaded"
             >
               {pdfImporting
                 ? <Loader2 className="h-4 w-4 animate-spin" />

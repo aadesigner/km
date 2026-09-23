@@ -10,7 +10,9 @@ describe("real Carfax Tiguan PDF extract", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.form.ownerCount).toBe("4");
-    expect(r.form.ownerHistory).toHaveLength(4);
+    expect(r.form.ownerHistory.every((o) => !/-01-01$/.test(o.date))).toBe(true);
+    // No invented Jan-1 purchase-year owner rows
+    expect(r.form.ownerHistory.some((o) => o.date === "2012-01-01" || o.date === "2026-01-01")).toBe(false);
     expect(r.form.model).toMatch(/Tiguan/i);
     expect(r.form.model).not.toMatch(/164/);
     expect(r.form.odometer).toBe(String(Math.round(164714 * 1.609344)));
@@ -23,6 +25,13 @@ describe("real Carfax Tiguan PDF extract", () => {
       expect(junkRe.test(m.description), `desc junk: ${m.description}`).toBe(false);
       expect(junkRe.test(m.location), `loc junk: ${m.location}`).toBe(false);
       expect(m.titleStatus).not.toMatch(/Doral Volkswagen\s*305/i);
+      expect(m.location).not.toMatch(/reported.*Gc Tire|Gc Tire.*905/i);
+      expect(`${m.titleStatus} ${m.description} ${m.location}`).not.toMatch(/carfax/i);
+    }
+
+    for (const s of r.form.serviceHistory) {
+      expect(junkRe.test(`${s.title} ${s.description} ${s.location}`), `svc junk: ${s.title}|${s.description}|${s.location}`).toBe(false);
+      expect(`${s.title} ${s.description} ${s.location}`).not.toMatch(/carfax/i);
     }
 
     const doral = r.form.mileageHistory.find((m) => m.date.startsWith("2012-01-28"));
@@ -30,8 +39,24 @@ describe("real Carfax Tiguan PDF extract", () => {
     expect(doral?.titleStatus).toMatch(/Vehicle serviced/i);
 
     const tire = r.form.mileageHistory.find((m) => m.date.startsWith("2026-04-20"));
-    expect(tire?.location).toMatch(/Gc Tire/i);
+    expect(tire?.location).toBe("Gc Tire And Auto Brampton, ON");
+    expect(tire?.location).not.toMatch(/j4yte|fbclid|tirecraft|0gi7/i);
     expect(tire?.titleStatus).toMatch(/Vehicle serviced/i);
-    expect(tire?.description).not.toMatch(/tirecraft|fbclid/i);
+    expect(tire?.description).toMatch(/Brake pads replaced/i);
+    expect(tire?.description).toMatch(/Tire\(s\) changed|Brakes checked/i);
+    expect(tire?.description).not.toMatch(/tirecraft|fbclid|Comments/i);
+
+    const reg = r.form.mileageHistory.find(
+      (m) => /registration issued or renewed/i.test(m.description),
+    );
+    expect(reg?.titleStatus ?? "").toBe("");
+    expect(reg?.description).toMatch(/Registration issued or renewed/i);
+    expect(reg?.description ?? "").not.toMatch(/^or renewed$/i);
+
+    for (const s of r.form.serviceHistory) {
+      expect(s.description).not.toMatch(/importer|michigan|first owner|title issued|pre-delivery|titled or registered/i);
+      expect(s.location).not.toMatch(/importer|manufacturer/i);
+      expect(s.title).not.toMatch(/importer|michigan|title issued/i);
+    }
   });
 });
