@@ -4,7 +4,10 @@ import { Link, useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2, Rocket, Gift, Banknote } from "lucide-react";
+import {
+  AlertTriangle, ArrowLeft, CheckCircle2, Clock, Loader2, Download, Trash2,
+  Rocket, Gift, Banknote, FileText,
+} from "lucide-react";
 import { AdminVinSaveBar } from "@/components/admin/admin-vin-save-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,6 +21,9 @@ import {
 } from "@/components/admin/vin-catalog-data-form";
 import { invalidateVinReportCaches } from "@/lib/vin-report-cache";
 import { ADMIN_PENDING_COUNT_QUERY_KEY } from "@/lib/admin-pending-count";
+import { extractTextFromPdfFile } from "@/lib/provider-pdf-extract";
+import { parseProviderPdfText } from "@/lib/provider-pdf-parse";
+import { applyProviderPdfToForm } from "@/lib/provider-pdf-apply";
 
 type PendingRequest = {
   id: number;
@@ -54,7 +60,10 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   const [crediting, setCrediting] = useState(false);
   const [refunding, setRefunding] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [pdfImporting, setPdfImporting] = useState(false);
+  const [pdfMsg, setPdfMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const exportLinkRef = useRef<HTMLAnchorElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const lastHydratedAtRef = useRef<string | null>(null);
   const formRef = useRef<VinCatalogDataFormHandle>(null);
 
@@ -189,6 +198,48 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       alert("JSON export failed.");
     } finally {
       setExportLoading(false);
+    }
+  };
+
+  const handlePdfPickClick = () => {
+    if (!detail || pdfImporting) return;
+    if (!confirm(
+      "Fill from Carfax / AutoCheck PDF?\n\nThis replaces all draft fields except photos. The PDF stays on your device (not uploaded). Miles are converted to km. Review and Save draft when done.",
+    )) return;
+    pdfInputRef.current?.click();
+  };
+
+  const handlePdfFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !detail) return;
+
+    setPdfImporting(true);
+    setPdfMsg(null);
+    try {
+      const extracted = await extractTextFromPdfFile(file);
+      if (!extracted.ok) {
+        setPdfMsg({ ok: false, text: extracted.error });
+        return;
+      }
+      const parsed = parseProviderPdfText(extracted.text, detail.vin);
+      if (!parsed.ok) {
+        setPdfMsg({ ok: false, text: parsed.error });
+        return;
+      }
+      setForm((prev) => applyProviderPdfToForm(prev, parsed.form));
+      setSaveMsg(null);
+      setPdfMsg({
+        ok: true,
+        text: `Filled from PDF — ${parsed.summary.join(" · ")}. Review fields, then Save draft.`,
+      });
+    } catch (err) {
+      setPdfMsg({
+        ok: false,
+        text: err instanceof Error ? err.message : "PDF import failed",
+      });
+    } finally {
+      setPdfImporting(false);
     }
   };
 
@@ -327,6 +378,13 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
   return (
     <div className="space-y-6">
       <a ref={exportLinkRef} className="hidden" aria-hidden="true" />
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="hidden"
+        onChange={(e) => void handlePdfFileChange(e)}
+      />
 
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
@@ -347,7 +405,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             variant="outline"
             className="flex-1 basis-0 min-w-0 border-amber-300 text-amber-800 hover:bg-amber-50 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleCreditAndNotify}
-            disabled={saving || publishing || removing || crediting || refunding || (detail.requests ?? []).length === 0}
+            disabled={saving || publishing || removing || crediting || refunding || pdfImporting || (detail.requests ?? []).length === 0}
             title="Adds 1 credit per user, emails them, and removes this pending check"
           >
             {crediting ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Gift className="h-4 w-4 sm:mr-1.5 shrink-0" />}
@@ -357,7 +415,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             variant="outline"
             className="flex-1 basis-0 min-w-0 border-orange-300 text-orange-800 hover:bg-orange-50 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleRemoveAndRefund}
-            disabled={saving || publishing || removing || crediting || refunding}
+            disabled={saving || publishing || removing || crediting || refunding || pdfImporting}
             title="Removes pending, marks payments refunded (deducts sales), emails customer. Refund PayPal/POK yourself."
           >
             {refunding ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Banknote className="h-4 w-4 sm:mr-1.5 shrink-0" />}
@@ -367,7 +425,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             variant="outline"
             className="flex-1 basis-0 min-w-0 text-destructive border-destructive/30 hover:bg-destructive/10 px-2 sm:px-3 text-xs sm:text-sm"
             onClick={handleRemove}
-            disabled={saving || publishing || removing || crediting || refunding}
+            disabled={saving || publishing || removing || crediting || refunding || pdfImporting}
             title="Remove pending"
           >
             {removing ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin shrink-0" /> : <Trash2 className="h-4 w-4 sm:mr-1.5 shrink-0" />}
@@ -379,6 +437,12 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
       {publishMsg && (
         <div className={`text-sm px-4 py-2 rounded-lg border ${publishMsg.ok ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800"}`}>
           {publishMsg.text}
+        </div>
+      )}
+
+      {pdfMsg && (
+        <div className={`text-sm px-4 py-2 rounded-lg border ${pdfMsg.ok ? "bg-green-50 border-green-200 text-green-800 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300" : "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300"}`}>
+          {pdfMsg.text}
         </div>
       )}
 
@@ -411,10 +475,28 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Edit draft data</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Use tabs to jump between vehicle info, metrics, photos, and history. Save draft before publishing.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="min-w-0">
+              <CardTitle className="text-base">Edit draft data</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Use tabs to jump between vehicle info, metrics, photos, and history. Save draft before publishing.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5"
+              onClick={handlePdfPickClick}
+              disabled={saving || publishing || removing || crediting || refunding || pdfImporting}
+              title="Read Carfax or AutoCheck PDF on this device — nothing is uploaded"
+            >
+              {pdfImporting
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <FileText className="h-4 w-4" />}
+              {pdfImporting ? "Reading PDF…" : "Fill from PDF"}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="pb-0">
           <VinCatalogDataForm
@@ -429,9 +511,9 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             saveLabel="Save draft"
             saveMsg={saveMsg}
             hint="Ctrl+S to save draft · publish adds this VIN to the catalog"
-            disabled={publishing || removing || crediting || refunding}
+            disabled={publishing || removing || crediting || refunding || pdfImporting}
             extra={(
-              <Button onClick={handlePublish} disabled={saving || publishing || removing || crediting || refunding} className="gap-1.5">
+              <Button onClick={handlePublish} disabled={saving || publishing || removing || crediting || refunding || pdfImporting} className="gap-1.5">
                 {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
                 {publishing ? "Publishing…" : "Publish"}
               </Button>

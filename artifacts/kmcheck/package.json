@@ -59,9 +59,9 @@
     "@workspace/accident-severity": "workspace:*",
     "@workspace/api-client-react": "workspace:*",
     "@workspace/korean-registry": "workspace:*",
+    "@workspace/marketing-page-seo": "workspace:*",
     "@workspace/odometer-resolve": "workspace:*",
     "@workspace/vin-decode": "workspace:*",
-    "@workspace/marketing-page-seo": "workspace:*",
     "@workspace/vin-page-seo": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -94,6 +94,7 @@
   },
   "dependencies": {
     "@nebula-ltd/pok-payments-js": "^2.0.1",
+    "pdfjs-dist": "4.10.38",
     "qrcode": "^1.5.4",
     "react-simple-maps": "^3.0.0",
     "world-atlas": "^2.0.2"
