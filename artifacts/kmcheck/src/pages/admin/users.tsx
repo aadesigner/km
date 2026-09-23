@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useAdminGetUsers, useAdminBanUser, useAdminUnbanUser, useAdminImportUsers,
   adminExportUsers,
@@ -8,7 +9,6 @@ import {
   type AdminGetUsersStatus,
   type AdminGetUsersHasPhone,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw } from "lucide-react";
+import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw, AtSign } from "lucide-react";
 import { Link } from "wouter";
 import { adminUsersQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
@@ -34,6 +34,9 @@ function userHasPhone(user: { phonePrefix?: string | null; phoneNational?: strin
 }
 
 const COUNTRY_UNSET = "unset";
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+type EmailDomainRow = { domain: string; count: number };
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
@@ -41,6 +44,7 @@ export default function AdminUsers() {
   const [checksFilter, setChecksFilter] = useState<"" | AdminGetUsersChecks>("");
   const [countryFilter, setCountryFilter] = useState("");
   const [hasPhoneFilter, setHasPhoneFilter] = useState<"" | AdminGetUsersHasPhone>("");
+  const [emailDomainFilter, setEmailDomainFilter] = useState("");
   const [page, setPage] = useState(1);
   const [importResult, setImportResult] = useState<UserImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -58,11 +62,25 @@ export default function AdminUsers() {
     checks: checksFilter || undefined,
     country: countryFilter || undefined,
     hasPhone: hasPhoneFilter || undefined,
+    emailDomain: emailDomainFilter || undefined,
   };
 
   const { data, isLoading, isError, error, refetch, isFetching } = useAdminGetUsers(listParams, {
     query: adminUsersQuery(),
   });
+
+  const { data: emailDomainsData } = useQuery({
+    queryKey: ["admin", "users", "email-domains"],
+    queryFn: async (): Promise<EmailDomainRow[]> => {
+      const res = await fetch(`${basePath}/api/admin/users/email-domains`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load email domains");
+      const json = await res.json() as { domains?: EmailDomainRow[] };
+      return Array.isArray(json.domains) ? json.domains : [];
+    },
+    staleTime: 60_000,
+  });
+  const emailDomains = emailDomainsData ?? [];
+
   const banUser = useAdminBanUser({
     mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }) },
   });
@@ -74,6 +92,7 @@ export default function AdminUsers() {
       onSuccess: (result) => {
         setImportResult(result);
         queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+        queryClient.invalidateQueries({ queryKey: ["admin", "users", "email-domains"] });
       },
       onError: (err: unknown) => {
         const apiErr = err as ApiError<{ error?: string }>;
@@ -85,7 +104,7 @@ export default function AdminUsers() {
   const users = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
   const hasActiveFilters = Boolean(search) || Boolean(statusFilter) || Boolean(checksFilter)
-    || Boolean(countryFilter) || Boolean(hasPhoneFilter);
+    || Boolean(countryFilter) || Boolean(hasPhoneFilter) || Boolean(emailDomainFilter);
   useQueryRecovery(isError, isFetching, refetch);
   const loadError = showFatalQueryError(isError, isFetching, !!data)
     ? queryErrorMessage(error, "Failed to load users")
@@ -106,6 +125,7 @@ export default function AdminUsers() {
         checks: checksFilter || undefined,
         country: countryFilter || undefined,
         hasPhone: hasPhoneFilter || undefined,
+        emailDomain: emailDomainFilter || undefined,
       });
       const blob = new Blob([csv.startsWith("\uFEFF") ? csv : `\uFEFF${csv}`], {
         type: "text/csv;charset=utf-8",
@@ -114,6 +134,7 @@ export default function AdminUsers() {
       const a = document.createElement("a");
       a.href = url;
       const parts = ["users"];
+      if (emailDomainFilter) parts.push(emailDomainFilter.replace(/\./g, "-"));
       if (countryFilter && countryFilter !== COUNTRY_UNSET) parts.push(countryFilter.toLowerCase());
       if (countryFilter === COUNTRY_UNSET) parts.push("no-country");
       if (hasPhoneFilter === "yes") parts.push("has-phone");
@@ -150,6 +171,7 @@ export default function AdminUsers() {
     setChecksFilter("");
     setCountryFilter("");
     setHasPhoneFilter("");
+    setEmailDomainFilter("");
     setPage(1);
   }
 
@@ -239,6 +261,22 @@ export default function AdminUsers() {
             <SelectItem value="no">Phone number: no</SelectItem>
           </SelectContent>
         </Select>
+        <Select
+          value={emailDomainFilter || "all"}
+          onValueChange={(v) => { setEmailDomainFilter(v === "all" ? "" : v); setPage(1); }}
+        >
+          <SelectTrigger className="w-full sm:w-[220px]">
+            <SelectValue placeholder="Email domain" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">All email domains</SelectItem>
+            {emailDomains.map(({ domain, count }) => (
+              <SelectItem key={domain} value={domain}>
+                @{domain} ({count})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <UserCountrySelect
           value={countryFilter}
           onValueChange={(v) => {
@@ -272,6 +310,12 @@ export default function AdminUsers() {
               Phone number: {hasPhoneFilter === "yes" ? "yes" : "no"}
             </Badge>
           )}
+          {emailDomainFilter && (
+            <Badge variant="secondary" className="inline-flex items-center gap-1">
+              <AtSign className="h-3 w-3" />
+              {emailDomainFilter}
+            </Badge>
+          )}
           {countryFilter && (
             <Badge variant="secondary" className="inline-flex items-center gap-1.5">
               <span>Country / Nationality:</span>
@@ -286,7 +330,7 @@ export default function AdminUsers() {
       )}
 
       <p className="text-xs text-muted-foreground -mt-2">
-        Filters combine (AND). Export CSV uses the same filters — e.g. one country, or country + has phone.
+        Filters combine (AND). Export CSV uses the same filters — e.g. one email domain, or country + has phone.
         Import needs an <span className="font-mono">email</span> column (optional{" "}
         <span className="font-mono">name</span>, <span className="font-mono">phone_prefix</span>,{" "}
         <span className="font-mono">phone_national</span>).

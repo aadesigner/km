@@ -665,7 +665,7 @@ html.admin-theme-active .admin-shell {
   /* Keep dimensions identical across themes to avoid layout jump when switching */
   --admin-radius: 0.75rem;
   --admin-card-radius: 0.85rem;
-  --admin-sidebar-width: 15.75rem;
+  --admin-sidebar-width: 16.5rem;
   --admin-card-shadow: 0 1px 2px hsl(220 20% 20% / 0.04);
   --admin-card-border: hsl(var(--card-border, var(--border)));
   --admin-card-bg: hsl(var(--card));

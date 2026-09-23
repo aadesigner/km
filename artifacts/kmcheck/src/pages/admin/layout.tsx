@@ -215,7 +215,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       className="admin-shell flex min-h-screen"
       data-admin-theme={themeId}
     >
-      <aside className="admin-sidebar hidden md:flex fixed inset-y-0 left-0 z-30 w-60 border-r border-border/60 flex-col">
+      <aside className="admin-sidebar hidden md:flex fixed inset-y-0 left-0 z-30 w-64 border-r border-border/60 flex-col">
         <SidebarContent />
       </aside>
 

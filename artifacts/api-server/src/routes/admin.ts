@@ -87,6 +87,11 @@ import {
   reconcileLockedOdometerData,
 } from "../lib/pendingVinService.js";
 import { ADMIN_CONFIRM_PHRASES, requireConfirmPhrase } from "../lib/adminDestructive.js";
+import {
+  loadBackupFromUploadPath,
+  restoreBackupPayload,
+  streamBackupExport,
+} from "../lib/adminBackup.js";
 import { consumeAdminProviderAction, adminProviderRateLimitMessage } from "../lib/adminProviderRateLimit.js";
 import { validateBoundedSettingsPatch, validateAnnouncementLinkUrl, validateSmtpSecurity } from "../lib/adminValidation.js";
 import { normalizeSmtpSecurity } from "../lib/smtpSecurity.js";
@@ -140,10 +145,43 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+const backupUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tmpdir()),
+    filename: (_req, file, cb) => {
+      const name = (file.originalname ?? "backup").toLowerCase();
+      const ext = name.endsWith(".json.gz")
+        ? ".json.gz"
+        : name.endsWith(".gz")
+          ? ".gz"
+          : ".json";
+      cb(null, `kmcheck-backup-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    },
+  }),
+  // Keep RAM/disk safe on Railway — matches BACKUP_UPLOAD_MAX_BYTES
+  limits: { fileSize: 100 * 1024 * 1024 },
+});
+
 const userImportLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   message: { error: "Too many user import attempts. Try again in an hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const backupImportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: { error: "Too many backup restore attempts. Try again in an hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const backupExportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 6,
+  message: { error: "Too many backup exports. Try again in an hour." },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -619,12 +657,23 @@ router.get("/admin/presence-users", requireAdmin, async (req, res) => {
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
 
+function normalizeEmailDomain(raw: string): string | null {
+  let domain = raw.trim().toLowerCase();
+  if (domain.startsWith("@")) domain = domain.slice(1);
+  if (!domain || domain.length > 253) return null;
+  // e.g. gmail.com, yahoo.co.uk — letters/digits/dot/hyphen only
+  if (!/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(domain)) return null;
+  if (!domain.includes(".")) return null;
+  return domain;
+}
+
 function buildAdminUserWhere(
   searchRaw: string,
   status: string,
   checks: string,
   countryRaw = "",
   hasPhoneRaw = "",
+  emailDomainRaw = "",
 ) {
   const conditions = [];
   const search = searchRaw.trim();
@@ -668,6 +717,10 @@ function buildAdminUserWhere(
     conditions.push(hasCompletePhone);
   } else if (hasPhoneKey === "no" || hasPhoneKey === "false" || hasPhoneKey === "0") {
     conditions.push(not(hasCompletePhone));
+  }
+  const emailDomain = normalizeEmailDomain(emailDomainRaw);
+  if (emailDomain) {
+    conditions.push(sql`lower(split_part(${usersTable.email}, '@', 2)) = ${emailDomain}`);
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
@@ -730,8 +783,9 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
     const checks = String(req.query.checks ?? "");
     const country = String(req.query.country ?? "");
     const hasPhone = String(req.query.hasPhone ?? "");
+    const emailDomain = String(req.query.emailDomain ?? "");
 
-    const where = buildAdminUserWhere(search, status, checks, country, hasPhone);
+    const where = buildAdminUserWhere(search, status, checks, country, hasPhone, emailDomain);
 
     const [users, totalRow] = await Promise.all([
       db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(limit).offset(offset),
@@ -769,6 +823,30 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
   }
 });
 
+/** Distinct email domains among users (for admin filter dropdown). */
+router.get("/admin/users/email-domains", requireAdmin, async (_req, res) => {
+  try {
+    const result = await db.execute(sql`
+      SELECT lower(split_part(email, '@', 2)) AS domain, COUNT(*)::int AS count
+      FROM users
+      WHERE position('@' in email) > 1
+        AND length(split_part(email, '@', 2)) > 0
+      GROUP BY 1
+      ORDER BY count DESC, domain ASC
+      LIMIT 500
+    `);
+    const list = (result.rows ?? []) as Array<{ domain: string; count: number }>;
+    res.json({
+      domains: list
+        .filter((r) => r.domain && normalizeEmailDomain(String(r.domain)))
+        .map((r) => ({ domain: String(r.domain).toLowerCase(), count: Number(r.count) || 0 })),
+    });
+  } catch (err) {
+    logger.error({ err }, "admin_users_email_domains_failed");
+    res.status(500).json({ error: "Failed to load email domains" });
+  }
+});
+
 // GET /admin/users/export — download users as CSV (must be defined before /:userId routes)
 router.get("/admin/users/export", requireAdmin, async (req, res) => {
   const search = String(req.query.search ?? "");
@@ -776,7 +854,8 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
   const checks = String(req.query.checks ?? "");
   const country = String(req.query.country ?? "");
   const hasPhone = String(req.query.hasPhone ?? "");
-  const where = buildAdminUserWhere(search, status, checks, country, hasPhone);
+  const emailDomain = String(req.query.emailDomain ?? "");
+  const where = buildAdminUserWhere(search, status, checks, country, hasPhone, emailDomain);
 
   const users = await db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(50000);
 
@@ -4175,5 +4254,85 @@ router.patch("/admin/plugins", requireAdmin, async (req, res) => {
   });
   res.json(merged);
 });
+
+// ── Full site backup (migration export / restore) ───────────────────────────
+
+router.get("/admin/backup/export", requireAdmin, backupExportLimiter, async (req, res) => {
+  try {
+    const { counts } = await streamBackupExport(res);
+    await logAdminAction(req.userId!, "admin_backup_export", "system", { counts });
+  } catch (err) {
+    const message = String((err as Error)?.message ?? err);
+    if (message.includes("aborted by client")) {
+      logger.info({ err }, "admin_backup_export_aborted");
+      return;
+    }
+    logger.error({ err }, "admin_backup_export_failed");
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Backup export failed" });
+    } else {
+      res.destroy(err as Error);
+    }
+  }
+});
+
+router.post(
+  "/admin/backup/import",
+  requireAdmin,
+  backupImportLimiter,
+  backupUpload.single("file"),
+  async (req, res) => {
+    const file = req.file;
+    try {
+      if (!requireConfirmPhrase(req.body ?? {}, ADMIN_CONFIRM_PHRASES.RESTORE_BACKUP, res)) {
+        return;
+      }
+      if (!file?.path) {
+        res.status(400).json({ error: "Backup file is required (field: file)" });
+        return;
+      }
+
+      const payload = await loadBackupFromUploadPath(file.path, file.originalname);
+      const { counts } = await restoreBackupPayload(payload);
+
+      invalidateSettingsCache();
+      invalidatePublicSettingsCache();
+      invalidatePricingCache();
+      invalidateFreeDecoderSettingsCache();
+      invalidateGetCarApiSettingsCache();
+      invalidatePluginSettingsCache();
+
+      await logAdminAction(req.userId!, "admin_backup_restore", "system", {
+        counts,
+        exportedAt: payload.exportedAt,
+      });
+
+      res.json({
+        ok: true,
+        message: "Backup restored successfully. All previous data was replaced.",
+        exportedAt: payload.exportedAt,
+        counts,
+      });
+    } catch (err) {
+      const message = String((err as Error)?.message ?? err);
+      logger.error({ err }, "admin_backup_restore_failed");
+      if (
+        message.includes("Backup") ||
+        message.includes("Invalid") ||
+        message.includes("Missing") ||
+        message.includes("Unsupported") ||
+        message.includes("Another backup") ||
+        message.includes("valid JSON") ||
+        message.includes("too large")
+      ) {
+        res.status(400).json({ error: message });
+        return;
+      }
+      res.status(500).json({ error: "Backup restore failed. Database was rolled back if the wipe had started." });
+    } finally {
+      if (file?.path) unlink(file.path, () => undefined);
+    }
+  },
+);
 
 export default router;

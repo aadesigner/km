@@ -551,6 +551,13 @@ paths:
           description: >
             Filter by whether the user has a complete phone number
             (both phone_prefix and phone_national). Combines with other filters (AND).
+        - name: emailDomain
+          in: query
+          schema:
+            type: string
+          description: >
+            Filter by email domain (e.g. gmail.com, yahoo.com). Case-insensitive.
+            Combines with other filters (AND).
       responses:
         "200":
           description: Paginated user list
@@ -558,6 +565,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminUserPage"
+
+  /admin/users/email-domains:
+    get:
+      operationId: adminGetUserEmailDomains
+      tags: [admin]
+      summary: List distinct email domains among users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Domains with user counts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [domains]
+                properties:
+                  domains:
+                    type: array
+                    items:
+                      type: object
+                      required: [domain, count]
+                      properties:
+                        domain:
+                          type: string
+                        count:
+                          type: integer
 
   /admin/users/export:
     get:
@@ -596,6 +630,13 @@ paths:
           description: >
             Filter by whether the user has a complete phone number
             (both phone_prefix and phone_national). Combines with other filters (AND).
+        - name: emailDomain
+          in: query
+          schema:
+            type: string
+          description: >
+            Filter by email domain (e.g. gmail.com, yahoo.com). Case-insensitive.
+            Combines with other filters (AND).
       responses:
         "200":
           description: CSV file download

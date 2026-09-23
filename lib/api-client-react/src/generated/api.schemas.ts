@@ -940,6 +940,10 @@ country?: string;
  * Filter by complete phone number (yes/no). Combines with other filters (AND).
  */
 hasPhone?: AdminGetUsersHasPhone;
+/**
+ * Filter by email domain (e.g. gmail.com). Combines with other filters (AND).
+ */
+emailDomain?: string;
 };
 
 export type AdminGetUsersStatus = typeof AdminGetUsersStatus[keyof typeof AdminGetUsersStatus];
@@ -979,6 +983,10 @@ country?: string;
  * Filter by complete phone number (yes/no). Combines with other filters (AND).
  */
 hasPhone?: AdminExportUsersHasPhone;
+/**
+ * Filter by email domain (e.g. gmail.com). Combines with other filters (AND).
+ */
+emailDomain?: string;
 };
 
 export type AdminExportUsersStatus = typeof AdminExportUsersStatus[keyof typeof AdminExportUsersStatus];

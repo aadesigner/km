@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import {
   Save, Mail, Info, CreditCard, Send, CheckCircle2, XCircle,
-  Search, Eye, Globe, Trash2, Database, Loader2, Wrench,
+  Search, Eye, Globe, Trash2, Database, Loader2, Wrench, Download, Upload,
 } from "lucide-react";
 import {
   MAINTENANCE_PARTIAL_RESTRICTIONS,
@@ -318,6 +318,10 @@ export default function AdminSettings() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [backupExporting, setBackupExporting] = useState(false);
+  const [backupImporting, setBackupImporting] = useState(false);
+  const [backupConfirm, setBackupConfirm] = useState("");
+  const [backupFile, setBackupFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -534,6 +538,95 @@ export default function AdminSettings() {
     }
   };
 
+  const handleBackupExport = async () => {
+    setBackupExporting(true);
+    try {
+      const resp = await fetch(`${basePath}/api/admin/backup/export`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({})) as { error?: string };
+        throw new Error(data.error || `Export failed (${resp.status})`);
+      }
+      const blob = await resp.blob();
+      const cd = resp.headers.get("Content-Disposition") ?? "";
+      const match = /filename="?([^"]+)"?/i.exec(cd);
+      const filename = match?.[1] ?? `kmcheck-backup-${new Date().toISOString().slice(0, 10)}.json.gz`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "Backup downloaded", description: "Keep this file private — it includes secrets and user data." });
+    } catch (err) {
+      toast({
+        title: "Backup export failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setBackupExporting(false);
+    }
+  };
+
+  const handleBackupImport = async () => {
+    if (!backupFile) {
+      toast({ title: "Choose a backup file", variant: "destructive" });
+      return;
+    }
+    if (backupConfirm.trim() !== "RESTORE BACKUP") {
+      toast({
+        title: "Confirm phrase required",
+        description: "Type RESTORE BACKUP exactly to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setBackupImporting(true);
+    try {
+      const body = new FormData();
+      body.append("file", backupFile);
+      body.append("confirmPhrase", "RESTORE BACKUP");
+      const resp = await fetch(`${basePath}/api/admin/backup/import`, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      const data = await resp.json().catch(() => ({})) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        counts?: Record<string, number>;
+      };
+      if (!resp.ok || !data.ok) {
+        throw new Error(data.error || `Restore failed (${resp.status})`);
+      }
+      const total = data.counts
+        ? Object.values(data.counts).reduce((n, v) => n + v, 0)
+        : 0;
+      toast({
+        title: "Backup restored",
+        description: data.message ?? `Replaced site data (${total.toLocaleString()} rows).`,
+      });
+      setBackupConfirm("");
+      setBackupFile(null);
+      invalidate();
+      void queryClient.invalidateQueries();
+    } catch (err) {
+      toast({
+        title: "Backup restore failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setBackupImporting(false);
+    }
+  };
+
   const settingsSkeleton = (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -565,7 +658,7 @@ export default function AdminSettings() {
       </div>
 
       <Tabs defaultValue="payments">
-        <TabsList className="w-full h-auto gap-1.5 p-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:gap-1">
+        <TabsList className="w-full h-auto gap-1.5 p-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 lg:gap-1">
           <TabsTrigger value="payments" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
             Payments
           </TabsTrigger>
@@ -587,6 +680,9 @@ export default function AdminSettings() {
           <TabsTrigger value="system" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
             <span className="lg:hidden">Limits</span>
             <span className="hidden lg:inline">System Limits</span>
+          </TabsTrigger>
+          <TabsTrigger value="backup" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            Backup
           </TabsTrigger>
         </TabsList>
 
@@ -1527,6 +1623,96 @@ export default function AdminSettings() {
             label="Save System Limits"
             onClick={() => sysUpdater.mutate({ data: system as Parameters<typeof sysUpdater.mutate>[0]["data"] })}
           />
+        </TabsContent>
+
+        {/* ── BACKUP ───────────────────────────────────────────────────────── */}
+        <TabsContent value="backup" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Download className="h-4 w-4 text-primary" />
+                Export backup
+              </CardTitle>
+              <CardDescription>
+                Download a full snapshot: users, VINs, catalog, payments, settings (including secrets),
+                coupons, announcements, providers, email logs, and related links. Use this before migration.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-muted-foreground">
+                <Database className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-600" />
+                <p>
+                  The file contains passwords hashes, API keys, and personal data. Store it privately.
+                  Format: <code className="text-[10px] bg-muted px-1 rounded">.json.gz</code>
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={() => void handleBackupExport()}
+                disabled={backupExporting || backupImporting}
+                className="gap-2"
+              >
+                {backupExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {backupExporting ? "Preparing backup…" : "Download full backup"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base text-destructive">
+                <Upload className="h-4 w-4" />
+                Restore backup
+              </CardTitle>
+              <CardDescription>
+                Replaces <strong>all</strong> current admin data with the backup. Intended for a fresh
+                migrate target. This cannot be undone from the UI.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="backup-file">Backup file</Label>
+                <Input
+                  id="backup-file"
+                  type="file"
+                  accept=".json,.gz,.json.gz,application/gzip,application/json"
+                  disabled={backupImporting || backupExporting}
+                  onChange={(e) => setBackupFile(e.target.files?.[0] ?? null)}
+                />
+                {backupFile ? (
+                  <p className="text-xs text-muted-foreground truncate">{backupFile.name}</p>
+                ) : null}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="backup-confirm">
+                  Type <code className="text-xs bg-muted px-1 rounded">RESTORE BACKUP</code> to confirm
+                </Label>
+                <Input
+                  id="backup-confirm"
+                  value={backupConfirm}
+                  onChange={(e) => setBackupConfirm(e.target.value)}
+                  placeholder="RESTORE BACKUP"
+                  disabled={backupImporting || backupExporting}
+                  autoComplete="off"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => void handleBackupImport()}
+                disabled={
+                  backupImporting
+                  || backupExporting
+                  || !backupFile
+                  || backupConfirm.trim() !== "RESTORE BACKUP"
+                }
+                className="gap-2"
+              >
+                {backupImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {backupImporting ? "Restoring… (do not close)" : "Restore and replace all data"}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
