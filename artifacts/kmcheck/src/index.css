@@ -795,6 +795,27 @@ html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .hover\:bg-mute
   background: hsl(140 30% 100% / 0.07) !important;
 }
 
+/* Header / footer dividers: green-tinted edge, not washed white */
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .border-b,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .border-t {
+  border-color: hsl(142 32% 72% / 0.34) !important;
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link:hover,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link:focus,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link:focus-visible {
+  background: transparent !important;
+  box-shadow: none;
+}
+
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link--active,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link--active:hover,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link--active:focus,
+html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link--active:focus-visible {
+  background: hsl(142 50% 40% / 0.12) !important;
+  box-shadow: inset 2px 0 0 hsl(142 65% 52%);
+}
+
 html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip {
   border-color: hsl(142 40% 70% / 0.22);
   background:
@@ -805,7 +826,7 @@ html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chi
 }
 
 html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__title {
-  color: hsl(142 55% 62%);
+  color: color-mix(in oklab, hsl(var(--primary)) 45%, white);
 }
 
 html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__amount {
@@ -1021,12 +1042,10 @@ html.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
     linear-gradient(180deg, hsl(142 55% 42% / 0.22), transparent 72%);
   --admin-sidebar-accent-line:
     linear-gradient(180deg, transparent 8%, hsl(142 70% 48% / 0.9) 42%, hsl(150 55% 42% / 0.5) 68%, transparent 92%);
-  --admin-nav-active-bg: linear-gradient(110deg, hsl(142 55% 38% / 0.32), hsl(160 30% 28% / 0.4));
+  --admin-nav-active-bg: hsl(142 50% 40% / 0.12);
   --admin-nav-active-fg: hsl(142 60% 78%);
-  --admin-nav-active-shadow:
-    inset 3px 0 0 hsl(142 65% 48%),
-    0 0 24px hsl(142 60% 42% / 0.2);
-  --admin-nav-hover-bg: hsl(140 30% 100% / 0.06);
+  --admin-nav-active-shadow: inset 2px 0 0 hsl(142 65% 52%);
+  --admin-nav-hover-bg: transparent;
   --admin-shell-bg:
     radial-gradient(ellipse 70% 50% at 100% -10%, hsl(142 55% 55% / 0.12), transparent 55%),
     radial-gradient(ellipse 50% 40% at 0% 100%, hsl(150 40% 60% / 0.08), transparent 50%),
@@ -1082,9 +1101,9 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
   --admin-shell-bg:
     radial-gradient(ellipse 55% 40% at 100% 0%, hsl(142 50% 36% / 0.12), transparent 55%),
     hsl(var(--background));
-  --admin-nav-active-bg: linear-gradient(110deg, hsl(142 55% 38% / 0.34), hsl(160 30% 20% / 0.42));
+  --admin-nav-active-bg: hsl(142 50% 40% / 0.12);
   --admin-nav-active-fg: hsl(142 55% 78%);
-  --admin-nav-hover-bg: hsl(140 30% 100% / 0.05);
+  --admin-nav-hover-bg: transparent;
   --admin-main-glow:
     radial-gradient(ellipse 40% 30% at 90% 5%, hsl(142 55% 40% / 0.1), transparent 55%);
 }
@@ -1148,7 +1167,7 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip {
 }
 
 html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__title {
-  color: hsl(142 58% 64%);
+  color: color-mix(in oklab, hsl(var(--primary)) 50%, white);
 }
 
 html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__amount {

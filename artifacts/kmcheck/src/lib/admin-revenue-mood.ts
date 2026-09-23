@@ -195,17 +195,37 @@ export function applyAdminRevenueMoodStyles(mood: AdminRevenueMood | null): () =
   }
 
   ensureAdminRevenueMoodFonts(mood);
-  shell.style.setProperty("--primary", mood.primary);
-  shell.style.setProperty("--primary-foreground", mood.primaryForeground);
-  shell.style.setProperty("--accent", mood.primary);
-  shell.style.setProperty("--accent-foreground", mood.primaryForeground);
-  shell.style.setProperty("--ring", mood.primary);
-  shell.style.setProperty("--sidebar-primary", mood.primary);
-  shell.style.setProperty("--sidebar-primary-foreground", mood.primaryForeground);
-  shell.style.setProperty("--sidebar-ring", mood.primary);
-  shell.style.setProperty("--chart-1", mood.primary);
   shell.setAttribute("data-admin-revenue-mood", mood.id);
   shell.style.setProperty("--admin-mood-intensity", String(mood.intensity));
+
+  // Low tiers (Warm-up → Building): keep theme colors — don't wash the shell in mood green.
+  // Hot tiers still tint accents for the sport vibe.
+  const tintShell = mood.intensity >= 0.68;
+  if (tintShell) {
+    shell.style.setProperty("--primary", mood.primary);
+    shell.style.setProperty("--primary-foreground", mood.primaryForeground);
+    shell.style.setProperty("--accent", mood.primary);
+    shell.style.setProperty("--accent-foreground", mood.primaryForeground);
+    shell.style.setProperty("--ring", mood.primary);
+    shell.style.setProperty("--sidebar-primary", mood.primary);
+    shell.style.setProperty("--sidebar-primary-foreground", mood.primaryForeground);
+    shell.style.setProperty("--sidebar-ring", mood.primary);
+    shell.style.setProperty("--chart-1", mood.primary);
+  } else {
+    for (const prop of [
+      "--primary",
+      "--primary-foreground",
+      "--accent",
+      "--accent-foreground",
+      "--ring",
+      "--sidebar-primary",
+      "--sidebar-primary-foreground",
+      "--sidebar-ring",
+      "--chart-1",
+    ] as const) {
+      shell.style.removeProperty(prop);
+    }
+  }
 
   if (mood.fontSans) {
     shell.style.setProperty("--admin-font-sans", mood.fontSans);
