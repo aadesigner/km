@@ -3,6 +3,7 @@ import { milesToKm, readingToKm, parseOdometerNumber } from "./provider-pdf-mile
 import {
   cleanHistoryNote,
   detectProviderPdfKind,
+  extractHistoryOdometerKm,
   extractVinsFromText,
   parseEngine,
   parseProviderPdfText,
@@ -144,18 +145,45 @@ describe("provider-pdf-parse", () => {
     expect(r.form.serviceHistory[0]!.description.toLowerCase()).not.toMatch(/miles/);
   });
 
-  it("keeps multi-word model and full engine; ignores history years", () => {
+  it("uses labeled model year; keeps 2012/2025 history dates with real miles (not year-as-odo)", () => {
     const r = parseProviderPdfText(AUDI_FIXTURE, AUDI_VIN);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
+    // Model year from header — not confused with history dates
     expect(r.form.year).toBe("2013");
-    expect(r.form.year).not.toBe("2012");
-    expect(r.form.year).not.toBe("2025");
     expect(r.form.make).toBe("Audi");
     expect(r.form.model).toMatch(/A6 Prestige/i);
     expect(r.form.engine).toMatch(/3\.0L/i);
     expect(r.form.engine).toMatch(/V6/i);
     expect(r.form.color).toBe("");
+
+    // History years stay — mileage uses real readings, never 2012/2025 as odometer
+    const odoValues = r.form.mileageHistory.map((m) => Number(m.odometer));
+    expect(odoValues).not.toContain(2012);
+    expect(odoValues).not.toContain(2025);
+    expect(odoValues).not.toContain(milesToKm(2012));
+    expect(odoValues).not.toContain(milesToKm(2025));
+
+    const dates = [
+      ...r.form.mileageHistory.map((m) => m.date),
+      ...r.form.serviceHistory.map((s) => s.date),
+      ...r.form.ownerHistory.map((o) => o.date),
+    ];
+    expect(dates.some((d) => d.startsWith("2012"))).toBe(true);
+    expect(dates.some((d) => d.startsWith("2025"))).toBe(true);
+    expect(odoValues).toContain(milesToKm(10));
+    expect(odoValues).toContain(milesToKm(90000));
+  });
+
+  it("does not treat calendar years as mileage readings", () => {
+    expect(extractHistoryOdometerKm("Title issued Houston, TX", "2012-01-05")).toBe("");
+    expect(extractHistoryOdometerKm("2012 Title issued", "2012-01-05")).toBe("");
+    expect(extractHistoryOdometerKm("10 miles Title issued", "2012-01-05")).toBe(
+      String(milesToKm(10)),
+    );
+    expect(extractHistoryOdometerKm("90,000 miles Service oil change", "2025-06-15")).toBe(
+      String(milesToKm(90000)),
+    );
   });
 
   it("parses engine richly", () => {

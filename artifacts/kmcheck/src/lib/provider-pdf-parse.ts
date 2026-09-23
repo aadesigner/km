@@ -353,21 +353,54 @@ type HistoryHit = {
   raw: string;
 };
 
+function yearFromIsoDate(iso: string): number | null {
+  const m = iso.match(/^(\d{4})-/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  return Number.isFinite(y) ? y : null;
+}
+
+/**
+ * Read odometer from the text after a history date.
+ * Requires an explicit miles/mi/km unit so calendar years (2012, 2025, …)
+ * are never treated as mileage readings.
+ */
+export function extractHistoryOdometerKm(
+  rest: string,
+  isoDate?: string,
+): string {
+  // Prefer "45,230 miles" / "90123 km" — unit required
+  const withUnit = [
+    ...rest.matchAll(/\b([\d,]{1,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/gi),
+  ];
+  for (const m of withUnit) {
+    const n = parseOdometerNumber(m[1] ?? "");
+    if (n == null || n < 0) continue;
+    const dateYear = isoDate ? yearFromIsoDate(isoDate) : null;
+    // Never use the date's year digits as the odometer (e.g. leftover "2012")
+    if (dateYear != null && n === dateYear) continue;
+    // Bare 4-digit year-shaped values without commas are almost always dates, not odo
+    const rawNum = (m[1] ?? "").replace(/,/g, "");
+    if (/^(?:19|20)\d{2}$/.test(rawNum) && n === Number(rawNum) && n <= 2100) {
+      // Allow only if unit is present AND reading is plausible as miles for a car
+      // (very low year-like readings like "2012 miles" are rare; still skip year==dateYear above)
+      if (n >= 1900 && n <= 2100 && !String(m[1]).includes(",")) {
+        // "2012 miles" right after a 2012 date is noise; otherwise allow
+        if (dateYear != null && Math.abs(n - dateYear) < 2) continue;
+      }
+    }
+    return String(readingToKm(n, m[2] ?? unitHintFromSnippet(m[0] ?? "")));
+  }
+  return "";
+}
+
 function parseHistoryBlocks(text: string): HistoryHit[] {
   const hits: HistoryHit[] = [];
   const lineRe = new RegExp(`(${DATE_TOKEN})\\s+(.{8,200})`, "gi");
   for (const m of text.matchAll(lineRe)) {
     const date = toIsoDate(m[1]!);
     const rest = m[2]!.trim();
-    // Skip if this "date" is actually a model year alone with make (handled elsewhere)
-    const odoM = rest.match(/([\d,]{2,7})\s*(miles?|mi|km|kilometers?)?/i);
-    let odometerKm = "";
-    if (odoM?.[1]) {
-      const n = parseOdometerNumber(odoM[1]);
-      if (n != null && n > 0) {
-        odometerKm = String(readingToKm(n, odoM[2] ?? unitHintFromSnippet(odoM[0])));
-      }
-    }
+    const odometerKm = extractHistoryOdometerKm(rest, date);
     const locationM = rest.match(/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Z]{2})\b/);
     const location = locationM ? `${locationM[1]}, ${locationM[2]}` : "";
     const note = cleanHistoryNote(rest);
@@ -388,12 +421,12 @@ function isServiceish(raw: string): boolean {
 
 function isMileageEvent(raw: string, odometerKm: string): boolean {
   if (!odometerKm) return false;
-  if (isServiceish(raw) && !/\b(odometer|mileage|reading|reported)\b/i.test(raw)) {
-    // Service with mileage still belongs in mileage table + service table
-    return true;
-  }
-  return /\b(odometer|mileage|inspection|registration|renewal|emission|smog|title\/registration|reported|reading)\b/i.test(raw)
-    || /[\d,]{2,7}\s*(miles?|mi|km)\b/i.test(raw);
+  // Only rows with a real unit-backed reading (already required to set odometerKm)
+  return (
+    isServiceish(raw)
+    || /\b(odometer|mileage|inspection|registration|renewal|emission|smog|title\/registration|reported|reading)\b/i.test(raw)
+    || /\b[\d,]{1,7}\s*(miles?|mi|km|kilometers?)\b/i.test(raw)
+  );
 }
 
 function isOwnerish(raw: string): boolean {
@@ -439,8 +472,7 @@ function sortMileageHighestFirst(rows: CatalogMileageForm[]): CatalogMileageForm
 
 function buildMileage(hits: HistoryHit[], latestKm: string): CatalogMileageForm[] {
   const rows = hits
-    .filter((h) => isMileageEvent(h.raw, h.odometerKm) || (h.odometerKm && !isAccidentish(h.raw)))
-    .filter((h) => h.odometerKm)
+    .filter((h) => h.odometerKm && isMileageEvent(h.raw, h.odometerKm))
     .map((h) => ({
       ...EMPTY_MILEAGE,
       date: h.date,
@@ -448,7 +480,6 @@ function buildMileage(hits: HistoryHit[], latestKm: string): CatalogMileageForm[
       unit: "km",
       source: "",
       location: h.location,
-      // Notes: service / event info only — not mileage figures
       description: isServiceish(h.raw) ? h.note : (h.note && !/^\d+$/.test(h.note) ? h.note : ""),
     }));
 
