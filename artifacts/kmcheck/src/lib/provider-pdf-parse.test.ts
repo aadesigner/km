@@ -199,6 +199,16 @@ describe("history comment / location split", () => {
     expect(description).not.toMatch(/^Passed Ontario$/i);
   });
 
+  it("does not mix registration with ignition/spark shop work", () => {
+    const rest =
+      "not reported Ontario Ministry of Transportation Registration issued or renewed Ignition coil(s) replaced - Spark plug(s) replaced - Four tires mounted";
+    const { titleStatus, description, orphanWork } = splitEventComment(rest);
+    expect(titleStatus).toBe("");
+    expect(description).toBe("Registration issued or renewed");
+    expect(description).not.toMatch(/ignition|spark|tire/i);
+    expect(orphanWork.some((w) => /ignition|spark/i.test(w))).toBe(true);
+  });
+
   it("does not use table header Comments as location", () => {
     expect(cleanHistoryLocation("Comments")).toBe("");
     expect(extractHistoryLocation("Source Comments 3,572 mi Ontario Ministry of Transportation Odometer reading reported")).toBe(

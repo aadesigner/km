@@ -554,9 +554,14 @@ export function extractHistoryLocation(rest: string): string {
 
 /**
  * Comments column → titleStatus + description.
- * Only "Vehicle serviced" uses titleStatus; other events go entirely into description.
+ * Only "Vehicle serviced" uses titleStatus; registry/admin events stay description-only
+ * and never absorb shop-work bullets (those belong on a prior Vehicle serviced row).
  */
-export function splitEventComment(rest: string): { titleStatus: string; description: string } {
+export function splitEventComment(rest: string): {
+  titleStatus: string;
+  description: string;
+  orphanWork: string[];
+} {
   let afterOdo = rest.replace(
     /^\s*(?:[\d,]{1,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)|not\s+reported)\b\s*/i,
     "",
@@ -565,7 +570,6 @@ export function splitEventComment(rest: string): { titleStatus: string; descript
   let commentsRaw = cm && cm.index != null ? afterOdo.slice(cm.index) : afterOdo;
   commentsRaw = stripDealerCardJunk(commentsRaw);
 
-  // Match event on raw text BEFORE cleanHistoryNote (which must not destroy "Ontario")
   const hitRaw = commentsRaw.match(HISTORY_COMMENT_START);
   const rawBullets = commentsRaw
     .split(/\s*-\s+/)
@@ -599,34 +603,53 @@ export function splitEventComment(rest: string): { titleStatus: string; descript
         .map((p) => sanitizeCustomerFacingText(stripDealerCardJunk(p.replace(/\s+/g, " ").trim())))
         .filter((p) => isUsefulDetailBullet(p) && !isNonServiceNoiseBullet(p)),
     );
+    const workBullets = filterServiceWorkBullets(detailBullets);
 
     // Vehicle serviced → short title + work details in description
     if (/^vehicle\s+serviced$/i.test(eventPhrase)) {
       return {
         titleStatus: "Vehicle serviced",
-        description: filterServiceWorkBullets(detailBullets).join(" · ").slice(0, 400),
+        description: workBullets.join(" · ").slice(0, 400),
+        orphanWork: [],
       };
     }
 
-    // Everything else (inspection, registration, import, owner…) → description only
-    const descParts = uniqueBullets([
-      eventPhrase,
-      ...detailBullets.filter((p) => !isNonServiceNoiseBullet(p) || /odometer reading|registration|passed|title issued/i.test(eventPhrase)),
-    ]);
-    // For non-service events, keep the event phrase; drop ownership/import pile-ons
-    const cleaned = descParts.filter((p, i) => {
-      if (i === 0) return true;
-      return !isNonServiceNoiseBullet(p);
-    });
+    // Registry / admin / ownership: description = event only.
+    // Shop-work that PDF dumped here is orphaned for a prior Vehicle serviced row.
+    if (isAdminOrRegistryEvent(eventPhrase)) {
+      return {
+        titleStatus: "",
+        description: eventPhrase.slice(0, 400),
+        orphanWork: workBullets,
+      };
+    }
+
     return {
       titleStatus: "",
-      description: cleaned.join(" · ").slice(0, 400),
+      description: uniqueBullets([eventPhrase, ...detailBullets.filter((p) => !filterServiceWorkBullets([p]).length)]).join(" · ").slice(0, 400),
+      orphanWork: workBullets,
     };
   }
 
+  // No known event starter — if the blob is mostly shop work, orphan it
   const cleaned = cleanHistoryNote(commentsRaw);
-  if (!cleaned) return { titleStatus: "", description: "" };
-  return { titleStatus: "", description: cleaned.slice(0, 400) };
+  const workOnly = filterServiceWorkBullets(
+    (cleaned || "")
+      .split(/\s*·\s*/)
+      .map((p) => p.trim())
+      .filter(Boolean),
+  );
+  if (workOnly.length > 0 && workOnly.join(" ").length >= (cleaned?.length ?? 0) * 0.5) {
+    return { titleStatus: "", description: "", orphanWork: workOnly };
+  }
+  if (!cleaned) return { titleStatus: "", description: "", orphanWork: [] };
+  return { titleStatus: "", description: cleaned.slice(0, 400), orphanWork: [] };
+}
+
+function isAdminOrRegistryEvent(phrase: string): boolean {
+  return /\b(?:registration\s+issued|title\s+issued|title\s+or\s+registration|odometer\s+reading\s+reported|odometer\s+reported|passed\s+ontario|passed\s+safety|new\s+owner\s+reported|first\s+owner\s+reported|vehicle\s+purchase\s+reported|vehicle\s+sold|vehicle\s+manufactured|vehicle\s+exported|vehicle\s+declared|registered\s+as|titled\s+or\s+registered)\b/i.test(
+    phrase,
+  );
 }
 
 /** Ownership / title / import lines — never "what was serviced". */
@@ -789,7 +812,6 @@ export function extractHistoryOdometerKm(
 }
 
 function parseHistoryBlocks(text: string): HistoryHit[] {
-  // Prefer Detailed History; drop glossary noise at the end (after harvesting deferred bullets)
   let scope = text;
   const detailedIdx = text.search(/\bDetailed\s+History\b/i);
   if (detailedIdx >= 0) scope = text.slice(detailedIdx);
@@ -800,10 +822,10 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
   const cut = scope.search(
     /\b(?:Full\s+Glossary|I have reviewed and received|©\s*\d{4}\s+CARFAX)\b/i,
   );
-  // Keep "Have Questions?" region — deferred service bullets often sit after it
   const parseScope = cut > 200 ? scope.slice(0, cut) : scope;
 
   const hits: HistoryHit[] = [];
+  const pendingOrphans: { beforeIndex: number; bullets: string[] }[] = [];
   const dateRe = new RegExp(`(${DATE_TOKEN})`, "gi");
   const dates = [...parseScope.matchAll(dateRe)];
   for (let i = 0; i < dates.length; i++) {
@@ -818,9 +840,12 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
 
     const odometerKm = extractHistoryOdometerKm(rest, date);
     const location = extractHistoryLocation(rest);
-    let { titleStatus, description } = splitEventComment(rest);
+    const split = splitEventComment(rest);
+    let { titleStatus, description } = split;
+    if (split.orphanWork.length > 0) {
+      pendingOrphans.push({ beforeIndex: hits.length, bullets: split.orphanWork });
+    }
 
-    // Merge Recent Service Highlights for this date
     const highlightBullets = highlights.get(date) ?? [];
     if (highlightBullets.length > 0) {
       if (!titleStatus || /^vehicle\s+serviced$/i.test(titleStatus)) {
@@ -836,36 +861,95 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
     if (hits.length >= 80) break;
   }
 
-  // Attach orphaned deferred service bullets to the best matching Vehicle serviced row
+  // Shop-work that landed on registration/odometer rows → prior empty Vehicle serviced
+  for (const { beforeIndex, bullets } of pendingOrphans) {
+    attachWorkToPriorVehicleServiced(hits, beforeIndex, bullets);
+  }
+
+  // End-of-report deferred bullets → latest empty Vehicle serviced (else last Vehicle serviced)
   if (deferredBullets.length > 0) {
-    let target: HistoryHit | undefined;
-    // Prefer a serviced row that already has highlight details (same visit)
+    let attached = false;
     for (const date of highlights.keys()) {
-      const h = hits.find(
+      const idx = hits.findIndex(
         (x) => x.date === date && /vehicle\s+serviced/i.test(`${x.titleStatus} ${x.raw}`),
       );
-      if (h) {
-        target = h;
+      if (idx >= 0) {
+        const h = hits[idx]!;
+        h.description = uniqueBullets([
+          ...h.description.split(/\s*·\s*/).filter(Boolean),
+          ...deferredBullets,
+        ]).join(" · ").slice(0, 400);
+        if (!h.titleStatus) h.titleStatus = "Vehicle serviced";
+        attached = true;
         break;
       }
     }
-    if (!target) {
-      for (let i = hits.length - 1; i >= 0; i--) {
-        const h = hits[i]!;
-        if (/vehicle\s+serviced/i.test(`${h.titleStatus} ${h.raw}`)) {
-          target = h;
-          break;
-        }
-      }
-    }
-    if (target) {
-      const existing = target.description.split(/\s*·\s*/).filter(Boolean);
-      target.description = uniqueBullets([...existing, ...deferredBullets]).join(" · ").slice(0, 400);
-      if (!target.titleStatus) target.titleStatus = "Vehicle serviced";
+    if (!attached) {
+      attachWorkToPriorVehicleServiced(hits, hits.length, deferredBullets);
     }
   }
 
+  // Any Vehicle serviced still empty: pull work from the next Vehicle serviced in a same-shop cluster
+  backfillEmptyVehicleServiced(hits);
+
   return hits;
+}
+
+/** Attach shop-work bullets to the nearest prior Vehicle serviced row (prefer empty description). */
+function attachWorkToPriorVehicleServiced(
+  hits: HistoryHit[],
+  beforeIndex: number,
+  bullets: string[],
+): void {
+  if (bullets.length === 0) return;
+  let emptyIdx = -1;
+  let anyIdx = -1;
+  for (let j = Math.min(beforeIndex, hits.length) - 1; j >= 0; j--) {
+    const h = hits[j]!;
+    if (!/^vehicle\s+serviced$/i.test(h.titleStatus) && !/\bvehicle\s+serviced\b/i.test(h.raw)) {
+      continue;
+    }
+    if (anyIdx < 0) anyIdx = j;
+    if (!h.description.trim()) {
+      emptyIdx = j;
+      break;
+    }
+  }
+  const idx = emptyIdx >= 0 ? emptyIdx : anyIdx;
+  if (idx < 0) return;
+  const h = hits[idx]!;
+  h.titleStatus = "Vehicle serviced";
+  h.description = uniqueBullets([
+    ...h.description.split(/\s*·\s*/).filter(Boolean),
+    ...bullets,
+  ]).join(" · ").slice(0, 400);
+}
+
+/**
+ * Carfax often lists several "Vehicle serviced" rows then dumps details after the last.
+ * Copy work from a filled row onto immediately preceding empty same-cluster rows
+ * only when they share the same location (same shop visit cluster).
+ */
+function backfillEmptyVehicleServiced(hits: HistoryHit[]): void {
+  for (let i = 0; i < hits.length; i++) {
+    const h = hits[i]!;
+    if (!/^vehicle\s+serviced$/i.test(h.titleStatus) || h.description.trim()) continue;
+
+    // Prefer work stolen onto the next non-service row (already redistributed).
+    // Else take from the next Vehicle serviced that has description + same location.
+    for (let k = i + 1; k < hits.length && k <= i + 6; k++) {
+      const next = hits[k]!;
+      if (!/^vehicle\s+serviced$/i.test(next.titleStatus)) continue;
+      if (!next.description.trim()) continue;
+      const sameShop =
+        !h.location
+        || !next.location
+        || h.location.toLowerCase() === next.location.toLowerCase();
+      if (!sameShop) break;
+      h.description = next.description;
+      break;
+    }
+  }
 }
 
 function isAccidentish(raw: string): boolean {

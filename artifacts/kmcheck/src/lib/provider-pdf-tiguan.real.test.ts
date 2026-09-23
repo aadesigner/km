@@ -50,8 +50,12 @@ describe("real Carfax Tiguan PDF extract", () => {
       (m) => /registration issued or renewed/i.test(m.description),
     );
     expect(reg?.titleStatus ?? "").toBe("");
-    expect(reg?.description).toMatch(/Registration issued or renewed/i);
-    expect(reg?.description ?? "").not.toMatch(/^or renewed$/i);
+    expect(reg?.description).toBe("Registration issued or renewed");
+    expect(reg?.description ?? "").not.toMatch(/ignition|spark|coil|tire/i);
+
+    // Shop work from PDF dumps should land on Vehicle serviced, not stay empty for the Gc Tire visit
+    const tireSvc = r.form.serviceHistory.find((s) => s.date.startsWith("2026-04-20"));
+    expect(tireSvc?.description ?? "").toMatch(/Brake|Tire/i);
 
     for (const s of r.form.serviceHistory) {
       expect(s.description).not.toMatch(/importer|michigan|first owner|title issued|pre-delivery|titled or registered/i);
