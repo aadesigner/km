@@ -28,6 +28,7 @@ import {
   slicePeriodBreakdown,
   PAYMENT_METHOD_LABELS,
 } from "@/lib/admin-dashboard-stats";
+import { AdminMotivationLine } from "@/components/admin/admin-motivation-line";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
 const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
@@ -643,6 +644,14 @@ export default function AdminOverview() {
               icon={UserPlus}
             />
           </div>
+          {derived ? (
+            <AdminMotivationLine
+              revenue={derived.periodMetrics.revenue}
+              checks={derived.periodMetrics.checks}
+              signups={derived.periodMetrics.signups}
+              seed={dataUpdatedAt || Date.now()}
+            />
+          ) : null}
         </section>
 
         {/* Online users */}

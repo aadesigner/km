@@ -14,7 +14,7 @@ import {
   Wrench, Palette, MapPin, Calendar,
   ShieldCheck, ShieldAlert, ChevronRight, AlertTriangle,
   Zap, Settings2, TrendingUp, DollarSign, Fuel, Box,
-  X, ChevronLeft, ChevronDown, FileText, ClipboardList, Droplets,
+  X, ChevronLeft, ChevronDown, FileText, ClipboardList, Droplets, Gavel,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isKoreanCountry } from "@/lib/korean-currency";
@@ -61,7 +61,7 @@ import {
 } from "@/lib/vehicle-attr-options";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
-import { formatMarketAuctionDate, marketValuesAreKrw } from "@/lib/market-chart-data";
+import { formatMarketAuctionDate } from "@/lib/market-chart-data";
 import {
   formatAccidentDescription,
   formatAccidentType,
@@ -81,9 +81,9 @@ import { formatAccidentCount } from "@/lib/format-accident-count";
 import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import { resolveReportPhotoSets } from "@/lib/report-photos";
-import { LazyMarketValueChart as MarketValueChart } from "@/components/lazy-market-value-chart";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
 import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
+import { VinMarketDataSection } from "@/components/vin-market-data-section";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { FloodDamageSection } from "@/components/flood-damage-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
@@ -1303,19 +1303,19 @@ export default function VinPublic({ params }: Props) {
             {/* Auction History */}
             {showAuctionSection && (
             <ReportReveal delay={0.19} y={12}>
-              <VinReportSection accent="emerald">
+              <VinReportSection accent="slate">
                 <VinReportSectionHeader
                   variant="public"
-                  icon={DollarSign}
-                  accent="emerald"
+                  icon={Gavel}
+                  accent="slate"
                   title={t("auction_history")}
                   trailing={
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs tabular-nums">
                       {auctionHistory.length}
                     </Badge>
                   }
                 />
-              <div className="px-4 py-3">
+              <div className="px-4 py-4 sm:px-6 sm:py-5">
                 <AuctionHistoryTimeline history={auctionHistory} t={t} language={language} vehicleYear={data.year} vehicleCountry={data.country} />
               </div>
               </VinReportSection>
@@ -1563,90 +1563,18 @@ export default function VinPublic({ params }: Props) {
               delay={0.119}
             />
 
-            {/* Market Data */}
             {showMarketDataSection && marketData && (
-              <ReportReveal delay={0.12} y={12}>
-                <VinReportSection accent="emerald">
-                  <VinReportSectionHeader
-                    variant="public"
-                    icon={TrendingUp}
-                    accent="emerald"
-                    title={t("report_market_data")}
-                  />
-                <div className="px-6 py-5">
-                <MarketValueChart
-                  marketData={marketData}
-                  auctionHistory={auctionHistory}
-                  t={t}
-                  language={language}
-                  vehicleCountry={data.country}
-                  krwPerUsd={krwPerUsd}
-                  className="mb-5"
-                />
-                <div className="space-y-4">
-                  {marketData.estimatedValue != null && (
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("report_estimated_value")}</p>
-                        <p className="text-sm font-bold tabular-nums">
-                          {marketValuesAreKrw(marketData.currency, data.country, marketData.estimatedValue) ? (
-                            <KoreanWonAmount krw={marketData.estimatedValue} krwPerUsd={krwPerUsd} />
-                          ) : (
-                            formatAmountPlain(
-                              marketData.estimatedValue,
-                              resolveAmountDisplayCurrency({
-                                currency: marketData.currency,
-                                vehicleCountry: data.country,
-                              }),
-                            )
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {marketData.lastAuctionPrice != null && (
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("report_last_auction")}</p>
-                        <p className="text-sm font-bold tabular-nums">
-                          {marketValuesAreKrw(marketData.currency, data.country, marketData.lastAuctionPrice) ? (
-                            <KoreanWonAmount krw={marketData.lastAuctionPrice} krwPerUsd={krwPerUsd} />
-                          ) : (
-                            formatAmountPlain(
-                              marketData.lastAuctionPrice,
-                              resolveAmountDisplayCurrency({
-                                currency: marketData.currency,
-                                vehicleCountry: data.country,
-                              }),
-                            )
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {marketData.lastAuctionDate && (
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{t("report_auction_date")}</p>
-                        <p className="text-sm font-semibold">
-                          {formatMarketAuctionDate(marketData.lastAuctionDate, language, data.year, data.country)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                </div>
-                </VinReportSection>
-              </ReportReveal>
+              <VinMarketDataSection
+                marketData={marketData}
+                auctionHistory={auctionHistory}
+                t={t}
+                language={language}
+                vehicleCountry={data.country}
+                vehicleYear={data.year}
+                krwPerUsd={krwPerUsd}
+                variant="public"
+                reveal={{ delay: 0.12 }}
+              />
             )}
 
               </>

@@ -19,6 +19,7 @@ import {
   Zap, ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
@@ -322,10 +323,8 @@ export default function CountryPage({ params }: Props) {
         <div className="max-w-7xl mx-auto pb-8 md:pb-12 lg:pb-20 relative z-10 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] lg:items-center">
 
           {/* Left */}
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <EnterReveal
+            y={16}
             className="space-y-8 pt-2 md:pt-6 lg:pt-14 relative z-20 text-center lg:text-start"
           >
             {/* Desktop eyebrow flag */}
@@ -381,13 +380,12 @@ export default function CountryPage({ params }: Props) {
               className="relative z-20 lg:mx-0"
               alerts={vinFormAlerts("default")}
             />
-          </motion.div>
+          </EnterReveal>
 
           {/* Right — demo card */}
-          <motion.div
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.13 }}
+          <EnterReveal
+            y={16}
+            delay={0.08}
             className="relative z-0 lg:sticky lg:top-8 pt-4 space-y-3 lg:overflow-visible hidden lg:flex flex-col items-center w-full min-w-0 lg:max-w-[400px] lg:justify-self-end lg:-translate-x-8"
           >
             <div className="flex w-full flex-col items-center gap-3">
@@ -396,7 +394,7 @@ export default function CountryPage({ params }: Props) {
               </Suspense>
               {heroPriceLine}
             </div>
-          </motion.div>
+          </EnterReveal>
         </div>
       </section>
 
@@ -473,18 +471,13 @@ export default function CountryPage({ params }: Props) {
       {/* ─────────────────────── FAQ ─────────────────────── */}
       <section className="py-20 md:py-28 px-4 bg-muted/25 dark:bg-white/[0.015] border-t">
         <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 space-y-3"
-          >
+          <EnterReveal inView y={16} className="text-center mb-12 space-y-3">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">
               <FlagImg code={meta.flagImg} size={16} className="rounded-sm" alt={formatImageFlagAlt(countryName, t)} />
               {countryName} {t("country_vin_checks")}
             </div>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">{t("faq")}</h2>
-          </motion.div>
+          </EnterReveal>
 
           <Accordion type="single" collapsible className="space-y-2">
             {content.faq.map((item, i) => (
@@ -536,12 +529,7 @@ export default function CountryPage({ params }: Props) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50 pointer-events-none" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-2xl mx-auto text-center space-y-8 relative z-10"
-        >
+        <EnterReveal inView y={16} className="max-w-2xl mx-auto text-center space-y-8 relative z-10">
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-semibold text-white/70">
               <FlagImg code={meta.flagImg} size={24} className="rounded-sm shadow-sm" alt={formatImageFlagAlt(countryName, t)} />
@@ -580,7 +568,7 @@ export default function CountryPage({ params }: Props) {
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-white/60" />{t("trust_secure_payment")}</span>
             <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-white/60" />{t("trust_instant_report")}</span>
           </div>
-        </motion.div>
+        </EnterReveal>
       </section>
 
       {/* ─────────────────────── OTHER COUNTRIES ─────────────────────── */}

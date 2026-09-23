@@ -2,6 +2,7 @@ import { useState, useMemo, type FormEvent } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -156,12 +157,7 @@ export default function HowItWorks() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(var(--primary)/0.12),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px)] [background-size:22px_22px] opacity-70" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative max-w-2xl mx-auto space-y-5"
-        >
+        <EnterReveal y={16} className="relative max-w-2xl mx-auto space-y-5">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary bg-primary/10 border border-primary/15 px-3 py-1 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5" />
             {t("hiw_badge")}
@@ -172,7 +168,7 @@ export default function HowItWorks() {
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             {t("hiw_subtitle")}
           </p>
-        </motion.div>
+        </EnterReveal>
       </section>
 
       {/* Steps */}
@@ -180,25 +176,19 @@ export default function HowItWorks() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-60 dark:opacity-50" />
         <div className="max-w-6xl mx-auto relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10 md:mb-12"
-          >
+          <EnterReveal inView y={16} className="text-center mb-10 md:mb-12">
             <div className="inline-flex items-center rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground dark:border-white/15 dark:bg-white/5 dark:text-white/70">
               {t("home_badge_3_steps")}
             </div>
-          </motion.div>
+          </EnterReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
             {steps.map(({ num, label, title, desc, icon: Icon }, i) => (
-              <motion.div
+              <EnterReveal
                 key={num}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.1, duration: 0.45 }}
+                inView
+                y={16}
+                delay={i * 0.04}
                 className="group"
               >
                 <div className="flex h-full flex-col gap-5 rounded-2xl border border-border/70 bg-card/90 dark:border-white/10 dark:bg-white/[0.05] p-6 sm:p-7 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:hover:border-primary/30 dark:hover:bg-white/[0.07]">
@@ -219,7 +209,7 @@ export default function HowItWorks() {
 
                   <StepPreview step={i} vinLabel={t("vin_label")} t={t} />
                 </div>
-              </motion.div>
+              </EnterReveal>
             ))}
           </div>
         </div>
@@ -233,12 +223,11 @@ export default function HowItWorks() {
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
         <div className="max-w-5xl mx-auto relative grid sm:grid-cols-3 gap-4 md:gap-6">
           {trustStrip.map(({ icon: Icon, label, desc }, i) => (
-            <motion.div
+            <EnterReveal
               key={label}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
+              inView
+              y={16}
+              delay={i * 0.04}
               className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-6 hover:border-primary/30 hover:bg-white/[0.06] transition-colors"
             >
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
@@ -246,7 +235,7 @@ export default function HowItWorks() {
               </div>
               <p className="font-bold text-white text-sm sm:text-base mb-1.5">{label}</p>
               <p className="text-sm text-white/50 leading-relaxed">{desc}</p>
-            </motion.div>
+            </EnterReveal>
           ))}
         </div>
       </section>
@@ -258,12 +247,7 @@ export default function HowItWorks() {
         <div className="absolute top-8 left-16 h-40 w-40 rounded-full bg-white/8 blur-3xl" />
         <div className="absolute bottom-8 right-16 h-48 w-48 rounded-full bg-white/8 blur-3xl" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative z-10 max-w-2xl mx-auto text-center space-y-8"
-        >
+        <EnterReveal inView y={16} className="relative z-10 max-w-2xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
               <span className="relative flex h-2 w-2">
@@ -296,7 +280,7 @@ export default function HowItWorks() {
               <Link href={`/${language}/free-vin-decoder`}>{t("free_decoder_nav_link")}</Link>
             </Button>
           </div>
-        </motion.div>
+        </EnterReveal>
       </section>
     </div>
   );

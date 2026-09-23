@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Maximize2, Minimize2, Minus, Plus, RotateCcw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { localizeProviderDate, translateKoreanProviderText, translateProviderDateInText } from "@/lib/korean-provider-text";
@@ -983,9 +984,9 @@ function TimelineMarker({
           type="button"
           aria-label={[headline, dateLabel, kmShort].filter(Boolean).join(", ")}
           className={cn(
-            "absolute z-[1] group flex h-12 w-12 items-center justify-center rounded-full sm:h-10 sm:w-10",
+            "absolute z-[2] group flex h-12 w-12 items-center justify-center rounded-full sm:h-11 sm:w-11",
             "touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1",
-            open && "z-[5]",
+            open && "z-[6]",
             !interactive && "pointer-events-none",
           )}
           style={{
@@ -995,6 +996,10 @@ function TimelineMarker({
           }}
           onPointerDown={(e) => {
             e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            openNow();
           }}
           onPointerEnter={(e) => {
             if (e.pointerType === "mouse") openNow();
@@ -1012,7 +1017,7 @@ function TimelineMarker({
               clustered
                 ? "h-5 w-5 sm:h-6 sm:w-6 bg-primary"
                 : accident
-                  ? "h-3.5 w-3.5 sm:h-4 sm:w-4"
+                  ? "h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]"
                   : markerType === "production"
                     ? "h-2.5 w-2.5 sm:h-3 sm:w-3 bg-slate-400 dark:bg-slate-300"
                     : "h-3 w-3 sm:h-3.5 sm:w-3.5",
@@ -1159,8 +1164,24 @@ export function ReportHistoryTimeline({
   className,
 }: Props) {
   const fillId = useId().replace(/:/g, "");
+  const fullscreenFillId = useId().replace(/:/g, "");
   const chartZoom = useChartZoom(true);
   const { resetZoom, ...chartZoomUi } = chartZoom;
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [fullscreen]);
 
   const presentTypes = useMemo(
     () =>
@@ -1308,7 +1329,7 @@ export function ReportHistoryTimeline({
         <div className={cn("relative min-w-0 w-full overflow-visible", opts.fillHeight && "h-full min-h-0")}>
           <svg
             viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-            className={cn("block w-full max-w-full", opts.heightClass)}
+            className={cn("pointer-events-none block w-full max-w-full", opts.heightClass)}
             preserveAspectRatio="none"
             role="img"
             aria-hidden
@@ -1329,9 +1350,8 @@ export function ReportHistoryTimeline({
                 x2={VIEW_W - PAD.r}
                 y1={(tick.topPct / 100) * VIEW_H}
                 y2={(tick.topPct / 100) * VIEW_H}
-                className="stroke-border/35"
+                className="stroke-border/25"
                 strokeWidth="1"
-                strokeDasharray="2 8"
                 vectorEffect="non-scaling-stroke"
               />
             ))}
@@ -1367,9 +1387,9 @@ export function ReportHistoryTimeline({
               <>
                 <path
                   d={layout.lineD}
-                  className="stroke-primary/25"
+                  className="stroke-primary/20"
                   fill="none"
-                  strokeWidth="6"
+                  strokeWidth="7"
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   vectorEffect="non-scaling-stroke"
@@ -1378,7 +1398,7 @@ export function ReportHistoryTimeline({
                   d={layout.lineD}
                   className="stroke-primary"
                   fill="none"
-                  strokeWidth="2.25"
+                  strokeWidth="2.5"
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   vectorEffect="non-scaling-stroke"
@@ -1516,20 +1536,30 @@ export function ReportHistoryTimeline({
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
           {t("report_timeline_title")}
         </h2>
-        <ChartZoomControls
-          t={t}
-          zoom={chartZoomUi.zoom}
-          zoomed={chartZoomUi.zoomed}
-          onZoomIn={() => chartZoomUi.zoomAtCenter(ZOOM_FACTOR)}
-          onZoomOut={() => chartZoomUi.zoomAtCenter(1 / ZOOM_FACTOR)}
-          onReset={resetZoom}
-        />
+        <div className="flex items-center gap-1.5">
+          <ChartZoomControls
+            t={t}
+            zoom={chartZoomUi.zoom}
+            zoomed={chartZoomUi.zoomed}
+            onZoomIn={() => chartZoomUi.zoomAtCenter(ZOOM_FACTOR)}
+            onZoomOut={() => chartZoomUi.zoomAtCenter(1 / ZOOM_FACTOR)}
+            onReset={resetZoom}
+          />
+          <button
+            type="button"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={t("report_timeline_fullscreen")}
+            onClick={() => setFullscreen(true)}
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="w-full min-w-0 pt-2 pb-1 sm:pt-2.5 sm:pb-1.5">
         {renderChart({
           gradientId: fillId,
-          heightClass: "h-[14rem] sm:h-[16.5rem] lg:h-[18rem]",
+          heightClass: "h-[14rem] sm:h-[17rem] lg:h-[19rem]",
           zoom: {
             viewportRef: chartZoomUi.viewportRef,
             zoom: chartZoomUi.zoom,
@@ -1540,6 +1570,63 @@ export function ReportHistoryTimeline({
       </div>
 
       {legend}
+
+      {fullscreen
+        && createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-sm"
+            style={{ paddingTop: "var(--site-header-offset, 4rem)" }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("report_timeline_title")}
+          >
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-col px-3 pb-3 pt-2 sm:px-5 sm:pb-4 sm:pt-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                  {t("report_timeline_title")}
+                </h2>
+                <div className="flex items-center gap-1.5">
+                  <ChartZoomControls
+                    t={t}
+                    zoom={chartZoomUi.zoom}
+                    zoomed={chartZoomUi.zoomed}
+                    onZoomIn={() => chartZoomUi.zoomAtCenter(ZOOM_FACTOR)}
+                    onZoomOut={() => chartZoomUi.zoomAtCenter(1 / ZOOM_FACTOR)}
+                    onReset={resetZoom}
+                  />
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label={t("report_timeline_fullscreen_close")}
+                    onClick={() => setFullscreen(false)}
+                  >
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
+                <div className="flex h-full min-h-0 flex-col">
+                  <div className="min-h-0 flex-1 px-2 pt-3 sm:px-4 sm:pt-4">
+                    {renderChart({
+                      gradientId: fullscreenFillId,
+                      heightClass: "h-full min-h-[18rem]",
+                      fillHeight: true,
+                      labelClass: "sm:text-xs",
+                      zoom: {
+                        viewportRef: chartZoomUi.viewportRef,
+                        zoom: chartZoomUi.zoom,
+                        gesturing: chartZoomUi.gesturing,
+                        interactive: !chartZoomUi.gesturing,
+                      },
+                    })}
+                  </div>
+                  {legend}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }

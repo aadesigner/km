@@ -199,6 +199,15 @@ describe("translateProviderDate", () => {
     expect(translateProviderChartLabel("05/18/2021", "sq", "usa")).toBe("18/05/21");
   });
 
+  it("localizes chart month labels for Albanian (no English Oct/May stubs)", () => {
+    expect(translateProviderChartLabel("2025-10-04", "sq")).toMatch(/tet/i);
+    expect(translateProviderChartLabel("2025-10-04", "sq")).not.toMatch(/Oct/i);
+    expect(translateProviderChartLabel("2021-05-18", "sq")).toMatch(/maj/i);
+    expect(translateProviderChartLabel("2021-05-18", "sq")).not.toMatch(/May/i);
+    expect(translateProviderChartLabel("Oct 4, 2025", "sq")).toMatch(/tet/i);
+    expect(translateProviderChartLabel("Oct 4", "sq")).toMatch(/tet/i);
+  });
+
   it("uses Albanian month names for ISO and mileage-style dates", () => {
     expect(localizeProviderDate("2024-03-15", "sq", 2020, "de")).toMatch(/mars/i);
     expect(localizeProviderDate("2025-10-04", "sq", 2020, "kr")).toMatch(/tetor/i);

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { CountryFocusMapVisual } from "@/components/country-focus-map-visual";
 import { VinDemoCard } from "@/components/vin-demo-card";
 import { useCoverageMapLivePings } from "@/hooks/use-coverage-map-live-pings";
@@ -35,12 +35,7 @@ export function CountryMapHeroStage({ country }: Props) {
   }, [livePings]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, delay: 0.13 }}
-      className="relative hidden lg:block w-full min-w-0"
-    >
+    <EnterReveal y={16} delay={0.08} className="relative hidden lg:block w-full min-w-0">
       <div className="relative w-full min-h-[500px] lg:min-h-[560px] xl:min-h-[600px]">
         <CountryFocusMapVisual
           country={country}
@@ -54,6 +49,6 @@ export function CountryMapHeroStage({ country }: Props) {
           <VinDemoCard country={country} showcase overlay livePing={featuredPing} />
         </div>
       </div>
-    </motion.div>
+    </EnterReveal>
   );
 }

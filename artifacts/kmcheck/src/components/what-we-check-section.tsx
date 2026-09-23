@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
 import {
@@ -86,12 +86,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false, class
         onMouseEnter={() => setChecksPaused(true)}
         onMouseLeave={() => setChecksPaused(false)}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-8 md:mb-10 text-center space-y-2.5"
-        >
+        <EnterReveal inView y={12} className="mb-8 md:mb-10 text-center space-y-2.5">
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {t("home_badge_most_checked")}
           </p>
@@ -99,7 +94,7 @@ export function WhatWeCheckSection({ subtitle, market, autoRotate = false, class
           <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
             {sectionSubtitle}
           </p>
-        </motion.div>
+        </EnterReveal>
 
         {/* Report only — section chips inside the card stay clickable; auto-rotate when enabled. */}
         <div className="mx-auto w-full max-w-[640px] md:max-w-[680px] lg:max-w-[720px]">

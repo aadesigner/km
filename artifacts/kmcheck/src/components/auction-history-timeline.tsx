@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { MapPin } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
@@ -8,8 +9,9 @@ import { translateDamageLabel } from "@/lib/translate-damage-label";
 import { translateTitleStatus } from "@/lib/translate-title-status";
 import { translateLotStatus } from "@/lib/translate-lot-status";
 import { cleanDisplayStr, type AuctionHistoryLike } from "@/lib/report-display";
-import { formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
+import { formatLocationLabel, countryLabelsFromT, type CountryLabelOverrides } from "@/lib/format-country-name";
 import type { Language } from "@/i18n/context";
+import { cn } from "@/lib/utils";
 
 type Props = {
   history: AuctionHistoryLike[];
@@ -23,6 +25,162 @@ function cleanStr(v: string | null | undefined): string | null {
   return cleanDisplayStr(v);
 }
 
+function formatUsd(amount: number): string {
+  return `$${amount.toLocaleString()}`;
+}
+
+function MetaChip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="text-[11px] text-muted-foreground">
+      <span className="text-muted-foreground/70">{label}: </span>
+      <span className="text-foreground/85">{value}</span>
+    </span>
+  );
+}
+
+function AuctionLotCard({
+  entry,
+  index,
+  lotNumber,
+  isLatest,
+  t,
+  language,
+  vehicleYear,
+  vehicleCountry,
+  countryLabels,
+}: {
+  entry: AuctionHistoryLike;
+  index: number;
+  lotNumber: number;
+  isLatest: boolean;
+  t: (key: string) => string;
+  language: Language;
+  vehicleYear?: number | null;
+  vehicleCountry?: string | null;
+  countryLabels: CountryLabelOverrides;
+}) {
+  const [open, setOpen] = useState(index === 0);
+  const rawStatus = cleanStr(entry.lotStatus);
+  const status = translateLotStatus(t, rawStatus);
+  const displayDate = entry.date
+    ? localizeProviderDate(entry.date, language, vehicleYear, vehicleCountry)
+    : null;
+  const locationParts = [entry.city, entry.state, entry.country].filter(Boolean);
+  const locationStr = locationParts.length > 0
+    ? formatLocationLabel(locationParts.join(", "), language, countryLabels)
+    : null;
+  const cond = translateLotStatus(t, cleanStr(entry.condition));
+  const primaryDmg = translateDamageLabel(t, cleanStr(entry.primaryDamage) ?? cleanStr(entry.damage));
+  const secondaryDmg = translateDamageLabel(t, cleanStr(entry.secondaryDamage));
+  const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
+  const hasBids = entry.openingBid != null || entry.buyNowPrice != null || entry.finalPrice != null;
+  const hasDetails = !!(cond || primaryDmg || secondaryDmg || titleLabel || hasBids || locationStr);
+
+  return (
+    <div className="rounded-lg border border-border/50">
+      <button
+        type="button"
+        onClick={() => hasDetails && setOpen((v) => !v)}
+        className={cn(
+          "w-full text-left px-3.5 py-3 sm:px-4 transition-colors",
+          hasDetails && "cursor-pointer hover:bg-muted/25",
+          open && "bg-muted/15",
+        )}
+        aria-expanded={hasDetails ? open : undefined}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <p className="text-sm font-semibold tracking-tight text-foreground">
+                {t("auction_record_n")} #{lotNumber}
+              </p>
+              {isLatest ? (
+                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-medium">
+                  {t("latest")}
+                </Badge>
+              ) : null}
+              {status ? (
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  · {status}
+                </span>
+              ) : null}
+            </div>
+            {displayDate ? (
+              <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">{displayDate}</p>
+            ) : null}
+            {locationStr && !open ? (
+              <p className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+                <MapPin className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
+                <span className="truncate">{locationStr}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {entry.finalPrice != null ? (
+              <p className="text-sm font-semibold tabular-nums text-foreground">
+                {formatUsd(entry.finalPrice)}
+              </p>
+            ) : null}
+            {hasDetails ? (
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 text-muted-foreground/70 transition-transform duration-200",
+                  open && "rotate-180",
+                )}
+                aria-hidden
+              />
+            ) : null}
+          </div>
+        </div>
+      </button>
+
+      {open && hasDetails ? (
+        <div className="space-y-2.5 border-t border-border/40 px-3.5 py-3 sm:px-4">
+          {locationStr ? (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 leading-snug">
+              <MapPin className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
+              {locationStr}
+            </p>
+          ) : null}
+
+          {(cond || primaryDmg || secondaryDmg || titleLabel) ? (
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {cond ? <MetaChip label={t("condition")} value={cond} /> : null}
+              {primaryDmg ? <MetaChip label={t("primary_damage")} value={primaryDmg} /> : null}
+              {secondaryDmg ? <MetaChip label={t("secondary_damage")} value={secondaryDmg} /> : null}
+              {titleLabel ? <MetaChip label={t("title_status")} value={titleLabel} /> : null}
+            </div>
+          ) : null}
+
+          {hasBids ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 pt-1">
+              {entry.openingBid != null ? (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t("auction_opening_bid")}</p>
+                  <p className="text-sm font-medium tabular-nums">{formatUsd(entry.openingBid)}</p>
+                </div>
+              ) : null}
+              {entry.buyNowPrice != null ? (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t("auction_buy_now")}</p>
+                  <p className="text-sm font-medium tabular-nums">{formatUsd(entry.buyNowPrice)}</p>
+                </div>
+              ) : null}
+              {entry.finalPrice != null ? (
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{t("auction_final_price")}</p>
+                  <p className="text-sm font-semibold tabular-nums">{formatUsd(entry.finalPrice)}</p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function AuctionHistoryTimeline({ history, t, language, vehicleYear, vehicleCountry }: Props) {
   const [expanded, setExpanded] = useState(false);
   const countryLabels = countryLabelsFromT(t);
@@ -32,97 +190,20 @@ export function AuctionHistoryTimeline({ history, t, language, vehicleYear, vehi
   return (
     <div className="space-y-2">
       {visible.map((entry, i) => {
-        const locationParts = [entry.city, entry.state, entry.country].filter(Boolean);
-        const locationStr = locationParts.length > 0
-          ? formatLocationLabel(locationParts.join(", "), language, countryLabels)
-          : null;
-        const cond = translateLotStatus(t, cleanStr(entry.condition));
-        const primaryDmg = translateDamageLabel(t, cleanStr(entry.primaryDamage) ?? cleanStr(entry.damage));
-        const secondaryDmg = translateDamageLabel(t, cleanStr(entry.secondaryDamage));
-        const status = translateLotStatus(t, cleanStr(entry.lotStatus));
-        const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
-        const hasBids = entry.openingBid != null || entry.buyNowPrice != null || entry.finalPrice != null;
+        const lotNumber = sorted.length - i;
         return (
-          <div key={i} className="rounded-lg border bg-muted/20 p-3 space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  {t("auction_record_n")} #{i + 1}
-                </p>
-                {entry.date && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {localizeProviderDate(entry.date, language, vehicleYear, vehicleCountry)}
-                  </p>
-                )}
-              </div>
-              {status && (
-                <span className="text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary rounded-full px-2 py-0.5 shrink-0">
-                  {status}
-                </span>
-              )}
-            </div>
-
-            {locationStr && (
-              <p className="text-[11px] text-muted-foreground flex items-center gap-1 leading-snug">
-                <MapPin className="h-3 w-3 shrink-0" />
-                {locationStr}
-              </p>
-            )}
-
-            {(cond || primaryDmg || secondaryDmg || titleLabel) && (
-              <div className="flex flex-wrap gap-1.5">
-                {cond && (
-                  <span className="text-[11px] bg-muted rounded-md px-2 py-0.5 text-muted-foreground">
-                    {t("condition")}: {cond}
-                  </span>
-                )}
-                {primaryDmg && (
-                  <span className="text-[11px] bg-muted rounded-md px-2 py-0.5 text-muted-foreground">
-                    {t("primary_damage")}: {primaryDmg}
-                  </span>
-                )}
-                {secondaryDmg && (
-                  <span className="text-[11px] bg-muted rounded-md px-2 py-0.5 text-muted-foreground">
-                    {t("secondary_damage")}: {secondaryDmg}
-                  </span>
-                )}
-                {titleLabel && (
-                  <span className="text-[11px] bg-amber-500/10 text-amber-800 dark:text-amber-300 rounded-md px-2 py-0.5">
-                    {t("title_status")}: {titleLabel}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {hasBids && (
-              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-border/60">
-                {entry.openingBid != null && (
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("auction_opening_bid")}</p>
-                    <p className="text-[11px] font-semibold tabular-nums">
-                      ${entry.openingBid.toLocaleString()}
-                    </p>
-                  </div>
-                )}
-                {entry.buyNowPrice != null && (
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("auction_buy_now")}</p>
-                    <p className="text-[11px] font-semibold tabular-nums">
-                      ${entry.buyNowPrice.toLocaleString()}
-                    </p>
-                  </div>
-                )}
-                {entry.finalPrice != null && (
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("auction_final_price")}</p>
-                    <p className="text-[11px] font-bold tabular-nums text-blue-700 dark:text-blue-400">
-                      ${entry.finalPrice.toLocaleString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <AuctionLotCard
+            key={`${entry.date ?? ""}-${entry.finalPrice ?? ""}-${i}`}
+            entry={entry}
+            index={i}
+            lotNumber={lotNumber}
+            isLatest={i === 0}
+            t={t}
+            language={language}
+            vehicleYear={vehicleYear}
+            vehicleCountry={vehicleCountry}
+            countryLabels={countryLabels}
+          />
         );
       })}
       <HistoryShowAllButton

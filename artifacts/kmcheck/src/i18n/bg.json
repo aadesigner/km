@@ -575,7 +575,7 @@
   "pending_scan_safety": "Salvage и записи за кражби",
   "pending_scan_auction": "Търгови обяви",
   "pending_scan_photos": "Снимки на автомобила",
-  "pending_photos_searching": "Търсене на архивни снимки…",
+  "pending_photos_searching": "Търсене във фотоархива…",
   "pending_partner_encar": "Encar · Корейски пазар",
   "pending_partner_insurance": "Застрахователни бюро документи",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1258,7 +1258,7 @@
   "print_summary_no_insurance": "Не са намерени застрахователни претенции",
   "print_summary_no_mileage": "Не са намерени записи за пробег",
   "print_summary_no_owners": "Не са намерени записи за собственост",
-  "print_summary_no_photos": "Няма налични снимки",
+  "print_summary_no_photos": "Няма фотоархив",
   "print_summary_photos": "Снимки на автомобила",
   "print_summary_mileage_history": "История на пробега",
   "print_summary_ownership": "История на собственост",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "Осака",
   "live_city_nagoya": "Нагоя",
   "live_city_yokohama": "Йокохама",
-  "live_city_fukuoka": "Фукуока"
+  "live_city_fukuoka": "Фукуока",
+  "report_no_photo_archive": "Няма намерен фотоархив",
+  "report_no_photo_archive_hint": "Няма налични снимки на автомобила за този VIN"
 }

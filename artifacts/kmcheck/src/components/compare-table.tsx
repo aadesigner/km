@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Check, Minus, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { cn } from "@/lib/utils";
 
 type CompareRow = {
@@ -243,12 +244,7 @@ export function CompareTable({ market = "default" }: Props) {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,hsl(var(--primary)/0.14),transparent)]" />
 
       <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-10 md:mb-12 space-y-3"
-        >
+        <EnterReveal inView y={16} className="text-center mb-10 md:mb-12 space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
             {t("compare_badge")}
           </div>
@@ -256,7 +252,7 @@ export function CompareTable({ market = "default" }: Props) {
           <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base leading-relaxed">
             {t(descKey)}
           </p>
-        </motion.div>
+        </EnterReveal>
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}

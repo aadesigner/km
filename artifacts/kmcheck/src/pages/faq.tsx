@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useLocation, Link } from "wouter";
-import { motion, type Variants } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo, faqPageJsonLd } from "@/components/seo";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { Button } from "@/components/ui/button";
@@ -33,15 +33,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.35, ease: "easeOut" },
-  }),
-} as unknown as Variants;
 
 type FaqItem = {
   q: string;
@@ -177,12 +168,7 @@ export default function FAQ() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-15%,hsl(var(--primary)/0.14),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px)] [background-size:22px_22px] opacity-60" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative max-w-2xl mx-auto space-y-5"
-        >
+        <EnterReveal y={14} className="relative max-w-2xl mx-auto space-y-5">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary bg-primary/10 border border-primary/15 px-2.5 py-1 rounded-full">
             <MessageCircle className="h-3 w-3" />
             {t("faq_badge")}
@@ -193,7 +179,7 @@ export default function FAQ() {
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
             {t("faq_subtitle")}
           </p>
-        </motion.div>
+        </EnterReveal>
       </section>
 
       {/* Category jump + FAQ list */}
@@ -220,17 +206,14 @@ export default function FAQ() {
         </nav>
 
         {categories.map((category, catIdx) => (
-          <motion.div
+          <EnterReveal
             key={category.id}
-            id={`faq-${category.id}`}
-            custom={catIdx}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={fadeUp}
-            className="scroll-mt-28 space-y-3"
+            inView
+            y={16}
+            delay={catIdx * 0.05}
+            className="space-y-3"
           >
-            <div className="flex items-center gap-2.5">
+            <div id={`faq-${category.id}`} className="scroll-mt-28 flex items-center gap-2.5">
               <span className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <category.icon className="h-3.5 w-3.5 text-primary" />
               </span>
@@ -264,7 +247,7 @@ export default function FAQ() {
                 );
               })}
             </Accordion>
-          </motion.div>
+          </EnterReveal>
         ))}
       </section>
 
@@ -273,13 +256,7 @@ export default function FAQ() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_80%_50%,rgba(255,255,255,0.12),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04]" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.45 }}
-          className="relative z-10 max-w-2xl mx-auto text-center space-y-6"
-        >
+        <EnterReveal inView y={16} className="relative z-10 max-w-2xl mx-auto text-center space-y-6">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-4 py-1.5 text-sm font-semibold text-white">
               <span className="relative flex h-2 w-2">
@@ -329,7 +306,7 @@ export default function FAQ() {
               <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
           </Button>
-        </motion.div>
+        </EnterReveal>
       </section>
     </>
   );

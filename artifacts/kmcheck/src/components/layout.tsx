@@ -27,6 +27,7 @@ import { LangPickerList, usePrefetchPickerFlags } from "@/components/lang-picker
 import { NavAssetWarmup } from "@/components/nav-asset-warmup";
 import { prefetchNavMenuAssets } from "@/lib/nav-assets";
 import { prefetchCountryPages, prefetchAuthAreaRoutes, prefetchRoute, prefetchCommonRoutes } from "@/lib/prefetch-route";
+import { clearLeakedAdminDocumentStyles } from "@/lib/admin-revenue-mood";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -513,8 +514,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const { resolvedTheme, setTheme } = useTheme();
   const [location, setLocation] = useLocation();
   const { isSignedIn, isLoaded, user, logout } = useAuth();
-  const [scrolled, setScrolled]       = useState(false);
-  const [heroScrolled, setHeroScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() =>
+    typeof window !== "undefined" ? window.scrollY > 16 : false,
+  );
+  const [heroScrolled, setHeroScrolled] = useState(() =>
+    typeof window !== "undefined" ? window.scrollY > 72 : false,
+  );
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [userOpen, setUserOpen]       = useState(false);
@@ -541,7 +546,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   }, []);
 
   useEffect(() => {
-    prefetchNavMenuAssets();
+    // After first paint — avoid competing with logo/hero on cold mobile loads.
+    const id = window.setTimeout(() => {
+      prefetchNavMenuAssets();
+    }, 800);
+    return () => window.clearTimeout(id);
   }, []);
 
   useEffect(() => {
@@ -687,13 +696,17 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       "fixed inset-x-0 z-[100] w-full print:hidden",
       "transition-[border-color,background-color,box-shadow] duration-150",
       scrolled
-        ? (isDarkNav
-            ? "bg-[#060a14]/95 border-b border-white/10"
+        ? (resolvedTheme === "dark"
+            ? (isDarkNav
+                ? "bg-[#060a14]/95 border-b border-white/20"
+                : "bg-background/97 border-b border-white/15")
             : "bg-background/97 border-b border-border/70")
         : isDarkNav
-        ? "bg-gradient-to-b from-black/30 to-transparent border-b border-white/[0.06]"
+        ? "bg-gradient-to-b from-black/30 to-transparent border-b border-white/15"
         : (isHeroTransparentNav || isAuthNavPage)
         ? "bg-transparent border-b border-border/30"
+        : resolvedTheme === "dark"
+        ? "bg-background/80 border-b border-white/12"
         : "bg-background/80 border-b border-border/40",
     )}>
       <div className={cn(
@@ -709,6 +722,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         <div className="flex items-center min-w-0 md:justify-self-start">
           <PrefetchLink href={`/${language}`} className="flex items-center shrink-0 group -translate-y-px">
             <KmcheckLogo
+              syncDecode
               className={cn(
                 "w-auto max-w-none object-contain transition-[height,opacity] duration-150 ease-out group-hover:opacity-90",
                 scrolled ? "h-8 md:h-9" : "h-9 md:h-10",
@@ -1084,9 +1098,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [announcementHeight, setAnnouncementHeight] = useState(0);
   const showClientNav = useShowClientMobileNav();
 
-  useEffect(() => {
+  // Admin themes used to write CSS vars onto <html>; scrub leftovers on public shell.
+  useLayoutEffect(() => {
+    clearLeakedAdminDocumentStyles();
+  }, []);
+
+  useLayoutEffect(() => {
     const apply = () => {
-      // Must match Navbar static height (`h-[76px]`).
+      // Must match Navbar resting height (`h-[76px]`). Keep stable — do not shrink
+      // with scroll or content jumps under the fixed header.
       const navbarHeight = 76;
       document.documentElement.style.setProperty(
         "--site-header-offset",
@@ -1116,7 +1136,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
         )}
       >
-        <main className="overflow-x-hidden pt-[var(--site-header-offset,80px)] print:pt-0">
+        <main className="overflow-x-hidden pt-[var(--site-header-offset,76px)] print:pt-0">
           {children}
         </main>
         <Footer />

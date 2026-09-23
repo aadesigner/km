@@ -575,7 +575,7 @@
   "pending_scan_safety": "Salvage і викрадення",
   "pending_scan_auction": "Аукціонні лоти",
   "pending_scan_photos": "Фото автомобіля",
-  "pending_photos_searching": "Пошук архівних фото…",
+  "pending_photos_searching": "Пошук у фотоархіві…",
   "pending_partner_encar": "Encar · Корейський ринок",
   "pending_partner_insurance": "Страхові бази",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1219,7 +1219,7 @@
   "print_summary_no_insurance": "Страхових виплат не знайдено",
   "print_summary_no_mileage": "Записів пробігу не знайдено",
   "print_summary_no_owners": "Записів про власників не знайдено",
-  "print_summary_no_photos": "Фото відсутні",
+  "print_summary_no_photos": "Фотоархів недоступний",
   "print_summary_photos": "Фото автомобіля",
   "print_summary_mileage_history": "Історія пробігу",
   "print_summary_ownership": "Історія власників",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "Осака",
   "live_city_nagoya": "Нагоя",
   "live_city_yokohama": "Йокогама",
-  "live_city_fukuoka": "Фукуока"
+  "live_city_fukuoka": "Фукуока",
+  "report_no_photo_archive": "Фотоархів не знайдено",
+  "report_no_photo_archive_hint": "Для цього VIN немає фотографій автомобіля"
 }

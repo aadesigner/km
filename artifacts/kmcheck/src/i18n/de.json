@@ -575,7 +575,7 @@
   "pending_scan_safety": "Salvage- & Diebstahldaten",
   "pending_scan_auction": "Auktionsinserate",
   "pending_scan_photos": "Fahrzeugfotos",
-  "pending_photos_searching": "Archivierte Fotos werden gesucht…",
+  "pending_photos_searching": "Fotoarchiv wird durchsucht…",
   "pending_partner_encar": "Encar · Koreanischer Marktplatz",
   "pending_partner_insurance": "Versicherungsbüro-Meldungen",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1258,7 +1258,7 @@
   "print_summary_no_insurance": "Keine Versicherungsansprüche gefunden",
   "print_summary_no_mileage": "Keine Kilometerstandsdaten gefunden",
   "print_summary_no_owners": "Keine Vorbesitzerdaten gefunden",
-  "print_summary_no_photos": "Keine Fotos verfügbar",
+  "print_summary_no_photos": "Kein Fotoarchiv verfügbar",
   "print_summary_photos": "Fahrzeugfotos",
   "print_summary_mileage_history": "Kilometerstandshistorie",
   "print_summary_ownership": "Vorbesitzerhistorie",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "Osaka",
   "live_city_nagoya": "Nagoya",
   "live_city_yokohama": "Yokohama",
-  "live_city_fukuoka": "Fukuoka"
+  "live_city_fukuoka": "Fukuoka",
+  "report_no_photo_archive": "Kein Fotoarchiv gefunden",
+  "report_no_photo_archive_hint": "Für diese FIN sind keine Fahrzeugfotos verfügbar"
 }

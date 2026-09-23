@@ -4,17 +4,6 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
 import { TextWithObfuscatedEmail } from "@/components/obfuscated-email-link";
 
-const SECTION_KEYS = [
-  "pending_scan_vehicle",
-  "pending_scan_mileage",
-  "pending_scan_accidents",
-  "pending_scan_insurance",
-  "pending_scan_registry",
-  "pending_scan_safety",
-  "pending_scan_auction",
-  "pending_scan_photos",
-] as const;
-
 export function PendingVinTopNotice({
   vin,
   className,
@@ -96,7 +85,7 @@ export function PendingVinSearchPanel({ className }: { className?: string }) {
       role="status"
       aria-live="polite"
     >
-      <div className="px-4 py-5 sm:px-5 sm:py-6 flex flex-col items-center text-center gap-3.5 border-b bg-muted/20">
+      <div className="px-4 py-5 sm:px-5 sm:py-6 flex flex-col items-center text-center gap-3.5 bg-muted/20">
         <SearchingOrb reduceMotion={reduceMotion} />
         <div className="min-w-0 max-w-md">
           <h2 className="font-bold text-sm sm:text-base">{t("pending_search_title")}</h2>
@@ -115,17 +104,6 @@ export function PendingVinSearchPanel({ className }: { className?: string }) {
             />
           )}
         </div>
-      </div>
-
-      <div className="p-3 sm:p-3.5 flex flex-wrap gap-1.5 justify-center">
-        {SECTION_KEYS.map((key) => (
-          <span
-            key={key}
-            className="text-[10px] sm:text-[11px] px-2 py-1 rounded-md border border-border/50 bg-muted/25 text-muted-foreground"
-          >
-            {t(key)}
-          </span>
-        ))}
       </div>
 
       <div className="px-3.5 py-2.5 sm:px-4 border-t bg-muted/15">

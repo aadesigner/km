@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
-  Car, ChevronLeft, ChevronRight, Lock, MapPin,
+  Car, ChevronLeft, ChevronRight, Lock, MapPin, ImageOff,
   CheckCircle2, XCircle, Gauge, ShieldCheck, ShieldAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -130,20 +130,23 @@ function HeroPhotoPlaceholder({
   className,
   label,
   pendingScan = false,
+  compact = false,
 }: {
   vehicleTitle: string;
   className?: string;
   label?: string;
   pendingScan?: boolean;
+  /** Shorter empty state on small screens when there are no photos. */
+  compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
 
   if (pendingScan) {
     return (
       <div
         className={cn(
-          "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo",
-          "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
+          "absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-muted/40",
           className,
         )}
       >
@@ -155,7 +158,7 @@ function HeroPhotoPlaceholder({
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
           />
         )}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-4">
+        <div className="relative z-[1] flex flex-col items-center justify-center gap-2.5 px-4">
           <Car className="h-11 w-11 sm:h-12 sm:w-12 text-muted-foreground/18" aria-hidden />
           {label ? (
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground/80 text-center leading-snug">
@@ -168,18 +171,45 @@ function HeroPhotoPlaceholder({
     );
   }
 
+  const title = label ?? t("report_no_photo_archive");
+
   return (
     <div
       className={cn(
-        "w-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-muted/50 px-4",
-        "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
+        "absolute inset-0 flex flex-col items-center justify-center gap-2 sm:gap-3 px-4 sm:px-5",
+        "bg-gradient-to-br from-muted/80 via-muted/40 to-muted/20",
         className,
       )}
     >
-      <Car className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/25" aria-hidden />
-      {label ? (
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground/80 text-center">{label}</p>
-      ) : null}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute border border-dashed border-border/70 rounded-lg sm:rounded-xl",
+          compact ? "inset-2" : "inset-2.5 sm:inset-4",
+        )}
+      />
+      <div
+        className={cn(
+          "relative flex items-center justify-center rounded-xl sm:rounded-2xl bg-background/70 border border-border/60 shadow-sm",
+          compact ? "h-8 w-8 sm:h-14 sm:w-14" : "h-9 w-9 sm:h-14 sm:w-14",
+        )}
+      >
+        <ImageOff
+          className={cn(
+            "text-muted-foreground/55",
+            compact ? "h-4 w-4 sm:h-7 sm:w-7" : "h-[1.125rem] w-[1.125rem] sm:h-7 sm:w-7",
+          )}
+          aria-hidden
+        />
+      </div>
+      <p
+        className={cn(
+          "relative max-w-[16rem] text-center font-semibold text-muted-foreground tracking-tight leading-snug",
+          compact ? "text-[11px] sm:text-sm" : "text-[11px] sm:text-sm",
+        )}
+      >
+        {title}
+      </p>
       <span className="sr-only">{vehicleTitle}</span>
     </div>
   );
@@ -295,6 +325,10 @@ function HeroPhotoGallery({
   );
   const currentPhoto = effectivePhotos[photoIdx] ?? effectivePhotos[0] ?? null;
   const showNav = photos.length > 1 && !locked;
+  const emptyCompact = photos.length === 0 && !pendingPhotoScan;
+  const photoFrameClass = emptyCompact
+    ? "aspect-[2.4/1] max-h-[120px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full"
+    : "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full";
   const bufferIndices = useMemo(() => {
     const n = photos.length;
     if (n === 0) return [];
@@ -402,7 +436,7 @@ function HeroPhotoGallery({
       <div
         className={cn(
           "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo",
-          "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
+          photoFrameClass,
           className,
         )}
       >
@@ -428,6 +462,7 @@ function HeroPhotoGallery({
             vehicleTitle={vehicleTitle}
             label={photoPlaceholderLabel}
             pendingScan={pendingPhotoScan}
+            compact={emptyCompact}
           />
         )}
 
@@ -449,7 +484,7 @@ function HeroPhotoGallery({
     <div
       className={cn(
         "relative w-full overflow-hidden bg-muted/40 print-vin-hero-photo group/gallery",
-        "aspect-[4/3] max-h-[250px] sm:aspect-auto sm:max-h-none sm:min-h-full sm:h-full",
+        photoFrameClass,
         photoClickable && "cursor-zoom-in",
         className,
       )}
@@ -492,6 +527,7 @@ function HeroPhotoGallery({
           vehicleTitle={vehicleTitle}
           label={photoPlaceholderLabel}
           pendingScan={pendingPhotoScan}
+          compact={emptyCompact}
         />
       )}
 

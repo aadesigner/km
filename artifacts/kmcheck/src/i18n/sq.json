@@ -578,7 +578,7 @@
   "pending_scan_safety": "Dëmtim total & vjedhje",
   "pending_scan_auction": "Listimet e ankandeve",
   "pending_scan_photos": "Fotot e automjetit",
-  "pending_photos_searching": "Duke kërkuar foto të arkivuara…",
+  "pending_photos_searching": "Duke kërkuar në arkivin e fotove…",
   "pending_partner_encar": "Encar · Treg korean",
   "pending_partner_insurance": "Dosjet e siguruesve",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1223,7 +1223,7 @@
   "print_summary_no_insurance": "Nuk u gjetën pretendime sigurimi",
   "print_summary_no_mileage": "Nuk u gjetën regjistra kilometrash",
   "print_summary_no_owners": "Nuk u gjetën regjistra pronësie",
-  "print_summary_no_photos": "Nuk ka foto",
+  "print_summary_no_photos": "Nuk ka arkiv fotosh",
   "print_summary_photos": "Fotot e automjetit",
   "print_summary_mileage_history": "Historia e kilometrave",
   "print_summary_ownership": "Historia e pronësisë",
@@ -1814,5 +1814,7 @@
   "live_city_osaka": "Osaka",
   "live_city_nagoya": "Nagoya",
   "live_city_yokohama": "Yokohama",
-  "live_city_fukuoka": "Fukuoka"
+  "live_city_fukuoka": "Fukuoka",
+  "report_no_photo_archive": "Nuk u gjet arkiv fotosh",
+  "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë shasi"
 }

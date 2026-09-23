@@ -12,7 +12,7 @@ import { HomeStatsStrip } from "@/components/home-stats-strip";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo, organizationJsonLd } from "@/components/seo";
 import { redirectGuestForVinCheckout, persistVinForCheckout, clearStoredPendingVin } from "@/lib/checkout-vin-flow";
 import { HeroVinForm } from "@/components/hero-vin-form";
@@ -174,10 +174,8 @@ export default function Home() {
         </div>
 
         <div className="relative max-w-6xl mx-auto z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          <EnterReveal
+            y={16}
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
             {/* Stable H1 for Google — full keyword phrase, no rotating text. */}
@@ -209,7 +207,7 @@ export default function Home() {
               placeholder={language === "sq" ? t("vin_placeholder_chassis") : t("vin_placeholder")}
             />
 
-          </motion.div>
+          </EnterReveal>
         </div>
       </section>
 
@@ -224,29 +222,16 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50" />
         <div className="max-w-5xl mx-auto relative">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
-            className="text-center mb-16 space-y-3"
-          >
+          <EnterReveal inView y={12} className="text-center mb-16 space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-semibold text-white/70">
               {t("home_badge_3_steps")}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white">{t("how_it_works")}</h2>
             <p className="text-white/50 text-base max-w-lg mx-auto">{t("how_it_works_desc")}</p>
-          </motion.div>
+          </EnterReveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {STEPS.map(({ n, title, desc, icon: StepIcon }, i) => (
-              <motion.div
-                key={n}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.28 }}
-                className="relative group"
-              >
+              <EnterReveal key={n} inView y={14} delay={i * 0.04} className="relative group">
                 <div className="relative z-10 flex flex-col gap-5 bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-primary/30 hover:bg-white/[0.07] transition-all duration-300">
                   <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-lg shadow-primary/30 shrink-0 group-hover:shadow-primary/50 transition-shadow">
@@ -259,7 +244,7 @@ export default function Home() {
                     <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
                   </div>
                 </div>
-              </motion.div>
+              </EnterReveal>
             ))}
           </div>
         </div>
@@ -292,12 +277,10 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(74,222,128,0.18)_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.12] [mask-image:linear-gradient(180deg,#000_0%,#000_55%,transparent_100%)]" />
 
         <div className="max-w-5xl mx-auto relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45 }}
-            className="relative overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-b from-emerald-950/45 via-emerald-950/20 to-[#060a12] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur-sm"
+          <EnterReveal
+            inView
+            y={16}
+            className="relative overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-b from-emerald-950/45 via-emerald-950/20 to-[#060a12] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)] md:backdrop-blur-sm"
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent" />
             <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
@@ -393,7 +376,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </EnterReveal>
         </div>
       </section>
     </div>

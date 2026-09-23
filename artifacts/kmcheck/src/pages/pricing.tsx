@@ -10,7 +10,7 @@ import {
   CheckCircle2, RotateCcw,
   CreditCard, UserCircle, Zap, FileText, Coins,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo, productOfferJsonLd } from "@/components/seo";
 import { SITE_ORIGIN } from "@/lib/seo-config";
 import { DEFAULT_PRICING } from "@/lib/pricing-defaults";
@@ -211,12 +211,7 @@ export default function Pricing() {
         />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-10"
-          >
+          <EnterReveal y={16} className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-10">
             <h1 className="text-[2.6rem] sm:text-[3.15rem] md:text-[3.25rem] lg:text-[3.5rem] font-black tracking-tight leading-[1.12] sm:leading-[1.14]">
               {t("pricing_hero_title_1")}
               <br />
@@ -225,17 +220,12 @@ export default function Pricing() {
             <p className="text-base sm:text-lg text-muted-foreground dark:text-white/60 leading-relaxed max-w-2xl mx-auto">
               {t("pricing_hero_lead")}
             </p>
-          </motion.div>
+          </EnterReveal>
 
           {/* Two equal columns on desktop */}
           <div className="grid gap-5 lg:grid-cols-2 lg:gap-6 lg:items-stretch max-w-5xl mx-auto w-full">
             {/* Primary — single report + VIN */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10"
-            >
+            <EnterReveal y={14} className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden ring-1 ring-primary/10">
               <div className="relative px-6 sm:px-8 pt-8 pb-7 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
                 {discountEnabled && savePct > 0 && (
@@ -279,15 +269,10 @@ export default function Pricing() {
                   className="max-w-none mx-0 [&_.hero-vin-field]:rounded-xl [&_input]:h-12 [&_input]:sm:h-14 [&_input]:text-sm [&_input]:pr-[5rem] [&_button]:h-9 [&_button]:sm:h-11 [&_button]:px-3 [&_button]:text-xs"
                 />
               </div>
-            </motion.div>
+            </EnterReveal>
 
             {/* Packs — equal-weight companion to single report */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08, duration: 0.45 }}
-              className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden lg:sticky lg:top-24"
-            >
+            <EnterReveal y={14} delay={0.06} className="flex flex-col rounded-2xl border border-border/70 dark:border-white/15 bg-card shadow-xl shadow-black/5 dark:shadow-black/30 overflow-hidden lg:sticky lg:top-24">
               <div className="relative px-6 sm:px-8 pt-8 pb-7 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
                 <div className="relative space-y-2.5">
@@ -377,7 +362,7 @@ export default function Pricing() {
                   </Button>
                 </div>
               </div>
-            </motion.div>
+            </EnterReveal>
           </div>
 
           <p className="mt-6 text-center text-[11px] sm:text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
@@ -393,13 +378,7 @@ export default function Pricing() {
         <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-60 dark:opacity-50" />
 
         <div className="max-w-6xl mx-auto relative space-y-10 md:space-y-14">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.45 }}
-            className="text-center max-w-3xl mx-auto space-y-4"
-          >
+          <EnterReveal inView y={16} className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3.5 py-1 text-xs font-semibold text-primary dark:border-white/15 dark:bg-white/5">
               <FileText className="h-3.5 w-3.5" />
               {t("pricing_included_label")}
@@ -410,16 +389,15 @@ export default function Pricing() {
             <p className="text-base md:text-lg text-muted-foreground dark:text-white/55 leading-relaxed">
               {t("pricing_seo_sub")}
             </p>
-          </motion.div>
+          </EnterReveal>
 
           <div className="grid sm:grid-cols-3 gap-4 md:gap-5">
             {SEO_VALUE_PROPS.map(({ icon: Icon, titleKey, descKey }, i) => (
-              <motion.div
+              <EnterReveal
                 key={titleKey}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
+                inView
+                y={14}
+                delay={i * 0.04}
                 className="rounded-2xl border border-border/70 bg-card/90 dark:border-white/10 dark:bg-white/[0.05] p-5 md:p-6 shadow-sm hover:border-primary/30 hover:shadow-md dark:hover:border-primary/30 transition-all"
               >
                 <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center mb-4 shadow-md shadow-primary/20">
@@ -431,18 +409,17 @@ export default function Pricing() {
                 <p className="text-sm text-muted-foreground dark:text-white/50 leading-relaxed">
                   {t(descKey)}
                 </p>
-              </motion.div>
+              </EnterReveal>
             ))}
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {SEO_INCLUDED.map(({ feature, desc }, i) => (
-              <motion.div
+              <EnterReveal
                 key={feature}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.05, duration: 0.35 }}
+                inView
+                y={12}
+                delay={i * 0.04}
                 className="rounded-2xl border border-border/70 bg-background/80 dark:border-white/10 dark:bg-white/[0.04] p-5 hover:border-primary/25 transition-colors"
               >
                 <div className="flex items-start gap-3">
@@ -456,7 +433,7 @@ export default function Pricing() {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </EnterReveal>
             ))}
           </div>
         </div>

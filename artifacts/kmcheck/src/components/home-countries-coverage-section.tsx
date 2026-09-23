@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { EnterReveal } from "@/components/enter-reveal";
 import { ArrowRight, CheckCircle2, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
@@ -94,13 +94,7 @@ function CountryCardLink({
   index: number;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.08, duration: 0.45 }}
-      className="h-full"
-    >
+    <EnterReveal inView y={16} delay={index * 0.04} className="h-full">
       <Link
         href={`/${language}/cars/${country.slug}`}
         className={cn(
@@ -152,7 +146,7 @@ function CountryCardLink({
           </div>
         </div>
       </Link>
-    </motion.div>
+    </EnterReveal>
   );
 }
 
@@ -163,19 +157,14 @@ export function HomeCountriesCoverageSection() {
   return (
     <section className="pt-16 md:pt-24 pb-10 md:pb-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-10 md:mb-12 text-center space-y-3"
-        >
+        <EnterReveal inView y={14} className="mb-10 md:mb-12 text-center space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
             <Globe className="h-3.5 w-3.5" />
             {t("stats_countries_badge")}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("countries_title")}</h2>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
-        </motion.div>
+        </EnterReveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
           {countries.map((country, i) => (
@@ -189,11 +178,9 @@ export function HomeCountriesCoverageSection() {
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
+        <EnterReveal
+          inView
+          y={12}
           className="mt-8 md:mt-10 rounded-2xl border border-border/70 bg-gradient-to-br from-muted/40 via-card to-card p-5 md:p-6"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -229,7 +216,7 @@ export function HomeCountriesCoverageSection() {
               </Link>
             </Button>
           </div>
-        </motion.div>
+        </EnterReveal>
       </div>
     </section>
   );

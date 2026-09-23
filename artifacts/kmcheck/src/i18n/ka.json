@@ -629,7 +629,7 @@
   "pending_scan_safety": "სალვაჟისა და ქურდობის ჩანაწერები",
   "pending_scan_auction": "აუქციონის ჩამონათვალი",
   "pending_scan_photos": "მანქანის ფოტოები",
-  "pending_photos_searching": "მიმდინარეობს დაარქივებული ფოტოების ძიება…",
+  "pending_photos_searching": "მიმდინარეობს ფოტოარქივის ძიება…",
   "pending_partner_encar": "Encar · კორეული ბაზარი",
   "pending_partner_insurance": "სადაზღვევო ბიუროს ჩანაწერები",
   "pending_partner_auction": "კოპარტი · IAAI · მანჰეიმი",
@@ -1316,7 +1316,7 @@
   "print_summary_no_insurance": "სადაზღვევო პრეტენზიები არ მოიძებნა",
   "print_summary_no_mileage": "გარბენის ჩანაწერები არ მოიძებნა",
   "print_summary_no_owners": "საკუთრების ჩანაწერები ვერ მოიძებნა",
-  "print_summary_no_photos": "ფოტოები არ არის ხელმისაწვდომი",
+  "print_summary_no_photos": "ფოტოარქივი მიუწვდომელია",
   "print_summary_photos": "მანქანის ფოტოები",
   "print_summary_mileage_history": "გარბენის ისტორია",
   "print_summary_ownership": "საკუთრების ისტორია",
@@ -1814,5 +1814,7 @@
   "live_city_osaka": "ოსაკა",
   "live_city_nagoya": "ნაგოია",
   "live_city_yokohama": "იოკოჰამა",
-  "live_city_fukuoka": "ფუკუოკა"
+  "live_city_fukuoka": "ფუკუოკა",
+  "report_no_photo_archive": "ფოტოარქივი ვერ მოიძებნა",
+  "report_no_photo_archive_hint": "ამ VIN-ისთვის მანქანის ფოტოები არ არის ხელმისაწვდომი"
 }

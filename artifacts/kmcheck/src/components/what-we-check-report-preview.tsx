@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Gauge, Lock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,8 +36,6 @@ function sortHistoryNewestFirst<T extends { date: string }>(rows: readonly T[]):
     return b.date.localeCompare(a.date);
   });
 }
-const TILT_MAX_X = 9;
-const TILT_MAX_Y = 11;
 
 function useDesktopTiltEnabled(reduced: boolean | null) {
   const [enabled, setEnabled] = useState(false);
@@ -64,34 +62,9 @@ function ReportTiltShell({
   children: React.ReactNode;
   reduced: boolean | null;
 }) {
+  // Soft hover lift only — 3D rotate/translateZ broke chip hit-testing on desktop.
   const tiltEnabled = useDesktopTiltEnabled(reduced);
-  const shellRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, lift: 0 });
-  const [glare, setGlare] = useState({ x: 50, y: 35 });
   const [hovering, setHovering] = useState(false);
-
-  const resetTilt = useCallback(() => {
-    setTilt({ rotateX: 0, rotateY: 0, lift: 0 });
-    setGlare({ x: 50, y: 35 });
-    setHovering(false);
-  }, []);
-
-  const handleMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!tiltEnabled || !shellRef.current) return;
-      const rect = shellRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width;
-      const py = (e.clientY - rect.top) / rect.height;
-      setTilt({
-        rotateX: (0.5 - py) * TILT_MAX_X,
-        rotateY: (px - 0.5) * TILT_MAX_Y,
-        lift: 10,
-      });
-      setGlare({ x: px * 100, y: py * 100 });
-      setHovering(true);
-    },
-    [tiltEnabled],
-  );
 
   if (!tiltEnabled) {
     return <div className="relative w-full">{children}</div>;
@@ -99,42 +72,22 @@ function ReportTiltShell({
 
   return (
     <div
-      ref={shellRef}
-      className="relative w-full [perspective:1400px]"
-      onMouseMove={tiltEnabled ? handleMove : undefined}
-      onMouseLeave={tiltEnabled ? resetTilt : undefined}
+      className="relative w-full"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
     >
       <div
         className={cn(
           "pointer-events-none absolute -bottom-4 left-[10%] right-[10%] h-5 rounded-[100%] blur-2xl transition-opacity duration-300",
-          hovering && tiltEnabled ? "opacity-100 bg-black/20 dark:bg-black/45" : "opacity-60 bg-black/10 dark:bg-black/30",
+          hovering ? "opacity-100 bg-black/20 dark:bg-black/45" : "opacity-60 bg-black/10 dark:bg-black/30",
         )}
-        style={
-          tiltEnabled
-            ? { transform: `translate3d(${tilt.rotateY * 0.6}px, 4px, 0) scale(${hovering ? 1.02 : 1})` }
-            : undefined
-        }
         aria-hidden
       />
-
       <motion.div
-        className="relative [transform-style:preserve-3d] will-change-transform"
-        animate={{
-          rotateX: tilt.rotateX,
-          rotateY: tilt.rotateY,
-          translateZ: tilt.lift,
-        }}
-        transition={{ type: "spring", stiffness: 280, damping: 26, mass: 0.8 }}
+        className="relative will-change-transform"
+        animate={{ y: hovering ? -3 : 0 }}
+        transition={{ type: "spring", stiffness: 380, damping: 28 }}
       >
-        {tiltEnabled && hovering && (
-          <div
-            className="pointer-events-none absolute inset-0 rounded-2xl z-30 mix-blend-soft-light"
-            style={{
-              background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.22), transparent 52%)`,
-            }}
-            aria-hidden
-          />
-        )}
         {children}
       </motion.div>
     </div>
@@ -196,7 +149,13 @@ function ScoreBadge({
   borderColor: string;
 }) {
   return (
-    <div className={cn("shrink-0 rounded-xl border-2 px-3 py-2 text-center min-w-[4.25rem]", bgColor, borderColor)}>
+    <div
+      className={cn(
+        "shrink-0 rounded-xl border-2 px-3 py-2 text-center min-w-[4.25rem] shadow-sm",
+        bgColor,
+        borderColor,
+      )}
+    >
       <p className={cn("text-xl font-black tabular-nums leading-none", textColor)}>{score.toFixed(1)}</p>
       <p className="text-[9px] font-semibold text-muted-foreground mt-0.5">/10</p>
       <p className={cn("text-[8px] font-bold mt-1 leading-tight line-clamp-2 max-w-[4.5rem] mx-auto", textColor)}>
@@ -208,36 +167,35 @@ function ScoreBadge({
 
 function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabel: string }) {
   const reduced = useReducedMotion();
-  const chartW = 100;
-  const chartH = 50;
-  const padX = 6;
-  const padY = 9;
-  const labelH = 13;
+  const chartW = 320;
+  const chartH = 118;
+  const padX = 18;
+  const padY = 16;
+  const labelH = 18;
   const viewH = chartH + labelH;
-  const minKm = 35_000;
-  const maxKm = 145_000;
+  const minKm = 30_000;
+  const maxKm = 150_000;
 
   const toY = (km: number) =>
     padY + (1 - (km - minKm) / (maxKm - minKm)) * (chartH - padY * 2);
 
   const readings = [
     { x: padX, km: 42_100, label: "2019" },
-    { x: 30, km: 89_200, label: "2021" },
-    { x: 56, km: 64_500, label: "2022", rollback: true },
+    { x: 110, km: 89_200, label: "2021" },
+    { x: 185, km: 64_500, label: "2022", rollback: true as const },
     { x: chartW - padX, km: 138_600, label: "2023" },
   ];
 
   const points = readings.map((r) => ({ ...r, y: toY(r.km) }));
-  const seg = (from: number, to: number) =>
-    `M ${points[from].x} ${points[from].y} L ${points[to].x} ${points[to].y}`;
-
-  const fmtKm = (km: number) => (km >= 1000 ? `${Math.round(km / 1000)}k` : String(km));
+  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const areaPath = `${linePath} L ${points[points.length - 1]!.x} ${chartH - padY / 2} L ${points[0]!.x} ${chartH - padY / 2} Z`;
+  const fmtKm = (km: number) => `${Math.round(km / 1000)}k`;
 
   return (
-    <div className="rounded-xl border border-border/50 bg-background/80 p-3">
-      <div className="flex items-center justify-between gap-2 mb-2.5">
+    <div className="rounded-xl border border-border/60 bg-gradient-to-b from-background to-muted/15 p-3 sm:p-3.5">
+      <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-baseline gap-1.5">
-          <AnimatedMileageKm value={odometer} className="text-xl font-black tabular-nums text-foreground" />
+          <AnimatedMileageKm value={odometer} className="text-xl sm:text-2xl font-black tabular-nums text-foreground" />
           <span className="text-[10px] font-semibold text-muted-foreground">km</span>
         </div>
         <motion.span
@@ -251,10 +209,24 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
       </div>
       <svg
         viewBox={`0 0 ${chartW} ${viewH}`}
-        className="w-full h-[5rem] sm:h-[5.5rem]"
+        className="w-full h-auto max-h-[7.25rem] sm:max-h-[8rem] text-foreground"
+        style={{ aspectRatio: `${chartW} / ${viewH}` }}
         aria-hidden
         preserveAspectRatio="xMidYMid meet"
       >
+        <defs>
+          <linearGradient id="wwcMileageFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ea580c" stopOpacity="0.22" />
+            <stop offset="55%" stopColor="#ea580c" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="wwcMileageStroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.45" />
+            <stop offset="40%" stopColor="#ea580c" stopOpacity="0.95" />
+            <stop offset="70%" stopColor="#ea580c" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0.5" />
+          </linearGradient>
+        </defs>
         {[0.25, 0.5, 0.75].map((t) => (
           <line
             key={t}
@@ -263,62 +235,66 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
             y1={padY + t * (chartH - padY * 2)}
             y2={padY + t * (chartH - padY * 2)}
             stroke="currentColor"
-            strokeOpacity="0.12"
-            strokeWidth="0.75"
+            strokeOpacity="0.08"
+            strokeWidth="1"
           />
         ))}
         <motion.path
-          d={seg(0, 1)}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity="0.55"
-          strokeWidth="2"
-          strokeLinecap="round"
-          initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.45, ease: EASE }}
+          d={areaPath}
+          fill="url(#wwcMileageFill)"
+          initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: EASE }}
         />
         <motion.path
-          d={seg(1, 2)}
+          d={linePath}
           fill="none"
+          stroke="url(#wwcMileageStroke)"
+          strokeWidth="2.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.9, ease: EASE }}
+        />
+        {/* Rollback callout segment */}
+        <motion.line
+          x1={points[1]!.x}
+          y1={points[1]!.y}
+          x2={points[2]!.x}
+          y2={points[2]!.y}
           stroke="#ea580c"
-          strokeWidth="2.5"
+          strokeWidth="3"
           strokeLinecap="round"
-          strokeDasharray="3 2"
-          initial={reduced ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 0.4, ease: EASE, delay: 0.3 }}
-        />
-        <motion.path
-          d={seg(2, 3)}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity="0.55"
-          strokeWidth="2"
-          strokeLinecap="round"
-          initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.45, ease: EASE, delay: 0.5 }}
+          strokeDasharray="5 4"
+          initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.55, duration: 0.35 }}
         />
         {points.map((p, i) => (
           <g key={p.label}>
             <motion.circle
               cx={p.x}
               cy={p.y}
-              r={p.rollback ? 3.5 : 2.75}
-              fill={p.rollback ? "#ea580c" : "currentColor"}
-              fillOpacity={p.rollback ? 1 : 0.65}
-              stroke="hsl(var(--background))"
-              strokeWidth="1.5"
+              r={p.rollback ? 5.5 : 4.25}
+              fill={p.rollback ? "#ea580c" : "hsl(var(--background))"}
+              stroke={p.rollback ? "#ea580c" : "currentColor"}
+              strokeWidth={p.rollback ? 2 : 1.75}
+              strokeOpacity={p.rollback ? 1 : 0.55}
               initial={reduced ? { scale: 1 } : { scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.1 + i * 0.08, type: "spring", stiffness: 380, damping: 22 }}
+              transition={{ delay: 0.15 + i * 0.1, type: "spring", stiffness: 380, damping: 22 }}
             />
+            {p.rollback ? (
+              <circle cx={p.x} cy={p.y} r={2} fill="hsl(var(--background))" />
+            ) : (
+              <circle cx={p.x} cy={p.y} r={1.75} fill="currentColor" fillOpacity="0.7" />
+            )}
             <text
               x={p.x}
-              y={p.y - (p.rollback ? 6 : 5)}
+              y={p.y - (p.rollback ? 11 : 9)}
               textAnchor="middle"
-              fontSize="6"
+              fontSize="9"
               fill={p.rollback ? "#c2410c" : "currentColor"}
               fillOpacity={p.rollback ? 1 : 0.55}
               fontWeight="700"
@@ -327,9 +303,9 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
             </text>
             <text
               x={p.x}
-              y={chartH + 8}
+              y={chartH + 14}
               textAnchor="middle"
-              fontSize="6.25"
+              fontSize="9"
               fill="currentColor"
               fillOpacity="0.45"
               fontWeight="600"
@@ -366,7 +342,7 @@ function AccidentDemo({ t }: { t: (k: string) => string }) {
   ];
 
   return (
-    <div className="rounded-xl border border-border/50 bg-background/80 p-3">
+    <div className="rounded-xl border border-border/60 bg-gradient-to-b from-background to-muted/20 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground mb-2">
         {t("wwc_demo_accident_map")}
       </p>
@@ -469,8 +445,8 @@ function AccidentDemo({ t }: { t: (k: string) => string }) {
 
 function SalvageDemo({ clearLabel, note }: { clearLabel: string; note: string }) {
   return (
-    <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-3 flex items-center gap-3 min-h-[4.5rem]">
-      <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+    <div className="rounded-xl border border-emerald-200/70 dark:border-emerald-900/45 bg-gradient-to-br from-emerald-50/80 via-background to-background dark:from-emerald-950/35 dark:via-background dark:to-background p-3.5 flex items-center gap-3 min-h-[4.5rem]">
+      <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
         <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
       </div>
       <div className="min-w-0">
@@ -483,8 +459,8 @@ function SalvageDemo({ clearLabel, note }: { clearLabel: string; note: string })
 
 function TheftDemo({ clearLabel, note }: { clearLabel: string; note: string }) {
   return (
-    <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-3 flex items-center gap-3 min-h-[4.5rem]">
-      <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+    <div className="rounded-xl border border-emerald-200/70 dark:border-emerald-900/45 bg-gradient-to-br from-emerald-50/80 via-background to-background dark:from-emerald-950/35 dark:via-background dark:to-background p-3.5 flex items-center gap-3 min-h-[4.5rem]">
+      <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
         <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
       </div>
       <div className="min-w-0">
@@ -525,36 +501,38 @@ function DocTable({
 }) {
   const reduced = useReducedMotion();
   return (
-    <table className="w-full border-collapse text-[9px] sm:text-[10px]">
-      <thead>
-        <tr className="border-b border-border/40">
-          {columns.map((col) => (
-            <th key={col} className="py-1 pr-2 text-left text-[8px] font-bold uppercase tracking-wide text-muted-foreground">
-              {col}
-            </th>
+    <div className="rounded-lg border border-border/55 overflow-hidden bg-background/60">
+      <table className="w-full border-collapse text-[9px] sm:text-[10px]">
+        <thead>
+          <tr className="border-b border-border/50 bg-muted/30">
+            {columns.map((col) => (
+              <th key={col} className="py-1.5 px-2.5 text-left text-[8px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <motion.tr
+              key={`${row.date}-${row.primary}-${i}`}
+              className="border-b border-border/25 last:border-0 even:bg-muted/10"
+              initial={reduced ? false : { opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.06 + i * 0.08, duration: 0.3, ease: EASE }}
+            >
+              <td className="py-2 px-2.5 text-muted-foreground whitespace-nowrap align-top font-medium tabular-nums w-[3.25rem]">
+                {row.date}
+              </td>
+              <td className="py-2 px-2.5 text-foreground align-top leading-snug line-clamp-2">
+                <span className="font-semibold">{row.primary || "—"}</span>
+                {row.detail ? <span className="text-muted-foreground"> · {row.detail}</span> : null}
+              </td>
+            </motion.tr>
           ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <motion.tr
-            key={`${row.date}-${row.primary}-${i}`}
-            className="border-b border-border/25 last:border-0"
-            initial={reduced ? false : { opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.06 + i * 0.08, duration: 0.3, ease: EASE }}
-          >
-            <td className="py-1.5 pr-2 text-muted-foreground whitespace-nowrap align-top font-medium tabular-nums w-[3.25rem]">
-              {row.date}
-            </td>
-            <td className="py-1.5 text-foreground align-top leading-snug line-clamp-2">
-              <span className="font-semibold">{row.primary || "—"}</span>
-              {row.detail ? <span className="text-muted-foreground"> · {row.detail}</span> : null}
-            </td>
-          </motion.tr>
-        ))}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -614,38 +592,63 @@ export function WhatWeCheckReportPreview({
       viewport={{ once: true, margin: "-20px" }}
       transition={{ duration: 0.35, ease: EASE }}
     >
-      <div className="relative mx-auto w-full max-w-[640px] md:max-w-[680px] lg:max-w-none lg:w-full">
+      <div className="relative mx-auto w-full max-w-[640px] md:max-w-[680px] lg:max-w-none lg:w-full pb-2">
         <ReportTiltShell reduced={reduced}>
-        <article className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-md sm:shadow-sm transition-shadow duration-300 lg:hover:shadow-lg">
+        {/* Offset paper sheets — reads as a printed PDF stack */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-3 -bottom-1.5 top-2 rounded-2xl border border-border/40 bg-card/70 dark:bg-card/40 shadow-sm"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-1.5 -bottom-0.5 top-1 rounded-2xl border border-border/50 bg-card/85 dark:bg-card/55"
+        />
+        <article
+          className={cn(
+            "relative overflow-hidden rounded-2xl border border-border/70 bg-card",
+            "shadow-[0_18px_40px_-24px_rgba(0,0,0,0.35)] dark:shadow-[0_22px_48px_-22px_rgba(0,0,0,0.65)]",
+            "ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
+            "transition-shadow duration-300 lg:hover:shadow-[0_24px_50px_-22px_rgba(0,0,0,0.4)]",
+          )}
+        >
           {/* Score accent — fixed for this car, does not change when switching sections */}
           <div
             className={cn(
-              "absolute inset-x-0 top-0 z-20 h-[2px] bg-gradient-to-r",
+              "absolute inset-x-0 top-0 z-20 h-[2.5px] bg-gradient-to-r",
               scoreStyle.accentBar,
               isRiskAccent && "vin-hero-accent-risk",
             )}
             aria-hidden
           />
           <div
-            className={cn("pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-gradient-to-b", scoreStyle.accentGlow)}
+            className={cn("pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b", scoreStyle.accentGlow)}
             aria-hidden
           />
 
-          <header className="relative px-5 sm:px-6 pt-5 pb-4 border-b border-border/50">
-            <div className="flex items-center justify-between gap-2 mb-3.5">
-              <KmcheckLogo className="h-5" />
+          <header className="relative z-[1] px-5 sm:px-6 pt-5 pb-4 border-b border-border/55">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <KmcheckLogo className="h-5 shrink-0" />
+                <span className="hidden sm:inline h-3.5 w-px bg-border/70" aria-hidden />
+                <span className="hidden sm:inline text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 truncate">
+                  {t("print_summary_title")}
+                </span>
+              </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Badge variant="outline" className="text-[9px] font-semibold border-primary/25 text-primary bg-primary/5">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] font-bold uppercase tracking-[0.12em] border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/[0.07]"
+                >
                   {t("what_we_check_sample_badge")}
                 </Badge>
                 <span className="text-[9px] text-muted-foreground tabular-nums hidden sm:inline">{generatedDate}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)] gap-4 sm:gap-5 items-start">
+            <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9.5rem_minmax(0,1fr)] gap-4 sm:gap-5 items-start">
               <motion.div
                 key={demo.photoUrl}
-                className="rounded-xl border border-border/50 overflow-hidden aspect-[4/3] bg-muted/40 shadow-sm"
+                className="rounded-xl border border-border/60 overflow-hidden aspect-[4/3] bg-muted/40 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.03] dark:ring-white/[0.05]"
                 initial={reduced ? false : { opacity: 0.7, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: EASE }}
@@ -653,18 +656,21 @@ export function WhatWeCheckReportPreview({
                 <DemoCarPhoto src={demo.photoUrl} alt={demo.vehicleTitle} eager />
               </motion.div>
 
-              <div className="min-w-0 flex gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="min-w-0 flex gap-2.5">
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:hidden">
                     {t("print_summary_title")}
                   </p>
-                  <h3 className="text-lg sm:text-xl font-bold tracking-tight leading-tight mt-0.5 line-clamp-1 text-foreground">
+                  <h3 className="text-lg sm:text-xl font-extrabold tracking-tight leading-[1.15] line-clamp-1 text-foreground">
                     {demo.vehicleTitle}
                   </h3>
-                  <Badge variant="outline" className="mt-1.5 font-mono text-[9px] tracking-wide px-2 py-0.5 bg-muted/30 border-border/60">
-                    {demo.vin}
-                  </Badge>
-                  <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-1">
+                  <div className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-muted/25 px-2 py-1">
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">VIN</span>
+                    <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wide text-foreground tabular-nums">
+                      {demo.vin}
+                    </span>
+                  </div>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1">
                     {t(demo.originKey)} · {demo.trim}
                   </p>
                 </div>
@@ -679,7 +685,7 @@ export function WhatWeCheckReportPreview({
             </div>
           </header>
 
-          <div className="relative px-5 sm:px-6 py-3.5 border-b border-border/50 bg-muted/15">
+          <div className="relative z-[2] px-5 sm:px-6 py-3.5 border-b border-border/55 bg-gradient-to-b from-muted/25 to-muted/10">
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground mb-2.5">
               {t("print_summary_findings")}
             </p>
@@ -695,7 +701,7 @@ export function WhatWeCheckReportPreview({
                     onClick={() => onSelectFeature?.(id)}
                     aria-pressed={active}
                     className={cn(
-                      "rounded-lg border px-2.5 py-2 sm:px-3 sm:py-2.5 flex items-start gap-2 text-left transition-all duration-200",
+                      "relative z-[1] rounded-lg border px-2.5 py-2 sm:px-3 sm:py-2.5 flex items-start gap-2 text-left transition-all duration-200",
                       onSelectFeature && "cursor-pointer hover:opacity-90 active:scale-[0.98]",
                       findingToneClass(item.tone),
                       active
@@ -726,7 +732,7 @@ export function WhatWeCheckReportPreview({
               animate={{ opacity: 1, y: 0 }}
               exit={reduced ? undefined : { opacity: 0, y: -4 }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="relative px-5 sm:px-6 py-3.5 border-b border-border/50"
+              className="relative px-5 sm:px-6 py-3.5 border-b border-border/55"
             >
               <div className="flex items-center gap-2 mb-2.5">
                 <span className={cn("h-3.5 w-0.5 rounded-full shrink-0 bg-gradient-to-b", theme.bar)} />
@@ -736,14 +742,18 @@ export function WhatWeCheckReportPreview({
             </motion.div>
           </AnimatePresence>
 
-          <div className="px-5 sm:px-6 py-3.5">
+          <div className="relative px-5 sm:px-6 py-3.5 bg-gradient-to-b from-transparent to-muted/10">
             <DocTable columns={tableColumns} rows={tableRows} />
           </div>
 
-          <footer className="px-5 sm:px-6 py-2.5 border-t border-border/40 bg-muted/10">
-            <p className="text-[9px] text-muted-foreground text-center leading-snug line-clamp-2">
-              {t("what_we_check_disclaimer")}
-            </p>
+          <footer className="relative px-5 sm:px-6 py-2.5 border-t border-border/50 bg-muted/15">
+            <div className="flex items-center justify-center gap-2">
+              <span className="h-px w-6 bg-border/70" aria-hidden />
+              <p className="text-[9px] text-muted-foreground text-center leading-snug line-clamp-2 max-w-md">
+                {t("what_we_check_disclaimer")}
+              </p>
+              <span className="h-px w-6 bg-border/70" aria-hidden />
+            </div>
           </footer>
         </article>
         </ReportTiltShell>

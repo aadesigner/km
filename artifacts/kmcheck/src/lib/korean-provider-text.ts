@@ -26,6 +26,12 @@ const SQ_MONTHS_LONG = [
   "korrik", "gusht", "shtator", "tetor", "nëntor", "dhjetor",
 ] as const;
 
+/** Compact chart axis labels (Intl short months often stay English for sq). */
+const SQ_MONTHS_SHORT = [
+  "jan", "shk", "mar", "pri", "maj", "qer",
+  "kor", "gus", "sht", "tet", "nën", "dhj",
+] as const;
+
 function isSqLocale(locale: string): boolean {
   return locale === LOCALE_BY_LANG.sq || locale.startsWith("sq");
 }
@@ -742,49 +748,112 @@ export function translateProviderChartLabel(
     }
   }
 
-  const locale = LOCALE_BY_LANG[language];
-
   const isoDay = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (isoDay) {
-    return new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-      year: "2-digit",
-    }).format(
-      new Date(Number(isoDay[1]), Number(isoDay[2]) - 1, Number(isoDay[3])),
+    return formatChartMonthDay(
+      language,
+      Number(isoDay[1]),
+      Number(isoDay[2]) - 1,
+      Number(isoDay[3]),
+    );
+  }
+
+  const isoDayTime = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[T\s]/);
+  if (isoDayTime) {
+    return formatChartMonthDay(
+      language,
+      Number(isoDayTime[1]),
+      Number(isoDayTime[2]) - 1,
+      Number(isoDayTime[3]),
     );
   }
 
   const compactIso = trimmed.match(/^(\d{4})(\d{2})(\d{2})$/);
   if (compactIso) {
-    return new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-      year: "2-digit",
-    }).format(
-      new Date(Number(compactIso[1]), Number(compactIso[2]) - 1, Number(compactIso[3])),
+    return formatChartMonthDay(
+      language,
+      Number(compactIso[1]),
+      Number(compactIso[2]) - 1,
+      Number(compactIso[3]),
     );
   }
 
   const encar = parseEncarMonthYearLabel(trimmed);
   if (encar) {
-    return new Intl.DateTimeFormat(locale, { year: "2-digit", month: "short" }).format(
-      new Date(encar.year, encar.month, 1),
-    );
+    return formatChartMonthYear(language, encar.year, encar.month);
   }
 
   const parsed = parseEnglishMonthDate(trimmed);
-  if (parsed?.year != null) {
-    return new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-      year: "2-digit",
-    }).format(new Date(parsed.year, parsed.month, parsed.day));
+  if (parsed) {
+    return formatChartMonthDay(language, parsed.year, parsed.month, parsed.day);
   }
 
   const localized = localizeProviderDate(trimmed, language);
-  if (localized && (language === "en" || !containsEnglishMonth(localized))) return localized;
+  if (localized && (language === "en" || !containsEnglishMonth(localized))) {
+    // Prefer compact chart form when we can re-parse ISO from the source.
+    const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) {
+      return formatChartMonthDay(
+        language,
+        Number(iso[1]),
+        Number(iso[2]) - 1,
+        Number(iso[3]),
+      );
+    }
+    return localized;
+  }
   return language === "en" ? trimmed : null;
+}
+
+/** Chart axis: localized short month + day (+ optional 2-digit year). */
+function formatChartMonthDay(
+  language: Language,
+  year: number | undefined,
+  month: number,
+  day: number,
+): string {
+  const locale = LOCALE_BY_LANG[language];
+
+  if (isSqLocale(locale)) {
+    const mon = SQ_MONTHS_SHORT[month] ?? SQ_MONTHS_LONG[month]?.slice(0, 3) ?? "";
+    if (year != null) return `${day} ${mon} ${String(year).slice(-2)}`;
+    return `${day} ${mon}`;
+  }
+
+  try {
+    const opts: Intl.DateTimeFormatOptions =
+      year != null
+        ? { month: "short", day: "numeric", year: "2-digit" }
+        : { month: "short", day: "numeric" };
+    const formatted = new Intl.DateTimeFormat(locale, opts).format(
+      new Date(year ?? 2000, month, day),
+    );
+    if (language === "en" || !containsEnglishMonth(formatted)) return formatted;
+  } catch {
+    // fall through
+  }
+
+  // Never leave English month stubs (e.g. "Oct 4") on non-English UIs.
+  if (year != null) return `${pad2(day)}/${pad2(month + 1)}/${String(year).slice(-2)}`;
+  return `${pad2(day)}/${pad2(month + 1)}`;
+}
+
+function formatChartMonthYear(language: Language, year: number, month: number): string {
+  const locale = LOCALE_BY_LANG[language];
+  if (isSqLocale(locale)) {
+    const mon = SQ_MONTHS_SHORT[month] ?? SQ_MONTHS_LONG[month]?.slice(0, 3) ?? "";
+    return `${mon} ${String(year).slice(-2)}`;
+  }
+  try {
+    const formatted = new Intl.DateTimeFormat(locale, {
+      year: "2-digit",
+      month: "short",
+    }).format(new Date(year, month, 1));
+    if (language === "en" || !containsEnglishMonth(formatted)) return formatted;
+  } catch {
+    // fall through
+  }
+  return `${pad2(month + 1)}/${String(year).slice(-2)}`;
 }
 
 export function translateKoreanProviderPhrase(

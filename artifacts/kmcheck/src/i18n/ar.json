@@ -575,7 +575,7 @@
   "pending_scan_safety": "سجل التالف والسرقة",
   "pending_scan_auction": "قوائم المزادات",
   "pending_scan_photos": "صور المركبة",
-  "pending_photos_searching": "جاري البحث عن الصور المؤرشفة…",
+  "pending_photos_searching": "جاري البحث في أرشيف الصور…",
   "pending_partner_encar": "Encar · السوق الكوري",
   "pending_partner_insurance": "سجلات شركات التأمين",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1219,7 +1219,7 @@
   "print_summary_no_insurance": "لا توجد مطالبات تأمين",
   "print_summary_no_mileage": "لا توجد سجلات مسافة",
   "print_summary_no_owners": "لا توجد سجلات ملكية",
-  "print_summary_no_photos": "لا توجد صور",
+  "print_summary_no_photos": "لا يتوفر أرشيف صور",
   "print_summary_photos": "صور المركبة",
   "print_summary_mileage_history": "سجل المسافة المقطوعة",
   "print_summary_ownership": "سجل الملكية",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "أوساكا",
   "live_city_nagoya": "ناغويا",
   "live_city_yokohama": "يوكوهاما",
-  "live_city_fukuoka": "فوكوكا"
+  "live_city_fukuoka": "فوكوكا",
+  "report_no_photo_archive": "لم يُعثر على أرشيف صور",
+  "report_no_photo_archive_hint": "لا تتوفر صور للمركبة لهذا الرقم VIN"
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
@@ -119,7 +119,7 @@ export function AnnouncementBar({ onHeightChange }: { onHeightChange?: (height: 
     !(data.showTo === "guests" && isSignedIn) &&
     !(data.showTo === "users" && !isSignedIn);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!onHeightChange) return;
     if (!visible) {
       onHeightChange(0);

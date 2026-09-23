@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, Copy, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   AdminAmountWithCurrency,
   AdminDateField,
@@ -474,6 +475,78 @@ function resolveEmptyItem<T>(emptyItem: T | (() => T)): T {
   return typeof emptyItem === "function" ? (emptyItem as () => T)() : emptyItem;
 }
 
+/** Report-aligned accents so History sections are easy to tell apart (same idea as VIN page cards). */
+type SectionTone =
+  | "accident"
+  | "mileage"
+  | "registry"
+  | "insurance"
+  | "service"
+  | "owner"
+  | "flood"
+  | "auction"
+  | "market";
+
+const SECTION_TONE: Record<
+  SectionTone,
+  { shell: string; icon: string; dot: string; badge: string }
+> = {
+  accident: {
+    shell: "border-red-500/35 bg-gradient-to-b from-red-500/[0.06] to-background border-l-[3px] border-l-red-500",
+    icon: "bg-red-500/15 text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
+    badge: "bg-red-500/10 text-red-700 dark:text-red-300 border-0",
+  },
+  mileage: {
+    shell: "border-orange-500/35 bg-gradient-to-b from-orange-500/[0.06] to-background border-l-[3px] border-l-orange-500",
+    icon: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    dot: "bg-orange-500",
+    badge: "bg-orange-500/10 text-orange-800 dark:text-orange-300 border-0",
+  },
+  registry: {
+    shell: "border-slate-500/35 bg-gradient-to-b from-slate-500/[0.06] to-background border-l-[3px] border-l-slate-500",
+    icon: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
+    dot: "bg-slate-500",
+    badge: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-0",
+  },
+  insurance: {
+    shell: "border-violet-500/35 bg-gradient-to-b from-violet-500/[0.06] to-background border-l-[3px] border-l-violet-500",
+    icon: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+    dot: "bg-violet-500",
+    badge: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-0",
+  },
+  service: {
+    shell: "border-teal-500/35 bg-gradient-to-b from-teal-500/[0.06] to-background border-l-[3px] border-l-teal-500",
+    icon: "bg-teal-500/15 text-teal-700 dark:text-teal-400",
+    dot: "bg-teal-500",
+    badge: "bg-teal-500/10 text-teal-800 dark:text-teal-300 border-0",
+  },
+  owner: {
+    shell: "border-blue-500/35 bg-gradient-to-b from-blue-500/[0.06] to-background border-l-[3px] border-l-blue-500",
+    icon: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    dot: "bg-blue-500",
+    badge: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-0",
+  },
+  flood: {
+    shell: "border-cyan-500/35 bg-gradient-to-b from-cyan-500/[0.06] to-background border-l-[3px] border-l-cyan-500",
+    icon: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-400",
+    dot: "bg-cyan-500",
+    badge: "bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-0",
+  },
+  auction: {
+    shell: "border-amber-500/35 bg-gradient-to-b from-amber-500/[0.06] to-background border-l-[3px] border-l-amber-500",
+    icon: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+    dot: "bg-amber-500",
+    badge: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-0",
+  },
+  market: {
+    shell: "border-emerald-500/35 bg-gradient-to-b from-emerald-500/[0.06] to-background border-l-[3px] border-l-emerald-500",
+    icon: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-0",
+  },
+};
+
 function CatalogListSection<T>({
   title,
   hint,
@@ -482,6 +555,7 @@ function CatalogListSection<T>({
   onChange,
   compact,
   defaultOpen,
+  tone = "registry",
   renderItem,
 }: {
   title: string;
@@ -491,6 +565,7 @@ function CatalogListSection<T>({
   onChange: (items: T[]) => void;
   compact?: boolean;
   defaultOpen?: boolean;
+  tone?: SectionTone;
   renderItem: (item: T, index: number, update: (patch: Partial<T>) => void) => ReactNode;
 }) {
   const updateAt = (index: number, patch: Partial<T>) => {
@@ -506,16 +581,20 @@ function CatalogListSection<T>({
   };
 
   const [open, setOpen] = useState(() => defaultOpen ?? (items.length > 3 ? false : items.length > 0));
+  const colors = SECTION_TONE[tone];
 
   return (
     <details
-      className="group overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-background to-muted/20 shadow-sm"
+      className={cn(
+        "group overflow-hidden rounded-2xl border shadow-sm",
+        colors.shell,
+      )}
       open={open}
       onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
     >
-      <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+      <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors">
         <div className="min-w-0 flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+          <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg shrink-0", colors.icon)}>
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
           </span>
           <div className="min-w-0">
@@ -523,11 +602,11 @@ function CatalogListSection<T>({
             {hint && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{hint}</p>}
           </div>
         </div>
-        <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold tabular-nums">
+        <Badge variant="secondary" className={cn("shrink-0 text-[10px] font-semibold tabular-nums", colors.badge)}>
           {items.length}
         </Badge>
       </summary>
-      <div className="px-4 pb-4 space-y-3 border-t bg-background/60 relative">
+      <div className="px-4 pb-4 space-y-3 border-t border-border/50 bg-background/70 relative">
         {items.length === 0 ? (
           <p className="text-xs text-muted-foreground italic pt-3">No records — add one below.</p>
         ) : (
@@ -538,7 +617,7 @@ function CatalogListSection<T>({
             >
               <div className="flex items-center justify-between gap-2 -mt-0.5">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                  <span className={cn("h-1.5 w-1.5 rounded-full", colors.dot)} />
                   Record {index + 1}
                 </span>
                 <div className="flex items-center gap-1">
@@ -592,25 +671,31 @@ function CatalogAccordionPanel({
   hint,
   badge,
   defaultOpen = false,
+  tone = "market",
   children,
 }: {
   title: string;
   hint?: string;
   badge?: string;
   defaultOpen?: boolean;
+  tone?: SectionTone;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const colors = SECTION_TONE[tone];
 
   return (
     <details
-      className="group overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-background to-muted/20 shadow-sm"
+      className={cn(
+        "group overflow-hidden rounded-2xl border shadow-sm",
+        colors.shell,
+      )}
       open={open}
       onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
     >
-      <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+      <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors">
         <div className="min-w-0 flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+          <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg shrink-0", colors.icon)}>
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
           </span>
           <div className="min-w-0">
@@ -619,12 +704,12 @@ function CatalogAccordionPanel({
           </div>
         </div>
         {badge != null ? (
-          <Badge variant="secondary" className="shrink-0 text-[10px] font-semibold tabular-nums">
+          <Badge variant="secondary" className={cn("shrink-0 text-[10px] font-semibold tabular-nums", colors.badge)}>
             {badge}
           </Badge>
         ) : null}
       </summary>
-      <div className="px-4 pb-4 pt-3 space-y-3 border-t bg-background/60">
+      <div className="px-4 pb-4 pt-3 space-y-3 border-t border-border/50 bg-background/70">
         {children}
       </div>
     </details>
@@ -801,6 +886,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Accident history"
+        tone="accident"
         hint="All accident fields on one screen — damage uses the same labels as reports."
         items={form.accidents}
         emptyItem={() => ({
@@ -875,6 +961,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Mileage history"
+        tone="mileage"
         hint="Odometer defaults to km. New rows prefill location from vehicle country."
         items={form.mileageHistory}
         emptyItem={() => ({
@@ -918,6 +1005,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Registry history"
+        tone="registry"
         hint="New rows prefill location from vehicle country."
         items={form.registryHistory}
         emptyItem={() => ({
@@ -956,6 +1044,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Insurance claims"
+        tone="insurance"
         hint="Part / labor / painting share the claim currency."
         items={form.insuranceClaims}
         emptyItem={() => ({
@@ -1014,6 +1103,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Service history (manual only)"
+        tone="service"
         hint="Admin-entered workshop visits only — never filled by automatic provider fetch."
         items={form.serviceHistory}
         emptyItem={EMPTY_SERVICE}
@@ -1039,6 +1129,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Owner history"
+        tone="owner"
         items={form.ownerHistory}
         emptyItem={EMPTY_OWNER}
         onChange={(ownerHistory) => onChange({ ownerHistory })}
@@ -1057,6 +1148,7 @@ export function VinCatalogHistorySections({
 
       <CatalogAccordionPanel
         title="Flood history"
+        tone="flood"
         hint="Optional — count and loss for the flood report card. Enable “Flood damage” under Metrics to show on the report."
         badge={floodFilled ? "set" : "optional"}
         defaultOpen={false}
@@ -1085,6 +1177,7 @@ export function VinCatalogHistorySections({
 
       <CatalogListSection
         title="Auction history"
+        tone="auction"
         items={form.auctionHistory}
         emptyItem={() => ({
           ...EMPTY_AUCTION,
@@ -1131,6 +1224,7 @@ export function VinCatalogHistorySections({
 
       <CatalogAccordionPanel
         title="Market data"
+        tone="market"
         hint="Estimated value and last auction share one currency."
         badge={marketFilled ? "set" : "0"}
         defaultOpen={marketFilled}

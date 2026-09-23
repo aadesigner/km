@@ -17,6 +17,9 @@ import { KmcheckLogo, KmcheckMark } from "@/components/logo";
 import { SEOHead } from "@/components/seo";
 import { useTheme } from "@/components/theme-provider";
 import { AdminPinGate } from "@/components/admin-pin-gate";
+import { AdminThemeProvider, useAdminTheme, useAdminThemeDocumentSync } from "@/components/admin/admin-theme-provider";
+import { AdminThemePicker } from "@/components/admin/admin-theme-picker";
+import { AdminRevenueMoodBadge, useAdminRevenueMood } from "@/components/admin/admin-revenue-mood";
 
 const navGroups = [
   {
@@ -59,15 +62,28 @@ const mobileBottomNav = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AdminThemeProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </AdminThemeProvider>
+  );
+}
+
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, isLoaded } = useAuth();
   const [location, setLocation] = useLocation();
   const { pathname } = splitRouterLocation(location);
   const navPath = normalizeAdminPath(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
+  const { themeId } = useAdminTheme();
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
   const isAdmin = user?.isAdmin === true;
+  useAdminThemeDocumentSync(isLoaded && isSignedIn && isAdmin);
+  const { mood, revenueToday, ready: moodReady } = useAdminRevenueMood(
+    isLoaded && isSignedIn && isAdmin,
+  );
 
   const { data: pendingCount } = useQuery({
     queryKey: ADMIN_PENDING_COUNT_QUERY_KEY,
@@ -109,14 +125,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ mobile }: { mobile?: boolean }) => (
     <>
-      <div className="px-5 py-5 border-b">
+      <div className="px-5 py-5 border-b border-border/60">
         <Link href="/en" className="flex items-center">
-          <KmcheckLogo className="h-8" />
+          <KmcheckLogo
+            className="h-8"
+            variant={themeId === "command" ? "dark" : undefined}
+            syncDecode
+          />
         </Link>
         <div className="flex items-center gap-1.5 mt-2">
-          <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           <span className="text-xs font-medium text-muted-foreground">Admin Panel</span>
         </div>
       </div>
@@ -124,7 +144,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {navGroups.map(({ label, items }) => (
           <div key={label}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-3 mb-1.5">{label}</p>
+            <p className="admin-nav-group-label text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5">{label}</p>
             <div className="space-y-0.5">
               {items.map(({ href, label: itemLabel, icon: Icon, ...rest }) => {
                 const exact = (rest as { exact?: boolean }).exact;
@@ -135,22 +155,17 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     key={href}
                     href={href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.98]",
+                      "admin-nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "admin-nav-link--active text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <span className="flex-1 min-w-0 truncate">{itemLabel}</span>
                     {showPendingBadge && (
                       <Badge
-                        className={cn(
-                          "text-[10px] px-1.5 min-w-[1.25rem] justify-center border-0",
-                          isActive
-                            ? "bg-white/20 text-primary-foreground hover:bg-white/20"
-                            : "bg-amber-500 text-white hover:bg-amber-500"
-                        )}
+                        className="text-[10px] px-1.5 min-w-[1.25rem] justify-center border-0 bg-amber-500 text-white hover:bg-amber-500"
                       >
                         {pendingOpen}
                       </Badge>
@@ -163,7 +178,24 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         ))}
       </nav>
 
-      <div className="p-3 border-t space-y-0.5">
+      <div className="p-3 border-t border-border/60 space-y-0.5">
+        {mobile ? (
+          <>
+            {moodReady && mood ? (
+              <AdminRevenueMoodBadge mood={mood} revenueToday={revenueToday} className="mb-2 mx-0" />
+            ) : null}
+            <AdminThemePicker />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+            </button>
+          </>
+        ) : null}
         <Link
           href="/en"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -179,8 +211,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     <AdminPinGate>
     <>
       <SEOHead title="Admin — kmcheck.com" description="kmcheck administration panel" lang="en" noIndex />
-    <div className="flex min-h-screen bg-muted/20">
-      <aside className="hidden md:flex w-60 bg-background/80 backdrop-blur-md border-r border-border/60 flex-col shrink-0">
+    <div
+      className="admin-shell flex min-h-screen"
+      data-admin-theme={themeId}
+    >
+      <aside className="admin-sidebar hidden md:flex fixed inset-y-0 left-0 z-30 w-60 border-r border-border/60 flex-col">
         <SidebarContent />
       </aside>
 
@@ -188,7 +223,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r flex flex-col md:hidden transition-transform duration-200",
+        "admin-sidebar fixed inset-y-0 left-0 z-50 w-64 border-r border-border/60 flex flex-col md:hidden transition-transform duration-200",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <button
@@ -198,11 +233,30 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         >
           <X className="h-4 w-4" />
         </button>
-        <SidebarContent />
+        <SidebarContent mobile />
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b flex items-center gap-3 px-4 py-3">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        {/* Desktop: mood + theme + dark — bottom-right */}
+        <div className="fixed bottom-4 right-4 z-40 hidden md:flex flex-col items-end gap-2.5">
+          {moodReady && mood ? (
+            <AdminRevenueMoodBadge mood={mood} revenueToday={revenueToday} />
+          ) : null}
+          <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/90 p-1 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <AdminThemePicker toolbar />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+            >
+              {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+
+        <header className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border/60 flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -214,24 +268,16 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <KmcheckMark className="h-5 w-5 text-primary shrink-0" />
             <span>Admin</span>
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
         </header>
 
-        <main className="flex-1 overflow-auto pb-[4.5rem] md:pb-0">
-          <div className="p-3 sm:p-4 lg:p-6 max-w-[88rem] mx-auto">
+        <main className="admin-main flex-1 overflow-auto pb-[4.5rem] md:pb-0">
+          <div className="p-3 sm:p-4 lg:p-6 max-w-[88rem] mx-auto md:pb-24">
             {children}
           </div>
         </main>
 
         <nav
-          className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+          className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
           aria-label="Admin quick navigation"
         >
           <div className="grid grid-cols-4">

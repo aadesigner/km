@@ -575,7 +575,7 @@
   "pending_scan_safety": "Salvage i kradzieże",
   "pending_scan_auction": "Oferty aukcyjne",
   "pending_scan_photos": "Zdjęcia pojazdu",
-  "pending_photos_searching": "Wyszukiwanie zdjęć w archiwum…",
+  "pending_photos_searching": "Przeszukiwanie archiwum zdjęć…",
   "pending_partner_encar": "Encar · Koreański rynek",
   "pending_partner_insurance": "Zgłoszenia biur ubezpieczeń",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1241,7 +1241,7 @@
   "print_summary_no_insurance": "Nie znaleziono roszczeń ubezpieczeniowych",
   "print_summary_no_mileage": "Nie znaleziono rekordów przebiegu",
   "print_summary_no_owners": "Nie znaleziono rekordów właścicieli",
-  "print_summary_no_photos": "Brak dostępnych zdjęć",
+  "print_summary_no_photos": "Brak archiwum zdjęć",
   "print_summary_photos": "Zdjęcia pojazdu",
   "print_summary_mileage_history": "Historia przebiegu",
   "print_summary_ownership": "Historia właścicieli",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "Osaka",
   "live_city_nagoya": "Nagoja",
   "live_city_yokohama": "Jokohama",
-  "live_city_fukuoka": "Fukuoka"
+  "live_city_fukuoka": "Fukuoka",
+  "report_no_photo_archive": "Nie znaleziono archiwum zdjęć",
+  "report_no_photo_archive_hint": "Brak zdjęć pojazdu dla tego VIN"
 }

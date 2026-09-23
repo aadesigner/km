@@ -23,8 +23,19 @@ export function WarmCache() {
   useEffect(() => {
     if (prefersReducedNetwork()) return;
 
-    // Navbar icons are tiny — warm immediately so mobile sidebar opens without flashes.
-    prefetchNavMenuAssets();
+    // Warm nav icons after first paint so they don't compete with hero decode on iOS.
+    let idleId: number | undefined;
+    const warmNav = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      prefetchNavMenuAssets();
+    };
+    const navStart = window.setTimeout(() => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(warmNav, { timeout: 2_500 });
+      } else {
+        warmNav();
+      }
+    }, 700);
 
     const warm = () => {
       if (typeof document !== "undefined" && document.hidden) return;
@@ -35,19 +46,23 @@ export function WarmCache() {
       prefetchCommonRoutes();
     };
 
-    let idleId: number | undefined;
+    let warmIdleId: number | undefined;
     const startId = window.setTimeout(() => {
       if (typeof window.requestIdleCallback === "function") {
-        idleId = window.requestIdleCallback(warm, { timeout: 20_000 });
+        warmIdleId = window.requestIdleCallback(warm, { timeout: 20_000 });
       } else {
         window.setTimeout(warm, 12_000);
       }
     }, 4_000);
 
     return () => {
+      window.clearTimeout(navStart);
       window.clearTimeout(startId);
       if (idleId != null && typeof window.cancelIdleCallback === "function") {
         window.cancelIdleCallback(idleId);
+      }
+      if (warmIdleId != null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(warmIdleId);
       }
     };
   }, [queryClient]);

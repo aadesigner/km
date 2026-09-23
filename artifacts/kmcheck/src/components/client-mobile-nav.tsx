@@ -129,7 +129,7 @@ export function ClientMobileNav() {
       aria-label="Main navigation"
       className={cn(
         "md:hidden fixed bottom-0 inset-x-0 z-40 print:hidden",
-        "border-t border-border/60 bg-background/92 backdrop-blur-md",
+        "border-t border-border/60 bg-background/95 md:bg-background/92 md:backdrop-blur-md",
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >

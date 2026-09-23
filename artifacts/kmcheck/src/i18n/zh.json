@@ -596,7 +596,7 @@
   "pending_scan_safety": "报废与盗抢记录",
   "pending_scan_auction": "拍卖挂牌",
   "pending_scan_photos": "车辆照片",
-  "pending_photos_searching": "正在搜索存档照片…",
+  "pending_photos_searching": "正在检索照片档案…",
   "pending_partner_encar": "Encar · 韩国交易平台",
   "pending_partner_insurance": "保险局备案",
   "pending_partner_auction": "Copart · IAAI · Manheim",
@@ -1282,7 +1282,7 @@
   "print_summary_no_insurance": "未发现保险理赔",
   "print_summary_no_mileage": "未发现里程记录",
   "print_summary_no_owners": "未发现所有权记录",
-  "print_summary_no_photos": "无可用照片",
+  "print_summary_no_photos": "暂无照片档案",
   "print_summary_photos": "车辆照片",
   "print_summary_mileage_history": "里程历史",
   "print_summary_ownership": "所有权历史",
@@ -1811,5 +1811,7 @@
   "live_city_osaka": "大阪",
   "live_city_nagoya": "名古屋",
   "live_city_yokohama": "横滨",
-  "live_city_fukuoka": "福冈"
+  "live_city_fukuoka": "福冈",
+  "report_no_photo_archive": "未找到照片档案",
+  "report_no_photo_archive_hint": "该 VIN 暂无车辆照片"
 }
