@@ -1,6 +1,12 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useState,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Link } from "wouter";
-import { FileText, LogOut, Shield, User, X } from "lucide-react";
+import { ChevronUp, FileText, LogOut, Shield, User, X } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -114,9 +120,14 @@ export function NavbarMobileMenu({
   onLogout,
 }: NavbarMobileMenuProps) {
   const { t } = useTranslation();
+  const [accountOpen, setAccountOpen] = useState(false);
   const close = () => onOpenChange(false);
   const displayName = user?.name?.trim() || user?.email?.split("@")[0] || "";
   const avatarInitial = displayName?.[0]?.toUpperCase() || <User className="h-3.5 w-3.5" />;
+
+  useEffect(() => {
+    if (!open) setAccountOpen(false);
+  }, [open]);
 
   const siteLinks = [
     { href: `/${language}/how-it-works`, seg: "how-it-works" as const, label: t("nav_how_it_works") },
@@ -202,21 +213,6 @@ export function NavbarMobileMenu({
             <div className="h-16 rounded-xl bg-muted/60 animate-pulse" aria-hidden />
           ) : isSignedIn ? (
             <div className="space-y-2.5">
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage src={user?.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                    {avatarInitial}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  {user?.name?.trim() ? (
-                    <p className="truncate text-sm font-semibold leading-tight">{user.name}</p>
-                  ) : null}
-                  <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-                </div>
-              </div>
-
               <div className={cn("grid gap-2", isAdmin ? "grid-cols-2" : "grid-cols-1")}>
                 <Button
                   variant="outline"
@@ -244,14 +240,58 @@ export function NavbarMobileMenu({
                 ) : null}
               </div>
 
-              <button
-                type="button"
-                onClick={onLogout}
-                className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[12px] font-medium text-muted-foreground touch-manipulation active:text-destructive"
-              >
-                <LogOut className="h-3 w-3" />
-                {t("logout")}
-              </button>
+              <div className="relative flex items-center gap-2.5 min-w-0">
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarImage src={user?.avatarUrl ?? undefined} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                    {avatarInitial}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="relative min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setAccountOpen((v) => !v)}
+                    aria-expanded={accountOpen}
+                    aria-haspopup="menu"
+                    className="flex w-full min-w-0 items-center gap-1.5 rounded-lg py-1 text-left touch-manipulation active:bg-muted/50"
+                  >
+                    <div className="min-w-0 flex-1">
+                      {user?.name?.trim() ? (
+                        <p className="truncate text-sm font-semibold leading-tight">{user.name}</p>
+                      ) : null}
+                      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <ChevronUp
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+                        accountOpen ? "rotate-0" : "rotate-180",
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+
+                  {accountOpen ? (
+                    <div
+                      role="menu"
+                      className="absolute bottom-full left-0 right-0 z-10 mb-1.5 overflow-hidden rounded-lg border border-border/60 bg-background shadow-md"
+                    >
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setAccountOpen(false);
+                          onLogout();
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground touch-manipulation active:bg-muted active:text-destructive"
+                      >
+                        <LogOut className="h-3.5 w-3.5 shrink-0" />
+                        {t("logout")}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">

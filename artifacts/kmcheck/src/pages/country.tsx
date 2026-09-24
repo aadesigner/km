@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EnterReveal } from "@/components/enter-reveal";
+import { useLightMotion } from "@/hooks/use-light-motion";
 import { SEOHead, usePageSeo } from "@/components/seo";
 import { DeferredSection } from "@/components/deferred-section";
 import { SectionFallback } from "@/components/section-fallback";
@@ -144,6 +145,7 @@ export default function CountryPage({ params }: Props) {
   const { t, language } = useTranslation();
   const [, setLocation] = useLocation();
   const { isSignedIn, user } = useAuth();
+  const lightMotion = useLightMotion();
   const [vin, setVin] = useState("");
   const [error, setError] = useState("");
   const vinRef  = useRef<HTMLInputElement>(null);
@@ -483,10 +485,10 @@ export default function CountryPage({ params }: Props) {
             {content.faq.map((item, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 12 }}
+                initial={lightMotion ? false : { opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: lightMotion ? 0 : i * 0.08 }}
               >
                 <AccordionItem
                   value={`faq-${i}`}
@@ -579,11 +581,11 @@ export default function CountryPage({ params }: Props) {
             {otherCountries.map(([key, c], i) => (
               <motion.div
                 key={key}
-                initial={{ opacity: 0, y: 16 }}
+                initial={lightMotion ? false : { opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                transition={{ delay: lightMotion ? 0 : i * 0.1 }}
+                whileHover={lightMotion ? undefined : { y: -3, transition: { duration: 0.2 } }}
               >
                 <Link
                   href={`/${language}/cars/${key}`}

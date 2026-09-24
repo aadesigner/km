@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { resolveAdminRevenueMood } from "./admin-revenue-mood";
+import {
+  moodNeedleAngle,
+  resolveAdminRevenueMood,
+  revenueToClusterSpeed,
+} from "./admin-revenue-mood";
 
 describe("resolveAdminRevenueMood", () => {
   it("maps EUR thresholds to mood tiers", () => {
@@ -22,5 +26,21 @@ describe("resolveAdminRevenueMood", () => {
     const superCar = resolveAdminRevenueMood(500);
     expect(eco.primary).toMatch(/^\d+ \d+% \d+%$/);
     expect(superCar.intensity).toBeGreaterThan(eco.intensity);
+  });
+});
+
+describe("revenueToClusterSpeed / moodNeedleAngle", () => {
+  it("maps revenue to speed like a cluster, climbing with sales", () => {
+    expect(revenueToClusterSpeed(0)).toBe(0);
+    expect(revenueToClusterSpeed(175)).toBe(150);
+    expect(revenueToClusterSpeed(350)).toBe(300);
+    expect(revenueToClusterSpeed(500)).toBeGreaterThan(300);
+    expect(revenueToClusterSpeed(500)).toBeLessThanOrEqual(340);
+  });
+
+  it("sweeps the needle left→right with intensity", () => {
+    expect(moodNeedleAngle(0)).toBe(-135);
+    expect(moodNeedleAngle(0.5)).toBe(0);
+    expect(moodNeedleAngle(1)).toBe(135);
   });
 });

@@ -29,6 +29,7 @@ import { NavAssetWarmup } from "@/components/nav-asset-warmup";
 import { prefetchNavMenuAssets } from "@/lib/nav-assets";
 import { prefetchCountryPages, prefetchAuthAreaRoutes, prefetchRoute, prefetchCommonRoutes } from "@/lib/prefetch-route";
 import { clearLeakedAdminDocumentStyles } from "@/lib/admin-revenue-mood";
+import { shouldDeferHeavyClientWarmup } from "@/hooks/use-light-motion";
 
 const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   code: l.code,
@@ -335,6 +336,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
   useEffect(() => {
     // After first paint — avoid competing with logo/hero on cold mobile loads.
+    // Skip on light-motion / Save-Data devices (steals main thread from VIN/CTA).
+    if (shouldDeferHeavyClientWarmup()) return;
     const id = window.setTimeout(() => {
       prefetchNavMenuAssets();
     }, 800);
@@ -349,6 +352,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   useEffect(() => {
     if (!mobileOpen) return;
     // Don't compete with the open animation — warm routes after the frame settles.
+    // Light devices: skip — menu open already feels heavy enough.
+    if (shouldDeferHeavyClientWarmup()) return;
     const run = () => {
       prefetchCommonRoutes();
       prefetchCountryPages();
@@ -375,9 +380,10 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY;
-        // Solid bar early so mobile doesn't stay transparent mid-scroll.
-        setScrolled(y > 16);
-        setHeroScrolled(y > 72);
+        // One threshold — dual scrolled/heroScrolled caused dark-nav text flicker.
+        const next = y > 16;
+        setScrolled(next);
+        setHeroScrolled(next);
         ticking = false;
       });
     };
@@ -482,7 +488,8 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       style={{ top: announcementOffset }}
       className={cn(
       "fixed inset-x-0 z-[100] w-full print:hidden",
-      "transition-[border-color,background-color,box-shadow] duration-150",
+      // No bg/border tween on mobile — mid devices flash when isDarkNav flips.
+      "md:transition-[border-color,background-color,box-shadow] md:duration-150",
       scrolled
         ? (resolvedTheme === "dark"
             ? (isDarkNav
@@ -500,10 +507,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
-        // Mild shrink when scrolled (all breakpoints). Height tween only on md+ to avoid
-        // route scroll-reset flicker on mobile.
-        "h-[76px] md:transition-[height] md:duration-150 md:ease-out",
-        scrolled && "h-16",
+        // Fixed height on mobile — logo/height tween caused scroll flicker.
+        "h-16 md:h-[76px] md:transition-[height] md:duration-150 md:ease-out",
+        scrolled && "md:h-16",
       )}>
 
         {/* ── Logo ── */}
@@ -512,8 +518,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             <KmcheckLogo
               syncDecode
               className={cn(
-                "w-auto max-w-none object-contain transition-[height,opacity] duration-150 ease-out group-hover:opacity-90",
-                scrolled ? "h-8 md:h-9" : "h-9 md:h-10",
+                "w-auto max-w-none object-contain group-hover:opacity-90",
+                "h-8 md:transition-[height,opacity] md:duration-150 md:ease-out",
+                scrolled ? "md:h-9" : "md:h-10",
               )}
             />
           </PrefetchLink>
@@ -744,9 +751,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useLayoutEffect(() => {
     const apply = () => {
-      // Must match Navbar resting height (`h-[76px]`). Keep stable — do not shrink
-      // with scroll or content jumps under the fixed header.
-      const navbarHeight = 76;
+      // Mobile navbar is fixed h-16 (64px); desktop resting height is 76px.
+      const navbarHeight =
+        typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches
+          ? 76
+          : 64;
       document.documentElement.style.setProperty(
         "--site-header-offset",
         `${navbarHeight + announcementHeight}px`,
@@ -757,7 +766,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       );
     };
     apply();
+    const mq = window.matchMedia("(min-width: 768px)");
+    mq.addEventListener("change", apply);
     return () => {
+      mq.removeEventListener("change", apply);
       document.documentElement.style.removeProperty("--site-header-offset");
       document.documentElement.style.removeProperty("--announcement-bar-height");
     };

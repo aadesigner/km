@@ -183,9 +183,6 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       <div className="p-3 border-t border-border/60 space-y-0.5">
         {mobile ? (
           <>
-            {moodReady && mood ? (
-              <AdminRevenueMoodBadge mood={mood} revenueToday={revenueToday} className="mb-2 mx-0" />
-            ) : null}
             <AdminThemePicker />
             <button
               type="button"

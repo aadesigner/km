@@ -25,3 +25,18 @@ function getServerSnapshot() {
 export function useLightMotion() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
+
+/** Sync read for effects outside React (prefetch / warmup gates). */
+export function isLightMotionEnv(): boolean {
+  if (typeof window === "undefined" || !window.matchMedia) return true;
+  return window.matchMedia(LIGHT_MQ).matches;
+}
+
+/** Skip decode/prefetch work when the device is weak or Data Saver is on. */
+export function shouldDeferHeavyClientWarmup(): boolean {
+  if (typeof window === "undefined") return true;
+  if (isLightMotionEnv()) return true;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (conn?.saveData) return true;
+  return false;
+}

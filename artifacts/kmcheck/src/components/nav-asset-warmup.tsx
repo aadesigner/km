@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { NAV_MENU_WARMUP_SOURCES } from "@/lib/nav-assets";
+import { shouldDeferHeavyClientWarmup } from "@/hooks/use-light-motion";
 
 /** Keeps navbar flag/logo bitmaps decoded after first paint (mobile sheet remounts). */
 export function NavAssetWarmup() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Skip on phones / Save-Data — decode storms compete with hero CTA.
+    if (shouldDeferHeavyClientWarmup()) return;
+
     // Defer past first paint so cold iOS loads don't sync-decode flags/logos mid-hero.
     let idleId: number | undefined;
     const start = window.setTimeout(() => {

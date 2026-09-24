@@ -18,6 +18,7 @@ import { redirectGuestForVinCheckout, persistVinForCheckout, clearStoredPendingV
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { prefetchFlags } from "@/components/flag-img";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
+import { useLightMotion } from "@/hooks/use-light-motion";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
 // Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
@@ -79,6 +80,11 @@ export default function Home() {
 
   const vinLookupDisabled = useVinLookupDisabledForUser(user?.isAdmin);
   const heroMapsEnabled = useHeroMapsEnabled();
+  const lightMotion = useLightMotion();
+  // Phones: don't preload several heavy chunks while still scrolling the hero.
+  const deferNear = lightMotion ? "100px 0px" : "480px 0px";
+  const deferMid = lightMotion ? "120px 0px" : "400px 0px";
+  const deferFar = lightMotion ? "140px 0px" : "280px 0px";
 
   useEffect(() => {
     if (!heroMapsEnabled) return;
@@ -211,7 +217,7 @@ export default function Home() {
         </div>
       </section>
 
-      <DeferredSection minHeight={160} rootMargin="480px 0px">
+      <DeferredSection minHeight={160} rootMargin={deferNear}>
         <Suspense fallback={<SectionFallback minHeight={160} />}>
           <WhatWeCheckSection autoRotate className="pt-12 md:pt-16 lg:pt-20 pb-12 md:pb-20" />
         </Suspense>
@@ -250,21 +256,21 @@ export default function Home() {
         </div>
       </section>
 
-      <DeferredSection minHeight={360} rootMargin="400px 0px">
+      <DeferredSection minHeight={360} rootMargin={deferMid}>
         <Suspense fallback={<SectionFallback minHeight={360} />}>
           <HomeCountriesCoverageSection />
         </Suspense>
       </DeferredSection>
 
       {/* ── TESTIMONIALS ── */}
-      <DeferredSection minHeight={420}>
+      <DeferredSection minHeight={420} rootMargin={deferFar}>
         <Suspense fallback={<SectionFallback minHeight={420} />}>
           <HomepageTestimonials />
         </Suspense>
       </DeferredSection>
 
       {/* ── COMPARISON TABLE ── */}
-      <DeferredSection minHeight={280}>
+      <DeferredSection minHeight={280} rootMargin={deferFar}>
         <Suspense fallback={<SectionFallback minHeight={280} />}>
           <CompareTable market="home" />
         </Suspense>

@@ -365,23 +365,22 @@
       ]
     },
     "sq": {
-      "h1": "Kontroll kilometrash, aksidente dhe historiku i makinës",
-      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente të fshehura, dëmtimin total dhe vjedhjet. Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai.",
+      "h1": "Kontroll kilometrash me VIN, aksidente dhe historia e makinës",
+      "lead": "Kontroll kilometrash me numrin e shasisë (VIN) — verifikoni km origjinale, aksidente dhe vjedhjet. Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai.",
       "bullets": [
         "aksidentesh",
-        "dëmtim total",
         "km origjinale",
         "vjedhjesh",
-        "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
+        "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente dhe vjedhje në një raport VIN."
       ],
       "sections": [
         {
           "title": "Raport i plotë historiku VIN",
-          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historikun e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet, dëmtimin total dhe vjedhjet. Mbulojmë makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — që të blini me më shumë informacion para pagesës."
+          "body": "kmcheck.com është shërbim për kontroll kilometrash dhe historinë e makinës. Shkruani numrin e shasisë (VIN) për të verifikuar km origjinale, aksidentet dhe vjedhjet para blerjes. Mbulojmë makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — që të blini me më shumë informacion."
         },
         {
           "title": "Çfarë kontrollojmë",
-          "body": "Çdo raport përfshin kontroll kilometrash, historik aksidentesh, dëmtim total dhe vjedhje — i njëjti format që merrni pas pagesës, me të dhëna reale për numrin e shasisë."
+          "body": "Çdo raport përfshin kontroll kilometrash, historik aksidentesh dhe vjedhje — i njëjti format që merrni pas pagesës, me të dhëna reale për numrin e shasisë."
         },
         {
           "title": "Verifikimi i kilometrave (km)",
@@ -421,7 +420,7 @@
         },
         {
           "title": "Kontrollo makina nga:",
-          "body": "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente, dëmtim total dhe vjedhje në një raport."
+          "body": "Historik për makina nga SHBA, Korea, Kanada, Kina, Japonia dhe Dubai — kilometrazh, aksidente dhe vjedhje në një raport VIN."
         }
       ],
       "links": [
@@ -2522,11 +2521,11 @@
         },
         {
           "title": "Merrni raportin tuaj",
-          "body": "Kilometrat, aksidentet, dëmtim total dhe vjedhjet — zakonisht në panelin tënd brenda sekondave."
+          "body": "Kilometrat, aksidentet dhe vjedhjet — zakonisht në panelin tënd brenda sekondave."
         },
         {
           "title": "Çfarë kontrollojmë",
-          "body": "Çdo raport përfshin kontroll kilometrash, historik aksidentesh, dëmtim total dhe vjedhje — i njëjti format që merrni pas pagesës, me të dhëna reale për numrin e shasisë."
+          "body": "Çdo raport përfshin kontroll kilometrash, historik aksidentesh dhe vjedhje — i njëjti format që merrni pas pagesës, me të dhëna reale për numrin e shasisë."
         },
         {
           "title": "Verifikimi i kilometrave (km)",

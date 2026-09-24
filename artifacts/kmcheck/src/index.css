@@ -846,24 +846,7 @@ html.admin-theme-active[data-admin-theme="orbit"] .admin-nav-link--active:focus-
 }
 
 html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip {
-  border-color: hsl(142 40% 70% / 0.22);
-  background:
-    linear-gradient(145deg, hsl(160 20% 14% / 0.95), hsl(160 22% 10% / 0.92));
-  box-shadow:
-    0 1px 0 hsl(142 40% 70% / 0.08) inset,
-    0 8px 24px hsl(0 0% 0% / 0.25);
-}
-
-html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__title {
-  color: color-mix(in oklab, hsl(var(--primary)) 45%, white);
-}
-
-html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__amount {
-  color: hsl(var(--sidebar-foreground));
-}
-
-html.admin-theme-active[data-admin-theme="orbit"] .admin-sidebar .admin-mood-chip__sub {
-  color: hsl(var(--sidebar-foreground) / 0.62);
+  display: none;
 }
 
 html.admin-theme-active .admin-sidebar .admin-nav-link:not(.admin-nav-link--active) {
@@ -1138,137 +1121,150 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
     radial-gradient(ellipse 40% 30% at 90% 5%, hsl(142 55% 40% / 0.1), transparent 55%);
 }
 
-/* ========== Revenue mood chip (floating — not sidebar) ========== */
-.admin-mood-chip {
+/* ========== Revenue mood gauge (desktop floating cluster) ========== */
+.admin-mood-gauge {
   position: relative;
-  min-width: 0;
-  width: 100%;
-  max-width: 14rem;
-  padding: 0.65rem 0.85rem 0.55rem;
-  border-radius: 1rem;
-  border: 1px solid hsl(var(--primary) / 0.22);
+  width: 11.75rem;
+  padding: 0.45rem 0.55rem 0.55rem;
+  border-radius: 1.15rem;
+  border: 1px solid hsl(var(--border) / 0.85);
   background:
-    linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.88));
+    linear-gradient(160deg, hsl(var(--card) / 0.98), hsl(220 18% 12% / 0.04)),
+    hsl(var(--card) / 0.94);
   box-shadow:
-    0 1px 0 hsl(0 0% 100% / 0.5) inset,
-    0 10px 28px hsl(220 25% 20% / 0.1);
-  backdrop-filter: blur(14px) saturate(1.15);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    0 1px 0 hsl(0 0% 100% / 0.45) inset,
+    0 14px 36px hsl(220 25% 12% / 0.14);
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
-  .admin-mood-chip {
-    min-width: 11.5rem;
-    width: auto;
-  }
+html.dark .admin-mood-gauge {
+  border-color: hsl(0 0% 100% / 0.1);
+  background:
+    linear-gradient(165deg, hsl(220 16% 14% / 0.96), hsl(220 18% 8% / 0.94));
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.06) inset,
+    0 16px 40px hsl(0 0% 0% / 0.4);
 }
 
-.admin-mood-chip__title {
+.admin-mood-gauge__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.admin-mood-gauge__live-arc {
+  transition: d 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-mood-gauge__needle {
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-mood-gauge__cluster {
+  margin-top: -1.65rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.admin-mood-gauge__speed {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: hsl(var(--foreground));
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-mood-gauge__unit {
+  margin: 0.1rem 0 0;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-mood-gauge__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid hsl(var(--border) / 0.55);
+}
+
+.admin-mood-gauge__title {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: hsl(var(--primary));
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
-/* Dark UI: mood primaries (Warm-up etc.) are too dark as raw title color */
-html.dark .admin-mood-chip__title {
+html.dark .admin-mood-gauge__title {
   color: color-mix(in oklab, hsl(var(--primary)) 55%, white);
 }
 
-html.dark .admin-mood-chip__sub {
-  color: hsl(var(--muted-foreground) / 0.95);
+.admin-mood-gauge__sub {
+  margin: 0.12rem 0 0;
+  font-size: 0.58rem;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.02em;
 }
 
-html.dark .admin-mood-chip {
-  box-shadow:
-    0 1px 0 hsl(0 0% 100% / 0.06) inset,
-    0 10px 28px hsl(0 0% 0% / 0.35);
-}
-
-/* Orbit dark main pane — keep Warm-up chip readable on ink cards */
-html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip {
-  border-color: hsl(142 40% 55% / 0.28);
-  background:
-    linear-gradient(145deg, hsl(160 18% 12% / 0.96), hsl(160 20% 9% / 0.94));
-}
-
-html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__title {
-  color: color-mix(in oklab, hsl(var(--primary)) 50%, white);
-}
-
-html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__amount {
-  color: hsl(140 16% 94%);
-}
-
-html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__sub {
-  color: hsl(140 12% 72%);
-}
-
-.admin-mood-chip__amount {
+.admin-mood-gauge__amount {
   margin: 0;
-  font-size: 0.8rem;
+  flex-shrink: 0;
+  font-size: 0.72rem;
   font-weight: 700;
   color: hsl(var(--foreground));
   line-height: 1.1;
 }
 
-.admin-mood-chip__meter {
-  margin-top: 0.45rem;
-  height: 3px;
-  border-radius: 999px;
-  background: hsl(var(--primary) / 0.12);
-  overflow: hidden;
-}
-
-.admin-mood-chip__meter > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, hsl(var(--primary) / 0.55), hsl(var(--primary)));
-  transition: width 180ms ease;
-}
-
-.admin-mood-chip__sub {
-  margin: 0.35rem 0 0;
-  font-size: 0.625rem;
-  color: hsl(var(--muted-foreground));
-  letter-spacing: 0.02em;
-}
-
-.admin-mood-chip--sport {
+.admin-mood-gauge--sport {
   border-color: hsl(var(--primary) / 0.4);
   box-shadow:
     0 0 0 1px hsl(var(--primary) / 0.12),
-    0 12px 32px hsl(var(--primary) / 0.14);
+    0 14px 36px hsl(var(--primary) / 0.16);
 }
 
-.admin-mood-chip--sport .admin-mood-chip__title {
-  letter-spacing: 0.12em;
+.admin-mood-gauge--sport .admin-mood-gauge__title {
+  letter-spacing: 0.14em;
 }
 
-.admin-mood-chip__streak {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    hsl(var(--primary) / 0.12) 50%,
-    transparent 60%
-  );
-  background-size: 220% 100%;
-  animation: admin-mood-streak 2.4s ease-in-out infinite;
+.admin-mood-gauge--redline .admin-mood-gauge__speed {
+  color: hsl(2 78% 52%);
+  animation: admin-gauge-pulse var(--admin-gauge-tick, 0.7s) ease-in-out infinite;
 }
 
-@keyframes admin-mood-streak {
-  0% { background-position: 120% 0; opacity: 0; }
-  20% { opacity: 1; }
-  55% { opacity: 0.7; }
-  100% { background-position: -40% 0; opacity: 0; }
+.admin-mood-gauge--sport:not(.admin-mood-gauge--redline) .admin-mood-gauge__speed {
+  animation: admin-gauge-pulse var(--admin-gauge-tick, 1.1s) ease-in-out infinite;
+}
+
+@keyframes admin-gauge-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.88; transform: scale(1.03); }
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge {
+  border-color: hsl(142 40% 55% / 0.28);
+  background:
+    linear-gradient(165deg, hsl(160 18% 12% / 0.96), hsl(160 20% 9% / 0.94));
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge__title {
+  color: color-mix(in oklab, hsl(var(--primary)) 50%, white);
+}
+
+html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge__amount {
+  color: hsl(140 16% 94%);
 }
 
 .admin-shell[data-admin-revenue-mood="heat"],
@@ -1282,10 +1278,19 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__sub {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .admin-mood-chip__streak {
+  .admin-mood-gauge--redline .admin-mood-gauge__speed,
+  .admin-mood-gauge--sport .admin-mood-gauge__speed {
     animation: none !important;
-    opacity: 0.25;
   }
+  .admin-mood-gauge__needle,
+  .admin-mood-gauge__live-arc {
+    transition: none !important;
+  }
+}
+
+/* Legacy chip selectors kept inert (mobile sidebar no longer mounts the chip) */
+.admin-mood-chip {
+  display: none;
 }
 
 @keyframes shimmer {
@@ -1420,8 +1425,15 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-chip__sub {
       0 12px 34px -10px hsl(var(--primary) / 0.28) !important;
   }
 
+  .hero-orb-a,
+  .hero-orb-b,
+  .hero-orb-c {
+    animation: none !important;
+    opacity: 0.35;
+  }
+
   .hero-orb-a {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 }
 

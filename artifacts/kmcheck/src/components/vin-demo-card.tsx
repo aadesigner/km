@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlertTriangle, ShieldAlert, Gauge, Fingerprint, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
+import { useLightMotion } from "@/hooks/use-light-motion";
 import { DemoCarPhoto, preloadDemoCarPhotos } from "@/components/demo-car-photo";
 import { FlagImg } from "@/components/flag-img";
 import { demoCarPhotoUrl } from "@/lib/demo-car-photos";
@@ -932,11 +933,14 @@ export function VinDemoCard({
   countryPage?: boolean;
 }) {
   const { t } = useTranslation();
+  const lightMotion = useLightMotion();
+  // Phones / reduced-motion: behave like frozen — no 5s carousel or Framer remounts.
+  const staticPreview = frozen || lightMotion;
   const pool = useMemo(() => carsForCountry(country), [country]);
-  const cars = frozen ? [pickFrozenCar(pool)] : pool;
+  const cars = staticPreview ? [pickFrozenCar(pool)] : pool;
 
   const [idx, setIdx] = useState(0);
-  const liveSync = overlay && livePing !== undefined;
+  const liveSync = overlay && livePing !== undefined && !staticPreview;
 
   useEffect(() => {
     setIdx((i) => (cars.length === 0 ? 0 : i % cars.length));
@@ -948,21 +952,21 @@ export function VinDemoCard({
   }, [liveSync, livePing, cars]);
 
   useEffect(() => {
-    if (frozen || cars.length === 0 || liveSync) return;
+    if (staticPreview || cars.length === 0 || liveSync) return;
     const timer = setInterval(() => setIdx(i => (i + 1) % cars.length), 5000);
     return () => clearInterval(timer);
-  }, [cars.length, frozen, liveSync]);
+  }, [cars.length, staticPreview, liveSync]);
 
   useEffect(() => {
     if (cars.length === 0) return;
-    const urls = frozen
+    const urls = staticPreview
       ? [cars[0]!.photo]
       : [
           cars[idx]?.photo,
           cars[(idx + 1) % cars.length]?.photo,
         ].filter((u): u is string => Boolean(u));
     preloadDemoCarPhotos(urls);
-  }, [cars, frozen, idx]);
+  }, [cars, staticPreview, idx]);
 
   const car = cars[idx] ?? cars[0];
   if (!car) return null;
@@ -1370,7 +1374,7 @@ export function VinDemoCard({
         "relative overflow-hidden bg-muted/40 dark:bg-white/[0.03] isolate [transform:translateZ(0)]",
         photoHeight,
       )}>
-        {frozen ? (
+        {staticPreview ? (
           <div className="absolute inset-0 overflow-hidden [transform:translateZ(0)]">
             <DemoCarPhoto
               src={car.photo}
@@ -1411,7 +1415,7 @@ export function VinDemoCard({
         )}
 
         {/* Subtle scan shimmer */}
-        {!compact && !frozen && (
+        {!compact && !staticPreview && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.12] dark:opacity-[0.08] bg-[linear-gradient(180deg,transparent_0%,rgba(255,255,255,0.35)_48%,transparent_100%)] bg-[length:100%_220%] animate-[demo-scan_4.5s_ease-in-out_infinite]"
@@ -1427,7 +1431,7 @@ export function VinDemoCard({
 
         {/* Top overlay: VIN + badge */}
         <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-black/40 to-transparent" />
-        {frozen ? (
+        {staticPreview ? (
           <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FlagImg code={displayFlag} size={20} className="rounded-sm shadow-sm" />
@@ -1469,7 +1473,7 @@ export function VinDemoCard({
 
       {/* ── Car info + score ── */}
       <div className={cn(compact ? "px-3 pt-1 pb-2" : "px-5 pt-1 pb-4")}>
-        {frozen ? (
+        {staticPreview ? (
           <div>
             <p className={cn(
               "text-foreground dark:text-white font-bold leading-tight",
@@ -1506,7 +1510,7 @@ export function VinDemoCard({
             <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/60 dark:text-white/35">
               {t("demo_trust_score")}
             </span>
-            {frozen ? (
+            {staticPreview ? (
               <span className={cn("font-black tabular-nums", heroSide ? "text-3xl" : compact ? "text-[1.35rem]" : "text-3xl", c.scoreColor)}>
                 {car.score.toFixed(1)}
                 <span className="text-sm font-semibold text-muted-foreground/40 dark:text-white/25"> /10</span>
@@ -1526,7 +1530,7 @@ export function VinDemoCard({
             )}
           </div>
           <div className="h-2 rounded-full bg-black/[0.06] dark:bg-white/8 overflow-hidden">
-            {frozen ? (
+            {staticPreview ? (
               <div
                 className={cn("h-2 rounded-full", c.barColor)}
                 style={{ width: `${car.score * 10}%` }}
@@ -1553,7 +1557,7 @@ export function VinDemoCard({
 
       {/* ── Data rows ── */}
       <div className="border-t border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.025]">
-        {frozen ? (
+        {staticPreview ? (
           <div>
             <div className={cn(rowClass, "flex-col items-stretch gap-2")}>
               <div className="flex items-center justify-between">
@@ -1702,7 +1706,7 @@ export function VinDemoCard({
       </div>
 
       {/* ── Dot nav ── */}
-      {!frozen && (
+      {!staticPreview && (
       <div className={cn(
         "bg-black/[0.02] dark:bg-white/[0.02] border-t border-black/[0.05] dark:border-white/[0.05] flex items-center justify-between gap-3",
         compact ? "px-3 py-1.5" : "px-5 py-3",

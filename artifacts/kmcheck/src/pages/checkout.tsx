@@ -15,6 +15,7 @@ import {
   Lock, Gauge, AlertTriangle, Users, Car, Zap, TrendingUp, ChevronDown, CreditCard, Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLightMotion } from "@/hooks/use-light-motion";
 import { translateClientError, translateCouponError } from "@/lib/translate-client-error";
 import { useQueryRecovery } from "@/hooks/use-query-recovery";
 import { CHECKOUT_QUERY_OPTIONS, spreadQueryExtras } from "@/lib/query-options";
@@ -85,7 +86,7 @@ function paypalHostedFieldStyles(): Record<string, Record<string, string>> {
 }
 
 const CHECKOUT_PANEL =
-  "rounded-2xl border border-border/70 bg-card/95 dark:bg-card/80 backdrop-blur-sm overflow-hidden shadow-sm shadow-black/[0.04] dark:shadow-black/30 ring-1 ring-black/[0.02] dark:ring-white/[0.05]";
+  "rounded-2xl border border-border/70 bg-card/95 dark:bg-card/80 max-sm:backdrop-blur-none sm:backdrop-blur-sm overflow-hidden shadow-sm shadow-black/[0.04] dark:shadow-black/30 ring-1 ring-black/[0.02] dark:ring-white/[0.05]";
 const PREVIEW_ROW =
   "px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border-b border-border/40 dark:border-white/[0.05] last:border-0";
 const PREVIEW_LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/45";
@@ -171,6 +172,7 @@ export default function Checkout({ params }: Props) {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { resolvedTheme } = useTheme();
+  const lightMotion = useLightMotion();
   usePreloadCheckoutPaymentLogos(true);
 
   // Fresh credit balance (admin edits / pack purchases) before showing Pay with credit.
@@ -1598,19 +1600,19 @@ export default function Checkout({ params }: Props) {
       <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-screen -z-10 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(34,197,94,0.07),transparent)] dark:bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
 
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
+        initial={lightMotion ? false : { opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.32 }}
+        transition={{ duration: lightMotion ? 0 : 0.32 }}
         className="max-w-5xl xl:max-w-6xl mx-auto"
       >
         <VinLookupDisabledBanner className="mb-4 sm:mb-5" />
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8 px-1">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={lightMotion ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/80 dark:bg-white/[0.03] backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-3.5"
+            transition={{ delay: lightMotion ? 0 : 0.05 }}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/80 dark:bg-white/[0.03] max-sm:backdrop-blur-none sm:backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-3.5"
           >
             <Lock className="h-3.5 w-3.5" />
             {t("checkout_badge")}

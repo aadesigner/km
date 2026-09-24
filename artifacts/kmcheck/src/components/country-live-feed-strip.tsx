@@ -18,7 +18,7 @@ export function CountryLiveFeedStrip({ pings, className, onMap = false }: Props)
     <div
       className={cn(
         onMap
-          ? "rounded-xl border border-primary/20 bg-background/88 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-md dark:bg-background/80 dark:shadow-black/30"
+          ? "rounded-xl border border-primary/20 bg-background/88 px-3 py-2.5 shadow-lg shadow-black/10 max-sm:backdrop-blur-none sm:backdrop-blur-md dark:bg-background/80 dark:shadow-black/30"
           : "border-t border-border/50 bg-muted/[0.18] px-2.5 py-2",
         className,
       )}

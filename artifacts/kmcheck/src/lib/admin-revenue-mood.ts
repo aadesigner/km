@@ -103,6 +103,25 @@ export function resolveAdminRevenueMood(revenueTodayEur: number): AdminRevenueMo
   };
 }
 
+/**
+ * Map today's EUR revenue to a cluster "speed" (0–340).
+ * €350 ≈ 300 — above that still climbs a little into redline.
+ */
+export function revenueToClusterSpeed(revenueTodayEur: number): number {
+  const n = Number.isFinite(revenueTodayEur) ? Math.max(0, revenueTodayEur) : 0;
+  if (n <= 0) return 0;
+  if (n >= 350) return Math.min(340, Math.round(300 + ((n - 350) / 150) * 40));
+  return Math.round((n / 350) * 300);
+}
+
+/**
+ * Needle angle in degrees for a −135°…+135° (270°) sweep. 0 revenue → left; redline → right.
+ */
+export function moodNeedleAngle(intensity: number): number {
+  const t = Math.min(1, Math.max(0, intensity));
+  return -135 + t * 270;
+}
+
 const MOOD_FONT_LINK_ID = "kmcheck-admin-revenue-mood-fonts";
 
 export function ensureAdminRevenueMoodFonts(mood: AdminRevenueMood): void {

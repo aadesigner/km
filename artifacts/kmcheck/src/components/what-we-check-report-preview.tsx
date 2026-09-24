@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Gauge, Lock, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
+import { useLightMotion } from "@/hooks/use-light-motion";
 import { KmcheckLogo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { DemoCarPhoto } from "@/components/demo-car-photo";
@@ -12,6 +13,13 @@ import { getWhatWeCheckDemoReport, type WwcDemoFinding } from "@/lib/what-we-che
 import { scoreStylesForDisplay } from "@/lib/vin-condition-score";
 import { localizeProviderDate } from "@/lib/korean-provider-text";
 import type { Language } from "@/lib/languages";
+
+/** Phones / reduced-motion: never start preview blocks at opacity 0. */
+function usePreviewMotionOff() {
+  const reduced = useReducedMotion();
+  const light = useLightMotion();
+  return Boolean(reduced || light);
+}
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -166,7 +174,7 @@ function ScoreBadge({
 }
 
 function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabel: string }) {
-  const reduced = useReducedMotion();
+  const reduced = usePreviewMotionOff();
   const chartW = 320;
   const chartH = 118;
   const padX = 18;
@@ -320,7 +328,7 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
 }
 
 function AccidentDemo({ t }: { t: (k: string) => string }) {
-  const reduced = useReducedMotion();
+  const reduced = usePreviewMotionOff();
 
   /** Top-down car silhouette — body, glass, wheels, then panel damage overlays. */
   const bodyPath =
@@ -499,7 +507,7 @@ function DocTable({
   columns: [string, string];
   rows: Array<{ date: string; primary: string; detail: string }>;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePreviewMotionOff();
   return (
     <div className="rounded-lg border border-border/55 overflow-hidden bg-background/60">
       <table className="w-full border-collapse text-[9px] sm:text-[10px]">
@@ -546,7 +554,7 @@ export function WhatWeCheckReportPreview({
   onSelectFeature?: (id: WhatWeCheckFeature["id"]) => void;
 }) {
   const { t, language } = useTranslation();
-  const reduced = useReducedMotion();
+  const reduced = usePreviewMotionOff();
   const demo = getWhatWeCheckDemoReport(market);
   const theme = FEATURE_THEME[feature.id];
   const scoreNum = parseFloat(demo.score);
