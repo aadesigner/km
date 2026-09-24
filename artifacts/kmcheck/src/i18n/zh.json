@@ -984,7 +984,7 @@
   "report_registry_history": "韩国登记时间线",
   "report_registry_history_note": "来自韩国登记来源的车辆历史 — 登记、检验、所有权变更与保险事件。",
   "report_recall_history": "召回",
-  "report_recall_history_note": "来自韩国登记来源的制造商安全召回 — 与主登记时间线分开列出。",
+  "report_recall_history_note": "针对特定生产区间和车型年的制造商安全召回，并显示每项召回的状态。",
   "report_timeline_title": "车辆历史时间线",
   "report_timeline_production": "生产年份",
   "report_timeline_accident": "事故",

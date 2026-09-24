@@ -960,7 +960,7 @@
   "report_registry_history": "Cronologie registru coreean",
   "report_registry_history_note": "Istoric vehicul din surse de registru coreene — înmatriculare, inspecții, schimbări de proprietate și evenimente de asigurare.",
   "report_recall_history": "Rechemări",
-  "report_recall_history_note": "Rechemări de siguranță ale producătorului din registrele coreene — afișate separat de cronologia principală a registrului.",
+  "report_recall_history_note": "Rechemări de siguranță ale producătorului pentru intervale de producție și ani de model specifici, inclusiv statusul fiecărei rechemări.",
   "report_timeline_title": "Istoricul vehiculului",
   "report_timeline_production": "Anul de producție",
   "report_timeline_accident": "Accident",

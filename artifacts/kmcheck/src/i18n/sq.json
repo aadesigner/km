@@ -954,7 +954,7 @@
   "report_registry_history": "Kronologjia e regjistrimit korean",
   "report_registry_history_note": "Histori automjeti nga regjistri korean — regjistrim, inspektime, ndryshime pronësie dhe ngjarje sigurimi.",
   "report_recall_history": "Rikthime (recall)",
-  "report_recall_history_note": "Rikthime sigurie të prodhuesit nga burimet e regjistrit korean — shfaqen veç nga kronologjia kryesore e regjistrit.",
+  "report_recall_history_note": "Rikthime sigurie të prodhuesit për intervale të caktuara prodhimi dhe vite modelesh, së bashku me statusin e tyre.",
   "report_timeline_title": "Historiku i automjetit",
   "report_timeline_production": "Viti i prodhimit",
   "report_timeline_accident": "Aksident",

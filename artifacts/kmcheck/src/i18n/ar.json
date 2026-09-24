@@ -950,7 +950,7 @@
   "report_registry_history": "السجل الزمني الكوري",
   "report_registry_history_note": "سجل تاريخ المركبة من مصادر التسجيل الكورية — التسجيل والفحص وتغيير الملكية وأحداث التأمين.",
   "report_recall_history": "استدعاءات (Recall)",
-  "report_recall_history_note": "استدعاءات السلامة من المصنع من مصادر التسجيل الكورية — معروضة بشكل منفصل عن الجدول الزمني الرئيسي.",
+  "report_recall_history_note": "استدعاءات السلامة من الشركة المصنعة لنطاقات إنتاج وسنوات طراز محددة، مع حالة كل استدعاء.",
   "report_timeline_title": "الجدول الزمني لتاريخ المركبة",
   "report_timeline_production": "سنة الإنتاج",
   "report_timeline_accident": "حادث",

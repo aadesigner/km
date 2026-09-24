@@ -960,7 +960,7 @@
   "report_registry_history": "Línea temporal del registro coreano",
   "report_registry_history_note": "Historial vehicular de fuentes del registro coreano — matriculación, inspecciones, cambios de propietario y eventos de seguro.",
   "report_recall_history": "Retiradas",
-  "report_recall_history_note": "Retiradas de seguridad del fabricante desde registros coreanos — listadas por separado de la línea temporal principal.",
+  "report_recall_history_note": "Retiradas de seguridad del fabricante para rangos de producción y años de modelo concretos, con el estado de cada retirada.",
   "report_timeline_title": "Historial del vehículo",
   "report_timeline_production": "Año de producción",
   "report_timeline_accident": "Accidente",

@@ -960,7 +960,7 @@
   "report_registry_history": "Oś czasu rejestru koreańskiego",
   "report_registry_history_note": "Historia pojazdu ze źródeł rejestru koreańskiego — rejestracja, przeglądy, zmiany właściciela i zdarzenia ubezpieczeniowe.",
   "report_recall_history": "Akcje serwisowe",
-  "report_recall_history_note": "Aktywne akcje serwisowe producenta z koreańskich rejestrów — wyświetlane osobno od głównej osi czasu rejestru.",
+  "report_recall_history_note": "Akcje serwisowe producenta dla określonych zakresów produkcji i lat modelowych, wraz ze statusem każdej akcji.",
   "report_timeline_title": "Historia pojazdu",
   "report_timeline_production": "Rok produkcji",
   "report_timeline_accident": "Wypadek",

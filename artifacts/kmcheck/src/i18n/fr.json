@@ -960,7 +960,7 @@
   "report_registry_history": "Chronologie du registre coréen",
   "report_registry_history_note": "Historique véhicule issu des sources du registre coréen — immatriculation, inspections, changements de propriétaire et événements d'assurance.",
   "report_recall_history": "Rappels",
-  "report_recall_history_note": "Rappels de sécurité constructeur issus des registres coréens — affichés séparément de la chronologie principale.",
+  "report_recall_history_note": "Rappels de sécurité du constructeur pour des plages de production et des années modèles précises, avec le statut de chaque rappel.",
   "report_timeline_title": "Historique du véhicule",
   "report_timeline_production": "Année de production",
   "report_timeline_accident": "Accident",

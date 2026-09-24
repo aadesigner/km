@@ -960,7 +960,7 @@
   "report_registry_history": "Koreanische Register-Timeline",
   "report_registry_history_note": "Fahrzeughistorie aus koreanischen Registerquellen — Zulassung, Inspektionen, Eigentumswechsel und Versicherungsereignisse.",
   "report_recall_history": "Rückrufe",
-  "report_recall_history_note": "Hersteller-Rückrufe aus koreanischen Registerquellen — separat von der Registry-Zeitleiste aufgeführt.",
+  "report_recall_history_note": "Sicherheitsrückrufe des Herstellers für bestimmte Produktionszeiträume und Modelljahre — inklusive Status jedes Rückrufs.",
   "report_timeline_title": "Fahrzeughistorie",
   "report_timeline_production": "Produktionsjahr",
   "report_timeline_accident": "Unfall",
