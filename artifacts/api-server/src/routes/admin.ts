@@ -1190,21 +1190,36 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     phoneNational?: string | null;
   };
 
-  const [target] = await db.select({ isAdmin: usersTable.isAdmin }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  const [target] = await db
+    .select({
+      isAdmin: usersTable.isAdmin,
+      email: usersTable.email,
+      name: usersTable.name,
+      phonePrefix: usersTable.phonePrefix,
+      phoneNational: usersTable.phoneNational,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
 
-  const updates: Record<string, unknown> = { updatedAt: new Date() };
-  if (name !== undefined) updates.name = name?.trim() || null;
+  const updates: Record<string, unknown> = {};
+  if (name !== undefined) {
+    const nextName = name?.trim() || null;
+    if (nextName !== (target.name ?? null)) updates.name = nextName;
+  }
   if (email?.trim()) {
     const emailLower = email.trim().toLowerCase();
-    if (adminEmailMatches(emailLower)) {
-      res.status(403).json({ error: "Cannot assign the configured admin email to another account" });
-      return;
+    if (emailLower !== target.email.toLowerCase()) {
+      if (adminEmailMatches(emailLower)) {
+        res.status(403).json({ error: "Cannot assign the configured admin email to another account" });
+        return;
+      }
+      const [conflict] = await db.select({ id: usersTable.id })
+        .from(usersTable).where(eq(usersTable.email, emailLower)).limit(1);
+      if (conflict && conflict.id !== userId) { res.status(409).json({ error: "Email already in use by another account" }); return; }
+      updates.email = emailLower;
     }
-    const [conflict] = await db.select({ id: usersTable.id })
-      .from(usersTable).where(eq(usersTable.email, emailLower)).limit(1);
-    if (conflict && conflict.id !== userId) { res.status(409).json({ error: "Email already in use by another account" }); return; }
-    updates.email = emailLower;
   }
   if (password) {
     if (target.isAdmin) {
@@ -1224,23 +1239,29 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     updates.countryCode = countryCode;
   }
   if (rawPrefix !== undefined || rawNational !== undefined) {
-    const [cur] = await db
-      .select({ phonePrefix: usersTable.phonePrefix, phoneNational: usersTable.phoneNational })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId))
-      .limit(1);
     const merged = parseUserPhone({
-      phonePrefix: rawPrefix !== undefined ? rawPrefix : (cur?.phonePrefix ?? null),
-      phoneNational: rawNational !== undefined ? rawNational : (cur?.phoneNational ?? null),
+      phonePrefix: rawPrefix !== undefined ? rawPrefix : (target.phonePrefix ?? null),
+      phoneNational: rawNational !== undefined ? rawNational : (target.phoneNational ?? null),
     });
     if (!merged) {
       res.status(400).json({ error: "Invalid phone number" });
       return;
     }
-    updates.phonePrefix = merged.prefix;
-    updates.phoneNational = merged.national;
+    if (merged.prefix !== (target.phonePrefix ?? null) || merged.national !== (target.phoneNational ?? null)) {
+      updates.phonePrefix = merged.prefix;
+      updates.phoneNational = merged.national;
+    }
   }
 
+  if (Object.keys(updates).length === 0) {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+    const { passwordHash: _pw, ...safeUser } = user;
+    res.json(safeUser);
+    return;
+  }
+
+  updates.updatedAt = new Date();
   const [user] = await db.update(usersTable)
     .set(updates as Parameters<ReturnType<typeof db.update>["set"]>[0])
     .where(eq(usersTable.id, userId))

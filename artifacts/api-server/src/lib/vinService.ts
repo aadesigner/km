@@ -920,7 +920,11 @@ export function isPartialCarstatPhotoCache(
   return urls.every(isCarstatMirroredPreviewUrl);
 }
 
-/** True when a cached catalog/lookup row should be refreshed from the provider. */
+/**
+ * Heuristic for incomplete/partial catalog rows (sparse Carstat previews, missing
+ * auction 360, stale KR). Paid lookup never re-fetches on this — only admin
+ * `force` refresh bypasses local catalog/cache.
+ */
 export function isStaleCachedReport(
   data: Record<string, unknown> | null | undefined,
 ): boolean {
@@ -981,7 +985,8 @@ export function isMissingAuction360Media(
 
 /**
  * Korean Encar reports cached before registry extraction often have insurance/owners
- * but an empty registryHistory — treat as stale so we re-fetch from the provider.
+ * but an empty registryHistory. Used by `isStaleCachedReport` for admin diagnostics;
+ * paid lookup still serves these rows as-is.
  */
 export function isStaleKoreanReport(data: Record<string, unknown> | null | undefined): boolean {
   if (!data) return false;
@@ -1236,7 +1241,7 @@ export async function grantVinReportToUser(
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
     const currentRate = await getCurrentKrwPerUsd();
     const stamped = applyFrozenKrwPerUsd(catalogData, {
       existingRate: readFrozenKrwPerUsd(catalogData),
@@ -1639,11 +1644,11 @@ export async function fetchFromProvider(
   const normalized = vin.trim().toUpperCase();
   return withGlobalVinProviderLock(normalized, async () => {
     // `force` (admin "Refresh from provider") always calls the provider and bypasses
-    // the catalog cache, so a partial/stale catalog row can be fully repaired.
+    // the catalog cache, so a partial catalog row can be fully repaired.
     if (!opts?.force) {
       const catalogEntry = await getCatalogVin(normalized);
       const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
+      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
         // Catalog stores NormalizedVinData (or legacy Carstat raw with lots).
         if (Array.isArray(catalogData.lots)) {
           return normalizeCarstatResponse(catalogData);

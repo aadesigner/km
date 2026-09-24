@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, forwardRef, type ButtonHTMLAttributes, type CSSProperties, type Dispatch, type MouseEvent as ReactMouseEvent, type MutableRefObject, type SetStateAction } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, type CSSProperties, type Dispatch, type MouseEvent as ReactMouseEvent, type MutableRefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
@@ -7,10 +7,9 @@ import { useTranslation, ensureDict } from "@/i18n/context";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  Moon, Sun, User, Shield, LogOut, X,
-  ChevronRight, ChevronDown,
+  Moon, Sun, User, Shield, LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Footer } from "@/components/footer";
@@ -20,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { setStoredLangPreference } from "@/lib/lang-preference";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ClientMobileNav, useShowClientMobileNav, CLIENT_MOBILE_NAV_PADDING } from "@/components/client-mobile-nav";
+import { CountryNavMenuGroups } from "@/components/nav-country-menu";
+import { NavbarMobileMenu } from "@/components/navbar-mobile-menu";
 import { LANG_PICKER_OPTIONS, isSupportedLang, replaceLangInPath, type Language } from "@/lib/languages";
 import { FlagImg } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
@@ -35,219 +36,6 @@ const LANGS = LANG_PICKER_OPTIONS.map((l) => ({
   short: l.short,
   img: l.flag,
 }));
-
-const COUNTRY_CONTINENTS = ["americas", "asia"] as const;
-type CountryContinent = (typeof COUNTRY_CONTINENTS)[number];
-
-const CONTINENT_LABEL_KEY: Record<CountryContinent, "nav_continent_americas" | "nav_continent_asia"> = {
-  americas: "nav_continent_americas",
-  asia: "nav_continent_asia",
-};
-
-const COUNTRY_LINKS = [
-  {
-    slug: "canada",
-    img: "ca",
-    continent: "americas" as const,
-    labelKey: "country_canada_label" as const,
-    nameKey: "country_canada_name" as const,
-    countKey: "country_canada_count" as const,
-  },
-  {
-    slug: "usa",
-    img: "us",
-    continent: "americas" as const,
-    labelKey: "country_usa_label" as const,
-    nameKey: "country_usa_name" as const,
-    countKey: "country_usa_count" as const,
-  },
-  {
-    slug: "korea",
-    img: "kr",
-    continent: "asia" as const,
-    labelKey: "country_korea_label" as const,
-    nameKey: "country_korea_name" as const,
-    countKey: "country_korea_count" as const,
-  },
-  {
-    slug: "uae",
-    img: "ae",
-    continent: "asia" as const,
-    labelKey: "country_uae_label" as const,
-    nameKey: "country_uae_name" as const,
-    countKey: "country_uae_count" as const,
-  },
-  {
-    slug: "china",
-    img: "cn",
-    continent: "asia" as const,
-    labelKey: "country_china_label" as const,
-    nameKey: "country_china_name" as const,
-    countKey: "country_china_count" as const,
-  },
-  {
-    slug: "japan",
-    img: "jp",
-    continent: "asia" as const,
-    labelKey: "country_japan_label" as const,
-    nameKey: "country_japan_name" as const,
-    countKey: "country_japan_count" as const,
-  },
-] as const;
-
-const NAV_COUNTRY_FLAGS = COUNTRY_LINKS.map((link) => link.img);
-
-function CountryNavMenuGroups({
-  language,
-  isActive,
-  onNavigate,
-  layout = "desktop",
-}: {
-  language: string;
-  isActive: (slug: string) => boolean;
-  onNavigate?: () => void;
-  layout?: "desktop" | "mobile";
-}) {
-  const { t } = useTranslation();
-  const groups = COUNTRY_CONTINENTS.map((continent) => ({
-    continent,
-    items: COUNTRY_LINKS.filter((link) => link.continent === continent),
-  }));
-
-  if (layout === "mobile") {
-    return (
-      <>
-        {groups.map((group, groupIndex) => (
-          <div key={group.continent}>
-            <p
-              className={cn(
-                "px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground",
-                groupIndex > 0 ? "pt-3" : "pt-1",
-              )}
-            >
-              {t(CONTINENT_LABEL_KEY[group.continent])}
-            </p>
-            {group.items.map(({ slug, img, labelKey }) => {
-              const active = isActive(slug);
-              return (
-                <Link
-                  key={slug}
-                  href={`/${language}/cars/${slug}`}
-                  onClick={onNavigate}
-                  className={cn(
-                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation",
-                    active ? "bg-primary/8 text-primary" : "hover:bg-primary/[0.06] active:bg-primary/10",
-                  )}
-                >
-                  <FlagImg code={img} size={20} priority className="w-3.5 h-2.5" alt={formatImageFlagAlt(t(labelKey), t)} />
-                  <span className="flex-1">{t(labelKey)}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </>
-    );
-  }
-
-  return (
-    <div role="menu" className="p-2.5">
-      {groups.map((group, groupIndex) => (
-        <div key={group.continent} className={cn(groupIndex > 0 && "mt-2 border-t border-border/50 pt-2")}>
-          <p className="px-3 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
-            {t(CONTINENT_LABEL_KEY[group.continent])}
-          </p>
-          <ul className="space-y-0.5">
-            {group.items.map(({ slug, img, labelKey }) => {
-              const active = isActive(slug);
-              const label = t(labelKey);
-              return (
-                <li key={slug} role="none">
-                  <Link
-                    href={`/${language}/cars/${slug}`}
-                    role="menuitem"
-                    onClick={onNavigate}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium tracking-tight",
-                      "transition-colors duration-75",
-                      active
-                        ? "bg-primary/[0.09] text-primary"
-                        : "text-foreground/85 hover:bg-muted/70 hover:text-foreground dark:hover:bg-white/[0.06]",
-                    )}
-                  >
-                    <FlagImg
-                      code={img}
-                      size={24}
-                      priority
-                      className="h-4 w-6 shrink-0 rounded-[2px] object-cover ring-1 ring-black/5 dark:ring-white/10"
-                      alt={formatImageFlagAlt(label, t)}
-                    />
-                    <span className="min-w-0 flex-1 truncate leading-none">{label}</span>
-                    <ChevronRight
-                      className={cn(
-                        "h-4 w-4 shrink-0",
-                        active ? "text-primary/70" : "text-muted-foreground/50",
-                      )}
-                    />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const MobileMenuToggle = forwardRef<
-  HTMLButtonElement,
-  ButtonHTMLAttributes<HTMLButtonElement> & {
-    open: boolean;
-    isDarkNav: boolean;
-    label: string;
-  }
->(({ open, isDarkNav, label, className, ...props }, ref) => (
-  <button
-    ref={ref}
-    type="button"
-    aria-label={label}
-    aria-expanded={open}
-    className={cn(
-      "md:hidden relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full touch-manipulation transition-colors duration-75 active:scale-95",
-      open
-        ? "bg-primary/12 text-primary"
-        : isDarkNav
-          ? "text-white/85 hover:bg-white/10 hover:text-white"
-          : "text-foreground/70 hover:bg-muted/90 hover:text-foreground",
-      className,
-    )}
-    {...props}
-  >
-    <span className="relative block h-3.5 w-[17px]" aria-hidden>
-      <span
-        className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
-          open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
-        )}
-      />
-      <span
-        className={cn(
-          "absolute left-0 top-1/2 block h-[1.5px] w-[17px] -translate-y-1/2 rounded-full bg-current transition-opacity duration-75",
-          open ? "opacity-0" : "opacity-100",
-        )}
-      />
-      <span
-        className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
-          open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
-        )}
-      />
-    </span>
-  </button>
-));
-MobileMenuToggle.displayName = "MobileMenuToggle";
 
 /** Country dropdown — compact list panel (solid fill, no blur). */
 const NAV_COUNTRY_PANEL = cn(
@@ -926,167 +714,18 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
           {/* Mobile menu */}
           <div className="md:hidden flex items-center gap-1.5">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <MobileMenuToggle
-                  open={mobileOpen}
-                  isDarkNav={isDarkNav}
-                  label={mobileOpen ? t("nav_close_menu") : t("nav_open_menu")}
-                  onPointerDown={prefetchNavMenuAssets}
-                />
-              </SheetTrigger>
-
-            <SheetContent
-              side="right"
-              speed="fast"
-              overlayClassName="z-[110]"
-              className="z-[110] w-[min(288px,86vw)] gap-0 p-0 flex flex-col overflow-hidden h-[100dvh] max-h-[100dvh] border-l border-border/50 shadow-xl shadow-black/20 dark:shadow-black/35"
-              onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-              {/* Constrained column: nav scrolls, auth stays pinned to the bottom of the viewport */}
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-5 h-16 border-b shrink-0">
-                <Link
-                  href={`/${language}`}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center -translate-y-px"
-                >
-                  <KmcheckLogo className="h-8" syncDecode />
-                </Link>
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] active:scale-95"
-                  aria-label={t("nav_close_menu")}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Mobile nav links */}
-              <nav className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-3 py-3 space-y-0.5 [-webkit-overflow-scrolling:touch] touch-pan-y">
-                <Link
-                  href={`/${language}/how-it-works`}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
-                    isOnPage("how-it-works") ? "bg-primary/8 text-primary" : "text-foreground/75",
-                  )}
-                >
-                  {t("nav_how_it_works")}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                <Link
-                  href={`/${language}/pricing`}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
-                    isOnPage("pricing") ? "bg-primary/8 text-primary" : "text-foreground/75",
-                  )}
-                >
-                  {t("pricing")}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                <Link
-                  href={`/${language}/faq`}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium touch-manipulation active:bg-primary/10",
-                    isOnPage("faq") ? "bg-primary/8 text-primary" : "text-foreground/75",
-                  )}
-                >
-                  {t("nav_faq")}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 pt-3 pb-1">
-                  {t("footer_countries")}
-                </p>
-
-                <CountryNavMenuGroups
-                  language={language}
-                  layout="mobile"
-                  isActive={(slug) => isOnPage(`cars/${slug}`)}
-                  onNavigate={() => setMobileOpen(false)}
-                />
-
-              </nav>
-
-              {/* Mobile auth footer — pinned; does not sit below the country list */}
-              <div className="border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 shrink-0 bg-background">
-                {!isLoaded ? (
-                  <div className="h-9 rounded-xl bg-muted/80 animate-pulse" aria-hidden />
-                ) : isSignedIn ? (
-                  <>
-                    <div className="flex items-center gap-3 px-1 py-1">
-                      <Avatar className="h-9 w-9 shrink-0">
-                        <AvatarImage src={user?.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
-                          {avatarInitial}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        {user?.name && <p className="font-semibold text-sm truncate">{user.name}</p>}
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 rounded-xl"
-                        asChild
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <Link href={`/${language}/dashboard`}>{t("my_reports")}</Link>
-                      </Button>
-                      {isAdmin ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 rounded-xl"
-                          asChild
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          <Link href="/adminx" onClick={closeMenus}>{t("admin")}</Link>
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 rounded-xl gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/8"
-                          onClick={handleLogout}
-                        >
-                          <LogOut className="h-3.5 w-3.5" />
-                          {t("logout")}
-                        </Button>
-                      )}
-                    </div>
-                    {isAdmin ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2 h-9 text-destructive border-destructive/30 hover:bg-destructive/8"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        {t("logout")}
-                      </Button>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 h-10 rounded-xl" asChild onClick={() => setMobileOpen(false)}>
-                      <Link href={`/${language}/sign-in`}>{t("sign_in")}</Link>
-                    </Button>
-                    <Button className="flex-1 h-10 rounded-xl font-bold" asChild onClick={() => setMobileOpen(false)}>
-                      <Link href={`/${language}/sign-up`}>{t("sign_up")}</Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+            <NavbarMobileMenu
+              open={mobileOpen}
+              onOpenChange={setMobileOpen}
+              language={language}
+              isDarkNav={isDarkNav}
+              isOnPage={isOnPage}
+              isLoaded={isLoaded}
+              isSignedIn={!!isSignedIn}
+              isAdmin={isAdmin}
+              user={user}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       </div>

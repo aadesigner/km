@@ -28,6 +28,7 @@ import { userCountryLabel } from "@/lib/user-countries";
 import { UserCountrySelect, AlbaniaKosovoLabel } from "@/components/user-country-select";
 import { FlagImg } from "@/components/flag-img";
 import { formatPhoneDisplay } from "@/lib/user-phone";
+import { AdminUserQuickEdit } from "@/components/admin/admin-user-quick-edit";
 
 function userHasPhone(user: { phonePrefix?: string | null; phoneNational?: string | null }) {
   return Boolean(user.phonePrefix?.trim() && user.phoneNational?.trim());
@@ -371,10 +372,7 @@ export default function AdminUsers() {
                   {users.map((user) => (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="p-4">
-                        <div>
-                          <p className="font-medium">{user.email}</p>
-                          {user.name && <p className="text-xs text-muted-foreground">{user.name}</p>}
-                        </div>
+                        <AdminUserQuickEdit user={user} />
                       </td>
                       <td className="p-4 text-muted-foreground">
                         {user.countryCode === "AL" ? (

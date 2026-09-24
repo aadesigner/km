@@ -14,7 +14,6 @@ import {
   vinHasReportData,
   resolveVinReportForViewer,
   resolveLockedPreviewPhotoSources,
-  isStaleCachedReport,
   sanitizeAuctionPanoramaUrl,
   splitAuctionPanoramaUrls,
 } from "../lib/vinService.js";
@@ -688,8 +687,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const catalogEntry = await getCatalogVin(normalizedVin);
   const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-  // Deliver from local catalog when present and fresh — skip stale rows (e.g. missing IAAI 360 embed).
-  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
+  // Local catalog wins — never re-fetch provider when we already have a deliverable report.
+  if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);
@@ -718,8 +717,8 @@ router.post("/vin/lookup", vinLookupLimiter, vinLookupUserLimiter, requireAuth, 
 
   const cached = await getCachedVin(normalizedVin);
   const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-  // Reuse another user's complete local report — skip stale (e.g. missing IAAI 360).
-  if (cached && cachedData && !isStaleCachedReport(cachedData)) {
+  // Reuse another user's complete local report — never re-fetch when we already have one.
+  if (cached && cachedData) {
     const racedLookup = await findCompleteUserLookup(userId, normalizedVin);
     if (racedLookup) {
       await sendExistingLookupResponse(res, racedLookup);

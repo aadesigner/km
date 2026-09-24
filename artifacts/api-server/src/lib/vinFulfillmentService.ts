@@ -13,7 +13,6 @@ import {
   getCatalogVin,
   upsertVinCatalog,
   enrichVinReportDataForServe,
-  isStaleCachedReport,
   probeExternalVinAvailability,
 } from "./vinService.js";
 import { catalogHasDeliverableReport } from "./vinCatalogImport.js";
@@ -191,35 +190,35 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
       if (!current || current.status !== VIN_FULFILLING_STATUS) return;
 
       const catalogEntry = await getCatalogVin(normalizedVin);
-        const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
-        // Local catalog wins when fresh — re-fetch provider for stale rows (missing IAAI 360, etc.).
-        if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData) && !isStaleCachedReport(catalogData)) {
-          await completeLookupFromCatalog(lookupId, input, catalogEntry);
-          return;
-        }
+      const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
+      // Local catalog wins — never re-fetch when we already have a deliverable report.
+      if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
+        await completeLookupFromCatalog(lookupId, input, catalogEntry);
+        return;
+      }
 
-        const cached = await getCachedVin(normalizedVin);
-        const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
-        if (cached && cachedData && !isStaleCachedReport(cachedData)) {
-          const enriched = await enrichVinReportDataForServe(normalizedVin, cachedData, {
-            primaryUpdatedAt: cached.updatedAt,
-          });
-          const stampedData = await stampLookupReportData(enriched ?? cachedData);
-          await db.update(vinLookupsTable).set({
-            status: "complete",
-            data: stampedData,
-            providerName: cached.providerName,
-            fromCache: true,
-            updatedAt: new Date(),
-          }).where(eq(vinLookupsTable.id, lookupId));
-          await finalizePaymentOnFulfillment(resolvedPaymentId, lookupId);
-          if (freeCouponPaymentId && freeCouponCode) {
-            void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
-          }
-          void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
-          logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
-          return;
+      const cached = await getCachedVin(normalizedVin);
+      const cachedData = (cached?.data as Record<string, unknown> | null) ?? null;
+      if (cached && cachedData) {
+        const enriched = await enrichVinReportDataForServe(normalizedVin, cachedData, {
+          primaryUpdatedAt: cached.updatedAt,
+        });
+        const stampedData = await stampLookupReportData(enriched ?? cachedData);
+        await db.update(vinLookupsTable).set({
+          status: "complete",
+          data: stampedData,
+          providerName: cached.providerName,
+          fromCache: true,
+          updatedAt: new Date(),
+        }).where(eq(vinLookupsTable.id, lookupId));
+        await finalizePaymentOnFulfillment(resolvedPaymentId, lookupId);
+        if (freeCouponPaymentId && freeCouponCode) {
+          void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
+        void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
+        logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
+        return;
+      }
 
         if (!provider.apiKey?.trim() && !(await resolveGetCarApiConfig())) {
           throw new Error("Provider API key not configured");
