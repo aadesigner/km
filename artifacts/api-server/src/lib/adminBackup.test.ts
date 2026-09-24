@@ -85,4 +85,9 @@ describe("adminBackup validateBackupPayload", () => {
       keys.indexOf("pending_vin_check_requests"),
     );
   });
+
+  it("revives acquisitionCapturedAt on users restore", () => {
+    const users = BACKUP_TABLES.find((t) => t.key === "users");
+    expect(users?.dateColumns).toContain("acquisitionCapturedAt");
+  });
 });

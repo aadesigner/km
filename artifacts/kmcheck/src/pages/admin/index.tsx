@@ -156,32 +156,33 @@ function StatCell({
       ? sourceParts.map((p) => `${p.value} ${p.label}`).join(" · ")
       : undefined);
 
-  /** Quiet attribution line: €82 FB · €40 Direct — brand-colored channel names, no pills. */
+  /** Quiet attribution line: €82 FB | €40 Direct — brand color on amount + name. */
   const renderSourceBreakdown = (opts?: { className?: string }) => {
     if (sourceParts?.length) {
       return (
         <p
           className={cn(
-            "text-[10px] md:text-xs leading-snug tracking-tight",
+            "text-[10px] md:text-[13px] leading-snug tracking-tight",
             "line-clamp-2 md:line-clamp-none",
             opts?.className,
           )}
           title={titleHint}
         >
-          {sourceParts.map((part, i) => (
-            <span key={`${part.channel ?? part.label}-${part.value}`}>
-              {i > 0 ? (
-                <span className="text-muted-foreground/35 mx-1" aria-hidden>
-                  ·
-                </span>
-              ) : null}
-              <span className="tabular-nums text-muted-foreground/80">{part.value}</span>
-              {" "}
-              <span className={cn("font-medium", acquisitionChannelTextClass(part.channel ?? part.label))}>
-                {part.label}
+          {sourceParts.map((part, i) => {
+            const color = acquisitionChannelTextClass(part.channel ?? part.label);
+            return (
+              <span key={`${part.channel ?? part.label}-${part.value}`} className="inline">
+                {i > 0 ? (
+                  <span className="text-muted-foreground/30 mx-1.5 md:mx-2 font-light" aria-hidden>
+                    |
+                  </span>
+                ) : null}
+                <span className={cn("tabular-nums font-semibold", color)}>{part.value}</span>
+                {" "}
+                <span className={cn("font-medium opacity-90", color)}>{part.label}</span>
               </span>
-            </span>
-          ))}
+            );
+          })}
         </p>
       );
     }

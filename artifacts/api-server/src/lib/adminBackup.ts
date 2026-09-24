@@ -61,7 +61,13 @@ export const BACKUP_TABLES: BackupTableSpec[] = [
     table: usersTable,
     idColumn: "id",
     idKind: "text",
-    dateColumns: ["lastLoginAt", "lastSeenAt", "createdAt", "updatedAt"],
+    dateColumns: [
+      "lastLoginAt",
+      "lastSeenAt",
+      "acquisitionCapturedAt",
+      "createdAt",
+      "updatedAt",
+    ],
   },
   {
     key: "providers",
