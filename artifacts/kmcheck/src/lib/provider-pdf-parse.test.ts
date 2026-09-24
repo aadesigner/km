@@ -352,6 +352,27 @@ describe("provider-pdf-parse", () => {
     );
   });
 
+  it("ignores not reported and Odometer reported as comment bleed", () => {
+    expect(
+      extractHistoryOdometerKm(
+        "not reported Ontario Ministry of Transportation Registration issued or renewed Odometer reported as 174,068 kilometers",
+        "2021-07-29",
+      ),
+    ).toBe("");
+    expect(
+      extractHistoryOdometerKm(
+        "not reported Ontario Ministry of Transportation Passed Ontario safety standards inspection Odometer reported as 262,999 kilometers",
+        "2026-07-29",
+      ),
+    ).toBe("");
+    expect(
+      extractHistoryOdometerKm(
+        "123,859 mi Ontario Ministry of Transportation Odometer reading reported",
+        "2021-07-08",
+      ),
+    ).toBe(String(milesToKm(123859)));
+  });
+
   it("parses engine richly", () => {
     expect(parseEngine("Engine: 3.0L V6 TFSI Supercharged\nFuel: Gasoline")).toMatch(/3\.0L.*V6/i);
   });

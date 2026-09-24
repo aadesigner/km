@@ -561,7 +561,7 @@
   "pending_coffee_popup_title": "Koha për një kafe",
   "pending_coffee_popup_body": "Ende po mbledhim të dhënat nga arkivat dhe partnerët tanë — zakonisht zgjat disa orë. Merrni një kafe, relaksohuni dhe kthehuni më vonë.",
   "pending_coffee_popup_cta": "Në rregull",
-  "report_no_photo_found": "Nuk u gjet foto",
+  "report_no_photo_found": "Nuk u gjetën foto",
   "pending_mileage_searching_title": "Duke kërkuar në të gjitha bazat e disponueshme…",
   "pending_mileage_searching_desc": "Historiku i kilometrave po mblidhet ende. Ky seksion do të përditësohet automatikisht kur raporti juaj të përfundojë.",
   "pending_search_title": "Duke kërkuar bazat e të dhënave të disponueshme",
@@ -1223,7 +1223,7 @@
   "print_summary_no_insurance": "Nuk u gjetën pretendime sigurimi",
   "print_summary_no_mileage": "Nuk u gjetën regjistra kilometrash",
   "print_summary_no_owners": "Nuk u gjetën regjistra pronësie",
-  "print_summary_no_photos": "Nuk ka arkiv fotosh",
+  "print_summary_no_photos": "Nuk ka foto të arkivuara",
   "print_summary_photos": "Fotot e automjetit",
   "print_summary_mileage_history": "Historia e kilometrave",
   "print_summary_ownership": "Historia e pronësisë",
@@ -1815,6 +1815,6 @@
   "live_city_nagoya": "Nagoya",
   "live_city_yokohama": "Yokohama",
   "live_city_fukuoka": "Fukuoka",
-  "report_no_photo_archive": "Nuk u gjet arkiv fotosh",
-  "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë shasi"
+  "report_no_photo_archive": "Nuk u gjetën foto të arkivuara",
+  "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë VIN"
 }

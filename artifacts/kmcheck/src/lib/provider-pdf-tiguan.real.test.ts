@@ -45,22 +45,60 @@ describe("real Carfax Tiguan PDF extract", () => {
     expect(tire?.description).toMatch(/Brake pads replaced/i);
     expect(tire?.description).toMatch(/Tire\(s\) changed|Brakes checked/i);
     expect(tire?.description).not.toMatch(/tirecraft|fbclid|Comments/i);
+    expect(tire?.odometer).toBe(String(Math.round(164714 * 1.609344)));
 
-    const reg = r.form.mileageHistory.find(
-      (m) => /registration issued or renewed/i.test(m.description),
-    );
-    expect(reg?.titleStatus ?? "").toBe("");
-    expect(reg?.description).toBe("Registration issued or renewed");
-    expect(reg?.description ?? "").not.toMatch(/ignition|spark|coil|tire/i);
+    // Mileage column said "not reported" — do not invent km from "Odometer reported as …"
+    expect(r.form.mileageHistory.find((m) => m.date.startsWith("2026-07-29"))).toBeUndefined();
+    expect(r.form.mileageHistory.find((m) => m.date.startsWith("2021-07-29"))).toBeUndefined();
+    expect(r.form.mileageHistory.find((m) => m.date.startsWith("2013-07-29"))).toBeUndefined();
+    // Dec 2025 Georgetown was "not reported" (205,375 km note is bleed from 127,614 mi)
+    expect(r.form.mileageHistory.find((m) => m.date.startsWith("2025-12-01"))).toBeUndefined();
+
+    // Legitimate column readings still convert (163,420 mi → ~262,999 km)
+    expect(
+      r.form.mileageHistory.some(
+        (m) => m.date.startsWith("2026-03-20") && m.odometer === String(Math.round(163420 * 1.609344)),
+      ),
+    ).toBe(true);
+
+    // Chronological readings must not invent rollbacks from comment bleed
+    const byDate = [...r.form.mileageHistory]
+      .filter((m) => m.date && m.odometer)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    for (let i = 1; i < byDate.length; i++) {
+      const prev = Number(byDate[i - 1]!.odometer);
+      const cur = Number(byDate[i]!.odometer);
+      expect(
+        cur + 500 >= prev,
+        `rollback ${byDate[i - 1]!.date} ${prev} → ${byDate[i]!.date} ${cur}`,
+      ).toBe(true);
+    }
+
+    // Registration rows with no mileage column stay out of mileage history
+    expect(
+      r.form.mileageHistory.every(
+        (m) => !/^registration issued or renewed$/i.test(m.description.trim()),
+      ),
+    ).toBe(true);
 
     // Shop work from PDF dumps should land on Vehicle serviced, not stay empty for the Gc Tire visit
     const tireSvc = r.form.serviceHistory.find((s) => s.date.startsWith("2026-04-20"));
     expect(tireSvc?.description ?? "").toMatch(/Brake|Tire/i);
 
+    // Do not clone the same shop-work blob onto every Humberview visit
+    const humberDescs = r.form.serviceHistory
+      .filter((s) => /humberview/i.test(s.location) && s.description.trim())
+      .map((s) => s.description);
+    if (humberDescs.length >= 3) {
+      const unique = new Set(humberDescs);
+      expect(unique.size).toBeGreaterThan(1);
+    }
+
     for (const s of r.form.serviceHistory) {
       expect(s.description).not.toMatch(/importer|michigan|first owner|title issued|pre-delivery|titled or registered/i);
       expect(s.location).not.toMatch(/importer|manufacturer/i);
       expect(s.title).not.toMatch(/importer|michigan|title issued/i);
+      expect(s.description).not.toMatch(/odometer reported as/i);
     }
   });
 });

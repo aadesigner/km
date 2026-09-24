@@ -499,6 +499,7 @@ export function cleanHistoryNote(raw: string): string {
   s = s.replace(new RegExp(DATE_TOKEN, "gi"), " ");
   s = s.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km|kilometers?|kilometres?)\b/gi, " ");
   s = s.replace(/\bnot\s+reported\b/gi, " ");
+  s = s.replace(/\bOdometer\s+reported\s+as\b/gi, " ");
   s = s.replace(/\bSource\s*[:#]?\s*[^|;\n]+/gi, " ");
   s = s.replace(/\b(?:Date|Mileage|Source|Comments)\b/gi, " ");
   // City, ST only — do NOT strip "Ontario" inside "Passed Ontario safety…"
@@ -675,8 +676,8 @@ function isUsefulDetailBullet(p: string): boolean {
   if (TABLE_HEADER_NOISE.test(p)) return false;
   if (/^or\s+renewed$/i.test(p) || /^or\s+updated$/i.test(p)) return false;
   if (/^(?:have questions|consumers|dealers|this report|follow us)\b/i.test(p)) return false;
-  // Drop pure odometer restatements from description when they're the only content
-  if (/^odometer\s+reported\s+as\b/i.test(p)) return false;
+  // Drop Canadian km restatements / color notes — never service work
+  if (/\bodometer\s+reported\s+as\b/i.test(p)) return false;
   if (/^vehicle\s+color\s+noted\b/i.test(p)) return false;
   return true;
 }
@@ -778,35 +779,54 @@ function yearFromIsoDate(iso: string): number | null {
 }
 
 /**
- * Read odometer from the text after a history date.
- * Requires an explicit miles/mi/km unit so calendar years (2012, 2025, …)
- * are never treated as mileage readings.
+ * Read odometer from the Carfax/AutoCheck **Mileage column** only.
+ * - `not reported` → no reading (do not invent one from comments)
+ * - Leading `123,859 mi` / `12 km` → column value
+ * - Never use Canadian comment notes like `Odometer reported as 174,068 kilometers`
+ *   (those are conversions of *other* rows, dumped onto the wrong date by PDF extract)
  */
 export function extractHistoryOdometerKm(
   rest: string,
   isoDate?: string,
 ): string {
-  // Prefer "45,230 miles" / "90123 km" — unit required
-  const withUnit = [
-    ...rest.matchAll(/\b([\d,]{1,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/gi),
-  ];
-  for (const m of withUnit) {
-    const n = parseOdometerNumber(m[1] ?? "");
-    if (n == null || n < 0) continue;
+  const trimmed = rest.trim();
+  if (!trimmed) return "";
+  if (/^not\s+reported\b/i.test(trimmed)) return "";
+
+  const accept = (rawNum: string, unit: string, snippet: string): string => {
+    const n = parseOdometerNumber(rawNum);
+    if (n == null || n < 0) return "";
     const dateYear = isoDate ? yearFromIsoDate(isoDate) : null;
-    // Never use the date's year digits as the odometer (e.g. leftover "2012")
-    if (dateYear != null && n === dateYear) continue;
-    // Bare 4-digit year-shaped values without commas are almost always dates, not odo
-    const rawNum = (m[1] ?? "").replace(/,/g, "");
-    if (/^(?:19|20)\d{2}$/.test(rawNum) && n === Number(rawNum) && n <= 2100) {
-      // Allow only if unit is present AND reading is plausible as miles for a car
-      // (very low year-like readings like "2012 miles" are rare; still skip year==dateYear above)
-      if (n >= 1900 && n <= 2100 && !String(m[1]).includes(",")) {
-        // "2012 miles" right after a 2012 date is noise; otherwise allow
-        if (dateYear != null && Math.abs(n - dateYear) < 2) continue;
+    if (dateYear != null && n === dateYear) return "";
+    const digits = rawNum.replace(/,/g, "");
+    if (/^(?:19|20)\d{2}$/.test(digits) && n === Number(digits) && n <= 2100) {
+      if (n >= 1900 && n <= 2100 && !rawNum.includes(",")) {
+        if (dateYear != null && Math.abs(n - dateYear) < 2) return "";
       }
     }
-    return String(readingToKm(n, m[2] ?? unitHintFromSnippet(m[0] ?? "")));
+    return String(readingToKm(n, unit || unitHintFromSnippet(snippet)));
+  };
+
+  // Mileage column is the first token(s) after the date
+  const leading = trimmed.match(
+    /^([\d,]{1,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/i,
+  );
+  if (leading) {
+    const km = accept(leading[1]!, leading[2]!, leading[0]!);
+    if (km) return km;
+  }
+
+  // Synthetic / non-column layouts (e.g. "… Registration 12 km Source:")
+  for (const m of trimmed.matchAll(
+    /\b([\d,]{1,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/gi,
+  )) {
+    const idx = m.index ?? 0;
+    const before = trimmed.slice(Math.max(0, idx - 32), idx);
+    if (/odometer\s+reported\s+as\s*$/i.test(before)) continue;
+    const after = trimmed.slice(idx);
+    if (/^[\d,]+\s*miles?\s+service\b/i.test(after)) continue;
+    const km = accept(m[1]!, m[2]!, m[0]!);
+    if (km) return km;
   }
   return "";
 }
@@ -889,8 +909,8 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
     }
   }
 
-  // Any Vehicle serviced still empty: pull work from the next Vehicle serviced in a same-shop cluster
-  backfillEmptyVehicleServiced(hits);
+  // Do NOT clone one visit's work onto every empty same-shop row — that fabricates
+  // identical spark-plug/water-pump descriptions across unrelated dates.
 
   return hits;
 }
@@ -923,33 +943,6 @@ function attachWorkToPriorVehicleServiced(
     ...h.description.split(/\s*·\s*/).filter(Boolean),
     ...bullets,
   ]).join(" · ").slice(0, 400);
-}
-
-/**
- * Carfax often lists several "Vehicle serviced" rows then dumps details after the last.
- * Copy work from a filled row onto immediately preceding empty same-cluster rows
- * only when they share the same location (same shop visit cluster).
- */
-function backfillEmptyVehicleServiced(hits: HistoryHit[]): void {
-  for (let i = 0; i < hits.length; i++) {
-    const h = hits[i]!;
-    if (!/^vehicle\s+serviced$/i.test(h.titleStatus) || h.description.trim()) continue;
-
-    // Prefer work stolen onto the next non-service row (already redistributed).
-    // Else take from the next Vehicle serviced that has description + same location.
-    for (let k = i + 1; k < hits.length && k <= i + 6; k++) {
-      const next = hits[k]!;
-      if (!/^vehicle\s+serviced$/i.test(next.titleStatus)) continue;
-      if (!next.description.trim()) continue;
-      const sameShop =
-        !h.location
-        || !next.location
-        || h.location.toLowerCase() === next.location.toLowerCase();
-      if (!sameShop) break;
-      h.description = next.description;
-      break;
-    }
-  }
 }
 
 function isAccidentish(raw: string): boolean {

@@ -171,8 +171,11 @@ export function VinMarketDataSection({
         </div>
       ) : null}
       {auctionDate ? (
-        <div className="min-w-0 flex-1 basis-[8rem] rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
-          <Stat label={dateLabel}>
+        <div className="min-w-0 flex-1 basis-[8rem] rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-3 py-2.5 dark:border-emerald-400/20 dark:bg-emerald-400/[0.08]">
+          <Stat
+            label={dateLabel}
+            labelClassName="font-medium text-emerald-700 dark:text-emerald-400"
+          >
             <span className="text-sm font-semibold tracking-tight text-foreground">
               {auctionDate}
             </span>

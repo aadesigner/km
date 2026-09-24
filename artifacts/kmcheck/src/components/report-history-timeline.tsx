@@ -88,8 +88,14 @@ function touchMidpoint(a: Touch, b: Touch): { x: number; y: number } {
   return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
 }
 
-function useChartZoom(enabled: boolean) {
+/**
+ * @param bindKey – change when the viewport DOM node swaps (e.g. fullscreen open/close)
+ *   so wheel/pan listeners re-attach to the visible chart. React refs alone do not
+ *   re-run this effect when the element they point at changes.
+ */
+function useChartZoom(enabled: boolean, bindKey: string | number | boolean = 0) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<ChartZoom>({ scale: 1, x: 0, y: 0 });
   const pinchRef = useRef<{
     distance: number;
@@ -103,16 +109,25 @@ function useChartZoom(enabled: boolean) {
   const [zoom, setZoom] = useState<ChartZoom>({ scale: 1, x: 0, y: 0 });
   const [gesturing, setGesturing] = useState(false);
 
-  const resetZoom = useCallback(() => {
-    zoomRef.current = { scale: 1, x: 0, y: 0 };
-    setZoom({ scale: 1, x: 0, y: 0 });
+  const paintTransform = useCallback((next: ChartZoom) => {
+    const el = contentRef.current;
+    if (!el) return;
+    el.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
+    el.style.transition = "none";
   }, []);
+
+  const resetZoom = useCallback(() => {
+    const next = { scale: 1, x: 0, y: 0 };
+    zoomRef.current = next;
+    setZoom(next);
+    paintTransform(next);
+  }, [paintTransform]);
 
   useEffect(() => {
     if (!enabled) resetZoom();
   }, [enabled, resetZoom]);
 
-  const applyZoom = useCallback((next: ChartZoom, origin?: { x: number; y: number }) => {
+  const applyZoom = useCallback((next: ChartZoom, origin?: { x: number; y: number }, opts?: { silent?: boolean }) => {
     const viewport = viewportRef.current;
     const vw = viewport?.clientWidth ?? 0;
     const vh = viewport?.clientHeight ?? 0;
@@ -130,8 +145,9 @@ function useChartZoom(enabled: boolean) {
       ? { scale: 1, x: 0, y: 0 }
       : { scale, ...clampPan(x, y, scale, vw, vh) };
     zoomRef.current = clamped;
-    setZoom(clamped);
-  }, []);
+    paintTransform(clamped);
+    if (!opts?.silent) setZoom(clamped);
+  }, [paintTransform]);
 
   const zoomAtCenter = useCallback((factor: number) => {
     const viewport = viewportRef.current;
@@ -148,181 +164,250 @@ function useChartZoom(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    const viewport = viewportRef.current;
-    if (!viewport) return;
+    let cancelled = false;
+    let detach: (() => void) | null = null;
+    let raf = 0;
 
-    const localPoint = (clientX: number, clientY: number) => {
-      const rect = viewport.getBoundingClientRect();
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    };
+    const attach = () => {
+      const viewport = viewportRef.current;
+      if (!viewport) return false;
 
-    const onWheel = (e: WheelEvent) => {
-      const zoomingIn = e.deltaY < 0;
-      const scale = zoomRef.current.scale;
-      if ((zoomingIn && scale >= MAX_ZOOM - 0.001) || (!zoomingIn && scale <= MIN_ZOOM + 0.001)) {
-        return;
-      }
-      e.preventDefault();
-      const factor = zoomingIn ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
-      applyZoom(
-        { ...zoomRef.current, scale: zoomRef.current.scale * factor },
-        localPoint(e.clientX, e.clientY),
-      );
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("button")) return;
-
-      if (e.touches.length === 2) {
-        const a = e.touches[0]!;
-        const b = e.touches[1]!;
-        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
-        const z = zoomRef.current;
-        const dist = touchDistance(a, b);
-        if (dist < 1) return;
-        pinchRef.current = {
-          distance: dist,
-          scale: z.scale,
-          contentX: (mid.x - z.x) / z.scale,
-          contentY: (mid.y - z.y) / z.scale,
-        };
-        panRef.current = null;
-        setGesturing(true);
-        return;
+      // Viewport size changes when entering/leaving fullscreen — reclamp pan so
+      // the chart stays movable within the new bounds.
+      const z = zoomRef.current;
+      if (z.scale > 1.001) {
+        applyZoom(z);
       }
 
-      if (e.touches.length === 1 && zoomRef.current.scale > 1.02) {
-        const t = e.touches[0]!;
+      const localPoint = (clientX: number, clientY: number) => {
+        const rect = viewport.getBoundingClientRect();
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+
+      const isMarkerControl = (target: EventTarget | null) => {
+        if (!(target instanceof Element)) return false;
+        return Boolean(
+          target.closest("button")
+          || target.closest("[data-timeline-marker]")
+          || target.closest("[data-radix-popper-content-wrapper]"),
+        );
+      };
+
+      const onWheel = (e: WheelEvent) => {
+        const zoomingIn = e.deltaY < 0;
+        const scale = zoomRef.current.scale;
+        if ((zoomingIn && scale >= MAX_ZOOM - 0.001) || (!zoomingIn && scale <= MIN_ZOOM + 0.001)) {
+          return;
+        }
+        e.preventDefault();
+        const factor = zoomingIn ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+        applyZoom(
+          { ...zoomRef.current, scale: zoomRef.current.scale * factor },
+          localPoint(e.clientX, e.clientY),
+        );
+      };
+
+      const onPointerDown = (e: PointerEvent) => {
+        if (e.pointerType === "touch") return;
+        if (e.button !== 0 || zoomRef.current.scale <= 1.02) return;
+        if (isMarkerControl(e.target)) return;
+        e.preventDefault();
+        e.stopPropagation();
         panRef.current = {
-          x: t.clientX,
-          y: t.clientY,
+          x: e.clientX,
+          y: e.clientY,
           tx: zoomRef.current.x,
           ty: zoomRef.current.y,
         };
-      }
-    };
+        panActiveRef.current = false;
+        setGesturing(true);
+        try {
+          viewport.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+      };
 
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && pinchRef.current) {
+      const onPointerMove = (e: PointerEvent) => {
+        if (e.pointerType === "touch") return;
+        if (!panRef.current || zoomRef.current.scale <= 1.02) return;
+        const dx = e.clientX - panRef.current.x;
+        const dy = e.clientY - panRef.current.y;
+        if (!panActiveRef.current && Math.hypot(dx, dy) < 4) return;
         e.preventDefault();
-        const a = e.touches[0]!;
-        const b = e.touches[1]!;
-        const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
-        const dist = touchDistance(a, b);
-        const p = pinchRef.current;
-        const scale = clampZoom(p.scale * (dist / p.distance));
+        panActiveRef.current = true;
+        // Silent: paint via DOM during drag; commit React state on pointerup
         applyZoom(
           {
-            scale,
-            x: mid.x - p.contentX * scale,
-            y: mid.y - p.contentY * scale,
+            scale: zoomRef.current.scale,
+            x: panRef.current.tx + dx,
+            y: panRef.current.ty + dy,
           },
+          undefined,
+          { silent: true },
         );
-        return;
-      }
+      };
 
-      if (e.touches.length === 1 && panRef.current && zoomRef.current.scale > 1.02) {
-        const t = e.touches[0]!;
-        const dx = t.clientX - panRef.current.x;
-        const dy = t.clientY - panRef.current.y;
-        if (!panActiveRef.current && Math.hypot(dx, dy) < 8) return;
-        e.preventDefault();
-        if (!panActiveRef.current) {
-          panActiveRef.current = true;
-          setGesturing(true);
-        }
-        applyZoom({
-          scale: zoomRef.current.scale,
-          x: panRef.current.tx + dx,
-          y: panRef.current.ty + dy,
-        });
-      }
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      const didPan = panActiveRef.current;
-      pinchRef.current = null;
-      panRef.current = null;
-      panActiveRef.current = false;
-      setGesturing(false);
-
-      if (e.touches.length > 0 || didPan) return;
-      const now = Date.now();
-      if (now - lastTapRef.current < 320) {
-        if (zoomRef.current.scale > 1.05) resetZoom();
-        else {
-          const t = e.changedTouches[0];
-          if (t) {
-            const pt = localPoint(t.clientX, t.clientY);
-            applyZoom(
-              { ...zoomRef.current, scale: DOUBLE_TAP_ZOOM },
-              pt,
-            );
+      const endPointerPan = (e: PointerEvent) => {
+        if (e.pointerType === "touch") return;
+        if (!panRef.current) return;
+        panRef.current = null;
+        panActiveRef.current = false;
+        setGesturing(false);
+        // Commit final position to React state
+        setZoom({ ...zoomRef.current });
+        if (viewport.hasPointerCapture?.(e.pointerId)) {
+          try {
+            viewport.releasePointerCapture(e.pointerId);
+          } catch {
+            /* ignore */
           }
         }
-        lastTapRef.current = 0;
-      } else {
-        lastTapRef.current = now;
-      }
-    };
-
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0 || zoomRef.current.scale <= 1.02) return;
-      e.preventDefault();
-      panRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-        tx: zoomRef.current.x,
-        ty: zoomRef.current.y,
       };
-      panActiveRef.current = false;
+
+      const onTouchStart = (e: TouchEvent) => {
+        if (isMarkerControl(e.target)) return;
+
+        if (e.touches.length === 2) {
+          const a = e.touches[0]!;
+          const b = e.touches[1]!;
+          const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
+          const zNow = zoomRef.current;
+          const dist = touchDistance(a, b);
+          if (dist < 1) return;
+          pinchRef.current = {
+            distance: dist,
+            scale: zNow.scale,
+            contentX: (mid.x - zNow.x) / zNow.scale,
+            contentY: (mid.y - zNow.y) / zNow.scale,
+          };
+          panRef.current = null;
+          setGesturing(true);
+          return;
+        }
+
+        if (e.touches.length === 1 && zoomRef.current.scale > 1.02) {
+          const t = e.touches[0]!;
+          panRef.current = {
+            x: t.clientX,
+            y: t.clientY,
+            tx: zoomRef.current.x,
+            ty: zoomRef.current.y,
+          };
+          panActiveRef.current = false;
+          setGesturing(true);
+        }
+      };
+
+      const onTouchMove = (e: TouchEvent) => {
+        if (e.touches.length === 2 && pinchRef.current) {
+          e.preventDefault();
+          const a = e.touches[0]!;
+          const b = e.touches[1]!;
+          const mid = localPoint(touchMidpoint(a, b).x, touchMidpoint(a, b).y);
+          const dist = touchDistance(a, b);
+          const p = pinchRef.current;
+          const scale = clampZoom(p.scale * (dist / p.distance));
+          applyZoom(
+            {
+              scale,
+              x: mid.x - p.contentX * scale,
+              y: mid.y - p.contentY * scale,
+            },
+            undefined,
+            { silent: true },
+          );
+          return;
+        }
+
+        if (e.touches.length === 1 && panRef.current && zoomRef.current.scale > 1.02) {
+          const t = e.touches[0]!;
+          const dx = t.clientX - panRef.current.x;
+          const dy = t.clientY - panRef.current.y;
+          if (!panActiveRef.current && Math.hypot(dx, dy) < 6) return;
+          e.preventDefault();
+          panActiveRef.current = true;
+          applyZoom(
+            {
+              scale: zoomRef.current.scale,
+              x: panRef.current.tx + dx,
+              y: panRef.current.ty + dy,
+            },
+            undefined,
+            { silent: true },
+          );
+        }
+      };
+
+      const onTouchEnd = (e: TouchEvent) => {
+        const didPan = panActiveRef.current;
+        const tappedMarker = isMarkerControl(e.target);
+        const wasPinching = pinchRef.current != null;
+        pinchRef.current = null;
+        panRef.current = null;
+        panActiveRef.current = false;
+        setGesturing(false);
+        setZoom({ ...zoomRef.current });
+
+        if (e.touches.length > 0 || didPan || tappedMarker || wasPinching) return;
+        const now = Date.now();
+        if (now - lastTapRef.current < 320) {
+          if (zoomRef.current.scale > 1.05) resetZoom();
+          else {
+            const t = e.changedTouches[0];
+            if (t) {
+              const pt = localPoint(t.clientX, t.clientY);
+              applyZoom(
+                { ...zoomRef.current, scale: DOUBLE_TAP_ZOOM },
+                pt,
+              );
+            }
+          }
+          lastTapRef.current = 0;
+        } else {
+          lastTapRef.current = now;
+        }
+      };
+
+      viewport.addEventListener("wheel", onWheel, { passive: false });
+      viewport.addEventListener("touchstart", onTouchStart, { passive: true });
+      viewport.addEventListener("touchmove", onTouchMove, { passive: false });
+      viewport.addEventListener("touchend", onTouchEnd, { passive: true });
+      viewport.addEventListener("pointerdown", onPointerDown);
+      // Listen on window so drag keeps working if the cursor leaves the chart
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", endPointerPan);
+      window.addEventListener("pointercancel", endPointerPan);
+
+      detach = () => {
+        viewport.removeEventListener("wheel", onWheel);
+        viewport.removeEventListener("touchstart", onTouchStart);
+        viewport.removeEventListener("touchmove", onTouchMove);
+        viewport.removeEventListener("touchend", onTouchEnd);
+        viewport.removeEventListener("pointerdown", onPointerDown);
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", endPointerPan);
+        window.removeEventListener("pointercancel", endPointerPan);
+      };
+      return true;
     };
 
-    const onMouseMove = (e: MouseEvent) => {
-      if (!panRef.current || zoomRef.current.scale <= 1.02) return;
-      const dx = e.clientX - panRef.current.x;
-      const dy = e.clientY - panRef.current.y;
-      if (!panActiveRef.current && Math.hypot(dx, dy) < 6) return;
-      e.preventDefault();
-      if (!panActiveRef.current) {
-        panActiveRef.current = true;
-        setGesturing(true);
-      }
-      applyZoom({
-        scale: zoomRef.current.scale,
-        x: panRef.current.tx + dx,
-        y: panRef.current.ty + dy,
+    if (!attach()) {
+      raf = requestAnimationFrame(() => {
+        if (!cancelled) attach();
       });
-    };
-
-    const onMouseUp = () => {
-      panRef.current = null;
-      panActiveRef.current = false;
-      setGesturing(false);
-    };
-
-    viewport.addEventListener("wheel", onWheel, { passive: false });
-    viewport.addEventListener("touchstart", onTouchStart, { passive: true });
-    viewport.addEventListener("touchmove", onTouchMove, { passive: false });
-    viewport.addEventListener("touchend", onTouchEnd, { passive: true });
-    viewport.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    }
 
     return () => {
-      viewport.removeEventListener("wheel", onWheel);
-      viewport.removeEventListener("touchstart", onTouchStart);
-      viewport.removeEventListener("touchmove", onTouchMove);
-      viewport.removeEventListener("touchend", onTouchEnd);
-      viewport.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      detach?.();
     };
-  }, [enabled, applyZoom, resetZoom]);
+  }, [enabled, applyZoom, resetZoom, bindKey]);
 
   return {
     viewportRef,
+    contentRef,
     zoom,
     gesturing,
     zoomAtCenter,
@@ -982,6 +1067,7 @@ function TimelineMarker({
       <PopoverTrigger asChild>
         <button
           type="button"
+          data-timeline-marker=""
           aria-label={[headline, dateLabel, kmShort].filter(Boolean).join(", ")}
           className={cn(
             "absolute z-[2] group flex h-12 w-12 items-center justify-center rounded-full sm:h-11 sm:w-11",
@@ -1038,7 +1124,8 @@ function TimelineMarker({
         sideOffset={12}
         collisionPadding={16}
         className={cn(
-          "z-[80] w-[min(17.5rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto",
+          /* Above timeline fullscreen overlay (z-[100]) and site chrome */
+          "z-[120] w-[min(17.5rem,calc(100vw-1.5rem))] max-h-[min(20rem,70vh)] overflow-y-auto",
           "rounded-2xl border border-border/60 bg-background p-0 shadow-xl shadow-black/10",
         )}
         onPointerEnter={(e) => {
@@ -1165,9 +1252,10 @@ export function ReportHistoryTimeline({
 }: Props) {
   const fillId = useId().replace(/:/g, "");
   const fullscreenFillId = useId().replace(/:/g, "");
-  const chartZoom = useChartZoom(true);
-  const { resetZoom, ...chartZoomUi } = chartZoom;
   const [fullscreen, setFullscreen] = useState(false);
+  // bindKey remounts pan/wheel listeners onto whichever chart is visible
+  const chartZoom = useChartZoom(true, fullscreen ? "fs" : "inline");
+  const { resetZoom, ...chartZoomUi } = chartZoom;
 
   useEffect(() => {
     if (!fullscreen) return;
@@ -1318,6 +1406,7 @@ export function ReportHistoryTimeline({
     fillHeight?: boolean;
     zoom?: {
       viewportRef: RefObject<HTMLDivElement | null>;
+      contentRef: RefObject<HTMLDivElement | null>;
       zoom: ChartZoom;
       gesturing: boolean;
       interactive: boolean;
@@ -1479,10 +1568,12 @@ export function ReportHistoryTimeline({
         )}
       >
         <div
+          ref={opts.zoom.contentRef}
           className={cn("origin-top-left will-change-transform", opts.fillHeight && "h-full min-h-0 flex flex-col")}
           style={{
             transform: `translate(${opts.zoom.zoom.x}px, ${opts.zoom.zoom.y}px) scale(${opts.zoom.zoom.scale})`,
-            transition: opts.zoom.gesturing ? "none" : "transform 140ms ease-out",
+            // Never animate while zoomed — CSS transitions fight drag updates and feel "stuck"
+            transition: zoomed || opts.zoom.gesturing ? "none" : "transform 140ms ease-out",
           }}
         >
           {chartBody}
@@ -1557,16 +1648,22 @@ export function ReportHistoryTimeline({
       </div>
 
       <div className="w-full min-w-0 pt-2 pb-1 sm:pt-2.5 sm:pb-1.5">
-        {renderChart({
-          gradientId: fillId,
-          heightClass: "h-[14rem] sm:h-[17rem] lg:h-[19rem]",
-          zoom: {
-            viewportRef: chartZoomUi.viewportRef,
-            zoom: chartZoomUi.zoom,
-            gesturing: chartZoomUi.gesturing,
-            interactive: !chartZoomUi.gesturing,
-          },
-        })}
+        {fullscreen ? (
+          /* Keep layout height while fullscreen owns the interactive viewport */
+          <div className="h-[14rem] sm:h-[17rem] lg:h-[19rem]" aria-hidden />
+        ) : (
+          renderChart({
+            gradientId: fillId,
+            heightClass: "h-[14rem] sm:h-[17rem] lg:h-[19rem]",
+            zoom: {
+              viewportRef: chartZoomUi.viewportRef,
+              contentRef: chartZoomUi.contentRef,
+              zoom: chartZoomUi.zoom,
+              gesturing: chartZoomUi.gesturing,
+              interactive: !chartZoomUi.gesturing,
+            },
+          })
+        )}
       </div>
 
       {legend}
@@ -1614,6 +1711,7 @@ export function ReportHistoryTimeline({
                       labelClass: "sm:text-xs",
                       zoom: {
                         viewportRef: chartZoomUi.viewportRef,
+                        contentRef: chartZoomUi.contentRef,
                         zoom: chartZoomUi.zoom,
                         gesturing: chartZoomUi.gesturing,
                         interactive: !chartZoomUi.gesturing,

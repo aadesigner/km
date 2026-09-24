@@ -85,16 +85,16 @@ export function MarketValueChart({
           {premium ? (
             <defs>
               <linearGradient id="mktBarEst" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#64748b" stopOpacity={0.85} />
+              </linearGradient>
+              <linearGradient id="mktBarAuction" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#34d399" stopOpacity={0.95} />
                 <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
               </linearGradient>
-              <linearGradient id="mktBarAuction" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.95} />
-                <stop offset="100%" stopColor="#d97706" stopOpacity={0.85} />
-              </linearGradient>
               <linearGradient id="mktBarHistory" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6ee7b7" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0.8} />
+                <stop offset="0%" stopColor="#6ee7b7" stopOpacity={0.85} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.75} />
               </linearGradient>
             </defs>
           ) : null}
@@ -135,7 +135,7 @@ export function MarketValueChart({
           />
           <Bar
             dataKey="value"
-            fill="hsl(var(--primary))"
+            fill="hsl(var(--muted-foreground) / 0.55)"
             radius={[4, 4, 0, 0]}
             maxBarSize={premium ? 40 : 36}
           >
@@ -152,7 +152,16 @@ export function MarketValueChart({
                     }
                   />
                 ))
-              : null}
+              : points.map((p, i) => (
+                  <Cell
+                    key={`${p.kind}-${i}`}
+                    fill={
+                      p.kind === "estimated"
+                        ? "hsl(215 16% 52%)"
+                        : "hsl(var(--primary))"
+                    }
+                  />
+                ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

@@ -502,9 +502,6 @@ export default function AdminOverview() {
     const compareLabel = PERIOD_COMPARE_LABEL[period];
     const chartTotal = chartData.reduce((sum, row) => sum + row.value, 0);
     const comparePeriod = previousComparePeriod(period);
-    const breakdownCompareHint = comparePeriod
-      ? `Bar length = ${PERIOD_LABELS[period].toLowerCase()} · color/Δ vs ${PERIOD_LABELS[comparePeriod].toLowerCase()}`
-      : null;
     const countrySignupRows = slicePeriodBreakdown(stats.signupsByCountry, period);
     const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
     const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
@@ -524,7 +521,6 @@ export default function AdminOverview() {
       chartTotal,
       activeChart,
       compareLabel,
-      breakdownCompareHint,
       countrySignupRows,
       countryPurchaseRows,
       methodRows,
@@ -730,12 +726,12 @@ export default function AdminOverview() {
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
+              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
+                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
                   <AdminCountrySignupsChart
+                    height={260}
                     data={derived?.countrySignupRows ?? []}
                     previousData={derived?.countrySignupPrev}
-                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
@@ -749,12 +745,12 @@ export default function AdminOverview() {
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
+              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
+                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
                   <AdminCountryPurchasesChart
+                    height={260}
                     data={derived?.countryPurchaseRows ?? []}
                     previousData={derived?.countryPurchasePrev}
-                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
@@ -768,12 +764,12 @@ export default function AdminOverview() {
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-2 pt-2 pb-2.5 md:px-3">
-                <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-lg" />}>
+              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
+                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
                   <AdminPaymentMethodsChart
+                    height={260}
                     data={derived?.methodRows ?? []}
                     previousData={derived?.methodPrev}
-                    compareHint={derived?.breakdownCompareHint}
                   />
                 </Suspense>
               </div>
