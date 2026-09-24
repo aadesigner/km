@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SEOHead } from "@/components/seo";
+import { PriceAmount } from "@/components/marketing-price";
 import { parseLangFromPath } from "@/lib/seo-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -288,6 +289,7 @@ export default function Checkout({ params }: Props) {
     loading: pricingLoading,
     fmtPrice,
     currency,
+    currencySymbol,
   } = useDisplayPrice();
   const promoDiscountAmount =
     isDiscount && standardPrice != null && salePrice != null
@@ -1608,15 +1610,6 @@ export default function Checkout({ params }: Props) {
         <VinLookupDisabledBanner className="mb-4 sm:mb-5" />
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8 px-1">
-          <motion.div
-            initial={lightMotion ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: lightMotion ? 0 : 0.05 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/80 dark:bg-white/[0.03] max-sm:backdrop-blur-none sm:backdrop-blur-sm px-3.5 py-1.5 text-xs font-semibold text-primary mb-3.5"
-          >
-            <Lock className="h-3.5 w-3.5" />
-            {t("checkout_badge")}
-          </motion.div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">{t("checkout_title")}</h1>
           <p className="text-muted-foreground text-sm sm:text-base mt-2 flex items-center justify-center gap-1.5 max-w-lg mx-auto leading-snug">
             <ShieldCheck className="h-4 w-4 text-primary/65 shrink-0" />
@@ -1638,7 +1631,7 @@ export default function Checkout({ params }: Props) {
           return (
             <nav
               aria-label={t("checkout_title")}
-              className="mb-5 sm:mb-7 mx-auto w-full max-w-xs sm:max-w-sm px-2 sm:px-4"
+              className="mb-5 sm:mb-7 mx-auto w-full max-w-xs sm:max-w-sm px-1 sm:px-4"
             >
               <ol className="flex items-start justify-center sm:justify-stretch w-full">
                 {steps.map((step, i) => {
@@ -1657,7 +1650,7 @@ export default function Checkout({ params }: Props) {
                       )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
-                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-[3.5rem] sm:w-[4.5rem] shrink-0">
+                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 w-[3.85rem] sm:w-[4.75rem] shrink-0">
                         <motion.div
                           initial={false}
                           animate={{
@@ -1695,7 +1688,7 @@ export default function Checkout({ params }: Props) {
                         </motion.div>
                         <span
                           className={cn(
-                            "text-[10px] sm:text-[11px] text-center leading-tight max-w-[3.5rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
+                            "text-[10px] sm:text-[11px] text-center leading-tight max-w-[3.85rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
                             isComplete && "font-semibold text-foreground/85",
                             isCurrent && "font-bold text-primary",
                             isUpcoming && "font-medium text-muted-foreground/75",
@@ -1707,7 +1700,7 @@ export default function Checkout({ params }: Props) {
 
                       {i < steps.length - 1 && (
                         <div
-                          className="relative mt-3 sm:mt-3.5 w-4 sm:w-auto sm:mx-1.5 h-0.5 sm:flex-1 sm:min-w-[1rem] rounded-full bg-muted/70 overflow-hidden shrink-0"
+                          className="relative mt-3 sm:mt-3.5 w-6 sm:w-auto sm:mx-2 sm:flex-1 sm:min-w-[1.25rem] h-0.5 rounded-full bg-muted/70 overflow-hidden shrink-0"
                           aria-hidden
                         >
                           <motion.div
@@ -2047,13 +2040,17 @@ export default function Checkout({ params }: Props) {
                           {t("pricing_save").replace("{n}", String(promoSavePercent))}
                         </Badge>
                       )}
-                      <span className="text-xl sm:text-2xl font-black text-primary tabular-nums tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums tracking-tight">
                         {pricingLoading ? (
-                          <Skeleton className="h-7 w-20 rounded inline-block" />
+                          <Skeleton className="h-8 w-24 rounded inline-block" />
                         ) : couponResult && finalPrice === 0 ? (
                           <span className="text-green-600 dark:text-green-400">{t("free")}</span>
                         ) : (
-                          fmtPrice(finalPrice)
+                          <PriceAmount
+                            amount={finalPrice}
+                            currencySymbol={currencySymbol}
+                            centsClassName="text-[0.62em] text-primary/70"
+                          />
                         )}
                       </span>
                     </div>

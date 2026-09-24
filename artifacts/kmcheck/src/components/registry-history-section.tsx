@@ -226,27 +226,12 @@ function RegistryEventCard({
 
       <div className={cn("pb-3", isLast && "pb-0")}>
         <div className="relative rounded-lg border border-border/70 bg-muted/15 overflow-hidden">
-          {recallStatus === "done" && (
-            <Badge
-              className="absolute top-2 right-2 z-10 border-0 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] px-1.5 py-0 font-medium pointer-events-none"
-            >
-              {t("recall_status_done")}
-            </Badge>
-          )}
-          {recallStatus === "not_done" && (
-            <Badge
-              className="absolute top-2 right-2 z-10 border-0 bg-amber-500/15 text-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0 font-medium pointer-events-none"
-            >
-              {t("recall_status_not_done")}
-            </Badge>
-          )}
           <button
             type="button"
             className={cn(
               "w-full text-left px-3 py-2.5 transition-colors",
               hasDetails && "hover:bg-muted/35 cursor-pointer",
               !hasDetails && "cursor-default",
-              recallStatus && "pr-16",
             )}
             onClick={() => hasDetails && setOpen((v) => !v)}
             disabled={!hasDetails}
@@ -266,8 +251,22 @@ function RegistryEventCard({
                       </p>
                     )}
                     <p className="text-xs font-medium text-foreground leading-snug">{typeLabel}</p>
+                    {recallStatus === "done" && (
+                      <Badge
+                        className="mt-1 max-w-full border-0 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] px-1.5 py-0.5 font-medium leading-tight whitespace-normal text-left"
+                      >
+                        {t("recall_status_done")}
+                      </Badge>
+                    )}
+                    {recallStatus === "not_done" && (
+                      <Badge
+                        className="mt-1 max-w-full border-0 bg-amber-500/15 text-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0.5 font-medium leading-tight whitespace-normal text-left"
+                      >
+                        {t("recall_status_not_done")}
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
+                  <div className="flex flex-col items-end gap-1 shrink-0 pt-0.5">
                     {isLatest && (
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
                         {t("latest")}

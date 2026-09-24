@@ -1,6 +1,32 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
+/** Inline €15.99 with smaller, faded cents — same treatment as pricing pages. */
+export function PriceAmount({
+  amount,
+  currencySymbol,
+  className,
+  centsClassName,
+}: {
+  amount: number;
+  currencySymbol: string;
+  className?: string;
+  centsClassName?: string;
+}) {
+  const [whole, fraction] = amount.toFixed(2).split(".");
+  return (
+    <span className={cn("inline-flex items-baseline tabular-nums tracking-tight", className)}>
+      <span>
+        {currencySymbol}
+        {whole}
+      </span>
+      <span className={cn("text-[0.55em] font-bold text-current/70", centsClassName)}>
+        .{fraction}
+      </span>
+    </span>
+  );
+}
+
 type MarketingPriceProps = {
   amount: number;
   currencySymbol: string;
