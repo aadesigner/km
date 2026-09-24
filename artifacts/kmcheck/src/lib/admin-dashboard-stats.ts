@@ -185,6 +185,16 @@ export function formatRevenueSourceFootnote(
   rows: SalesByChannelStat[] | undefined,
   maxParts = 4,
 ): string | null {
+  const parts = revenueSourceParts(rows, maxParts);
+  if (!parts?.length) return null;
+  return parts.map((p) => `${p.value} ${p.label}`).join(" · ");
+}
+
+/** Structured chips for Revenue card — amount + channel. */
+export function revenueSourceParts(
+  rows: SalesByChannelStat[] | undefined,
+  maxParts = 4,
+): SourceBreakdownPart[] | null {
   if (!rows?.length) return null;
   const withRev = rows
     .filter((r) => (r.revenue ?? 0) > 0)
@@ -193,12 +203,16 @@ export function formatRevenueSourceFootnote(
 
   const top = withRev.slice(0, maxParts);
   const rest = withRev.slice(maxParts);
-  const parts = top.map(
-    (r) => `${fmtCompact(r.revenue)} ${acquisitionChannelShortLabel(r.channel)}`,
-  );
+  const parts: SourceBreakdownPart[] = top.map((r) => ({
+    label: acquisitionChannelShortLabel(r.channel),
+    value: fmtCompact(r.revenue),
+    channel: r.channel,
+  }));
   const restRev = rest.reduce((s, r) => s + r.revenue, 0);
-  if (restRev > 0.009) parts.push(`${fmtCompact(restRev)} other`);
-  return parts.join(" · ");
+  if (restRev > 0.009) {
+    parts.push({ label: "Other", value: fmtCompact(restRev), channel: "other" });
+  }
+  return parts;
 }
 
 /** Compact “31 FB ads · 10 Google · 10 Insta social” for the Signups metric. */
@@ -206,6 +220,16 @@ export function formatSignupSourceFootnote(
   rows: SignupsByChannelStat[] | undefined,
   maxParts = 4,
 ): string | null {
+  const parts = signupSourceParts(rows, maxParts);
+  if (!parts?.length) return null;
+  return parts.map((p) => `${p.value} ${p.label}`).join(" · ");
+}
+
+/** Structured chips for Signups card — count + channel. */
+export function signupSourceParts(
+  rows: SignupsByChannelStat[] | undefined,
+  maxParts = 4,
+): SourceBreakdownPart[] | null {
   if (!rows?.length) return null;
   const sorted = [...rows]
     .filter((r) => r.count > 0)
@@ -214,13 +238,23 @@ export function formatSignupSourceFootnote(
 
   const top = sorted.slice(0, maxParts);
   const rest = sorted.slice(maxParts);
-  const parts = top.map(
-    (r) => `${r.count.toLocaleString()} ${acquisitionChannelShortLabel(r.channel)}`,
-  );
+  const parts: SourceBreakdownPart[] = top.map((r) => ({
+    label: acquisitionChannelShortLabel(r.channel),
+    value: r.count.toLocaleString(),
+    channel: r.channel,
+  }));
   const restCount = rest.reduce((s, r) => s + r.count, 0);
-  if (restCount > 0) parts.push(`${restCount.toLocaleString()} other`);
-  return parts.join(" · ");
+  if (restCount > 0) {
+    parts.push({ label: "Other", value: restCount.toLocaleString(), channel: "other" });
+  }
+  return parts;
 }
+
+export type SourceBreakdownPart = {
+  label: string;
+  value: string;
+  channel: string;
+};
 
 export function utcDateKeyDaysAgo(daysAgo: number): string {
   const dt = new Date();

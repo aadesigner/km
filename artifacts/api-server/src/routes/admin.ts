@@ -338,6 +338,61 @@ router.post("/admin/unlock/logout", requireAdminAuth, async (req, res) => {
 
 const ADMIN_STATS_CACHE_MS = 90_000;
 
+async function fetchAcquisitionAttributionRows(): Promise<{
+  salesRows: Array<{ date: unknown; channel: unknown; count: unknown; revenue: unknown }>;
+  signupRows: Array<{ date: unknown; channel: unknown; count: unknown }>;
+}> {
+  try {
+    const [salesBySourceRaw, signupsByChannelRaw] = await Promise.all([
+      db.execute(sql`
+        SELECT
+          (p.created_at AT TIME ZONE 'UTC')::date AS date,
+          COALESCE(
+            NULLIF(TRIM(u.acquisition_channel), ''),
+            NULLIF(TRIM(u.acquisition_bucket), ''),
+            'unknown'
+          ) AS channel,
+          COUNT(*)::int AS count,
+          COALESCE(SUM(p.amount), 0)::float AS revenue
+        FROM payments p
+        LEFT JOIN users u ON u.id = p.user_id
+        WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
+          AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
+          DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+          (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        )
+        GROUP BY 1, 2
+        ORDER BY date ASC
+      `),
+      db.execute(sql`
+        SELECT
+          (created_at AT TIME ZONE 'UTC')::date AS date,
+          COALESCE(
+            NULLIF(TRIM(acquisition_channel), ''),
+            NULLIF(TRIM(acquisition_bucket), ''),
+            'unknown'
+          ) AS channel,
+          COUNT(*)::int AS count
+        FROM users
+        WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
+          DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+          (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        )
+        GROUP BY 1, 2
+        ORDER BY date ASC
+      `),
+    ]);
+    return {
+      salesRows: salesBySourceRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown; revenue: unknown }>,
+      signupRows: signupsByChannelRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown }>,
+    };
+  } catch (err) {
+    // Missing acquisition_* columns must not blank the whole admin dashboard.
+    logger.warn({ err }, "acquisition attribution stats unavailable");
+    return { salesRows: [], signupRows: [] };
+  }
+}
+
 async function loadAdminStatsPayload() {
   const [
     aggregatesRaw,
@@ -354,8 +409,6 @@ async function loadAdminStatsPayload() {
     signupsByCountryRaw,
     purchasesByCountryRaw,
     paymentsByMethodRaw,
-    salesBySourceRaw,
-    signupsByChannelRaw,
   ] = await Promise.all([
     // Merge totals + today count + weekly trends into one query
     db.execute(sql`
@@ -548,44 +601,10 @@ async function loadAdminStatsPayload() {
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
-    db.execute(sql`
-      SELECT
-        (p.created_at AT TIME ZONE 'UTC')::date AS date,
-        COALESCE(
-          NULLIF(TRIM(u.acquisition_channel), ''),
-          NULLIF(TRIM(u.acquisition_bucket), ''),
-          'unknown'
-        ) AS channel,
-        COUNT(*)::int AS count,
-        COALESCE(SUM(p.amount), 0)::float AS revenue
-      FROM payments p
-      LEFT JOIN users u ON u.id = p.user_id
-      WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-        AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
-        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
-        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
-      )
-      GROUP BY 1, 2
-      ORDER BY date ASC
-    `),
-    db.execute(sql`
-      SELECT
-        (created_at AT TIME ZONE 'UTC')::date AS date,
-        COALESCE(
-          NULLIF(TRIM(acquisition_channel), ''),
-          NULLIF(TRIM(acquisition_bucket), ''),
-          'unknown'
-        ) AS channel,
-        COUNT(*)::int AS count
-      FROM users
-      WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
-        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
-        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
-      )
-      GROUP BY 1, 2
-      ORDER BY date ASC
-    `),
   ]);
+
+  const { salesRows: salesBySourceRows, signupRows: signupsByChannelRows } =
+    await fetchAcquisitionAttributionRows();
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
     total_users?: number; total_vin_checks?: number; total_revenue?: number;
@@ -702,12 +721,8 @@ async function loadAdminStatsPayload() {
     paymentsByMethod: buildPaymentsByMethodPeriods(
       paymentsByMethodRaw.rows as Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
     ),
-    ...buildSalesAttributionPeriods(
-      salesBySourceRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown; revenue: unknown }>,
-    ),
-    signupsByChannel: buildSignupsByChannelPeriods(
-      signupsByChannelRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown }>,
-    ),
+    ...buildSalesAttributionPeriods(salesBySourceRows),
+    signupsByChannel: buildSignupsByChannelPeriods(signupsByChannelRows),
   };
 }
 
@@ -725,14 +740,26 @@ router.get("/admin/stats", requireAdmin, async (req, res) => {
 });
 
 router.get("/admin/presence-users", requireAdmin, async (req, res) => {
-  const periodRaw = String(req.query.period ?? "now");
-  if (!["now", "today", "yesterday"].includes(periodRaw)) {
-    res.status(400).json({ error: "Invalid period" });
-    return;
+  try {
+    const periodRaw = String(req.query.period ?? "now");
+    if (!["now", "today", "yesterday"].includes(periodRaw)) {
+      res.status(400).json({ error: "Invalid period" });
+      return;
+    }
+    const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+    const data = await fetchPresenceUsersPage(periodRaw as PresencePeriod, page);
+    res.json(data);
+  } catch (err) {
+    logger.error({ err }, "admin_presence_users_failed");
+    res.status(500).json({
+      users: [],
+      page: 1,
+      pageSize: 10,
+      total: 0,
+      pageCount: 1,
+      error: "Failed to load online users",
+    });
   }
-  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
-  const data = await fetchPresenceUsersPage(periodRaw as PresencePeriod, page);
-  res.json(data);
 });
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
@@ -828,6 +855,92 @@ function normalizeUserCsvRecord(record: Record<string, string>): {
 
 type DbUser = typeof usersTable.$inferSelect;
 
+/** Core columns always present — used when acquisition_* patches have not applied yet. */
+const ADMIN_USER_CORE_COLUMNS = {
+  id: usersTable.id,
+  email: usersTable.email,
+  name: usersTable.name,
+  avatarUrl: usersTable.avatarUrl,
+  passwordHash: usersTable.passwordHash,
+  googleId: usersTable.googleId,
+  facebookId: usersTable.facebookId,
+  linkedinId: usersTable.linkedinId,
+  authProvider: usersTable.authProvider,
+  isBanned: usersTable.isBanned,
+  banReason: usersTable.banReason,
+  isAdmin: usersTable.isAdmin,
+  lastLoginAt: usersTable.lastLoginAt,
+  lastLoginIp: usersTable.lastLoginIp,
+  signupIp: usersTable.signupIp,
+  countryCode: usersTable.countryCode,
+  countryChangeDay: usersTable.countryChangeDay,
+  countryChangeCount: usersTable.countryChangeCount,
+  phonePrefix: usersTable.phonePrefix,
+  phoneNational: usersTable.phoneNational,
+  phoneChangeDay: usersTable.phoneChangeDay,
+  phoneChangeCount: usersTable.phoneChangeCount,
+  lastSeenAt: usersTable.lastSeenAt,
+  lastSeenPath: usersTable.lastSeenPath,
+  creditBalance: usersTable.creditBalance,
+  createdAt: usersTable.createdAt,
+  updatedAt: usersTable.updatedAt,
+} as const;
+
+function withNullAcquisition(row: Record<string, unknown>): DbUser {
+  return {
+    ...row,
+    acquisitionBucket: null,
+    acquisitionChannel: null,
+    acquisitionSource: null,
+    acquisitionMedium: null,
+    acquisitionCampaign: null,
+    acquisitionClickId: null,
+    acquisitionReferrer: null,
+    acquisitionCapturedAt: null,
+  } as DbUser;
+}
+
+async function selectAdminUsersPage(
+  where: ReturnType<typeof buildAdminUserWhere>,
+  limit: number,
+  offset: number,
+): Promise<DbUser[]> {
+  try {
+    return await db
+      .select()
+      .from(usersTable)
+      .where(where)
+      .orderBy(desc(usersTable.createdAt))
+      .limit(limit)
+      .offset(offset);
+  } catch (err) {
+    logger.warn({ err }, "admin users select with acquisition failed; falling back to core columns");
+    const rows = await db
+      .select(ADMIN_USER_CORE_COLUMNS)
+      .from(usersTable)
+      .where(where)
+      .orderBy(desc(usersTable.createdAt))
+      .limit(limit)
+      .offset(offset);
+    return rows.map((r) => withNullAcquisition(r as Record<string, unknown>));
+  }
+}
+
+async function selectAdminUserById(userId: string): Promise<DbUser | null> {
+  try {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    return user ?? null;
+  } catch (err) {
+    logger.warn({ err, userId }, "admin user by id with acquisition failed; falling back");
+    const [row] = await db
+      .select(ADMIN_USER_CORE_COLUMNS)
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+    return row ? withNullAcquisition(row as Record<string, unknown>) : null;
+  }
+}
+
 function toAdminUser(
   user: DbUser,
   stats?: { totalChecks: number; totalSpent: number },
@@ -835,6 +948,15 @@ function toAdminUser(
   const { passwordHash: _pw, ...safe } = user;
   return {
     ...safe,
+    // Legacy accounts legitimately have null acquisition — never omit the keys.
+    acquisitionBucket: user.acquisitionBucket ?? null,
+    acquisitionChannel: user.acquisitionChannel ?? null,
+    acquisitionSource: user.acquisitionSource ?? null,
+    acquisitionMedium: user.acquisitionMedium ?? null,
+    acquisitionCampaign: user.acquisitionCampaign ?? null,
+    acquisitionClickId: user.acquisitionClickId ?? null,
+    acquisitionReferrer: user.acquisitionReferrer ?? null,
+    acquisitionCapturedAt: user.acquisitionCapturedAt ?? null,
     totalChecks: stats?.totalChecks ?? 0,
     totalSpent: stats?.totalSpent ?? 0,
   };
@@ -868,7 +990,7 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
     const where = buildAdminUserWhere(search, status, checks, country, hasPhone, emailDomain);
 
     const [users, totalRow] = await Promise.all([
-      db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(limit).offset(offset),
+      selectAdminUsersPage(where, limit, offset),
       db.select({ total: count() }).from(usersTable).where(where),
     ]);
     const total = Number(totalRow[0]?.total ?? 0);
@@ -937,7 +1059,20 @@ router.get("/admin/users/export", requireAdmin, async (req, res) => {
   const emailDomain = String(req.query.emailDomain ?? "");
   const where = buildAdminUserWhere(search, status, checks, country, hasPhone, emailDomain);
 
-  const users = await db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(50000);
+  const users = await (async () => {
+    try {
+      return await db.select().from(usersTable).where(where).orderBy(desc(usersTable.createdAt)).limit(50000);
+    } catch (err) {
+      logger.warn({ err }, "admin users export with acquisition failed; falling back");
+      const rows = await db
+        .select(ADMIN_USER_CORE_COLUMNS)
+        .from(usersTable)
+        .where(where)
+        .orderBy(desc(usersTable.createdAt))
+        .limit(50000);
+      return rows.map((r) => withNullAcquisition(r as Record<string, unknown>));
+    }
+  })();
 
   let checksMap = new Map<string, number>();
   let spentMap = new Map<string, number>();
@@ -1129,7 +1264,7 @@ router.get("/admin/users/:userId", requireAdmin, async (req, res) => {
     const userId = String(req.params.userId ?? "").trim();
     if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
 
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    const user = await selectAdminUserById(userId);
     if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
     const stats = await loadAdminUserStats(userId);

@@ -3,6 +3,8 @@ import {
   buildPaymentsByMethodPeriods,
   buildSignupsByCountryPeriods,
   buildCountryCountPeriods,
+  buildSalesAttributionPeriods,
+  buildSignupsByChannelPeriods,
 } from "./adminStats.js";
 
 describe("dashboard period breakdowns", () => {
@@ -58,6 +60,36 @@ describe("dashboard period breakdowns", () => {
       { method: "pok", count: 2, revenue: 30 },
     ]);
     expect(maps.week.some((r) => r.method === "credit" && r.count === 3)).toBe(true);
+  });
+
+  it("attributes sales/signups with null/empty channel as unknown", () => {
+    const sales = buildSalesAttributionPeriods(
+      [
+        { date: "2026-08-08", channel: null, count: 2, revenue: 30 },
+        { date: "2026-08-08", channel: "", count: 1, revenue: 15 },
+        { date: "2026-08-08", channel: "meta_ads", count: 1, revenue: 16 },
+        { date: "2026-08-07", channel: "unknown", count: 3, revenue: 45 },
+      ],
+      now,
+    );
+    // null + empty + explicit unknown roll into channel "unknown"
+    const todayUnknown = sales.salesByChannel.today.find((r) => r.channel === "unknown");
+    expect(todayUnknown?.count).toBe(3);
+    expect(todayUnknown?.revenue).toBe(45);
+    expect(sales.salesByChannel.today.find((r) => r.channel === "meta_ads")?.revenue).toBe(16);
+    expect(sales.salesBySource.today.find((r) => r.bucket === "unknown")?.count).toBe(3);
+    expect(sales.salesBySource.today.find((r) => r.bucket === "paid_ads")?.count).toBe(1);
+
+    const signups = buildSignupsByChannelPeriods(
+      [
+        { date: "2026-08-08", channel: null, count: 5 },
+        { date: "2026-08-08", channel: "direct", count: 2 },
+        { date: "2026-08-08", channel: "  ", count: 1 },
+      ],
+      now,
+    );
+    expect(signups.today.find((r) => r.channel === "unknown")?.count).toBe(6);
+    expect(signups.today.find((r) => r.channel === "direct")?.count).toBe(2);
   });
 
   it("uses Monday–Sunday weeks and calendar year", () => {

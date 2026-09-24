@@ -176,6 +176,8 @@ const PRICING_DATA_PATCHES = [
 
 /** Idempotent schema adds for DBs that predate newer fields/tables. */
 export async function patchSystemSettingsSchema(): Promise<void> {
+  // Run each statement independently so one failure (e.g. conflict) cannot
+  // skip later critical ALTERs like users.acquisition_*.
   for (const statement of [
     ...SYSTEM_SETTINGS_PATCHES,
     ...TABLE_PATCHES,
@@ -183,7 +185,11 @@ export async function patchSystemSettingsSchema(): Promise<void> {
     ...EMAIL_MERGE_PATCHES,
     ...PRICING_DATA_PATCHES,
   ]) {
-    await db.execute(sql.raw(statement));
+    try {
+      await db.execute(sql.raw(statement));
+    } catch (err) {
+      logger.warn({ err, statement: statement.slice(0, 120) }, "schema patch statement failed");
+    }
   }
 
   const [missingPlugins] = await db

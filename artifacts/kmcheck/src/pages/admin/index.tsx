@@ -27,8 +27,8 @@ import {
   PERIOD_COMPARE_LABEL,
   previousComparePeriod,
   slicePeriodBreakdown,
-  formatRevenueSourceFootnote,
-  formatSignupSourceFootnote,
+  revenueSourceParts,
+  signupSourceParts,
   acquisitionChannelShortLabel,
 } from "@/lib/admin-dashboard-stats";
 
@@ -126,6 +126,7 @@ function StatCell({
   trend,
   compareLabel,
   footnote,
+  sourceParts,
   icon: Icon,
   highlight,
   size = "compact",
@@ -136,8 +137,10 @@ function StatCell({
   value: string;
   trend?: number | null;
   compareLabel?: string;
-  /** Small secondary line (e.g. revenue by acquisition channel). */
+  /** Small secondary line (e.g. legacy text footnote). */
   footnote?: string | null;
+  /** Preferred: where revenue/signups came from, as chips. */
+  sourceParts?: Array<{ label: string; value: string }> | null;
   icon?: React.ElementType;
   highlight?: boolean;
   size?: "main" | "compact";
@@ -146,6 +149,45 @@ function StatCell({
 }) {
   const isMain = size === "main";
   const interactive = Boolean(onClick);
+  const titleHint = footnote
+    ?? (sourceParts?.length
+      ? sourceParts.map((p) => `${p.value} ${p.label}`).join(" · ")
+      : undefined);
+
+  const renderSourceBreakdown = () => {
+    if (sourceParts?.length) {
+      return (
+        <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1" title={titleHint}>
+          {sourceParts.map((part) => (
+            <span
+              key={`${part.label}-${part.value}`}
+              className={cn(
+                "inline-flex items-baseline gap-1 max-w-full rounded-md border border-border/60 bg-muted/40",
+                "px-1.5 py-0.5 text-[10px] md:text-[11px] leading-tight text-muted-foreground",
+              )}
+            >
+              <span className="font-semibold tabular-nums text-foreground/80 shrink-0">{part.value}</span>
+              <span className="truncate">{part.label}</span>
+            </span>
+          ))}
+        </div>
+      );
+    }
+    if (footnote) {
+      return (
+        <p
+          className={cn(
+            "text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2",
+            isMain ? "text-[10px] md:text-[11px] md:mt-2" : "text-[10px] md:text-[11px]",
+          )}
+          title={footnote}
+        >
+          {footnote}
+        </p>
+      );
+    }
+    return null;
+  };
 
   const panel = (
     <Panel
@@ -174,11 +216,7 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-[11px] text-muted-foreground mt-1 truncate">{compareLabel}</p>
           )}
-          {footnote ? (
-            <p className="text-[10px] text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2" title={footnote}>
-              {footnote}
-            </p>
-          ) : null}
+          {renderSourceBreakdown()}
         </div>
       ) : null}
 
@@ -199,11 +237,7 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
           )}
-          {footnote ? (
-            <p className="text-[11px] text-muted-foreground mt-2 leading-snug line-clamp-2" title={footnote}>
-              {footnote}
-            </p>
-          ) : null}
+          {renderSourceBreakdown()}
         </div>
       ) : (
         <>
@@ -218,11 +252,7 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-[11px] md:text-sm text-muted-foreground mt-1 truncate">{compareLabel}</p>
           )}
-          {footnote ? (
-            <p className="text-[10px] md:text-[11px] text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2" title={footnote}>
-              {footnote}
-            </p>
-          ) : null}
+          {renderSourceBreakdown()}
         </>
       )}
     </Panel>
@@ -450,7 +480,7 @@ function PresenceUserList({
       {users.map((u) => {
         const channelLabel = u.acquisitionChannel
           ? acquisitionChannelShortLabel(u.acquisitionChannel)
-          : "—";
+          : "No channel";
         const reports = u.totalReports ?? 0;
         const meta = `${channelLabel} · ${reports} report${reports === 1 ? "" : "s"}`;
         return (
@@ -556,8 +586,8 @@ export default function AdminOverview() {
     const sourceRows = slicePeriodBreakdown(stats.salesBySource, period);
     const channelRows = slicePeriodBreakdown(stats.salesByChannel, period);
     const signupChannelRows = slicePeriodBreakdown(stats.signupsByChannel, period);
-    const revenueSourceFootnote = formatRevenueSourceFootnote(channelRows);
-    const signupSourceFootnote = formatSignupSourceFootnote(signupChannelRows);
+    const revenueSourceChips = revenueSourceParts(channelRows);
+    const signupSourceChips = signupSourceParts(signupChannelRows);
     const countrySignupPrev = comparePeriod
       ? slicePeriodBreakdown(stats.signupsByCountry, comparePeriod)
       : undefined;
@@ -581,8 +611,8 @@ export default function AdminOverview() {
       countryPurchaseRows,
       methodRows,
       sourceRows,
-      revenueSourceFootnote,
-      signupSourceFootnote,
+      revenueSourceChips,
+      signupSourceChips,
       countrySignupPrev,
       countryPurchasePrev,
       methodPrev,
@@ -697,7 +727,7 @@ export default function AdminOverview() {
               value={fmtCompact(derived?.periodMetrics.revenue ?? 0)}
               trend={derived?.periodMetrics.revenueTrend}
               compareLabel={derived?.compareLabel}
-              footnote={derived?.revenueSourceFootnote}
+              sourceParts={derived?.revenueSourceChips}
               icon={DollarSign}
             />
             <StatCell
@@ -714,7 +744,7 @@ export default function AdminOverview() {
               value={String(derived?.periodMetrics.signups ?? 0)}
               trend={derived?.periodMetrics.signupsTrend}
               compareLabel={derived?.compareLabel}
-              footnote={derived?.signupSourceFootnote}
+              sourceParts={derived?.signupSourceChips}
               icon={UserPlus}
             />
           </div>

@@ -3,6 +3,9 @@ import {
   derivePeriodMetrics,
   fillDays,
   trendPct,
+  revenueSourceParts,
+  signupSourceParts,
+  formatRevenueSourceFootnote,
   type ExtendedStats,
 } from "./admin-dashboard-stats";
 
@@ -73,5 +76,38 @@ describe("derivePeriodMetrics", () => {
     expect(m.checks).toBe(80);
     expect(m.signups).toBe(40);
     expect(m.checksTrend).toBe(33);
+  });
+});
+
+describe("revenue / signup source parts", () => {
+  it("builds chips sorted by revenue and rolls rest into Other", () => {
+    const parts = revenueSourceParts(
+      [
+        { channel: "meta_ads", count: 3, revenue: 100 },
+        { channel: "direct", count: 2, revenue: 40 },
+        { channel: "google_organic", count: 1, revenue: 20 },
+        { channel: "unknown", count: 1, revenue: 10 },
+        { channel: "tiktok_ads", count: 1, revenue: 5 },
+      ],
+      3,
+    );
+    expect(parts).toHaveLength(4);
+    expect(parts![0]).toMatchObject({ value: "€100.00", label: "FB ads" });
+    expect(parts![3]).toMatchObject({ label: "Other", value: "€15.00" });
+    expect(formatRevenueSourceFootnote([
+      { channel: "meta_ads", count: 1, revenue: 50 },
+      { channel: "unknown", count: 1, revenue: 10 },
+    ])).toContain("Other");
+  });
+
+  it("includes unknown channel and returns null when empty", () => {
+    expect(revenueSourceParts([])).toBeNull();
+    expect(revenueSourceParts([{ channel: "unknown", count: 2, revenue: 0 }])).toBeNull();
+    const parts = signupSourceParts([
+      { channel: "unknown", count: 7 },
+      { channel: "direct", count: 3 },
+    ]);
+    expect(parts![0]).toMatchObject({ label: "Other", value: "7" });
+    expect(parts![1]).toMatchObject({ label: "Direct", value: "3" });
   });
 });

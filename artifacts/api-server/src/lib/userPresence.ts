@@ -1,5 +1,5 @@
-import { db, usersTable } from "@workspace/db";
-import { and, desc, eq, isNotNull, sql, type SQL } from "drizzle-orm";
+import { db, usersTable, vinLookupsTable } from "@workspace/db";
+import { and, count, desc, eq, inArray, isNotNull, sql, type SQL } from "drizzle-orm";
 import { logger } from "./logger.js";
 
 const THROTTLE_MS = 60_000;
@@ -93,51 +93,96 @@ function periodWhere(period: PresencePeriod): SQL {
   return sql`${usersTable.lastSeenAt} >= NOW() - INTERVAL '5 minutes'`;
 }
 
+const presenceBaseWhere = (whereExtra: SQL) =>
+  and(
+    eq(usersTable.isBanned, false),
+    eq(usersTable.isAdmin, false),
+    isNotNull(usersTable.lastSeenAt),
+    whereExtra,
+  );
+
+async function loadReportCountsByUserIds(userIds: string[]): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  if (userIds.length === 0) return map;
+  const rows = await db
+    .select({
+      userId: vinLookupsTable.userId,
+      total: count(),
+    })
+    .from(vinLookupsTable)
+    .where(inArray(vinLookupsTable.userId, userIds))
+    .groupBy(vinLookupsTable.userId);
+  for (const row of rows) {
+    if (row.userId) map.set(row.userId, Number(row.total ?? 0));
+  }
+  return map;
+}
+
+type PresenceRowCore = {
+  id: string;
+  email: string;
+  name: string | null;
+  lastSeenAt: Date | null;
+  acquisitionChannel?: string | null;
+  acquisitionBucket?: string | null;
+};
+
 function mapPresenceUsers(
-  rows: Array<{
-    id: string;
-    email: string;
-    name: string | null;
-    lastSeenAt: Date | null;
-    acquisitionChannel: string | null;
-    acquisitionBucket: string | null;
-    totalReports: number;
-  }>,
+  rows: PresenceRowCore[],
+  reportCounts: Map<string, number>,
 ): OnlinePresenceUser[] {
   return rows
     .filter((r) => r.lastSeenAt)
-    .map((r) => ({
-      id: r.id,
-      email: r.email,
-      name: r.name,
-      lastSeenAt: r.lastSeenAt!.toISOString(),
-      acquisitionChannel: r.acquisitionChannel?.trim() || r.acquisitionBucket?.trim() || null,
-      totalReports: Number(r.totalReports ?? 0),
-    }));
+    .map((r) => {
+      const channel = (r.acquisitionChannel ?? r.acquisitionBucket ?? "").trim() || null;
+      return {
+        id: r.id,
+        email: r.email,
+        name: r.name,
+        lastSeenAt: r.lastSeenAt!.toISOString(),
+        acquisitionChannel: channel,
+        totalReports: reportCounts.get(r.id) ?? 0,
+      };
+    });
 }
 
 async function countPresenceUsers(whereExtra: SQL): Promise<number> {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(usersTable)
-    .where(
-      and(
-        eq(usersTable.isBanned, false),
-        eq(usersTable.isAdmin, false),
-        isNotNull(usersTable.lastSeenAt),
-        whereExtra,
-      ),
-    );
+    .where(presenceBaseWhere(whereExtra));
   return Number(row?.count ?? 0);
 }
 
-async function fetchPresenceUserList(
+/** Core user page — no acquisition columns (always safe). */
+async function fetchPresenceCoreRows(
   whereExtra: SQL,
   page: number,
   pageSize: number,
-): Promise<OnlinePresenceUser[]> {
+): Promise<PresenceRowCore[]> {
   const offset = (Math.max(1, page) - 1) * pageSize;
-  const rows = await db
+  return db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+      name: usersTable.name,
+      lastSeenAt: usersTable.lastSeenAt,
+    })
+    .from(usersTable)
+    .where(presenceBaseWhere(whereExtra))
+    .orderBy(desc(usersTable.lastSeenAt))
+    .limit(pageSize)
+    .offset(offset);
+}
+
+/** Prefer acquisition fields when columns exist; null channel is fine for legacy users. */
+async function fetchPresenceRowsWithAcquisition(
+  whereExtra: SQL,
+  page: number,
+  pageSize: number,
+): Promise<PresenceRowCore[]> {
+  const offset = (Math.max(1, page) - 1) * pageSize;
+  return db
     .select({
       id: usersTable.id,
       email: usersTable.email,
@@ -145,24 +190,30 @@ async function fetchPresenceUserList(
       lastSeenAt: usersTable.lastSeenAt,
       acquisitionChannel: usersTable.acquisitionChannel,
       acquisitionBucket: usersTable.acquisitionBucket,
-      totalReports: sql<number>`(
-        SELECT COUNT(*)::int FROM vin_lookups vl WHERE vl.user_id = ${usersTable.id}
-      )`,
     })
     .from(usersTable)
-    .where(
-      and(
-        eq(usersTable.isBanned, false),
-        eq(usersTable.isAdmin, false),
-        isNotNull(usersTable.lastSeenAt),
-        whereExtra,
-      ),
-    )
+    .where(presenceBaseWhere(whereExtra))
     .orderBy(desc(usersTable.lastSeenAt))
     .limit(pageSize)
     .offset(offset);
+}
 
-  return mapPresenceUsers(rows);
+async function fetchPresenceUserList(
+  whereExtra: SQL,
+  page: number,
+  pageSize: number,
+): Promise<OnlinePresenceUser[]> {
+  let rows: PresenceRowCore[];
+  try {
+    rows = await fetchPresenceRowsWithAcquisition(whereExtra, page, pageSize);
+  } catch (err) {
+    // Columns may not be patched yet on a stale process — still show users.
+    logger.warn({ err }, "presence list with acquisition failed; falling back");
+    rows = await fetchPresenceCoreRows(whereExtra, page, pageSize);
+  }
+
+  const reportCounts = await loadReportCountsByUserIds(rows.map((r) => r.id));
+  return mapPresenceUsers(rows, reportCounts);
 }
 
 /** Paginated user list — 10 per page, fetched on demand from admin UI. */
@@ -170,21 +221,32 @@ export async function fetchPresenceUsersPage(
   period: PresencePeriod,
   page: number,
 ): Promise<OnlinePresenceUsersPage> {
-  const where = periodWhere(period);
-  const total = await countPresenceUsers(where);
-  const pageCount = Math.max(1, Math.ceil(total / PRESENCE_PAGE_SIZE));
-  const safePage = Math.min(Math.max(1, Math.floor(page) || 1), pageCount);
-  const users = total > 0
-    ? await fetchPresenceUserList(where, safePage, PRESENCE_PAGE_SIZE)
-    : [];
+  try {
+    const where = periodWhere(period);
+    const total = await countPresenceUsers(where);
+    const pageCount = Math.max(1, Math.ceil(total / PRESENCE_PAGE_SIZE));
+    const safePage = Math.min(Math.max(1, Math.floor(page) || 1), pageCount);
+    const users = total > 0
+      ? await fetchPresenceUserList(where, safePage, PRESENCE_PAGE_SIZE)
+      : [];
 
-  return {
-    users,
-    page: safePage,
-    pageSize: PRESENCE_PAGE_SIZE,
-    total,
-    pageCount,
-  };
+    return {
+      users,
+      page: safePage,
+      pageSize: PRESENCE_PAGE_SIZE,
+      total,
+      pageCount,
+    };
+  } catch (err) {
+    logger.error({ err, period, page }, "presence users page failed");
+    return {
+      users: [],
+      page: 1,
+      pageSize: PRESENCE_PAGE_SIZE,
+      total: 0,
+      pageCount: 1,
+    };
+  }
 }
 
 /** Admin dashboard counts only (UTC). Cached ~45s — no user lists. */
