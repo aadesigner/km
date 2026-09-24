@@ -2,23 +2,28 @@ import { useEffect, useState } from "react";
 import { NAV_MENU_WARMUP_SOURCES } from "@/lib/nav-assets";
 import { shouldDeferHeavyClientWarmup } from "@/hooks/use-light-motion";
 
-/** Keeps navbar flag/logo bitmaps decoded after first paint (mobile sheet remounts). */
+/**
+ * Keeps navbar flag/logo bitmaps decoded after first paint (mobile sheet remounts).
+ * On phones we still warm this small set — just later — so sidebar open is instant
+ * without competing with the hero CTA on first paint.
+ */
 export function NavAssetWarmup() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Skip on phones / Save-Data — decode storms compete with hero CTA.
-    if (shouldDeferHeavyClientWarmup()) return;
+    const light = shouldDeferHeavyClientWarmup();
+    // Desktop: sooner. Mobile/Save-Data: after first paint settles.
+    const delayMs = light ? 1_800 : 700;
+    const idleTimeout = light ? 4_000 : 2_500;
 
-    // Defer past first paint so cold iOS loads don't sync-decode flags/logos mid-hero.
     let idleId: number | undefined;
     const start = window.setTimeout(() => {
       if (typeof window.requestIdleCallback === "function") {
-        idleId = window.requestIdleCallback(() => setReady(true), { timeout: 2_500 });
+        idleId = window.requestIdleCallback(() => setReady(true), { timeout: idleTimeout });
       } else {
         setReady(true);
       }
-    }, 700);
+    }, delayMs);
     return () => {
       window.clearTimeout(start);
       if (idleId != null && typeof window.cancelIdleCallback === "function") {

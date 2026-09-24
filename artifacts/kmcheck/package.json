@@ -16,7 +16,8 @@
     "qa:seo": "node scripts/qa-seo.mjs",
     "qa:seo-keywords": "node scripts/qa-seo-keywords.mjs",
     "seo:capture-screenshots": "node scripts/capture-seo-screenshots.mjs",
-    "seo:optimize-og": "node scripts/optimize-seo-og.mjs"
+    "seo:optimize-og": "node scripts/optimize-seo-og.mjs",
+    "flags:fetch": "node scripts/fetch-flag-icons.mjs"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.2.8",

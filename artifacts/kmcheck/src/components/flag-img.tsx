@@ -1,8 +1,25 @@
 import { cn } from "@/lib/utils";
 
 const FLAG_ICONS_VERSION = "7.5.0";
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const prefetched = new Set<string>();
+
+/**
+ * Flags we ship under public/flags/4x3/ (see scripts/fetch-flag-icons.mjs).
+ * Unknown codes fall back to jsDelivr so admin/geo never breaks.
+ */
+const LOCAL_FLAG_CODES = new Set([
+  "gb", "de", "es", "fr", "al", "pl", "ro", "bg", "ge", "sa", "ua", "ru", "cn",
+  "us", "kr", "ca", "jp", "ae", "xk",
+  "it", "nl", "au", "mx", "se", "no", "dk", "fi",
+  "mk", "me", "by", "kz", "kg", "tw", "hk", "mo", "sg",
+  "at", "ch", "li", "be", "lu", "mc",
+  "ar", "co", "pe", "cl", "ve", "ec", "gt", "bo", "do", "hn", "py", "sv", "ni", "cr", "pa", "uy",
+  "tr", "rs", "ba",
+  "eg", "iq", "jo", "lb", "kw", "qa", "bh", "om", "ma", "dz", "tn", "ly", "ye", "ps", "il", "sy",
+  "sd", "mr", "dj", "so", "km",
+]);
 
 export type FlagVariant = "default" | "nav" | "list";
 
@@ -13,21 +30,30 @@ const FLAG_WIDTH: Record<FlagVariant, number> = {
   default: 18,
 };
 
+function normalizeFlagCode(code: string): string {
+  return code.trim().toLowerCase();
+}
+
 /**
- * lipis/flag-icons — consistent 4:3 SVGs (not flagcdn; no circle crop).
- * @see https://github.com/lipis/flag-icons
+ * Prefer same-origin SVGs (instant on mobile sidebar remounts).
+ * lipis/flag-icons 4:3 — @see https://github.com/lipis/flag-icons
  */
 export function flagUrl(code: string): string {
-  return `https://cdn.jsdelivr.net/npm/flag-icons@${FLAG_ICONS_VERSION}/flags/4x3/${code}.svg`;
+  const normalized = normalizeFlagCode(code);
+  if (LOCAL_FLAG_CODES.has(normalized)) {
+    return `${basePath}/flags/4x3/${normalized}.svg`;
+  }
+  return `https://cdn.jsdelivr.net/npm/flag-icons@${FLAG_ICONS_VERSION}/flags/4x3/${normalized}.svg`;
 }
 
 export function prefetchFlags(codes: string[]): void {
   if (typeof window === "undefined") return;
   for (const code of codes) {
-    if (prefetched.has(code)) continue;
-    prefetched.add(code);
+    const normalized = normalizeFlagCode(code);
+    if (prefetched.has(normalized)) continue;
+    prefetched.add(normalized);
     const img = new Image();
-    img.src = flagUrl(code);
+    img.src = flagUrl(normalized);
   }
 }
 

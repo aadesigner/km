@@ -336,11 +336,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
 
   useEffect(() => {
     // After first paint — avoid competing with logo/hero on cold mobile loads.
-    // Skip on light-motion / Save-Data devices (steals main thread from VIN/CTA).
-    if (shouldDeferHeavyClientWarmup()) return;
+    // Phones still get this small same-origin set (flags + wordmarks); only delayed longer.
+    const delayMs = shouldDeferHeavyClientWarmup() ? 1_600 : 800;
     const id = window.setTimeout(() => {
       prefetchNavMenuAssets();
-    }, 800);
+    }, delayMs);
     return () => window.clearTimeout(id);
   }, []);
 

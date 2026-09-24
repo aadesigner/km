@@ -10,6 +10,7 @@ export const NAV_MENU_FLAG_CODES = [
     "kr",
     "ca",
     "cn",
+    "jp",
     "ae",
   ]),
 ] as const;
