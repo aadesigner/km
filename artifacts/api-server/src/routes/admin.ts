@@ -43,6 +43,11 @@ import { logger } from "../lib/logger";
 import { makeTtlCache } from "../lib/ttlCache.js";
 import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
+  getAdminAnalyticsCached,
+  invalidateAdminAnalyticsCache,
+  parseAnalyticsPeriod,
+} from "../lib/adminAnalytics.js";
+import {
   buildPaymentsByMethodPeriods,
   buildSalesAttributionPeriods,
   buildSignupsByChannelPeriods,
@@ -728,7 +733,10 @@ async function loadAdminStatsPayload() {
 
 const adminStatsCache = makeTtlCache<Awaited<ReturnType<typeof loadAdminStatsPayload>>>(ADMIN_STATS_CACHE_MS);
 
-registerAdminStatsInvalidationHook(() => adminStatsCache.invalidate());
+registerAdminStatsInvalidationHook(() => {
+  adminStatsCache.invalidate();
+  invalidateAdminAnalyticsCache();
+});
 
 router.get("/admin/stats", requireAdmin, async (req, res) => {
   res.setHeader("Cache-Control", "private, no-store");
@@ -737,6 +745,21 @@ router.get("/admin/stats", requireAdmin, async (req, res) => {
   }
   const payload = await adminStatsCache.getOrFetch(loadAdminStatsPayload);
   res.json(payload);
+});
+
+/** Lean acquisition + ops monitoring — one period, aggregates only. */
+router.get("/admin/analytics", requireAdmin, async (req, res) => {
+  try {
+    res.setHeader("Cache-Control", "private, no-store");
+    const period = parseAnalyticsPeriod(req.query.period);
+    const refresh = req.query.refresh === "1";
+    if (refresh) invalidateAdminAnalyticsCache();
+    const payload = await getAdminAnalyticsCached(period, { refresh });
+    res.json(payload);
+  } catch (err) {
+    logger.error({ err }, "admin_analytics_failed");
+    res.status(500).json({ error: "Failed to load analytics" });
+  }
 });
 
 router.get("/admin/presence-users", requireAdmin, async (req, res) => {

@@ -26,7 +26,7 @@ const navGroups = [
     label: "Analytics",
     items: [
       { href: "/adminx", label: "Overview", icon: BarChart3, exact: true },
-      { href: "/adminx/analytics", label: "Tracking", icon: Activity },
+      { href: "/adminx/analytics", label: "Analytics", icon: Activity },
     ],
   },
   {

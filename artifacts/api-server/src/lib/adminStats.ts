@@ -222,6 +222,18 @@ function periodWindows(now = new Date()): Record<DashboardPeriodKey, { from: str
   };
 }
 
+/** Single period window for analytics monitoring (one SQL scope, not all keys). */
+export function periodWindowFor(
+  period: DashboardPeriodKey,
+  now = new Date(),
+): { from: string; toExclusive?: string } {
+  return periodWindows(now)[period];
+}
+
+export function isDashboardPeriodKey(raw: string): raw is DashboardPeriodKey {
+  return (PERIOD_KEYS as readonly string[]).includes(raw);
+}
+
 function inWindow(date: string, from: string, toExclusive?: string): boolean {
   if (!date || date < from) return false;
   if (toExclusive && date >= toExclusive) return false;

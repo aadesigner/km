@@ -187,80 +187,110 @@ export function isOtherAcquisitionChannel(channel: string | null | undefined): b
 }
 
 /**
- * Soft brand text colors for acquisition (no fill) — used on metric cards.
+ * Brand-aligned acquisition colors (shared by online badges + metric cards).
+ * Soft fills for badges; solid text for card attribution lines.
  */
-export function acquisitionChannelTextClass(channel: string | null | undefined): string {
+const ACQ_BRAND: Record<string, { text: string; tint: string }> = {
+  // Meta / Facebook — #1877F2
+  meta: {
+    text: "text-[#1877F2]",
+    tint: "bg-[#1877F2]/10 text-[#166FE5] border-[#1877F2]/25",
+  },
+  // Instagram — #E4405F
+  instagram: {
+    text: "text-[#E4405F]",
+    tint: "bg-[#E4405F]/10 text-[#D62956] border-[#E4405F]/25",
+  },
+  // Google — #4285F4
+  google: {
+    text: "text-[#4285F4]",
+    tint: "bg-[#4285F4]/10 text-[#3367D6] border-[#4285F4]/25",
+  },
+  // TikTok — ink + brand red accent
+  tiktok: {
+    text: "text-[#FE2C55]",
+    tint: "bg-[#FE2C55]/10 text-[#E11D48] border-[#FE2C55]/25",
+  },
+  // LinkedIn — #0A66C2
+  linkedin: {
+    text: "text-[#0A66C2]",
+    tint: "bg-[#0A66C2]/10 text-[#004182] border-[#0A66C2]/25",
+  },
+  // X / Twitter — near-black
+  x: {
+    text: "text-[#0F1419]",
+    tint: "bg-zinc-900/5 text-zinc-800 border-zinc-900/15",
+  },
+  // Bing — #00809D
+  bing: {
+    text: "text-[#00809D]",
+    tint: "bg-[#00809D]/10 text-[#006F8A] border-[#00809D]/25",
+  },
+  // Messenger — #006AFF (ready if/when channel is added)
+  messenger: {
+    text: "text-[#006AFF]",
+    tint: "bg-[#006AFF]/10 text-[#005AE0] border-[#006AFF]/25",
+  },
+  referral: {
+    text: "text-amber-700",
+    tint: "bg-amber-50 text-amber-800 border-amber-200/80",
+  },
+  direct: {
+    text: "text-slate-600",
+    tint: "bg-slate-100 text-slate-700 border-slate-200/80",
+  },
+  paid_ads: {
+    text: "text-orange-700",
+    tint: "bg-orange-50 text-orange-800 border-orange-200/80",
+  },
+  organic_social: {
+    text: "text-rose-600",
+    tint: "bg-rose-50 text-rose-700 border-rose-200/80",
+  },
+  other: {
+    text: "text-slate-500",
+    tint: "bg-slate-100 text-slate-600 border-slate-200/80",
+  },
+};
+
+function acquisitionBrandKey(channel: string | null | undefined): keyof typeof ACQ_BRAND {
   const key = (channel ?? "").trim().toLowerCase();
-  if (!key || key === "unknown" || key === "other") return "text-slate-500";
-  if (key === "meta_ads" || key === "facebook_ads" || key === "facebook_social" || key.startsWith("facebook")) {
-    return "text-blue-600";
+  if (!key || key === "unknown" || key === "other") return "other";
+  if (key === "meta_ads" || key === "facebook_ads" || key === "facebook_social" || key.startsWith("facebook") || key.startsWith("meta")) {
+    return "meta";
   }
-  if (key === "instagram_ads" || key === "instagram_social" || key.startsWith("instagram")) {
-    return "text-fuchsia-600";
+  if (key === "instagram_ads" || key === "instagram_social" || key.startsWith("instagram") || key === "ig") {
+    return "instagram";
   }
   if (key === "google_ads" || key === "google_organic" || key === "google" || key.startsWith("google")) {
-    return "text-emerald-600";
+    return "google";
   }
   if (key === "tiktok_ads" || key === "tiktok_social" || key.startsWith("tiktok")) {
-    return "text-cyan-700";
+    return "tiktok";
   }
   if (key === "linkedin_ads" || key === "linkedin_social" || key.startsWith("linkedin")) {
-    return "text-sky-700";
+    return "linkedin";
   }
   if (key === "x_ads" || key === "x_social" || key.startsWith("x_") || key === "twitter" || key.startsWith("twitter")) {
-    return "text-zinc-600";
+    return "x";
   }
-  if (key === "bing_ads" || key.startsWith("bing")) return "text-teal-700";
-  if (key === "referral") return "text-amber-700";
-  if (key === "direct") return "text-violet-600";
-  if (key === "paid_ads") return "text-orange-700";
-  if (key === "organic_social") return "text-pink-600";
-  return "text-slate-500";
+  if (key === "bing_ads" || key.startsWith("bing")) return "bing";
+  if (key === "messenger" || key.startsWith("messenger") || key === "msg") return "messenger";
+  if (key === "referral") return "referral";
+  if (key === "direct") return "direct";
+  if (key === "paid_ads") return "paid_ads";
+  if (key === "organic_social") return "organic_social";
+  return "other";
 }
 
-/**
- * Light tint classes for acquisition badges/chips (FB blue, Insta pink, …).
- * Safe for light admin UI — soft bg + readable text.
- */
+/** Soft brand text colors for metric cards (amount + channel name). */
+export function acquisitionChannelTextClass(channel: string | null | undefined): string {
+  return ACQ_BRAND[acquisitionBrandKey(channel)].text;
+}
+
+/** Soft brand fills for online-user channel badges. */
 export function acquisitionChannelTintClass(channel: string | null | undefined): string {
-  const key = (channel ?? "").trim().toLowerCase();
-  if (!key || key === "unknown" || key === "other") {
-    return "bg-slate-100 text-slate-600 border-slate-200/80";
-  }
-  if (key === "meta_ads" || key === "facebook_ads" || key === "facebook_social" || key.startsWith("facebook")) {
-    return "bg-blue-50 text-blue-700 border-blue-200/70";
-  }
-  if (key === "instagram_ads" || key === "instagram_social" || key.startsWith("instagram")) {
-    return "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/70";
-  }
-  if (key === "google_ads" || key === "google_organic" || key === "google" || key.startsWith("google")) {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200/70";
-  }
-  if (key === "tiktok_ads" || key === "tiktok_social" || key.startsWith("tiktok")) {
-    return "bg-cyan-50 text-cyan-800 border-cyan-200/70";
-  }
-  if (key === "linkedin_ads" || key === "linkedin_social" || key.startsWith("linkedin")) {
-    return "bg-sky-50 text-sky-800 border-sky-200/70";
-  }
-  if (key === "x_ads" || key === "x_social" || key.startsWith("x_") || key === "twitter" || key.startsWith("twitter")) {
-    return "bg-zinc-100 text-zinc-700 border-zinc-200/80";
-  }
-  if (key === "bing_ads" || key.startsWith("bing")) {
-    return "bg-teal-50 text-teal-800 border-teal-200/70";
-  }
-  if (key === "referral") {
-    return "bg-amber-50 text-amber-800 border-amber-200/70";
-  }
-  if (key === "direct") {
-    return "bg-violet-50 text-violet-700 border-violet-200/70";
-  }
-  if (key === "paid_ads") {
-    return "bg-orange-50 text-orange-800 border-orange-200/70";
-  }
-  if (key === "organic_social") {
-    return "bg-pink-50 text-pink-700 border-pink-200/70";
-  }
-  return "bg-slate-100 text-slate-600 border-slate-200/80";
+  return ACQ_BRAND[acquisitionBrandKey(channel)].tint;
 }
 
 /** Compact “€120 FB ads · €20 Insta social” line for the Revenue metric. */

@@ -26,6 +26,7 @@ import {
 } from "@/lib/maintenance-policy";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AdminTrackingSettings } from "@/components/admin/admin-tracking-settings";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -658,9 +659,12 @@ export default function AdminSettings() {
       </div>
 
       <Tabs defaultValue="payments">
-        <TabsList className="w-full h-auto gap-1.5 p-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 lg:gap-1">
+        <TabsList className="w-full h-auto gap-1.5 p-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 lg:gap-1">
           <TabsTrigger value="payments" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
             Payments
+          </TabsTrigger>
+          <TabsTrigger value="tracking" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
+            Tracking
           </TabsTrigger>
           <TabsTrigger value="social" className="text-[11px] sm:text-xs lg:text-sm py-2.5 px-2 whitespace-normal leading-tight min-h-11">
             <span className="lg:hidden">Social</span>
@@ -842,6 +846,14 @@ export default function AdminSettings() {
               if (pokKeySecret) payload.pokKeySecret = pokKeySecret;
               paymUpdater.mutate({ data: payload as Parameters<typeof paymUpdater.mutate>[0]["data"] });
             }}
+          />
+        </TabsContent>
+
+        {/* ── TRACKING (GTM / GA / Clarity / Meta) ───────────────────────────── */}
+        <TabsContent value="tracking" className="space-y-4 mt-4">
+          <AdminTrackingSettings
+            onSaved={() => notifySaved("Tracking settings")}
+            onSaveError={(err) => notifySaveError("Tracking settings", err)}
           />
         </TabsContent>
 
