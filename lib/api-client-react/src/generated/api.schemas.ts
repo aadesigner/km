@@ -558,6 +558,15 @@ export interface AdminUser {
   createdAt: string;
   /** Present on credit adjust responses — credits actually applied */
   appliedDelta?: number;
+  /** First-touch acquisition (nullable for legacy users) */
+  acquisitionBucket?: string | null;
+  acquisitionChannel?: string | null;
+  acquisitionSource?: string | null;
+  acquisitionMedium?: string | null;
+  acquisitionCampaign?: string | null;
+  acquisitionClickId?: string | null;
+  acquisitionReferrer?: string | null;
+  acquisitionCapturedAt?: string | null;
 }
 
 export interface AdminUserPage {

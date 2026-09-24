@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Users, Search, DollarSign, Server, TrendingUp, TrendingDown,
   RefreshCw, ArrowRight, Clock, Car, ReceiptText, Database,
-  Activity, UserPlus, BarChart3, Zap, Globe, CreditCard,
+  Activity, UserPlus, BarChart3, Zap, Globe, CreditCard, Megaphone,
 } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -44,6 +44,11 @@ const AdminCountryPurchasesChart = lazyWithRetry(() =>
 const AdminPaymentMethodsChart = lazyWithRetry(() =>
   import("@/pages/admin/admin-dashboard-breakdown-charts").then((m) => ({
     default: m.AdminPaymentMethodsChart,
+  })),
+);
+const AdminSalesBySourceChart = lazyWithRetry(() =>
+  import("@/pages/admin/admin-dashboard-breakdown-charts").then((m) => ({
+    default: m.AdminSalesBySourceChart,
   })),
 );
 
@@ -505,6 +510,7 @@ export default function AdminOverview() {
     const countrySignupRows = slicePeriodBreakdown(stats.signupsByCountry, period);
     const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
     const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
+    const sourceRows = slicePeriodBreakdown(stats.salesBySource, period);
     const countrySignupPrev = comparePeriod
       ? slicePeriodBreakdown(stats.signupsByCountry, comparePeriod)
       : undefined;
@@ -513,6 +519,9 @@ export default function AdminOverview() {
       : undefined;
     const methodPrev = comparePeriod
       ? slicePeriodBreakdown(stats.paymentsByMethod, comparePeriod)
+      : undefined;
+    const sourcePrev = comparePeriod
+      ? slicePeriodBreakdown(stats.salesBySource, comparePeriod)
       : undefined;
 
     return {
@@ -524,9 +533,11 @@ export default function AdminOverview() {
       countrySignupRows,
       countryPurchaseRows,
       methodRows,
+      sourceRows,
       countrySignupPrev,
       countryPurchasePrev,
       methodPrev,
+      sourcePrev,
       pendingOpen: stats.pendingVinChecksOpen ?? 0,
       recentPending: stats.recentPendingVinChecks ?? [],
       totalRevStr: fmtEuro(Number(stats.totalRevenue) || 0),
@@ -767,6 +778,24 @@ export default function AdminOverview() {
                   <AdminPaymentMethodsChart
                     data={derived?.methodRows ?? []}
                     previousData={derived?.methodPrev}
+                  />
+                </Suspense>
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden lg:col-span-2">
+              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Megaphone className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Sales by source</h3>
+                </div>
+                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
+              </div>
+              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
+                <Suspense fallback={<Skeleton className="h-28 w-full rounded-lg" />}>
+                  <AdminSalesBySourceChart
+                    data={derived?.sourceRows ?? []}
+                    previousData={derived?.sourcePrev}
                   />
                 </Suspense>
               </div>

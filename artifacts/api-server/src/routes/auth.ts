@@ -30,9 +30,24 @@ import {
 } from "../lib/authUserSelect.js";
 import { resolveRequestCountryCode, resolveRequestCountryCodeAsync } from "../lib/geoCountry.js";
 import { parseUserCountryCode } from "../lib/userCountry.js";
+import {
+  ACQUISITION_COOKIE,
+  resolveAcquisitionForSignup,
+  type AcquisitionUserFields,
+} from "../lib/acquisition.js";
 
 const router = Router();
 
+function clearAcquisitionCookie(res: import("express").Response): void {
+  res.clearCookie(ACQUISITION_COOKIE, { path: "/" });
+}
+
+function acquisitionFromRequest(req: import("express").Request, body?: unknown): AcquisitionUserFields | null {
+  const cookieRaw = typeof req.cookies?.[ACQUISITION_COOKIE] === "string"
+    ? req.cookies[ACQUISITION_COOKIE]
+    : undefined;
+  return resolveAcquisitionForSignup(body ?? req.body, cookieRaw);
+}
 const OAUTH_LANGS = new Set(["en", "es", "ar", "uk", "ru", "ro", "pl", "ka", "sq"]);
 const OAUTH_LANG_COOKIE = "km_oauth_lang";
 
@@ -335,6 +350,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
   const passwordHash = await hashPassword(password);
   const id = crypto.randomUUID();
   const signupIp = clientIpKey(req);
+  const acquisition = acquisitionFromRequest(req, req.body);
 
   const [user] = await db.insert(usersTable).values({
     id,
@@ -346,12 +362,15 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     lastLoginAt: new Date(),
     lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
     signupIp: signupIp !== "unknown" ? signupIp : undefined,
+    ...(acquisition ?? {}),
   }).returning(authSessionUserSelect);
 
   if (!user) {
     res.status(500).json({ error: "Failed to create account" });
     return;
   }
+
+  clearAcquisitionCookie(res);
 
   const [regSettings] = await db
     .select({ sessionDays: systemSettingsTable.sessionDays })
@@ -907,6 +926,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
   if (!user) {
     const isAdmin = await shouldBootstrapAdmin(email);
     const id = crypto.randomUUID();
+    const acquisition = acquisitionFromRequest(req);
     try {
       const [created] = await db.insert(usersTable).values({
         id,
@@ -920,9 +940,11 @@ router.get("/auth/facebook/callback", async (req, res) => {
         lastLoginAt: new Date(),
         lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
         signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        ...(acquisition ?? {}),
       }).returning(authSessionUserSelect);
       user = created;
       oauthIsNewAccount = true;
+      clearAcquisitionCookie(res);
       logger.info({ msg: "facebook_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
@@ -1136,6 +1158,7 @@ router.get("/auth/google/callback", async (req, res) => {
   if (!user) {
     const isAdmin = await shouldBootstrapAdmin(email);
     const id = crypto.randomUUID();
+    const acquisition = acquisitionFromRequest(req);
     try {
       const [created] = await db.insert(usersTable).values({
         id,
@@ -1149,9 +1172,11 @@ router.get("/auth/google/callback", async (req, res) => {
         lastLoginAt: new Date(),
         lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
         signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        ...(acquisition ?? {}),
       }).returning(authSessionUserSelect);
       user = created;
       oauthIsNewAccount = true;
+      clearAcquisitionCookie(res);
       logger.info({ msg: "google_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;
@@ -1367,6 +1392,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
   if (!user) {
     const isAdmin = await shouldBootstrapAdmin(email);
     const id = crypto.randomUUID();
+    const acquisition = acquisitionFromRequest(req);
     try {
       const [created] = await db.insert(usersTable).values({
         id,
@@ -1380,9 +1406,11 @@ router.get("/auth/linkedin/callback", async (req, res) => {
         lastLoginAt: new Date(),
         lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
         signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+        ...(acquisition ?? {}),
       }).returning(authSessionUserSelect);
       user = created;
       oauthIsNewAccount = true;
+      clearAcquisitionCookie(res);
       logger.info({ msg: "linkedin_oauth_register", userId: id, email });
     } catch (err) {
       if (!isPgUniqueViolation(err)) throw err;

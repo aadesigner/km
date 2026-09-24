@@ -25,6 +25,7 @@ import {
 } from "@/lib/user-countries";
 import { UserCountrySelect } from "@/components/user-country-select";
 import { cn } from "@/lib/utils";
+import { captureAcquisitionOnce, syncAcquisitionCookie } from "@/lib/acquisition";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -209,6 +210,10 @@ function SocialAuthButtons({
           <a
             key={provider.id}
             href={provider.href}
+            onClick={() => {
+              captureAcquisitionOnce();
+              syncAcquisitionCookie();
+            }}
             className={cn(
               compact ? SOCIAL_BTN_COMPACT : SOCIAL_BTN_FULL,
               provider.className,

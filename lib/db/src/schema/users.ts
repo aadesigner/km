@@ -36,11 +36,26 @@ export const usersTable = pgTable("users", {
   lastSeenPath: text("last_seen_path"),
   /** Prepaid report credits (1 credit = 1 VIN report unlock). Never expires. */
   creditBalance: integer("credit_balance").notNull().default(0),
+  /**
+   * First-touch acquisition (set once at signup).
+   * Bucket: paid_ads | organic_social | google | referral | direct | unknown
+   */
+  acquisitionBucket: text("acquisition_bucket"),
+  /** Fine channel e.g. meta_ads, instagram_social, google_organic, direct */
+  acquisitionChannel: text("acquisition_channel"),
+  acquisitionSource: text("acquisition_source"),
+  acquisitionMedium: text("acquisition_medium"),
+  acquisitionCampaign: text("acquisition_campaign"),
+  acquisitionClickId: text("acquisition_click_id"),
+  /** External referrer hostname only */
+  acquisitionReferrer: text("acquisition_referrer"),
+  acquisitionCapturedAt: timestamp("acquisition_captured_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
   index("users_created_at_idx").on(table.createdAt),
   index("users_last_seen_at_idx").on(table.lastSeenAt),
+  index("users_acquisition_bucket_idx").on(table.acquisitionBucket),
 ]);
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({ createdAt: true, updatedAt: true });

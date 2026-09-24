@@ -3,8 +3,10 @@ import {
   fmtCompact,
   trendPct,
   PAYMENT_METHOD_LABELS,
+  ACQUISITION_BUCKET_LABELS,
   type CountryCountRow,
   type PaymentMethodStat,
+  type SalesBySourceStat,
 } from "@/lib/admin-dashboard-stats";
 import { userCountryLabel } from "@/lib/user-countries";
 import { FlagImg } from "@/components/flag-img";
@@ -271,6 +273,106 @@ export function AdminPaymentMethodsChart({
               className={cn(
                 "h-2 w-2 shrink-0 rounded-full",
                 METHOD_TONE[row.key as PaymentMethodStat["method"]],
+              )}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12px] font-medium text-foreground">{row.name}</p>
+              <p className="text-[10px] tabular-nums text-muted-foreground">
+                {row.count.toLocaleString()} · {row.share}%
+                {row.revenue != null && row.revenue > 0 ? ` · ${fmtEuro(row.revenue)}` : ""}
+              </p>
+            </div>
+            <DeltaBadge pct={row.deltaPct} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+type SourceProps = {
+  data: SalesBySourceStat[];
+  previousData?: SalesBySourceStat[];
+};
+
+const SOURCE_TONE: Record<SalesBySourceStat["bucket"], string> = {
+  paid_ads: "bg-[hsl(12,76%,48%)]",
+  organic_social: "bg-[hsl(280,45%,48%)]",
+  google: "bg-[hsl(207,72%,42%)]",
+  referral: "bg-[hsl(173,48%,36%)]",
+  direct: "bg-muted-foreground/55",
+  unknown: "bg-muted-foreground/30",
+};
+
+export function AdminSalesBySourceChart({ data, previousData }: SourceProps) {
+  if (data.length === 0) {
+    return (
+      <div className="flex min-h-[7rem] items-center justify-center text-xs text-muted-foreground">
+        No attributed sales in this period
+      </div>
+    );
+  }
+
+  const prevMap = new Map((previousData ?? []).map((r) => [r.bucket, r.count]));
+  const hasCompare = Boolean(previousData);
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const total = sorted.reduce((s, r) => s + r.count, 0) || 1;
+  const totalRev = sorted.reduce((s, r) => s + (r.revenue ?? 0), 0);
+
+  const rows: RankRow[] = sorted.map((row) => {
+    const prevCount = prevMap.get(row.bucket) ?? 0;
+    return {
+      key: row.bucket,
+      name: ACQUISITION_BUCKET_LABELS[row.bucket],
+      codeHint: null,
+      count: row.count,
+      share: Math.round((row.count / total) * 100),
+      deltaPct: hasCompare ? trendPct(row.count, prevCount) : null,
+      revenue: row.revenue,
+    };
+  });
+
+  return (
+    <div className="w-full min-w-0 space-y-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">
+          Payments by first-touch source (user signup attribution)
+        </p>
+        {totalRev > 0 ? (
+          <p className="text-[11px] tabular-nums text-muted-foreground">
+            Collected{" "}
+            <span className="font-semibold text-foreground">{fmtCompact(totalRev)}</span>
+          </p>
+        ) : null}
+      </div>
+
+      <div
+        className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted/50"
+        title="Acquisition source share"
+      >
+        {rows.map((row) => (
+          <div
+            key={row.key}
+            className={cn(
+              "h-full first:rounded-l-full last:rounded-r-full",
+              SOURCE_TONE[row.key as SalesBySourceStat["bucket"]],
+            )}
+            style={{ width: `${Math.max(row.share, row.count > 0 ? 2 : 0)}%` }}
+            title={`${row.name}: ${row.share}%`}
+          />
+        ))}
+      </div>
+
+      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {rows.map((row) => (
+          <li
+            key={row.key}
+            className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-muted/15 px-2.5 py-2"
+          >
+            <span
+              className={cn(
+                "h-2 w-2 shrink-0 rounded-full",
+                SOURCE_TONE[row.key as SalesBySourceStat["bucket"]],
               )}
             />
             <div className="min-w-0 flex-1">

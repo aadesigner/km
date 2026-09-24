@@ -145,11 +145,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     recaptchaToken?: string,
     countryCode?: string,
   ) => {
+    const { captureAcquisitionOnce, getStoredAcquisition } = await import("@/lib/acquisition");
+    captureAcquisitionOnce();
+    const acquisition = getStoredAcquisition();
     const res = await fetch(`${basePath}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password, name, countryCode, recaptchaToken }),
+      body: JSON.stringify({ email, password, name, countryCode, recaptchaToken, acquisition }),
     });
     const data = await res.json().catch(() => ({})) as { user?: AuthUser; error?: string; code?: string };
     if (!res.ok) throw new ApiRequestError(data.error ?? "Registration failed", data.code);

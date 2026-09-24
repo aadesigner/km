@@ -117,20 +117,47 @@ export type PaymentMethodRow = {
   revenue: number;
 };
 
+export type AcquisitionBucket =
+  | "paid_ads"
+  | "organic_social"
+  | "google"
+  | "referral"
+  | "direct"
+  | "unknown";
+
+export type SalesBySourceRow = {
+  bucket: AcquisitionBucket;
+  count: number;
+  revenue: number;
+};
+
 export type PeriodBreakdownMaps = {
   signupsByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
   purchasesByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
   paymentsByMethod: Record<DashboardPeriodKey, PaymentMethodRow[]>;
+  salesBySource: Record<DashboardPeriodKey, SalesBySourceRow[]>;
 };
 
 const PERIOD_KEYS: DashboardPeriodKey[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter"];
 const METHOD_ORDER: Array<PaymentMethodRow["method"]> = ["paypal", "pok", "credit", "free"];
+const SOURCE_ORDER: AcquisitionBucket[] = [
+  "paid_ads",
+  "organic_social",
+  "google",
+  "referral",
+  "direct",
+  "unknown",
+];
 
 function emptyCountryMaps(): Record<DashboardPeriodKey, CountryCountRow[]> {
   return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
 }
 
 function emptyMethodMaps(): Record<DashboardPeriodKey, PaymentMethodRow[]> {
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+}
+
+function emptySourceMaps(): Record<DashboardPeriodKey, SalesBySourceRow[]> {
   return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
 }
 
@@ -243,6 +270,62 @@ export function buildPaymentsByMethodPeriods(
       .map((method) => {
         const v = maps[key].get(method);
         return { method, count: v?.count ?? 0, revenue: v?.revenue ?? 0 };
+      })
+      .filter((r) => r.count > 0);
+  }
+  return out;
+}
+
+function normalizeAcquisitionBucket(raw: unknown): AcquisitionBucket {
+  const b = String(raw ?? "").toLowerCase().trim();
+  if (
+    b === "paid_ads"
+    || b === "organic_social"
+    || b === "google"
+    || b === "referral"
+    || b === "direct"
+    || b === "unknown"
+  ) {
+    return b;
+  }
+  return "unknown";
+}
+
+/** Bucket daily sales-by-acquisition rows into dashboard periods. */
+export function buildSalesBySourcePeriods(
+  rows: Array<{ date: unknown; bucket: unknown; count: unknown; revenue: unknown }>,
+  now = new Date(),
+): Record<DashboardPeriodKey, SalesBySourceRow[]> {
+  const windows = periodWindows(now);
+  const maps: Record<DashboardPeriodKey, Map<AcquisitionBucket, { count: number; revenue: number }>> = {
+    today: new Map(),
+    yesterday: new Map(),
+    week: new Map(),
+    month: new Map(),
+    lastMonth: new Map(),
+    quarter: new Map(),
+  };
+
+  for (const row of rows) {
+    const date = normalizeDayKey(row.date);
+    const bucket = normalizeAcquisitionBucket(row.bucket);
+    const count = Number(row.count ?? 0);
+    const revenue = Number(row.revenue ?? 0);
+    if (!date || count <= 0) continue;
+    for (const key of PERIOD_KEYS) {
+      const w = windows[key];
+      if (!inWindow(date, w.from, w.toExclusive)) continue;
+      const prev = maps[key].get(bucket) ?? { count: 0, revenue: 0 };
+      maps[key].set(bucket, { count: prev.count + count, revenue: prev.revenue + revenue });
+    }
+  }
+
+  const out = emptySourceMaps();
+  for (const key of PERIOD_KEYS) {
+    out[key] = SOURCE_ORDER
+      .map((bucket) => {
+        const v = maps[key].get(bucket);
+        return { bucket, count: v?.count ?? 0, revenue: v?.revenue ?? 0 };
       })
       .filter((r) => r.count > 0);
   }

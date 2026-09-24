@@ -26,7 +26,7 @@ import {
   ArrowLeft, Mail, Calendar, Clock, Key, Gift,
   Ban, CheckCircle2, Loader2, Save, Car,
   ShieldOff, AlertTriangle, ImageOff, ChevronLeft, ChevronRight, Trash2,
-  DollarSign, Search, Globe, Phone, Coins, ReceiptText,
+  DollarSign, Search, Globe, Phone, Coins, ReceiptText, Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserCountrySelect } from "@/components/user-country-select";
@@ -34,6 +34,7 @@ import { UserPhoneFields } from "@/components/user-phone-fields";
 import { formatPhoneDisplay } from "@/lib/user-phone";
 import { useAuth } from "@/lib/auth-context";
 import { ADMIN_QUERY_OPTIONS, ADMIN_USER_DETAIL_QUERY, adminUserDetailQuery } from "@/lib/admin-query-options";
+import { ACQUISITION_BUCKET_LABELS, type AcquisitionBucket } from "@/lib/admin-dashboard-stats";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -76,6 +77,14 @@ export interface UserRow {
   totalChecks?: number;
   totalSpent?: number;
   creditBalance?: number;
+  acquisitionBucket?: string | null;
+  acquisitionChannel?: string | null;
+  acquisitionSource?: string | null;
+  acquisitionMedium?: string | null;
+  acquisitionCampaign?: string | null;
+  acquisitionClickId?: string | null;
+  acquisitionReferrer?: string | null;
+  acquisitionCapturedAt?: string | null;
 }
 
 interface VinData {
@@ -639,6 +648,46 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
           </p>
         </Panel>
       </div>
+
+      <Panel className="overflow-hidden">
+        <div className="px-3.5 py-3 md:px-4 md:py-3.5 flex items-start gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Megaphone className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Acquisition</p>
+            {user.acquisitionBucket ? (
+              <>
+                <p className="text-sm font-semibold text-foreground">
+                  {ACQUISITION_BUCKET_LABELS[(user.acquisitionBucket as AcquisitionBucket)]
+                    ?? user.acquisitionBucket}
+                  {user.acquisitionChannel ? (
+                    <span className="font-normal text-muted-foreground"> · {user.acquisitionChannel}</span>
+                  ) : null}
+                </p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                  {user.acquisitionCampaign ? <span>Campaign: {user.acquisitionCampaign}</span> : null}
+                  {user.acquisitionSource || user.acquisitionMedium ? (
+                    <span>
+                      UTM: {[user.acquisitionSource, user.acquisitionMedium].filter(Boolean).join(" / ")}
+                    </span>
+                  ) : null}
+                  {user.acquisitionReferrer ? <span>From: {user.acquisitionReferrer}</span> : null}
+                  {user.acquisitionClickId ? (
+                    <span className="font-mono truncate max-w-[14rem]" title={user.acquisitionClickId}>
+                      Click id: {user.acquisitionClickId}
+                    </span>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Unknown — signed up before attribution tracking, or no referrer was available.
+              </p>
+            )}
+          </div>
+        </div>
+      </Panel>
 
       <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
         <div className="space-y-3 md:space-y-4">

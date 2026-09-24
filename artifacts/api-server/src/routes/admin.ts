@@ -44,6 +44,7 @@ import { makeTtlCache } from "../lib/ttlCache.js";
 import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
   buildPaymentsByMethodPeriods,
+  buildSalesBySourcePeriods,
   buildSignupsByCountryPeriods,
   buildCountryCountPeriods,
   normalizeDailyCounts,
@@ -352,6 +353,7 @@ async function loadAdminStatsPayload() {
     signupsByCountryRaw,
     purchasesByCountryRaw,
     paymentsByMethodRaw,
+    salesBySourceRaw,
   ] = await Promise.all([
     // Merge totals + today count + weekly trends into one query
     db.execute(sql`
@@ -518,6 +520,19 @@ async function loadAdminStatsPayload() {
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
+    db.execute(sql`
+      SELECT
+        (p.created_at AT TIME ZONE 'UTC')::date AS date,
+        COALESCE(NULLIF(TRIM(u.acquisition_bucket), ''), 'unknown') AS bucket,
+        COUNT(*)::int AS count,
+        COALESCE(SUM(p.amount), 0)::float AS revenue
+      FROM payments p
+      LEFT JOIN users u ON u.id = p.user_id
+      WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      GROUP BY 1, 2
+      ORDER BY date ASC
+    `),
   ]);
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
@@ -627,6 +642,9 @@ async function loadAdminStatsPayload() {
     ),
     paymentsByMethod: buildPaymentsByMethodPeriods(
       paymentsByMethodRaw.rows as Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
+    ),
+    salesBySource: buildSalesBySourcePeriods(
+      salesBySourceRaw.rows as Array<{ date: unknown; bucket: unknown; count: unknown; revenue: unknown }>,
     ),
   };
 }

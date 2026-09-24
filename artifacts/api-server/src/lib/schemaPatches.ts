@@ -58,6 +58,15 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_key_id text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_key_secret text`,
   `ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS pok_env text NOT NULL DEFAULT 'production'`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_bucket text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_channel text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_source text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_medium text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_campaign text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_click_id text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_referrer text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_captured_at timestamp`,
+  `CREATE INDEX IF NOT EXISTS users_acquisition_bucket_idx ON users (acquisition_bucket)`,
 ];
 
 const TABLE_PATCHES = [

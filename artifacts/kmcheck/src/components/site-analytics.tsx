@@ -198,6 +198,12 @@ export function SiteAnalytics() {
   const publicTrackable = isPublicAnalyticsPath(location);
   const siteTrackable = isSiteTrackingPath(location);
 
+  useEffect(() => {
+    void import("@/lib/acquisition").then((m) => {
+      m.captureAcquisitionOnce();
+    });
+  }, []);
+
   const { data: settings } = useQuery({
     queryKey: PUBLIC_SETTINGS_QUERY_KEY,
     queryFn: fetchAnalyticsSettings,

@@ -14,6 +14,20 @@ export type PaymentMethodStat = {
   revenue: number;
 };
 
+export type AcquisitionBucket =
+  | "paid_ads"
+  | "organic_social"
+  | "google"
+  | "referral"
+  | "direct"
+  | "unknown";
+
+export type SalesBySourceStat = {
+  bucket: AcquisitionBucket;
+  count: number;
+  revenue: number;
+};
+
 export type ExtendedStats = {
   totalUsers: number;
   totalVinChecks: number;
@@ -79,6 +93,7 @@ export type ExtendedStats = {
   signupsByCountry?: Record<DashboardPeriod, CountryCountRow[]>;
   purchasesByCountry?: Record<DashboardPeriod, CountryCountRow[]>;
   paymentsByMethod?: Record<DashboardPeriod, PaymentMethodStat[]>;
+  salesBySource?: Record<DashboardPeriod, SalesBySourceStat[]>;
 };
 
 export function slicePeriodBreakdown<T>(
@@ -106,6 +121,15 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethodStat["method"], string> 
   pok: "POK",
   credit: "Credit",
   free: "Free",
+};
+
+export const ACQUISITION_BUCKET_LABELS: Record<AcquisitionBucket, string> = {
+  paid_ads: "Paid ads",
+  organic_social: "Organic social",
+  google: "Google",
+  referral: "Referral sites",
+  direct: "Direct",
+  unknown: "Unknown",
 };
 
 export function utcDateKeyDaysAgo(daysAgo: number): string {
