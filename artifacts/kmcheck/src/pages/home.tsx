@@ -198,7 +198,7 @@ export default function Home() {
               className={cn(
                 "font-extrabold tracking-tight",
                 compactHeroH1
-                  ? "text-[2.05rem] sm:text-[2.5rem] lg:text-[3.2rem] leading-[1.2] sm:leading-[1.18] lg:leading-[1.15]"
+                  ? "text-[2.28rem] sm:text-[2.7rem] lg:text-[3.4rem] leading-[1.2] sm:leading-[1.17] lg:leading-[1.15]"
                   : "text-[2.5rem] sm:text-[2.85rem] lg:text-[3.55rem] leading-[1.18] sm:leading-[1.16] lg:leading-[1.14]",
               )}
             >
