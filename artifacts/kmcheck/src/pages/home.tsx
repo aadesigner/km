@@ -20,6 +20,7 @@ import { prefetchFlags } from "@/components/flag-img";
 import { useVinLookupDisabledForUser } from "@/hooks/use-site-public-flags";
 import { useLightMotion } from "@/hooks/use-light-motion";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
+import { cn } from "@/lib/utils";
 
 // Decorative hero maps: heavy (react-simple-maps + d3 + ~105KB topojson) and
 // only shown at lg+. Skip mounting on smaller screens to avoid wasted SVG work.
@@ -116,6 +117,14 @@ export default function Home() {
     ),
     [seo.description],
   );
+
+  /** Visual only — shrink long H1s (e.g. Albanian) so mobile stays ~3 lines; EN unchanged. */
+  const compactHeroH1 = useMemo(() => {
+    if (language === "zh") return false;
+    const line1 = language === "sq" ? `${t("hero_headline_1")},` : t("hero_headline_1");
+    return line1.length + t("hero_headline_2").length >= 52;
+  }, [language, t]);
+
   return (
     <div className="flex flex-col">
       <SEOHead
@@ -185,17 +194,26 @@ export default function Home() {
             className="space-y-6 md:space-y-7 text-center pt-2 pb-4 md:pt-5 md:pb-6"
           >
             {/* Stable H1 for Google — full keyword phrase, no rotating text. */}
-            <h1 className="text-[2.5rem] sm:text-[2.85rem] lg:text-[3.55rem] font-extrabold tracking-tight leading-[1.18] sm:leading-[1.16] lg:leading-[1.14]">
+            <h1
+              className={cn(
+                "font-extrabold tracking-tight",
+                compactHeroH1
+                  ? "text-[2.05rem] sm:text-[2.5rem] lg:text-[3.2rem] leading-[1.2] sm:leading-[1.18] lg:leading-[1.15]"
+                  : "text-[2.5rem] sm:text-[2.85rem] lg:text-[3.55rem] leading-[1.18] sm:leading-[1.16] lg:leading-[1.14]",
+              )}
+            >
               {language === "zh" ? (
                 <>
                   {t("hero_headline_lead")}
-                  <span className="text-primary">{t("hero_headline_2")}</span>
+                  <span className="text-primary text-[1.06em]">{t("hero_headline_2")}</span>
                 </>
               ) : (
                 <>
                   {language === "sq" ? <>{t("hero_headline_1")},</> : t("hero_headline_1")}
                   <br />
-                  <span className="block text-primary">{t("hero_headline_2")}</span>
+                  <span className="block text-primary text-[1.08em] sm:text-[1.06em] leading-[1.12]">
+                    {t("hero_headline_2")}
+                  </span>
                 </>
               )}
             </h1>

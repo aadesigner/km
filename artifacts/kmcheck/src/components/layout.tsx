@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, type CSSProperties, type Dispatch, type MouseEvent as ReactMouseEvent, type MutableRefObject, type SetStateAction } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useSyncExternalStore, type CSSProperties, type Dispatch, type MouseEvent as ReactMouseEvent, type MutableRefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
@@ -95,6 +95,27 @@ function navDropdownTriggerProps(open: boolean, label?: string) {
   };
 }
 
+/** True when hover menus are safe (desktop). Touch devices synthesize mouseleave and close instantly. */
+function subscribeFinePointer(onChange: () => void) {
+  const fine = window.matchMedia("(pointer: fine)");
+  const hover = window.matchMedia("(hover: hover)");
+  fine.addEventListener("change", onChange);
+  hover.addEventListener("change", onChange);
+  return () => {
+    fine.removeEventListener("change", onChange);
+    hover.removeEventListener("change", onChange);
+  };
+}
+
+function getFinePointer() {
+  return window.matchMedia("(pointer: fine)").matches
+    && window.matchMedia("(hover: hover)").matches;
+}
+
+function useFinePointerHover() {
+  return useSyncExternalStore(subscribeFinePointer, getFinePointer, () => false);
+}
+
 function MobileLangPicker({
   language,
   onLanguageChange,
@@ -107,6 +128,7 @@ function MobileLangPicker({
   mobileMenuOpen?: boolean;
 }) {
   const { t } = useTranslation();
+  const finePointer = useFinePointerHover();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -152,12 +174,13 @@ function MobileLangPicker({
   }, [clearHoverClose, updateMenuPosition]);
 
   const scheduleClose = useCallback(() => {
+    if (!finePointer) return;
     clearHoverClose();
     hoverCloseTimer.current = setTimeout(() => {
       hoverCloseTimer.current = null;
       setOpen(false);
     }, 120);
-  }, [clearHoverClose]);
+  }, [clearHoverClose, finePointer]);
 
   useEffect(() => () => clearHoverClose(), [clearHoverClose]);
 
@@ -220,6 +243,9 @@ function MobileLangPicker({
   };
 
   const current = LANGS.find((l) => l.code === language);
+  const hoverProps = finePointer
+    ? { onMouseEnter: openMenu, onMouseLeave: scheduleClose }
+    : {};
 
   const menu = mounted
     ? createPortal(
@@ -235,11 +261,11 @@ function MobileLangPicker({
                 transition={{ duration: 0.08, ease: [0.22, 1, 0.36, 1] }}
                 style={{ ...menuStyle, transformOrigin: "top center" }}
                 className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
-                onMouseEnter={openMenu}
-                onMouseLeave={scheduleClose}
+                {...hoverProps}
               >
                 <LangPickerList
                   language={language as Language}
+                  layout="mobile"
                   hrefForLanguage={(code) =>
                     replaceLangInPath(
                       typeof window !== "undefined" ? window.location.pathname : `/${language}`,
@@ -260,11 +286,7 @@ function MobileLangPicker({
     : null;
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={openMenu}
-      onMouseLeave={scheduleClose}
-    >
+    <div className="relative" {...hoverProps}>
       <button
         ref={btnRef}
         type="button"

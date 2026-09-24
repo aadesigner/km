@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { Link } from "wouter";
-import { ChevronUp, FileText, LogOut, Shield, User, X } from "lucide-react";
+import { ChevronUp, CreditCard, FileText, HelpCircle, LogOut, Shield, User, X } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -254,7 +254,11 @@ export function NavbarMobileMenu({
                     onClick={() => setAccountOpen((v) => !v)}
                     aria-expanded={accountOpen}
                     aria-haspopup="menu"
-                    className="flex w-full min-w-0 items-center gap-1.5 rounded-lg py-1 text-left touch-manipulation active:bg-muted/50"
+                    className={cn(
+                      "flex w-full min-w-0 items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-left touch-manipulation",
+                      "active:bg-muted/60",
+                      accountOpen && "bg-muted/40",
+                    )}
                   >
                     <div className="min-w-0 flex-1">
                       {user?.name?.trim() ? (
@@ -264,7 +268,7 @@ export function NavbarMobileMenu({
                     </div>
                     <ChevronUp
                       className={cn(
-                        "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+                        "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
                         accountOpen ? "rotate-0" : "rotate-180",
                       )}
                       aria-hidden
@@ -274,20 +278,58 @@ export function NavbarMobileMenu({
                   {accountOpen ? (
                     <div
                       role="menu"
-                      className="absolute bottom-full left-0 right-0 z-10 mb-1.5 overflow-hidden rounded-lg border border-border/60 bg-background shadow-md"
+                      className={cn(
+                        "absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden",
+                        "rounded-xl border border-border/70 bg-popover shadow-lg shadow-black/10",
+                        "ring-1 ring-black/5 dark:ring-white/10",
+                      )}
                     >
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setAccountOpen(false);
-                          onLogout();
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground touch-manipulation active:bg-muted active:text-destructive"
-                      >
-                        <LogOut className="h-3.5 w-3.5 shrink-0" />
-                        {t("logout")}
-                      </button>
+                      <div className="p-1">
+                        <Link
+                          href={`/${language}/purchases`}
+                          role="menuitem"
+                          onClick={() => {
+                            setAccountOpen(false);
+                            close();
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-[13px] font-medium text-foreground touch-manipulation active:bg-muted"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
+                            <CreditCard className="h-3.5 w-3.5" />
+                          </span>
+                          {t("purchases_title")}
+                        </Link>
+                        <Link
+                          href={dashboardPath(language, "help")}
+                          role="menuitem"
+                          onClick={() => {
+                            setAccountOpen(false);
+                            close();
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-[13px] font-medium text-foreground touch-manipulation active:bg-muted"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
+                            <HelpCircle className="h-3.5 w-3.5" />
+                          </span>
+                          {t("help_title")}
+                        </Link>
+                      </div>
+                      <div className="border-t border-border/50 p-1">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setAccountOpen(false);
+                            onLogout();
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[13px] font-medium text-red-600 touch-manipulation active:bg-red-500/10 dark:text-red-400"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-500/10 text-red-600 dark:text-red-400">
+                            <LogOut className="h-3.5 w-3.5" />
+                          </span>
+                          {t("logout")}
+                        </button>
+                      </div>
                     </div>
                   ) : null}
                 </div>

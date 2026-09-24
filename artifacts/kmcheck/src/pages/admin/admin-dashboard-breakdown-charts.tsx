@@ -1,14 +1,4 @@
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Cell,
-} from "recharts";
-import {
   fmtEuro,
   fmtCompact,
   trendPct,
@@ -17,21 +7,8 @@ import {
   type PaymentMethodStat,
 } from "@/lib/admin-dashboard-stats";
 import { userCountryLabel } from "@/lib/user-countries";
+import { FlagImg } from "@/components/flag-img";
 import { cn } from "@/lib/utils";
-
-/** Theme chart tokens — solid, no rainbow gradients. */
-const FILL = {
-  signups: "hsl(var(--chart-1))",
-  purchases: "hsl(var(--chart-2))",
-} as const;
-
-/** Method colors: restrained, no purple. */
-const METHOD_FILL: Record<PaymentMethodStat["method"], string> = {
-  paypal: "hsl(207, 72%, 42%)",
-  pok: "hsl(173, 48%, 36%)",
-  credit: "hsl(var(--chart-1))",
-  free: "hsl(215, 12%, 55%)",
-};
 
 function countryDisplayName(countryCode: string): string {
   const code = countryCode.trim();
@@ -41,191 +18,31 @@ function countryDisplayName(countryCode: string): string {
   return userCountryLabel(code) ?? code;
 }
 
-function shortLabel(countryCode: string, name: string): string {
-  const code = countryCode.trim().toUpperCase();
-  if (code.length === 2) return `${code} · ${name.length > 14 ? `${name.slice(0, 13)}…` : name}`;
-  return name.length > 18 ? `${name.slice(0, 17)}…` : name;
+function flagCodeFor(countryCode: string): string | null {
+  const code = countryCode.trim().toLowerCase();
+  if (code.length === 2) return code;
+  return null;
 }
 
-type ChartRow = {
+type RankRow = {
   key: string;
   name: string;
-  label: string;
+  codeHint: string | null;
   count: number;
-  prevCount: number;
-  deltaPct: number | null;
-  fill: string;
   share: number;
+  deltaPct: number | null;
   revenue?: number;
 };
-
-function opacityForRank(index: number, total: number): number {
-  if (total <= 1) return 1;
-  return Math.max(0.45, 1 - index * (0.5 / Math.max(total - 1, 1)));
-}
-
-function CustomTooltip({
-  active,
-  payload,
-  valueLabel,
-  showRevenue,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload: ChartRow }>;
-  valueLabel: string;
-  showRevenue?: boolean;
-}) {
-  if (!active || !payload?.[0]) return null;
-  const row = payload[0].payload;
-  const delta =
-    row.deltaPct == null
-      ? null
-      : row.deltaPct === 0
-        ? "0%"
-        : `${row.deltaPct > 0 ? "+" : ""}${row.deltaPct}%`;
-
-  return (
-    <div className="rounded-lg border border-border/70 bg-popover px-3 py-2 shadow-md">
-      <p className="text-[11px] font-semibold text-foreground">{row.name}</p>
-      <p className="mt-1 tabular-nums text-[12px] text-muted-foreground">
-        <span className="font-semibold text-foreground">{row.count.toLocaleString()}</span>
-        {" "}
-        {valueLabel}
-        <span className="text-muted-foreground/80"> · {row.share}%</span>
-        {showRevenue && row.revenue != null && row.revenue > 0 ? (
-          <span> · {fmtEuro(row.revenue)}</span>
-        ) : null}
-      </p>
-      {delta != null ? (
-        <p
-          className={cn(
-            "mt-0.5 text-[10px] font-medium tabular-nums",
-            row.deltaPct != null && row.deltaPct > 0 && "text-emerald-600 dark:text-emerald-400",
-            row.deltaPct != null && row.deltaPct < 0 && "text-rose-600 dark:text-rose-400",
-            row.deltaPct === 0 && "text-muted-foreground",
-          )}
-        >
-          {delta} vs prior period
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-/** Horizontal ranking bars — analytics-style, one accent, rank opacity. */
-function RankBarChart({
-  rows,
-  height,
-  valueLabel,
-  showRevenue,
-}: {
-  rows: ChartRow[];
-  height: number;
-  valueLabel: string;
-  showRevenue?: boolean;
-}) {
-  const rowH = Math.max(28, Math.min(36, Math.floor((height - 24) / Math.max(rows.length, 1))));
-  const chartH = Math.max(rows.length * rowH + 16, 120);
-
-  return (
-    <div className="w-full min-w-0" style={{ minHeight: height }}>
-      <ResponsiveContainer width="100%" height={chartH} minWidth={1}>
-        <BarChart
-          data={rows}
-          layout="vertical"
-          margin={{ top: 4, right: 44, left: 4, bottom: 4 }}
-          barCategoryGap="22%"
-        >
-          <CartesianGrid
-            strokeDasharray="3 3"
-            horizontal={false}
-            className="stroke-border/30"
-          />
-          <XAxis
-            type="number"
-            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-            tickLine={false}
-            axisLine={false}
-            allowDecimals={false}
-          />
-          <YAxis
-            type="category"
-            dataKey="label"
-            width={108}
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-            tickLine={false}
-            axisLine={false}
-          />
-          <Tooltip
-            cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
-            content={<CustomTooltip valueLabel={valueLabel} showRevenue={showRevenue} />}
-          />
-          <Bar
-            dataKey="count"
-            radius={[0, 5, 5, 0]}
-            maxBarSize={22}
-            isAnimationActive={false}
-            label={{
-              position: "right",
-              fontSize: 10,
-              fill: "hsl(var(--muted-foreground))",
-              formatter: (v: number) => (v > 0 ? String(v) : ""),
-            }}
-          >
-            {rows.map((row, i) => (
-              <Cell
-                key={row.key}
-                fill={row.fill}
-                fillOpacity={opacityForRank(i, rows.length)}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-
-      {/* Compact deltas under chart */}
-      {rows.some((r) => r.deltaPct != null) ? (
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 border-t border-border/40 pt-2">
-          {rows
-            .filter((r) => r.deltaPct != null)
-            .slice(0, 6)
-            .map((row) => {
-              const up = (row.deltaPct ?? 0) > 0;
-              const down = (row.deltaPct ?? 0) < 0;
-              return (
-                <span key={row.key} className="inline-flex items-center gap-1 text-[10px]">
-                  <span className="max-w-[5rem] truncate text-muted-foreground">{row.name}</span>
-                  <span
-                    className={cn(
-                      "font-semibold tabular-nums",
-                      up && "text-emerald-600 dark:text-emerald-400",
-                      down && "text-rose-600 dark:text-rose-400",
-                      !up && !down && "text-muted-foreground",
-                    )}
-                  >
-                    {row.deltaPct === 0
-                      ? "0%"
-                      : `${up ? "+" : ""}${row.deltaPct}%`}
-                  </span>
-                </span>
-              );
-            })}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 function buildCountryRows(
   data: CountryCountRow[],
   previousData: CountryCountRow[] | undefined,
-  fill: string,
-): ChartRow[] {
+): RankRow[] {
   const prevMap = new Map(
     (previousData ?? []).map((r) => [r.countryCode.trim().toUpperCase(), r.count]),
   );
   const hasCompare = Boolean(previousData);
-  const top = data.slice(0, 8);
+  const top = data.slice(0, 7);
   const total = top.reduce((s, r) => s + r.count, 0) || 1;
 
   return top.map((row, i) => {
@@ -235,14 +52,100 @@ function buildCountryRows(
     return {
       key: code || `row-${i}`,
       name,
-      label: shortLabel(code, name),
+      codeHint: flagCodeFor(code),
       count: row.count,
-      prevCount,
-      deltaPct: hasCompare ? trendPct(row.count, prevCount) : null,
-      fill,
       share: Math.round((row.count / total) * 100),
+      deltaPct: hasCompare ? trendPct(row.count, prevCount) : null,
     };
   });
+}
+
+function DeltaBadge({ pct }: { pct: number | null }) {
+  if (pct == null) return null;
+  const up = pct > 0;
+  const down = pct < 0;
+  return (
+    <span
+      className={cn(
+        "inline-flex min-w-[2.4rem] justify-end text-[10px] font-semibold tabular-nums",
+        up && "text-emerald-600 dark:text-emerald-400",
+        down && "text-rose-600 dark:text-rose-400",
+        !up && !down && "text-muted-foreground",
+      )}
+    >
+      {pct === 0 ? "0%" : `${up ? "+" : ""}${pct}%`}
+    </span>
+  );
+}
+
+/** Lightweight ranked list — no Recharts, Stripe/Linear style. */
+function RankList({
+  rows,
+  valueLabel,
+  accentClass,
+  showRevenue,
+  emptyLabel,
+}: {
+  rows: RankRow[];
+  valueLabel: string;
+  accentClass: string;
+  showRevenue?: boolean;
+  emptyLabel: string;
+}) {
+  if (rows.length === 0) {
+    return (
+      <div className="flex min-h-[9rem] items-center justify-center text-xs text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  const max = Math.max(...rows.map((r) => r.count), 1);
+
+  return (
+    <ul className="flex flex-col gap-2.5" aria-label={valueLabel}>
+      {rows.map((row, i) => {
+        const widthPct = Math.max(4, Math.round((row.count / max) * 100));
+        return (
+          <li key={row.key} className="group min-w-0">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="w-3.5 shrink-0 text-[10px] font-medium tabular-nums text-muted-foreground/70">
+                {i + 1}
+              </span>
+              {row.codeHint ? (
+                <FlagImg code={row.codeHint} size={14} className="rounded-[2px]" />
+              ) : (
+                <span className="h-3.5 w-[14px] shrink-0 rounded-[2px] bg-muted" />
+              )}
+              <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-foreground">
+                {row.name}
+              </p>
+              <span className="shrink-0 text-[12px] font-semibold tabular-nums text-foreground">
+                {row.count.toLocaleString()}
+              </span>
+              <DeltaBadge pct={row.deltaPct} />
+            </div>
+            <div className="ml-[1.35rem] flex items-center gap-2">
+              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted/60">
+                <div
+                  className={cn("h-full rounded-full transition-[width] duration-500 ease-out", accentClass)}
+                  style={{ width: `${widthPct}%` }}
+                />
+              </div>
+              <span className="w-8 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
+                {row.share}%
+              </span>
+              {showRevenue && row.revenue != null && row.revenue > 0 ? (
+                <span className="hidden w-14 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground sm:inline">
+                  {fmtCompact(row.revenue)}
+                </span>
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 type CountryProps = {
@@ -255,49 +158,33 @@ type CountryProps = {
 };
 
 export function AdminCountrySignupsChart({
-  height = 260,
   data,
   previousData,
   emptyLabel = "No signups in this period",
   valueLabel = "signups",
 }: CountryProps) {
-  if (data.length === 0) {
-    return (
-      <div
-        className="flex items-center justify-center text-xs text-muted-foreground"
-        style={{ minHeight: height }}
-      >
-        {emptyLabel}
-      </div>
-    );
-  }
-
   return (
-    <RankBarChart
-      rows={buildCountryRows(data, previousData, FILL.signups)}
-      height={height}
+    <RankList
+      rows={buildCountryRows(data, previousData)}
       valueLabel={valueLabel}
+      accentClass="bg-primary/80"
+      emptyLabel={emptyLabel}
     />
   );
 }
 
-export function AdminCountryPurchasesChart(props: CountryProps) {
-  if ((props.data?.length ?? 0) === 0) {
-    return (
-      <div
-        className="flex items-center justify-center text-xs text-muted-foreground"
-        style={{ minHeight: props.height ?? 260 }}
-      >
-        {props.emptyLabel ?? "No purchases in this period"}
-      </div>
-    );
-  }
-
+export function AdminCountryPurchasesChart({
+  data,
+  previousData,
+  emptyLabel = "No purchases in this period",
+  valueLabel = "purchases",
+}: CountryProps) {
   return (
-    <RankBarChart
-      rows={buildCountryRows(props.data, props.previousData, FILL.purchases)}
-      height={props.height ?? 260}
-      valueLabel={props.valueLabel ?? "purchases"}
+    <RankList
+      rows={buildCountryRows(data, previousData)}
+      valueLabel={valueLabel}
+      accentClass="bg-[hsl(var(--chart-2))]"
+      emptyLabel={emptyLabel}
     />
   );
 }
@@ -309,17 +196,20 @@ type MethodProps = {
   compareHint?: string | null;
 };
 
+const METHOD_TONE: Record<PaymentMethodStat["method"], string> = {
+  paypal: "bg-[hsl(207,72%,42%)]",
+  pok: "bg-[hsl(173,48%,36%)]",
+  credit: "bg-primary/75",
+  free: "bg-muted-foreground/45",
+};
+
 export function AdminPaymentMethodsChart({
-  height = 260,
   data,
   previousData,
 }: MethodProps) {
   if (data.length === 0) {
     return (
-      <div
-        className="flex items-center justify-center text-xs text-muted-foreground"
-        style={{ minHeight: height }}
-      >
+      <div className="flex min-h-[7rem] items-center justify-center text-xs text-muted-foreground">
         No payments in this period
       </div>
     );
@@ -329,60 +219,71 @@ export function AdminPaymentMethodsChart({
   const hasCompare = Boolean(previousData);
   const sorted = [...data].sort((a, b) => b.count - a.count);
   const total = sorted.reduce((s, r) => s + r.count, 0) || 1;
-  const rows: ChartRow[] = sorted.map((row) => {
+  const totalRev = sorted.reduce((s, r) => s + (r.revenue ?? 0), 0);
+
+  const rows: RankRow[] = sorted.map((row) => {
     const prevCount = prevMap.get(row.method) ?? 0;
     return {
       key: row.method,
       name: PAYMENT_METHOD_LABELS[row.method],
-      label: PAYMENT_METHOD_LABELS[row.method],
+      codeHint: null,
       count: row.count,
-      prevCount,
-      deltaPct: hasCompare ? trendPct(row.count, prevCount) : null,
-      fill: METHOD_FILL[row.method],
       share: Math.round((row.count / total) * 100),
+      deltaPct: hasCompare ? trendPct(row.count, prevCount) : null,
       revenue: row.revenue,
     };
   });
 
-  const totalRev = rows.reduce((s, r) => s + (r.revenue ?? 0), 0);
-
   return (
-    <div className="w-full min-w-0" style={{ minHeight: height }}>
-      <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
-        <p className="text-[11px] text-muted-foreground">Share of payments</p>
+    <div className="w-full min-w-0 space-y-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">Mix of paid checkouts</p>
         {totalRev > 0 ? (
           <p className="text-[11px] tabular-nums text-muted-foreground">
-            Revenue{" "}
+            Collected{" "}
             <span className="font-semibold text-foreground">{fmtCompact(totalRev)}</span>
           </p>
         ) : null}
       </div>
 
-      {/* Method legend pills */}
-      <div className="mb-3 flex flex-wrap gap-2">
+      {/* Segmented share — one glance */}
+      <div
+        className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted/50"
+        title="Payment method share"
+      >
         {rows.map((row) => (
           <div
             key={row.key}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-2 py-1"
-          >
-            <span
-              className="h-2 w-2 shrink-0 rounded-sm"
-              style={{ backgroundColor: row.fill }}
-            />
-            <span className="text-[11px] font-medium text-foreground">{row.name}</span>
-            <span className="text-[11px] tabular-nums text-muted-foreground">
-              {row.share}%
-            </span>
-          </div>
+            className={cn("h-full first:rounded-l-full last:rounded-r-full", METHOD_TONE[row.key as PaymentMethodStat["method"]])}
+            style={{ width: `${Math.max(row.share, row.count > 0 ? 2 : 0)}%` }}
+            title={`${row.name}: ${row.share}%`}
+          />
         ))}
       </div>
 
-      <RankBarChart
-        rows={rows}
-        height={Math.max(140, height - 72)}
-        valueLabel="payments"
-        showRevenue
-      />
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {rows.map((row) => (
+          <li
+            key={row.key}
+            className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-muted/15 px-2.5 py-2"
+          >
+            <span
+              className={cn(
+                "h-2 w-2 shrink-0 rounded-full",
+                METHOD_TONE[row.key as PaymentMethodStat["method"]],
+              )}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12px] font-medium text-foreground">{row.name}</p>
+              <p className="text-[10px] tabular-nums text-muted-foreground">
+                {row.count.toLocaleString()} · {row.share}%
+                {row.revenue != null && row.revenue > 0 ? ` · ${fmtEuro(row.revenue)}` : ""}
+              </p>
+            </div>
+            <DeltaBadge pct={row.deltaPct} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

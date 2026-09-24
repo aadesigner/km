@@ -471,13 +471,13 @@ export default function AdminOverview() {
     staleTime: 30_000,
   });
 
-  const [chartHeight, setChartHeight] = useState(200);
+  const [chartHeight, setChartHeight] = useState(180);
 
   useEffect(() => {
     const update = () => {
-      if (window.innerWidth < 640) setChartHeight(200);
-      else if (window.innerWidth < 1024) setChartHeight(260);
-      else setChartHeight(280);
+      if (window.innerWidth < 640) setChartHeight(168);
+      else if (window.innerWidth < 1024) setChartHeight(200);
+      else setChartHeight(220);
     };
     update();
     window.addEventListener("resize", update);
@@ -719,17 +719,16 @@ export default function AdminOverview() {
         <section>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 md:gap-4">
             <Panel className="overflow-hidden">
-              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <UserPlus className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
-                  <h3 className="text-xs md:text-sm font-semibold truncate">Top countries · Signups</h3>
+                  <UserPlus className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Signups by country</h3>
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
-                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
+              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
+                <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
                   <AdminCountrySignupsChart
-                    height={260}
                     data={derived?.countrySignupRows ?? []}
                     previousData={derived?.countrySignupPrev}
                   />
@@ -738,17 +737,16 @@ export default function AdminOverview() {
             </Panel>
 
             <Panel className="overflow-hidden">
-              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Globe className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
-                  <h3 className="text-xs md:text-sm font-semibold truncate">Top countries · Purchases</h3>
+                  <Globe className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Purchases by country</h3>
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
-                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
+              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
+                <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
                   <AdminCountryPurchasesChart
-                    height={260}
                     data={derived?.countryPurchaseRows ?? []}
                     previousData={derived?.countryPurchasePrev}
                   />
@@ -757,17 +755,16 @@ export default function AdminOverview() {
             </Panel>
 
             <Panel className="overflow-hidden lg:col-span-2">
-              <div className="px-3.5 pt-3.5 pb-2 md:px-4 md:pt-4 md:pb-2.5 border-b border-border/40 flex items-center justify-between gap-2">
+              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <CreditCard className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/70 shrink-0" />
-                  <h3 className="text-xs md:text-sm font-semibold truncate">Payment methods</h3>
+                  <CreditCard className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Payment mix</h3>
                 </div>
                 <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
               </div>
-              <div className="px-3 pt-3 pb-3 md:px-4 md:pt-3.5 md:pb-3.5">
-                <Suspense fallback={<Skeleton className="h-[260px] w-full rounded-lg" />}>
+              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
+                <Suspense fallback={<Skeleton className="h-28 w-full rounded-lg" />}>
                   <AdminPaymentMethodsChart
-                    height={260}
                     data={derived?.methodRows ?? []}
                     previousData={derived?.methodPrev}
                   />
