@@ -31,6 +31,7 @@ import {
   signupSourceParts,
   acquisitionChannelShortLabel,
   acquisitionChannelTintClass,
+  acquisitionChannelTextClass,
 } from "@/lib/admin-dashboard-stats";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
@@ -140,7 +141,7 @@ function StatCell({
   compareLabel?: string;
   /** Small secondary line (e.g. legacy text footnote). */
   footnote?: string | null;
-  /** Preferred: where revenue/signups came from, as chips. */
+  /** Where revenue/signups came from — shown between value and label. */
   sourceParts?: Array<{ label: string; value: string; channel?: string }> | null;
   icon?: React.ElementType;
   highlight?: boolean;
@@ -155,36 +156,41 @@ function StatCell({
       ? sourceParts.map((p) => `${p.value} ${p.label}`).join(" · ")
       : undefined);
 
-  const renderSourceBreakdown = () => {
+  /** Quiet attribution line: €82 FB · €40 Direct — brand-colored channel names, no pills. */
+  const renderSourceBreakdown = (opts?: { className?: string }) => {
     if (sourceParts?.length) {
       return (
-        <div
-          className="mt-1 md:mt-2 flex flex-nowrap md:flex-wrap gap-1 overflow-hidden"
+        <p
+          className={cn(
+            "text-[10px] md:text-xs leading-snug tracking-tight",
+            "line-clamp-2 md:line-clamp-none",
+            opts?.className,
+          )}
           title={titleHint}
         >
-          {sourceParts.map((part) => (
-            <span
-              key={`${part.channel ?? part.label}-${part.value}`}
-              className={cn(
-                "inline-flex items-baseline gap-0.5 max-w-[5.5rem] sm:max-w-[7rem] md:max-w-full shrink-0 md:shrink",
-                "rounded border px-1 py-px md:px-1.5 md:py-0.5 md:rounded-md",
-                "text-[9px] md:text-[11px] leading-none truncate",
-                acquisitionChannelTintClass(part.channel ?? part.label),
-              )}
-            >
-              <span className="font-semibold tabular-nums shrink-0 opacity-90">{part.value}</span>
-              <span className="truncate font-medium">{part.label}</span>
+          {sourceParts.map((part, i) => (
+            <span key={`${part.channel ?? part.label}-${part.value}`}>
+              {i > 0 ? (
+                <span className="text-muted-foreground/35 mx-1" aria-hidden>
+                  ·
+                </span>
+              ) : null}
+              <span className="tabular-nums text-muted-foreground/80">{part.value}</span>
+              {" "}
+              <span className={cn("font-medium", acquisitionChannelTextClass(part.channel ?? part.label))}>
+                {part.label}
+              </span>
             </span>
           ))}
-        </div>
+        </p>
       );
     }
     if (footnote) {
       return (
         <p
           className={cn(
-            "text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2",
-            isMain ? "text-[10px] md:text-[11px] md:mt-2" : "text-[10px] md:text-[11px]",
+            "text-[10px] md:text-xs text-muted-foreground/90 leading-snug line-clamp-2",
+            opts?.className,
           )}
           title={footnote}
         >
@@ -211,18 +217,20 @@ function StatCell({
     >
       {isMain ? (
         <div className="md:hidden">
-          <div className="flex items-center justify-between gap-1.5 min-w-0">
-            <span className="text-[11px] text-muted-foreground truncate leading-tight">{label}</span>
-            {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0" />}
+          <div className="flex items-start justify-between gap-1.5 min-w-0">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
+                <TrendBadge value={trend ?? null} compact />
+              </div>
+              {renderSourceBreakdown({ className: "mt-1.5" })}
+              <p className="text-[11px] text-muted-foreground mt-1.5 truncate leading-tight">{label}</p>
+              {compareLabel && trend != null && (
+                <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
+              )}
+            </div>
+            {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0 mt-0.5" />}
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
-            <TrendBadge value={trend ?? null} compact />
-          </div>
-          {compareLabel && trend != null && (
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">{compareLabel}</p>
-          )}
-          {renderSourceBreakdown()}
         </div>
       ) : null}
 
@@ -239,11 +247,11 @@ function StatCell({
           <p className="text-3xl lg:text-[2rem] font-bold tabular-nums tracking-tight mt-4 leading-none">
             {value}
           </p>
-          <p className="text-base font-medium text-foreground/80 mt-2.5">{label}</p>
+          {renderSourceBreakdown({ className: "mt-2.5" })}
+          <p className="text-base font-medium text-foreground/80 mt-2">{label}</p>
           {compareLabel && trend != null && (
             <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
           )}
-          {renderSourceBreakdown()}
         </div>
       ) : (
         <>
@@ -255,10 +263,10 @@ function StatCell({
             <span className="text-lg md:text-2xl font-bold tabular-nums leading-none">{value}</span>
             <TrendBadge value={trend ?? null} compact />
           </div>
+          {renderSourceBreakdown({ className: "mt-1.5" })}
           {compareLabel && trend != null && (
             <p className="text-[11px] md:text-sm text-muted-foreground mt-1 truncate">{compareLabel}</p>
           )}
-          {renderSourceBreakdown()}
         </>
       )}
     </Panel>

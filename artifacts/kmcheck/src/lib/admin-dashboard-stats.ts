@@ -187,6 +187,38 @@ export function isOtherAcquisitionChannel(channel: string | null | undefined): b
 }
 
 /**
+ * Soft brand text colors for acquisition (no fill) — used on metric cards.
+ */
+export function acquisitionChannelTextClass(channel: string | null | undefined): string {
+  const key = (channel ?? "").trim().toLowerCase();
+  if (!key || key === "unknown" || key === "other") return "text-slate-500";
+  if (key === "meta_ads" || key === "facebook_ads" || key === "facebook_social" || key.startsWith("facebook")) {
+    return "text-blue-600";
+  }
+  if (key === "instagram_ads" || key === "instagram_social" || key.startsWith("instagram")) {
+    return "text-fuchsia-600";
+  }
+  if (key === "google_ads" || key === "google_organic" || key === "google" || key.startsWith("google")) {
+    return "text-emerald-600";
+  }
+  if (key === "tiktok_ads" || key === "tiktok_social" || key.startsWith("tiktok")) {
+    return "text-cyan-700";
+  }
+  if (key === "linkedin_ads" || key === "linkedin_social" || key.startsWith("linkedin")) {
+    return "text-sky-700";
+  }
+  if (key === "x_ads" || key === "x_social" || key.startsWith("x_") || key === "twitter" || key.startsWith("twitter")) {
+    return "text-zinc-600";
+  }
+  if (key === "bing_ads" || key.startsWith("bing")) return "text-teal-700";
+  if (key === "referral") return "text-amber-700";
+  if (key === "direct") return "text-violet-600";
+  if (key === "paid_ads") return "text-orange-700";
+  if (key === "organic_social") return "text-pink-600";
+  return "text-slate-500";
+}
+
+/**
  * Light tint classes for acquisition badges/chips (FB blue, Insta pink, …).
  * Safe for light admin UI — soft bg + readable text.
  */
