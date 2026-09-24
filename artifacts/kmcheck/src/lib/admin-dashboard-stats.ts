@@ -180,6 +180,57 @@ export function acquisitionChannelShortLabel(channel: string): string {
   return key.replace(/_/g, " ") || "Other";
 }
 
+/** True for unknown / rolled-up “Other” — always sorted last, never by size. */
+export function isOtherAcquisitionChannel(channel: string | null | undefined): boolean {
+  const key = (channel ?? "").trim().toLowerCase();
+  return !key || key === "unknown" || key === "other";
+}
+
+/**
+ * Light tint classes for acquisition badges/chips (FB blue, Insta pink, …).
+ * Safe for light admin UI — soft bg + readable text.
+ */
+export function acquisitionChannelTintClass(channel: string | null | undefined): string {
+  const key = (channel ?? "").trim().toLowerCase();
+  if (!key || key === "unknown" || key === "other") {
+    return "bg-slate-100 text-slate-600 border-slate-200/80";
+  }
+  if (key === "meta_ads" || key === "facebook_ads" || key === "facebook_social" || key.startsWith("facebook")) {
+    return "bg-blue-50 text-blue-700 border-blue-200/70";
+  }
+  if (key === "instagram_ads" || key === "instagram_social" || key.startsWith("instagram")) {
+    return "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/70";
+  }
+  if (key === "google_ads" || key === "google_organic" || key === "google" || key.startsWith("google")) {
+    return "bg-emerald-50 text-emerald-700 border-emerald-200/70";
+  }
+  if (key === "tiktok_ads" || key === "tiktok_social" || key.startsWith("tiktok")) {
+    return "bg-cyan-50 text-cyan-800 border-cyan-200/70";
+  }
+  if (key === "linkedin_ads" || key === "linkedin_social" || key.startsWith("linkedin")) {
+    return "bg-sky-50 text-sky-800 border-sky-200/70";
+  }
+  if (key === "x_ads" || key === "x_social" || key.startsWith("x_") || key === "twitter" || key.startsWith("twitter")) {
+    return "bg-zinc-100 text-zinc-700 border-zinc-200/80";
+  }
+  if (key === "bing_ads" || key.startsWith("bing")) {
+    return "bg-teal-50 text-teal-800 border-teal-200/70";
+  }
+  if (key === "referral") {
+    return "bg-amber-50 text-amber-800 border-amber-200/70";
+  }
+  if (key === "direct") {
+    return "bg-violet-50 text-violet-700 border-violet-200/70";
+  }
+  if (key === "paid_ads") {
+    return "bg-orange-50 text-orange-800 border-orange-200/70";
+  }
+  if (key === "organic_social") {
+    return "bg-pink-50 text-pink-700 border-pink-200/70";
+  }
+  return "bg-slate-100 text-slate-600 border-slate-200/80";
+}
+
 /** Compact “€120 FB ads · €20 Insta social” line for the Revenue metric. */
 export function formatRevenueSourceFootnote(
   rows: SalesByChannelStat[] | undefined,
@@ -190,29 +241,36 @@ export function formatRevenueSourceFootnote(
   return parts.map((p) => `${p.value} ${p.label}`).join(" · ");
 }
 
-/** Structured chips for Revenue card — amount + channel. */
+/** Structured chips for Revenue card — amount + channel. Other always last. */
 export function revenueSourceParts(
   rows: SalesByChannelStat[] | undefined,
   maxParts = 4,
 ): SourceBreakdownPart[] | null {
   if (!rows?.length) return null;
-  const withRev = rows
-    .filter((r) => (r.revenue ?? 0) > 0)
-    .sort((a, b) => b.revenue - a.revenue);
+  const withRev = rows.filter((r) => (r.revenue ?? 0) > 0);
   if (withRev.length === 0) return null;
 
-  const top = withRev.slice(0, maxParts);
-  const rest = withRev.slice(maxParts);
-  const parts: SourceBreakdownPart[] = top.map((r) => ({
+  const named = withRev.filter((r) => !isOtherAcquisitionChannel(r.channel));
+  const otherRows = withRev.filter((r) => isOtherAcquisitionChannel(r.channel));
+  named.sort((a, b) => b.revenue - a.revenue);
+
+  const otherBudget = otherRows.length > 0 || named.length > maxParts ? 1 : 0;
+  const namedSlots = Math.max(0, maxParts - otherBudget);
+  const topNamed = named.slice(0, namedSlots);
+  const overflowNamed = named.slice(namedSlots);
+  const otherRev =
+    otherRows.reduce((s, r) => s + r.revenue, 0)
+    + overflowNamed.reduce((s, r) => s + r.revenue, 0);
+
+  const parts: SourceBreakdownPart[] = topNamed.map((r) => ({
     label: acquisitionChannelShortLabel(r.channel),
     value: fmtCompact(r.revenue),
     channel: r.channel,
   }));
-  const restRev = rest.reduce((s, r) => s + r.revenue, 0);
-  if (restRev > 0.009) {
-    parts.push({ label: "Other", value: fmtCompact(restRev), channel: "other" });
+  if (otherRev > 0.009) {
+    parts.push({ label: "Other", value: fmtCompact(otherRev), channel: "other" });
   }
-  return parts;
+  return parts.length ? parts : null;
 }
 
 /** Compact “31 FB ads · 10 Google · 10 Insta social” for the Signups metric. */
@@ -225,29 +283,36 @@ export function formatSignupSourceFootnote(
   return parts.map((p) => `${p.value} ${p.label}`).join(" · ");
 }
 
-/** Structured chips for Signups card — count + channel. */
+/** Structured chips for Signups card — count + channel. Other always last. */
 export function signupSourceParts(
   rows: SignupsByChannelStat[] | undefined,
   maxParts = 4,
 ): SourceBreakdownPart[] | null {
   if (!rows?.length) return null;
-  const sorted = [...rows]
-    .filter((r) => r.count > 0)
-    .sort((a, b) => b.count - a.count);
-  if (sorted.length === 0) return null;
+  const withCount = rows.filter((r) => r.count > 0);
+  if (withCount.length === 0) return null;
 
-  const top = sorted.slice(0, maxParts);
-  const rest = sorted.slice(maxParts);
-  const parts: SourceBreakdownPart[] = top.map((r) => ({
+  const named = withCount.filter((r) => !isOtherAcquisitionChannel(r.channel));
+  const otherRows = withCount.filter((r) => isOtherAcquisitionChannel(r.channel));
+  named.sort((a, b) => b.count - a.count);
+
+  const otherBudget = otherRows.length > 0 || named.length > maxParts ? 1 : 0;
+  const namedSlots = Math.max(0, maxParts - otherBudget);
+  const topNamed = named.slice(0, namedSlots);
+  const overflowNamed = named.slice(namedSlots);
+  const otherCount =
+    otherRows.reduce((s, r) => s + r.count, 0)
+    + overflowNamed.reduce((s, r) => s + r.count, 0);
+
+  const parts: SourceBreakdownPart[] = topNamed.map((r) => ({
     label: acquisitionChannelShortLabel(r.channel),
     value: r.count.toLocaleString(),
     channel: r.channel,
   }));
-  const restCount = rest.reduce((s, r) => s + r.count, 0);
-  if (restCount > 0) {
-    parts.push({ label: "Other", value: restCount.toLocaleString(), channel: "other" });
+  if (otherCount > 0) {
+    parts.push({ label: "Other", value: otherCount.toLocaleString(), channel: "other" });
   }
-  return parts;
+  return parts.length ? parts : null;
 }
 
 export type SourceBreakdownPart = {

@@ -30,6 +30,7 @@ import {
   revenueSourceParts,
   signupSourceParts,
   acquisitionChannelShortLabel,
+  acquisitionChannelTintClass,
 } from "@/lib/admin-dashboard-stats";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
@@ -140,7 +141,7 @@ function StatCell({
   /** Small secondary line (e.g. legacy text footnote). */
   footnote?: string | null;
   /** Preferred: where revenue/signups came from, as chips. */
-  sourceParts?: Array<{ label: string; value: string }> | null;
+  sourceParts?: Array<{ label: string; value: string; channel?: string }> | null;
   icon?: React.ElementType;
   highlight?: boolean;
   size?: "main" | "compact";
@@ -160,14 +161,15 @@ function StatCell({
         <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1" title={titleHint}>
           {sourceParts.map((part) => (
             <span
-              key={`${part.label}-${part.value}`}
+              key={`${part.channel ?? part.label}-${part.value}`}
               className={cn(
-                "inline-flex items-baseline gap-1 max-w-full rounded-md border border-border/60 bg-muted/40",
-                "px-1.5 py-0.5 text-[10px] md:text-[11px] leading-tight text-muted-foreground",
+                "inline-flex items-baseline gap-1 max-w-full rounded-md border",
+                "px-1.5 py-0.5 text-[10px] md:text-[11px] leading-tight",
+                acquisitionChannelTintClass(part.channel ?? part.label),
               )}
             >
-              <span className="font-semibold tabular-nums text-foreground/80 shrink-0">{part.value}</span>
-              <span className="truncate">{part.label}</span>
+              <span className="font-semibold tabular-nums shrink-0 opacity-90">{part.value}</span>
+              <span className="truncate font-medium">{part.label}</span>
             </span>
           ))}
         </div>
@@ -478,38 +480,53 @@ function PresenceUserList({
   return (
     <div className="divide-y divide-border/40">
       {users.map((u) => {
-        const channelLabel = u.acquisitionChannel
-          ? acquisitionChannelShortLabel(u.acquisitionChannel)
+        const channelKey = u.acquisitionChannel?.trim() || null;
+        const channelLabel = channelKey
+          ? acquisitionChannelShortLabel(channelKey)
           : "No channel";
         const reports = u.totalReports ?? 0;
-        const meta = `${channelLabel} · ${reports} report${reports === 1 ? "" : "s"}`;
+        const reportsLabel = `${reports} report${reports === 1 ? "" : "s"}`;
         return (
           <Link key={u.id} href={`/adminx/users/${u.id}`}>
             <div className="group flex items-center gap-2.5 md:gap-3 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
               <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
                 {presenceUserInitials(u)}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
-                  {u.name || u.email}
-                </p>
-                {u.name ? (
-                  <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
-                ) : null}
-                <p className="sm:hidden text-[10px] text-muted-foreground/90 tabular-nums mt-0.5 truncate">
-                  {meta}
-                </p>
+              <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-5 md:gap-6">
+                <div className="min-w-0">
+                  <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
+                    {u.name || u.email}
+                  </p>
+                  {u.name ? (
+                    <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+                  ) : null}
+                  <div className="sm:hidden mt-1 flex flex-wrap items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none",
+                        acquisitionChannelTintClass(channelKey),
+                      )}
+                    >
+                      {channelLabel}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">{reportsLabel}</span>
+                  </div>
+                </div>
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                  <span
+                    className={cn(
+                      "inline-flex items-center max-w-[7.5rem] md:max-w-[9rem] truncate rounded-md border px-1.5 py-0.5 text-[10px] md:text-[11px] font-medium leading-none",
+                      acquisitionChannelTintClass(channelKey),
+                    )}
+                    title={channelLabel}
+                  >
+                    {channelLabel}
+                  </span>
+                  <span className="text-[10px] md:text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+                    {reportsLabel}
+                  </span>
+                </div>
               </div>
-              <p
-                className="hidden sm:block min-w-0 max-w-[9.5rem] md:max-w-[11rem] shrink text-[10px] md:text-[11px] text-muted-foreground tabular-nums truncate text-center"
-                title={meta}
-              >
-                <span className="font-medium text-foreground/70">{channelLabel}</span>
-                <span className="text-muted-foreground/40"> · </span>
-                <span className="whitespace-nowrap">
-                  {reports} report{reports === 1 ? "" : "s"}
-                </span>
-              </p>
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
                   {formatPresenceLastActive(u.lastSeenAt, period)}

@@ -5,7 +5,6 @@ import {
   trendPct,
   revenueSourceParts,
   signupSourceParts,
-  formatRevenueSourceFootnote,
   type ExtendedStats,
 } from "./admin-dashboard-stats";
 
@@ -80,7 +79,7 @@ describe("derivePeriodMetrics", () => {
 });
 
 describe("revenue / signup source parts", () => {
-  it("builds chips sorted by revenue and rolls rest into Other", () => {
+  it("builds chips sorted by revenue with Other always last", () => {
     const parts = revenueSourceParts(
       [
         { channel: "meta_ads", count: 3, revenue: 100 },
@@ -91,23 +90,26 @@ describe("revenue / signup source parts", () => {
       ],
       3,
     );
-    expect(parts).toHaveLength(4);
-    expect(parts![0]).toMatchObject({ value: "€100.00", label: "FB ads" });
-    expect(parts![3]).toMatchObject({ label: "Other", value: "€15.00" });
-    expect(formatRevenueSourceFootnote([
-      { channel: "meta_ads", count: 1, revenue: 50 },
-      { channel: "unknown", count: 1, revenue: 10 },
-    ])).toContain("Other");
+    expect(parts).toHaveLength(3);
+    expect(parts![0]).toMatchObject({ value: "€100.00", label: "FB ads", channel: "meta_ads" });
+    expect(parts![1]).toMatchObject({ label: "Direct", channel: "direct" });
+    expect(parts![2]).toMatchObject({ label: "Other", channel: "other" });
+    // unknown (10) + overflow google (20) + tiktok (5) = 35
+    expect(parts![2].value).toBe("€35.00");
   });
 
-  it("includes unknown channel and returns null when empty", () => {
+  it("keeps Other last even when it is the largest bucket", () => {
+    const parts = signupSourceParts([
+      { channel: "unknown", count: 70 },
+      { channel: "direct", count: 3 },
+      { channel: "meta_ads", count: 10 },
+    ]);
+    expect(parts!.map((p) => p.label)).toEqual(["FB ads", "Direct", "Other"]);
+    expect(parts![2]).toMatchObject({ label: "Other", value: "70" });
+  });
+
+  it("returns null when empty or zero revenue", () => {
     expect(revenueSourceParts([])).toBeNull();
     expect(revenueSourceParts([{ channel: "unknown", count: 2, revenue: 0 }])).toBeNull();
-    const parts = signupSourceParts([
-      { channel: "unknown", count: 7 },
-      { channel: "direct", count: 3 },
-    ]);
-    expect(parts![0]).toMatchObject({ label: "Other", value: "7" });
-    expect(parts![1]).toMatchObject({ label: "Direct", value: "3" });
   });
 });
