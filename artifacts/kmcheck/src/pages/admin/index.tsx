@@ -492,40 +492,38 @@ function PresenceUserList({
               <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
                 {presenceUserInitials(u)}
               </div>
-              <div className="min-w-0 flex-1 flex items-center gap-3 sm:gap-5 md:gap-6">
-                <div className="min-w-0">
-                  <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
-                    {u.name || u.email}
-                  </p>
-                  {u.name ? (
-                    <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
-                  ) : null}
-                  <div className="sm:hidden mt-1 flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none",
-                        acquisitionChannelTintClass(channelKey),
-                      )}
-                    >
-                      {channelLabel}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">{reportsLabel}</span>
-                  </div>
-                </div>
-                <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
+                  {u.name || u.email}
+                </p>
+                {u.name ? (
+                  <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+                ) : null}
+                <div className="sm:hidden mt-1 flex flex-wrap items-center gap-1.5">
                   <span
                     className={cn(
-                      "inline-flex items-center max-w-[7.5rem] md:max-w-[9rem] truncate rounded-md border px-1.5 py-0.5 text-[10px] md:text-[11px] font-medium leading-none",
+                      "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none",
                       acquisitionChannelTintClass(channelKey),
                     )}
-                    title={channelLabel}
                   >
                     {channelLabel}
                   </span>
-                  <span className="text-[10px] md:text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
-                    {reportsLabel}
-                  </span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{reportsLabel}</span>
                 </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <span
+                  className={cn(
+                    "inline-flex items-center max-w-[7.5rem] md:max-w-[9rem] truncate rounded-md border px-1.5 py-0.5 text-[10px] md:text-[11px] font-medium leading-none",
+                    acquisitionChannelTintClass(channelKey),
+                  )}
+                  title={channelLabel}
+                >
+                  {channelLabel}
+                </span>
+                <span className="text-[10px] md:text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+                  {reportsLabel}
+                </span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
