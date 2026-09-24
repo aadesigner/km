@@ -59,4 +59,20 @@ describe("dashboard period breakdowns", () => {
     ]);
     expect(maps.week.some((r) => r.method === "credit" && r.count === 3)).toBe(true);
   });
+
+  it("uses Monday–Sunday weeks and calendar year", () => {
+    // 2026-08-08 is Saturday → week starts Monday 2026-08-03
+    const maps = buildSignupsByCountryPeriods(
+      [
+        { date: "2026-08-03", country_code: "AL", count: 2 },
+        { date: "2026-08-02", country_code: "DE", count: 4 }, // Sunday before this Monday — last week
+        { date: "2026-01-15", country_code: "US", count: 3 },
+      ],
+      now,
+    );
+    expect(maps.week.find((r) => r.countryCode === "AL")?.count).toBe(2);
+    expect(maps.week.find((r) => r.countryCode === "DE")).toBeUndefined();
+    expect(maps.year.find((r) => r.countryCode === "US")?.count).toBe(3);
+    expect(maps.year.find((r) => r.countryCode === "AL")?.count).toBe(2);
+  });
 });

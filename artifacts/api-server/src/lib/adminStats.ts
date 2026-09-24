@@ -19,6 +19,27 @@ export function utcPrevMonthStartIso(now = new Date()): string {
   return d.toISOString().substring(0, 10);
 }
 
+/** ISO week: Monday 00:00 UTC of the week containing `now`. */
+export function utcMondayWeekStartIso(now = new Date()): string {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = d.getUTCDay(); // 0=Sun … 6=Sat
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
+  d.setUTCDate(d.getUTCDate() - daysSinceMonday);
+  return d.toISOString().substring(0, 10);
+}
+
+/** Previous ISO week Monday (7 days before this week's Monday). */
+export function utcPrevMondayWeekStartIso(now = new Date()): string {
+  const thisMon = new Date(`${utcMondayWeekStartIso(now)}T00:00:00.000Z`);
+  thisMon.setUTCDate(thisMon.getUTCDate() - 7);
+  return thisMon.toISOString().substring(0, 10);
+}
+
+/** Calendar year start YYYY-01-01 (UTC). */
+export function utcYearStartIso(now = new Date()): string {
+  return `${now.getUTCFullYear()}-01-01`;
+}
+
 /** Normalize PG date / timestamp to YYYY-MM-DD (UTC). */
 export function normalizeDayKey(value: unknown): string {
   if (value == null) return "";
@@ -108,7 +129,7 @@ export function trendPct(current: number, prev: number): number | null {
   return Math.round(((current - prev) / prev) * 100);
 }
 
-export type DashboardPeriodKey = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter";
+export type DashboardPeriodKey = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter" | "year";
 
 export type CountryCountRow = { countryCode: string; count: number };
 export type PaymentMethodRow = {
@@ -131,14 +152,27 @@ export type SalesBySourceRow = {
   revenue: number;
 };
 
+export type SalesByChannelRow = {
+  channel: string;
+  count: number;
+  revenue: number;
+};
+
+export type SignupsByChannelRow = {
+  channel: string;
+  count: number;
+};
+
 export type PeriodBreakdownMaps = {
   signupsByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
   purchasesByCountry: Record<DashboardPeriodKey, CountryCountRow[]>;
   paymentsByMethod: Record<DashboardPeriodKey, PaymentMethodRow[]>;
   salesBySource: Record<DashboardPeriodKey, SalesBySourceRow[]>;
+  salesByChannel: Record<DashboardPeriodKey, SalesByChannelRow[]>;
+  signupsByChannel: Record<DashboardPeriodKey, SignupsByChannelRow[]>;
 };
 
-const PERIOD_KEYS: DashboardPeriodKey[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter"];
+const PERIOD_KEYS: DashboardPeriodKey[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter", "year"];
 const METHOD_ORDER: Array<PaymentMethodRow["method"]> = ["paypal", "pok", "credit", "free"];
 const SOURCE_ORDER: AcquisitionBucket[] = [
   "paid_ads",
@@ -150,24 +184,33 @@ const SOURCE_ORDER: AcquisitionBucket[] = [
 ];
 
 function emptyCountryMaps(): Record<DashboardPeriodKey, CountryCountRow[]> {
-  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [], year: [] };
 }
 
 function emptyMethodMaps(): Record<DashboardPeriodKey, PaymentMethodRow[]> {
-  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [], year: [] };
 }
 
 function emptySourceMaps(): Record<DashboardPeriodKey, SalesBySourceRow[]> {
-  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [] };
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [], year: [] };
+}
+
+function emptyChannelMaps(): Record<DashboardPeriodKey, SalesByChannelRow[]> {
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [], year: [] };
+}
+
+function emptySignupChannelMaps(): Record<DashboardPeriodKey, SignupsByChannelRow[]> {
+  return { today: [], yesterday: [], week: [], month: [], lastMonth: [], quarter: [], year: [] };
 }
 
 function periodWindows(now = new Date()): Record<DashboardPeriodKey, { from: string; toExclusive?: string }> {
   const today = utcTodayIso(now);
   const yesterday = utcDateIsoDaysAgo(1, now);
-  const weekFrom = utcDateIsoDaysAgo(6, now);
+  const weekFrom = utcMondayWeekStartIso(now);
   const monthFrom = utcMonthStartIso(now);
   const lastMonthFrom = utcPrevMonthStartIso(now);
   const quarterFrom = utcDateIsoDaysAgo(89, now);
+  const yearFrom = utcYearStartIso(now);
   return {
     today: { from: today },
     yesterday: { from: yesterday, toExclusive: today },
@@ -175,6 +218,7 @@ function periodWindows(now = new Date()): Record<DashboardPeriodKey, { from: str
     month: { from: monthFrom },
     lastMonth: { from: lastMonthFrom, toExclusive: monthFrom },
     quarter: { from: quarterFrom },
+    year: { from: yearFrom },
   };
 }
 
@@ -213,6 +257,7 @@ export function buildCountryCountPeriods(
     month: new Map(),
     lastMonth: new Map(),
     quarter: new Map(),
+    year: new Map(),
   };
 
   for (const row of rows) {
@@ -248,6 +293,7 @@ export function buildPaymentsByMethodPeriods(
     month: new Map(),
     lastMonth: new Map(),
     quarter: new Map(),
+    year: new Map(),
   };
 
   for (const row of rows) {
@@ -291,43 +337,139 @@ function normalizeAcquisitionBucket(raw: unknown): AcquisitionBucket {
   return "unknown";
 }
 
-/** Bucket daily sales-by-acquisition rows into dashboard periods. */
-export function buildSalesBySourcePeriods(
-  rows: Array<{ date: unknown; bucket: unknown; count: unknown; revenue: unknown }>,
+/** Map fine channel → coarse dashboard bucket. */
+export function channelToAcquisitionBucket(channel: unknown): AcquisitionBucket {
+  const c = String(channel ?? "").toLowerCase().trim();
+  if (!c || c === "unknown") return "unknown";
+  if (c === "direct") return "direct";
+  if (c === "referral") return "referral";
+  if (c === "google" || c === "google_organic") return "google";
+  if (c.includes("_ads") || c === "paid_ads") return "paid_ads";
+  if (c.includes("_social") || c === "organic_social") return "organic_social";
+  if (c === "google_ads") return "paid_ads";
+  return normalizeAcquisitionBucket(c);
+}
+
+function normalizeChannel(raw: unknown): string {
+  const c = String(raw ?? "").toLowerCase().trim().slice(0, 48);
+  return c || "unknown";
+}
+
+/**
+ * One pass over daily channel rows → per-period channel list + rolled-up buckets.
+ * Keeps admin stats to a single acquisition SQL query.
+ */
+export function buildSalesAttributionPeriods(
+  rows: Array<{ date: unknown; channel: unknown; count: unknown; revenue: unknown }>,
   now = new Date(),
-): Record<DashboardPeriodKey, SalesBySourceRow[]> {
+): {
+  salesByChannel: Record<DashboardPeriodKey, SalesByChannelRow[]>;
+  salesBySource: Record<DashboardPeriodKey, SalesBySourceRow[]>;
+} {
   const windows = periodWindows(now);
-  const maps: Record<DashboardPeriodKey, Map<AcquisitionBucket, { count: number; revenue: number }>> = {
+  const channelMaps: Record<DashboardPeriodKey, Map<string, { count: number; revenue: number }>> = {
     today: new Map(),
     yesterday: new Map(),
     week: new Map(),
     month: new Map(),
     lastMonth: new Map(),
     quarter: new Map(),
+    year: new Map(),
+  };
+  const bucketMaps: Record<DashboardPeriodKey, Map<AcquisitionBucket, { count: number; revenue: number }>> = {
+    today: new Map(),
+    yesterday: new Map(),
+    week: new Map(),
+    month: new Map(),
+    lastMonth: new Map(),
+    quarter: new Map(),
+    year: new Map(),
   };
 
   for (const row of rows) {
     const date = normalizeDayKey(row.date);
-    const bucket = normalizeAcquisitionBucket(row.bucket);
+    const channel = normalizeChannel(row.channel);
+    const bucket = channelToAcquisitionBucket(channel);
     const count = Number(row.count ?? 0);
     const revenue = Number(row.revenue ?? 0);
     if (!date || count <= 0) continue;
     for (const key of PERIOD_KEYS) {
       const w = windows[key];
       if (!inWindow(date, w.from, w.toExclusive)) continue;
-      const prev = maps[key].get(bucket) ?? { count: 0, revenue: 0 };
-      maps[key].set(bucket, { count: prev.count + count, revenue: prev.revenue + revenue });
+      const prevC = channelMaps[key].get(channel) ?? { count: 0, revenue: 0 };
+      channelMaps[key].set(channel, { count: prevC.count + count, revenue: prevC.revenue + revenue });
+      const prevB = bucketMaps[key].get(bucket) ?? { count: 0, revenue: 0 };
+      bucketMaps[key].set(bucket, { count: prevB.count + count, revenue: prevB.revenue + revenue });
     }
   }
 
-  const out = emptySourceMaps();
+  const salesByChannel = emptyChannelMaps();
+  const salesBySource = emptySourceMaps();
   for (const key of PERIOD_KEYS) {
-    out[key] = SOURCE_ORDER
+    salesByChannel[key] = [...channelMaps[key].entries()]
+      .map(([channel, v]) => ({ channel, count: v.count, revenue: v.revenue }))
+      .sort((a, b) => b.revenue - a.revenue || b.count - a.count)
+      .slice(0, 12);
+    salesBySource[key] = SOURCE_ORDER
       .map((bucket) => {
-        const v = maps[key].get(bucket);
+        const v = bucketMaps[key].get(bucket);
         return { bucket, count: v?.count ?? 0, revenue: v?.revenue ?? 0 };
       })
       .filter((r) => r.count > 0);
+  }
+  return { salesByChannel, salesBySource };
+}
+
+/** @deprecated — prefer buildSalesAttributionPeriods */
+export function buildSalesBySourcePeriods(
+  rows: Array<{ date: unknown; bucket: unknown; count: unknown; revenue: unknown }>,
+  now = new Date(),
+): Record<DashboardPeriodKey, SalesBySourceRow[]> {
+  return buildSalesAttributionPeriods(
+    rows.map((r) => ({
+      date: r.date,
+      channel: r.bucket,
+      count: r.count,
+      revenue: r.revenue,
+    })),
+    now,
+  ).salesBySource;
+}
+
+/** Daily signup counts by acquisition channel → dashboard periods. */
+export function buildSignupsByChannelPeriods(
+  rows: Array<{ date: unknown; channel: unknown; count: unknown }>,
+  now = new Date(),
+): Record<DashboardPeriodKey, SignupsByChannelRow[]> {
+  const windows = periodWindows(now);
+  const maps: Record<DashboardPeriodKey, Map<string, number>> = {
+    today: new Map(),
+    yesterday: new Map(),
+    week: new Map(),
+    month: new Map(),
+    lastMonth: new Map(),
+    quarter: new Map(),
+    year: new Map(),
+  };
+
+  for (const row of rows) {
+    const date = normalizeDayKey(row.date);
+    const channel = normalizeChannel(row.channel);
+    const count = Number(row.count ?? 0);
+    if (!date || count <= 0) continue;
+    for (const key of PERIOD_KEYS) {
+      const w = windows[key];
+      if (!inWindow(date, w.from, w.toExclusive)) continue;
+      maps[key].set(channel, (maps[key].get(channel) ?? 0) + count);
+    }
+  }
+
+  const out = emptySignupChannelMaps();
+  for (const key of PERIOD_KEYS) {
+    out[key] = [...maps[key].entries()]
+      .map(([channel, count]) => ({ channel, count }))
+      .sort((a, b) => b.count - a.count || a.channel.localeCompare(b.channel))
+      .slice(0, 12);
   }
   return out;
 }

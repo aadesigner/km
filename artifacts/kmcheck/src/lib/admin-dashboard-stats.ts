@@ -1,6 +1,6 @@
 export type DaySeries = { date: string; count?: number; revenue?: number };
 
-export type DashboardPeriod = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter";
+export type DashboardPeriod = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter" | "year";
 
 export type ChartMetric = "revenue" | "checks" | "signups";
 
@@ -28,6 +28,17 @@ export type SalesBySourceStat = {
   revenue: number;
 };
 
+export type SalesByChannelStat = {
+  channel: string;
+  count: number;
+  revenue: number;
+};
+
+export type SignupsByChannelStat = {
+  channel: string;
+  count: number;
+};
+
 export type ExtendedStats = {
   totalUsers: number;
   totalVinChecks: number;
@@ -38,16 +49,23 @@ export type ExtendedStats = {
   revenueLastWeek?: number;
   revenueThisMonth?: number;
   revenueLastMonth?: number;
+  revenueThisYear?: number;
   revenueToday?: number;
   revenueYesterday?: number;
   signupsThisWeek?: number;
   signupsLastWeek?: number;
   signupsThisMonth?: number;
   signupsLastMonth?: number;
+  signupsThisYear?: number;
   signupsToday?: number;
   signupsYesterday?: number;
   checksToday: number;
   checksYesterday?: number;
+  checksThisWeek?: number;
+  checksLastWeek?: number;
+  checksThisMonth?: number;
+  checksLastMonth?: number;
+  checksThisYear?: number;
   cacheHitRate: number;
   activeProviders: number;
   checksByDay: DaySeries[];
@@ -70,10 +88,6 @@ export type ExtendedStats = {
     email: string | null;
     name: string | null;
   }>;
-  checksThisWeek: number;
-  checksLastWeek: number;
-  checksThisMonth?: number;
-  checksLastMonth?: number;
   pendingVinChecksOpen?: number;
   recentPendingVinChecks?: Array<{
     id: number;
@@ -94,6 +108,8 @@ export type ExtendedStats = {
   purchasesByCountry?: Record<DashboardPeriod, CountryCountRow[]>;
   paymentsByMethod?: Record<DashboardPeriod, PaymentMethodStat[]>;
   salesBySource?: Record<DashboardPeriod, SalesBySourceStat[]>;
+  salesByChannel?: Record<DashboardPeriod, SalesByChannelStat[]>;
+  signupsByChannel?: Record<DashboardPeriod, SignupsByChannelStat[]>;
 };
 
 export function slicePeriodBreakdown<T>(
@@ -132,10 +148,97 @@ export const ACQUISITION_BUCKET_LABELS: Record<AcquisitionBucket, string> = {
   unknown: "Unknown",
 };
 
+/** Short labels for the Revenue card footnote. */
+export const ACQUISITION_CHANNEL_SHORT: Record<string, string> = {
+  meta_ads: "FB ads",
+  facebook_ads: "FB ads",
+  instagram_ads: "Insta ads",
+  facebook_social: "FB social",
+  instagram_social: "Insta social",
+  tiktok_ads: "TikTok ads",
+  tiktok_social: "TikTok",
+  google_ads: "Google ads",
+  google_organic: "Google",
+  google: "Google",
+  bing_ads: "Bing ads",
+  x_ads: "X ads",
+  x_social: "X social",
+  linkedin_ads: "LinkedIn ads",
+  linkedin_social: "LinkedIn",
+  referral: "Referral",
+  direct: "Direct",
+  paid_ads: "Ads",
+  organic_social: "Social",
+  unknown: "Other",
+};
+
+export function acquisitionChannelShortLabel(channel: string): string {
+  const key = channel.trim().toLowerCase();
+  if (ACQUISITION_CHANNEL_SHORT[key]) return ACQUISITION_CHANNEL_SHORT[key];
+  if (key.endsWith("_ads")) return key.replace(/_ads$/, " ads").replace(/_/g, " ");
+  if (key.endsWith("_social")) return key.replace(/_social$/, " social").replace(/_/g, " ");
+  return key.replace(/_/g, " ") || "Other";
+}
+
+/** Compact “€120 FB ads · €20 Insta social” line for the Revenue metric. */
+export function formatRevenueSourceFootnote(
+  rows: SalesByChannelStat[] | undefined,
+  maxParts = 4,
+): string | null {
+  if (!rows?.length) return null;
+  const withRev = rows
+    .filter((r) => (r.revenue ?? 0) > 0)
+    .sort((a, b) => b.revenue - a.revenue);
+  if (withRev.length === 0) return null;
+
+  const top = withRev.slice(0, maxParts);
+  const rest = withRev.slice(maxParts);
+  const parts = top.map(
+    (r) => `${fmtCompact(r.revenue)} ${acquisitionChannelShortLabel(r.channel)}`,
+  );
+  const restRev = rest.reduce((s, r) => s + r.revenue, 0);
+  if (restRev > 0.009) parts.push(`${fmtCompact(restRev)} other`);
+  return parts.join(" · ");
+}
+
+/** Compact “31 FB ads · 10 Google · 10 Insta social” for the Signups metric. */
+export function formatSignupSourceFootnote(
+  rows: SignupsByChannelStat[] | undefined,
+  maxParts = 4,
+): string | null {
+  if (!rows?.length) return null;
+  const sorted = [...rows]
+    .filter((r) => r.count > 0)
+    .sort((a, b) => b.count - a.count);
+  if (sorted.length === 0) return null;
+
+  const top = sorted.slice(0, maxParts);
+  const rest = sorted.slice(maxParts);
+  const parts = top.map(
+    (r) => `${r.count.toLocaleString()} ${acquisitionChannelShortLabel(r.channel)}`,
+  );
+  const restCount = rest.reduce((s, r) => s + r.count, 0);
+  if (restCount > 0) parts.push(`${restCount.toLocaleString()} other`);
+  return parts.join(" · ");
+}
+
 export function utcDateKeyDaysAgo(daysAgo: number): string {
   const dt = new Date();
   dt.setUTCDate(dt.getUTCDate() - daysAgo);
   return dt.toISOString().substring(0, 10);
+}
+
+/** ISO week Monday (UTC) for the calendar week containing `now`. */
+export function utcMondayWeekStartIso(now = new Date()): string {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = d.getUTCDay();
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
+  d.setUTCDate(d.getUTCDate() - daysSinceMonday);
+  return d.toISOString().substring(0, 10);
+}
+
+export function utcYearStartIso(now = new Date()): string {
+  return `${now.getUTCFullYear()}-01-01`;
 }
 
 export function fmtEuro(amount: number): string {
@@ -214,7 +317,7 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
 
   const todayIso = utcDateKeyDaysAgo(0);
   const yesterdayIso = utcDateKeyDaysAgo(1);
-  const weekStartIso = utcDateKeyDaysAgo(6);
+  const weekStartIso = utcMondayWeekStartIso();
   const monthStartIso = (() => {
     const now = new Date();
     return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
@@ -225,6 +328,7 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
     return d.toISOString().substring(0, 10);
   })();
   const quarterStartIso = utcDateKeyDaysAgo(89);
+  const yearStartIso = utcYearStartIso();
 
   switch (period) {
     case "today":
@@ -296,6 +400,15 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
         checksTrend: null,
         signupsTrend: null,
       };
+    case "year":
+      return {
+        revenue: stats.revenueThisYear ?? sumSeriesInUtcWindow(revenueSeries, "revenue", yearStartIso),
+        checks: stats.checksThisYear ?? sumSeriesInUtcWindow(checksSeries, "count", yearStartIso),
+        signups: stats.signupsThisYear ?? sumSeriesInUtcWindow(usersSeries, "count", yearStartIso),
+        revenueTrend: null,
+        checksTrend: null,
+        signupsTrend: null,
+      };
   }
 }
 
@@ -306,6 +419,7 @@ export const PERIOD_LABELS: Record<DashboardPeriod, string> = {
   month: "This month",
   lastMonth: "Last month",
   quarter: "Last 90 days",
+  year: String(new Date().getUTCFullYear()),
 };
 
 export const PERIOD_COMPARE_LABEL: Partial<Record<DashboardPeriod, string>> = {

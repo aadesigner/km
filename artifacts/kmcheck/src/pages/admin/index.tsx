@@ -27,6 +27,9 @@ import {
   PERIOD_COMPARE_LABEL,
   previousComparePeriod,
   slicePeriodBreakdown,
+  formatRevenueSourceFootnote,
+  formatSignupSourceFootnote,
+  acquisitionChannelShortLabel,
 } from "@/lib/admin-dashboard-stats";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
@@ -57,7 +60,7 @@ const BRAND_LIGHT = "hsl(142, 76%, 36%)";
 const BRAND_MUTED = "hsl(142, 45%, 55%)";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const PERIODS: DashboardPeriod[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter"];
+const PERIODS: DashboardPeriod[] = ["today", "yesterday", "week", "month", "lastMonth", "quarter", "year"];
 const CHART_RANGES: ChartRange[] = [7, 30, 90];
 const CHART_METRICS: { id: ChartMetric; label: string; color: string; grad: string }[] = [
   { id: "revenue", label: "Revenue", color: BRAND, grad: "gradRevenue" },
@@ -122,6 +125,7 @@ function StatCell({
   value,
   trend,
   compareLabel,
+  footnote,
   icon: Icon,
   highlight,
   size = "compact",
@@ -132,6 +136,8 @@ function StatCell({
   value: string;
   trend?: number | null;
   compareLabel?: string;
+  /** Small secondary line (e.g. revenue by acquisition channel). */
+  footnote?: string | null;
   icon?: React.ElementType;
   highlight?: boolean;
   size?: "main" | "compact";
@@ -168,6 +174,11 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-[11px] text-muted-foreground mt-1 truncate">{compareLabel}</p>
           )}
+          {footnote ? (
+            <p className="text-[10px] text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2" title={footnote}>
+              {footnote}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -188,6 +199,11 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
           )}
+          {footnote ? (
+            <p className="text-[11px] text-muted-foreground mt-2 leading-snug line-clamp-2" title={footnote}>
+              {footnote}
+            </p>
+          ) : null}
         </div>
       ) : (
         <>
@@ -202,6 +218,11 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-[11px] md:text-sm text-muted-foreground mt-1 truncate">{compareLabel}</p>
           )}
+          {footnote ? (
+            <p className="text-[10px] md:text-[11px] text-muted-foreground/90 mt-1.5 leading-snug line-clamp-2" title={footnote}>
+              {footnote}
+            </p>
+          ) : null}
         </>
       )}
     </Panel>
@@ -367,6 +388,8 @@ type PresenceUser = {
   email: string;
   name: string | null;
   lastSeenAt: string;
+  acquisitionChannel?: string | null;
+  totalReports?: number;
 };
 
 type PresenceUsersPage = {
@@ -424,29 +447,49 @@ function PresenceUserList({
 
   return (
     <div className="divide-y divide-border/40">
-      {users.map((u) => (
-        <Link key={u.id} href={`/adminx/users/${u.id}`}>
-          <div className="group flex items-center gap-3 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
-            <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
-              {presenceUserInitials(u)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
-                {u.name || u.email}
+      {users.map((u) => {
+        const channelLabel = u.acquisitionChannel
+          ? acquisitionChannelShortLabel(u.acquisitionChannel)
+          : "—";
+        const reports = u.totalReports ?? 0;
+        const meta = `${channelLabel} · ${reports} report${reports === 1 ? "" : "s"}`;
+        return (
+          <Link key={u.id} href={`/adminx/users/${u.id}`}>
+            <div className="group flex items-center gap-2.5 md:gap-3 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
+              <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
+                {presenceUserInitials(u)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs md:text-sm font-medium truncate group-hover:text-primary transition-colors">
+                  {u.name || u.email}
+                </p>
+                {u.name ? (
+                  <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
+                ) : null}
+                <p className="sm:hidden text-[10px] text-muted-foreground/90 tabular-nums mt-0.5 truncate">
+                  {meta}
+                </p>
+              </div>
+              <p
+                className="hidden sm:block min-w-0 max-w-[9.5rem] md:max-w-[11rem] shrink text-[10px] md:text-[11px] text-muted-foreground tabular-nums truncate text-center"
+                title={meta}
+              >
+                <span className="font-medium text-foreground/70">{channelLabel}</span>
+                <span className="text-muted-foreground/40"> · </span>
+                <span className="whitespace-nowrap">
+                  {reports} report{reports === 1 ? "" : "s"}
+                </span>
               </p>
-              {u.name && (
-                <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                  {formatPresenceLastActive(u.lastSeenAt, period)}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 transition-colors" />
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
-                {formatPresenceLastActive(u.lastSeenAt, period)}
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 transition-colors" />
-            </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -511,6 +554,10 @@ export default function AdminOverview() {
     const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
     const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
     const sourceRows = slicePeriodBreakdown(stats.salesBySource, period);
+    const channelRows = slicePeriodBreakdown(stats.salesByChannel, period);
+    const signupChannelRows = slicePeriodBreakdown(stats.signupsByChannel, period);
+    const revenueSourceFootnote = formatRevenueSourceFootnote(channelRows);
+    const signupSourceFootnote = formatSignupSourceFootnote(signupChannelRows);
     const countrySignupPrev = comparePeriod
       ? slicePeriodBreakdown(stats.signupsByCountry, comparePeriod)
       : undefined;
@@ -534,6 +581,8 @@ export default function AdminOverview() {
       countryPurchaseRows,
       methodRows,
       sourceRows,
+      revenueSourceFootnote,
+      signupSourceFootnote,
       countrySignupPrev,
       countryPurchasePrev,
       methodPrev,
@@ -648,6 +697,7 @@ export default function AdminOverview() {
               value={fmtCompact(derived?.periodMetrics.revenue ?? 0)}
               trend={derived?.periodMetrics.revenueTrend}
               compareLabel={derived?.compareLabel}
+              footnote={derived?.revenueSourceFootnote}
               icon={DollarSign}
             />
             <StatCell
@@ -664,6 +714,7 @@ export default function AdminOverview() {
               value={String(derived?.periodMetrics.signups ?? 0)}
               trend={derived?.periodMetrics.signupsTrend}
               compareLabel={derived?.compareLabel}
+              footnote={derived?.signupSourceFootnote}
               icon={UserPlus}
             />
           </div>
@@ -765,7 +816,7 @@ export default function AdminOverview() {
               </div>
             </Panel>
 
-            <Panel className="overflow-hidden lg:col-span-2">
+            <Panel className="overflow-hidden">
               <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <CreditCard className="h-3.5 w-3.5 text-primary/70 shrink-0" />
@@ -783,7 +834,7 @@ export default function AdminOverview() {
               </div>
             </Panel>
 
-            <Panel className="overflow-hidden lg:col-span-2">
+            <Panel className="overflow-hidden">
               <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Megaphone className="h-3.5 w-3.5 text-primary/70 shrink-0" />
@@ -894,10 +945,10 @@ export default function AdminOverview() {
           </Panel>
         </div>
 
-        {/* Quick actions */}
-        <section>
+        {/* Quick actions — mobile only (sidebar covers desktop) */}
+        <section className="md:hidden">
           <SectionHead title="Quick actions" icon={ArrowRight} />
-          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <ActionRow href="/adminx/pending-vin-checks" icon={Clock} label="Pending checks" badge={derived?.pendingOpen} />
             <ActionRow href="/adminx/vin-catalog" icon={Database} label="VIN catalog" />
             <ActionRow href="/adminx/lookups" icon={Search} label="Lookups" />

@@ -57,6 +57,10 @@ export type OnlinePresenceUser = {
   email: string;
   name: string | null;
   lastSeenAt: string;
+  /** Fine acquisition channel (meta_ads, direct, …) or null for legacy users */
+  acquisitionChannel: string | null;
+  /** VIN reports / lookups on the account */
+  totalReports: number;
 };
 
 export type OnlinePresenceCounts = {
@@ -95,6 +99,9 @@ function mapPresenceUsers(
     email: string;
     name: string | null;
     lastSeenAt: Date | null;
+    acquisitionChannel: string | null;
+    acquisitionBucket: string | null;
+    totalReports: number;
   }>,
 ): OnlinePresenceUser[] {
   return rows
@@ -104,6 +111,8 @@ function mapPresenceUsers(
       email: r.email,
       name: r.name,
       lastSeenAt: r.lastSeenAt!.toISOString(),
+      acquisitionChannel: r.acquisitionChannel?.trim() || r.acquisitionBucket?.trim() || null,
+      totalReports: Number(r.totalReports ?? 0),
     }));
 }
 
@@ -134,6 +143,11 @@ async function fetchPresenceUserList(
       email: usersTable.email,
       name: usersTable.name,
       lastSeenAt: usersTable.lastSeenAt,
+      acquisitionChannel: usersTable.acquisitionChannel,
+      acquisitionBucket: usersTable.acquisitionBucket,
+      totalReports: sql<number>`(
+        SELECT COUNT(*)::int FROM vin_lookups vl WHERE vl.user_id = ${usersTable.id}
+      )`,
     })
     .from(usersTable)
     .where(

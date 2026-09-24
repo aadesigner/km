@@ -44,7 +44,8 @@ import { makeTtlCache } from "../lib/ttlCache.js";
 import { fetchOnlinePresenceStats, fetchPresenceUsersPage, type PresencePeriod } from "../lib/userPresence.js";
 import {
   buildPaymentsByMethodPeriods,
-  buildSalesBySourcePeriods,
+  buildSalesAttributionPeriods,
+  buildSignupsByChannelPeriods,
   buildSignupsByCountryPeriods,
   buildCountryCountPeriods,
   normalizeDailyCounts,
@@ -354,6 +355,7 @@ async function loadAdminStatsPayload() {
     purchasesByCountryRaw,
     paymentsByMethodRaw,
     salesBySourceRaw,
+    signupsByChannelRaw,
   ] = await Promise.all([
     // Merge totals + today count + weekly trends into one query
     db.execute(sql`
@@ -369,11 +371,11 @@ async function loadAdminStatsPayload() {
            AND p.amount > 0) AS avg_paid_order_value,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_this_week,
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date) AS revenue_this_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-           AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
-           AND (p.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS revenue_last_week,
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC') - INTERVAL '7 days')::date
+           AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date) AS revenue_last_week,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_this_month,
@@ -383,30 +385,35 @@ async function loadAdminStatsPayload() {
            AND (p.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS revenue_last_month,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
+           AND (p.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date) AS revenue_this_year,
+        (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date) AS revenue_today,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
            AND (p.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day') AS revenue_yesterday,
         (SELECT COUNT(*)::int FROM users u
-         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_this_week,
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date) AS signups_this_week,
         (SELECT COUNT(*)::int FROM users u
-         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
-           AND (u.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days') AS signups_last_week,
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC') - INTERVAL '7 days')::date
+           AND (u.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date) AS signups_last_week,
         (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS signups_this_month,
         (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
            AND (u.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date) AS signups_last_month,
         (SELECT COUNT(*)::int FROM users u
+         WHERE (u.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date) AS signups_this_year,
+        (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date) AS signups_today,
         (SELECT COUNT(*)::int FROM users u
          WHERE (u.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '1 day') AS signups_yesterday,
         COUNT(*) FILTER (
-          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date
         )::int AS checks_this_week,
         COUNT(*) FILTER (
-          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '13 days'
-            AND (vl.created_at AT TIME ZONE 'UTC')::date < (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '6 days'
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC') - INTERVAL '7 days')::date
+            AND (vl.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('week', NOW() AT TIME ZONE 'UTC')::date
         )::int AS checks_last_week,
         COUNT(*) FILTER (
           WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
@@ -415,6 +422,9 @@ async function loadAdminStatsPayload() {
           WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= (DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC') - INTERVAL '1 month')::date
             AND (vl.created_at AT TIME ZONE 'UTC')::date < DATE_TRUNC('month', NOW() AT TIME ZONE 'UTC')::date
         )::int AS checks_last_month,
+        COUNT(*) FILTER (
+          WHERE (vl.created_at AT TIME ZONE 'UTC')::date >= DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date
+        )::int AS checks_this_year,
         COUNT(*) FILTER (
           WHERE (vl.created_at AT TIME ZONE 'UTC')::date = (NOW() AT TIME ZONE 'UTC')::date
         )::int AS checks_today,
@@ -429,7 +439,10 @@ async function loadAdminStatsPayload() {
     db.execute(sql`
       SELECT (created_at AT TIME ZONE 'UTC')::date as date, COUNT(*)::int as count
       FROM vin_lookups
-      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY (created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
@@ -438,14 +451,20 @@ async function loadAdminStatsPayload() {
       SELECT (p.created_at AT TIME ZONE 'UTC')::date as date, COALESCE(SUM(p.amount), 0)::float as revenue
       FROM payments p
       WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY (p.created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
     db.execute(sql`
       SELECT (created_at AT TIME ZONE 'UTC')::date as date, COUNT(*)::int as count
       FROM users
-      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY (created_at AT TIME ZONE 'UTC')::date
       ORDER BY date ASC
     `),
@@ -485,7 +504,10 @@ async function loadAdminStatsPayload() {
         COALESCE(NULLIF(TRIM(country_code), ''), '—') AS country_code,
         COUNT(*)::int AS count
       FROM users
-      WHERE (created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
@@ -498,7 +520,10 @@ async function loadAdminStatsPayload() {
       LEFT JOIN users u ON u.id = p.user_id
       WHERE p.status IN ('completed', 'revoked')
         AND p.amount > 0
-        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
@@ -516,20 +541,47 @@ async function loadAdminStatsPayload() {
         COALESCE(SUM(p.amount), 0)::float AS revenue
       FROM payments p
       WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
     db.execute(sql`
       SELECT
         (p.created_at AT TIME ZONE 'UTC')::date AS date,
-        COALESCE(NULLIF(TRIM(u.acquisition_bucket), ''), 'unknown') AS bucket,
+        COALESCE(
+          NULLIF(TRIM(u.acquisition_channel), ''),
+          NULLIF(TRIM(u.acquisition_bucket), ''),
+          'unknown'
+        ) AS channel,
         COUNT(*)::int AS count,
         COALESCE(SUM(p.amount), 0)::float AS revenue
       FROM payments p
       LEFT JOIN users u ON u.id = p.user_id
       WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
-        AND (p.created_at AT TIME ZONE 'UTC')::date >= (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+        AND (p.created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
+      GROUP BY 1, 2
+      ORDER BY date ASC
+    `),
+    db.execute(sql`
+      SELECT
+        (created_at AT TIME ZONE 'UTC')::date AS date,
+        COALESCE(
+          NULLIF(TRIM(acquisition_channel), ''),
+          NULLIF(TRIM(acquisition_bucket), ''),
+          'unknown'
+        ) AS channel,
+        COUNT(*)::int AS count
+      FROM users
+      WHERE (created_at AT TIME ZONE 'UTC')::date >= LEAST(
+        DATE_TRUNC('year', NOW() AT TIME ZONE 'UTC')::date,
+        (NOW() AT TIME ZONE 'UTC')::date - INTERVAL '89 days'
+      )
       GROUP BY 1, 2
       ORDER BY date ASC
     `),
@@ -541,12 +593,15 @@ async function loadAdminStatsPayload() {
     avg_paid_order_value?: number;
     revenue_this_week?: number; revenue_last_week?: number;
     revenue_this_month?: number; revenue_last_month?: number;
+    revenue_this_year?: number;
     revenue_today?: number; revenue_yesterday?: number;
     signups_this_week?: number; signups_last_week?: number;
     signups_this_month?: number; signups_last_month?: number;
+    signups_this_year?: number;
     signups_today?: number; signups_yesterday?: number;
     checks_this_week?: number; checks_last_week?: number;
     checks_this_month?: number; checks_last_month?: number;
+    checks_this_year?: number;
     checks_today?: number; checks_yesterday?: number;
   };
 
@@ -566,6 +621,7 @@ async function loadAdminStatsPayload() {
   const revenueLastWeek = Number(agg.revenue_last_week ?? 0);
   const revenueThisMonth = Number(agg.revenue_this_month ?? 0);
   const revenueLastMonth = Number(agg.revenue_last_month ?? 0);
+  const revenueThisYear = Number(agg.revenue_this_year ?? 0);
 
   const recentPendingVinChecks = await (async () => {
     if (recentPendingRows.length === 0) return [];
@@ -603,18 +659,23 @@ async function loadAdminStatsPayload() {
     revenueLastWeek,
     revenueThisMonth,
     revenueLastMonth,
+    revenueThisYear,
     revenueToday: Number(agg.revenue_today ?? 0),
     revenueYesterday: Number(agg.revenue_yesterday ?? 0),
     signupsThisWeek: Number(agg.signups_this_week ?? 0),
     signupsLastWeek: Number(agg.signups_last_week ?? 0),
     signupsThisMonth: Number(agg.signups_this_month ?? 0),
     signupsLastMonth: Number(agg.signups_last_month ?? 0),
+    signupsThisYear: Number(agg.signups_this_year ?? 0),
     signupsToday: Number(agg.signups_today ?? 0),
     signupsYesterday: Number(agg.signups_yesterday ?? 0),
     checksToday: Number(agg.checks_today ?? 0),
     checksYesterday: Number(agg.checks_yesterday ?? 0),
+    checksThisWeek: Number(agg.checks_this_week ?? 0),
+    checksLastWeek: Number(agg.checks_last_week ?? 0),
     checksThisMonth: Number(agg.checks_this_month ?? 0),
     checksLastMonth: Number(agg.checks_last_month ?? 0),
+    checksThisYear: Number(agg.checks_this_year ?? 0),
     cacheHitRate: Math.round(cacheHitRate * 10) / 10,
     activeProviders: activeProviders ?? 0,
     checksByDay: sliceSeriesFrom(checksBy90, cutoff7Str),
@@ -629,8 +690,6 @@ async function loadAdminStatsPayload() {
     paymentStatusCounts: normalizePaymentStatusCounts(
       paymentStatusCountsRaw.rows as Array<{ status: unknown; count: unknown }>,
     ),
-    checksThisWeek: Number(agg.checks_this_week ?? 0),
-    checksLastWeek: Number(agg.checks_last_week ?? 0),
     pendingVinChecksOpen: pendingVinChecksOpen ?? 0,
     recentPendingVinChecks,
     onlinePresence,
@@ -643,8 +702,11 @@ async function loadAdminStatsPayload() {
     paymentsByMethod: buildPaymentsByMethodPeriods(
       paymentsByMethodRaw.rows as Array<{ date: unknown; method: unknown; count: unknown; revenue: unknown }>,
     ),
-    salesBySource: buildSalesBySourcePeriods(
-      salesBySourceRaw.rows as Array<{ date: unknown; bucket: unknown; count: unknown; revenue: unknown }>,
+    ...buildSalesAttributionPeriods(
+      salesBySourceRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown; revenue: unknown }>,
+    ),
+    signupsByChannel: buildSignupsByChannelPeriods(
+      signupsByChannelRaw.rows as Array<{ date: unknown; channel: unknown; count: unknown }>,
     ),
   };
 }
