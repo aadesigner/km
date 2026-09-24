@@ -158,13 +158,17 @@ function StatCell({
   const renderSourceBreakdown = () => {
     if (sourceParts?.length) {
       return (
-        <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1" title={titleHint}>
+        <div
+          className="mt-1 md:mt-2 flex flex-nowrap md:flex-wrap gap-1 overflow-hidden"
+          title={titleHint}
+        >
           {sourceParts.map((part) => (
             <span
               key={`${part.channel ?? part.label}-${part.value}`}
               className={cn(
-                "inline-flex items-baseline gap-1 max-w-full rounded-md border",
-                "px-1.5 py-0.5 text-[10px] md:text-[11px] leading-tight",
+                "inline-flex items-baseline gap-0.5 max-w-[5.5rem] sm:max-w-[7rem] md:max-w-full shrink-0 md:shrink",
+                "rounded border px-1 py-px md:px-1.5 md:py-0.5 md:rounded-md",
+                "text-[9px] md:text-[11px] leading-none truncate",
                 acquisitionChannelTintClass(part.channel ?? part.label),
               )}
             >
@@ -488,8 +492,8 @@ function PresenceUserList({
         const reportsLabel = `${reports} report${reports === 1 ? "" : "s"}`;
         return (
           <Link key={u.id} href={`/adminx/users/${u.id}`}>
-            <div className="group flex items-center gap-2.5 md:gap-3 px-3.5 py-2.5 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
-              <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[11px] md:text-xs font-semibold ring-1 ring-primary/10">
+            <div className="group flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 hover:bg-muted/40 transition-colors">
+              <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[10px] md:text-xs font-semibold ring-1 ring-primary/10">
                 {presenceUserInitials(u)}
               </div>
               <div className="min-w-0 flex-1">
@@ -499,37 +503,29 @@ function PresenceUserList({
                 {u.name ? (
                   <p className="text-[11px] md:text-xs text-muted-foreground truncate">{u.email}</p>
                 ) : null}
-                <div className="sm:hidden mt-1 flex flex-wrap items-center gap-1.5">
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-none",
-                      acquisitionChannelTintClass(channelKey),
-                    )}
-                  >
-                    {channelLabel}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">{reportsLabel}</span>
-                </div>
               </div>
-              <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
                 <span
                   className={cn(
-                    "inline-flex items-center max-w-[7.5rem] md:max-w-[9rem] truncate rounded-md border px-1.5 py-0.5 text-[10px] md:text-[11px] font-medium leading-none",
+                    "inline-flex items-center max-w-[4.75rem] sm:max-w-[7.5rem] md:max-w-[9rem] truncate rounded border px-1 py-px md:px-1.5 md:py-0.5 md:rounded-md",
+                    "text-[9px] md:text-[11px] font-medium leading-none",
                     acquisitionChannelTintClass(channelKey),
                   )}
                   title={channelLabel}
                 >
                   {channelLabel}
                 </span>
-                <span className="text-[10px] md:text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
-                  {reportsLabel}
+                <span
+                  className="text-[9px] md:text-[11px] text-muted-foreground tabular-nums whitespace-nowrap"
+                  title={reportsLabel}
+                >
+                  {reports}
+                  <span className="hidden sm:inline">{` report${reports === 1 ? "" : "s"}`}</span>
                 </span>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                <span className="text-[10px] md:text-xs text-muted-foreground tabular-nums whitespace-nowrap ml-0.5">
                   {formatPresenceLastActive(u.lastSeenAt, period)}
                 </span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 transition-colors" />
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 transition-colors hidden sm:block" />
               </div>
             </div>
           </Link>
