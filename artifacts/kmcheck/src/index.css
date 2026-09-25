@@ -1124,8 +1124,8 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-shell {
 /* ========== Revenue mood gauge (desktop floating cluster) ========== */
 .admin-mood-gauge {
   position: relative;
-  width: 9.25rem;
-  padding: 0.35rem 0.4rem 0.4rem;
+  width: 7rem;
+  padding: 0.25rem 0.3rem 0.3rem;
   border-radius: 0.95rem;
   border: 1px solid hsl(var(--border) / 0.85);
   background:
@@ -1160,14 +1160,14 @@ html.dark .admin-mood-gauge {
 }
 
 .admin-mood-gauge__cluster {
-  margin-top: -1.35rem;
+  margin-top: -1.02rem;
   text-align: center;
   pointer-events: none;
 }
 
 .admin-mood-gauge__speed {
   margin: 0;
-  font-size: 1.28rem;
+  font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -1176,8 +1176,8 @@ html.dark .admin-mood-gauge {
 }
 
 .admin-mood-gauge__unit {
-  margin: 0.08rem 0 0;
-  font-size: 0.5rem;
+  margin: 0.05rem 0 0;
+  font-size: 0.42rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1189,14 +1189,14 @@ html.dark .admin-mood-gauge {
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.35rem;
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
+  margin-top: 0.28rem;
+  padding-top: 0.26rem;
   border-top: 1px solid hsl(var(--border) / 0.55);
 }
 
 .admin-mood-gauge__title {
   margin: 0;
-  font-size: 0.55rem;
+  font-size: 0.48rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1209,8 +1209,8 @@ html.dark .admin-mood-gauge__title {
 }
 
 .admin-mood-gauge__sub {
-  margin: 0.1rem 0 0;
-  font-size: 0.5rem;
+  margin: 0.06rem 0 0;
+  font-size: 0.42rem;
   color: hsl(var(--muted-foreground));
   letter-spacing: 0.02em;
 }
@@ -1218,7 +1218,7 @@ html.dark .admin-mood-gauge__title {
 .admin-mood-gauge__amount {
   margin: 0;
   flex-shrink: 0;
-  font-size: 0.68rem;
+  font-size: 0.56rem;
   font-weight: 700;
   color: hsl(var(--foreground));
   line-height: 1.1;

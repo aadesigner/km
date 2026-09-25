@@ -8,6 +8,7 @@ import {
   Database, Megaphone, Globe, CreditCard, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RisingCompactEuro, RisingEuro, RisingInteger, RisingPercent } from "@/hooks/use-rising-number";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import { FlagImg } from "@/components/flag-img";
 import { userCountryLabel } from "@/lib/user-countries";
@@ -15,7 +16,6 @@ import {
   type DashboardPeriod,
   PERIOD_LABELS,
   fmtCompact,
-  fmtEuro,
   acquisitionChannelShortLabel,
   acquisitionChannelTextClass,
   PAYMENT_METHOD_LABELS,
@@ -100,7 +100,7 @@ function KpiTile({
   icon: Icon,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   icon: React.ElementType;
 }) {
   return (
@@ -216,17 +216,17 @@ export default function AdminAnalytics() {
         />
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-2.5">
-          <KpiTile label="Revenue" value={fmtCompact(data?.summary.revenue ?? 0)} icon={DollarSign} />
-          <KpiTile label="Checks" value={String(data?.summary.checks ?? 0)} icon={Search} />
-          <KpiTile label="Signups" value={String(data?.summary.signups ?? 0)} icon={UserPlus} />
-          <KpiTile label="Paying users" value={String(data?.summary.payingUsers ?? 0)} icon={Users} />
-          <KpiTile label="AOV" value={fmtEuro(data?.summary.aov ?? 0)} icon={DollarSign} />
+          <KpiTile label="Revenue" value={<RisingCompactEuro value={data?.summary.revenue ?? 0} replayKey={period} />} icon={DollarSign} />
+          <KpiTile label="Checks" value={<RisingInteger value={data?.summary.checks ?? 0} replayKey={period} />} icon={Search} />
+          <KpiTile label="Signups" value={<RisingInteger value={data?.summary.signups ?? 0} replayKey={period} />} icon={UserPlus} />
+          <KpiTile label="Paying users" value={<RisingInteger value={data?.summary.payingUsers ?? 0} replayKey={period} />} icon={Users} />
+          <KpiTile label="AOV" value={<RisingEuro value={data?.summary.aov ?? 0} replayKey={period} />} icon={DollarSign} />
           <KpiTile
             label="Cache hit"
-            value={`${Number(data?.summary.cacheHitRate ?? 0).toFixed(1)}%`}
+            value={<RisingPercent value={Number(data?.summary.cacheHitRate ?? 0)} replayKey={period} />}
             icon={Database}
           />
-          <KpiTile label="Online now" value={String(data?.summary.onlineNow ?? 0)} icon={Activity} />
+          <KpiTile label="Online now" value={<RisingInteger value={data?.summary.onlineNow ?? 0} replayKey={period} />} icon={Activity} />
         </div>
 
         <Panel>

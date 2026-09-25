@@ -986,6 +986,8 @@ export default function Checkout({ params }: Props) {
       return false;
     }
     if (!paypalContainerRef.current) {
+      setStatus("idle");
+      setPaymentStarted(false);
       return false;
     }
 
@@ -1049,6 +1051,7 @@ export default function Checkout({ params }: Props) {
     try {
       paypalContainerRef.current.innerHTML = "";
       await buttons.render(paypalContainerRef.current);
+      paypalContainerRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
       return true;
     } catch {
       pendingPaypalOrderRef.current = null;
@@ -1549,7 +1552,7 @@ export default function Checkout({ params }: Props) {
     status !== "success";
   const showProceedButton =
     checkoutDataReady &&
-    (status === "idle" || status === "error") &&
+    (status === "idle" || status === "error" || (status === "creating" && payMethod === "paypal")) &&
     (payMethod === "card" || !paymentStarted) &&
     !(payMethod === "card" && pubSettings?.pokEnabled && !!pokOrderId);
   const showCreditsOption =
@@ -1661,7 +1664,7 @@ export default function Checkout({ params }: Props) {
                             "relative flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full transition-shadow duration-300",
                             isComplete && "bg-primary text-primary-foreground shadow-sm shadow-primary/25",
                             isCurrent && !isComplete && "bg-primary/10 text-primary ring-2 ring-primary/65 ring-offset-1 ring-offset-background",
-                            isUpcoming && "bg-muted/40 text-muted-foreground/55 ring-1 ring-border/60",
+                            isUpcoming && "bg-muted/20 text-muted-foreground/30 ring-1 ring-border/30",
                           )}
                         >
                           {isCurrent && !isComplete && (
@@ -1680,7 +1683,7 @@ export default function Checkout({ params }: Props) {
                             <StepIcon
                               className={cn(
                                 "h-3 w-3 sm:h-3.5 sm:w-3.5",
-                                isCurrent ? "stroke-[2.25px]" : "stroke-2 opacity-75",
+                                isCurrent ? "stroke-[2.25px]" : isUpcoming ? "stroke-2 opacity-40" : "stroke-2 opacity-75",
                               )}
                               aria-hidden
                             />
@@ -1691,7 +1694,7 @@ export default function Checkout({ params }: Props) {
                             "text-[10px] sm:text-[11px] text-center leading-tight max-w-[3.85rem] sm:max-w-none sm:whitespace-nowrap transition-colors",
                             isComplete && "font-semibold text-foreground/85",
                             isCurrent && "font-bold text-primary",
-                            isUpcoming && "font-medium text-muted-foreground/75",
+                            isUpcoming && "font-medium text-muted-foreground/35",
                           )}
                         >
                           {t(step.labelKey)}
@@ -1700,7 +1703,10 @@ export default function Checkout({ params }: Props) {
 
                       {i < steps.length - 1 && (
                         <div
-                          className="relative mt-3 sm:mt-3.5 w-6 sm:w-auto sm:mx-2 sm:flex-1 sm:min-w-[1.25rem] h-0.5 rounded-full bg-muted/70 overflow-hidden shrink-0"
+                          className={cn(
+                            "relative mt-3 sm:mt-3.5 w-6 sm:w-auto sm:mx-2 sm:flex-1 sm:min-w-[1.25rem] h-0.5 rounded-full overflow-hidden shrink-0",
+                            i < currentStep ? "bg-muted/70" : "bg-muted/30",
+                          )}
                           aria-hidden
                         >
                           <motion.div
@@ -2266,11 +2272,6 @@ export default function Checkout({ params }: Props) {
                     </div>
                   )}
 
-                  {/* PayPal button container — color-scheme:none stops forced white iframe chrome in dark mode */}
-                  {paymentAllowed && !isFreeCoupon && (
-                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
-                  )}
-
                   {/* Hosted card fields (PayPal) or POK GuestCheckoutForm.
                       Keep POK form mounted once we have an orderId even if peek flickers —
                       unmounting right after a successful create looks like payment failure. */}
@@ -2361,6 +2362,11 @@ export default function Checkout({ params }: Props) {
                         ? t("processing_retrieving_data")
                         : t("processing_payment")}
                     </div>
+                  )}
+
+                  {/* PayPal buttons render here, where the buyer just tapped. */}
+                  {paymentAllowed && !isFreeCoupon && (
+                    <div ref={paypalContainerRef} className={cn("[color-scheme:none] min-h-0", payMethod === "card" && "hidden")} />
                   )}
 
                   {/* Proceed / Pay by Card / Free button */}

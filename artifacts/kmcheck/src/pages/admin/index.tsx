@@ -12,7 +12,7 @@ import {
   Activity, UserPlus, BarChart3, Zap, Globe, CreditCard, Megaphone,
 } from "lucide-react";
 import { Link } from "wouter";
-import { cn } from "@/lib/utils";
+import { RisingCompactEuro, RisingInteger } from "@/hooks/use-rising-number";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import {
   type ExtendedStats,
@@ -136,7 +136,7 @@ function StatCell({
   selected,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   trend?: number | null;
   compareLabel?: string;
   /** Small secondary line (e.g. legacy text footnote). */
@@ -740,7 +740,7 @@ export default function AdminOverview() {
             <StatCell
               size="main"
               label="Revenue"
-              value={fmtCompact(derived?.periodMetrics.revenue ?? 0)}
+              value={<RisingCompactEuro value={derived?.periodMetrics.revenue ?? 0} replayKey={period} />}
               trend={derived?.periodMetrics.revenueTrend}
               compareLabel={derived?.compareLabel}
               sourceParts={derived?.revenueSourceChips}
@@ -757,7 +757,7 @@ export default function AdminOverview() {
             <StatCell
               size="main"
               label="Signups"
-              value={String(derived?.periodMetrics.signups ?? 0)}
+              value={<RisingInteger value={derived?.periodMetrics.signups ?? 0} replayKey={period} />}
               trend={derived?.periodMetrics.signupsTrend}
               compareLabel={derived?.compareLabel}
               sourceParts={derived?.signupSourceChips}
