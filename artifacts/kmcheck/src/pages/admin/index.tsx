@@ -838,24 +838,6 @@ export default function AdminOverview() {
             <Panel className="overflow-hidden">
               <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <UserPlus className="h-3.5 w-3.5 text-primary/70 shrink-0" />
-                  <h3 className="text-xs md:text-sm font-semibold truncate">Signups by country</h3>
-                </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
-              </div>
-              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
-                <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
-                  <AdminCountrySignupsChart
-                    data={derived?.countrySignupRows ?? []}
-                    previousData={derived?.countrySignupPrev}
-                  />
-                </Suspense>
-              </div>
-            </Panel>
-
-            <Panel className="overflow-hidden">
-              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
                   <Globe className="h-3.5 w-3.5 text-primary/70 shrink-0" />
                   <h3 className="text-xs md:text-sm font-semibold truncate">Purchases by country</h3>
                 </div>
@@ -866,6 +848,24 @@ export default function AdminOverview() {
                   <AdminCountryPurchasesChart
                     data={derived?.countryPurchaseRows ?? []}
                     previousData={derived?.countryPurchasePrev}
+                  />
+                </Suspense>
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden">
+              <div className="px-3.5 pt-3 pb-2 md:px-4 md:pt-3.5 md:pb-2 border-b border-border/40 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <UserPlus className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                  <h3 className="text-xs md:text-sm font-semibold truncate">Signups by country</h3>
+                </div>
+                <span className="text-[11px] text-muted-foreground shrink-0">{PERIOD_LABELS[period]}</span>
+              </div>
+              <div className="px-3.5 py-3 md:px-4 md:py-3.5">
+                <Suspense fallback={<Skeleton className="h-40 w-full rounded-lg" />}>
+                  <AdminCountrySignupsChart
+                    data={derived?.countrySignupRows ?? []}
+                    previousData={derived?.countrySignupPrev}
                   />
                 </Suspense>
               </div>
