@@ -216,7 +216,7 @@ function StatCell({
       )}
     >
       {isMain ? (
-        <div className="flex h-full flex-col md:hidden">
+        <div className="md:hidden">
           <div className="flex items-start justify-between gap-1.5 min-w-0">
             <div className="flex items-baseline gap-1.5 min-w-0">
               <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
@@ -224,20 +224,16 @@ function StatCell({
             </div>
             {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0 mt-0.5" />}
           </div>
-          <div className="mt-1.5 min-h-[2rem]">
-            {renderSourceBreakdown()}
-          </div>
-          <div className="mt-auto pt-1.5">
-            <p className="text-[11px] text-muted-foreground truncate leading-tight">{label}</p>
-            {compareLabel && trend != null && (
-              <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
-            )}
-          </div>
+          {renderSourceBreakdown({ className: "mt-1.5" })}
+          <p className="text-[11px] text-muted-foreground mt-1.5 truncate leading-tight">{label}</p>
+          {compareLabel && trend != null && (
+            <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
+          )}
         </div>
       ) : null}
 
       {isMain ? (
-        <div className="hidden h-full flex-col md:flex">
+        <div className="hidden md:block">
           <div className="flex items-start justify-between gap-3">
             {Icon && (
               <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
@@ -249,15 +245,11 @@ function StatCell({
           <p className="text-3xl lg:text-[2rem] font-bold tabular-nums tracking-tight mt-4 leading-none">
             {value}
           </p>
-          <div className="mt-2.5 min-h-[2.75rem]">
-            {renderSourceBreakdown()}
-          </div>
-          <div className="mt-auto pt-2">
-            <p className="text-base font-medium text-foreground/80">{label}</p>
-            {compareLabel && trend != null && (
-              <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
-            )}
-          </div>
+          {renderSourceBreakdown({ className: "mt-2.5" })}
+          <p className={cn("text-base font-medium text-foreground/80", sourceParts?.length ? "mt-2" : "mt-2.5")}>{label}</p>
+          {compareLabel && trend != null && (
+            <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
+          )}
         </div>
       ) : (
         <>
