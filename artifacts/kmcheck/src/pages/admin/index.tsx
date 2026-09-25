@@ -12,6 +12,7 @@ import {
   Activity, UserPlus, BarChart3, Zap, Globe, CreditCard, Megaphone,
 } from "lucide-react";
 import { Link } from "wouter";
+import { cn } from "@/lib/utils";
 import { RisingCompactEuro, RisingInteger } from "@/hooks/use-rising-number";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import {
