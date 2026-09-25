@@ -224,7 +224,6 @@ function StatCell({
             </div>
             {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0 mt-0.5" />}
           </div>
-          {renderSourceBreakdown({ className: "mt-1.5" })}
           <p className="text-[11px] text-muted-foreground mt-1.5 truncate leading-tight">{label}</p>
           {compareLabel && trend != null && (
             <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
