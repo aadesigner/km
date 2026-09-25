@@ -162,8 +162,7 @@ function StatCell({
       return (
         <p
           className={cn(
-            "text-[10px] md:text-[13px] leading-snug tracking-tight",
-            "line-clamp-2 md:line-clamp-none",
+            "text-[10px] md:text-[13px] leading-snug tracking-tight line-clamp-2",
             opts?.className,
           )}
           title={titleHint}
@@ -205,7 +204,7 @@ function StatCell({
   const panel = (
     <Panel
       className={cn(
-        "px-3 py-2.5 sm:px-3.5 sm:py-3",
+        "flex h-full flex-col px-3 py-2.5 sm:px-3.5 sm:py-3",
         isMain && [
           "border-t-[3px] border-t-primary bg-gradient-to-b from-primary/[0.05] to-card",
           "md:px-6 md:py-5 md:rounded-xl md:shadow-sm",
@@ -217,26 +216,28 @@ function StatCell({
       )}
     >
       {isMain ? (
-        <div className="md:hidden">
+        <div className="flex h-full flex-col md:hidden">
           <div className="flex items-start justify-between gap-1.5 min-w-0">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
-                <TrendBadge value={trend ?? null} compact />
-              </div>
-              {renderSourceBreakdown({ className: "mt-1.5" })}
-              <p className="text-[11px] text-muted-foreground mt-1.5 truncate leading-tight">{label}</p>
-              {compareLabel && trend != null && (
-                <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
-              )}
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
+              <TrendBadge value={trend ?? null} compact />
             </div>
             {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0 mt-0.5" />}
+          </div>
+          <div className="mt-1.5 min-h-[2rem]">
+            {renderSourceBreakdown()}
+          </div>
+          <div className="mt-auto pt-1.5">
+            <p className="text-[11px] text-muted-foreground truncate leading-tight">{label}</p>
+            {compareLabel && trend != null && (
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
+            )}
           </div>
         </div>
       ) : null}
 
       {isMain ? (
-        <div className="hidden md:block">
+        <div className="hidden h-full flex-col md:flex">
           <div className="flex items-start justify-between gap-3">
             {Icon && (
               <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
@@ -248,11 +249,15 @@ function StatCell({
           <p className="text-3xl lg:text-[2rem] font-bold tabular-nums tracking-tight mt-4 leading-none">
             {value}
           </p>
-          {renderSourceBreakdown({ className: "mt-2.5" })}
-          <p className="text-base font-medium text-foreground/80 mt-2">{label}</p>
-          {compareLabel && trend != null && (
-            <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
-          )}
+          <div className="mt-2.5 min-h-[2.75rem]">
+            {renderSourceBreakdown()}
+          </div>
+          <div className="mt-auto pt-2">
+            <p className="text-base font-medium text-foreground/80">{label}</p>
+            {compareLabel && trend != null && (
+              <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
+            )}
+          </div>
         </div>
       ) : (
         <>
@@ -740,7 +745,7 @@ export default function AdminOverview() {
           <div className="mb-2.5 md:mb-3">
             <PillTabs<DashboardPeriod> value={period} options={PERIODS.map((p) => ({ id: p, label: PERIOD_LABELS[p] }))} onChange={(id) => setPeriod(id)} />
           </div>
-          <div className="grid grid-cols-3 gap-2.5 md:gap-5">
+          <div className="grid grid-cols-3 items-stretch gap-2.5 md:gap-5">
             <StatCell
               size="main"
               label="Revenue"
