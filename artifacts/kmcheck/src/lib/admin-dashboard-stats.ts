@@ -155,6 +155,12 @@ export const ACQUISITION_CHANNEL_SHORT: Record<string, string> = {
   instagram_ads: "Insta ads",
   facebook_social: "FB social",
   instagram_social: "Insta social",
+  messenger: "Messenger",
+  whatsapp_social: "WhatsApp",
+  youtube_social: "YouTube",
+  pinterest_social: "Pinterest",
+  reddit_social: "Reddit",
+  snapchat_social: "Snapchat",
   tiktok_ads: "TikTok ads",
   tiktok_social: "TikTok",
   google_ads: "Google ads",
@@ -276,6 +282,10 @@ function acquisitionBrandKey(channel: string | null | undefined): keyof typeof A
   }
   if (key === "bing_ads" || key.startsWith("bing")) return "bing";
   if (key === "messenger" || key.startsWith("messenger") || key === "msg") return "messenger";
+  if (key.startsWith("whatsapp")) return "organic_social";
+  if (key.startsWith("youtube") || key.startsWith("pinterest") || key.startsWith("reddit") || key.startsWith("snapchat")) {
+    return "organic_social";
+  }
   if (key === "referral") return "referral";
   if (key === "direct") return "direct";
   if (key === "paid_ads") return "paid_ads";

@@ -56,19 +56,97 @@ function param(sp: URLSearchParams, key: string): string | null {
   return v ? v.slice(0, 128) : null;
 }
 
+type SocialKind =
+  | "instagram"
+  | "facebook"
+  | "messenger"
+  | "tiktok"
+  | "x"
+  | "linkedin"
+  | "whatsapp"
+  | "youtube"
+  | "pinterest"
+  | "reddit"
+  | "snapchat";
+
 function isPaidMedium(medium: string | null): boolean {
   if (!medium) return false;
   return PAID_MEDIUMS.has(medium.toLowerCase());
 }
 
-function socialKind(host: string | null): "instagram" | "facebook" | "tiktok" | "x" | "linkedin" | null {
+function socialKind(host: string | null): SocialKind | null {
   if (!host) return null;
-  if (/(^|\.)instagram\.com$/i.test(host) || host === "l.instagram.com") return "instagram";
-  if (/(^|\.)(facebook|fb|fb\.me)\.com$/i.test(host) || host.endsWith(".facebook.com")) return "facebook";
+  if (
+    /(^|\.)instagram\.com$/i.test(host)
+    || host === "ig.me"
+    || /(^|\.)threads\.net$/i.test(host)
+    || /(^|\.)threads\.com$/i.test(host)
+  ) {
+    return "instagram";
+  }
+  if (
+    /(^|\.)messenger\.com$/i.test(host)
+    || host === "m.me"
+    || host === "l.messenger.com"
+  ) {
+    return "messenger";
+  }
+  if (
+    /(^|\.)facebook\.com$/i.test(host)
+    || /(^|\.)fb\.com$/i.test(host)
+    || host === "fb.me"
+    || host.endsWith(".fb.me")
+  ) {
+    return "facebook";
+  }
   if (/(^|\.)tiktok\.com$/i.test(host)) return "tiktok";
   if (/(^|\.)(twitter|x)\.com$/i.test(host) || host === "t.co") return "x";
-  if (/(^|\.)(linkedin|lnkd\.in)/i.test(host)) return "linkedin";
+  if (/(^|\.)linkedin\.com$/i.test(host) || host === "lnkd.in" || host.endsWith(".lnkd.in")) return "linkedin";
+  if (/(^|\.)whatsapp\.com$/i.test(host) || host === "wa.me") return "whatsapp";
+  if (/(^|\.)youtube\.com$/i.test(host) || host === "youtu.be") return "youtube";
+  if (/(^|\.)pinterest\.com$/i.test(host) || host === "pin.it") return "pinterest";
+  if (/(^|\.)reddit\.com$/i.test(host)) return "reddit";
+  if (/(^|\.)snapchat\.com$/i.test(host)) return "snapchat";
   return null;
+}
+
+function inAppSocial(userAgent: string): SocialKind | null {
+  if (!userAgent) return null;
+  if (/Instagram|Threads/i.test(userAgent)) return "instagram";
+  if (/FBAN|FBAV|FB_IAB|FB4A|FBIOS/i.test(userAgent)) return "facebook";
+  if (/Messenger/i.test(userAgent)) return "messenger";
+  if (/TikTok/i.test(userAgent)) return "tiktok";
+  if (/\bTwitter/i.test(userAgent)) return "x";
+  if (/LinkedIn/i.test(userAgent)) return "linkedin";
+  if (/WhatsApp/i.test(userAgent)) return "whatsapp";
+  return null;
+}
+
+function organicChannel(kind: SocialKind): string {
+  switch (kind) {
+    case "instagram": return "instagram_social";
+    case "facebook": return "facebook_social";
+    case "messenger": return "messenger";
+    case "tiktok": return "tiktok_social";
+    case "x": return "x_social";
+    case "linkedin": return "linkedin_social";
+    case "whatsapp": return "whatsapp_social";
+    case "youtube": return "youtube_social";
+    case "pinterest": return "pinterest_social";
+    case "reddit": return "reddit_social";
+    case "snapchat": return "snapchat_social";
+  }
+}
+
+function paidChannel(kind: SocialKind | "meta" | "google" | string | null, source: string | null): string {
+  if (kind === "instagram") return "instagram_ads";
+  if (kind === "facebook" || kind === "meta" || kind === "messenger") return "meta_ads";
+  if (kind === "tiktok") return "tiktok_ads";
+  if (kind === "x") return "x_ads";
+  if (kind === "linkedin") return "linkedin_ads";
+  if (kind === "google") return "google_ads";
+  if (source) return `${source.slice(0, 24)}_ads`;
+  return "paid_ads";
 }
 
 function isGoogleHost(host: string | null): boolean {
@@ -82,22 +160,35 @@ function isSelfHost(referrerHost: string | null): boolean {
   return referrerHost === self || referrerHost.endsWith(`.${self}`);
 }
 
-function sourceBrand(source: string | null): string | null {
+function sourceBrand(source: string | null): SocialKind | "meta" | "google" | null {
   if (!source) return null;
   const s = source.toLowerCase();
+  if (/^(ig|instagram|insta|threads)$/.test(s)) return "instagram";
+  if (/^(messenger|msg)$/.test(s)) return "messenger";
   if (/^(meta|facebook|fb)$/.test(s)) return "meta";
-  if (/^(ig|instagram)$/.test(s)) return "instagram";
   if (/^tiktok$/.test(s)) return "tiktok";
   if (/^(google|adwords|adsense)$/.test(s)) return "google";
   if (/^(twitter|x)$/.test(s)) return "x";
   if (/^linkedin$/.test(s)) return "linkedin";
+  if (/^(whatsapp|wa)$/.test(s)) return "whatsapp";
+  if (/^(youtube|yt)$/.test(s)) return "youtube";
+  if (/^pinterest$/.test(s)) return "pinterest";
+  if (/^reddit$/.test(s)) return "reddit";
+  if (/^snapchat$/.test(s)) return "snapchat";
   return null;
 }
 
-/** Classify current landing URL + document.referrer. */
+function brandToSocial(brand: SocialKind | "meta" | "google" | null): SocialKind | null {
+  if (!brand || brand === "google") return null;
+  if (brand === "meta") return "facebook";
+  return brand;
+}
+
+/** Classify current landing URL + document.referrer (+ in-app browser when present). */
 export function classifyAcquisition(
   href: string = typeof window !== "undefined" ? window.location.href : "",
   referrerUrl: string = typeof document !== "undefined" ? document.referrer : "",
+  userAgent: string = typeof navigator !== "undefined" ? navigator.userAgent : "",
 ): AcquisitionPayload {
   let sp: URLSearchParams;
   try {
@@ -116,7 +207,7 @@ export function classifyAcquisition(
   const referrer = hostOnly(referrerUrl);
   const extReferrer = isSelfHost(referrer) ? null : referrer;
   const brand = sourceBrand(source);
-  const social = socialKind(extReferrer);
+  const social = socialKind(extReferrer) ?? inAppSocial(userAgent);
   const capturedAt = new Date().toISOString();
 
   const base = {
@@ -139,44 +230,32 @@ export function classifyAcquisition(
     return { ...base, bucket: "paid_ads", channel: "bing_ads", clickId: msclkid };
   }
 
-  // Paid UTMs
+  // Paid UTMs only — a social site by itself is not an ad
   if (isPaidMedium(medium) || medium?.toLowerCase() === "paid_social") {
-    let channel = "paid_ads";
-    if (brand === "meta" || brand === "facebook") channel = "meta_ads";
-    else if (brand === "instagram") channel = "instagram_ads";
-    else if (brand === "tiktok") channel = "tiktok_ads";
-    else if (brand === "google") channel = "google_ads";
-    else if (brand === "x") channel = "x_ads";
-    else if (brand === "linkedin") channel = "linkedin_ads";
-    else if (source) channel = `${source.slice(0, 24)}_ads`;
-    return { ...base, bucket: "paid_ads", channel, clickId: fbclid };
+    const kind = brandToSocial(brand) ?? social;
+    return {
+      ...base,
+      bucket: "paid_ads",
+      channel: paidChannel(kind ?? brand, source),
+      clickId: fbclid,
+    };
   }
 
-  // Organic social referrer (Instagram in-app often keeps fbclid on the URL)
+  // Referrer or in-app browser (Instagram / Facebook / TikTok / X / …)
   if (social) {
-    const channel =
-      social === "instagram" ? "instagram_social"
-        : social === "facebook" ? "facebook_social"
-          : social === "tiktok" ? "tiktok_social"
-            : social === "x" ? "x_social"
-              : "linkedin_social";
-    return { ...base, bucket: "organic_social", channel, clickId: fbclid };
+    return { ...base, bucket: "organic_social", channel: organicChannel(social), clickId: fbclid };
   }
 
   // Tagged social without a paid medium (bio links, stories)
-  if (brand === "instagram" || brand === "facebook" || brand === "meta" || brand === "tiktok" || brand === "x" || brand === "linkedin") {
-    const channel =
-      brand === "instagram" ? "instagram_social"
-        : brand === "tiktok" ? "tiktok_social"
-          : brand === "x" ? "x_social"
-            : brand === "linkedin" ? "linkedin_social"
-              : "facebook_social";
-    return { ...base, bucket: "organic_social", channel, clickId: fbclid };
+  const tagged = brandToSocial(brand);
+  if (tagged) {
+    return { ...base, bucket: "organic_social", channel: organicChannel(tagged), clickId: fbclid };
   }
 
-  // fbclid alone is Meta wrapping a link — not proof of an ad
+  // fbclid is added to Meta organic links too. Without a referrer/app, we only
+  // know it came from Meta — not that it was an ad, and not which app.
   if (fbclid) {
-    return { ...base, bucket: "organic_social", channel: "instagram_social", clickId: fbclid };
+    return { ...base, bucket: "organic_social", channel: "facebook_social", clickId: fbclid };
   }
 
   // Google organic (referrer or utm without paid)
