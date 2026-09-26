@@ -93,6 +93,24 @@ export function sanitizeAcquisitionPayload(raw: unknown): AcquisitionPayload | n
 }
 
 /** Decode cookie value (base64url JSON or plain JSON). */
+export function encodeAcquisitionCookieValue(payload: AcquisitionPayload): string {
+  const compact = {
+    bucket: payload.bucket,
+    channel: payload.channel,
+    source: payload.source ?? undefined,
+    medium: payload.medium ?? undefined,
+    campaign: payload.campaign ?? undefined,
+    clickId: payload.clickId ?? undefined,
+    referrer: payload.referrer ?? undefined,
+    capturedAt: payload.capturedAt,
+  };
+  return Buffer.from(JSON.stringify(compact), "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 export function parseAcquisitionCookieValue(raw: string | undefined): AcquisitionPayload | null {
   if (!raw || typeof raw !== "string") return null;
   const trimmed = raw.trim();
@@ -134,5 +152,21 @@ export function resolveAcquisitionForSignup(
     body && typeof body === "object" && "acquisition" in (body as object)
       ? sanitizeAcquisitionPayload((body as { acquisition?: unknown }).acquisition)
       : null;
-  return acquisitionToUserFields(fromBody ?? parseAcquisitionCookieValue(cookieRaw));
+  const fromCookie = parseAcquisitionCookieValue(cookieRaw);
+  const chosen = pickSignupPayload(fromBody, fromCookie);
+  return acquisitionToUserFields(chosen);
+}
+
+function pickSignupPayload(
+  fromBody: AcquisitionPayload | null,
+  fromCookie: AcquisitionPayload | null,
+): AcquisitionPayload | null {
+  if (!fromBody) return fromCookie;
+  if (!fromCookie) return fromBody;
+  const bodyWeak = fromBody.bucket === "direct" || fromBody.bucket === "unknown";
+  const cookieWeak = fromCookie.bucket === "direct" || fromCookie.bucket === "unknown";
+  if (bodyWeak && !cookieWeak) return fromCookie;
+  if (fromCookie.channel === "instagram_social" && fromBody.channel === "facebook_social") return fromCookie;
+  if (fromCookie.channel === "messenger" && fromBody.channel === "facebook_social") return fromCookie;
+  return fromBody;
 }

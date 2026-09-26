@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyAcquisition } from "./acquisition";
+import { classifyAcquisition, isStrongerAcquisition } from "./acquisition";
 
 describe("classifyAcquisition", () => {
   it("does not treat fbclid as an ad", () => {
@@ -141,5 +141,18 @@ describe("classifyAcquisition", () => {
     const r = classifyAcquisition("https://kmcheck.com/en/", "");
     expect(r.bucket).toBe("direct");
     expect(r.channel).toBe("direct");
+  });
+
+  it("upgrades a direct first hit when Instagram arrives later", () => {
+    const first = classifyAcquisition("https://kmcheck.com/en/", "");
+    const later = classifyAcquisition("https://kmcheck.com/sq/?fbclid=Ig", "https://l.instagram.com/");
+    expect(isStrongerAcquisition(first, later)).toBe(true);
+    expect(isStrongerAcquisition(later, first)).toBe(false);
+  });
+
+  it("does not replace Instagram social with a later ad guess", () => {
+    const insta = classifyAcquisition("https://kmcheck.com/sq/", "https://l.instagram.com/");
+    const googleAd = classifyAcquisition("https://kmcheck.com/en/?gclid=1", "");
+    expect(isStrongerAcquisition(insta, googleAd)).toBe(false);
   });
 });

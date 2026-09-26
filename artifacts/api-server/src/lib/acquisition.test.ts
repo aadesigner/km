@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   sanitizeAcquisitionPayload,
   parseAcquisitionCookieValue,
+  encodeAcquisitionCookieValue,
+  resolveAcquisitionForSignup,
   acquisitionToUserFields,
 } from "./acquisition.js";
 
@@ -40,5 +42,20 @@ describe("acquisition sanitize", () => {
     expect(p?.bucket).toBe("direct");
     const fields = acquisitionToUserFields(p);
     expect(fields?.acquisitionBucket).toBe("direct");
+  });
+
+  it("prefers server instagram cookie over a direct body payload", () => {
+    const cookie = encodeAcquisitionCookieValue({
+      bucket: "organic_social",
+      channel: "instagram_social",
+      referrer: "l.instagram.com",
+      capturedAt: new Date().toISOString(),
+    });
+    const fields = resolveAcquisitionForSignup(
+      { acquisition: { bucket: "direct", channel: "direct" } },
+      cookie,
+    );
+    expect(fields?.acquisitionChannel).toBe("instagram_social");
+    expect(fields?.acquisitionBucket).toBe("organic_social");
   });
 });
