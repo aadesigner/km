@@ -1465,6 +1465,7 @@ export default function VinResult({ params }: Props) {
                   { key: "make", label: t("make"), value: data?.make },
                   { key: "model", label: t("model"), value: data?.model },
                   { key: "year", label: t("year"), value: data?.year ? String(data.year) : null },
+                  { key: "trim", label: t("trim_generation"), value: data?.trim },
                   { key: "fuel", label: t("fuel_type"), value: translateFuelType(t, data?.fuelType) ?? cleanLabel(data?.fuelType) },
                   { key: "transmission", label: t("transmission"), value: translateValue(data?.transmission, TRANSMISSION_KEYS, t) },
                   { key: "country", label: t("country"), value: fmtCountry(data?.country) },

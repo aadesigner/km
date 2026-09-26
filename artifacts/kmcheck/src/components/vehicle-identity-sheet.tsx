@@ -12,7 +12,7 @@ type Props = {
   className?: string;
 };
 
-const FEATURED_KEYS = new Set(["make", "model", "year"]);
+const FEATURED_KEYS = new Set(["make", "model", "year", "trim"]);
 
 function formatSpecValue(key: string, value: string) {
   const raw = value.trim();
@@ -33,6 +33,7 @@ export function VehicleIdentitySheet({ fields, className }: Props) {
   const make = fieldValue(fields, "make");
   const model = fieldValue(fields, "model");
   const year = fieldValue(fields, "year");
+  const trim = fieldValue(fields, "trim");
   const title = [make, model].filter(Boolean).join(" ");
   const rows = fields
     .filter((field) => field.value && !FEATURED_KEYS.has(field.key))
@@ -55,6 +56,14 @@ export function VehicleIdentitySheet({ fields, className }: Props) {
           ) : (
             <p className="text-sm font-medium text-muted-foreground">{t("vehicle_info")}</p>
           )}
+          {trim ? (
+            <p className="mt-1.5">
+              <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {t("trim_generation")}
+              </span>
+              <span className="mt-0.5 block text-sm text-muted-foreground">{trim}</span>
+            </p>
+          ) : null}
         </div>
         {year ? (
           <div className="shrink-0 rounded-xl border border-primary/20 bg-primary/[0.07] px-3 py-2 text-center">
