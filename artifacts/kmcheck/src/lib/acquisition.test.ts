@@ -2,14 +2,32 @@ import { describe, expect, it } from "vitest";
 import { classifyAcquisition } from "./acquisition";
 
 describe("classifyAcquisition", () => {
-  it("maps fbclid to meta paid ads", () => {
+  it("maps fbclid alone to organic instagram, not ads", () => {
     const r = classifyAcquisition(
       "https://kmcheck.com/sq/?fbclid=abc123",
       "",
     );
-    expect(r.bucket).toBe("paid_ads");
-    expect(r.channel).toBe("meta_ads");
+    expect(r.bucket).toBe("organic_social");
+    expect(r.channel).toBe("instagram_social");
     expect(r.clickId).toBe("abc123");
+  });
+
+  it("maps instagram referrer plus fbclid to organic social", () => {
+    const r = classifyAcquisition(
+      "https://kmcheck.com/sq/?fbclid=IgAbc",
+      "https://l.instagram.com/",
+    );
+    expect(r.bucket).toBe("organic_social");
+    expect(r.channel).toBe("instagram_social");
+  });
+
+  it("still maps paid instagram utm to ads even with fbclid", () => {
+    const r = classifyAcquisition(
+      "https://kmcheck.com/sq/?utm_source=instagram&utm_medium=paid&fbclid=xyz",
+      "https://l.instagram.com/",
+    );
+    expect(r.bucket).toBe("paid_ads");
+    expect(r.channel).toBe("instagram_ads");
   });
 
   it("maps gclid to google ads", () => {

@@ -127,10 +127,8 @@ export function classifyAcquisition(
     capturedAt,
   };
 
-  // Paid click ids first
-  if (fbclid) {
-    return { ...base, bucket: "paid_ads", channel: brand === "instagram" ? "instagram_ads" : "meta_ads", clickId: fbclid };
-  }
+  // Real ad click ids (Google / TikTok / Bing). Do not treat fbclid as paid —
+  // Instagram and Facebook add it to every outbound link, including bio and posts.
   if (gclid) {
     return { ...base, bucket: "paid_ads", channel: "google_ads", clickId: gclid };
   }
@@ -151,10 +149,10 @@ export function classifyAcquisition(
     else if (brand === "x") channel = "x_ads";
     else if (brand === "linkedin") channel = "linkedin_ads";
     else if (source) channel = `${source.slice(0, 24)}_ads`;
-    return { ...base, bucket: "paid_ads", channel, clickId: null };
+    return { ...base, bucket: "paid_ads", channel, clickId: fbclid };
   }
 
-  // Organic social referrer
+  // Organic social referrer (Instagram in-app often keeps fbclid on the URL)
   if (social) {
     const channel =
       social === "instagram" ? "instagram_social"
@@ -162,7 +160,23 @@ export function classifyAcquisition(
           : social === "tiktok" ? "tiktok_social"
             : social === "x" ? "x_social"
               : "linkedin_social";
-    return { ...base, bucket: "organic_social", channel, clickId: null };
+    return { ...base, bucket: "organic_social", channel, clickId: fbclid };
+  }
+
+  // Tagged social without a paid medium (bio links, stories)
+  if (brand === "instagram" || brand === "facebook" || brand === "meta" || brand === "tiktok" || brand === "x" || brand === "linkedin") {
+    const channel =
+      brand === "instagram" ? "instagram_social"
+        : brand === "tiktok" ? "tiktok_social"
+          : brand === "x" ? "x_social"
+            : brand === "linkedin" ? "linkedin_social"
+              : "facebook_social";
+    return { ...base, bucket: "organic_social", channel, clickId: fbclid };
+  }
+
+  // fbclid alone is Meta wrapping a link — not proof of an ad
+  if (fbclid) {
+    return { ...base, bucket: "organic_social", channel: "instagram_social", clickId: fbclid };
   }
 
   // Google organic (referrer or utm without paid)
