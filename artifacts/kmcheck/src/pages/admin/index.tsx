@@ -226,7 +226,7 @@ function StatCell({
           {compareLabel && trend != null && (
             <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
           )}
-          {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0 self-end mt-auto pt-1.5" />}
+          {Icon && <Icon className="h-5 w-5 text-primary/70 shrink-0 self-end mt-auto pt-1.5" />}
         </div>
       ) : null}
 
