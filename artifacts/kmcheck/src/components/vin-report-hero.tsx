@@ -699,13 +699,10 @@ export function VinReportHero({
                   {vehicleTitle}
                 </h1>
                 <div
-                  className={cn("mt-1.5 min-h-[2.375rem]", !trim && "invisible")}
+                  className={cn("mt-1.5 min-h-[1.25rem]", !trim && "invisible")}
                   aria-hidden={!trim}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                    {t("trim_generation")}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">{trim || "\u00A0"}</p>
+                  <p className="text-sm text-muted-foreground">{trim || "\u00A0"}</p>
                 </div>
                 <Badge
                   variant="outline"

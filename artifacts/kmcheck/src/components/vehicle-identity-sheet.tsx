@@ -57,12 +57,7 @@ export function VehicleIdentitySheet({ fields, className }: Props) {
             <p className="text-sm font-medium text-muted-foreground">{t("vehicle_info")}</p>
           )}
           {trim ? (
-            <p className="mt-1.5">
-              <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                {t("trim_generation")}
-              </span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">{trim}</span>
-            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{trim}</p>
           ) : null}
         </div>
         {year ? (
