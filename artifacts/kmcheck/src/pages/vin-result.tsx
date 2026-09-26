@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ArrowLeft, ShieldCheck, AlertTriangle, Car, Wrench, MapPin, Calendar, Gauge,
-  Palette, CheckCircle2, XCircle, Users, Lock,
-  ChevronDown, ChevronLeft, ChevronRight, DollarSign, Fuel, Box,
-  X, Zap, Settings2, Loader2, Gavel,
+  ArrowLeft, ShieldCheck, AlertTriangle, Car, MapPin, Gauge,
+  CheckCircle2, XCircle, Users, Lock,
+  ChevronDown, ChevronLeft, ChevronRight, DollarSign,
+  X, Loader2, Gavel,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { ReportReveal } from "@/components/report-reveal";
@@ -93,7 +93,7 @@ import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { RegistryHistorySection } from "@/components/registry-history-section";
 import { ServiceHistorySection } from "@/components/service-history-section";
 import { VehicleExtrasSection } from "@/components/vehicle-extras-section";
-import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
+import { VehicleIdentitySheet } from "@/components/vehicle-identity-sheet";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
 import { ReportHistoryTimeline } from "@/components/report-history-timeline";
@@ -1460,33 +1460,21 @@ export default function VinResult({ params }: Props) {
           <ReportReveal delay={0.05} y={16}>
             <VinReportSection accent="sky">
               <VinReportSectionHeader icon={Car} accent="sky" title={t("vehicle_info")} />
-            <div className="px-5 py-4">
-              <VehicleSpecsGrid>
-                {[
-                  { icon: Car,       label: t("make"),           value: data?.make,        accent: "text-blue-500",   bg: "bg-blue-500/8" },
-                  { icon: Car,       label: t("model"),          value: data?.model,       accent: "text-blue-500",   bg: "bg-blue-500/8" },
-                  { icon: Calendar,  label: t("year"),           value: data?.year ? String(data.year) : null, accent: "text-purple-500", bg: "bg-purple-500/8" },
-                  { icon: Fuel,      label: t("fuel_type"),      value: translateFuelType(t, data?.fuelType) ?? cleanLabel(data?.fuelType), accent: "text-green-500", bg: "bg-green-500/8" },
-                  { icon: Settings2, label: t("transmission"),   value: translateValue(data?.transmission, TRANSMISSION_KEYS, t), accent: "text-cyan-500", bg: "bg-cyan-500/8" },
-                  { icon: MapPin,    label: t("country"),        value: fmtCountry(data?.country), accent: "text-orange-500", bg: "bg-orange-500/8" },
-                  { icon: Wrench,    label: t("engine"),         value: data?.engine,      accent: "text-slate-500",  bg: "bg-slate-500/8" },
-                  { icon: Zap,       label: t("hp"),             value: data?.hp ? `${data.hp} hp` : null, accent: "text-yellow-500", bg: "bg-yellow-500/8" },
-                  { icon: Box,       label: t("body_type"),      value: cleanLabel(data?.bodyType) ?? translateValue(data?.bodyType, BODY_KEYS, t), accent: "text-pink-500", bg: "bg-pink-500/8" },
-                  { icon: Palette,   label: t("color"),          value: translateColor(t, data?.color) ?? data?.color, accent: "text-rose-500",   bg: "bg-rose-500/8" },
-                  { icon: Settings2, label: t("cylinders"),      value: data?.cylinders ? `${data.cylinders} cyl` : null, accent: "text-indigo-500", bg: "bg-indigo-500/8" },
-                ].filter(f => f.value).map(({ icon: Icon, label, value, accent, bg }) => (
-                  <div key={label} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40 min-w-0 h-full">
-                    <div className={`h-7 w-7 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-3.5 w-3.5 ${accent}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-muted-foreground font-medium truncate">{label}</p>
-                      <p className="font-bold text-xs truncate">{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </VehicleSpecsGrid>
-            </div>
+              <VehicleIdentitySheet
+                fields={[
+                  { key: "make", label: t("make"), value: data?.make },
+                  { key: "model", label: t("model"), value: data?.model },
+                  { key: "year", label: t("year"), value: data?.year ? String(data.year) : null },
+                  { key: "fuel", label: t("fuel_type"), value: translateFuelType(t, data?.fuelType) ?? cleanLabel(data?.fuelType) },
+                  { key: "transmission", label: t("transmission"), value: translateValue(data?.transmission, TRANSMISSION_KEYS, t) },
+                  { key: "country", label: t("country"), value: fmtCountry(data?.country) },
+                  { key: "engine", label: t("engine"), value: data?.engine },
+                  { key: "hp", label: t("hp"), value: data?.hp ? `${data.hp} hp` : null },
+                  { key: "body", label: t("body_type"), value: cleanLabel(data?.bodyType) ?? translateValue(data?.bodyType, BODY_KEYS, t) },
+                  { key: "color", label: t("color"), value: translateColor(t, data?.color) ?? data?.color },
+                  { key: "cylinders", label: t("cylinders"), value: data?.cylinders ? `${data.cylinders} cyl` : null },
+                ]}
+              />
             </VinReportSection>
           </ReportReveal>
           ) : null}

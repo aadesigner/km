@@ -11,9 +11,9 @@ import { ReportReveal } from "@/components/report-reveal";
 import {
   Lock, Car, ArrowLeft,
   CheckCircle2, XCircle, Users, Gauge,
-  Wrench, Palette, MapPin, Calendar,
+  MapPin,
   ShieldCheck, ShieldAlert, ChevronRight, AlertTriangle,
-  Zap, Settings2, TrendingUp, DollarSign, Fuel, Box,
+  TrendingUp, DollarSign,
   X, ChevronLeft, ChevronDown, FileText, ClipboardList, Droplets, Gavel,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -91,7 +91,7 @@ import { useDisplayPrice } from "@/hooks/use-display-price";
 import { RegistryHistorySection } from "@/components/registry-history-section";
 import { ServiceHistorySection } from "@/components/service-history-section";
 import { VehicleExtrasSection } from "@/components/vehicle-extras-section";
-import { VehicleSpecsGrid } from "@/components/vehicle-specs-grid";
+import { VehicleIdentitySheet } from "@/components/vehicle-identity-sheet";
 import { OwnerHistoryTimeline } from "@/components/owner-history-timeline";
 import { AuctionHistoryTimeline } from "@/components/auction-history-timeline";
 import { ReportHistoryTimeline } from "@/components/report-history-timeline";
@@ -276,29 +276,6 @@ function PassPill({ ok, labelOk, labelFail }: { ok: boolean; labelOk: string; la
   );
 }
 
-
-function SpecRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | null | undefined;
-}) {
-  if (!value) return null;
-  return (
-    <div className="flex items-center gap-3">
-      <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[11px] text-muted-foreground uppercase tracking-wide leading-tight">{label}</p>
-        <p className="text-sm font-semibold truncate">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 // ── Sanitize display strings — reject empty / placeholder provider values ──
 function cleanStr(v: string | null | undefined): string | null {
@@ -773,23 +750,24 @@ export default function VinPublic({ params }: Props) {
     t("vin_public_found_count").replace("{count}", String(count));
 
   const vehicleSpecFields = [
-    { icon: Car, label: t("free_decoder_field_make"), value: data.make },
-    { icon: Car, label: t("free_decoder_field_model"), value: data.model },
-    { icon: Calendar, label: t("free_decoder_field_year"), value: data.year ? String(data.year) : null },
+    { key: "make", label: t("free_decoder_field_make"), value: data.make },
+    { key: "model", label: t("free_decoder_field_model"), value: data.model },
+    { key: "year", label: t("free_decoder_field_year"), value: data.year ? String(data.year) : null },
     ...(data.isUnlocked && data.trim
-      ? [{ icon: Car, label: t("free_decoder_field_trim"), value: data.trim }]
+      ? [{ key: "trim", label: t("free_decoder_field_trim"), value: data.trim }]
       : []),
     ...(data.isUnlocked
-      ? [{ icon: Fuel, label: t("free_decoder_field_fuel_type"), value: translateFuelType(t, data.fuelType) ?? cleanLabel(data.fuelType) }]
+      ? [{ key: "fuel", label: t("free_decoder_field_fuel_type"), value: translateFuelType(t, data.fuelType) ?? cleanLabel(data.fuelType) }]
       : []),
-    { icon: Gauge, label: t("free_decoder_field_transmission"), value: translateValue(data.transmission, TRANSMISSION_KEYS, t) },
-    { icon: Wrench, label: t("free_decoder_field_engine"), value: data.engine },
-    { icon: Palette, label: t("color"), value: translateColor(t, data.color) ?? data.color },
+    { key: "transmission", label: t("free_decoder_field_transmission"), value: translateValue(data.transmission, TRANSMISSION_KEYS, t) },
+    { key: "country", label: t("country"), value: fmtCountry(data.country) },
+    { key: "engine", label: t("free_decoder_field_engine"), value: data.engine },
+    { key: "color", label: t("color"), value: translateColor(t, data.color) ?? data.color },
     ...(data.isUnlocked
       ? [
-          { icon: Box, label: t("free_decoder_field_body_type"), value: translateValue(data.bodyType, BODY_KEYS, t) ?? cleanLabel(data.bodyType) },
-          { icon: Zap, label: t("hp"), value: data.hp ? `${data.hp} hp` : null },
-          { icon: Settings2, label: t("cylinders"), value: data.cylinders ? String(data.cylinders) : null },
+          { key: "body", label: t("free_decoder_field_body_type"), value: translateValue(data.bodyType, BODY_KEYS, t) ?? cleanLabel(data.bodyType) },
+          { key: "hp", label: t("hp"), value: data.hp ? `${data.hp} hp` : null },
+          { key: "cylinders", label: t("cylinders"), value: data.cylinders ? String(data.cylinders) : null },
         ]
       : []),
   ].filter((field) => field.value);
@@ -1418,13 +1396,7 @@ export default function VinPublic({ params }: Props) {
                   accent="sky"
                   title={t("report_specs")}
                 />
-                <div className="px-6 py-5">
-                  <VehicleSpecsGrid>
-                    {vehicleSpecFields.map(({ icon, label, value }) => (
-                      <SpecRow key={label} icon={icon} label={label} value={value} />
-                    ))}
-                  </VehicleSpecsGrid>
-                </div>
+                <VehicleIdentitySheet fields={vehicleSpecFields} />
               </VinReportSection>
             </ReportReveal>
 
