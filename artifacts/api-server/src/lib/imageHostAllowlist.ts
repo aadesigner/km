@@ -1,20 +1,7 @@
 /** Host suffixes allowed for VIN image proxy upstream fetches. */
 const ALLOWED_HOST_SUFFIXES = [
-  "encar.com",
-  "api.encar.com",
-  "ci.encar.com",
-  "img.encar.com",
   "carstat.dev",
   "api.carstat.dev",
-  "cloudfront.net",
-  "amazonaws.com",
-  "akamaized.net",
-  "blob.core.windows.net",
-  "googleusercontent.com",
-  "wp.com",
-  "imgix.net",
-  "getcarapi.com",
-  "imgsv.getcarapi.com",
 ];
 
 export function isAllowedImageHost(hostname: string): boolean {

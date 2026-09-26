@@ -69,7 +69,7 @@ export function buildImageProxyUrl(
   return url;
 }
 
-/** Proxy known CDNs; pass through admin-pasted URLs so reports can use any public HTTPS image. */
+/** Proxy Carstat hosts only; pass through other URLs so reports can use any public HTTPS image. */
 export function resolveVinPhotoUrlForClient(
   upstreamUrl: string,
   opts?: { baseApiUrl?: string; mediaVersion?: number },

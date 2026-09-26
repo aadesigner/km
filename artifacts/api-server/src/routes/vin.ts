@@ -22,7 +22,7 @@ import { logger } from "../lib/logger.js";
 import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
 import { decodeVinPeek } from "../lib/vinDecodePreview.js";
-import { verifyImageToken, buildImageProxyUrl, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
+import { verifyImageToken, transformVinPhotoData, resolveVinPhotoUrlForClient } from "../lib/imageProxy.js";
 import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt, withVinImageUpstreamSlot } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
@@ -1463,7 +1463,7 @@ router.get("/vin/preview/:vin", publicVinLimiter, optionalAuth, async (req, res)
     model: cached.model ?? null,
     year: cached.year ?? null,
     country: cached.country ?? null,
-    thumbnailUrl: firstPhoto ? buildImageProxyUrl(firstPhoto, { mediaVersion }) : null,
+    thumbnailUrl: firstPhoto ? resolveVinPhotoUrlForClient(firstPhoto, { mediaVersion }) : null,
   });
 });
 
