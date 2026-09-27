@@ -1091,6 +1091,7 @@
   "report_flood_section": "Istoric inundații",
   "report_flood_count": "{count} înregistrare/înregistrări de inundație",
   "report_flood_body": "Înregistrările de asigurare coreene indică daune prin apă / inundație pentru acest vehicul.",
+  "report_flood_body_generic": "Înregistrările indică daune prin apă / inundație pentru acest vehicul.",
   "report_taxi": "Utilizare ca taxi",
   "report_stolen_flag": "Raportat ca furat",
   "report_accidents_recorded": "accidente înregistrate",

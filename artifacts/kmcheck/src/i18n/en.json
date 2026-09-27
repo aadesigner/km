@@ -1211,6 +1211,7 @@
   "report_flood_section": "Flood history",
   "report_flood_count": "{count} flood record(s)",
   "report_flood_body": "Korean insurance records list flood (water) damage for this vehicle.",
+  "report_flood_body_generic": "Records list flood (water) damage for this vehicle.",
   "report_taxi": "Taxi use",
   "report_stolen_flag": "Reported stolen",
   "report_accidents_recorded": "accidents recorded",

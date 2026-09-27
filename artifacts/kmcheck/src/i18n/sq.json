@@ -1085,6 +1085,7 @@
   "report_flood_section": "Historiku i përmbytjes",
   "report_flood_count": "{count} regjistrim(e) përmbytjeje",
   "report_flood_body": "Regjistrat e sigurimit korean tregojnë dëmtime nga uji / përmbytja për këtë makinë.",
+  "report_flood_body_generic": "Regjistrat tregojnë dëmtime nga uji / përmbytja për këtë makinë.",
   "report_taxi": "Përdorim si taksi",
   "report_stolen_flag": "Raportuar si i vjedhur",
   "report_accidents_recorded": "aksidente të regjistruara",

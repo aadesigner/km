@@ -1091,6 +1091,7 @@
   "report_flood_section": "Historia zalania",
   "report_flood_count": "{count} wpis(ów) o zalaniu",
   "report_flood_body": "Koreańskie zapisy ubezpieczeniowe wskazują szkody wodne / powodziowe dla tego pojazdu.",
+  "report_flood_body_generic": "Zapisy wskazują szkody wodne / powodziowe dla tego pojazdu.",
   "report_taxi": "Użycie jako taksówka",
   "report_stolen_flag": "Zgłoszony jako skradziony",
   "report_accidents_recorded": "zarejestrowanych wypadków",

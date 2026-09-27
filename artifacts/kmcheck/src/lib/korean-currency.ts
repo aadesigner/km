@@ -36,13 +36,12 @@ export function isEuropeanCountry(country?: string | null): boolean {
   return EUROPE_COUNTRY_CODES.has(c);
 }
 
-/** Encar/KOTSA insurance payouts and registry repair costs are stored as KRW. */
+/** Encar/KOTSA insurance payouts and registry repair costs are stored as KRW. Flood is not Korea-only. */
 export function isKoreanSourcedAccidentType(type?: string | null): boolean {
   const normalized = type?.toLowerCase();
   return normalized === "insurance"
     || normalized === "registry"
-    || normalized === "inspection"
-    || normalized === "flood";
+    || normalized === "inspection";
 }
 
 /** Normalize admin/provider currency tags to KRW / USD / EUR when recognizable. */

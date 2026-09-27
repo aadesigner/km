@@ -1108,6 +1108,7 @@
   "report_flood_section": "Überschwemmungshistorie",
   "report_flood_count": "{count} Überschwemmungseintrag/einträge",
   "report_flood_body": "Koreanische Versicherungsunterlagen weisen Wasserschäden / Überschwemmung für dieses Fahrzeug aus.",
+  "report_flood_body_generic": "Die Unterlagen weisen Wasserschäden / Überschwemmung für dieses Fahrzeug aus.",
   "report_taxi": "Taxinutzung",
   "report_stolen_flag": "Als gestohlen gemeldet",
   "report_accidents_recorded": "Unfälle erfasst",
