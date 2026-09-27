@@ -166,6 +166,8 @@ export default function HowItWorks() {
         </EnterReveal>
       </section>
 
+      <WhatWeCheckSection autoRotate />
+
       {/* Steps — one path, not three cloned cards */}
       <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-16 md:py-20 px-4 border-b border-border/60">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.14),transparent)]" />
@@ -204,8 +206,6 @@ export default function HowItWorks() {
           ))}
         </div>
       </section>
-
-      <WhatWeCheckSection autoRotate />
 
       {/* Trust strip */}
       <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-12 md:py-16 px-4">

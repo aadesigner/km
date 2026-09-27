@@ -16,9 +16,9 @@
       .dark #root:empty,.dark .app-boot-shell{background:#0b1220;color:#f8fafc}
       .app-boot-bar{height:4rem;border-bottom:1px solid rgba(15,23,42,.08);display:flex;align-items:center;justify-content:space-between;padding:0 1rem;max-width:80rem;margin:0 auto}
       .dark .app-boot-bar{border-bottom-color:rgba(255,255,255,.08)}
-      .app-boot-logo,.app-boot-pill,.app-boot-line,.app-boot-card{background:rgba(15,23,42,.08);border-radius:.75rem;animation:boot-pulse 1.4s ease-in-out infinite}
-      .dark .app-boot-logo,.dark .app-boot-pill,.dark .app-boot-line,.dark .app-boot-card{background:rgba(255,255,255,.08)}
-      .app-boot-logo{height:2rem;width:7rem}
+      .app-boot-logo-img{height:2rem;width:auto;display:block;object-fit:contain}
+      .app-boot-pill,.app-boot-line,.app-boot-card{background:rgba(15,23,42,.08);border-radius:.75rem;animation:boot-pulse 1.4s ease-in-out infinite}
+      .dark .app-boot-pill,.dark .app-boot-line,.dark .app-boot-card{background:rgba(255,255,255,.08)}
       .app-boot-pill{height:2.25rem;width:5.5rem;border-radius:999px}
       .app-boot-body{max-width:80rem;margin:0 auto;padding:2.5rem 1rem}
       .app-boot-line{height:2.5rem;width:min(66%,32rem);margin-bottom:1rem}
@@ -36,6 +36,15 @@
         var resolved = dark ? "dark" : "light";
         document.documentElement.classList.add(resolved);
         document.documentElement.style.colorScheme = resolved;
+        var logo = dark ? "/brand/logo-white.webp" : "/brand/logo-dark.webp";
+        var preload = document.createElement("link");
+        preload.rel = "preload";
+        preload.as = "image";
+        preload.type = "image/webp";
+        preload.href = logo;
+        preload.setAttribute("fetchpriority", "high");
+        document.head.appendChild(preload);
+        document.documentElement.setAttribute("data-boot-logo", logo);
       })();
     </script>
   </head>
@@ -43,7 +52,23 @@
     <div id="root">
       <div class="app-boot-shell" aria-hidden="true">
         <div class="app-boot-bar">
-          <div class="app-boot-logo"></div>
+          <img
+            id="app-boot-logo"
+            class="app-boot-logo-img"
+            src="/brand/logo-dark.webp"
+            alt=""
+            width="160"
+            height="40"
+            decoding="async"
+            fetchpriority="high"
+          />
+          <script>
+            (function () {
+              var src = document.documentElement.getAttribute("data-boot-logo");
+              var img = document.getElementById("app-boot-logo");
+              if (src && img) img.src = src;
+            })();
+          </script>
           <div class="app-boot-pill"></div>
         </div>
         <div class="app-boot-body">
