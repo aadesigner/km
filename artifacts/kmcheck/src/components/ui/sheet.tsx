@@ -22,9 +22,8 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     className={cn(
       "fixed inset-0 z-50 bg-black/80",
-      // Fast (mobile nav): no opacity fade — fade was the open flicker on phones.
       fast
-        ? null
+        ? "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:duration-300 data-[state=closed]:duration-220"
         : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
@@ -49,10 +48,10 @@ const sheetVariants = cva(
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         ),
-        // Mobile nav: short slide only — no opacity / will-change (both caused open flash).
+        // Mobile nav: iOS-like spring slide. Opacity stays on the overlay only.
         fast: cn(
-          "transition-transform ease-[cubic-bezier(0.22,1,0.36,1)]",
-          "data-[state=closed]:duration-150 data-[state=open]:duration-180",
+          "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "data-[state=closed]:duration-220 data-[state=open]:duration-320",
           "data-[state=open]:translate-x-0 data-[state=open]:translate-y-0",
         ),
       },
@@ -115,18 +114,50 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", speed = "default", className, overlayClassName, children, ...props }, ref) => {
+>(({ side = "right", speed = "default", className, overlayClassName, children, onPointerDownOutside, onInteractOutside, onCloseAutoFocus, ...props }, ref) => {
   const isFast = speed === "fast"
+  const openedAtRef = React.useRef(0)
+  const [overlayArmed, setOverlayArmed] = React.useState(!isFast)
+
+  React.useEffect(() => {
+    if (!isFast) return
+    openedAtRef.current = Date.now()
+    setOverlayArmed(false)
+    const id = window.setTimeout(() => setOverlayArmed(true), 380)
+    return () => window.clearTimeout(id)
+  }, [isFast])
+
+  const ignoreOpeningGesture = (event: Event) => {
+    if (isFast && Date.now() - openedAtRef.current < 400) {
+      event.preventDefault()
+    }
+  }
 
   return (
     <SheetPortal>
       <SheetOverlay
         fast={isFast}
-        className={cn(isFast && "bg-black/40", overlayClassName)}
+        className={cn(
+          isFast && "bg-black/45 backdrop-blur-[2px]",
+          isFast && !overlayArmed && "pointer-events-none",
+          overlayClassName,
+        )}
       />
       <SheetPrimitive.Content
         ref={ref}
         className={cn(sheetVariants({ side, speed }), className)}
+        onPointerDownOutside={(event) => {
+          ignoreOpeningGesture(event)
+          onPointerDownOutside?.(event)
+        }}
+        onInteractOutside={(event) => {
+          ignoreOpeningGesture(event)
+          onInteractOutside?.(event)
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          onCloseAutoFocus?.(event)
+        }}
         {...props}
       >
         {children}

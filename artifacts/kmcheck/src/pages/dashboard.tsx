@@ -350,10 +350,6 @@ export default function Dashboard() {
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const saveAccountCountry = async () => {
-    if (!accountCountry) {
-      setCountryMsg({ ok: false, text: t("auth_error_country_required") });
-      return;
-    }
     if (countryChangesRemaining === 0) {
       setCountryMsg({ ok: false, text: t("account_country_change_limit") });
       return;

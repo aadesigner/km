@@ -89,10 +89,10 @@ function paypalHostedFieldStyles(): Record<string, Record<string, string>> {
 const CHECKOUT_PANEL =
   "rounded-2xl border border-border/70 bg-card/95 dark:bg-card/80 max-sm:backdrop-blur-none sm:backdrop-blur-sm overflow-hidden shadow-sm shadow-black/[0.04] dark:shadow-black/30 ring-1 ring-black/[0.02] dark:ring-white/[0.05]";
 const PREVIEW_ROW =
-  "px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border-b border-border/40 dark:border-white/[0.05] last:border-0";
-const PREVIEW_LBL = "text-[12px] font-medium text-muted-foreground dark:text-white/45";
-const PREVIEW_ICO = "h-3.5 w-3.5 shrink-0 text-muted-foreground/45 dark:text-white/30";
-const PREVIEW_BLUR = "text-[12px] font-semibold tabular-nums text-foreground/75 select-none blur-[3.5px]";
+  "px-5 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between border-b border-border/40 dark:border-white/[0.05] last:border-0";
+const PREVIEW_LBL = "text-[13px] font-medium text-foreground/85 dark:text-white/75";
+const PREVIEW_ICO = "h-3.5 w-3.5 shrink-0 text-foreground/55 dark:text-white/45";
+const PREVIEW_BLUR = "text-[13px] font-semibold tabular-nums text-foreground/80 select-none blur-[3.5px]";
 
 type PaypalHostedFieldsInstance = {
   submit: (opts?: { contingencies?: string[] }) => Promise<{ orderId: string; liabilityShifted?: boolean }>;
@@ -183,7 +183,7 @@ export default function Checkout({ params }: Props) {
   }, [isLoaded, isSignedIn, refreshUser]);
 
   const LOCKED_ROWS = [
-    { icon: Gauge,         labelKey: "mileage_verification", blur: "47,832 km" },
+    { icon: Gauge,         labelKey: "mileage_verification", blur: "284,600 km" },
     { icon: AlertTriangle, labelKey: "accident_history",     blur: "2 records" },
     { icon: Users,         labelKey: "previous_owners",      blur: "3 owners" },
     { icon: Car,           labelKey: "report_salvage",       blurKey: "checkout_mock_not_flagged" },
@@ -1578,6 +1578,11 @@ export default function Checkout({ params }: Props) {
       (payMethod === "paypal" && !!pubSettings?.paypalClientId && !paymentStarted)
       || (payMethod === "card" && !!pubSettings?.pokEnabled)
     );
+  const mileagePreviewStartYear =
+    peekForVin?.year && peekForVin.year >= 1980 && peekForVin.year <= 2024
+      ? peekForVin.year
+      : 2012;
+  const mileagePreviewEndYear = 2026;
   const showLockedPreview =
     vinIsValid &&
     !peekLoadingUi &&
@@ -1888,11 +1893,14 @@ export default function Checkout({ params }: Props) {
                     <>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Gauge className={PREVIEW_ICO} />
+                          <Gauge className={cn(PREVIEW_ICO, "text-orange-600 dark:text-orange-400")} />
                           <span className={PREVIEW_LBL}>{t(labelKey)}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={cn(PREVIEW_BLUR, "max-w-[100px] sm:max-w-none truncate")} aria-hidden>
+                          <span
+                            className={cn(PREVIEW_BLUR, "max-w-[110px] sm:max-w-none truncate text-orange-700 dark:text-orange-300")}
+                            aria-hidden
+                          >
                             {blur}
                           </span>
                           <div className="h-5 w-5 rounded-full bg-muted/80 dark:bg-white/[0.06] border border-border/50 dark:border-white/[0.08] flex items-center justify-center">
@@ -1902,9 +1910,13 @@ export default function Checkout({ params }: Props) {
                       </div>
                       <div className="h-1.5 rounded-full bg-muted/80 dark:bg-white/8 overflow-hidden">
                         <div
-                          className="h-1.5 rounded-full bg-primary/50 blur-[1.5px] w-[58%] select-none"
+                          className="h-1.5 rounded-full bg-orange-500 dark:bg-orange-500/85 blur-[1.5px] w-[89%] select-none"
                           aria-hidden
                         />
+                      </div>
+                      <div className="flex justify-between text-[10px] tabular-nums text-muted-foreground/70 select-none" aria-hidden>
+                        <span className="blur-[2.5px]">{mileagePreviewStartYear}</span>
+                        <span className="blur-[2.5px]">{mileagePreviewEndYear}</span>
                       </div>
                     </>
                   ) : (
@@ -1930,14 +1942,16 @@ export default function Checkout({ params }: Props) {
 
             {/* Unlock CTA at bottom of preview */}
             {showLockedPreview && (
-            <div className="px-5 sm:px-6 py-3 bg-muted/20 dark:bg-white/[0.02] border-t border-border/40 dark:border-white/[0.05] flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground min-w-0">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="px-5 sm:px-6 py-3.5 bg-muted/20 dark:bg-white/[0.02] border-t border-border/40 dark:border-white/[0.05] flex items-start sm:items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
                   <Zap className="h-3 w-3 text-primary" />
                 </div>
-                <span className="leading-snug font-medium text-foreground/75">{t("checkout_instant_delivery")}</span>
+                <span className="text-xs sm:text-[13px] leading-relaxed font-medium text-foreground/80">
+                  {t("checkout_instant_delivery")}
+                </span>
               </div>
-              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-bold shrink-0 bg-primary/8 text-primary border-primary/15">
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-bold shrink-0 bg-primary/10 text-primary border-primary/20">
                 {t("checkout_checks_badge").replace("{n}", String(LOCKED_ROWS.length))}
               </Badge>
             </div>
@@ -2055,7 +2069,7 @@ export default function Checkout({ params }: Props) {
                           <PriceAmount
                             amount={finalPrice}
                             currencySymbol={currencySymbol}
-                            centsClassName="text-[0.62em] text-primary/70"
+                            centsClassName="text-[0.62em] text-primary"
                           />
                         )}
                       </span>

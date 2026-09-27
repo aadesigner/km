@@ -447,7 +447,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     const creds = readAuthCredentials(form, { email, password, name });
 
     if (!isSignInMode) {
-      const signupCheck = validateAuthSignupInput(creds, acceptedTerms, t, countryCode);
+      const signupCheck = validateAuthSignupInput(creds, acceptedTerms, t);
       if (!signupCheck.ok) {
         setError(signupCheck.error);
         return;
@@ -480,7 +480,13 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (isSignInMode) {
         await login(creds.email, creds.password, recaptchaToken);
       } else {
-        await register(creds.email, creds.password, creds.name || undefined, recaptchaToken, countryCode);
+        await register(
+          creds.email,
+          creds.password,
+          creds.name || undefined,
+          recaptchaToken,
+          countryCode || undefined,
+        );
       }
       applyPostAuthRedirect(getPostAuthRedirectPath(language), setLocation);
     } catch (err) {
@@ -492,7 +498,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
   };
 
-  const submitDisabled = loading || (!isSignIn && (!acceptedTerms || !countryCode));
+  const submitDisabled = loading || (!isSignIn && !acceptedTerms);
 
   return (
     <>
@@ -635,7 +641,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   </AuthField>
 
                   {!isSignIn && (
-                    <AuthField id="country" label={t("auth_country_label")}>
+                    <AuthField id="country" label={t("auth_country_label")} optional={t("auth_name_optional")}>
                       <UserCountrySelect
                         id="country"
                         value={countryCode}
@@ -644,6 +650,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         placeholder={t("auth_country_placeholder")}
                         searchPlaceholder={t("auth_country_search")}
                         emptySearchLabel={t("auth_country_search_empty")}
+                        emptyLabel={t("account_country_unset")}
                         disabled={loading}
                         size="lg"
                         triggerClassName={cn(

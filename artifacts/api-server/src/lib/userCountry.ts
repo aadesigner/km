@@ -77,3 +77,14 @@ export function parseUserCountryCode(code: string | null | undefined): string | 
   if (!normalized || !ALLOWED.has(normalized)) return null;
   return normalized;
 }
+
+/**
+ * Signup / profile country: missing, blank, or unrecognized → null.
+ * Optional field — never treat this as a hard failure.
+ */
+export function optionalStoredCountry(raw: unknown): string | null {
+  if (raw == null) return null;
+  const s = String(raw).trim();
+  if (!s || s === "__none__" || s === "unset") return null;
+  return parseUserCountryCode(s);
+}

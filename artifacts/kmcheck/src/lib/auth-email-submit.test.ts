@@ -48,19 +48,17 @@ describe("validateAuthSignupInput", () => {
       { email: "a@b.com", password: "pass12", name: "" },
       false,
       t,
-      "AL",
     );
     expect(result).toEqual({ ok: false, error: "auth_error_terms_required" });
   });
 
-  it("requires country", () => {
+  it("allows missing country", () => {
     const result = validateAuthSignupInput(
       { email: "a@b.com", password: "Xk9-mPq2-Rn4v", name: "" },
       true,
       t,
-      "",
     );
-    expect(result).toEqual({ ok: false, error: "auth_error_country_required" });
+    expect(result).toEqual({ ok: true });
   });
 
   it("accepts strong passwords from password managers", () => {
@@ -68,7 +66,6 @@ describe("validateAuthSignupInput", () => {
       { email: "a@b.com", password: "Xk9-mPq2-Rn4v", name: "" },
       true,
       t,
-      "AL",
     );
     expect(result).toEqual({ ok: true });
   });

@@ -20,7 +20,7 @@ export function PriceAmount({
         {currencySymbol}
         {whole}
       </span>
-      <span className={cn("text-[0.55em] font-bold text-current/70", centsClassName)}>
+      <span className={cn("text-[0.55em] font-bold", centsClassName ?? "text-current/70")}>
         .{fraction}
       </span>
     </span>

@@ -30,7 +30,7 @@ import {
   type AuthSessionUser,
 } from "../lib/authUserSelect.js";
 import { resolveRequestCountryCode, resolveRequestCountryCodeAsync } from "../lib/geoCountry.js";
-import { parseUserCountryCode } from "../lib/userCountry.js";
+import { optionalStoredCountry, parseUserCountryCode } from "../lib/userCountry.js";
 import {
   ACQUISITION_COOKIE,
   resolveAcquisitionForSignup,
@@ -322,11 +322,7 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
     return;
   }
 
-  const countryCode = parseUserCountryCode(rawCountry);
-  if (!countryCode) {
-    res.status(400).json({ error: "Country is required", code: "COUNTRY_REQUIRED" });
-    return;
-  }
+  const countryCode = optionalStoredCountry(rawCountry);
 
   const passwordCheck = validatePassword(password);
   if (!passwordCheck.ok) {
@@ -357,18 +353,30 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
   const signupIp = clientIpKey(req);
   const acquisition = acquisitionFromRequest(req, req.body);
 
-  const [user] = await db.insert(usersTable).values({
-    id,
-    email: normalizedEmail,
-    name: name?.trim() || undefined,
-    passwordHash,
-    isAdmin,
-    countryCode,
-    lastLoginAt: new Date(),
-    lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
-    signupIp: signupIp !== "unknown" ? signupIp : undefined,
-    ...(acquisition ?? {}),
-  }).returning(authSessionUserSelect);
+  let user: AuthSessionUser | undefined;
+  try {
+    const [created] = await db.insert(usersTable).values({
+      id,
+      email: normalizedEmail,
+      name: name?.trim() || undefined,
+      passwordHash,
+      isAdmin,
+      countryCode: countryCode ?? null,
+      lastLoginAt: new Date(),
+      lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
+      signupIp: signupIp !== "unknown" ? signupIp : undefined,
+      ...(acquisition ?? {}),
+    }).returning(authSessionUserSelect);
+    user = created;
+  } catch (err) {
+    if (isPgUniqueViolation(err)) {
+      res.status(409).json({ error: "An account with this email already exists" });
+      return;
+    }
+    logger.error({ err }, "auth_register_insert_failed");
+    res.status(500).json({ error: "Failed to create account" });
+    return;
+  }
 
   if (!user) {
     res.status(500).json({ error: "Failed to create account" });

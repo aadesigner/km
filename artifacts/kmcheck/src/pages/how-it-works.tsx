@@ -1,110 +1,105 @@
 import { useState, useMemo, type FormEvent } from "react";
 import { useTranslation } from "@/i18n/context";
 import { useLocation, Link } from "wouter";
-import { motion } from "framer-motion";
 import { EnterReveal } from "@/components/enter-reveal";
 import { SEOHead, usePageSeo } from "@/components/seo";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { WhatWeCheckSection } from "@/components/what-we-check-section";
 import { useAuth } from "@/lib/auth-context";
 import { redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
-import {
-  Search, Database, FileText, Zap, RotateCcw, Globe2,
-  ArrowRight, ShieldCheck, CheckCircle2,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Zap, RotateCcw, Globe2, ShieldCheck, Search, Gauge, AlertTriangle, Shield, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const VIN_EXAMPLE = "WAUZZZ8K9NA123456";
-const DEMO_VEHICLE = "Audi A4 2022";
+const DEMO_VEHICLE = "Audi A4";
+const DEMO_YEAR = "2014";
 
-type Step = {
-  num: string;
-  label: string;
-  title: string;
-  desc: string;
-  icon: LucideIcon;
-};
-
-function StepPreview({ step, vinLabel, t }: { step: number; vinLabel: string; t: (k: string) => string }) {
-  const shell = "rounded-xl border border-border/60 bg-background/80 dark:border-white/10 dark:bg-black/25 overflow-hidden";
-
+function StepPreview({ step, t }: { step: number; t: (k: string) => string }) {
   if (step === 0) {
     return (
-      <div className={cn(shell, "p-4 space-y-2")}>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground dark:text-white/45">{vinLabel}</p>
-        <div className="flex items-center gap-2.5 rounded-lg border border-primary/30 bg-muted/50 dark:bg-black/30 px-3 py-2.5">
-          <Search className="h-4 w-4 text-primary shrink-0" />
-          <span className="font-mono text-xs sm:text-sm tracking-widest text-foreground dark:text-white">{VIN_EXAMPLE}</span>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/55">{t("vin_check")}</span>
+          <span className="text-[11px] font-mono font-semibold tabular-nums text-white/70">17/17</span>
         </div>
-        <p className="text-xs text-muted-foreground dark:text-white/45">{DEMO_VEHICLE}</p>
+        <div className="flex items-center h-12 rounded-xl border border-white/20 bg-white/10 px-3">
+          <Search className="h-4 w-4 text-white/45 shrink-0" />
+          <span className="ml-2.5 font-mono text-[13px] sm:text-sm tracking-[0.12em] text-white truncate">
+            {VIN_EXAMPLE}
+          </span>
+          <span className="ml-auto shrink-0 rounded-lg bg-primary text-primary-foreground text-[12px] font-semibold px-2.5 py-1.5">
+            {t("check_vin_short")}
+          </span>
+        </div>
+        <p className="px-0.5 text-[13px] text-white/45">
+          {DEMO_VEHICLE} <span className="text-white/25">·</span> {DEMO_YEAR}
+        </p>
       </div>
     );
   }
 
   if (step === 1) {
-    const sources = [t("auction_history"), t("accident_history"), t("mileage_verification"), t("theft_records")];
+    const sources = [
+      t("auction_history"),
+      t("accident_history"),
+      t("mileage_verification"),
+      t("theft_records"),
+    ];
     return (
-      <div className={cn(shell, "p-4 space-y-3")}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Database className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-xs font-semibold text-foreground dark:text-white truncate">{t("hiw_trust_official")}</span>
-          </div>
-          <Badge className="shrink-0 text-[10px] bg-primary/15 text-primary border-primary/25 hover:bg-primary/15">
-            {t("instant_report")}
-          </Badge>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {sources.map((src) => (
-            <div key={src} className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 dark:border-white/10 dark:bg-black/30 px-2.5 py-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-              <span className="text-[11px] font-medium text-muted-foreground dark:text-white/65 leading-snug">{src}</span>
-            </div>
-          ))}
-        </div>
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[11px] text-muted-foreground dark:text-white/45">
-            <span>{t("hiw_mock_scanning")}</span>
-            <span className="font-medium text-foreground dark:text-white/80">100%</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-muted dark:bg-white/10 overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              initial={{ width: "0%" }}
-              whileInView={{ width: "100%" }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-      </div>
+      <ul className="grid grid-cols-2 gap-2">
+        {sources.map((src) => (
+          <li
+            key={src}
+            className="rounded-lg border border-white/12 bg-white/[0.05] px-2.5 py-2 text-[12px] leading-snug text-white/80"
+          >
+            {src}
+          </li>
+        ))}
+      </ul>
     );
   }
 
+  const rows = [
+    { icon: Gauge, label: t("mileage"), val: "248,600 km", warn: true },
+    { icon: AlertTriangle, label: t("mock_label_accidents"), val: t("wwc_preview_accidents_status"), warn: true },
+    { icon: Shield, label: t("mock_label_salvage"), val: t("report_clean"), warn: false },
+    { icon: Users, label: t("mock_label_owners"), val: "4", warn: false },
+    { icon: ShieldCheck, label: t("mock_label_stolen"), val: t("report_not_stolen"), warn: false },
+  ];
+
   return (
-    <div className={shell}>
-      <div className="bg-gradient-to-r from-primary to-emerald-600 px-4 py-3">
-        <p className="text-[11px] font-mono text-white/75">{VIN_EXAMPLE}</p>
-        <p className="text-base font-bold text-white mt-1">{DEMO_VEHICLE}</p>
+    <div className="rounded-xl border border-white/12 bg-white/[0.05] overflow-hidden">
+      <div className="px-3.5 py-2.5 border-b border-white/10">
+        <p className="font-mono text-[11px] tracking-wide text-white/40">{VIN_EXAMPLE}</p>
+        <p className="mt-0.5 text-[14px] font-medium text-white">
+          {DEMO_VEHICLE} {DEMO_YEAR}
+        </p>
       </div>
-      <div className="p-3 space-y-1.5">
-        {[
-          { label: t("mileage"), val: "68,400 km" },
-          { label: t("mock_label_accidents"), val: t("demo_none_found") },
-          { label: t("mock_label_salvage"), val: t("report_clean") },
-        ].map((row) => (
-          <div key={row.label} className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/40 dark:border-white/10 dark:bg-black/30 px-3 py-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <CheckCircle2 className="h-3.5 w-3.5 text-green-500 dark:text-green-400 shrink-0" />
-              <span className="text-xs text-muted-foreground dark:text-white/55 truncate">{row.label}</span>
-            </div>
-            <span className="text-xs font-semibold text-foreground dark:text-white shrink-0 ml-2">{row.val}</span>
+      <dl>
+        {rows.map(({ icon: Icon, label, val, warn }, i) => (
+          <div
+            key={label}
+            className={cn(
+              "flex items-center justify-between gap-3 px-3.5 py-2",
+              i < rows.length - 1 && "border-b border-white/[0.07]",
+            )}
+          >
+            <dt className="flex items-center gap-2 min-w-0 text-[12px] text-white/50">
+              <Icon className={cn("h-3.5 w-3.5 shrink-0", warn ? "text-orange-400" : "opacity-70")} />
+              <span className="truncate">{label}</span>
+            </dt>
+            <dd
+              className={cn(
+                "text-[12px] font-semibold tabular-nums shrink-0",
+                warn ? "text-orange-300" : "text-white",
+              )}
+            >
+              {val}
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   );
 }
@@ -117,10 +112,10 @@ export default function HowItWorks() {
   const [vinError, setVinError] = useState("");
   const seo = usePageSeo("how_it_works");
 
-  const steps: Step[] = useMemo(() => [
-    { num: "01", label: t("hiw_step1_label"), title: t("hiw_step1_title"), desc: t("hiw_step1_desc"), icon: Search },
-    { num: "02", label: t("hiw_step2_label"), title: t("hiw_step2_title"), desc: t("hiw_step2_desc"), icon: Database },
-    { num: "03", label: t("hiw_step3_label"), title: t("hiw_step3_title"), desc: t("hiw_step3_desc"), icon: FileText },
+  const steps = useMemo(() => [
+    { n: "1", title: t("hiw_step1_title"), desc: t("hiw_step1_desc") },
+    { n: "2", title: t("hiw_step2_title"), desc: t("hiw_step2_desc") },
+    { n: "3", title: t("hiw_step3_title"), desc: t("hiw_step3_desc") },
   ], [t]);
 
   const trustStrip = useMemo(() => [
@@ -171,47 +166,42 @@ export default function HowItWorks() {
         </EnterReveal>
       </section>
 
-      {/* Steps */}
-      <section className="relative overflow-hidden bg-muted/40 dark:bg-[#060a12] py-14 md:py-20 px-4 border-y border-border/60">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-60 dark:opacity-50" />
-        <div className="max-w-6xl mx-auto relative">
-          <EnterReveal inView y={16} className="text-center mb-10 md:mb-12">
-            <div className="inline-flex items-center rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground dark:border-white/15 dark:bg-white/5 dark:text-white/70">
-              {t("home_badge_3_steps")}
-            </div>
-          </EnterReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-            {steps.map(({ num, label, title, desc, icon: Icon }, i) => (
-              <EnterReveal
-                key={num}
-                inView
-                y={16}
-                delay={i * 0.04}
-                className="group"
-              >
-                <div className="flex h-full flex-col gap-5 rounded-2xl border border-border/70 bg-card/90 dark:border-white/10 dark:bg-white/[0.05] p-6 sm:p-7 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:hover:border-primary/30 dark:hover:bg-white/[0.07]">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-md shadow-primary/25 shrink-0 group-hover:shadow-primary/40 transition-shadow">
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <span className="text-4xl font-black text-foreground/[0.06] dark:text-white/[0.08] leading-none tabular-nums select-none">
-                      {num}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 flex-1">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-primary">{label}</p>
-                    <h3 className="text-lg font-bold text-foreground dark:text-white leading-snug">{title}</h3>
-                    <p className="text-sm text-muted-foreground dark:text-white/50 leading-relaxed">{desc}</p>
-                  </div>
-
-                  <StepPreview step={i} vinLabel={t("vin_label")} t={t} />
+      {/* Steps — one path, not three cloned cards */}
+      <section className="relative overflow-hidden bg-slate-950 dark:bg-[#060a12] py-16 md:py-20 px-4 border-b border-border/60">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(34,197,94,0.14),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+        <div className="max-w-3xl mx-auto relative">
+          {steps.map(({ n, title, desc }, i) => (
+            <EnterReveal
+              key={n}
+              inView
+              y={12}
+              className="relative grid md:grid-cols-[minmax(0,1fr)_16.75rem] gap-5 md:gap-10 pb-12 last:pb-0"
+            >
+              {i < steps.length - 1 && (
+                <div
+                  className="absolute left-[15px] top-9 bottom-0 w-px bg-white/12"
+                  aria-hidden
+                />
+              )}
+              <div className="relative flex gap-4 min-w-0">
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[13px] font-semibold text-white">
+                  {n}
+                </span>
+                <div className="min-w-0 pt-0.5">
+                  <h2 className="text-xl font-semibold tracking-tight text-white leading-snug">
+                    {title}
+                  </h2>
+                  <p className="mt-2 text-[15px] text-white/55 leading-relaxed">
+                    {desc}
+                  </p>
                 </div>
-              </EnterReveal>
-            ))}
-          </div>
+              </div>
+              <div className="pl-12 md:pl-0 md:pt-0.5">
+                <StepPreview step={i} t={t} />
+              </div>
+            </EnterReveal>
+          ))}
         </div>
       </section>
 

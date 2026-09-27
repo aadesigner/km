@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useEffect,
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type ReactNode,
@@ -9,7 +10,7 @@ import { Link } from "wouter";
 import { ChevronUp, CreditCard, FileText, HelpCircle, LogOut, Shield, User, X } from "lucide-react";
 import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { KmcheckLogo } from "@/components/logo";
 import { CountryNavMenuGroups } from "@/components/nav-country-menu";
@@ -31,12 +32,12 @@ const MobileMenuToggle = forwardRef<
     aria-label={label}
     aria-expanded={open}
     className={cn(
-      "md:hidden relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full touch-manipulation transition-colors duration-75 active:scale-95",
+      "md:hidden relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] transition-colors duration-150 active:scale-95",
       open
         ? "bg-primary/12 text-primary"
         : isDarkNav
-          ? "text-white/85 hover:bg-white/10 hover:text-white"
-          : "text-foreground/70 hover:bg-muted/90 hover:text-foreground",
+          ? "text-white/85 [@media(hover:hover)]:hover:bg-white/10 [@media(hover:hover)]:hover:text-white"
+          : "text-foreground/70 [@media(hover:hover)]:hover:bg-muted/90 [@media(hover:hover)]:hover:text-foreground",
       className,
     )}
     {...props}
@@ -44,7 +45,7 @@ const MobileMenuToggle = forwardRef<
     <span className="relative block h-3.5 w-[17px]" aria-hidden>
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
         )}
       />
@@ -56,7 +57,7 @@ const MobileMenuToggle = forwardRef<
       />
       <span
         className={cn(
-          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-100 ease-out",
+          "absolute left-0 block h-[1.5px] w-[17px] rounded-full bg-current transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
         )}
       />
@@ -121,6 +122,7 @@ export function NavbarMobileMenu({
 }: NavbarMobileMenuProps) {
   const { t } = useTranslation();
   const [accountOpen, setAccountOpen] = useState(false);
+  const openedByTouchRef = useRef(false);
   const close = () => onOpenChange(false);
   const displayName = user?.name?.trim() || user?.email?.split("@")[0] || "";
   const avatarInitial = displayName?.[0]?.toUpperCase() || <User className="h-3.5 w-3.5" />;
@@ -136,16 +138,28 @@ export function NavbarMobileMenu({
   ];
 
   return (
+    <>
+      <MobileMenuToggle
+        open={open}
+        isDarkNav={isDarkNav}
+        label={open ? t("nav_close_menu") : t("nav_open_menu")}
+        onPointerDown={(event) => {
+          prefetchNavMenuAssets();
+          if (event.pointerType === "touch") {
+            event.preventDefault();
+            openedByTouchRef.current = true;
+            onOpenChange(!open);
+          }
+        }}
+        onClick={() => {
+          if (openedByTouchRef.current) {
+            openedByTouchRef.current = false;
+            return;
+          }
+          onOpenChange(!open);
+        }}
+      />
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <MobileMenuToggle
-          open={open}
-          isDarkNav={isDarkNav}
-          label={open ? t("nav_close_menu") : t("nav_open_menu")}
-          onPointerDown={prefetchNavMenuAssets}
-        />
-      </SheetTrigger>
-
       <SheetContent
         side="right"
         speed="fast"
@@ -356,5 +370,6 @@ export function NavbarMobileMenu({
         </div>
       </SheetContent>
     </Sheet>
+    </>
   );
 }

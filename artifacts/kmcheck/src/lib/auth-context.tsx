@@ -152,10 +152,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password, name, countryCode, recaptchaToken, acquisition }),
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        countryCode: countryCode?.trim() || null,
+        recaptchaToken,
+        acquisition,
+      }),
     });
     const data = await res.json().catch(() => ({})) as { user?: AuthUser; error?: string; code?: string };
-    if (!res.ok) throw new ApiRequestError(data.error ?? "Registration failed", data.code);
+    if (!res.ok) {
+      throw new ApiRequestError(
+        data.error ?? (res.status >= 500 ? "Internal server error" : "Couldn't create your account. Please try again."),
+        data.code,
+      );
+    }
     assertActiveUser(data.user);
     setUser(data.user ?? null);
     persistUserSession(data.user ?? null);

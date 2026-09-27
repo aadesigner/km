@@ -1,222 +1,70 @@
 import { Link } from "wouter";
 import { EnterReveal } from "@/components/enter-reveal";
-import { ArrowRight, CheckCircle2, Globe } from "lucide-react";
+import { ArrowRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
+import { FlagImg } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
-import { Button } from "@/components/ui/button";
 
-type CountryConfig = {
+type Market = {
   slug: string;
   flagCode: string;
-  name: string;
-  count: string;
-  accentFrom: string;
-  accentTo: string;
-  tint: string;
-  highlights: readonly string[];
+  nameKey: string;
+  hintKey: string;
+  countKey: string;
 };
 
-function useHomeCountries(t: (k: string) => string): CountryConfig[] {
-  return [
-    {
-      slug: "usa",
-      flagCode: "us",
-      name: t("country_usa_name"),
-      count: t("country_usa_count"),
-      accentFrom: "from-blue-600",
-      accentTo: "to-red-500",
-      tint: "from-blue-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_usa_h0", "home_country_usa_h1", "home_country_usa_h2"],
-    },
-    {
-      slug: "korea",
-      flagCode: "kr",
-      name: t("country_korea_name"),
-      count: t("country_korea_count"),
-      accentFrom: "from-indigo-600",
-      accentTo: "to-red-600",
-      tint: "from-indigo-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_korea_h0", "home_country_korea_h1", "home_country_korea_h2"],
-    },
-    {
-      slug: "canada",
-      flagCode: "ca",
-      name: t("country_canada_name"),
-      count: t("country_canada_count"),
-      accentFrom: "from-red-600",
-      accentTo: "to-slate-600",
-      tint: "from-red-500/[0.07] via-transparent to-slate-500/[0.05]",
-      highlights: ["home_country_canada_h0", "home_country_canada_h1", "home_country_canada_h2"],
-    },
-    {
-      slug: "china",
-      flagCode: "cn",
-      name: t("country_china_name"),
-      count: t("country_china_count"),
-      accentFrom: "from-red-600",
-      accentTo: "to-amber-600",
-      tint: "from-red-500/[0.07] via-transparent to-amber-500/[0.05]",
-      highlights: ["home_country_china_h0", "home_country_china_h1", "home_country_china_h2"],
-    },
-    {
-      slug: "japan",
-      flagCode: "jp",
-      name: t("country_japan_name"),
-      count: t("country_japan_count"),
-      accentFrom: "from-slate-700",
-      accentTo: "to-red-600",
-      tint: "from-slate-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_japan_h0", "home_country_japan_h1", "home_country_japan_h2"],
-    },
-    {
-      slug: "uae",
-      flagCode: "ae",
-      name: t("country_uae_name"),
-      count: t("country_uae_count"),
-      accentFrom: "from-emerald-600",
-      accentTo: "to-red-600",
-      tint: "from-emerald-500/[0.07] via-transparent to-red-500/[0.05]",
-      highlights: ["home_country_uae_h0", "home_country_uae_h1", "home_country_uae_h2"],
-    },
-  ];
-}
-
-function CountryCardLink({
-  country,
-  language,
-  t,
-  index,
-}: {
-  country: CountryConfig;
-  language: string;
-  t: (k: string) => string;
-  index: number;
-}) {
-  return (
-    <EnterReveal inView y={16} delay={index * 0.04} className="h-full">
-      <Link
-        href={`/${language}/cars/${country.slug}`}
-        className={cn(
-          "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm",
-          "hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
-        )}
-      >
-        <div className={cn("h-1 bg-gradient-to-r", country.accentFrom, country.accentTo)} />
-        <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", country.tint)} />
-
-        <div className="relative z-10 flex flex-1 flex-col p-4 md:p-5">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <img
-                  src={`https://flagcdn.com/${country.flagCode}.svg`}
-                  alt={formatImageFlagAlt(country.name, t)}
-                  width={43}
-                  height={32}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-7 w-auto rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                />
-                <h3 className="text-lg font-bold tracking-tight">{country.name}</h3>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {country.count} {t("country_registered_vehicles")}
-              </p>
-            </div>
-          </div>
-
-          <ul className="space-y-2 mb-4 flex-1">
-            {country.highlights.map((key) => (
-              <li key={key} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                <span className="line-clamp-2">{t(key)}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div
-            className={cn(
-              "inline-flex items-center gap-2 text-sm font-semibold text-primary mt-auto pt-4",
-              "group-hover:gap-2.5 transition-[gap] duration-200",
-            )}
-          >
-            <span>{t("vin_check_for")} {country.name}</span>
-            <ArrowRight className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </div>
-      </Link>
-    </EnterReveal>
-  );
-}
+const MARKETS: Market[] = [
+  { slug: "usa", flagCode: "us", nameKey: "country_usa_name", hintKey: "home_country_usa_h0", countKey: "country_usa_count" },
+  { slug: "korea", flagCode: "kr", nameKey: "country_korea_name", hintKey: "home_country_korea_h0", countKey: "country_korea_count" },
+  { slug: "canada", flagCode: "ca", nameKey: "country_canada_name", hintKey: "home_country_canada_h0", countKey: "country_canada_count" },
+  { slug: "china", flagCode: "cn", nameKey: "country_china_name", hintKey: "home_country_china_h0", countKey: "country_china_count" },
+  { slug: "japan", flagCode: "jp", nameKey: "country_japan_name", hintKey: "home_country_japan_h0", countKey: "country_japan_count" },
+  { slug: "uae", flagCode: "ae", nameKey: "country_uae_name", hintKey: "home_country_uae_h0", countKey: "country_uae_count" },
+];
 
 export function HomeCountriesCoverageSection() {
   const { t, language } = useTranslation();
-  const countries = useHomeCountries(t);
 
   return (
     <section className="pt-16 md:pt-24 pb-10 md:pb-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <EnterReveal inView y={14} className="mb-10 md:mb-12 text-center space-y-3">
+      <div className="max-w-3xl mx-auto">
+        <EnterReveal inView y={12} className="mb-8 md:mb-10 text-center space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
             <Globe className="h-3.5 w-3.5" />
             {t("stats_countries_badge")}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("countries_title")}</h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">{t("countries_subtitle")}</p>
+          <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">{t("countries_subtitle")}</p>
         </EnterReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-          {countries.map((country, i) => (
-            <CountryCardLink
-              key={country.slug}
-              country={country}
-              language={language}
-              t={t}
-              index={i}
-            />
+        <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          {MARKETS.map((m) => (
+            <Link
+              key={m.slug}
+              href={`/${language}/cars/${m.slug}`}
+              className={cn(
+                "group flex items-center gap-3.5 px-4 py-3.5 sm:px-5",
+                "hover:bg-primary/5 transition-colors",
+              )}
+            >
+              <FlagImg
+                code={m.flagCode}
+                size={28}
+                className="h-5 w-auto rounded-[2px] shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                alt={formatImageFlagAlt(t(m.nameKey), t)}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold tracking-tight text-foreground">{t(m.nameKey)}</p>
+                <p className="truncate text-xs text-muted-foreground">{t(m.hintKey)}</p>
+              </div>
+              <span className="hidden sm:inline text-[12px] tabular-nums text-muted-foreground">
+                {t(m.countKey)}
+              </span>
+              <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            </Link>
           ))}
         </div>
-
-        <EnterReveal
-          inView
-          y={12}
-          className="mt-8 md:mt-10 rounded-2xl border border-border/70 bg-gradient-to-br from-muted/40 via-card to-card p-5 md:p-6"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="flex -space-x-2.5 shrink-0">
-                {countries.map((c) => (
-                  <img
-                    key={c.slug}
-                    src={`https://flagcdn.com/${c.flagCode}.svg`}
-                    alt=""
-                    width={32}
-                    height={24}
-                    loading="lazy"
-                    className="h-7 w-auto rounded-sm ring-2 ring-background shadow-sm"
-                  />
-                ))}
-                <span
-                  className="inline-flex h-7 min-w-[1.75rem] px-1.5 items-center justify-center rounded-sm ring-2 ring-background bg-muted text-[10px] font-bold text-muted-foreground"
-                  aria-hidden
-                >
-                  +
-                </span>
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold text-base md:text-lg tracking-tight">{t("stats_countries_badge")}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">{t("stats_countries")}</p>
-              </div>
-            </div>
-            <Button asChild variant="outline" className="rounded-xl shrink-0 w-full md:w-auto">
-              <Link href={`/${language}/pricing`}>
-                {t("get_started")}
-                <ArrowRight className="h-4 w-4 ml-1.5" />
-              </Link>
-            </Button>
-          </div>
-        </EnterReveal>
       </div>
     </section>
   );

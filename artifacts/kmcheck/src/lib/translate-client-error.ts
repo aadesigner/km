@@ -194,7 +194,7 @@ export function translateClientError(t: TFn, code?: string, error?: string): str
   if (matchError(error, [/account with this email already exists/i, /email already exists/i])) {
     return t("auth_error_email_exists");
   }
-  if (matchError(error, [/failed to create account/i])) {
+  if (matchError(error, [/failed to create account/i, /couldn't create your account/i, /registration failed/i])) {
     return t("auth_error_signup_failed");
   }
   if (matchError(error, [/vin lookup not found/i, /^not found$/i])) {

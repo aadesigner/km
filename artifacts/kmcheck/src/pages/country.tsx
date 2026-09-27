@@ -329,8 +329,7 @@ export default function CountryPage({ params }: Props) {
             y={16}
             className="space-y-8 pt-2 md:pt-6 lg:pt-14 relative z-20 text-center lg:text-start"
           >
-            {/* Desktop eyebrow flag */}
-            <div className="hidden lg:flex items-center justify-start gap-3">
+            <div className="flex items-center justify-center lg:justify-start gap-3">
               <FlagImg
                 code={meta.flagImg}
                 size={40}
@@ -340,7 +339,7 @@ export default function CountryPage({ params }: Props) {
               />
             </div>
 
-            {/* Stable H1 — primary keyword + market (no rotating words inside). */}
+            {/* Same H1 on every breakpoint — keyword + market line. */}
             <h1 className="text-[2.65rem] sm:text-4xl md:text-5xl lg:text-[3.35rem] xl:text-[3.65rem] font-extrabold tracking-tight leading-[1.1]">
               {(() => {
                 const verb = t(`country_${slug}_headline_verb`);
@@ -348,22 +347,7 @@ export default function CountryPage({ params }: Props) {
               })()}
               <span className="text-primary">{t(`country_${slug}_cycling_0`)}</span>
               <br />
-              <span className="lg:hidden text-foreground/90 inline-flex items-center justify-center gap-x-2 gap-y-1 flex-wrap">
-                <span>{t(`country_${slug}_headline_origin_prefix`)}</span>
-                <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
-                  <FlagImg
-                    code={meta.flagImg}
-                    size={44}
-                    alt={formatImageFlagAlt(countryName, t)}
-                    priority
-                    className="rounded-md shadow-md ring-1 ring-black/10 shrink-0"
-                  />
-                  <span className="text-foreground font-extrabold">{countryName}</span>
-                </span>
-              </span>
-              <span className="hidden lg:inline text-foreground/90">
-                {t(`country_${slug}_headline_origin`)}
-              </span>
+              <span className="text-foreground/90">{t(`country_${slug}_headline_origin`)}</span>
             </h1>
 
             <p className="text-sm md:text-base text-muted-foreground mx-auto lg:mx-0 max-w-lg leading-relaxed">
@@ -575,50 +559,30 @@ export default function CountryPage({ params }: Props) {
 
       {/* ─────────────────────── OTHER COUNTRIES ─────────────────────── */}
       <section className="py-12 md:py-16 px-4 bg-muted/20 border-t">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h3 className="text-lg font-bold text-muted-foreground text-center lg:text-start">{t("browse_countries")}</h3>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {otherCountries.map(([key, c], i) => (
-              <motion.div
+        <div className="max-w-3xl mx-auto space-y-5">
+          <h3 className="text-lg font-semibold text-foreground">{t("browse_countries")}</h3>
+          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            {otherCountries.map(([key, c]) => (
+              <Link
                 key={key}
-                initial={lightMotion ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: lightMotion ? 0 : i * 0.1 }}
-                whileHover={lightMotion ? undefined : { y: -3, transition: { duration: 0.2 } }}
+                href={`/${language}/cars/${key}`}
+                className="group flex items-center gap-3.5 px-4 py-3.5 sm:px-5 hover:bg-primary/5 transition-colors"
               >
-                <Link
-                  href={`/${language}/cars/${key}`}
-                  className={cn(
-                    "group relative block rounded-2xl overflow-hidden p-7",
-                    "bg-gradient-to-br", c.gradient,
-                    "hover:shadow-2xl hover:shadow-black/30 transition-all duration-300"
-                  )}
-                >
-                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_50%_60%_at_80%_20%,rgba(255,255,255,0.08),transparent)]" />
-                  <div className="relative z-10 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <FlagImg code={c.flagImg} size={60} className="rounded-md shadow-md group-hover:scale-110 transition-transform duration-300" alt={formatImageFlagAlt(t(`country_${key}_name`), t)} />
-                      <div>
-                        <h4 className="text-xl font-black text-white">{t(`country_${key}_name`)}</h4>
-                        <p className="text-white/50 text-xs">{c.totalVehicles} {t("country_registered_vehicles")}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {c.popularBrands.slice(0, 4).map(brand => (
-                        <span key={brand} className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded-md border border-white/10">
-                          {brand}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="inline-flex items-center gap-1.5 text-white/80 text-sm font-semibold bg-white/10 border border-white/15 rounded-xl px-3 py-1.5 group-hover:bg-white/20 transition-colors">
-                      {t("vin_check_for")} {t(`country_${key}_name`)}
-                      <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+                <FlagImg
+                  code={c.flagImg}
+                  size={28}
+                  className="h-5 w-auto rounded-[2px] shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                  alt={formatImageFlagAlt(t(`country_${key}_name`), t)}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold tracking-tight text-foreground">{t(`country_${key}_name`)}</p>
+                  <p className="truncate text-xs text-muted-foreground">{t(`home_country_${key}_h0`)}</p>
+                </div>
+                <span className="hidden sm:inline text-[12px] tabular-nums text-muted-foreground">
+                  {c.totalVehicles}
+                </span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </Link>
             ))}
           </div>
         </div>

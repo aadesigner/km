@@ -173,7 +173,17 @@ function ScoreBadge({
   );
 }
 
-function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabel: string }) {
+function MileageDemo({
+  odometer,
+  flaggedLabel,
+  flagged,
+  chart,
+}: {
+  odometer: number;
+  flaggedLabel: string;
+  flagged: boolean;
+  chart: ReturnType<typeof getWhatWeCheckDemoReport>["mileageChart"];
+}) {
   const reduced = usePreviewMotionOff();
   const chartW = 320;
   const chartH = 118;
@@ -181,18 +191,20 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
   const padY = 16;
   const labelH = 18;
   const viewH = chartH + labelH;
-  const minKm = 30_000;
-  const maxKm = 150_000;
+  const kms = chart.map((p) => p.km);
+  const minKm = Math.max(0, Math.min(...kms) - 8_000);
+  const maxKm = Math.max(...kms) + 8_000;
+  const spanX = chartW - padX * 2;
 
   const toY = (km: number) =>
     padY + (1 - (km - minKm) / (maxKm - minKm)) * (chartH - padY * 2);
 
-  const readings = [
-    { x: padX, km: 42_100, label: "2019" },
-    { x: 110, km: 89_200, label: "2021" },
-    { x: 185, km: 64_500, label: "2022", rollback: true as const },
-    { x: chartW - padX, km: 138_600, label: "2023" },
-  ];
+  const readings = chart.map((p, i) => ({
+    x: padX + (chart.length === 1 ? spanX / 2 : (i / (chart.length - 1)) * spanX),
+    km: p.km,
+    label: p.year,
+    rollback: p.rollback,
+  }));
 
   const points = readings.map((r) => ({ ...r, y: toY(r.km) }));
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
@@ -206,14 +218,20 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
           <AnimatedMileageKm value={odometer} className="text-xl sm:text-2xl font-black tabular-nums text-foreground" />
           <span className="text-[10px] font-semibold text-muted-foreground">km</span>
         </div>
-        <motion.span
-          className="text-[9px] font-bold text-orange-900 dark:text-orange-100 bg-orange-100 dark:bg-orange-950/50 border border-orange-200/80 dark:border-orange-800/60 rounded-md px-2 py-0.5 leading-snug max-w-[55%] text-right"
-          initial={reduced ? false : { opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.3 }}
-        >
-          {flaggedLabel}
-        </motion.span>
+        {flagged ? (
+          <motion.span
+            className="text-[9px] font-bold text-orange-900 dark:text-orange-100 bg-orange-100 dark:bg-orange-950/50 border border-orange-200/80 dark:border-orange-800/60 rounded-md px-2 py-0.5 leading-snug max-w-[55%] text-right"
+            initial={reduced ? false : { opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.3 }}
+          >
+            {flaggedLabel}
+          </motion.span>
+        ) : (
+          <span className="text-[9px] font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 rounded-md px-2 py-0.5">
+            {flaggedLabel}
+          </span>
+        )}
       </div>
       <svg
         viewBox={`0 0 ${chartW} ${viewH}`}
@@ -265,22 +283,28 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
           animate={{ pathLength: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         />
-        {/* Rollback callout segment */}
-        <motion.line
-          x1={points[1]!.x}
-          y1={points[1]!.y}
-          x2={points[2]!.x}
-          y2={points[2]!.y}
-          stroke="#ea580c"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray="5 4"
-          initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.55, duration: 0.35 }}
-        />
+        {points.map((p, i) => {
+          if (!p.rollback || i === 0) return null;
+          const prev = points[i - 1]!;
+          return (
+            <motion.line
+              key={`rollback-${p.label}`}
+              x1={prev.x}
+              y1={prev.y}
+              x2={p.x}
+              y2={p.y}
+              stroke="#ea580c"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="5 4"
+              initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.55, duration: 0.35 }}
+            />
+          );
+        })}
         {points.map((p, i) => (
-          <g key={p.label}>
+          <g key={`${p.label}-${p.km}`}>
             <motion.circle
               cx={p.x}
               cy={p.y}
@@ -327,7 +351,13 @@ function MileageDemo({ odometer, flaggedLabel }: { odometer: number; flaggedLabe
   );
 }
 
-function AccidentDemo({ t }: { t: (k: string) => string }) {
+function AccidentDemo({
+  t,
+  hot,
+}: {
+  t: (k: string) => string;
+  hot: ReturnType<typeof getWhatWeCheckDemoReport>["accidentHot"];
+}) {
   const reduced = usePreviewMotionOff();
 
   /** Top-down car silhouette — body, glass, wheels, then panel damage overlays. */
@@ -343,11 +373,12 @@ function AccidentDemo({ t }: { t: (k: string) => string }) {
   ];
 
   const zones = [
-    { id: "front", hot: true, d: "M 35 6 L 65 6 L 62 40 L 38 40 Z" },
-    { id: "left", hot: true, d: "M 24 38 L 38 40 L 38 90 L 24 94 Z" },
-    { id: "right", hot: true, d: "M 76 38 L 62 40 L 62 90 L 76 94 Z" },
-    { id: "rear", hot: false, d: "M 38 96 L 62 96 L 64 118 L 36 118 Z" },
+    { id: "front" as const, hot: hot.front, d: "M 35 6 L 65 6 L 62 40 L 38 40 Z", labelKey: "wwc_demo_event_front" },
+    { id: "left" as const, hot: hot.left, d: "M 24 38 L 38 40 L 38 90 L 24 94 Z", labelKey: "wwc_demo_event_left" },
+    { id: "right" as const, hot: hot.right, d: "M 76 38 L 62 40 L 62 90 L 76 94 Z", labelKey: "wwc_demo_event_right" },
+    { id: "rear" as const, hot: hot.rear, d: "M 38 96 L 62 96 L 64 118 L 36 118 Z", labelKey: "wwc_demo_event_rear" },
   ];
+  const hotZones = zones.filter((z) => z.hot);
 
   return (
     <div className="rounded-xl border border-border/60 bg-gradient-to-b from-background to-muted/20 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -434,18 +465,12 @@ function AccidentDemo({ t }: { t: (k: string) => string }) {
       </svg>
 
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-        <span className="inline-flex items-center gap-1 text-[9px] text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
-          {t("wwc_demo_event_front")}
-        </span>
-        <span className="inline-flex items-center gap-1 text-[9px] text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
-          {t("damage_val_side")} ×2
-        </span>
-        <span className="inline-flex items-center gap-1 text-[9px] text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30 shrink-0" />
-          {t("wwc_demo_event_rear")}
-        </span>
+        {hotZones.map((z) => (
+          <span key={z.id} className="inline-flex items-center gap-1 text-[9px] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
+            {t(z.labelKey)}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -489,15 +514,22 @@ function FeatureDemonstration({
   t: (k: string) => string;
 }) {
   if (featureId === "mileage") {
-    return <MileageDemo odometer={demo.odometer} flaggedLabel={t(demo.findings.mileage.valueKey)} />;
+    return (
+      <MileageDemo
+        odometer={demo.odometer}
+        flaggedLabel={t(demo.findings.mileage.valueKey)}
+        flagged={demo.findings.mileage.tone === "negative"}
+        chart={demo.mileageChart}
+      />
+    );
   }
   if (featureId === "accidents") {
-    return <AccidentDemo t={t} />;
+    return <AccidentDemo t={t} hot={demo.accidentHot} />;
   }
   if (featureId === "salvage") {
-    return <SalvageDemo clearLabel={t(demo.findings.salvage.valueKey)} note={t("wwc_demo_salvage_note")} />;
+    return <SalvageDemo clearLabel={t(demo.findings.salvage.valueKey)} note={t(demo.salvageNoteKey)} />;
   }
-  return <TheftDemo clearLabel={t(demo.findings.theft.valueKey)} note={t("wwc_demo_theft_note")} />;
+  return <TheftDemo clearLabel={t(demo.findings.theft.valueKey)} note={t(demo.theftNoteKey)} />;
 }
 
 function DocTable({
@@ -532,7 +564,7 @@ function DocTable({
               <td className="py-2 px-2.5 text-muted-foreground whitespace-nowrap align-top font-medium tabular-nums w-[3.25rem]">
                 {row.date}
               </td>
-              <td className="py-2 px-2.5 text-foreground align-top leading-snug line-clamp-2">
+              <td className="py-2 px-2.5 text-foreground align-top leading-snug">
                 <span className="font-semibold">{row.primary || "—"}</span>
                 {row.detail ? <span className="text-muted-foreground"> · {row.detail}</span> : null}
               </td>
@@ -576,10 +608,10 @@ export function WhatWeCheckReportPreview({
       : feature.id === "accidents"
         ? demo.accidentRows
         : feature.id === "salvage"
-          ? [{ date: "—", primary: t(demo.findings.salvage.valueKey), detailKey: "wwc_demo_salvage_note" }]
-          : [{ date: "—", primary: t(demo.findings.theft.valueKey), detailKey: "wwc_demo_theft_note" }];
+          ? demo.salvageRows
+          : demo.theftRows;
 
-  const tableRows = sortHistoryNewestFirst(historyRows).slice(0, 2).map((row) => ({
+  const tableRows = sortHistoryNewestFirst(historyRows).slice(0, 6).map((row) => ({
     date: formatWwcDemoDate(row.date, language),
     primary: row.primaryKey ? t(row.primaryKey) : row.primary,
     detail: t(row.detailKey),
