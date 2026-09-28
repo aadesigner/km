@@ -2197,3 +2197,20 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge__amount
   border-radius: 0.75rem;
   font-weight: 700;
 }
+
+/*
+ * City + ZIP share a 2-col grid. POK wraps each field in an extra div, so a hidden
+ * city must collapse the row — otherwise ZIP stays in column 2 with a hole on the left.
+ */
+.kmcheck-pok-checkout .pok-payment-input-row:has([data-kmcheck-pok-hidden="1"]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kmcheck-pok-checkout .pok-payment-input-row > :has([data-kmcheck-pok-hidden="1"]),
+.kmcheck-pok-checkout .pok-payment-input-row > [data-kmcheck-pok-hidden="1"] {
+  display: none !important;
+}
+
+.kmcheck-pok-checkout .pok-payment-input-row:has([data-kmcheck-pok-hidden="1"]) > :not(:has([data-kmcheck-pok-hidden="1"])):not([data-kmcheck-pok-hidden="1"]) {
+  grid-column: 1 / -1;
+}

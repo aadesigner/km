@@ -6,6 +6,7 @@ import {
   buildPokPaymentInitialState,
   isPokCountryFieldLabel,
   isPokRequiredUsCaFieldLabel,
+  isPokUsCaBillingExtraLabel,
   openPokUsCaBillingIfNeeded,
   pokCountryRequiresBillingExtras,
   pokPrefillCountryCode,
@@ -61,11 +62,14 @@ describe("pokPrefillCountryCode", () => {
 });
 
 describe("POK field labels", () => {
-  it("treats Country as visible and required (en/it/al)", () => {
+  it("does not treat Albanian State/Province as the Country field", () => {
     expect(isPokCountryFieldLabel("Country")).toBe(true);
     expect(isPokCountryFieldLabel("Paese")).toBe(true);
     expect(isPokCountryFieldLabel("Shteti")).toBe(true);
-    expect(shouldHidePokOptionalField("Country")).toBe(false);
+    expect(isPokCountryFieldLabel("Shteti/Provinca")).toBe(false);
+    expect(isPokRequiredUsCaFieldLabel("Shteti/Provinca")).toBe(true);
+    expect(isPokUsCaBillingExtraLabel("Qyteti")).toBe(true);
+    expect(isPokUsCaBillingExtraLabel("Kodi Postar")).toBe(true);
   });
 
   it("does not hide POK's US/CA required extras", () => {
@@ -77,12 +81,13 @@ describe("POK field labels", () => {
     expect(shouldHidePokOptionalField("ZIP Code")).toBe(false);
   });
 
-  it("hides optional address / phone / add-billing copy", () => {
-    expect(shouldHidePokOptionalField("Address")).toBe(true);
-    expect(shouldHidePokOptionalField("City")).toBe(true);
-    expect(shouldHidePokOptionalField("Phone")).toBe(true);
+  it("hides Add billing copy; address extras are shown only while US/CA billing is open", () => {
     expect(shouldHidePokOptionalField("Add billing info")).toBe(true);
     expect(shouldHidePokOptionalField("Card number")).toBe(false);
+    expect(isPokUsCaBillingExtraLabel("Address")).toBe(true);
+    expect(isPokUsCaBillingExtraLabel("City")).toBe(true);
+    expect(isPokUsCaBillingExtraLabel("Phone")).toBe(true);
+    expect(isPokUsCaBillingExtraLabel("State/Province")).toBe(true);
   });
 });
 
@@ -128,7 +133,7 @@ describe("openPokUsCaBillingIfNeeded", () => {
 });
 
 describe("syncPokGuestVisibleFields", () => {
-  it("leaves Country visible and hides optional address", () => {
+  it("leaves Country visible and hides address when US/CA extras are closed", () => {
     const root = document.createElement("div");
     const country = document.createElement("div");
     country.className = "pok-payment-relative";
@@ -175,5 +180,82 @@ describe("syncPokGuestVisibleFields", () => {
 
     expect(state.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
     expect(zip.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+  });
+
+  it("shows address/city/phone while US/CA extras are open, and hides them when they are not", () => {
+    const root = document.createElement("div");
+    const address = document.createElement("div");
+    address.className = "pok-payment-relative";
+    address.innerHTML = '<span class="pok-payment-label">Address</span>';
+    const city = document.createElement("div");
+    city.className = "pok-payment-relative";
+    city.innerHTML = '<span class="pok-payment-label">City</span>';
+    const phone = document.createElement("div");
+    phone.className = "pok-payment-relative";
+    phone.innerHTML = '<span class="pok-payment-label">Phone</span>';
+    root.append(address, city, phone);
+
+    syncPokGuestVisibleFields(root, "DE", { billingClickAttempted: false });
+    expect(address.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
+    expect(city.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
+    expect(phone.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
+
+    const state = document.createElement("div");
+    state.className = "pok-payment-relative";
+    state.innerHTML = '<span class="pok-payment-label">State/Province *</span>';
+    root.append(state);
+
+    syncPokGuestVisibleFields(root, "US", { billingClickAttempted: true });
+    expect(address.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(city.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(phone.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(address.style.display).toBe("");
+  });
+
+  it("shows Qyteti next to Kodi Postar for US instead of leaving ZIP alone on the right", () => {
+    const root = document.createElement("div");
+    const row = document.createElement("div");
+    row.className = "pok-payment-input-row";
+    const cityWrap = document.createElement("div");
+    const city = document.createElement("div");
+    city.className = "pok-payment-relative";
+    city.innerHTML = '<span class="pok-payment-label">Qyteti</span>';
+    cityWrap.append(city);
+    const zipWrap = document.createElement("div");
+    const zip = document.createElement("div");
+    zip.className = "pok-payment-relative";
+    zip.innerHTML = '<span class="pok-payment-label">Kodi Postar *</span>';
+    zipWrap.append(zip);
+    row.append(cityWrap, zipWrap);
+    root.append(row);
+
+    syncPokGuestVisibleFields(root, "US", { billingClickAttempted: true });
+    expect(city.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(zip.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(cityWrap.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(zipWrap.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+  });
+
+  it("hides the extra POK wrapper around a 2-col field, not only the inner input", () => {
+    const root = document.createElement("div");
+    const row = document.createElement("div");
+    row.className = "pok-payment-input-row";
+    const cityWrap = document.createElement("div");
+    const city = document.createElement("div");
+    city.className = "pok-payment-relative";
+    city.innerHTML = '<span class="pok-payment-label">Qyteti</span>';
+    cityWrap.append(city);
+    const phoneWrap = document.createElement("div");
+    const phone = document.createElement("div");
+    phone.className = "pok-payment-relative";
+    phone.innerHTML = '<span class="pok-payment-label">Telefoni</span>';
+    phoneWrap.append(phone);
+    row.append(cityWrap, phoneWrap);
+    root.append(row);
+
+    syncPokGuestVisibleFields(root, "AL", { billingClickAttempted: false });
+    expect(cityWrap.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
+    expect(phoneWrap.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
+    expect(cityWrap.style.display).toBe("none");
   });
 });

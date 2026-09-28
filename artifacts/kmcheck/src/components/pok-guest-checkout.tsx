@@ -35,7 +35,8 @@ export function pokLocaleFromLanguage(language: string): "en" | "it" | "al" {
 /**
  * Inline POK card checkout. Card number / expiry / CVC / name / email / country stay visible.
  * Country uses POK's required dropdown, prefilled from the kmcheck profile when set.
- * Optional address/phone stay hidden. PAN/CVV stay inside the POK SDK — never posted to kmcheck.
+ * US/CA open POK's extra billing fields; other countries hide them again.
+ * PAN/CVV stay inside the POK SDK — never posted to kmcheck.
  */
 export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, className }: Props) {
   const { language, t } = useTranslation();
@@ -102,14 +103,26 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     };
     run();
 
-    // Debounced: only react to new nodes (not every style tweak) so we don't fight 3DS UI.
+    const onCountryInteract = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest(".pok-payment-option, .pok-payment-options, .pok-payment-modal")) {
+        run();
+      }
+    };
+    host.addEventListener("click", onCountryInteract);
+    host.addEventListener("change", onCountryInteract);
+
+    // New or removed nodes: US/CA extras mount/unmount. Ignore style-only tweaks (3DS).
     const obs = new MutationObserver((mutations) => {
-      const hasNewNodes = mutations.some((m) => m.addedNodes.length > 0);
-      if (hasNewNodes) run();
+      const listChanged = mutations.some((m) => m.addedNodes.length > 0 || m.removedNodes.length > 0);
+      if (listChanged) run();
     });
     obs.observe(host, { childList: true, subtree: true });
     return () => {
       cancelAnimationFrame(raf);
+      host.removeEventListener("click", onCountryInteract);
+      host.removeEventListener("change", onCountryInteract);
       obs.disconnect();
     };
   }, [orderId, countryCode]);

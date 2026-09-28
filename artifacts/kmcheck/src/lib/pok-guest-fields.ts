@@ -1,8 +1,10 @@
 import { parseUserCountryCode } from "@/lib/user-countries";
 
-/** POK SDK labels (en / it / al). Country + US/CA extras stay visible. */
-const POK_OPTIONAL_HIDE_RE =
-  /^(indirizzo|adresa|address|città|qyteti|city|telefono|phone|telefoni|add billing|aggiungi|shto informacion)/i;
+/** Hidden unless US/CA billing extras are open. */
+const POK_BILLING_EXTRA_RE =
+  /^(indirizzo|adresa|address|stato\/provincia|shteti\/provinca|state\/province|stato|provinca|state|città|qyteti|city|cap|zip(?: code)?|kodi postar|telefono|phone|telefoni)$/i;
+
+const POK_ADD_BILLING_RE = /^(add billing|aggiungi|shto informacion)/i;
 
 const POK_EMPTY_FORM = {
   cardNumber: "",
@@ -63,29 +65,32 @@ export function buildPokPaymentInitialState(input: {
   };
 }
 
-/** POK requires State/Province + ZIP when billing country is US or CA. */
+/** POK requires State/Province + ZIP (and shows address extras) for US or CA. */
 export function pokCountryRequiresBillingExtras(countryCode: string | null | undefined): boolean {
   const code = (countryCode ?? "").trim().toUpperCase();
   return code === "US" || code === "CA";
 }
 
 export function pokFieldLabel(text: string): string {
-  return text.replace(/\*/g, "").trim();
+  return text.replace(/\*/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export function isPokCountryFieldLabel(label: string): boolean {
-  return /^(paese|shteti|country)\b/i.test(label);
+  return /^(paese|shteti|country)$/i.test(label);
 }
 
-/** Shown by POK only when billing is open for US/CA — required, must not be hidden. */
 export function isPokRequiredUsCaFieldLabel(label: string): boolean {
-  return /^(stato|provinca|state|cap|zip|kodi postar)\b/i.test(label);
+  return /^(stato\/provincia|shteti\/provinca|state\/province|stato|provinca|state|cap|zip(?: code)?|kodi postar)$/i.test(label);
+}
+
+export function isPokUsCaBillingExtraLabel(label: string): boolean {
+  return POK_BILLING_EXTRA_RE.test(label);
 }
 
 export function shouldHidePokOptionalField(label: string): boolean {
   if (!label) return false;
-  if (isPokCountryFieldLabel(label) || isPokRequiredUsCaFieldLabel(label)) return false;
-  return POK_OPTIONAL_HIDE_RE.test(label);
+  if (isPokCountryFieldLabel(label)) return false;
+  return POK_ADD_BILLING_RE.test(label);
 }
 
 export function pokBillingExtrasVisible(root: HTMLElement): boolean {
@@ -95,16 +100,44 @@ export function pokBillingExtrasVisible(root: HTMLElement): boolean {
   return false;
 }
 
+/**
+ * POK wraps each `.pok-payment-relative` in an extra `<div>`. City + ZIP sit in a
+ * 2-col grid of those wrappers — hiding only the inner field leaves an empty left cell
+ * and parks ZIP on the right.
+ */
+function pokFieldHideTarget(row: HTMLElement): HTMLElement {
+  const parent = row.parentElement;
+  if (
+    parent instanceof HTMLElement &&
+    parent.parentElement?.classList.contains("pok-payment-input-row")
+  ) {
+    return parent;
+  }
+  return row;
+}
+
+function hideOne(el: HTMLElement): void {
+  if (el.getAttribute("data-kmcheck-pok-hidden") === "1") return;
+  el.style.display = "none";
+  el.setAttribute("data-kmcheck-pok-hidden", "1");
+}
+
+function revealOne(el: HTMLElement): void {
+  if (el.getAttribute("data-kmcheck-pok-hidden") !== "1") return;
+  el.style.display = "";
+  el.removeAttribute("data-kmcheck-pok-hidden");
+}
+
 function hidePokRow(row: HTMLElement): void {
-  if (row.getAttribute("data-kmcheck-pok-hidden") === "1") return;
-  row.style.display = "none";
-  row.setAttribute("data-kmcheck-pok-hidden", "1");
+  const target = pokFieldHideTarget(row);
+  hideOne(target);
+  if (target !== row) hideOne(row);
 }
 
 function revealPokRow(row: HTMLElement): void {
-  if (row.getAttribute("data-kmcheck-pok-hidden") !== "1") return;
-  row.style.display = "";
-  row.removeAttribute("data-kmcheck-pok-hidden");
+  const target = pokFieldHideTarget(row);
+  revealOne(target);
+  if (target !== row) revealOne(row);
 }
 
 function isPokChromeRow(row: HTMLElement): boolean {
@@ -116,6 +149,7 @@ function isPokChromeRow(row: HTMLElement): boolean {
 /**
  * POK starts "Add billing info" collapsed. Prefilling US/CA does not open it, and the
  * checkbox is then disabled — click it once (never twice: that would close it again).
+ * User picks of US/CA are handled by the SDK itself.
  */
 export function openPokUsCaBillingIfNeeded(
   root: HTMLElement,
@@ -131,7 +165,10 @@ export function openPokUsCaBillingIfNeeded(
   return true;
 }
 
-/** Keep POK's Country (and US/CA State/ZIP) visible; hide optional address/phone. */
+/**
+ * Country always visible. US/CA extras (address, state, ZIP, city, phone) stay open
+ * while POK has expanded billing; they hide again when billing collapses.
+ */
 export function syncPokGuestVisibleFields(
   root: HTMLElement,
   prefillCountry: string | undefined,
@@ -139,9 +176,10 @@ export function syncPokGuestVisibleFields(
 ): PokGuestFieldSyncState {
   const extrasVisible = pokBillingExtrasVisible(root);
   const box = root.querySelector<HTMLInputElement>("#addBillingCheckbox");
-  let billingClickAttempted = state.billingClickAttempted || extrasVisible || !!box?.checked;
+  const extrasOpen = extrasVisible || !!box?.checked;
+  let billingClickAttempted = state.billingClickAttempted || extrasOpen;
 
-  if (!extrasVisible && !box?.checked) {
+  if (!extrasOpen) {
     if (openPokUsCaBillingIfNeeded(root, prefillCountry, billingClickAttempted)) {
       billingClickAttempted = true;
     }
@@ -151,8 +189,13 @@ export function syncPokGuestVisibleFields(
     if (isPokChromeRow(row)) return;
     const label = pokFieldLabel(row.querySelector(".pok-payment-label")?.textContent ?? "");
     if (!label) return;
-    if (isPokCountryFieldLabel(label) || isPokRequiredUsCaFieldLabel(label)) {
+    if (isPokCountryFieldLabel(label)) {
       revealPokRow(row);
+      return;
+    }
+    if (isPokUsCaBillingExtraLabel(label)) {
+      if (extrasOpen) revealPokRow(row);
+      else hidePokRow(row);
       return;
     }
     if (shouldHidePokOptionalField(label)) hidePokRow(row);
@@ -162,10 +205,7 @@ export function syncPokGuestVisibleFields(
     ?? root.querySelector<HTMLElement>(".pok-payment-checkbox-container");
   if (billing) {
     const wrap = billing.parentElement instanceof HTMLElement ? billing.parentElement : billing;
-    const extrasOpen = extrasVisible || !!box?.checked;
-    if (!pokCountryRequiresBillingExtras(prefillCountry) || extrasOpen) {
-      hidePokRow(wrap);
-    }
+    hidePokRow(wrap);
   }
 
   return { billingClickAttempted };
