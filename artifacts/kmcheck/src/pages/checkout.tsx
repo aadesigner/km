@@ -212,6 +212,8 @@ export default function Checkout({ params }: Props) {
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
   const [pokPaymentId, setPokPaymentId] = useState<number | null>(null);
+  const [pokSdkEnv, setPokSdkEnv] = useState<"staging" | "production">("production");
+  const pokOrderIdRef = useRef<string | null>(null);
   const pokConfirmingRef = useRef(false);
   const pokResumeAttemptedRef = useRef(false);
   /** Prevents overlapping create-pok-order calls (double-click / Strict Mode). */
@@ -1293,6 +1295,7 @@ export default function Checkout({ params }: Props) {
           code?: string;
           alreadyUnlocked?: boolean;
           lookupId?: number | null;
+          pokEnv?: string;
         };
         const rawText = await resp.text();
         try {
@@ -1344,7 +1347,13 @@ export default function Checkout({ params }: Props) {
         const orderId = typeof data.orderId === "string" ? data.orderId.trim() : "";
         // Mount card fields whenever POK returned an order id — even if paymentId is missing.
         if (orderId) {
+          pokOrderIdRef.current = orderId;
           setPokOrderId(orderId);
+          setPokSdkEnv(
+            data.pokEnv === "staging" || data.pokEnv === "production"
+              ? data.pokEnv
+              : (pubSettings?.pokEnv === "staging" ? "staging" : "production"),
+          );
           setPokPaymentId(Number.isFinite(paymentIdNum) ? paymentIdNum : null);
           writePokCheckoutSession({ orderId, vin: nvin, kind: "vin_report", phase: "created" });
           setErrorMsg("");
@@ -1471,10 +1480,12 @@ export default function Checkout({ params }: Props) {
   }, [basePath, pokPaymentId, t]);
 
   const handlePokSuccess = async () => {
-    const orderId = pokOrderId;
+    const orderId = pokOrderIdRef.current ?? pokOrderId;
     const nvin = validateVin() ?? vin.trim().toUpperCase();
-    if (!orderId || !nvin) return;
-    markPokCheckoutAwaitingConfirm({ orderId, vin: nvin, kind: "vin_report" });
+    if (!orderId) return;
+    // Persist before confirm so a refresh still retries even if this tab dies mid-request.
+    markPokCheckoutAwaitingConfirm({ orderId, vin: nvin || undefined, kind: "vin_report" });
+    if (!nvin) return;
     await confirmPokAndDeliver(orderId, nvin, pokPaymentId);
   };
 
@@ -1494,6 +1505,7 @@ export default function Checkout({ params }: Props) {
     if (peekForVin?.alreadyUnlocked && peekForVin.lookupId) return;
 
     pokResumeAttemptedRef.current = true;
+    pokOrderIdRef.current = session.orderId;
     setPokOrderId(session.orderId);
     setPayMethod("card");
     void confirmPokAndDeliver(session.orderId, normalizedVin);
@@ -2295,7 +2307,7 @@ export default function Checkout({ params }: Props) {
                         pokOrderId ? (
                           <PokGuestCheckout
                             orderId={pokOrderId}
-                            pokEnv={pubSettings.pokEnv === "staging" ? "staging" : "production"}
+                            pokEnv={pokSdkEnv}
                             onSuccess={() => { void handlePokSuccess(); }}
                             onError={(message) => {
                               // Keep orderId mounted so card fields stay visible for retry.

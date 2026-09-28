@@ -103,6 +103,8 @@ export default function CreditsCheckout({ params }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [pokOrderId, setPokOrderId] = useState<string | null>(null);
+  const [pokSdkEnv, setPokSdkEnv] = useState<"staging" | "production">("production");
+  const pokOrderIdRef = useRef<string | null>(null);
   const pokConfirmingRef = useRef(false);
   const pokResumeAttemptedRef = useRef(false);
   const paypalReturnHandledRef = useRef(false);
@@ -335,6 +337,7 @@ export default function CreditsCheckout({ params }: Props) {
     if (pokOrderId) return;
 
     pokResumeAttemptedRef.current = true;
+    pokOrderIdRef.current = session.orderId;
     setPokOrderId(session.orderId);
     setPayMethod("card");
     setPaymentStarted(true);
@@ -356,14 +359,20 @@ export default function CreditsCheckout({ params }: Props) {
           credentials: "include",
           body: JSON.stringify({ packId: pack.id }),
         });
-        const data = await resp.json() as { orderId?: string; error?: string; code?: string };
+        const data = await resp.json() as { orderId?: string; error?: string; code?: string; pokEnv?: string };
         if (!resp.ok || !data.orderId) {
           setErrorMsg(translateClientError(t, data.code, data.error) || t("checkout_error_payment_create"));
           setStatus("error");
           setPaymentStarted(false);
           return;
         }
+        pokOrderIdRef.current = data.orderId;
         setPokOrderId(data.orderId);
+        setPokSdkEnv(
+          data.pokEnv === "staging" || data.pokEnv === "production"
+            ? data.pokEnv
+            : (pubSettings?.pokEnv === "staging" ? "staging" : "production"),
+        );
         writePokCheckoutSession({ orderId: data.orderId, kind: "credit_pack", phase: "created" });
         setStatus("idle");
       } catch {
@@ -667,12 +676,12 @@ export default function CreditsCheckout({ params }: Props) {
                     {payMethod === "card" && pokOrderId && (
                       <PokGuestCheckout
                         orderId={pokOrderId}
-                        pokEnv={pubSettings?.pokEnv === "staging" ? "staging" : "production"}
+                        pokEnv={pokSdkEnv}
                         onSuccess={() => {
-                          if (pokOrderId) {
-                            markPokCheckoutAwaitingConfirm({ orderId: pokOrderId, kind: "credit_pack" });
-                          }
-                          void finalizePokCapture(pokOrderId);
+                          const orderId = pokOrderIdRef.current ?? pokOrderId;
+                          if (!orderId) return;
+                          markPokCheckoutAwaitingConfirm({ orderId, kind: "credit_pack" });
+                          void finalizePokCapture(orderId);
                         }}
                         onError={(message) => {
                           setErrorMsg(message);

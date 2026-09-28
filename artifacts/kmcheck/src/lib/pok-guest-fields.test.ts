@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  buildPokPaymentInitialState,
   isPokCountryFieldLabel,
   isPokRequiredUsCaFieldLabel,
   openPokUsCaBillingIfNeeded,
@@ -11,6 +12,37 @@ import {
   shouldHidePokOptionalField,
   syncPokGuestVisibleFields,
 } from "./pok-guest-fields";
+
+describe("buildPokPaymentInitialState", () => {
+  it("sends every POK form field as a string (SDK does not merge partial initialState)", () => {
+    const state = buildPokPaymentInitialState({
+      email: "a@b.com",
+      name: "Ada Lovelace",
+      countryCode: "de",
+    });
+    expect(state).toEqual({
+      cardNumber: "",
+      email: "a@b.com",
+      expiration: "",
+      securityCode: "",
+      holdersName: "Ada Lovelace",
+      countryCode: "DE",
+      address1: "",
+      locality: "",
+      administrativeArea: "",
+      postalCode: "",
+      phoneNumber: "",
+    });
+  });
+
+  it("prefills US/CA as-is and does not invent AL when country is unset", () => {
+    expect(buildPokPaymentInitialState({ countryCode: "US" }).countryCode).toBe("US");
+    expect(buildPokPaymentInitialState({ countryCode: "ca" }).countryCode).toBe("CA");
+    expect(buildPokPaymentInitialState({ countryCode: null }).countryCode).toBe("");
+    expect(buildPokPaymentInitialState({}).countryCode).toBe("");
+    expect(buildPokPaymentInitialState({ countryCode: "XK" }).countryCode).toBe("AL");
+  });
+});
 
 describe("pokPrefillCountryCode", () => {
   it("sends the profile country including US/CA (does not remap to AL)", () => {
@@ -106,8 +138,9 @@ describe("syncPokGuestVisibleFields", () => {
     address.innerHTML = '<span class="pok-payment-label">Address</span>';
     root.append(country, address);
 
-    syncPokGuestVisibleFields(root, "AL", false);
+    const next = syncPokGuestVisibleFields(root, "AL", { billingClickAttempted: false });
 
+    expect(next.billingClickAttempted).toBe(false);
     expect(country.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
     expect(address.getAttribute("data-kmcheck-pok-hidden")).toBe("1");
     expect(address.style.display).toBe("none");
@@ -122,9 +155,25 @@ describe("syncPokGuestVisibleFields", () => {
     country.innerHTML = '<span class="pok-payment-label">Country</span>';
     root.append(country);
 
-    syncPokGuestVisibleFields(root, undefined, false);
+    syncPokGuestVisibleFields(root, undefined, { billingClickAttempted: false });
 
     expect(country.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
     expect(country.style.display).toBe("");
+  });
+
+  it("does not hide State/ZIP when POK has opened US billing extras", () => {
+    const root = document.createElement("div");
+    const state = document.createElement("div");
+    state.className = "pok-payment-relative";
+    state.innerHTML = '<span class="pok-payment-label">State/Province *</span>';
+    const zip = document.createElement("div");
+    zip.className = "pok-payment-relative";
+    zip.innerHTML = '<span class="pok-payment-label">ZIP Code *</span>';
+    root.append(state, zip);
+
+    syncPokGuestVisibleFields(root, "US", { billingClickAttempted: true });
+
+    expect(state.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
+    expect(zip.getAttribute("data-kmcheck-pok-hidden")).toBeNull();
   });
 });

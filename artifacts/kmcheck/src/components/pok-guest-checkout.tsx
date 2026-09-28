@@ -7,7 +7,12 @@ import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import { pokCardErrorI18nKey } from "@/lib/pok-card-error";
-import { pokPrefillCountryCode, syncPokGuestVisibleFields } from "@/lib/pok-guest-fields";
+import {
+  buildPokPaymentInitialState,
+  pokPrefillCountryCode,
+  syncPokGuestVisibleFields,
+  type PokGuestFieldSyncState,
+} from "@/lib/pok-guest-fields";
 
 export type PokEnv = "staging" | "production";
 
@@ -29,7 +34,7 @@ export function pokLocaleFromLanguage(language: string): "en" | "it" | "al" {
 
 /**
  * Inline POK card checkout. Card number / expiry / CVC / name / email / country stay visible.
- * Country uses POK's own required dropdown, prefilled from the kmcheck profile when set.
+ * Country uses POK's required dropdown, prefilled from the kmcheck profile when set.
  * Optional address/phone stay hidden. PAN/CVV stay inside the POK SDK — never posted to kmcheck.
  */
 export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, className }: Props) {
@@ -38,7 +43,7 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
   const hostRef = useRef<HTMLDivElement>(null);
   const onSuccessRef = useRef(onSuccess);
   const onErrorRef = useRef(onError);
-  const usCaBillingOpenedRef = useRef(false);
+  const fieldSyncRef = useRef<PokGuestFieldSyncState>({ billingClickAttempted: false });
   onSuccessRef.current = onSuccess;
   onErrorRef.current = onError;
 
@@ -48,18 +53,14 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     [user?.countryCode],
   );
 
-  const initialState = useMemo(() => {
-    const email = user?.email?.trim() || undefined;
-    const holdersName =
-      user?.name?.trim()
-      || (email?.includes("@") ? email.split("@")[0]!.replace(/[._+]/g, " ").trim() : "")
-      || "Cardholder";
-    return {
-      ...(email ? { email } : {}),
-      holdersName,
-      ...(countryCode ? { countryCode } : {}),
-    };
-  }, [user?.email, user?.name, countryCode]);
+  const initialState = useMemo(
+    () => buildPokPaymentInitialState({
+      email: user?.email,
+      name: user?.name,
+      countryCode: user?.countryCode,
+    }),
+    [user?.email, user?.name, user?.countryCode],
+  );
 
   const options = useMemo(
     () => ({
@@ -84,7 +85,7 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
   );
 
   useEffect(() => {
-    usCaBillingOpenedRef.current = false;
+    fieldSyncRef.current = { billingClickAttempted: false };
     const host = hostRef.current;
     if (!host) return;
 
@@ -92,10 +93,10 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     const run = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        usCaBillingOpenedRef.current = syncPokGuestVisibleFields(
+        fieldSyncRef.current = syncPokGuestVisibleFields(
           host,
           countryCode,
-          usCaBillingOpenedRef.current,
+          fieldSyncRef.current,
         );
       });
     };

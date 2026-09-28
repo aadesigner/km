@@ -23,7 +23,12 @@ export function readPokCheckoutSession(): PokCheckoutSession | null {
   }
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw) as { orderId?: string; vin?: string; kind?: string };
+    const parsed = JSON.parse(raw) as {
+      orderId?: string;
+      vin?: string;
+      kind?: string;
+      phase?: string;
+    };
     const orderId = parsed.orderId?.trim() ?? "";
     if (!POK_ORDER_ID_RE.test(orderId)) return null;
     const kind =
