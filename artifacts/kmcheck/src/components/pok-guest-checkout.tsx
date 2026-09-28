@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import { pokCardErrorI18nKey } from "@/lib/pok-card-error";
+import { pokPrefillCountryCode, syncPokGuestVisibleFields } from "@/lib/pok-guest-fields";
 
 export type PokEnv = "staging" | "production";
 
@@ -26,32 +27,10 @@ export function pokLocaleFromLanguage(language: string): "en" | "it" | "al" {
   return "en";
 }
 
-/** Labels for fields we hide (SDK is en/it/al only). Card + billing email stay visible. */
-const HIDE_LABEL_RE =
-  /^(paese|shteti|country|indirizzo|adresa|address|stato|provinca|state|città|qyteti|city|cap|zip|kodi postar|telefono|phone|telefoni|add billing|aggiungi|shto informacion)/i;
-
-function hideNonCardPokFields(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>(".pok-payment-relative").forEach((row) => {
-    if (row.getAttribute("data-kmcheck-pok-hidden") === "1") return;
-    const label = row.querySelector(".pok-payment-label")?.textContent?.replace(/\*/g, "").trim() ?? "";
-    if (HIDE_LABEL_RE.test(label)) {
-      row.style.display = "none";
-      row.setAttribute("data-kmcheck-pok-hidden", "1");
-    }
-  });
-  const billing = root.querySelector<HTMLElement>("#addBillingCheckbox")?.closest(".pok-payment-checkbox-container")
-    ?? root.querySelector<HTMLElement>(".pok-payment-checkbox-container");
-  if (billing && billing.getAttribute("data-kmcheck-pok-hidden") !== "1") {
-    const wrap = billing.parentElement instanceof HTMLElement ? billing.parentElement : billing;
-    wrap.style.display = "none";
-    wrap.setAttribute("data-kmcheck-pok-hidden", "1");
-  }
-}
-
 /**
- * Inline POK card checkout. Shows card number / expiry / CVC / name + billing email.
- * Email is prefilled from the signed-in account and editable in the POK form (sent only to POK).
- * Address/phone stay hidden. PAN/CVV are encrypted inside the POK SDK — never posted to kmcheck.
+ * Inline POK card checkout. Card number / expiry / CVC / name / email / country stay visible.
+ * Country uses POK's own required dropdown, prefilled from the kmcheck profile when set.
+ * Optional address/phone stay hidden. PAN/CVV stay inside the POK SDK — never posted to kmcheck.
  */
 export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, className }: Props) {
   const { language, t } = useTranslation();
@@ -59,18 +38,17 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
   const hostRef = useRef<HTMLDivElement>(null);
   const onSuccessRef = useRef(onSuccess);
   const onErrorRef = useRef(onError);
+  const usCaBillingOpenedRef = useRef(false);
   onSuccessRef.current = onSuccess;
   onErrorRef.current = onError;
 
   const locale = useMemo(() => pokLocaleFromLanguage(language), [language]);
+  const countryCode = useMemo(
+    () => pokPrefillCountryCode(user?.countryCode),
+    [user?.countryCode],
+  );
 
   const initialState = useMemo(() => {
-    const countryRaw = (user?.countryCode ?? "").trim().toUpperCase();
-    // US/CA force address fields in the SDK — prefer a non-NA default when hiding billing address.
-    const countryCode =
-      countryRaw && countryRaw !== "US" && countryRaw !== "CA"
-        ? countryRaw
-        : "AL";
     const email = user?.email?.trim() || undefined;
     const holdersName =
       user?.name?.trim()
@@ -79,15 +57,15 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
     return {
       ...(email ? { email } : {}),
       holdersName,
-      countryCode,
+      ...(countryCode ? { countryCode } : {}),
     };
-  }, [user?.email, user?.name, user?.countryCode]);
+  }, [user?.email, user?.name, countryCode]);
 
   const options = useMemo(
     () => ({
       env: pokEnv,
       locale,
-      countrySelect: "modal" as const,
+      countrySelect: "dropdown" as const,
       initialState,
     }),
     [pokEnv, locale, initialState],
@@ -106,13 +84,20 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
   );
 
   useEffect(() => {
+    usCaBillingOpenedRef.current = false;
     const host = hostRef.current;
     if (!host) return;
 
     let raf = 0;
     const run = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => hideNonCardPokFields(host));
+      raf = requestAnimationFrame(() => {
+        usCaBillingOpenedRef.current = syncPokGuestVisibleFields(
+          host,
+          countryCode,
+          usCaBillingOpenedRef.current,
+        );
+      });
     };
     run();
 
@@ -126,7 +111,7 @@ export function PokGuestCheckout({ orderId, pokEnv, onSuccess, onError, classNam
       cancelAnimationFrame(raf);
       obs.disconnect();
     };
-  }, [orderId]);
+  }, [orderId, countryCode]);
 
   return (
     <div

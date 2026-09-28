@@ -2184,7 +2184,7 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge__amount
   }
 }
 
-/* POK GuestCheckout — card-only UI; email/billing prefilled & hidden (still validated by SDK) */
+/* POK GuestCheckout — card + required Country; optional address/phone stay hidden */
 .kmcheck-pok-checkout #pok-payment-container {
   max-width: 100%;
 }
