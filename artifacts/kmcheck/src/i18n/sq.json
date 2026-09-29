@@ -1080,6 +1080,7 @@
   "report_not_taxi": "Nuk është përdorur si taksi",
   "taxi_flagged": "Është përdorur si taksi",
   "report_not_flooded": "Nuk u gjet asnjë regjistrim përmbytjeje",
+  "report_not_flooded_header": "Asnjë regjistrim përmbytje",
   "flood_flagged": "Ka dëmtime nga përmbytja",
   "report_flood": "Dëmtime nga përmbytja",
   "report_flood_section": "Historiku i përmbytjes",

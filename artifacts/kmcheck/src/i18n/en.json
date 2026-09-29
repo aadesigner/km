@@ -1206,6 +1206,7 @@
   "report_not_taxi": "Not used as a taxi",
   "taxi_flagged": "Used as a taxi",
   "report_not_flooded": "No flood record found",
+  "report_not_flooded_header": "No flood record found",
   "flood_flagged": "Flood damage recorded",
   "report_flood": "Flood damage",
   "report_flood_section": "Flood history",

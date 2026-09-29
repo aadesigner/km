@@ -932,7 +932,7 @@ export default function VinPublic({ params }: Props) {
                   salvageFail: t("salvage_flagged"),
                   stolenOk: t("report_not_stolen"),
                   stolenFail: t("theft_flagged"),
-                  floodOk: t("report_not_flooded"),
+                  floodOk: t("report_not_flooded_header"),
                   floodFail: t("flood_flagged"),
                   taxiOk: t("report_not_taxi"),
                   taxiFail: t("taxi_flagged"),
