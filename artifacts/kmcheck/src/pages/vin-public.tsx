@@ -928,7 +928,7 @@ export default function VinPublic({ params }: Props) {
                 isFlooded: data.flooded,
                 showFlood: data.flooded != null || isKoreanCountry(data.country) || isGetCarApi,
                 accidentCount: accidentSignals,
-                accidentLabel: formatAccidentCount(t, accidentSignals),
+                accidentFailLabel: formatAccidentCount(t, accidentSignals),
                 onAccidentClick: () => {
                   document.getElementById("vin-report-accidents")?.scrollIntoView({
                     behavior: "smooth",
@@ -942,6 +942,7 @@ export default function VinPublic({ params }: Props) {
                   stolenFail: t("theft_flagged"),
                   floodOk: t("report_not_flooded_header"),
                   floodFail: t("flood_flagged"),
+                  accidentOk: t("report_no_accidents_header"),
                 },
               })}
             />

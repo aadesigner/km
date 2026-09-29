@@ -639,6 +639,7 @@
   "dashboard_mileage_unavailable": "Kilometrat e padisponueshëm",
   "dashboard_accidents_found": "Aksidente të gjetura",
   "dashboard_no_accidents": "Pa aksidente",
+  "report_no_accidents_header": "Nuk u gjetën aksidente",
   "dashboard_filter_label": "Rendit sipas",
   "dashboard_filter_newest": "Kontrolluar së fundmi",
   "dashboard_filter_oldest": "Kontrollet e vjetra",

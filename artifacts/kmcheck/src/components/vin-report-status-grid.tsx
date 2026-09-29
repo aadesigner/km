@@ -245,7 +245,7 @@ export function buildUnlockStatusFlags(opts: {
   isFlooded?: boolean | null;
   showFlood: boolean;
   accidentCount?: number;
-  accidentLabel?: string;
+  accidentFailLabel?: string;
   onAccidentClick?: () => void;
   labels: {
     salvageOk: string;
@@ -254,6 +254,7 @@ export function buildUnlockStatusFlags(opts: {
     stolenFail: string;
     floodOk: string;
     floodFail: string;
+    accidentOk: string;
   };
 }): UnlockStatusFlag[] {
   const flags: UnlockStatusFlag[] = [
@@ -276,14 +277,16 @@ export function buildUnlockStatusFlags(opts: {
       label: opts.isFlooded === true ? opts.labels.floodFail : opts.labels.floodOk,
     });
   }
-  if ((opts.accidentCount ?? 0) > 0 && opts.accidentLabel) {
-    flags.push({
-      key: "accidents",
-      ok: false,
-      label: opts.accidentLabel,
-      onClick: opts.onAccidentClick,
-    });
-  }
+  const accidentCount = opts.accidentCount ?? 0;
+  const hasAccidents = accidentCount > 0;
+  flags.push({
+    key: "accidents",
+    ok: !hasAccidents,
+    label: hasAccidents
+      ? (opts.accidentFailLabel ?? String(accidentCount))
+      : opts.labels.accidentOk,
+    onClick: hasAccidents ? opts.onAccidentClick : undefined,
+  });
   return flags;
 }
 

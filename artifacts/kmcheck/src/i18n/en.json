@@ -719,6 +719,7 @@
   "dashboard_mileage_unavailable": "Mileage unavailable",
   "dashboard_accidents_found": "Accidents found",
   "dashboard_no_accidents": "No accidents",
+  "report_no_accidents_header": "No accidents found",
   "dashboard_filter_label": "Sort by",
   "dashboard_filter_newest": "Recently checked",
   "dashboard_filter_oldest": "Oldest first",
