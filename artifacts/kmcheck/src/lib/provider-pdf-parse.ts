@@ -56,7 +56,11 @@ const MIN_MODEL_YEAR = 1981;
 const MAX_MODEL_YEAR = CURRENT_YEAR + 1;
 
 const NEXT_SPEC_LABEL =
-  "VIN|Year|Make|Model|Trim|Style|Series|Engine|Transmission|Trans|Fuel|Body|Drive|Drivetrain|Title|Odometer|Owners?|Cylinders?|Horsepower|HP\\b";
+  "VIN|Year|Make|Model|Trim|Style|Series|Engine|Transmission|Trans|Fuel|Body|Drive|Drivetrain|Title|Odometer|Owners?|Cylinders?|Horsepower|HP\\b|Exterior|Interior|Previous|Service|Door";
+
+/** Admin/registry phrases that start a *different* Carfax Comments row (PDF bleed). */
+const NEXT_ROW_ADMIN_EVENT =
+  /\b(?:Registration\s+issued(?:\s+or\s+renewed)?|Title\s+issued(?:\s+or\s+updated)?|Title\s+or\s+registration\s+issued|Odometer\s+reading\s+reported|Odometer\s+reported(?:\s+as)?|New\s+owner\s+reported|First\s+owner\s+reported|Vehicle\s+purchase\s+reported|Vehicle\s+sold|Vehicle\s+manufactured|Vehicle\s+exported|Vehicle\s+declared|Passed\s+Ontario\s+safety|Passed\s+safety\s+inspection|Registered\s+as|Titled\s+or\s+registered|Pre-delivery\s+inspection)\b/i;
 
 const KNOWN_MAKES = [
   "Acura", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Buick", "Cadillac",
@@ -140,7 +144,34 @@ function fieldAfterLabel(scope: string, labels: string[], maxLen = 80): string |
   return null;
 }
 
+/** Carfax banner: "2012 Volkswagen Tiguan S 164,714 mi VIN:" — stop before mileage/VIN/body. */
+function parseYmmFromBanner(scope: string): { year: string; make: string; model: string } | null {
+  const makes = KNOWN_MAKES.map(escapeRe).join("|");
+  const m = scope.match(
+    new RegExp(
+      `\\b((?:19|20)\\d{2})\\s+(${makes})\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{0,40}?)(?=`
+        + `\\s+[\\d,]{2,7}\\s*(?:miles?|mi|km)\\b`
+        + `|\\s+VIN\\b`
+        + `|\\s+\\d\\s*Door\\b`
+        + `|\\s+(?:Wagon|Sport\\s+Utility|Sedan|Coupe|Hatch|SUV|Crossover|Gasoline|Diesel|Automatic|Manual)\\b`
+        + `|\\s{2,}`
+        + `|$)`,
+      "i",
+    ),
+  );
+  if (!m?.[1] || !m[2] || !m[3]) return null;
+  const y = Number(m[1]);
+  if (!isPlausibleModelYear(y)) return null;
+  const make = KNOWN_MAKES.find((k) => k.toLowerCase() === m[2]!.toLowerCase()) ?? m[2]!;
+  const model = cleanModelName(m[3]!, make);
+  if (!model) return null;
+  return { year: String(y), make, model };
+}
+
 function parseYear(scope: string): string {
+  const banner = parseYmmFromBanner(scope);
+  if (banner) return banner.year;
+
   const labeled = fieldAfterLabel(scope, [
     "Model\\s*year",
     "Year\\s*(?:of\\s*)?(?:manufacture|vehicle)?",
@@ -170,6 +201,9 @@ function escapeRe(s: string): string {
 }
 
 function parseMake(scope: string): string {
+  const banner = parseYmmFromBanner(scope);
+  if (banner) return banner.make;
+
   const labeled = fieldAfterLabel(scope, ["Make", "Manufacturer"]);
   if (labeled) {
     const hit = KNOWN_MAKES.find((m) => labeled.toLowerCase().startsWith(m.toLowerCase()));
@@ -186,12 +220,18 @@ function parseMake(scope: string): string {
 }
 
 function parseModel(scope: string, make: string): string {
+  const banner = parseYmmFromBanner(scope);
+  if (banner) {
+    // Prefer banner model when make matches (or make still empty)
+    if (!make || banner.make.toLowerCase() === make.toLowerCase()) return banner.model;
+  }
+
   const labeled = fieldAfterLabel(scope, ["Model(?:\\s*name)?"], 60);
   if (labeled) return cleanModelName(labeled, make);
 
   if (make) {
     const re = new RegExp(
-      `\\b${escapeRe(make)}\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,50}?)(?=\\s{2,}|\\n|\\b(?:${NEXT_SPEC_LABEL})\\b|$)`,
+      `\\b${escapeRe(make)}\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,50}?)(?=\\s{2,}|\\n|\\b(?:${NEXT_SPEC_LABEL})\\b|\\s+[\\d,]{2,7}\\s*(?:mi|miles?|km)\\b|$)`,
       "i",
     );
     const m = scope.match(re);
@@ -212,16 +252,20 @@ function parseModel(scope: string, make: string): string {
   return "";
 }
 
-/** Drop duplicated make, trailing mileage digits, and junk. */
+/** Drop duplicated make, trailing mileage digits, body style, and junk. */
 export function cleanModelName(raw: string, make?: string): string {
   let m = raw.replace(/\s+/g, " ").trim();
   if (make) {
     const makeRe = new RegExp(`^${escapeRe(make)}\\s+`, "i");
     m = m.replace(makeRe, "");
   }
+  // Mileage / VIN / body bleed from Carfax banner line
+  m = m.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b.*$/gi, "");
+  m = m.replace(/\s+\d+\s*Door\b.*$/i, "");
+  m = m.replace(/\b(?:Wagon|Sport\s+Utility|Sedan|Coupe|Hatch(?:back)?|SUV|Crossover|4\s*Door|2\s*Door)\b.*$/i, "");
+  m = m.replace(/\bVIN\b.*$/i, "");
   // Strip trailing bare numbers (mileage bleed like "Tiguan S 164")
   m = m.replace(/\s+\d{1,6}$/g, "");
-  m = m.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b/gi, "");
   m = m.replace(/\s*[-–—]\s*(vehicle|car|noted|reported).*$/i, "");
   return m.replace(/\s{2,}/g, " ").trim().slice(0, 60);
 }
@@ -596,10 +640,23 @@ export function splitEventComment(rest: string): {
     }
 
     const afterEvent = commentsRaw.slice((hitRaw.index ?? 0) + (hitRaw[0]?.length ?? 0));
+    // Carfax PDF often dumps later rows' comments into this blob — keep only the
+    // immediate work for THIS event (stop at the next admin/registry phrase).
+    const adminStop = afterEvent.search(NEXT_ROW_ADMIN_EVENT);
+    const localAfter =
+      adminStop >= 0
+        ? afterEvent.slice(0, adminStop)
+        : afterEvent.slice(0, /^vehicle\s+serviced$/i.test(eventPhrase) ? 240 : 360);
+
     const detailBullets = uniqueBullets(
       [
-        ...afterEvent.split(/\s*-\s+/),
-        ...rawBullets.slice(1),
+        ...localAfter.split(/\s*-\s+/),
+        ...rawBullets.slice(1).filter((b) => {
+          // Ignore bullets that only appear after the admin-stop cut
+          if (adminStop < 0) return true;
+          const idx = afterEvent.toLowerCase().indexOf(b.toLowerCase());
+          return idx >= 0 && idx < adminStop;
+        }),
       ]
         .map((p) => sanitizeCustomerFacingText(stripDealerCardJunk(p.replace(/\s+/g, " ").trim())))
         .filter((p) => isUsefulDetailBullet(p) && !isNonServiceNoiseBullet(p)),
@@ -816,14 +873,17 @@ export function extractHistoryOdometerKm(
     if (km) return km;
   }
 
-  // Synthetic / non-column layouts (e.g. "… Registration 12 km Source:")
-  for (const m of trimmed.matchAll(
+  // Only accept a non-leading reading when it sits before Source/Comments —
+  // never mine odometer from comment bleed further down the row.
+  const sourceIdx = trimmed.search(/\b(?:Source|Comments|Vehicle\s+serviced|Registration\s+issued|Title\s+issued|Odometer\s+reading\s+reported)\b/i);
+  const columnWindow = sourceIdx > 0 ? trimmed.slice(0, sourceIdx) : trimmed.slice(0, 48);
+  for (const m of columnWindow.matchAll(
     /\b([\d,]{1,7})\s*(miles?|mi|km|kilometers?|kilometres?)\b/gi,
   )) {
     const idx = m.index ?? 0;
-    const before = trimmed.slice(Math.max(0, idx - 32), idx);
+    const before = columnWindow.slice(Math.max(0, idx - 32), idx);
     if (/odometer\s+reported\s+as\s*$/i.test(before)) continue;
-    const after = trimmed.slice(idx);
+    const after = columnWindow.slice(idx);
     if (/^[\d,]+\s*miles?\s+service\b/i.test(after)) continue;
     const km = accept(m[1]!, m[2]!, m[0]!);
     if (km) return km;
@@ -856,7 +916,8 @@ function parseHistoryBlocks(text: string): HistoryHit[] {
     const end = i + 1 < dates.length ? (dates[i + 1]!.index ?? parseScope.length) : parseScope.length;
     let rest = parseScope.slice(start, end).replace(/\s+/g, " ").trim();
     if (rest.length < 4) continue;
-    if (rest.length > 420) rest = rest.slice(0, 420);
+    // Cap per-row window — long slices are almost always next-row comment bleed
+    if (rest.length > 280) rest = rest.slice(0, 280);
 
     const odometerKm = extractHistoryOdometerKm(rest, date);
     const location = extractHistoryLocation(rest);
@@ -922,6 +983,9 @@ function attachWorkToPriorVehicleServiced(
   bullets: string[],
 ): void {
   if (bullets.length === 0) return;
+  // Huge multi-visit dumps are unreliable — skip rather than invent descriptions
+  if (bullets.length > 6) return;
+
   let emptyIdx = -1;
   let anyIdx = -1;
   for (let j = Math.min(beforeIndex, hits.length) - 1; j >= 0; j--) {
@@ -938,6 +1002,8 @@ function attachWorkToPriorVehicleServiced(
   const idx = emptyIdx >= 0 ? emptyIdx : anyIdx;
   if (idx < 0) return;
   const h = hits[idx]!;
+  // Don't invent the same work on a row that already has different details
+  if (h.description.trim() && emptyIdx < 0) return;
   h.titleStatus = "Vehicle serviced";
   h.description = uniqueBullets([
     ...h.description.split(/\s*·\s*/).filter(Boolean),

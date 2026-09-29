@@ -79,6 +79,10 @@
     color: hsl(220 13% 9%) !important;
     font-size: 9.5pt;
     line-height: 1.4;
+    /* Never clip paginated print output (screen uses overflow-x: clip). */
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
   }
 
   /* Navbar is hidden in print — drop the layout offset reserved for it */
@@ -89,6 +93,18 @@
     width: 100% !important;
     max-width: none !important;
     overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* overflow-x-clip / hidden on layout wrappers blocks multi-page print in Chromium. */
+  #root > div,
+  .min-h-\[100dvh\],
+  .overflow-x-clip,
+  .overflow-x-hidden,
+  .overflow-hidden {
+    overflow: visible !important;
+    max-height: none !important;
   }
 
   .vin-report-print {
@@ -98,6 +114,7 @@
     padding: 0 !important;
     background: #fff !important;
     color: hsl(220 13% 9%) !important;
+    overflow: visible !important;
   }
 
   /* Reset all max-width containers */
@@ -154,19 +171,23 @@
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
+  /* Cover always finishes as page 1 — history then flows across as many pages as needed. */
   .vin-report-print-summary .print-page-cover {
-    page-break-after: auto;
-    break-after: auto;
+    page-break-after: always;
+    break-after: page;
   }
 
   .vin-report-print-summary .print-page-history {
     page-break-before: auto;
     break-before: auto;
-    margin-top: 0.35rem !important;
-    padding-top: 0.25rem !important;
-    border-top: 1px solid hsl(var(--border) / 0.35);
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none;
+    overflow: visible !important;
   }
 
   .vin-report-print-summary .print-page:last-child {
@@ -300,10 +321,27 @@
     display: block !important;
   }
 
+  /* Tall history tables must split across pages — avoid + overflow clipped to ~2 pages. */
   .vin-report-print-summary .print-section {
+    page-break-inside: auto;
+    break-inside: auto;
+    overflow: visible !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .vin-report-print-summary .print-section-head {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .vin-report-print-summary .print-timeline-table {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  .vin-report-print-summary .print-timeline-table tr {
     page-break-inside: avoid;
     break-inside: avoid;
-    margin-bottom: 0.25rem !important;
   }
 
   .vin-report-print-summary .print-timeline-table td {
@@ -2077,9 +2115,10 @@ html.dark.admin-theme-active[data-admin-theme="orbit"] .admin-mood-gauge__amount
     }
   }
 
-  /* Phones: drop decorative glow blobs only — keep intentional locked-content blur. */
+  /* Phones: drop decorative glow blobs only — keep intentional locked-content blur
+   * and the mileage header wash (same soft blur as desktop). */
   @media (max-width: 767px), (pointer: coarse) {
-    .vin-report-screen .blur-2xl {
+    .vin-report-screen .blur-2xl:not(.vin-mileage-wash) {
       filter: none !important;
       -webkit-filter: none !important;
     }

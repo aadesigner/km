@@ -71,7 +71,7 @@ function PrintSection({
 }) {
   const hasContent = count == null ? true : count > 0;
   return (
-    <section className={cn("print-section rounded-md border border-border/55 overflow-hidden", className)}>
+    <section className={cn("print-section rounded-md border border-border/55 overflow-visible", className)}>
       <div className="print-section-head px-3 py-1.5 border-b border-border/40 flex items-center justify-between gap-2">
         <h2 className="text-[8pt] font-bold uppercase tracking-wide text-foreground">{title}</h2>
         {count != null && count > 0 && (
@@ -451,7 +451,7 @@ export function VinPrintSummary({
         )}
       </div>
 
-      {/* History — continues on same page when space allows */}
+      {/* History — starts on page 2 and flows across as many pages as needed */}
       <div className="print-page print-page-history">
         <PrintBlockTitle>{t("print_summary_history_title")}</PrintBlockTitle>
         <div className="grid grid-cols-1 gap-1.5 mt-1">

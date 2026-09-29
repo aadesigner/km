@@ -35,6 +35,11 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { VinReportHero } from "@/components/vin-report-hero";
+import {
+  VinReportStatusGrid,
+  buildUnlockStatusFlags,
+  statusGridMilesParen,
+} from "@/components/vin-report-status-grid";
 import { VinReportSection, VinReportSectionHeader } from "@/components/vin-report-section";
 import {
   SalvageMeaningHint,
@@ -65,7 +70,7 @@ import {
   accidentSeverityStyle,
   ACCIDENT_SEVERITY_I18N_KEYS,
 } from "@/lib/accident-display";
-import { formatCountryName, formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
+import { formatCountryName, formatLocationLabel, countryLabelsFromT, resolveCountryIso2 } from "@/lib/format-country-name";
 import { repairDatedRecords } from "@/lib/encar-date-repair";
 import { computeVinConditionScore, hasMileageRollback, scoreInputFromLookup } from "@/lib/vin-condition-score";
 import { formatAccidentCount } from "@/lib/format-accident-count";
@@ -766,9 +771,17 @@ export default function VinResult({ params }: Props) {
 
   const hasSalvageData = data?.isSalvage !== undefined && data?.isSalvage !== null;
   const hasTheftData   = data?.isStolen  !== undefined && data?.isStolen  !== null;
+  // Same signal set as the hero badge — insurance/registry damage counts as an accident.
+  const accidentSignals = countAccidentSignals({
+    accidents,
+    accidentCount: data?.accidentCount,
+    insuranceClaims,
+    registryHistory,
+  });
   const showAccidentsSection = accidents.length > 0;
   const showAccidentsClear =
     !isPendingManual
+    && accidentSignals === 0
     && accidents.length === 0
     && (isGetCarApi || data?.accidentCount === 0);
   const showMileageSection = hasMileageData(odometer, mileageHistory);
@@ -781,13 +794,6 @@ export default function VinResult({ params }: Props) {
   const countryLabels = countryLabelsFromT(t);
   const fmtCountry = (value?: string | null) =>
     value ? formatCountryName(value, language, countryLabels) : null;
-
-  const accidentSignals = countAccidentSignals({
-    accidents,
-    accidentCount: data?.accidentCount,
-    insuranceClaims,
-    registryHistory,
-  });
 
   const heroSummary = buildVinHeroSummaryItems({
     t,
@@ -914,7 +920,7 @@ export default function VinResult({ params }: Props) {
         photos={isPendingManual ? [] : photos}
         photoAlternates={isPendingManual ? undefined : photoAlternates}
         scoreData={displayScoreData}
-        summaryItems={displayHeroSummary}
+        summaryItems={[]}
         accidentCount={isPendingManual ? 0 : accidentSignals}
         photoPlaceholderLabel={isPendingManual ? t("pending_photos_searching") : undefined}
         pendingPhotoScan={isPendingManual}
@@ -923,42 +929,40 @@ export default function VinResult({ params }: Props) {
         pendingEta={isPendingManual}
         onPhotoClick={!isPendingManual && photos.length > 0 ? (i) => openLightbox(i) : undefined}
       >
-        {odometer && odoCol && !isPendingManual ? (
-          <div className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 sm:px-3 max-w-full">
-            <div className={cn("h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full shrink-0", odoCol.dot.split(" ")[0])} />
-            <span className={cn("text-[10px] sm:text-[11px] font-semibold tabular-nums", odoCol.text)}>
-              {odometer.toLocaleString()} km
-              <span className="font-normal opacity-80 hidden sm:inline"> {formatMilesInParens(odometer, t)}</span>
-            </span>
-          </div>
-        ) : null}
         {!isPendingManual && (
-          <>
-        {showAccidentsSection ? (
-          <div className="!hidden print:!inline-flex">
-            <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidents.length)} />
-          </div>
-        ) : showAccidentsClear ? (
-          <PassPill ok labelOk={t("no_accidents")} labelFail="" />
-        ) : null}
-        <div className="inline-flex items-center gap-1 max-w-full">
-          <PassPill
-            ok={data?.isSalvage !== true}
-            labelOk={t("report_no_salvage")}
-            labelFail={t("salvage_flagged")}
+          <VinReportStatusGrid
+            odometerKm={odometer && odoCol ? odometer : null}
+            mileageLabel={t("mileage")}
+            formatMiles={(km) => statusGridMilesParen(km, t)}
+            originLabel={fmtCountry(data?.country)}
+            originFlagCode={resolveCountryIso2(data?.country)?.toLowerCase() ?? null}
+            originEyebrow={t("country")}
+            tForFlagAlt={t}
+            lead={
+              accidentSignals > 0 ? (
+                <div className="!hidden print:!block">
+                  <PassPill ok={false} labelOk="" labelFail={formatAccidentCount(t, accidentSignals)} />
+                </div>
+              ) : null
+            }
+            flags={buildUnlockStatusFlags({
+              isSalvage: data?.isSalvage === true,
+              isStolen: data?.isStolen === true,
+              isTaxi: data?.isTaxi === true,
+              isFlooded: data?.isFlooded,
+              showFlood: data?.isFlooded != null || isKoreanCountry(data?.country) || isGetCarApi,
+              labels: {
+                salvageOk: t("report_no_salvage"),
+                salvageFail: t("salvage_flagged"),
+                stolenOk: t("report_not_stolen"),
+                stolenFail: t("theft_flagged"),
+                floodOk: t("report_not_flooded"),
+                floodFail: t("flood_flagged"),
+                taxiOk: t("report_not_taxi"),
+                taxiFail: t("taxi_flagged"),
+              },
+            })}
           />
-          {data?.isSalvage === true ? <SalvageMeaningHint className="shrink-0" /> : null}
-        </div>
-        <PassPill
-          ok={data?.isStolen !== true}
-          labelOk={t("report_not_stolen")}
-          labelFail={t("theft_flagged")}
-        />
-        {data?.isFlooded != null || isKoreanCountry(data?.country) || isGetCarApi
-          ? <PassPill ok={data?.isFlooded !== true} labelOk={t("report_not_flooded")} labelFail={t("flood_flagged")} />
-          : null}
-        <PassPill ok={data?.isTaxi !== true} labelOk={t("report_not_taxi")} labelFail={t("taxi_flagged")} />
-          </>
         )}
       </VinReportHero>
 

@@ -231,6 +231,36 @@ describe("history comment / location split", () => {
   it("strips mileage bleed from model names", () => {
     expect(cleanModelName("Tiguan S 164", "Volkswagen")).toBe("Tiguan S");
     expect(cleanModelName("Volkswagen Tiguan S 164", "Volkswagen")).toBe("Tiguan S");
+    expect(cleanModelName("Tiguan S 4 Door Wagon/Sport Utility", "Volkswagen")).toBe("Tiguan S");
+    expect(cleanModelName("Tiguan S 164,714 mi VIN: ABC", "Volkswagen")).toBe("Tiguan S");
+  });
+
+  it("stops Vehicle serviced description before next-row admin bleed", () => {
+    const rest =
+      "164,714 mi Gc Tire And Auto Brampton, ON Vehicle serviced Brake pads replaced - Tire(s) changed - Registration issued or renewed - New owner reported - Vehicle color noted as White";
+    const { titleStatus, description } = splitEventComment(rest);
+    expect(titleStatus).toBe("Vehicle serviced");
+    expect(description).toMatch(/Brake pads replaced/i);
+    expect(description).toMatch(/Tire\(s\) changed/i);
+    expect(description).not.toMatch(/Registration issued|New owner|color noted/i);
+  });
+
+  it("does not invent mileage from comment-column odometer notes", () => {
+    const rest =
+      "not reported Ontario Ministry of Transportation Registration issued or renewed Odometer reported as 205,375 kilometers - Undercoating/rustproofing applied";
+    expect(extractHistoryOdometerKm(rest, "2025-12-01")).toBe("");
+  });
+
+  it("parses Carfax banner YMM without mileage/body bleed", () => {
+    const banner =
+      "Report 2012 Volkswagen Tiguan S 164,714 mi VIN: WVGAV7AX1CW554218 4 Door Wagon/Sport Utility 2.0L I4 F DOHC 16V Gasoline";
+    const r = parseProviderPdfText(`CARFAX Vehicle History Report\n${banner}\nDetailed Vehicle History\n01/28/2012 11 mi Doral Volkswagen Vehicle serviced`, "WVGAV7AX1CW554218");
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.form.year).toBe("2012");
+    expect(r.form.make).toBe("Volkswagen");
+    expect(r.form.model).toBe("Tiguan S");
+    expect(r.form.model).not.toMatch(/164|Door|Wagon|Gasoline/i);
   });
 
   it("strips fuel words from engine", () => {

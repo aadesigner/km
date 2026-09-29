@@ -7,7 +7,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/i18n/context";
-import { formatCountryName, countryLabelsFromT } from "@/lib/format-country-name";
+import { formatCountryName, countryLabelsFromT, resolveCountryIso2 } from "@/lib/format-country-name";
+import { FlagImg } from "@/components/flag-img";
+import { formatImageFlagAlt } from "@/lib/flag-alt";
 import {
   isVinImageSessionLoaded,
   markVinImageSessionLoaded,
@@ -21,6 +23,8 @@ export type VinHeroScore = {
   textColor: string;
   bgColor: string;
   borderColor: string;
+  /** Hex stroke for the circular score ring. */
+  trackColor?: string;
   accentBar?: string;
   accentGlow?: string;
   /** Soft bottom-right wash matching trust tier (green / amber / red). */
@@ -586,6 +590,79 @@ function HeroPhotoGallery({
   );
 }
 
+function resolveScoreTier(scoreData: VinHeroScore): "clean" | "caution" | "risk" {
+  if (scoreData.riskTier) return scoreData.riskTier;
+  const n = parseFloat(scoreData.score);
+  if (Number.isFinite(n) && n >= 8) return "clean";
+  if (Number.isFinite(n) && n >= 6) return "caution";
+  return "risk";
+}
+
+function HeroAccidentBadge({ count, label }: { count: number; label: string }) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-center",
+        "border-orange-200/85 bg-gradient-to-b from-orange-50 to-orange-50/40",
+        "dark:border-orange-800/55 dark:from-orange-950/55 dark:to-orange-950/25",
+      )}
+    >
+      <p className="text-2xl font-bold tabular-nums leading-none text-orange-700 dark:text-orange-400">
+        {count}
+      </p>
+      <p className="max-w-[4.75rem] text-[10px] font-semibold leading-tight text-orange-700/85 dark:text-orange-400/90">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
+  const tier = resolveScoreTier(scoreData);
+  const scoreNum = parseFloat(scoreData.score);
+  const pct = Number.isFinite(scoreNum) ? Math.max(0, Math.min(100, (scoreNum / 10) * 100)) : 0;
+  const r = 15;
+  const c = 2 * Math.PI * r;
+  const dash = (pct / 100) * c;
+  const stroke = scoreData.trackColor
+    ?? (tier === "clean" ? "#16a34a" : tier === "caution" ? "#d97706" : "#dc2626");
+
+  return (
+    <div
+      className={cn(
+        "flex min-w-[5rem] flex-col items-center gap-1.5 rounded-xl border px-3 py-2.5",
+        scoreData.bgColor,
+        scoreData.borderColor,
+      )}
+    >
+      <div className="relative flex h-[3.25rem] w-[3.25rem] items-center justify-center">
+        <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
+          <circle cx="20" cy="20" r={r} fill="none" className="stroke-muted-foreground/12" strokeWidth="3" />
+          <circle
+            cx="20"
+            cy="20"
+            r={r}
+            fill="none"
+            stroke={stroke}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={`${dash} ${c}`}
+          />
+        </svg>
+        <div className="relative flex flex-col items-center leading-none">
+          <span className={cn("text-[17px] font-bold tabular-nums", scoreData.textColor)}>
+            {scoreData.score}
+          </span>
+          <span className="text-[8px] font-medium text-muted-foreground">/10</span>
+        </div>
+      </div>
+      <p className={cn("text-[10px] font-semibold leading-tight text-center", scoreData.textColor)}>
+        {scoreData.label}
+      </p>
+    </div>
+  );
+}
+
 export function VinReportHero({
   vehicleTitle,
   vin,
@@ -615,6 +692,8 @@ export function VinReportHero({
   const displayCountry = country
     ? formatCountryName(country, language, countryLabelsFromT(t))
     : null;
+  const countryFlagCode = resolveCountryIso2(country)?.toLowerCase() ?? null;
+  const displayTrim = trim?.trim() || null;
   const showDesktopSummary = !!summaryItems?.length;
   const showScoreAccent = !locked && scoreData?.accentBar;
   const isRiskAccent = scoreData?.riskTier === "risk" || (scoreData && parseFloat(scoreData.score) < 6);
@@ -685,7 +764,12 @@ export function VinReportHero({
         {/* Right — vehicle details + status badges */}
         <div className="flex flex-col min-w-0">
           <div className="px-3 sm:px-5 py-3 sm:py-5 flex-1 print:py-2 print:px-3">
-            <div className="flex items-start justify-between gap-3 mb-3">
+            <div
+              className={cn(
+                "flex justify-between gap-3 sm:gap-4 mb-1",
+                displayTrim ? "items-start" : "items-center",
+              )}
+            >
               <div className="min-w-0 flex-1">
                 {unlockedLabel && !locked && (
                   <Badge
@@ -695,18 +779,17 @@ export function VinReportHero({
                     {unlockedLabel}
                   </Badge>
                 )}
-                <h1 className="text-lg sm:text-2xl lg:text-[1.65rem] font-bold tracking-tight text-foreground leading-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-[1.65rem] font-bold tracking-tight text-foreground leading-tight">
                   {vehicleTitle}
                 </h1>
-                <div
-                  className={cn("mt-1.5 min-h-[1.25rem]", !trim && "invisible")}
-                  aria-hidden={!trim}
-                >
-                  <p className="text-sm text-muted-foreground">{trim || "\u00A0"}</p>
-                </div>
+                {displayTrim ? (
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-snug">
+                    {displayTrim}
+                  </p>
+                ) : null}
                 <Badge
                   variant="outline"
-                  className="mt-3 font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/40 border-border/70 text-foreground/90 select-all w-fit"
+                  className="mt-3 font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/35 border-border/65 text-foreground/85 select-all w-fit"
                 >
                   {vin}
                 </Badge>
@@ -726,64 +809,76 @@ export function VinReportHero({
               {(scoreData || accidentCount > 0) && (
                 <div className="flex items-stretch gap-2 shrink-0">
                   {accidentCount > 0 ? (
-                    <div
-                      className={cn(
-                        "flex h-full flex-col shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
-                        "bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-800/60",
-                      )}
-                    >
-                      <div className="flex flex-1 flex-col items-center justify-center">
-                        <p className="text-xl sm:text-2xl font-black tabular-nums leading-none text-orange-700 dark:text-orange-400">
-                          {accidentCount}
-                        </p>
-                      </div>
-                      <p className="text-[9px] font-semibold leading-tight max-w-[4rem] text-orange-700 dark:text-orange-400">
-                        {t(accidentCount === 1 ? "accident_count_one" : "accidents_count")
-                          .replace("{count}", "")
-                          .trim()}
-                      </p>
-                    </div>
+                    <HeroAccidentBadge
+                      count={accidentCount}
+                      label={t(accidentCount === 1 ? "accident_count_one" : "accidents_count")
+                        .replace("{count}", "")
+                        .trim()}
+                    />
                   ) : null}
-                  {scoreData ? (
-                <div
-                  className={cn(
-                    "flex h-full flex-col justify-center shrink-0 rounded-xl border px-3 py-2 text-center min-w-[4.25rem]",
-                    scoreData.bgColor,
-                    scoreData.borderColor,
-                  )}
-                >
-                  <p className={cn("text-xl sm:text-2xl font-black tabular-nums leading-none", scoreData.textColor)}>
-                    {scoreData.score}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">/10</p>
-                  <p className={cn("text-[9px] font-semibold mt-0.5 leading-tight max-w-[4rem]", scoreData.textColor)}>
-                    {scoreData.label}
-                  </p>
-                </div>
-                  ) : null}
+                  {scoreData ? <HeroScoreBadge scoreData={scoreData} /> : null}
                 </div>
               )}
             </div>
 
-            <div className="space-y-2 pt-1 border-t border-border/50">
-              {displayCountry && (
-                <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5 pt-2">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                  {displayCountry}
-                </p>
-              )}
-              {showDesktopSummary && !useLockedPanel && <HeroSummaryList items={summaryItems!} />}
-              {useLockedPanel ? lockedPanel : null}
-            </div>
+            {(() => {
+              const showOriginChip = Boolean(displayCountry && !children);
+              const showSummary = Boolean(showDesktopSummary && !useLockedPanel && !children);
+              const showLocked = Boolean(useLockedPanel);
+              if (!showOriginChip && !showSummary && !showLocked) return null;
+              return (
+                <div className="space-y-2 pt-3 mt-3 border-t border-border/50">
+                  {showOriginChip && (
+                    <div className="pt-0.5">
+                      <div
+                        className={cn(
+                          "group inline-flex max-w-full items-center gap-2.5 rounded-xl border border-border/60",
+                          "bg-gradient-to-r from-muted/50 via-muted/30 to-transparent",
+                          "pl-1.5 pr-3 py-1.5 shadow-[inset_0_1px_0_0_hsl(var(--foreground)/0.04)]",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg",
+                            "bg-background ring-1 ring-border/60 shadow-sm",
+                          )}
+                        >
+                          {countryFlagCode ? (
+                            <FlagImg
+                              code={countryFlagCode}
+                              size={22}
+                              className="rounded-sm"
+                              alt={formatImageFlagAlt(displayCountry!, t)}
+                            />
+                          ) : (
+                            <MapPin className="h-3.5 w-3.5 text-primary/80" />
+                          )}
+                        </span>
+                        <span className="min-w-0 flex flex-col gap-0.5">
+                          <span className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            <MapPin className="h-2.5 w-2.5 shrink-0 opacity-70" />
+                            {t("country")}
+                          </span>
+                          <span className="truncate text-sm font-bold tracking-tight text-foreground leading-none">
+                            {displayCountry}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {showSummary ? <HeroSummaryList items={summaryItems!} /> : null}
+                  {showLocked ? lockedPanel : null}
+                </div>
+              );
+            })()}
           </div>
 
           {!useLockedPanel && showStatsRow ? (
           <div
             className={cn(
               "px-2.5 sm:px-5 pb-3 sm:pb-5 pt-2.5 bg-muted/15 border-t border-border/40 vin-hero-stats",
-              "flex flex-wrap justify-center content-start gap-1.5 sm:gap-2",
-              "print:flex print:flex-wrap print:justify-start print:gap-1.5 print:py-1.5 print:px-2",
-              showDesktopSummary && !locked && "sm:hidden print:flex",
+              "w-full min-w-0",
+              "print:py-1.5 print:px-2",
             )}
           >
             {children}
