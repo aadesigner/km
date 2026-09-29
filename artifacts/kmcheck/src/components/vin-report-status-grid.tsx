@@ -152,10 +152,10 @@ export function VinReportStatusGrid({
           {hasMileage && odometerKm != null && odoCol ? (
             <div
               className={cn(
-                "relative min-w-0 overflow-hidden rounded-xl border px-3 py-2.5 sm:px-3.5",
+                "relative min-w-0 overflow-hidden rounded-xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5",
                 "border-border/55 bg-gradient-to-br from-background via-background to-muted/40",
                 "shadow-[inset_0_1px_0_0_hsl(var(--foreground)/0.04)]",
-                hasOrigin ? "w-[60%] flex-[0_0_60%] sm:w-[62%] sm:flex-[0_0_62%]" : "w-full",
+                hasOrigin ? "w-1/2 flex-[0_0_50%] sm:w-[62%] sm:flex-[0_0_62%]" : "w-full",
               )}
             >
               <div
@@ -168,7 +168,7 @@ export function VinReportStatusGrid({
               <div className="relative flex items-center gap-2.5">
                 <div
                   className={cn(
-                    "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                    "relative hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
                     "bg-muted/60 ring-1 ring-border/50",
                     odoCol.text,
                   )}
@@ -200,16 +200,16 @@ export function VinReportStatusGrid({
                   <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {mileageLabel}
                   </p>
-                  <p className={cn("mt-0.5 text-lg sm:text-xl font-black tabular-nums leading-none tracking-tight", odoCol.text)}>
+                  <p className={cn("mt-0.5 text-base sm:text-xl font-black tabular-nums leading-none tracking-tight", odoCol.text)}>
                     {odometerKm.toLocaleString()}
-                    <span className="ml-1 text-[11px] sm:text-xs font-bold opacity-70">km</span>
+                    <span className="ml-1 text-[10px] sm:text-xs font-bold opacity-70">km</span>
                     {milesText ? (
-                      <span className="ml-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground opacity-90">
+                      <span className="ml-1.5 hidden sm:inline text-[10px] sm:text-xs font-medium text-muted-foreground opacity-90">
                         {milesText}
                       </span>
                     ) : null}
                   </p>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted/80 ring-1 ring-inset ring-border/40">
+                  <div className="mt-1.5 sm:mt-2 h-1 sm:h-1.5 w-full overflow-hidden rounded-full bg-muted/80 ring-1 ring-inset ring-border/40">
                     <div
                       className={cn("h-full rounded-full transition-[width] duration-500", odoCol.bar)}
                       style={{ width: `${Math.max(4, gaugePct)}%` }}
@@ -227,7 +227,7 @@ export function VinReportStatusGrid({
               eyebrow={originEyebrow}
               tForFlagAlt={tForFlagAlt}
               className={cn(
-                hasMileage ? "w-[40%] flex-[0_0_40%] sm:w-[38%] sm:flex-[0_0_38%] sm:min-w-[9.75rem]" : "w-full",
+                hasMileage ? "w-1/2 flex-[0_0_50%] sm:w-[38%] sm:flex-[0_0_38%] sm:min-w-[9.75rem]" : "w-full",
               )}
             />
           ) : null}

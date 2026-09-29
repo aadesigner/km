@@ -602,15 +602,16 @@ function HeroAccidentBadge({ count, label }: { count: number; label: string }) {
   return (
     <div
       className={cn(
-        "flex min-w-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-center",
+        "flex min-w-[3.35rem] sm:min-w-[4rem] flex-col items-center justify-center gap-0.5 sm:gap-1",
+        "rounded-lg sm:rounded-xl border px-1.5 py-1.5 sm:px-2.5 sm:py-2 text-center",
         "border-orange-200/85 bg-gradient-to-b from-orange-50 to-orange-50/40",
         "dark:border-orange-800/55 dark:from-orange-950/55 dark:to-orange-950/25",
       )}
     >
-      <p className="text-2xl font-bold tabular-nums leading-none text-orange-700 dark:text-orange-400">
+      <p className="text-lg sm:text-xl font-bold tabular-nums leading-none text-orange-700 dark:text-orange-400">
         {count}
       </p>
-      <p className="max-w-[4.75rem] text-[10px] font-semibold leading-tight text-orange-700/85 dark:text-orange-400/90">
+      <p className="max-w-[3.75rem] sm:max-w-[4.5rem] text-[8px] sm:text-[10px] font-semibold leading-tight text-orange-700/85 dark:text-orange-400/90">
         {label}
       </p>
     </div>
@@ -630,12 +631,13 @@ function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
   return (
     <div
       className={cn(
-        "flex min-w-[5rem] flex-col items-center gap-1.5 rounded-xl border px-3 py-2.5",
+        "flex min-w-[3.5rem] sm:min-w-[4.5rem] flex-col items-center gap-0.5 sm:gap-1",
+        "rounded-lg sm:rounded-xl border px-1.5 py-1.5 sm:px-2.5 sm:py-2",
         scoreData.bgColor,
         scoreData.borderColor,
       )}
     >
-      <div className="relative flex h-[3.25rem] w-[3.25rem] items-center justify-center">
+      <div className="relative flex h-9 w-9 sm:h-[3.25rem] sm:w-[3.25rem] items-center justify-center">
         <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
           <circle cx="20" cy="20" r={r} fill="none" className="stroke-muted-foreground/12" strokeWidth="3" />
           <circle
@@ -649,14 +651,11 @@ function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
             strokeDasharray={`${dash} ${c}`}
           />
         </svg>
-        <div className="relative flex flex-col items-center leading-none">
-          <span className={cn("text-[17px] font-bold tabular-nums", scoreData.textColor)}>
-            {scoreData.score}
-          </span>
-          <span className="text-[8px] font-medium text-muted-foreground">/10</span>
-        </div>
+        <span className={cn("relative text-sm sm:text-[17px] font-bold tabular-nums leading-none", scoreData.textColor)}>
+          {scoreData.score}
+        </span>
       </div>
-      <p className={cn("text-[10px] font-semibold leading-tight text-center", scoreData.textColor)}>
+      <p className={cn("text-[8px] sm:text-[10px] font-semibold leading-tight text-center", scoreData.textColor)}>
         {scoreData.label}
       </p>
     </div>
