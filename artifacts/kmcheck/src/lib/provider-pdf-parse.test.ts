@@ -235,6 +235,42 @@ describe("history comment / location split", () => {
     expect(cleanModelName("Tiguan S 164,714 mi VIN: ABC", "Volkswagen")).toBe("Tiguan S");
   });
 
+  it("rejects Carfax disclaimer text as a model name", () => {
+    expect(
+      cleanModelName("This CARFAX Vehicle History Report is based only on information", "Volkswagen"),
+    ).toBe("");
+    expect(cleanModelName("This CARFAX Vehicle History Report is in it", "Honda")).toBe("");
+    expect(cleanModelName("Vehicle History Report is based only on", "Audi")).toBe("");
+  });
+
+  it("does not fill model from Carfax disclaimer after year/make", () => {
+    const collapsed =
+      "CARFAX Vehicle History Report\n" +
+      "VIN: WVGAV7AX1CW554218\n" +
+      "2012 Volkswagen This CARFAX Vehicle History Report is based only on information supplied to CARFAX\n" +
+      "Use this report as one important tool, along with a vehicle inspection and test drive, to make a better decision about your next used car.\n" +
+      "Detailed Vehicle History\n01/28/2012 11 mi Doral Volkswagen Vehicle serviced";
+    const r = parseProviderPdfText(collapsed, "WVGAV7AX1CW554218");
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.form.make).toBe("Volkswagen");
+    expect(r.form.model).not.toMatch(/CARFAX|History Report|based only|information|decision|serviced/i);
+    expect(r.form.model).toBe("");
+  });
+
+  it("parses signature-line YMM without 'vehicle' bleed", () => {
+    const sig =
+      "CARFAX Vehicle History Report\n" +
+      "I have reviewed and received a copy of the CARFAX Vehicle History Report for this 2012 VOLKSWAGEN TIGUAN vehicle (VIN: WVGAV7AX1CW554218), which is based on information supplied to CARFAX\n" +
+      "Detailed Vehicle History\n01/28/2012 11 mi";
+    const r = parseProviderPdfText(sig, "WVGAV7AX1CW554218");
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.form.year).toBe("2012");
+    expect(r.form.make).toBe("Volkswagen");
+    expect(r.form.model).toMatch(/^TIGUAN$/i);
+  });
+
   it("stops Vehicle serviced description before next-row admin bleed", () => {
     const rest =
       "164,714 mi Gc Tire And Auto Brampton, ON Vehicle serviced Brake pads replaced - Tire(s) changed - Registration issued or renewed - New owner reported - Vehicle color noted as White";

@@ -135,7 +135,8 @@ function cleanSpecValue(raw: string): string {
 
 function fieldAfterLabel(scope: string, labels: string[], maxLen = 80): string | null {
   for (const label of labels) {
-    const re = new RegExp(`${label}\\s*[:#]?\\s*([^\\n]{1,${maxLen}})`, "i");
+    // Word boundary avoids matching "Make" inside longer tokens; colon preferred but optional.
+    const re = new RegExp(`\\b${label}\\s*[:#]?\\s*([^\\n]{1,${maxLen}})`, "i");
     const m = scope.match(re);
     if (!m?.[1]) continue;
     const cleaned = cleanSpecValue(m[1]);
@@ -144,16 +145,45 @@ function fieldAfterLabel(scope: string, labels: string[], maxLen = 80): string |
   return null;
 }
 
-/** Carfax banner: "2012 Volkswagen Tiguan S 164,714 mi VIN:" — stop before mileage/VIN/body. */
+/** Carfax disclaimer / boilerplate that must never become year/make/model. */
+const MODEL_DISCLAIMER_STOP =
+  `\\s+(?:This\\s+CARFAX\\b|CARFAX\\s+Vehicle\\s+History\\b|CARFAX\\b|Vehicle\\s+History\\s+Report\\b|based\\s+only\\s+on\\b|NO\\s+ACCIDENTS\\b|No\\s+Accidents\\b|Detailed\\s+Records\\b|Service\\s+History\\s+Records\\b|Previous\\s+Owners\\b|Types\\s+of\\s+Owners\\b)`;
+
+/** Model token must not start with report boilerplate. */
+const MODEL_START_OK = `(?!This\\b|CARFAX\\b|Vehicle\\s+History\\b|based\\b|Use\\b|NO\\b|No\\b|Detailed\\b|Service\\b|Previous\\b|Types\\b)`;
+
+function isPlausibleModelName(model: string): boolean {
+  const m = model.trim();
+  if (!m || m.length < 1 || m.length > 48) return false;
+  if (/carfax|autocheck|vehicle\s+history|based\s+only|supplied\s+to|information\s+supplied/i.test(m)) {
+    return false;
+  }
+  // Real models are short tokens (Civic EX, Tiguan S, ML 350) — not sentences or history events.
+  if (
+    /\b(report|information|available|decision|inspection|serviced|issued|reported|registration|exported|imported|purchased|owner)\b/i.test(
+      m,
+    )
+  ) {
+    return false;
+  }
+  if (/^(vehicle|personal|title|odometer|service|accident|damage|this|the|a|an|to|for|based|use|one)$/i.test(m)) {
+    return false;
+  }
+  if ((m.match(/\s+/g) ?? []).length > 5) return false;
+  return true;
+}
+
+/** Carfax banner: "2012 Volkswagen Tiguan S 164,714 mi VIN:" — stop before mileage/VIN/body/disclaimer. */
 function parseYmmFromBanner(scope: string): { year: string; make: string; model: string } | null {
   const makes = KNOWN_MAKES.map(escapeRe).join("|");
   const m = scope.match(
     new RegExp(
-      `\\b((?:19|20)\\d{2})\\s+(${makes})\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{0,40}?)(?=`
+      `\\b((?:19|20)\\d{2})\\s+(${makes})\\s+${MODEL_START_OK}([A-Za-z0-9][A-Za-z0-9 \\-/.]{0,40}?)(?=`
         + `\\s+[\\d,]{2,7}\\s*(?:miles?|mi|km)\\b`
         + `|\\s+VIN\\b`
         + `|\\s+\\d\\s*Door\\b`
         + `|\\s+(?:Wagon|Sport\\s+Utility|Sedan|Coupe|Hatch|SUV|Crossover|Gasoline|Diesel|Automatic|Manual)\\b`
+        + `|${MODEL_DISCLAIMER_STOP}`
         + `|\\s{2,}`
         + `|$)`,
       "i",
@@ -164,7 +194,7 @@ function parseYmmFromBanner(scope: string): { year: string; make: string; model:
   if (!isPlausibleModelYear(y)) return null;
   const make = KNOWN_MAKES.find((k) => k.toLowerCase() === m[2]!.toLowerCase()) ?? m[2]!;
   const model = cleanModelName(m[3]!, make);
-  if (!model) return null;
+  if (!model || !isPlausibleModelName(model)) return null;
   return { year: String(y), make, model };
 }
 
@@ -204,13 +234,24 @@ function parseMake(scope: string): string {
   const banner = parseYmmFromBanner(scope);
   if (banner) return banner.make;
 
-  const labeled = fieldAfterLabel(scope, ["Make", "Manufacturer"]);
+  // Prefer explicit "Make:" / "Manufacturer:" so "to make a better decision" never wins.
+  const labeledColon = scope.match(
+    /\b(?:Make|Manufacturer)\s*[:#]\s*([^\n]{1,80})/i,
+  );
+  const labeled = labeledColon?.[1]
+    ? cleanSpecValue(labeledColon[1])
+    : fieldAfterLabel(scope, ["Manufacturer"]);
   if (labeled) {
     const hit = KNOWN_MAKES.find((m) => labeled.toLowerCase().startsWith(m.toLowerCase()));
     if (hit) return hit;
     // First 1–3 words, stop before model-ish tokens
     const word = labeled.split(/\s+/)[0] ?? "";
-    if (/^[A-Za-z][A-Za-z\-]+$/.test(word) && word.length >= 2) return word;
+    if (/^[A-Za-z][A-Za-z\-]+$/.test(word) && word.length >= 2 && word.length <= 20) {
+      // Reject boilerplate openers
+      if (!/^(this|the|a|an|to|for|based|report|vehicle|history|information)$/i.test(word)) {
+        return word;
+      }
+    }
   }
   for (const make of KNOWN_MAKES) {
     const re = new RegExp(`\\b${escapeRe(make)}\\b`, "i");
@@ -226,29 +267,43 @@ function parseModel(scope: string, make: string): string {
     if (!make || banner.make.toLowerCase() === make.toLowerCase()) return banner.model;
   }
 
-  const labeled = fieldAfterLabel(scope, ["Model(?:\\s*name)?"], 60);
-  if (labeled) return cleanModelName(labeled, make);
+  const labeledMatch = scope.match(/\bModel(?:\s*name)?\s*[:#]\s*([^\n]{1,60})/i);
+  if (labeledMatch?.[1]) {
+    const cleaned = cleanModelName(cleanSpecValue(labeledMatch[1]), make);
+    if (cleaned && isPlausibleModelName(cleaned)) return cleaned;
+  }
 
   if (make) {
     const re = new RegExp(
-      `\\b${escapeRe(make)}\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,50}?)(?=\\s{2,}|\\n|\\b(?:${NEXT_SPEC_LABEL})\\b|\\s+[\\d,]{2,7}\\s*(?:mi|miles?|km)\\b|$)`,
+      `\\b${escapeRe(make)}\\s+${MODEL_START_OK}([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,50}?)(?=\\s{2,}|\\n|\\b(?:${NEXT_SPEC_LABEL})\\b|\\s+[\\d,]{2,7}\\s*(?:mi|miles?|km)\\b|${MODEL_DISCLAIMER_STOP}|$)`,
       "i",
     );
     const m = scope.match(re);
     if (m?.[1]) {
       let model = cleanSpecValue(m[1]);
       model = model.replace(/^(?:19|20)\d{2}\s+/, "");
-      return cleanModelName(model, make);
+      const cleaned = cleanModelName(model, make);
+      if (cleaned && isPlausibleModelName(cleaned)) return cleaned;
     }
   }
 
   const ymm = scope.match(
     new RegExp(
-      `\\b(?:19|20)\\d{2}\\s+(${KNOWN_MAKES.map(escapeRe).join("|")})\\s+([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,50})`,
+      `\\b(?:19|20)\\d{2}\\s+(${KNOWN_MAKES.map(escapeRe).join("|")})\\s+${MODEL_START_OK}([A-Za-z0-9][A-Za-z0-9 \\-/.]{1,40}?)(?=`
+        + `\\s+[\\d,]{2,7}\\s*(?:miles?|mi|km)\\b`
+        + `|\\s+VIN\\b`
+        + `|\\s+\\d\\s*Door\\b`
+        + `|\\s+(?:Wagon|Sport\\s+Utility|Sedan|Coupe|Hatch|SUV|Crossover|Gasoline|Diesel|Automatic|Manual|vehicle)\\b`
+        + `|${MODEL_DISCLAIMER_STOP}`
+        + `|\\s{2,}`
+        + `|$)`,
       "i",
     ),
   );
-  if (ymm?.[2]) return cleanModelName(cleanSpecValue(ymm[2]), ymm[1] ?? make);
+  if (ymm?.[2]) {
+    const cleaned = cleanModelName(cleanSpecValue(ymm[2]), ymm[1] ?? make);
+    if (cleaned && isPlausibleModelName(cleaned)) return cleaned;
+  }
   return "";
 }
 
@@ -259,6 +314,10 @@ export function cleanModelName(raw: string, make?: string): string {
     const makeRe = new RegExp(`^${escapeRe(make)}\\s+`, "i");
     m = m.replace(makeRe, "");
   }
+  // Cut Carfax disclaimer / report boilerplate if it bled into the model field
+  m = m.replace(/\b(?:This\s+)?CARFAX\b.*$/i, "");
+  m = m.replace(/\bVehicle\s+History\s+Report\b.*$/i, "");
+  m = m.replace(/\bbased\s+only\s+on\b.*$/i, "");
   // Mileage / VIN / body bleed from Carfax banner line
   m = m.replace(/\b[\d,]{2,7}\s*(?:miles?|mi|km)\b.*$/gi, "");
   m = m.replace(/\s+\d+\s*Door\b.*$/i, "");
@@ -267,7 +326,9 @@ export function cleanModelName(raw: string, make?: string): string {
   // Strip trailing bare numbers (mileage bleed like "Tiguan S 164")
   m = m.replace(/\s+\d{1,6}$/g, "");
   m = m.replace(/\s*[-–—]\s*(vehicle|car|noted|reported).*$/i, "");
-  return m.replace(/\s{2,}/g, " ").trim().slice(0, 60);
+  m = m.replace(/\s{2,}/g, " ").trim().slice(0, 60);
+  if (!isPlausibleModelName(m)) return "";
+  return m;
 }
 
 function parseFuel(scope: string): string {
