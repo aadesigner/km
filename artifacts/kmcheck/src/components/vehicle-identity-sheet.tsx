@@ -47,7 +47,12 @@ export function VehicleIdentitySheet({ fields, className }: Props) {
 
   return (
     <div className={cn(className)}>
-      <div className="flex items-start justify-between gap-4 border-b border-border/60 px-5 py-4 sm:px-6">
+      <div
+        className={cn(
+          "flex justify-between gap-4 border-b border-border/60 px-5 py-4 sm:px-6",
+          trim ? "items-start" : "items-center",
+        )}
+      >
         <div className="min-w-0">
           {title ? (
             <p className="text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl">

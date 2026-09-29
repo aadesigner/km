@@ -91,6 +91,7 @@ import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-cu
 import { VinMarketDataSection } from "@/components/vin-market-data-section";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { FloodDamageSection } from "@/components/flood-damage-section";
+import { TaxiUseSection } from "@/components/taxi-use-section";
 import { useReportKrwPerUsd } from "@/hooks/use-report-krw-per-usd";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { RegistryHistorySection } from "@/components/registry-history-section";
@@ -889,7 +890,7 @@ export default function VinPublic({ params }: Props) {
           unlockedLabel={data.isUnlocked ? t("vin_public_unlocked_badge") : undefined}
           scoreData={scoreData}
           summaryItems={data.isUnlocked ? [] : heroSummary}
-          accidentCount={data.isUnlocked ? accidentSignals : 0}
+          accidentCount={0}
           onPhotoClick={data.isUnlocked && heroPhotos.length > 0 ? (i) => openLightbox(i) : undefined}
           lockedPanel={
             !data.isUnlocked
@@ -924,9 +925,16 @@ export default function VinPublic({ params }: Props) {
               flags={buildUnlockStatusFlags({
                 isSalvage: data.salvage === true,
                 isStolen: data.stolen === true,
-                isTaxi: data.taxi === true,
                 isFlooded: data.flooded,
                 showFlood: data.flooded != null || isKoreanCountry(data.country) || isGetCarApi,
+                accidentCount: accidentSignals,
+                accidentLabel: formatAccidentCount(t, accidentSignals),
+                onAccidentClick: () => {
+                  document.getElementById("vin-report-accidents")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                },
                 labels: {
                   salvageOk: t("report_no_salvage"),
                   salvageFail: t("salvage_flagged"),
@@ -934,8 +942,6 @@ export default function VinPublic({ params }: Props) {
                   stolenFail: t("theft_flagged"),
                   floodOk: t("report_not_flooded_header"),
                   floodFail: t("flood_flagged"),
-                  taxiOk: t("report_not_taxi"),
-                  taxiFail: t("taxi_flagged"),
                 },
               })}
             />
@@ -1012,6 +1018,7 @@ export default function VinPublic({ params }: Props) {
             {/* Accident History */}
             {showAccidentsSection && (
             <ReportReveal delay={0.15} y={12}>
+              <div id="vin-report-accidents" className="scroll-mt-24">
               <VinReportSection accent="rose">
                 <VinReportSectionHeader
                   variant="public"
@@ -1159,6 +1166,7 @@ export default function VinPublic({ params }: Props) {
                     </div>
               </div>
               </VinReportSection>
+              </div>
             </ReportReveal>
             )}
 
@@ -1186,6 +1194,17 @@ export default function VinPublic({ params }: Props) {
                   </div>
                 </div>
               </VinReportSection>
+            </ReportReveal>
+            )}
+
+            {/* Taxi use — below accidents, above safety */}
+            {data.isUnlocked && (
+            <ReportReveal delay={0.16} y={12}>
+              <TaxiUseSection
+                isTaxi={data.taxi === true}
+                t={t}
+                variant="public"
+              />
             </ReportReveal>
             )}
 

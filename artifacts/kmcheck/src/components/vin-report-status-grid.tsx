@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CheckCircle2, XCircle, Gauge, MapPin } from "lucide-react";
+import { CheckCircle2, XCircle, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mileageColor } from "@/lib/mileage-color";
 import { formatMilesInParens } from "@/lib/format-km-with-miles";
@@ -12,6 +12,7 @@ export type UnlockStatusFlag = {
   ok: boolean;
   label: string;
   trailing?: ReactNode;
+  onClick?: () => void;
 };
 
 type Props = {
@@ -34,20 +35,26 @@ function StatusRow({
   ok,
   label,
   trailing,
+  onClick,
   className,
 }: {
   ok: boolean;
   label: string;
   trailing?: ReactNode;
+  onClick?: () => void;
   className?: string;
 }) {
+  const Comp = onClick ? "button" : "div";
   return (
-    <div
+    <Comp
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 sm:px-3",
+        "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 sm:px-3 text-left w-full",
         ok
           ? "border-emerald-200/70 bg-emerald-50/70 dark:border-emerald-800/45 dark:bg-emerald-950/35"
           : "border-red-200/70 bg-red-50/70 dark:border-red-800/45 dark:bg-red-950/35",
+        onClick && "cursor-pointer transition-colors hover:brightness-[0.98] dark:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
         className,
       )}
     >
@@ -65,7 +72,7 @@ function StatusRow({
         {label}
       </span>
       {trailing}
-    </div>
+    </Comp>
   );
 }
 
@@ -155,7 +162,7 @@ export function VinReportStatusGrid({
                 "relative min-w-0 overflow-hidden rounded-xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5",
                 "border-border/55 bg-gradient-to-br from-background via-background to-muted/40",
                 "shadow-[inset_0_1px_0_0_hsl(var(--foreground)/0.04)]",
-                hasOrigin ? "w-1/2 flex-[0_0_50%] sm:w-[62%] sm:flex-[0_0_62%]" : "w-full",
+                hasOrigin ? "w-1/2 flex-[0_0_50%]" : "w-full",
               )}
             >
               <div
@@ -165,38 +172,7 @@ export function VinReportStatusGrid({
                   odoCol.bar,
                 )}
               />
-              <div className="relative flex items-center gap-2.5">
-                <div
-                  className={cn(
-                    "relative hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                    "bg-muted/60 ring-1 ring-border/50",
-                    odoCol.text,
-                  )}
-                >
-                  <svg viewBox="0 0 36 36" className="absolute inset-1 h-8 w-8 -rotate-90" aria-hidden>
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="14"
-                      fill="none"
-                      className="stroke-muted-foreground/15"
-                      strokeWidth="3"
-                    />
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(gaugePct / 100) * 88} 88`}
-                      className="opacity-90"
-                    />
-                  </svg>
-                  <Gauge className="relative h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
+              <div className="relative min-w-0">
                   <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {mileageLabel}
                   </p>
@@ -204,7 +180,7 @@ export function VinReportStatusGrid({
                     {odometerKm.toLocaleString()}
                     <span className="ml-1 text-[10px] sm:text-xs font-bold opacity-70">km</span>
                     {milesText ? (
-                      <span className="ml-1.5 hidden sm:inline text-[10px] sm:text-xs font-medium text-muted-foreground opacity-90">
+                      <span className="ml-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground opacity-90">
                         {milesText}
                       </span>
                     ) : null}
@@ -216,7 +192,6 @@ export function VinReportStatusGrid({
                     />
                   </div>
                 </div>
-              </div>
             </div>
           ) : null}
 
@@ -227,7 +202,7 @@ export function VinReportStatusGrid({
               eyebrow={originEyebrow}
               tForFlagAlt={tForFlagAlt}
               className={cn(
-                hasMileage ? "w-1/2 flex-[0_0_50%] sm:w-[38%] sm:flex-[0_0_38%] sm:min-w-[9.75rem]" : "w-full",
+                hasMileage ? "w-1/2 flex-[0_0_50%]" : "w-full",
               )}
             />
           ) : null}
@@ -254,6 +229,7 @@ export function VinReportStatusGrid({
               ok={f.ok}
               label={f.label}
               trailing={f.trailing}
+              onClick={f.onClick}
             />
           ))}
         </div>
@@ -262,13 +238,15 @@ export function VinReportStatusGrid({
   );
 }
 
-/** Salvage / stolen / flood / taxi flags for unlocked reports. */
+/** Salvage / stolen / flood / accidents flags for unlocked reports. */
 export function buildUnlockStatusFlags(opts: {
   isSalvage: boolean;
   isStolen: boolean;
-  isTaxi: boolean;
   isFlooded?: boolean | null;
   showFlood: boolean;
+  accidentCount?: number;
+  accidentLabel?: string;
+  onAccidentClick?: () => void;
   labels: {
     salvageOk: string;
     salvageFail: string;
@@ -276,8 +254,6 @@ export function buildUnlockStatusFlags(opts: {
     stolenFail: string;
     floodOk: string;
     floodFail: string;
-    taxiOk: string;
-    taxiFail: string;
   };
 }): UnlockStatusFlag[] {
   const flags: UnlockStatusFlag[] = [
@@ -300,11 +276,14 @@ export function buildUnlockStatusFlags(opts: {
       label: opts.isFlooded === true ? opts.labels.floodFail : opts.labels.floodOk,
     });
   }
-  flags.push({
-    key: "taxi",
-    ok: !opts.isTaxi,
-    label: opts.isTaxi ? opts.labels.taxiFail : opts.labels.taxiOk,
-  });
+  if ((opts.accidentCount ?? 0) > 0 && opts.accidentLabel) {
+    flags.push({
+      key: "accidents",
+      ok: false,
+      label: opts.accidentLabel,
+      onClick: opts.onAccidentClick,
+    });
+  }
   return flags;
 }
 

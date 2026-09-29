@@ -56,7 +56,7 @@ type VinReportHeroProps = {
   summaryItems?: VinHeroSummaryItem[];
   /** Locked preview: structured findings panel in the hero right column (replaces bottom chips). */
   lockedPanel?: React.ReactNode;
-  /** Shown as a rating-style badge to the left of the score on mobile. */
+  /** @deprecated Accidents moved to status grid; kept for API compat. */
   accidentCount?: number;
   onPhotoClick?: (index: number) => void;
   photoPlaceholderLabel?: string;
@@ -598,26 +598,6 @@ function resolveScoreTier(scoreData: VinHeroScore): "clean" | "caution" | "risk"
   return "risk";
 }
 
-function HeroAccidentBadge({ count, label }: { count: number; label: string }) {
-  return (
-    <div
-      className={cn(
-        "flex min-w-[3.35rem] sm:min-w-[4rem] flex-col items-center justify-center gap-0.5 sm:gap-1",
-        "rounded-lg sm:rounded-xl border px-1.5 py-1.5 sm:px-2.5 sm:py-2 text-center",
-        "border-orange-200/85 bg-gradient-to-b from-orange-50 to-orange-50/40",
-        "dark:border-orange-800/55 dark:from-orange-950/55 dark:to-orange-950/25",
-      )}
-    >
-      <p className="text-lg sm:text-xl font-bold tabular-nums leading-none text-orange-700 dark:text-orange-400">
-        {count}
-      </p>
-      <p className="max-w-[3.75rem] sm:max-w-[4.5rem] text-[8px] sm:text-[10px] font-semibold leading-tight text-orange-700/85 dark:text-orange-400/90">
-        {label}
-      </p>
-    </div>
-  );
-}
-
 function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
   const tier = resolveScoreTier(scoreData);
   const scoreNum = parseFloat(scoreData.score);
@@ -631,13 +611,13 @@ function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
   return (
     <div
       className={cn(
-        "flex min-w-[3.5rem] sm:min-w-[4.5rem] flex-col items-center gap-0.5 sm:gap-1",
-        "rounded-lg sm:rounded-xl border px-1.5 py-1.5 sm:px-2.5 sm:py-2",
+        "flex min-w-[4rem] sm:min-w-[3.75rem] flex-col items-center gap-0.5",
+        "rounded-xl border px-2 py-1.5",
         scoreData.bgColor,
         scoreData.borderColor,
       )}
     >
-      <div className="relative flex h-9 w-9 sm:h-[3.25rem] sm:w-[3.25rem] items-center justify-center">
+      <div className="relative flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center">
         <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
           <circle cx="20" cy="20" r={r} fill="none" className="stroke-muted-foreground/12" strokeWidth="3" />
           <circle
@@ -651,11 +631,11 @@ function HeroScoreBadge({ scoreData }: { scoreData: VinHeroScore }) {
             strokeDasharray={`${dash} ${c}`}
           />
         </svg>
-        <span className={cn("relative text-sm sm:text-[17px] font-bold tabular-nums leading-none", scoreData.textColor)}>
+        <span className={cn("relative text-[15px] sm:text-sm font-bold tabular-nums leading-none", scoreData.textColor)}>
           {scoreData.score}
         </span>
       </div>
-      <p className={cn("text-[8px] sm:text-[10px] font-semibold leading-tight text-center", scoreData.textColor)}>
+      <p className={cn("text-[9px] font-semibold leading-tight text-center max-w-[4.5rem]", scoreData.textColor)}>
         {scoreData.label}
       </p>
     </div>
@@ -763,61 +743,57 @@ export function VinReportHero({
         {/* Right — vehicle details + status badges */}
         <div className="flex flex-col min-w-0">
           <div className="px-3 sm:px-5 py-3 sm:py-5 flex-1 print:py-2 print:px-3">
-            <div
-              className={cn(
-                "flex justify-between gap-3 sm:gap-4 mb-1",
-                displayTrim ? "items-start" : "items-center",
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                {unlockedLabel && !locked && (
-                  <Badge
-                    variant="outline"
-                    className="mb-2 text-[10px] font-semibold border-primary/25 text-primary bg-primary/[0.07] print:hidden"
-                  >
-                    {unlockedLabel}
-                  </Badge>
-                )}
-                <h1 className="text-xl sm:text-2xl lg:text-[1.65rem] font-bold tracking-tight text-foreground leading-tight">
-                  {vehicleTitle}
-                </h1>
-                {displayTrim ? (
-                  <p className="mt-1.5 text-sm text-muted-foreground leading-snug">
-                    {displayTrim}
-                  </p>
-                ) : null}
+            <div className="mb-1">
+              {unlockedLabel && !locked && (
                 <Badge
                   variant="outline"
-                  className="mt-3 font-mono text-[11px] sm:text-xs tracking-wider px-2.5 py-1 bg-muted/35 border-border/65 text-foreground/85 select-all w-fit"
+                  className="mb-2 text-[10px] font-semibold border-primary/25 text-primary bg-primary/[0.07] print:hidden"
                 >
-                  {vin}
+                  {unlockedLabel}
                 </Badge>
-                {pendingEta ? (
-                  <div className="mt-3.5 pt-3.5 border-t border-border/50 max-w-md">
-                    <div className="rounded-lg border border-sky-500/20 bg-sky-500/[0.06] px-3 py-2.5">
-                      <p className="text-sm sm:text-[15px] font-medium text-foreground leading-snug">
-                        {t("pending_report_eta_title")}
-                      </p>
-                      <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        {t("pending_report_eta_body")}
-                      </p>
-                    </div>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-[1.65rem] font-bold tracking-tight text-foreground leading-tight">
+                    {vehicleTitle}
+                  </h1>
+                  {displayTrim ? (
+                    <p className="mt-1.5 text-sm text-muted-foreground leading-snug">
+                      {displayTrim}
+                    </p>
+                  ) : null}
+                </div>
+                {scoreData ? (
+                  <div className="shrink-0 self-center">
+                    <HeroScoreBadge scoreData={scoreData} />
                   </div>
                 ) : null}
               </div>
-              {(scoreData || accidentCount > 0) && (
-                <div className="flex items-stretch gap-2 shrink-0">
-                  {accidentCount > 0 ? (
-                    <HeroAccidentBadge
-                      count={accidentCount}
-                      label={t(accidentCount === 1 ? "accident_count_one" : "accidents_count")
-                        .replace("{count}", "")
-                        .trim()}
-                    />
-                  ) : null}
-                  {scoreData ? <HeroScoreBadge scoreData={scoreData} /> : null}
+              <div
+                className={cn(
+                  "mt-2.5 inline-flex max-w-full items-center gap-2 rounded-lg border border-border/70",
+                  "bg-muted/30 px-2.5 py-1.5 shadow-[inset_0_1px_0_0_hsl(var(--foreground)/0.03)]",
+                )}
+              >
+                <span className="shrink-0 rounded-md bg-background/80 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground ring-1 ring-border/60">
+                  {t("vin")}
+                </span>
+                <span className="min-w-0 truncate font-mono text-[11px] sm:text-xs tracking-[0.12em] text-foreground/90 select-all">
+                  {vin}
+                </span>
+              </div>
+              {pendingEta ? (
+                <div className="mt-3.5 pt-3.5 border-t border-border/50 max-w-md">
+                  <div className="rounded-lg border border-sky-500/20 bg-sky-500/[0.06] px-3 py-2.5">
+                    <p className="text-sm sm:text-[15px] font-medium text-foreground leading-snug">
+                      {t("pending_report_eta_title")}
+                    </p>
+                    <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      {t("pending_report_eta_body")}
+                    </p>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {(() => {
