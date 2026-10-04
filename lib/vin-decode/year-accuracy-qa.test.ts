@@ -6,6 +6,7 @@ import {
   decodeVin,
   decodeVinLocalFree,
   isoModelYearCandidates,
+  maxPlausibleModelYear,
   resolveIsoModelYear,
 } from "./index";
 
@@ -28,10 +29,25 @@ describe("iso year — unique cycle only", () => {
   });
 
   it("uses a verified production window only when exactly one cycle remains", () => {
+    // Floor window → newer twin only (model did not exist in the old cycle).
     expect(resolveIsoModelYear("P", { from: 2018, to: 2099 })).toBe(2023);
-    expect(resolveIsoModelYear("N", { from: 1988, to: 1995 })).toBe(1992);
+    // Ceiling window that only keeps the older twin while 2022 is still live → omit (no prefer-old).
+    expect(resolveIsoModelYear("N", { from: 1988, to: 1995 })).toBeNull();
+    expect(resolveIsoModelYear("B", { from: 1979, to: 1992 })).toBeNull();
     // Wide window spanning both cycles → omit (do not prefer newest)
     expect(resolveIsoModelYear("D", { from: 1983, to: 2016 })).toBeNull();
+  });
+
+  it("never invents 1980s years from letter codes via old ceilings", () => {
+    const letters = "ABCDEFGHJKLMNPRSTVWXY";
+    for (const ch of letters) {
+      const y = resolveIsoModelYear(ch, { from: 1979, to: 1999 });
+      if (y != null) {
+        // Only allowed if the newer twin is not calendar-plausible (should not happen for A–Y in 2026+).
+        const cands = isoModelYearCandidates(ch).filter((x) => x <= maxPlausibleModelYear());
+        expect(cands.length, ch).toBe(1);
+      }
+    }
   });
 });
 

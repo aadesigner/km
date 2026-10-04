@@ -191,8 +191,9 @@ export function isTrustworthyVinIdentity(identity: VinPeekIdentity, vin: string)
 
 /**
  * Seed pending-VIN draft from local peek identity.
- * Checkout UI still shows make + year only; the draft keeps richer local fields
- * (engine, country, fuel, body, transmission, cylinders, series→trim).
+ * Prefill only verified local fields when present: make, model, year, body,
+ * country, fuel, engine, cylinders.
+ * Never prefill trim, color, or transmission (chassis≠trim; color/gear not VIN-sure).
  * Built without catalog sanitize import (keeps this module DB-free for tests).
  */
 export function buildManualPendingReportData(identity: VinPeekIdentity): Record<string, unknown> {
@@ -216,9 +217,7 @@ export function buildManualPendingReportData(identity: VinPeekIdentity): Record<
   put("make", identity.make);
   put("model", identity.model);
   put("year", identity.year);
-  put("trim", identity.trim ?? identity.series);
   put("engine", identity.engine);
-  put("transmission", identity.transmission);
   put("fuelType", identity.fuelType);
   put("bodyType", identity.bodyType);
   put("cylinders", identity.cylinders);

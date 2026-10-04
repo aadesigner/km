@@ -44,6 +44,10 @@ export function maxPlausibleModelYear(now = new Date().getFullYear()): number {
 /**
  * Resolve a single model year from a position-10 code.
  * Returns null when zero or multiple candidates remain — never pick a cycle by preference.
+ *
+ * Critical: a production window may confirm the *newer* ISO twin (model did not exist
+ * in the older cycle). It must NEVER invent the *older* twin merely because a ceiling
+ * excludes the still-plausible newer reading (Typ 16 + B → 1981 while 2011 is live).
  */
 export function resolveIsoModelYear(
   code: string,
@@ -53,19 +57,19 @@ export function resolveIsoModelYear(
   const now = opts?.now ?? new Date().getFullYear();
   const maxY = maxPlausibleModelYear(now);
   const raw = isoModelYearCandidates(code).filter((y) => y >= 1980);
-  const droppedAsFuture = raw.filter((y) => y > maxY);
-  let cands = raw.filter((y) => y <= maxY);
+  const plausible = raw.filter((y) => y <= maxY);
+  let cands = plausible;
   if (window) {
     cands = cands.filter((y) => y >= window.from && y <= window.to);
   }
   if (cands.length === 1) {
     const only = cands[0]!;
-    // Without a production window, do not collapse letter codes to the old ISO cycle
-    // just because the newer twin is still beyond now+1 (e.g. W → 1998/2028 in 2026).
-    // Digit codes (2001–2009 vs 2031–2039) still uniquely resolve to 200x until 203x is plausible.
     const upper = code.toUpperCase();
     const isDigitCode = upper >= "1" && upper <= "9";
-    if (!window && !isDigitCode && droppedAsFuture.length > 0 && only === Math.min(...raw)) {
+    // Letters: never collapse to the old twin while a newer twin exists in the raw
+    // ISO pair — whether that twin is still calendar-plausible or only beyond now+1.
+    // (Bare W → null in 2026; windowed Typ16/B → 1981 would also invent.)
+    if (!isDigitCode && raw.length > 1 && only === Math.min(...raw)) {
       return null;
     }
     return only;

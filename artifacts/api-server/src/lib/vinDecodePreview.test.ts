@@ -64,6 +64,10 @@ describe("buildManualPendingReportData", () => {
     expect(draft.fuelType).toBe("Electric");
     expect(draft.engine).toBeTruthy();
     expect(draft.fulfillmentPending).toBe(true);
+    // Never invent soft equipment fields on pending drafts.
+    expect(draft.trim).toBeUndefined();
+    expect(draft.color).toBeUndefined();
+    expect(draft.transmission).toBeUndefined();
   });
 
   it("seeds Mercedes Baumuster make/model/country even when year is null", async () => {
@@ -73,6 +77,8 @@ describe("buildManualPendingReportData", () => {
     expect(draft.model).toBeTruthy();
     expect(draft.country).toBeTruthy();
     expect(identity.year).toBeNull();
-    if (identity.series) expect(draft.trim).toBe(identity.series);
+    expect(draft.trim).toBeUndefined();
+    expect(draft.color).toBeUndefined();
+    expect(draft.transmission).toBeUndefined();
   });
 });
