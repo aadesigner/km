@@ -4,6 +4,10 @@
  * Letters/digits repeat every 30 years. We never guess a cycle —
  * a year is returned only when exactly one candidate remains after optional
  * production-window filtering (and excluding impossible future years).
+ *
+ * Important: VIN position 10 is **model year** (MY), not calendar/manufacture year.
+ * A car built in late calendar 2019 as MY2020 correctly decodes as 2020.
+ * We never invent a manufacture year, and we never pick a cycle by preference.
  */
 
 /** First-cycle base map: A–Y → 1980–2000, 1–9 → 2001–2009. */
@@ -33,7 +37,7 @@ export function isoModelYearCandidates(code: string): number[] {
  * Model years can run slightly ahead of the calendar (e.g. MY2027 cars sold late in 2026).
  * Cap at now+1 so ISO 30-year reuse cannot invent years like 2028 while we are still in 2026.
  */
-function maxPlausibleModelYear(now = new Date().getFullYear()): number {
+export function maxPlausibleModelYear(now = new Date().getFullYear()): number {
   return now + 1;
 }
 
@@ -84,4 +88,16 @@ export function resolveIsoModelYearWhere(
     .filter((y) => y >= 1980 && y <= maxY)
     .filter(pred);
   return hits.length === 1 ? hits[0]! : null;
+}
+
+/** True when `year` is exactly one of the ISO cycles for this position-10 code (and not future). */
+export function isIsoModelYearCandidate(
+  code: string,
+  year: number,
+  opts?: { now?: number },
+): boolean {
+  if (!Number.isFinite(year)) return false;
+  const maxY = maxPlausibleModelYear(opts?.now ?? new Date().getFullYear());
+  if (year < 1980 || year > maxY) return false;
+  return isoModelYearCandidates(code).includes(year);
 }

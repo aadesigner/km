@@ -9,14 +9,19 @@ import type { BrandVinSpec } from "./brand-vin-spec";
 
 export const BYD_WMIS = new Set(["LGX", "LC0", "LFP", "LBV", "LPE"]);
 
+/** Seal mass production began June 2022 (Changzhou); MY2022+ only. */
+const SEAL_YEAR_FROM = 2022;
+/** Atto 3 / Yuan Plus — first line-off / China launch Feb 2022 (MY2022+). */
+const ATTO3_YEAR_FROM = 2022;
+
 const BYD_PREFIX_RULES = compilePrefixRules([
   // Atto 3 / Yuan Plus
-  { prefix: "LGXCE4", model: "Atto 3", body: "SUV" },
-  { prefix: "LC0C5G", model: "Atto 3", body: "SUV" },
-  { prefix: "LFPAA", model: "Atto 3", body: "SUV" },
+  { prefix: "LGXCE4", model: "Atto 3", body: "SUV", yearFrom: ATTO3_YEAR_FROM, yearTo: 2099 },
+  { prefix: "LC0C5G", model: "Atto 3", body: "SUV", yearFrom: ATTO3_YEAR_FROM, yearTo: 2099 },
+  { prefix: "LFPAA", model: "Atto 3", body: "SUV", yearFrom: ATTO3_YEAR_FROM, yearTo: 2099 },
   // Seal
-  { prefix: "LGXCH6", model: "Seal", body: "Sedan" },
-  { prefix: "LC0DE", model: "Seal", body: "Sedan" },
+  { prefix: "LGXCH6", model: "Seal", body: "Sedan", yearFrom: SEAL_YEAR_FROM, yearTo: 2099 },
+  { prefix: "LC0DE", model: "Seal", body: "Sedan", yearFrom: SEAL_YEAR_FROM, yearTo: 2099 },
   // Dolphin
   { prefix: "LC0CE4", model: "Dolphin", body: "Hatchback" },
   { prefix: "LC0CE", model: "Dolphin", body: "Hatchback" },
@@ -36,6 +41,18 @@ const BYD_PREFIX_RULES = compilePrefixRules([
   { prefix: "LC0D", model: "Song", body: "SUV" },
   { prefix: "LC0B", model: "Qin", body: "Sedan" },
 ]);
+
+export function matchBydRule(vin: string): { model: string; yearFrom?: number; yearTo?: number } | null {
+  const upper = vin.toUpperCase().trim();
+  if (!isBydVin(upper)) return null;
+  const hit = matchLongestPrefix(upper, BYD_PREFIX_RULES);
+  if (!hit) return null;
+  return {
+    model: hit.model,
+    yearFrom: hit.yearFrom,
+    yearTo: hit.yearTo,
+  };
+}
 
 const MODEL_META: Record<string, { body: string; fuel: string }> = {
   "Atto 3": { body: "SUV", fuel: "Electric" },

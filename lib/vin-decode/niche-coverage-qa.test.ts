@@ -107,14 +107,15 @@ describe("Polestar 3", () => {
     const r = decodeVin("YSREJ3YB0SG123456");
     expect(r.make).toBe("Polestar");
     expect(r.model).toBe("Polestar 3");
-    // Letter S without a verified Polestar 3 window → null
-    expect(r.year).toBeNull();
+    // Letter S + verified MY2024+ window → 2025
+    expect(r.year).toBe(2025);
   });
 
   it("7SY USA MPV Performance motor → Polestar 3", () => {
     const r = decodeVin("7SYEE3YB0SG123456");
     expect(r.make).toBe("Polestar");
     expect(r.model).toBe("Polestar 3");
+    expect(r.year).toBe(2025);
   });
 
   it("bare YSR stays make-only", () => {
@@ -129,8 +130,8 @@ describe("Lucid Air / Gravity", () => {
     const r = decodeVin("7UUG1GHL4SA012345");
     expect(r.make).toBe("Lucid");
     expect(r.model).toBe("Gravity");
-    // Letter S without a verified Lucid Gravity window → null
-    expect(r.year).toBeNull();
+    // Letter S + verified MY2025+ Gravity window → 2025
+    expect(r.year).toBe(2025);
     expect(r.fuelType).toBe("Electric");
   });
 
@@ -138,6 +139,7 @@ describe("Lucid Air / Gravity", () => {
     const r = decodeVin(pad("50EAAAA", "S"));
     expect(r.make).toBe("Lucid");
     expect(r.model).toBe("Air");
+    expect(r.year).toBe(2025);
     expect(r.fuelType).toBe("Electric");
   });
 
@@ -151,5 +153,37 @@ describe("Lucid Air / Gravity", () => {
     const r = decodeVin(pad("5LABP", "N"));
     expect(r.make).toBe("Lucid");
     expect(r.model).toBe("Air");
+    expect(r.year).toBe(2022);
+  });
+});
+
+describe("Fisker Ocean / Scout make", () => {
+  it("VCF… → Fisker Ocean MY2023 (NHTSA/LevelCAR)", () => {
+    const r = decodeVin("VCF1EBU29PG007236");
+    expect(r.make).toBe("Fisker");
+    expect(r.model).toBe("Ocean");
+    expect(r.year).toBe(2023);
+    expect(r.fuelType).toBe("Electric");
+  });
+
+  it("7WA… → Scout make-only (NHTSA MID; no volume VDS yet)", () => {
+    const r = decodeVin(pad("7WAZ", "S"));
+    expect(r.make).toBe("Scout");
+    expect(r.model).toBeNull();
+    expect(r.fuelType).toBe("Electric");
+  });
+});
+
+describe("Dodge 2C3 Charger/Challenger badge", () => {
+  it("2C3CD… → Dodge Charger (not Chrysler)", () => {
+    const r = decodeVin(pad("2C3CDXGJ0", "N"));
+    expect(r.make).toBe("Dodge");
+    expect(r.model).toBe("Charger");
+  });
+
+  it("2C3CM… → Dodge Challenger (not Chrysler)", () => {
+    const r = decodeVin(pad("2C3CMXGJ0", "N"));
+    expect(r.make).toBe("Dodge");
+    expect(r.model).toBe("Challenger");
   });
 });

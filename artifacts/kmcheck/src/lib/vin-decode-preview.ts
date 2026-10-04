@@ -1,3 +1,5 @@
+import { maxPlausibleModelYear } from "@workspace/vin-decode";
+
 type VinPeekLike = {
   vin: string;
   make?: string | null;
@@ -40,7 +42,7 @@ function fieldLooksValid(value: string | null | undefined, vin: string): boolean
 
 function plausibleYear(year: number | null | undefined): boolean {
   if (year == null || !Number.isFinite(year)) return false;
-  return year >= 1980 && year <= new Date().getFullYear() + 2;
+  return year >= 1980 && year <= maxPlausibleModelYear();
 }
 
 /** Peek response belongs to the VIN currently in the input (guards stale React Query data). */
@@ -74,6 +76,8 @@ export function shouldShowPendingVinDoubleCheck(
 /**
  * Checkout preview title ONLY: make, or make + year when year is available.
  * Never include model or generation ranges in checkout preview.
+ * Year is only shown when the local VIN decoder resolved it with certainty
+ * (unique ISO cycle / verified platform window) — never a guessed cycle.
  */
 export function formatVehicleTitle(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
@@ -86,7 +90,7 @@ export function formatVehicleTitle(peek: VinPeekLike): string | null {
 export function formatVehiclePreview(peek: VinPeekLike): string | null {
   if (!isTrustworthyVinDecode(peek)) return null;
   const parts: (string | number)[] = [];
-  if (peek.year != null) parts.push(peek.year);
+  if (plausibleYear(peek.year ?? null)) parts.push(peek.year!);
   if (peek.make) parts.push(peek.make);
   if (peek.model) parts.push(peek.model);
   const line = parts.join(" ");

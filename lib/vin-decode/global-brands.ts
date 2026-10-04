@@ -106,18 +106,22 @@ const HAVAL_PREFIX_RULES = compilePrefixRules([
 
 // ── Polestar / VinFast / Lucid ───────────────────────────────────────────────
 const POLESTAR_PREFIX_RULES = compilePrefixRules([
-  { prefix: "LPSVSE", model: "Polestar 2" },
-  { prefix: "LPSVS", model: "Polestar 2" },
-  { prefix: "LPSVY", model: "Polestar 4" },
-  { prefix: "LYVSE", model: "Polestar 2" },
-  { prefix: "YSMRH", model: "Polestar 1" },
+  // Polestar 2 — MY2021+ (US/EU first retail MY)
+  { prefix: "LPSVSE", model: "Polestar 2", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "LPSVS", model: "Polestar 2", yearFrom: 2021, yearTo: 2099 },
+  { prefix: "LYVSE", model: "Polestar 2", yearFrom: 2021, yearTo: 2099 },
+  // Polestar 4 — MY2024+
+  { prefix: "LPSVY", model: "Polestar 4", yearFrom: 2024, yearTo: 2099 },
+  // Polestar 1 — limited MY2020–2022
+  { prefix: "YSMRH", model: "Polestar 1", yearFrom: 2020, yearTo: 2022 },
   // NA/EU Polestar 3 — NHTSA: motor EJ/EA/EE + vehicle Y + trim B (YSR Sweden / 7SY USA)
-  { prefix: "YSREJ3YB", model: "Polestar 3" },
-  { prefix: "YSREA3YB", model: "Polestar 3" },
-  { prefix: "YSREE3YB", model: "Polestar 3" },
-  { prefix: "7SYEJ3YB", model: "Polestar 3" },
-  { prefix: "7SYEA3YB", model: "Polestar 3" },
-  { prefix: "7SYEE3YB", model: "Polestar 3" },
+  // Production Feb 2024; first customer deliveries June 2024 → MY2024+
+  { prefix: "YSREJ3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
+  { prefix: "YSREA3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
+  { prefix: "YSREE3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
+  { prefix: "7SYEJ3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
+  { prefix: "7SYEA3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
+  { prefix: "7SYEE3YB", model: "Polestar 3", yearFrom: 2024, yearTo: 2099 },
 ]);
 
 const VINFAST_PREFIX_RULES = compilePrefixRules([
@@ -131,12 +135,19 @@ const VINFAST_PREFIX_RULES = compilePrefixRules([
 
 const LUCID_PREFIX_RULES = compilePrefixRules([
   // Legacy 5LA* Air descriptors (pre-NHTSA 50E/7UU reassignment in some datasets)
-  { prefix: "5LABP", model: "Air" },
-  { prefix: "5LAA1", model: "Air" },
-  { prefix: "5LAC1", model: "Air" },
+  // Lucid Air — MY2022+ (EPA / first retail)
+  { prefix: "5LABP", model: "Air", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "5LAA1", model: "Air", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "5LAC1", model: "Air", yearFrom: 2022, yearTo: 2099 },
   // NHTSA: 50E = Lucid passenger (Air); 7UUG* = Gravity (pos.4 G) — verified ErrorCode 0 samples
-  { prefix: "50E", model: "Air" },
-  { prefix: "7UUG", model: "Gravity" },
+  { prefix: "50E", model: "Air", yearFrom: 2022, yearTo: 2099 },
+  // Gravity — EPA/NHTSA MY2025+ (first deliveries Dec 2024 as MY2025)
+  { prefix: "7UUG", model: "Gravity", yearFrom: 2025, yearTo: 2099 },
+]);
+
+/** Fisker Ocean — WMI VCF (Magna Steyr Graz); NHTSA/LevelCAR VCF1EBU29PG007236 → Ocean MY2023. */
+const FISKER_PREFIX_RULES = compilePrefixRules([
+  { prefix: "VCF", model: "Ocean", yearFrom: 2023, yearTo: 2099 },
 ]);
 
 /**
@@ -357,16 +368,18 @@ export function decodeGlobalBrand(vin: string): GlobalBrandDecode {
 
   if (wmi === "LPS" || wmi === "YSM" || wmi === "YSR" || wmi === "7SY") {
     const hit = matchLongestPrefix(upper, POLESTAR_PREFIX_RULES);
-    return {
-      model: hit?.model ?? null,
-      makeOverride: "Polestar",
-      chassis: hit?.chassis ?? null,
-    };
+    return hit
+      ? hitToGlobal(hit, "Polestar")
+      : { model: null, makeOverride: "Polestar", chassis: null };
   }
 
   if (wmi === "LYV") {
     const hit = matchLongestPrefix(upper, POLESTAR_PREFIX_RULES);
     return hit ? hitToGlobal(hit, "Polestar") : EMPTY_GLOBAL;
+  }
+
+  if (wmi === "VCF") {
+    return hitToGlobal(matchLongestPrefix(upper, FISKER_PREFIX_RULES), "Fisker");
   }
 
   if (isVinFastVin(upper)) {

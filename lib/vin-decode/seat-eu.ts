@@ -18,6 +18,8 @@ type CodeRule = {
   model: string;
   platform?: string;
   years?: string;
+  yearFrom?: number;
+  yearTo?: number;
 };
 
 export const SEAT_EU_WMIS = ["VSS", "VS6", "VS7", "VSX"] as const;
@@ -41,42 +43,45 @@ export const SEAT_ZZZ_AT_7: Record<string, string> = {};
 
 /**
  * Homologation type codes (positions 7–8 after ZZZ).
- * Years are display-only generation windows (open-ended when production continued).
+ * Years are verified generation windows (open-ended when production continued).
  * Cupra-only lines (Formentor KM, Born K1/KP) live in global-brands.ts — not here.
  */
 const SEAT_HOMOLOGATION_CODES: CodeRule[] = [
   // Ibiza / Cordoba
-  { code: "6K", model: "Ibiza / Cordoba", platform: "6K", years: "1993–2009" },
-  { code: "6L", model: "Ibiza / Cordoba", platform: "6L", years: "2002–2009" },
-  { code: "6J", model: "Ibiza", platform: "6J", years: "2008–2017" },
-  { code: "6F", model: "Ibiza", platform: "6F", years: "2017–" },
-  { code: "KJ", model: "Ibiza", platform: "KJ", years: "2021–" },
+  { code: "6K", model: "Ibiza / Cordoba", platform: "6K", years: "1993–2009", yearFrom: 1993, yearTo: 2009 },
+  { code: "6L", model: "Ibiza / Cordoba", platform: "6L", years: "2002–2009", yearFrom: 2002, yearTo: 2009 },
+  { code: "6J", model: "Ibiza", platform: "6J", years: "2008–2017", yearFrom: 2008, yearTo: 2017 },
+  { code: "6F", model: "Ibiza", platform: "6F", years: "2017–", yearFrom: 2017, yearTo: 2099 },
+  { code: "KJ", model: "Ibiza", platform: "KJ", years: "2021–", yearFrom: 2021, yearTo: 2099 },
   // León / Toledo (shared platforms)
-  { code: "1M", model: "León / Toledo", platform: "1M", years: "1999–2006" },
-  { code: "1P", model: "León", platform: "1P", years: "2005–2013" },
-  { code: "5F", model: "León", platform: "5F", years: "2012–2020" },
-  { code: "KL", model: "León", platform: "KL", years: "2020–" },
+  { code: "1M", model: "León / Toledo", platform: "1M", years: "1999–2006", yearFrom: 1999, yearTo: 2006 },
+  { code: "1P", model: "León", platform: "1P", years: "2005–2013", yearFrom: 2005, yearTo: 2013 },
+  { code: "5F", model: "León", platform: "5F", years: "2012–2020", yearFrom: 2012, yearTo: 2020 },
+  { code: "KL", model: "León", platform: "KL", years: "2020–", yearFrom: 2020, yearTo: 2099 },
   // SUVs / crossovers
-  { code: "K7", model: "Arona", platform: "K7", years: "2017–" },
-  { code: "KH", model: "Ateca", platform: "KH", years: "2016–" },
-  { code: "KN", model: "Tarraco", platform: "KN", years: "2018–" },
+  { code: "K7", model: "Arona", platform: "K7", years: "2017–", yearFrom: 2017, yearTo: 2099 },
+  { code: "KH", model: "Ateca", platform: "KH", years: "2016–", yearFrom: 2016, yearTo: 2099 },
+  { code: "KN", model: "Tarraco", platform: "KN", years: "2018–", yearFrom: 2018, yearTo: 2099 },
   // MPV / family
-  { code: "5P", model: "Altea / Toledo", platform: "5P", years: "2004–2015" },
-  { code: "7M", model: "Alhambra", platform: "7M", years: "1996–2010" },
-  { code: "7N", model: "Alhambra", platform: "7N", years: "2010–2020" },
+  { code: "5P", model: "Altea / Toledo", platform: "5P", years: "2004–2015", yearFrom: 2004, yearTo: 2015 },
+  { code: "7M", model: "Alhambra", platform: "7M", years: "1996–2010", yearFrom: 1996, yearTo: 2010 },
+  { code: "7N", model: "Alhambra", platform: "7N", years: "2010–2020", yearFrom: 2010, yearTo: 2020 },
   // Sedans / city / niche
-  { code: "1L", model: "Toledo", platform: "1L", years: "1991–1999" },
-  { code: "NH", model: "Toledo", platform: "NH", years: "2012–2019" },
-  { code: "3R", model: "Exeo", platform: "3R", years: "2008–2014" },
-  { code: "6H", model: "Arosa", platform: "6H", years: "1997–2004" },
-  { code: "1S", model: "Mii", platform: "1S", years: "2011–2021" },
-  { code: "AA", model: "Mii", platform: "AA", years: "2012–2021" },
+  { code: "1L", model: "Toledo", platform: "1L", years: "1991–1999", yearFrom: 1991, yearTo: 1999 },
+  { code: "NH", model: "Toledo", platform: "NH", years: "2012–2019", yearFrom: 2012, yearTo: 2019 },
+  { code: "3R", model: "Exeo", platform: "3R", years: "2008–2014", yearFrom: 2008, yearTo: 2014 },
+  { code: "6H", model: "Arosa", platform: "6H", years: "1997–2004", yearFrom: 1997, yearTo: 2004 },
+  { code: "1S", model: "Mii", platform: "1S", years: "2011–2021", yearFrom: 2011, yearTo: 2021 },
+  { code: "AA", model: "Mii", platform: "AA", years: "2012–2021", yearFrom: 2012, yearTo: 2021 },
 ];
 
 function rulesForWmi(wmi: string, codes: CodeRule[]): PrefixRule[] {
-  return codes.map(({ code, model, platform, years }) => ({
+  return codes.map(({ code, model, platform, years, yearFrom, yearTo }) => ({
     prefix: `${wmi}ZZZ${code}`,
     model: formatSeatDisplay({ model, platform: platform ?? null, years: years ?? null }),
+    chassis: platform,
+    yearFrom,
+    yearTo,
   }));
 }
 
@@ -105,6 +110,15 @@ function hitFromRule(rule: PrefixRule): SeatHomologationHit {
     platform: inner.slice(0, comma),
     years: inner.slice(comma + 2),
   };
+}
+
+export function matchSeatEuRule(vin: string): PrefixRule | null {
+  const u = vin.toUpperCase().trim();
+  if (u.length < 8) return null;
+  const wmi = u.slice(0, 3);
+  if (!(SEAT_EU_WMIS as readonly string[]).includes(wmi)) return null;
+  if (u.slice(3, 6) !== "ZZZ") return null;
+  return matchLongestPrefix(u, SEAT_EU_RULES);
 }
 
 export function decodeSeatEuHomologation(vin: string): SeatHomologationHit | null {

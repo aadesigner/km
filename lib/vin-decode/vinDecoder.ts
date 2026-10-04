@@ -27,6 +27,9 @@ import { decodeOpelOldPaddedYear, isOpelOldPaddedTypeVin, isOpelVauxhallVin, mat
 import { decodeHyundaiToyotaModel, isHyundaiToyotaVin, isHyundaiVin, decodeHyundaiEngine, matchHyundaiRule, matchHyundaiToyotaRule } from "./asian-eu";
 import { decodeUsVdsModel, matchUsVdsRule, resolveUsVdsMake } from "./us-vds";
 import { decodeMazdaModel, isMazdaVin } from "./mazda";
+import { matchRivianRule } from "./rivian";
+import { matchBydRule } from "./byd";
+import { matchSeatEuRule } from "./seat-eu";
 import {
   inferBodyStyleFromModel,
   inferVagDriveFromModel,
@@ -97,6 +100,17 @@ function resolveVinModelYear(
   const hyRule = isHyundaiVin(vin) ? matchHyundaiRule(vin) : null;
   const asiaRule = isHyundaiToyotaVin(vin) ? matchHyundaiToyotaRule(vin) : null;
   const usRule = matchUsVdsRule(vin);
+  const rivianRule = matchRivianRule(vin);
+  const bydRule = matchBydRule(vin);
+  const seatRule = matchSeatEuRule(vin);
+  // SEAT homologation windows are authoritative for VSSZZZ* type codes — apply before
+  // shared VAG chassis tokens that may be open-ended (e.g. 7N).
+  if (seatRule?.yearFrom != null || seatRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: seatRule.yearFrom ?? 1980,
+      to: seatRule.yearTo ?? 2099,
+    });
+  }
   const series =
     vagHit?.chassis
     ?? premiumChassis
@@ -108,12 +122,10 @@ function resolveVinModelYear(
     ?? seriesFromDisplayModel(model);
   const chassisWin = chassisProductionWindow(series);
   if (chassisWin) {
-    const gated = resolveIsoModelYear(code, chassisWin);
-    if (gated != null) return gated;
-    // Window rejects every cycle: allow unambiguous digit years only.
-    const digitOnly = resolveIsoModelYear(code, null);
-    if (digitOnly != null) return digitOnly;
-    return null;
+    // Unique cycle inside a verified production window only.
+    // Never fall back to an unconstrained digit year that the window already rejected
+    // (that was inventing e.g. 2004 when the chassis only ran 2010–2017).
+    return resolveIsoModelYear(code, chassisWin);
   }
 
   // Platform / prefix verified window (e.g. Hyundai IONIQ 5 from 2021).
@@ -133,6 +145,18 @@ function resolveVinModelYear(
     return resolveIsoModelYear(code, {
       from: usRule.yearFrom ?? 1980,
       to: usRule.yearTo ?? 2099,
+    });
+  }
+  if (rivianRule?.yearFrom != null || rivianRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: rivianRule.yearFrom ?? 1980,
+      to: rivianRule.yearTo ?? 2099,
+    });
+  }
+  if (bydRule?.yearFrom != null || bydRule?.yearTo != null) {
+    return resolveIsoModelYear(code, {
+      from: bydRule.yearFrom ?? 1980,
+      to: bydRule.yearTo ?? 2099,
     });
   }
   if (globalHit.yearFrom != null || globalHit.yearTo != null) {
@@ -166,7 +190,9 @@ function resolveVinModelYear(
   if (vin.startsWith("WBS5")) {
     return resolveIsoModelYear(code, chassisProductionWindow("F10/F90/G90"));
   }
-  // Known make, no verified window: unique cycle only — never prefer-recent.
+  // Known make, no verified window: unique ISO cycle only — never prefer-recent.
+  // Digit codes (2001–2009) uniquely resolve until the +30 twin is plausible;
+  // ambiguous letter codes return null rather than guess a cycle.
   return resolveIsoModelYear(code, null);
 }
 
@@ -322,7 +348,7 @@ const WMI_MAP: Record<string, string> = {
   "1P3": "Plymouth",
   "1VW": "Volkswagen", "1V2": "Volkswagen",
   "1YV": "Mazda",
-  "1ZV": "Mustang",
+  "1ZV": "Ford",
   "2C3": "Chrysler", "2C4": "Chrysler", "2C8": "Chrysler",
   "2D3": "Dodge", "2D4": "Dodge", "2D8": "Dodge",
   "2FA": "Ford", "2FM": "Ford", "2FT": "Ford",
@@ -350,7 +376,8 @@ const WMI_MAP: Record<string, string> = {
   "7MU": "Toyota", // MTM Alabama — Corolla Cross
   "58A": "Lexus",  // TMMK Kentucky — ES
   "JMZ": "Mazda",
-  "5FN": "Honda", "5FR": "Honda", "5J6": "Honda", "5J8": "Honda",
+  "5FN": "Honda", "5FR": "Acura", "5FP": "Honda", "5FS": "Acura", "5J6": "Honda", "5J8": "Acura",
+  "5J7": "Honda", "5J0": "Acura",
   "5L1": "Lincoln",
   "5NM": "Hyundai", "5NP": "Hyundai", "5NT": "Hyundai", "5N1": "Nissan",
   // Kia Georgia (KMMG) — NHTSA DecodeWMI / GetWMIsForManufacturer(kia)
@@ -525,12 +552,17 @@ const WMI_MAP: Record<string, string> = {
   // ── USA (more brands) ─────────────────────────────────────────────────────
   "19U": "Acura",
   "7FC": "Rivian",
+  "7PD": "Rivian", // NHTSA MPV WMI — R1S (pos.4 = S)
   "5LA": "Lucid", // legacy Air descriptors still seen in the wild
   "50E": "Lucid", // NHTSA passenger-car WMI (Air)
   "7UU": "Lucid", // NHTSA MPV WMI (Gravity)
   "7G2": "Tesla",
   "1B3": "Dodge",
   "1D3": "Dodge",
+  // Fisker Ocean — Magna Steyr Graz; NHTSA vPIC / LevelCAR (VCF1EBU29PG007236 → MY2023 Ocean)
+  "VCF": "Fisker",
+  // Scout Motors — NHTSA MID manufacturer 22938 WMI 7WA (make-only until volume VDS verified)
+  "7WA": "Scout",
   // ── CZECH REPUBLIC (Škoda) ────────────────────────────────────────────────
   "TMB": "Škoda", "TM8": "Škoda", "TMP": "Škoda", "TMS": "Škoda",
   "TNL": "Škoda", "XW8": "Škoda", "XWW": "Škoda", "Y6U": "Škoda",
@@ -598,7 +630,8 @@ const MODEL_MAP_4: Record<string, string> = {
   "1HGC": "Accord",     "1HGA": "Accord",     "1HGE": "Accord",
   "1HGF": "Civic",      "1HGB": "Civic",      "1HGD": "Civic",
   "5FNR": "CR-V",       "5J6R": "CR-V",       "5J6T": "CR-V",
-  "5J8Y": "Pilot",      "5J8T": "Pilot",
+  // 5J8* is Acura MPV (NHTSA MID) — do not map 5J8Y/5J8T as Honda Pilot.
+  // MDX/RDX come from us-vds.ts (5J8YE/YD/TB/TC).
   "1HGS": "Odyssey",    "5FNRL": "Odyssey",
   "2HGF": "Civic",      "2HGE": "Accord",
   "JHMG": "Accord",     "JHMZ": "Jazz/Fit",   "JHMF": "Civic",
@@ -755,8 +788,7 @@ const MODEL_MAP_4: Record<string, string> = {
   // ── Lincoln ───────────────────────────────────────────────────────────────
   "1LNH": "Navigator",   "5LMJ": "Navigator",
   // 5LMF MKZ vs Zephyr is ambiguous — omit.
-  // ── Rivian (7FC*) ─────────────────────────────────────────────────────────
-  "7FCA": "R1T",         "7FCC": "R1S",         "7FCB": "EDV 700",
+  // ── Rivian — NHTSA MID: 7FCT=R1T, 7PDS=R1S (see rivian.ts). Legacy 4-char stubs removed.
   // ── More Renault (VF1*) ───────────────────────────────────────────────────
   "VF1J": "Clio",        "VF1L": "Megane",      "VF1K": "Captur",
   "VF1R": "Zoe",         "VF1E": "Kadjar",      "VF1S": "Arkana",
@@ -904,6 +936,11 @@ const MODEL_OVERRIDES: Record<string, string> = {
   "JHMC":    "Accord",
   "JHME":    "Civic",
   "JHMF":    "Civic",
+  // Subaru Crosstrek — must beat 4-char JF2G → Legacy (Crosstrek VDS is JF2GT*)
+  "JF2GT":   "Crosstrek",
+  // Nissan Altima — must beat 4-char 1N4B → Maxima (Altima often 1N4BL4*)
+  "1N4BL4":  "Altima",
+  "1N4BL3":  "Altima",
   // Toyota USA Mississippi (5YF* — Corolla)
   "5YFS4":   "Corolla",
   "5YFT4":   "Corolla",
@@ -1815,7 +1852,9 @@ const ELECTRIC_ONLY_WMI = new Set([
   "L1N", "LMV",          // XPeng
   "LW4", "HLX",          // Li Auto
   "5LA", "50E", "7UU",  // Lucid (legacy 5LA + NHTSA 50E Air / 7UU Gravity)
-  "7FC",                 // Rivian
+  "7FC", "7PD",           // Rivian truck + MPV (NHTSA MID)
+  "VCF",                 // Fisker Ocean (BEV)
+  "7WA",                 // Scout Motors (BEV MPV — NHTSA MID)
   "LBV",                 // BYD Electric
   "HES",                 // Smart Automobile (#1 / #3 BEV)
   "YSR", "7SY",          // Polestar 3 MPV WMIs (BEV)

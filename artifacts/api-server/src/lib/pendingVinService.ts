@@ -15,7 +15,7 @@ import {
   syncStampedCatalogToAllLookups,
 } from "./vinService.js";
 import { sanitizeCatalogPayload, catalogHasDeliverableReport, applyCatalogAdminPatch } from "./vinCatalogImport.js";
-import { decodeVinPeek, isTrustworthyVinIdentity } from "./vinDecodePreview.js";
+import { decodeVinPeek, isTrustworthyVinIdentity, buildManualPendingReportData } from "./vinDecodePreview.js";
 import { validateCheckDigit } from "@workspace/vin-decode";
 import { logger } from "./logger.js";
 import { transformVinPhotoData } from "./imageProxy.js";
@@ -36,6 +36,7 @@ import {
 import { yieldEventLoop } from "./batchAsync.js";
 
 export { prepareManualPublishCatalogData, finalizeAdminCatalogSave, detectAdminCatalogMileageTouched, reconcileLockedOdometerData } from "./pendingVinCatalogPrep.js";
+export { buildManualPendingReportData } from "./vinDecodePreview.js";
 
 const MAX_VIN_PHOTOS = 24;
 
@@ -68,34 +69,6 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
 export const PENDING_MANUAL_LOOKUP_STATUS = "pending_manual" as const;
 
 export type VinFulfillmentMode = "standard" | "manual_pending";
-
-export function buildManualPendingReportData(
-  identity: Awaited<ReturnType<typeof decodeVinPeek>>,
-): Record<string, unknown> {
-  const payload = sanitizeCatalogPayload({
-    make: identity.make,
-    model: identity.model,
-    year: identity.year,
-    trim: identity.trim,
-    engine: identity.engine,
-    country: identity.country,
-    photos: [],
-    accidents: [],
-    accidentCount: 0,
-    mileageHistory: [],
-    ownerHistory: [],
-    insuranceClaims: [],
-    registryHistory: [],
-    serviceHistory: [],
-    auctionHistory: [],
-    marketData: null,
-    isSalvage: null,
-    isStolen: null,
-    ownerCount: null,
-    odometer: null,
-  });
-  return { ...payload, fulfillmentPending: true };
-}
 
 export async function isVinEligibleForManualPending(vin: string): Promise<boolean> {
   const normalized = vin.trim().toUpperCase();

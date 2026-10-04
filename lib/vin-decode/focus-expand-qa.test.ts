@@ -69,7 +69,7 @@ const HONDA: Case[] = [
   { vin: pad("3CZRU5H5X", "N"), label: "Honda HR-V US", make: "Honda", modelContains: "HR-V", year: null },
   { vin: "SHHFN2000PA123456", label: "Honda Civic FN2 UK", make: "Honda", modelContains: "Civic", year: null },
   { vin: pad("SHHRE4850", "K"), label: "Honda CR-V RW UK", make: "Honda", modelContains: "CR-V", year: 2019 },
-  { vin: pad("5FNYF5H9X", "N"), label: "Honda Ridgeline", make: "Honda", modelContains: "Ridgeline", year: 2022 },
+  { vin: pad("5FPYK3H9X", "N"), label: "Honda Ridgeline", make: "Honda", modelContains: "Ridgeline", year: 2022 },
 ];
 
 const SUZUKI: Case[] = [

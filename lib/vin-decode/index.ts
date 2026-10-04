@@ -52,6 +52,8 @@ export {
   isoModelYearCandidates,
   resolveIsoModelYear,
   resolveIsoModelYearWhere,
+  maxPlausibleModelYear,
+  isIsoModelYearCandidate,
   type IsoYearWindow,
 } from "./iso-year";
 export { decodeUsVdsModel, matchUsVdsRule } from "./us-vds";
@@ -91,6 +93,7 @@ export {
   decodeSeatEuHomologation,
   decodeSeatEuModel,
   formatSeatDisplay,
+  matchSeatEuRule,
   SEAT_EU_WMIS,
 } from "./seat-eu";
 export {
@@ -107,9 +110,16 @@ export {
   TESLA_WMIS,
 } from "./tesla";
 export {
+  decodeRivianSpec,
+  isRivianVin,
+  matchRivianRule,
+  RIVIAN_WMIS,
+} from "./rivian";
+export {
   decodeBydModel,
   decodeBydSpec,
   isBydVin,
+  matchBydRule,
   BYD_WMIS,
 } from "./byd";
 export {

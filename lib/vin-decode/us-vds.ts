@@ -40,12 +40,20 @@ const US_VDS_RULES = compilePrefixRules([
   { prefix: "3CZRU5", model: "HR-V", chassis: "HR-V 3rd gen" },
   { prefix: "3CZRU6", model: "HR-V" },
   { prefix: "5FNRL6", model: "Odyssey" },
-  { prefix: "5J8YD", model: "Pilot" },
-  { prefix: "5FNYF8", model: "Pilot" },
-  { prefix: "5FNYF6", model: "Passport" },
-  { prefix: "5FNYF5", model: "Ridgeline", yearFrom: 2017, yearTo: 2099 },
-  { prefix: "19UUB", model: "Acura TLX" },
-  { prefix: "5J8TB", model: "Acura MDX" },
+  // Honda Pilot / Passport / Ridgeline — NHTSA TSB VIN ranges (MC-10181839 / MC-11005272)
+  // 5FNYF5 = Pilot 2WD, 5FNYF6 = Pilot AWD, 5FNYF8 = Passport; Ridgeline = 5FPYK*
+  { prefix: "5FNYF5", model: "Pilot", yearFrom: 2016, yearTo: 2022 },
+  { prefix: "5FNYF6", model: "Pilot", yearFrom: 2016, yearTo: 2022 },
+  { prefix: "5FNYF8", model: "Passport", yearFrom: 2019, yearTo: 2099 },
+  { prefix: "5FPYK3", model: "Ridgeline", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "5FPYK2", model: "Ridgeline", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "5FPYK", model: "Ridgeline", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "19UUB", model: "TLX", yearFrom: 2015, yearTo: 2099 },
+  // Acura 5J8* — NHTSA MID + decoded VINs (5J8YD*/5J8YE* = MDX, never Pilot)
+  { prefix: "5J8YE", model: "MDX", yearFrom: 2022, yearTo: 2099 },
+  { prefix: "5J8YD", model: "MDX", yearFrom: 2014, yearTo: 2099 },
+  { prefix: "5J8TB", model: "MDX", yearFrom: 2014, yearTo: 2021 },
+  { prefix: "5J8TC", model: "RDX", yearFrom: 2019, yearTo: 2099 },
   { prefix: "JHMFD", model: "Fit", chassis: "Fit 3rd gen" },
   { prefix: "JHMGE", model: "Fit", chassis: "Fit 2nd gen" },
   { prefix: "JHMZF", model: "Insight" },
@@ -106,6 +114,9 @@ const JEEP_VDS_MODELS = new Set([
   "Grand Wagoneer",
 ]);
 
+const ACURA_VDS_MODELS = new Set(["MDX", "RDX", "TLX", "ILX", "ZDX", "Integra", "NSX"]);
+const DODGE_VDS_MODELS = new Set(["Charger", "Challenger"]);
+
 export function resolveUsVdsMake(vin: string): string | null {
   const upper = vin.toUpperCase().trim();
   // HMMA Alabama Genesis SUV line — verified NHTSA (5NMMCET… → Genesis GV70).
@@ -115,5 +126,8 @@ export function resolveUsVdsMake(vin: string): string | null {
   const hit = matchUsVdsRule(upper);
   if (!hit) return null;
   if (JEEP_VDS_MODELS.has(hit.model)) return "Jeep";
+  if (ACURA_VDS_MODELS.has(hit.model)) return "Acura";
+  // 2C3* Windsor Charger/Challenger — WMI maps Chrysler; badge Dodge from VDS.
+  if (DODGE_VDS_MODELS.has(hit.model)) return "Dodge";
   return null;
 }

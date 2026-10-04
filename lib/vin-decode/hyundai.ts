@@ -62,9 +62,9 @@ const HYUNDAI_PLATFORM_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "TMAD381", model: "Tucson" },
   // Santa Fe
   { prefix: "KMHK251", model: "Santa Fe", chassis: "TM" },
-  { prefix: "KMHS381", model: "Santa Fe Sport" },
-  { prefix: "KMHSW", model: "Santa Fe Sport" },
-  { prefix: "KMHS", model: "Santa Fe Sport" },
+  { prefix: "KMHS381", model: "Santa Fe Sport", yearFrom: 2013, yearTo: 2018 },
+  { prefix: "KMHSW", model: "Santa Fe Sport", yearFrom: 2013, yearTo: 2018 },
+  { prefix: "KMHS", model: "Santa Fe Sport", yearFrom: 2013, yearTo: 2018 },
   // Do not map bare KMHR → Santa Fe (pos.4 R is Venue / Palisade / Kona era).
   { prefix: "KM8S3", model: "Santa Fe", chassis: "TM US" },
   { prefix: "KM8S2", model: "Santa Fe" },

@@ -6,6 +6,7 @@ import {
   isPlausibleMake,
   isPlausibleModel,
   isYearLikeModelName,
+  maxPlausibleModelYear,
 } from "@workspace/vin-decode";
 
 export type VinPeekIdentity = {
@@ -20,6 +21,10 @@ export type VinPeekIdentity = {
   series: string | null;
   trim: string | null;
   engine: string | null;
+  transmission: string | null;
+  fuelType: string | null;
+  bodyType: string | null;
+  cylinders: number | null;
   country: string | null;
   wmi: string;
   decodeSource: "cache" | "local";
@@ -47,7 +52,7 @@ function asYear(value: unknown): number | null {
 
 function plausibleYear(year: number | null): number | null {
   if (year == null) return null;
-  const max = new Date().getFullYear() + 2;
+  const max = maxPlausibleModelYear();
   return year >= 1980 && year <= max ? year : null;
 }
 
@@ -75,6 +80,23 @@ function pickCachedField(
   return decoded;
 }
 
+/**
+ * Model year for checkout / peek.
+ * Local VIN decode is authoritative — catalog/registration years must never override
+ * (that was the main source of “shows one year newer” client reports).
+ * When local year is null (ambiguous ISO cycle / Baumuster), we omit rather than guess
+ * from cache.
+ */
+function resolvePeekYear(localYear: number | null, _cacheYear: unknown): number | null {
+  return plausibleYear(localYear);
+}
+
+function plausibleCylinders(raw: string | null): number | null {
+  if (!raw) return null;
+  const n = Number.parseInt(raw.replace(/[^\d]/g, ""), 10);
+  return Number.isFinite(n) && n >= 1 && n <= 16 ? n : null;
+}
+
 /** Fast local identity — WMI make, model line, model year. No NHTSA round-trip. */
 function fromLocalDecode(vin: string): VinPeekIdentity {
   const local = decodeVin(vin);
@@ -86,11 +108,16 @@ function fromLocalDecode(vin: string): VinPeekIdentity {
   return {
     make: isPlausibleMake(local.make, vin) ? local.make : null,
     model,
-    year: local.year,
+    year: plausibleYear(local.year),
     modelYearRange: free?.modelYearRange ?? null,
     series,
-    trim: null,
+    // Chassis / platform fills trim when no equipment grade is known locally.
+    trim: series,
     engine: local.engineDecoded,
+    transmission: local.transmissionDecoded,
+    fuelType: local.fuelType,
+    bodyType: local.bodyStyleDecoded,
+    cylinders: plausibleCylinders(local.engineCylinders),
     country: local.country ?? decodeCountry(vin),
     wmi: local.wmi,
     decodeSource: "local",
@@ -101,6 +128,7 @@ function fromLocalDecode(vin: string): VinPeekIdentity {
  * Checkout / peek identity decode.
  * Uses local tables only (make, year, optional model) — instant, no VPIC wait.
  * Rich NHTSA merge stays on GET /api/vin/decode-free for the free decoder page.
+ * Checkout UI still shows make + year only; pending drafts use the full identity.
  */
 export async function decodeVinPeek(
   vin: string,
@@ -113,11 +141,10 @@ export async function decodeVinPeek(
 
   const cachedMake = pickCachedField(cache.make, base.make, vin, "make");
   const cachedModel = pickCachedField(cache.model, base.model, vin, "model");
-  const cachedYear = plausibleYear(asYear(cache.year)) ?? base.year;
+  const cachedYear = resolvePeekYear(base.year, cache.year);
   const usedCache =
     (cachedMake !== base.make && asString(cache.make) != null) ||
-    (cachedModel !== base.model && asString(cache.model) != null) ||
-    (cachedYear !== base.year && asYear(cache.year) != null);
+    (cachedModel !== base.model && asString(cache.model) != null);
 
   return {
     make: cachedMake,
@@ -128,6 +155,10 @@ export async function decodeVinPeek(
     series: base.series,
     trim: base.trim,
     engine: base.engine,
+    transmission: base.transmission,
+    fuelType: base.fuelType,
+    bodyType: base.bodyType,
+    cylinders: base.cylinders,
     country: base.country,
     wmi: base.wmi,
     decodeSource: usedCache ? "cache" : base.decodeSource,
@@ -156,6 +187,43 @@ function fieldLooksValid(value: string | null | undefined, vin: string): boolean
 /** Same rules as checkout free-decoder trust check — make alone is enough. */
 export function isTrustworthyVinIdentity(identity: VinPeekIdentity, vin: string): boolean {
   return fieldLooksValid(identity.make, vin);
+}
+
+/**
+ * Seed pending-VIN draft from local peek identity.
+ * Checkout UI still shows make + year only; the draft keeps richer local fields
+ * (engine, country, fuel, body, transmission, cylinders, series→trim).
+ * Built without catalog sanitize import (keeps this module DB-free for tests).
+ */
+export function buildManualPendingReportData(identity: VinPeekIdentity): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    photos: [],
+    accidents: [],
+    accidentCount: 0,
+    mileageHistory: [],
+    ownerHistory: [],
+    insuranceClaims: [],
+    registryHistory: [],
+    serviceHistory: [],
+    auctionHistory: [],
+    fulfillmentPending: true,
+  };
+  const put = (key: string, value: unknown) => {
+    if (value == null) return;
+    if (typeof value === "string" && !value.trim()) return;
+    out[key] = typeof value === "string" ? value.trim() : value;
+  };
+  put("make", identity.make);
+  put("model", identity.model);
+  put("year", identity.year);
+  put("trim", identity.trim ?? identity.series);
+  put("engine", identity.engine);
+  put("transmission", identity.transmission);
+  put("fuelType", identity.fuelType);
+  put("bodyType", identity.bodyType);
+  put("cylinders", identity.cylinders);
+  put("country", identity.country);
+  return out;
 }
 
 export { isPlausibleMake, isPlausibleModel };

@@ -4,6 +4,7 @@
 
 import { decodeBydSpec, isBydVin } from "./byd";
 import { decodeOpelVauxhallMake, decodeOpelVauxhallModel, decodeOpelVauxhallPlant, isOpelVauxhallVin } from "./opel-vauxhall";
+import { decodeRivianSpec, isRivianVin } from "./rivian";
 import { decodeTeslaSpec, isTeslaVin } from "./tesla";
 import { decodeVolvoSpec, isVolvoVin } from "./volvo";
 import { decodeXiaomiSpec, isXiaomiVin } from "./xiaomi";
@@ -61,6 +62,7 @@ export function resolveBrandVinSpec(vin: string): BrandVinSpec | null {
     };
   }
   if (isTeslaVin(upper)) return decodeTeslaSpec(upper);
+  if (isRivianVin(upper)) return decodeRivianSpec(upper);
   if (isBydVin(upper)) return decodeBydSpec(upper);
   if (isZeekrVin(upper)) return decodeZeekrSpec(upper);
   if (isXiaomiVin(upper)) return decodeXiaomiSpec(upper);
