@@ -273,6 +273,21 @@ const ASIA: Case[] = [
     modelContains: "Hilux",
     year: null,
   },
+  // Toyota Rush Indonesia (Astra Daihatsu MHK) — year char 0 is not ISO → null
+  {
+    vin: "MHKM5EA3J0K284716",
+    label: "Toyota Rush MHKM5E (no invent year from 0)",
+    make: "Toyota",
+    modelContains: "Rush",
+    year: null,
+  },
+  {
+    vin: "MHKM5EA3JHK069881",
+    label: "Toyota Rush MHKM5E letter H → 2017",
+    make: "Toyota",
+    modelContains: "Rush",
+    year: 2017,
+  },
   // Kia EV6 — KNDC verified
   {
     vin: pad("KNDC34LA0", "N"),

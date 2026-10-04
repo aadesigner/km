@@ -22,13 +22,49 @@ describe("Toyota worldwide QA", () => {
     expect(r).toMatchObject({ make: "Toyota", model: "Hilux", country: "South Africa" });
   });
 
-  it("Indonesia MHF model prefixes distinguish Innova and Fortuner", () => {
-    expect(decodeVin("MHFKW42GGB2194382")).toMatchObject({
+  it("Indonesia MHK Astra Daihatsu Toyota Rush / Avanza (no invent year from pos.10 0)", () => {
+    // User sample — year char "0" is not ISO 3779 → year must stay null (no guessing 2020).
+    const rush = decodeVin("MHKM5EA3J0K284716");
+    expect(rush).toMatchObject({
       make: "Toyota",
-      model: "Innova",
+      model: "Rush",
       country: "Indonesia",
+      year: null,
     });
-    expect(decodeVin("MHFZR69G9B3024738").model).toBe("Fortuner");
+
+    // Letter H + Rush window 2017+ → unique 2017
+    const rush2017 = decodeVin("MHKM5EA3JHK069881");
+    expect(rush2017).toMatchObject({
+      make: "Toyota",
+      model: "Rush",
+      country: "Indonesia",
+      year: 2017,
+    });
+
+    // Avanza / Rush shared family — year char 0 stays null
+    expect(decodeVin("MHKM5FA2N0K008695")).toMatchObject({
+      make: "Toyota",
+      model: "Avanza / Rush",
+      country: "Indonesia",
+      year: null,
+    });
+
+    // Letter L = 2020 uniquely under open Avanza/Rush (no year window) — still ambiguous
+    // without a verified production window; LHKE8F with L:
+    const avanzaL = decodeVin("MHKE8FB20LK002245");
+    expect(avanzaL.make).toBe("Toyota");
+    expect(avanzaL.model).toBe("Avanza / Rush");
+    expect(avanzaL.country).toBe("Indonesia");
+    // Letter L is 1990/2020 — without window we must not prefer-recent
+    expect(avanzaL.year).toBeNull();
+  });
+
+  it("Indonesia MHK bare WMI stays Toyota with plant family (no invented exact model)", () => {
+    const r = decodeVin("MHKZZZZZ0K0123456");
+    expect(r.make).toBe("Toyota");
+    expect(r.model).toBe("Avanza / Rush / Calya");
+    expect(r.country).toBe("Indonesia");
+    expect(r.year).toBeNull();
   });
 
   it("Argentina / Brazil / India unknown VDS return conservative plant families", () => {

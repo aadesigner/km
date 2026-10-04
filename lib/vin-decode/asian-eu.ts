@@ -69,6 +69,11 @@ const TOYOTA_RULES: PrefixRule[] = compilePrefixRules([
   { prefix: "MHFFXW", model: "Innova" },
   { prefix: "MHFFXR", model: "Innova" },
   { prefix: "MHFZR", model: "Fortuner" },
+  // PT Astra Daihatsu Motor (MHK) — Toyota-badged Indonesia OEM (vindecoderz / NHTSA WMI)
+  // Rush F800 family from MY2017; pos.10 "0" is not an ISO year code → year stays null.
+  { prefix: "MHKM5E", model: "Rush", yearFrom: 2017, yearTo: 2099 },
+  { prefix: "MHKM5F", model: "Avanza / Rush" },
+  { prefix: "MHKE8F", model: "Avanza / Rush" },
   // Mexico plants
   { prefix: "3TM", model: "Tacoma" },
   { prefix: "3MY", model: "Yaris" },
@@ -122,7 +127,8 @@ const TOYOTA_PLANT_FAMILY: Record<string, string> = {
   MR0: "Hilux / Fortuner / Yaris / Camry", // Toyota Thailand
   MR1: "Toyota Thailand passenger vehicle",
   MR2: "Toyota Thailand passenger vehicle",
-  MHF: "Innova / Fortuner / Avanza / Rush", // Toyota Indonesia
+  MHF: "Innova / Fortuner / Avanza / Rush", // Toyota Indonesia (PT Toyota Motor Manufacturing)
+  MHK: "Avanza / Rush / Calya", // Astra Daihatsu Indonesia — Toyota OEM volume lines
   MBJ: "Innova / Fortuner / Etios / Corolla / Camry", // Toyota India
   "8AJ": "Hilux / Fortuner", // Toyota Argentina
   "9BR": "Corolla / Etios / Yaris", // Toyota Brazil
@@ -137,7 +143,7 @@ function isToyotaExtendedVin(vin: string): boolean {
     || [
       "SB1", "YAR", "WZ1", "5YF", "4T1", "4T3", "4T4", "5TD", "5TF",
       "2T1", "2T3", "3TM", "3MY", "VNK", "NMT", "MR0", "MR1", "MR2",
-      "MHF", "MBJ", "8AJ", "9BR", "AHT", "6T1", "LFM", "LVG", "7MU",
+      "MHF", "MHK", "MBJ", "8AJ", "9BR", "AHT", "6T1", "LFM", "LVG", "7MU",
     ].includes(wmi);
 }
 
