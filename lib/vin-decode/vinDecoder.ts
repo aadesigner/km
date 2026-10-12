@@ -158,10 +158,17 @@ function resolveVinModelYear(
     ?? seriesFromDisplayModel(model);
   const chassisWin = chassisProductionWindow(series);
   if (chassisWin) {
+    // A shared chassis token can be wider than the prefix that identified the car
+    // (Audi "C8" is 2018+, Corvette C8 is 2020+; XG10 is 2020+, Alabama Corolla Cross is 2022+).
+    // Keep only years that sit in both windows. An empty overlap means omit the year.
+    const tightened = tightenChassisWindow(chassisWin, [
+      vagHit, globalHit, hyRule, asiaRule, usRule, rivianRule, bydRule,
+    ]);
+    if (!tightened) return null;
     // Unique cycle inside a verified production window only.
     // Never fall back to an unconstrained digit year that the window already rejected
     // (that was inventing e.g. 2004 when the chassis only ran 2010–2017).
-    return resolveIsoModelYear(code, chassisWin);
+    return resolveIsoModelYear(code, tightened);
   }
 
   // Platform / prefix verified window (e.g. Hyundai IONIQ 5 from 2021).
@@ -226,10 +233,52 @@ function resolveVinModelYear(
   if (vin.startsWith("WBS5")) {
     return resolveIsoModelYear(code, chassisProductionWindow("F10/F90/G90"));
   }
+  // A slash family ("i30 / Tucson / Kona", "IONIQ 5 / IONIQ 9") is not one model.
+  // A single year would be a guess.
+  if (model?.includes(" / ")) return null;
+  const floor = knownModelYearFloor(vin, make, model);
+  if (floor) return resolveIsoModelYear(code, floor);
   // Known make, no verified window: unique ISO cycle only — never prefer-recent.
   // Digit codes (2001–2009) uniquely resolve until the +30 twin is plausible;
   // ambiguous letter codes return null rather than guess a cycle.
   return resolveIsoModelYear(code, null);
+}
+
+function explicitYearWindow(
+  rule: { yearFrom?: number; yearTo?: number } | null | undefined,
+): IsoYearWindow | null {
+  if (!rule || (rule.yearFrom == null && rule.yearTo == null)) return null;
+  return { from: rule.yearFrom ?? 1980, to: rule.yearTo ?? 2099 };
+}
+
+/** Intersect a chassis window with every matched prefix rule that has its own years. */
+function tightenChassisWindow(
+  chassis: IsoYearWindow,
+  rules: Array<{ yearFrom?: number; yearTo?: number } | null | undefined>,
+): IsoYearWindow | null {
+  let from = chassis.from;
+  let to = chassis.to;
+  for (const rule of rules) {
+    const w = explicitYearWindow(rule);
+    if (!w) continue;
+    from = Math.max(from, w.from);
+    to = Math.min(to, w.to);
+  }
+  if (from > to) return null;
+  return { from, to };
+}
+
+/**
+ * Models whose first model year is known, but the VIN prefix has no chassis window.
+ * Digit codes must not become 2001–2009 before the car existed.
+ */
+function knownModelYearFloor(vin: string, make: string | null, model: string | null): IsoYearWindow | null {
+  const wmi = vin.toUpperCase().slice(0, 3);
+  if (make === "Xiaomi") return { from: 2024, to: 2099 };
+  if (wmi === "7JR") return { from: 2019, to: 2099 };
+  if (wmi === "LVY") return { from: 2016, to: 2099 };
+  if (model?.includes("GR Supra")) return { from: 2019, to: 2099 };
+  return null;
 }
 
 /** Verified Tesla model-year floors — omit rather than invent a cycle. */
