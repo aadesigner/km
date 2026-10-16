@@ -32,7 +32,7 @@ import {
   translateRegistryEventType,
   translateRegistryFieldLabel,
 } from "@/lib/registry-history";
-import { isRegistryAmountLabel } from "@workspace/korean-registry";
+import { correctStoredKoreanNewCarPrices, isRegistryAmountLabel } from "@workspace/korean-registry";
 import type { Language } from "@/i18n/context";
 import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { sanitizeRegistryDetailRows } from "@/lib/report-display";
@@ -195,7 +195,9 @@ function RegistryEventCard({
     location: event.location,
     amount: event.amount,
   });
-  const details = expanded.details;
+  const priced = correctStoredKoreanNewCarPrices(expanded.details, event.amount);
+  const details = priced.rows;
+  const displayAmount = priced.amount;
   const hasDetails = details.length > 0;
   const visual = typeVisual(event.type);
   const TypeIcon = visual.icon;
@@ -295,12 +297,12 @@ function RegistryEventCard({
                         {formatRegistryMileage(event.mileage)}
                       </span>
                     )}
-                    {event.amount && (
+                    {displayAmount && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-normal bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 rounded-md px-1.5 py-0.5">
                         <Wallet className="h-2.5 w-2.5 shrink-0" />
                         {isKoreanCountry(country) ? (
                           <KoreanWonAmount
-                            text={event.amount}
+                            text={displayAmount}
                             krwPerUsd={krwPerUsd}
                             amountLabel={event.type === "new_car_delivery" ? "New car list price" : undefined}
                           />
