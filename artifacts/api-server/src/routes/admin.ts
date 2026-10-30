@@ -1475,8 +1475,9 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
   }
 });
 
-router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
+router.patch("/admin/users/:userId", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "");
+  const editorLocked = req.staffRole !== "admin";
   const { name, email, password, countryCode: rawCountry, phonePrefix: rawPrefix, phoneNational: rawNational } = req.body as {
     name?: string;
     email?: string;
@@ -1489,7 +1490,6 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   const [target] = await db
     .select({
       isAdmin: usersTable.isAdmin,
-      isEditor: usersTable.isEditor,
       email: usersTable.email,
       name: usersTable.name,
       phonePrefix: usersTable.phonePrefix,
@@ -1499,6 +1499,10 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     .where(eq(usersTable.id, userId))
     .limit(1);
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
+  if (editorLocked && target.isAdmin) {
+    res.status(403).json({ error: "Editors cannot change admin accounts", code: "admin_account_protected" });
+    return;
+  }
 
   const updates: Record<string, unknown> = {};
   if (name !== undefined) {
@@ -1519,8 +1523,8 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     }
   }
   if (password) {
-    if (target.isAdmin || target.isEditor) {
-      res.status(403).json({ error: "Cannot reset another staff account's password from the panel" });
+    if (target.isAdmin) {
+      res.status(403).json({ error: "Cannot reset another admin account's password from the panel" });
       return;
     }
     if (password.length < 8) { res.status(400).json({ error: "Password must be at least 8 characters" }); return; }
@@ -1561,9 +1565,17 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   updates.updatedAt = new Date();
   const [user] = await db.update(usersTable)
     .set(updates as Parameters<ReturnType<typeof db.update>["set"]>[0])
-    .where(eq(usersTable.id, userId))
+    .where(editorLocked
+      ? and(eq(usersTable.id, userId), eq(usersTable.isAdmin, false))
+      : eq(usersTable.id, userId))
     .returning();
-  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  if (!user) {
+    res.status(editorLocked ? 403 : 404).json({
+      error: editorLocked ? "Editors cannot change admin accounts" : "User not found",
+      code: editorLocked ? "admin_account_protected" : undefined,
+    });
+    return;
+  }
   const { passwordHash: _pw, ...safeUser } = user;
   await logAdminAction(req.userId!, "admin_edit_user", userId, { fields: Object.keys(updates).filter(k => k !== "updatedAt") });
   res.json(safeUser);
@@ -1698,14 +1710,27 @@ router.get("/admin/users/:userId/history", requireStaff, async (req, res) => {
 });
 
 // POST /admin/users/:userId/credits — adjust prepaid credit balance (clamp at 0)
-router.post("/admin/users/:userId/credits", requireAdmin, async (req, res) => {
+router.post("/admin/users/:userId/credits", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "").trim();
   if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
+  const editorLocked = req.staffRole !== "admin";
 
   const body = req.body as { delta?: unknown; creditBalance?: unknown };
-  const [existing] = await db.select({ id: usersTable.id, creditBalance: usersTable.creditBalance })
+  const [existing] = await db.select({
+    id: usersTable.id,
+    creditBalance: usersTable.creditBalance,
+    isAdmin: usersTable.isAdmin,
+  })
     .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!existing) { res.status(404).json({ error: "User not found" }); return; }
+  if (editorLocked && existing.isAdmin) {
+    res.status(403).json({ error: "Editors cannot change admin accounts", code: "admin_account_protected" });
+    return;
+  }
+  if (editorLocked && userId === req.userId) {
+    res.status(403).json({ error: "Editors cannot change their own credits", code: "own_credits_forbidden" });
+    return;
+  }
 
   let nextBalance: number;
   if (body.creditBalance !== undefined && body.creditBalance !== null && body.creditBalance !== "") {
@@ -1736,10 +1761,18 @@ router.post("/admin/users/:userId/credits", requireAdmin, async (req, res) => {
 
   const [user] = await db.update(usersTable)
     .set({ creditBalance: nextBalance, updatedAt: new Date() })
-    .where(eq(usersTable.id, userId))
+    .where(editorLocked
+      ? and(eq(usersTable.id, userId), eq(usersTable.isAdmin, false))
+      : eq(usersTable.id, userId))
     .returning();
 
-  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  if (!user) {
+    res.status(editorLocked ? 403 : 404).json({
+      error: editorLocked ? "Editors cannot change admin accounts" : "User not found",
+      code: editorLocked ? "admin_account_protected" : undefined,
+    });
+    return;
+  }
 
   await logAdminAction(req.userId!, "admin_adjust_credits", userId, {
     delta: appliedDelta,

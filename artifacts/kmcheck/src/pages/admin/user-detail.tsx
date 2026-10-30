@@ -376,6 +376,10 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   };
 
   const handleSaveDetails = async () => {
+    if (!fullAdmin && user?.isAdmin) {
+      setDetailsMsg({ ok: false, text: "Editors cannot change admin accounts" });
+      return;
+    }
     setSavingDetails(true);
     setDetailsMsg(null);
     try {
@@ -423,6 +427,10 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   };
 
   const handleResetPassword = async () => {
+    if (user?.isAdmin) {
+      setPasswordMsg({ ok: false, text: "Cannot reset an admin account password" });
+      return;
+    }
     if (newPassword.length < 6) return;
     setSavingPassword(true);
     setPasswordMsg(null);
@@ -508,6 +516,10 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   };
 
   const handleSaveCredits = () => {
+    if (!fullAdmin && (user?.isAdmin || userId === authUser?.id)) {
+      setCreditMsg({ ok: false, text: user?.isAdmin ? "Editors cannot change admin accounts" : "Editors cannot change their own credits" });
+      return;
+    }
     const next = parseInt(creditBalanceEdit, 10);
     if (!Number.isFinite(next) || next < 0) {
       setCreditMsg({ ok: false, text: "Enter a non-negative whole number" });
@@ -576,6 +588,10 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
       </Panel>
     );
   }
+
+  const canEditProfile = fullAdmin || !user.isAdmin;
+  const canEditPassword = !user.isAdmin;
+  const canEditCredits = !user.isAdmin && (fullAdmin || userId !== authUser?.id);
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-6 max-w-5xl min-w-0 w-full">
@@ -728,16 +744,16 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
       <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
         <div className="space-y-3 md:space-y-4">
           <Panel className="overflow-hidden">
-            <SectionLabel icon={Mail} title={fullAdmin ? "Edit details" : "Details"} />
-            <div className={cn("p-3.5 md:p-4 space-y-3", !fullAdmin && "pointer-events-none")}>
+            <SectionLabel icon={Mail} title={canEditProfile ? "Edit details" : "Details"} />
+            <div className={cn("p-3.5 md:p-4 space-y-3", !canEditProfile && "pointer-events-none")}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Display name</Label>
-                  <Input placeholder="Name" value={editName} onChange={e => setEditName(e.target.value)} className="h-9 md:h-10" disabled={!fullAdmin} />
+                  <Input placeholder="Name" value={editName} onChange={e => setEditName(e.target.value)} className="h-9 md:h-10" disabled={!canEditProfile} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Email</Label>
-                  <Input type="email" placeholder="email@example.com" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-9 md:h-10" disabled={!fullAdmin} />
+                  <Input type="email" placeholder="email@example.com" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-9 md:h-10" disabled={!canEditProfile} />
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -749,6 +765,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   value={editCountry}
                   onValueChange={setEditCountry}
                   emptyLabel="Not set"
+                  disabled={!canEditProfile}
                 />
               </div>
               <div className="space-y-1.5 min-w-0">
@@ -769,9 +786,10 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   searchPlaceholder="Search prefix…"
                   emptySearchLabel="No prefix found."
                   nationalPlaceholder="Insert your phone number..."
+                  disabled={!canEditProfile}
                 />
               </div>
-              {fullAdmin ? (
+              {canEditProfile ? (
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <Button size="sm" onClick={handleSaveDetails} disabled={savingDetails} className="h-9">
                   {savingDetails ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -832,7 +850,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             </Panel>
           ) : null}
 
-          {fullAdmin ? (
+          {canEditCredits ? (
           <Panel className="overflow-hidden">
             <SectionLabel icon={Coins} title="Credits" />
             <div className="p-3.5 md:p-4 space-y-3">
@@ -859,7 +877,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
           </Panel>
           ) : null}
 
-          {fullAdmin && !user.isAdmin && !user.isEditor && (
+          {canEditPassword ? (
             <Panel className="overflow-hidden">
               <SectionLabel icon={Key} title="Reset password" />
               <div className="p-3.5 md:p-4 space-y-3">
@@ -879,7 +897,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 {passwordMsg && <StatusMessage msg={passwordMsg} />}
               </div>
             </Panel>
-          )}
+          ) : null}
 
           {fullAdmin ? (
           <Panel className="overflow-hidden">

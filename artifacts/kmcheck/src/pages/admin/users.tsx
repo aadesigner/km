@@ -459,7 +459,7 @@ export default function AdminUsers() {
                   {users.map((user) => (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="p-4">
-                        {fullAdmin ? (
+                        {fullAdmin || !user.isAdmin ? (
                           <AdminUserQuickEdit user={user} />
                         ) : (
                           <div>
