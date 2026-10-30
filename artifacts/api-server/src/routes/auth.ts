@@ -103,11 +103,14 @@ function oauthSuccessRedirect(
   frontendBase: string,
   lang: string,
   user: { passwordHash: string | null },
+  isNewAccount = false,
 ): string {
-  if (!user.passwordHash) {
-    return oauthSetPasswordRedirect(frontendBase, lang);
-  }
-  return oauthDashboardRedirect(frontendBase, lang);
+  const url = !user.passwordHash
+    ? oauthSetPasswordRedirect(frontendBase, lang)
+    : oauthDashboardRedirect(frontendBase, lang);
+  if (!isNewAccount) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}signup=1`;
 }
 
 const loginLimiter = rateLimit({
@@ -133,6 +136,10 @@ const registerLimiter = rateLimit({
   message: { error: "Too many registration attempts. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
+  // Per-IP cap (admin: registerMaxPerHour, default 5). Raise to 20–50 during ad campaigns.
+  // clientIpKey + validate.ip=false so IPv6 / odd X-Forwarded-For cannot 500 the limiter.
+  keyGenerator: (req) => clientIpKey(req),
+  validate: { ip: false },
   skip: async () => {
     if (process.env.NODE_ENV === "production") return false;
     const s = await getSettings();
@@ -988,7 +995,7 @@ router.get("/auth/facebook/callback", async (req, res) => {
   setAuthCookie(res, token, sessionDays);
   await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
-  res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
+  res.redirect(oauthSuccessRedirect(frontendBase, lang, user, oauthIsNewAccount));
 });
 
 // ── Google OAuth ──────────────────────────────────────────────────────────────
@@ -1220,7 +1227,7 @@ router.get("/auth/google/callback", async (req, res) => {
   setAuthCookie(res, token, sessionDays);
   await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
-  res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
+  res.redirect(oauthSuccessRedirect(frontendBase, lang, user, oauthIsNewAccount));
 });
 
 // ── LinkedIn OAuth ────────────────────────────────────────────────────────────
@@ -1454,7 +1461,7 @@ router.get("/auth/linkedin/callback", async (req, res) => {
   setAuthCookie(res, token, sessionDays);
   await trackUserSessionAccess(req, res, user.id, { isNewAccount: oauthIsNewAccount });
 
-  res.redirect(oauthSuccessRedirect(frontendBase, lang, user));
+  res.redirect(oauthSuccessRedirect(frontendBase, lang, user, oauthIsNewAccount));
 });
 
 // POST /auth/set-password — OAuth-only accounts set a local password (authenticated)
