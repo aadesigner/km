@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DollarSign, CheckCircle2, XCircle, AlertTriangle, Search, ChevronLeft, ChevronRight, CreditCard, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -237,6 +239,8 @@ function FailedTxnCleanup() {
 }
 
 export default function AdminTransactions() {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -423,6 +427,7 @@ export default function AdminTransactions() {
                         <StatusBadge status={tx.status} />
                       </TableCell>
                       <TableCell>
+                        {fullAdmin ? (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -431,6 +436,7 @@ export default function AdminTransactions() {
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                     );
@@ -467,8 +473,7 @@ export default function AdminTransactions() {
         </CardContent>
       </Card>
 
-      {/* Failed transaction cleanup */}
-      <FailedTxnCleanup />
+      {fullAdmin ? <FailedTxnCleanup /> : null}
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!confirmDelete} onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}>

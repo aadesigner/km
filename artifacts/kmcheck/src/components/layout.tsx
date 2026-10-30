@@ -456,7 +456,7 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   };
 
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
-  const isAdmin     = user?.isAdmin === true;
+  const isAdmin     = user?.isAdmin === true || user?.isEditor === true;
   const isOnPage    = (seg: string) => location.includes(`/${seg}`);
   const isHome      = /^\/[a-z]{2}\/?$/.test(location) || location === "/";
   const isCountry   = isOnPage("cars");

@@ -60,6 +60,7 @@ function profilePayload(
     avatarUrl: string | null;
     isBanned: boolean;
     isAdmin: boolean;
+    isEditor?: boolean;
     countryCode: string | null;
     phonePrefix: string | null;
     phoneNational: string | null;
@@ -80,6 +81,7 @@ function profilePayload(
     avatarUrl: user.avatarUrl,
     isBanned: user.isBanned,
     isAdmin: user.isAdmin,
+    isEditor: user.isEditor === true,
     countryCode: user.countryCode ?? null,
     countryChangesRemaining: extras.countryChangesRemaining,
     countryChangesLimit: MAX_COUNTRY_CHANGES_PER_DAY,

@@ -31,6 +31,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Search, RefreshCw, Trash2, ImageOff, AlertTriangle, Download } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 
 const STATUS_VARIANTS: Record<
   string,
@@ -76,6 +78,8 @@ function VinThumb({ photos }: { photos?: string[] }) {
 type DialogCategory = "errors" | "pending" | "cache" | "provider";
 
 export default function AdminLookups() {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [fromCacheFilter, setFromCacheFilter] = useState<string>("");
@@ -249,6 +253,7 @@ export default function AdminLookups() {
             <Download className="h-3.5 w-3.5 mr-1.5" />
             {exporting ? "Exporting…" : "Export CSV"}
           </Button>
+          {fullAdmin ? (
           <Button
             variant="destructive"
             size="sm"
@@ -257,6 +262,7 @@ export default function AdminLookups() {
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Bulk Delete
           </Button>
+          ) : null}
         </div>
       </div>
 
@@ -372,6 +378,7 @@ export default function AdminLookups() {
                       {vd?.isSalvage && <span className="text-orange-600">Salvage</span>}
                       <span className="ml-auto">{new Date(lookup.createdAt).toLocaleDateString()}</span>
                     </div>
+                    {fullAdmin ? (
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => refreshVin.mutate({ id: lookup.id })} disabled={refreshVin.isPending}>
                         <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
@@ -380,6 +387,7 @@ export default function AdminLookups() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
+                    ) : null}
                   </div>
                 );
               })}
@@ -458,6 +466,7 @@ export default function AdminLookups() {
                           {new Date(lookup.createdAt).toLocaleString()}
                         </td>
                         <td className="p-4 text-right">
+                          {fullAdmin ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
@@ -478,6 +487,7 @@ export default function AdminLookups() {
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
+                          ) : null}
                         </td>
                       </tr>
                     );

@@ -33,6 +33,12 @@ describe("maintenanceMiddleware", () => {
     expect(next).toHaveBeenCalledOnce();
   });
 
+  it("allows editors through during full-site maintenance", async () => {
+    const next = vi.fn() as NextFunction;
+    await maintenanceMiddleware(mockReq({ isAdmin: false, isEditor: true }), mockRes(), next);
+    expect(next).toHaveBeenCalledOnce();
+  });
+
   it("blocks non-admin requests on restricted paths", async () => {
     const res = mockRes();
     const next = vi.fn() as NextFunction;

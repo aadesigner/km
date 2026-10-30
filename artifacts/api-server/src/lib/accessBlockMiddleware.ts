@@ -6,6 +6,7 @@ import {
   resolveBlockIpFromRequest,
 } from "./accessBlocks.js";
 import { isExemptAccessBlockPath } from "./accessBlockPolicy.js";
+import { isStaffFlags } from "./staffRole.js";
 
 export async function accessBlockMiddleware(
   req: Request,
@@ -17,7 +18,7 @@ export async function accessBlockMiddleware(
     return;
   }
 
-  if (req.isAdmin) {
+  if (isStaffFlags({ isAdmin: req.isAdmin, isEditor: req.isEditor })) {
     next();
     return;
   }

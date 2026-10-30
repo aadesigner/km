@@ -8,7 +8,8 @@ import {
   fetchAdminPendingCount,
 } from "@/lib/admin-pending-count";
 import { splitRouterLocation } from "@/lib/normalize-app-path";
-import { normalizeAdminPath } from "@/lib/admin-routes";
+import { matchAdminRoute, normalizeAdminPath } from "@/lib/admin-routes";
+import { canAccessAdminArea, canAccessAdminRoute, isFullAdmin } from "@/lib/admin-staff";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Users, Search, Server, Settings, LogOut, CreditCard, Activity, Tag, Menu, X, Mail, Database, ReceiptText, ShieldAlert, Megaphone, Clock, Puzzle, Home, Moon, Sun } from "lucide-react";
@@ -21,7 +22,15 @@ import { AdminThemeProvider, useAdminTheme, useAdminThemeDocumentSync } from "@/
 import { AdminThemePicker } from "@/components/admin/admin-theme-picker";
 import { AdminRevenueMoodBadge, useAdminRevenueMood } from "@/components/admin/admin-revenue-mood";
 
-const navGroups = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof BarChart3;
+  exact?: boolean;
+  adminOnly?: boolean;
+};
+
+const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Analytics",
     items: [
@@ -36,20 +45,20 @@ const navGroups = [
       { href: "/adminx/lookups", label: "VIN Lookups", icon: Search },
       { href: "/adminx/pending-vin-checks", label: "Pending Vin Checks", icon: Clock },
       { href: "/adminx/vin-catalog", label: "VIN Catalog", icon: Database },
-      { href: "/adminx/pricing", label: "Pricing", icon: CreditCard },
-      { href: "/adminx/coupons", label: "Coupons", icon: Tag },
-      { href: "/adminx/announcements", label: "Announcements", icon: Megaphone },
+      { href: "/adminx/pricing", label: "Pricing", icon: CreditCard, adminOnly: true },
+      { href: "/adminx/coupons", label: "Coupons", icon: Tag, adminOnly: true },
+      { href: "/adminx/announcements", label: "Announcements", icon: Megaphone, adminOnly: true },
       { href: "/adminx/transactions", label: "Transactions", icon: ReceiptText },
     ],
   },
   {
     label: "System",
     items: [
-      { href: "/adminx/providers", label: "Providers", icon: Server },
-      { href: "/adminx/emails", label: "Emails", icon: Mail },
-      { href: "/adminx/plugins", label: "Plugins", icon: Puzzle },
-      { href: "/adminx/security", label: "Security & Logs", icon: ShieldAlert },
-      { href: "/adminx/settings", label: "Settings", icon: Settings },
+      { href: "/adminx/providers", label: "Providers", icon: Server, adminOnly: true },
+      { href: "/adminx/emails", label: "Emails", icon: Mail, adminOnly: true },
+      { href: "/adminx/plugins", label: "Plugins", icon: Puzzle, adminOnly: true },
+      { href: "/adminx/security", label: "Security & Logs", icon: ShieldAlert, adminOnly: true },
+      { href: "/adminx/settings", label: "Settings", icon: Settings, adminOnly: true },
     ],
   },
 ];
@@ -79,28 +88,43 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { themeId } = useAdminTheme();
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
-  const isAdmin = user?.isAdmin === true;
-  useAdminThemeDocumentSync(isLoaded && isSignedIn && isAdmin);
+  const isStaff = canAccessAdminArea(user);
+  const fullAdmin = isFullAdmin(user);
+  useAdminThemeDocumentSync(isLoaded && isSignedIn && isStaff);
   /** Hide revenue mood chip + atmosphere on pending VIN work pages. */
   const isPendingVinPage = navPath.startsWith("/adminx/pending-vin-checks");
   const { mood, revenueToday, ready: moodReady } = useAdminRevenueMood(
-    isLoaded && isSignedIn && isAdmin && !isPendingVinPage,
+    isLoaded && isSignedIn && isStaff && !isPendingVinPage,
   );
 
   const { data: pendingCount } = useQuery({
     queryKey: ADMIN_PENDING_COUNT_QUERY_KEY,
     queryFn: ({ signal }) => fetchAdminPendingCount(signal),
     ...adminPendingCountQuery(),
-    enabled: isLoaded && isSignedIn && isAdmin,
+    enabled: isLoaded && isSignedIn && isStaff,
   });
   const pendingOpen = pendingCount?.open ?? 0;
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => fullAdmin || !item.adminOnly),
+    }))
+    .filter((group) => group.items.length > 0);
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (!isSignedIn || !isAdmin) {
+    if (!isSignedIn || !isStaff) {
       setLocation("/en");
     }
-  }, [isLoaded, isSignedIn, isAdmin, setLocation]);
+  }, [isLoaded, isSignedIn, isStaff, setLocation]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !isStaff) return;
+    const match = matchAdminRoute(navPath);
+    if (!canAccessAdminRoute(user, match.id)) {
+      setLocation("/adminx");
+    }
+  }, [isLoaded, isSignedIn, isStaff, navPath, setLocation, user]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -119,7 +143,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isSignedIn || !isAdmin) {
+  if (!isSignedIn || !isStaff) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Skeleton className="h-8 w-48" />
@@ -139,12 +163,12 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         </Link>
         <div className="flex items-center gap-1.5 mt-2">
           <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs font-medium text-muted-foreground">Admin Panel</span>
+          <span className="text-xs font-medium text-muted-foreground">{fullAdmin ? "Admin Panel" : "Editor Panel"}</span>
         </div>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-        {navGroups.map(({ label, items }) => (
+        {visibleNavGroups.map(({ label, items }) => (
           <div key={label}>
             <p className="admin-nav-group-label text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5">{label}</p>
             <div className="space-y-0.5">
@@ -266,7 +290,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           </button>
           <div className="flex items-center gap-2 font-semibold text-sm min-w-0">
             <KmcheckMark className="h-5 w-5 text-primary shrink-0" />
-            <span>Admin</span>
+            <span>{fullAdmin ? "Admin" : "Editor"}</span>
           </div>
         </header>
 

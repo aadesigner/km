@@ -24,6 +24,8 @@ import { ADMIN_PENDING_COUNT_QUERY_KEY } from "@/lib/admin-pending-count";
 import { extractTextFromPdfFile } from "@/lib/provider-pdf-extract";
 import { parseProviderPdfText } from "@/lib/provider-pdf-parse";
 import { applyProviderPdfToForm } from "@/lib/provider-pdf-apply";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 
 type PendingRequest = {
   id: number;
@@ -46,6 +48,8 @@ type PendingDetail = {
 };
 
 export default function AdminPendingVinDetail({ params }: { params: { id: string } }) {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const pendingId = parseInt(params.id, 10);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -400,6 +404,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             Edit vehicle data, then publish to add this VIN to the catalog and email purchasers.
           </p>
         </div>
+        {fullAdmin ? (
         <div className="flex w-full lg:w-auto gap-2 shrink-0">
           <Button
             variant="outline"
@@ -432,6 +437,7 @@ export default function AdminPendingVinDetail({ params }: { params: { id: string
             <span className="truncate">Remove</span>
           </Button>
         </div>
+        ) : null}
       </div>
 
       {publishMsg && (

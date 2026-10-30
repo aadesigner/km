@@ -26,13 +26,14 @@ import {
   ArrowLeft, Mail, Calendar, Clock, Key, Gift,
   Ban, CheckCircle2, Loader2, Save, Car,
   ShieldOff, AlertTriangle, ImageOff, ChevronLeft, ChevronRight, Trash2,
-  DollarSign, Search, Globe, Phone, Coins, ReceiptText, Megaphone,
+  DollarSign, Search, Globe, Phone, Coins, ReceiptText, Megaphone, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserCountrySelect } from "@/components/user-country-select";
 import { UserPhoneFields } from "@/components/user-phone-fields";
 import { formatPhoneDisplay } from "@/lib/user-phone";
 import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 import { ADMIN_QUERY_OPTIONS, ADMIN_USER_DETAIL_QUERY, adminUserDetailQuery } from "@/lib/admin-query-options";
 import { ACQUISITION_BUCKET_LABELS, type AcquisitionBucket } from "@/lib/admin-dashboard-stats";
 
@@ -66,6 +67,7 @@ export interface UserRow {
   name: string | null;
   isBanned: boolean;
   isAdmin: boolean;
+  isEditor?: boolean;
   countryCode?: string | null;
   phonePrefix?: string | null;
   phoneNational?: string | null;
@@ -207,6 +209,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { user: authUser, refreshUser } = useAuth();
+  const fullAdmin = isFullAdmin(authUser);
 
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
@@ -232,6 +235,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [creditBalanceEdit, setCreditBalanceEdit] = useState("0");
   const [creditMsg, setCreditMsg] = useState<Msg | null>(null);
+  const [savingRole, setSavingRole] = useState(false);
+  const [roleMsg, setRoleMsg] = useState<Msg | null>(null);
+  const [roleConfirm, setRoleConfirm] = useState<boolean | null>(null);
 
   const {
     data: user,
@@ -385,6 +391,35 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
       invalidateUsers();
     } catch { setDetailsMsg({ ok: false, text: "Network error" }); }
     finally { setSavingDetails(false); }
+  };
+
+  const handleSetEditor = async (isEditor: boolean) => {
+    if (!fullAdmin || user?.isAdmin || userId === authUser?.id) {
+      setRoleMsg({ ok: false, text: "You cannot change this account's role" });
+      return;
+    }
+    setSavingRole(true);
+    setRoleMsg(null);
+    try {
+      const resp = await fetch(`${basePath}/api/admin/users/${encodeURIComponent(userId)}/role`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ isEditor }),
+      });
+      const data = await resp.json().catch(() => ({})) as { error?: string };
+      if (!resp.ok) {
+        setRoleMsg({ ok: false, text: data.error ?? "Failed to update role" });
+        return;
+      }
+      setRoleMsg({ ok: true, text: isEditor ? "Role set to Editor" : "Role set to Normal user" });
+      invalidateUsers();
+      void refetchUser();
+    } catch {
+      setRoleMsg({ ok: false, text: "Network error" });
+    } finally {
+      setSavingRole(false);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -567,6 +602,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   {user.isBanned ? "Banned" : "Active"}
                 </Badge>
                 {user.isAdmin && <Badge variant="secondary">Admin</Badge>}
+                {!user.isAdmin && user.isEditor && <Badge variant="secondary" className="bg-sky-100 text-sky-800">Editor</Badge>}
               </div>
               {user.name && (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5 truncate">
@@ -692,16 +728,16 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
       <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
         <div className="space-y-3 md:space-y-4">
           <Panel className="overflow-hidden">
-            <SectionLabel icon={Mail} title="Edit details" />
-            <div className="p-3.5 md:p-4 space-y-3">
+            <SectionLabel icon={Mail} title={fullAdmin ? "Edit details" : "Details"} />
+            <div className={cn("p-3.5 md:p-4 space-y-3", !fullAdmin && "pointer-events-none")}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Display name</Label>
-                  <Input placeholder="Name" value={editName} onChange={e => setEditName(e.target.value)} className="h-9 md:h-10" />
+                  <Input placeholder="Name" value={editName} onChange={e => setEditName(e.target.value)} className="h-9 md:h-10" disabled={!fullAdmin} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Email</Label>
-                  <Input type="email" placeholder="email@example.com" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-9 md:h-10" />
+                  <Input type="email" placeholder="email@example.com" value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-9 md:h-10" disabled={!fullAdmin} />
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -735,6 +771,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                   nationalPlaceholder="Insert your phone number..."
                 />
               </div>
+              {fullAdmin ? (
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <Button size="sm" onClick={handleSaveDetails} disabled={savingDetails} className="h-9">
                   {savingDetails ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -742,9 +779,60 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 </Button>
                 {detailsMsg && <StatusMessage msg={detailsMsg} />}
               </div>
+              ) : null}
             </div>
           </Panel>
 
+          {fullAdmin && !user.isAdmin ? (
+            <Panel className="overflow-hidden">
+              <SectionLabel
+                icon={Shield}
+                title="Account role"
+                hint="Choose Normal user or Editor. This does not change payments, credits, or VIN provider calls."
+              />
+              <div className="p-3.5 md:p-4 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={savingRole}
+                    aria-pressed={!user.isEditor}
+                    onClick={() => { if (user.isEditor) setRoleConfirm(false); }}
+                    className={cn(
+                      "rounded-xl border px-3.5 py-3 text-left transition-colors disabled:opacity-60",
+                      !user.isEditor
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                        : "border-border/60 hover:bg-muted/40",
+                    )}
+                  >
+                    <p className="text-sm font-semibold">Normal user</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      Customer account. No admin panel access.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={savingRole}
+                    aria-pressed={!!user.isEditor}
+                    onClick={() => { if (!user.isEditor) setRoleConfirm(true); }}
+                    className={cn(
+                      "rounded-xl border px-3.5 py-3 text-left transition-colors disabled:opacity-60",
+                      user.isEditor
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                        : "border-border/60 hover:bg-muted/40",
+                    )}
+                  >
+                    <p className="text-sm font-semibold">Editor</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      Analytics, users, transactions, VIN lookups, catalog, pending VIN, and publish.
+                    </p>
+                  </button>
+                </div>
+                {roleMsg ? <StatusMessage msg={roleMsg} /> : null}
+              </div>
+            </Panel>
+          ) : null}
+
+          {fullAdmin ? (
           <Panel className="overflow-hidden">
             <SectionLabel icon={Coins} title="Credits" />
             <div className="p-3.5 md:p-4 space-y-3">
@@ -769,8 +857,9 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
               {creditMsg && <StatusMessage msg={creditMsg} />}
             </div>
           </Panel>
+          ) : null}
 
-          {!user.isAdmin && (
+          {fullAdmin && !user.isAdmin && !user.isEditor && (
             <Panel className="overflow-hidden">
               <SectionLabel icon={Key} title="Reset password" />
               <div className="p-3.5 md:p-4 space-y-3">
@@ -792,6 +881,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             </Panel>
           )}
 
+          {fullAdmin ? (
           <Panel className="overflow-hidden">
             <SectionLabel
               icon={Gift}
@@ -816,6 +906,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
               {grantMsg && <StatusMessage msg={grantMsg} />}
             </div>
           </Panel>
+          ) : null}
 
           <Panel className="overflow-hidden">
             <SectionLabel
@@ -993,7 +1084,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                             </span>
                           </div>
                         </div>
-                        {lookup.status === "complete" && (
+                        {fullAdmin && lookup.status === "complete" && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -1054,7 +1145,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
             </div>
           </Panel>
 
-          {!user.isAdmin && (
+          {fullAdmin && !user.isAdmin && !user.isEditor && (
             <Panel className="overflow-hidden">
               <div className="p-3.5 md:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="min-w-0">
@@ -1100,7 +1191,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         </div>
       </div>
 
-      {!user.isAdmin && (
+      {fullAdmin && !user.isAdmin && !user.isEditor && (
         <Panel className="overflow-hidden border-destructive/30 bg-destructive/[0.03]">
           <div className="p-3.5 md:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0">
@@ -1129,6 +1220,55 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
           </div>
         </Panel>
       )}
+
+      <AlertDialog
+        open={roleConfirm !== null}
+        onOpenChange={(open) => { if (!savingRole && !open) setRoleConfirm(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {roleConfirm ? "Make this account an editor?" : "Make this account a normal user?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  This changes staff access for{" "}
+                  <span className="font-medium text-foreground">{user.email}</span>
+                  {roleConfirm
+                    ? ". They will be able to open the editor panel (overview, analytics, users, transactions, VIN lookups, catalog, pending VIN) and publish pending VINs."
+                    : ". Editor access will be removed. They will no longer open the admin panel."}
+                </p>
+                <p>They still cannot change settings, pricing, credits, security, or provider calls.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={savingRole}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={savingRole || roleConfirm === null}
+              onClick={(e) => {
+                e.preventDefault();
+                if (roleConfirm === null) return;
+                const next = roleConfirm;
+                setRoleConfirm(null);
+                void handleSetEditor(next);
+              }}
+            >
+              {savingRole ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  Saving…
+                </>
+              ) : roleConfirm ? (
+                "Make editor"
+              ) : (
+                "Make normal user"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deleteOpen} onOpenChange={(open) => { if (!deleteUser.isPending) setDeleteOpen(open); }}>
         <AlertDialogContent>

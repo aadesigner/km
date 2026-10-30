@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { shouldBootstrapAdmin } from "./adminBootstrap.js";
 import { clampSessionDays, DEFAULT_SESSION_DAYS, MIN_SESSION_DAYS } from "./sessionPolicy.js";
 import { hasValidAdminUnlock, isAdminAreaPinEnabled } from "./adminAreaUnlock.js";
+import { staffRoleFromFlags, type StaffRole } from "./staffRole.js";
 
 export { clampSessionDays, DEFAULT_SESSION_DAYS, MIN_SESSION_DAYS } from "./sessionPolicy.js";
 
@@ -15,6 +16,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: string;
+      staffRole?: StaffRole;
     }
   }
 }
@@ -198,14 +200,38 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
 }
 
 export async function requireAdminAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const userId = await authenticateAdminRequest(req, res);
+  const userId = await authenticateStaffRequest(req, res);
   if (!userId) return;
   req.userId = userId;
   next();
 }
 
+/** Full admin only (settings, providers, money, destructive ops). */
 export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const userId = await authenticateAdminRequest(req, res);
+  const userId = await authenticateStaffRequest(req, res);
+  if (!userId) return;
+  req.userId = userId;
+
+  if (req.staffRole !== "admin") {
+    logger.warn({ msg: "admin_only_denied", userId, role: req.staffRole, method: req.method, path: req.path });
+    res.status(403).json({ error: "Forbidden", code: "admin_only" });
+    return;
+  }
+
+  if (isAdminAreaPinEnabled() && !(await hasValidAdminUnlock(req, userId))) {
+    res.status(403).json({
+      error: "Admin area locked. Enter your admin PIN.",
+      code: "admin_unlock_required",
+    });
+    return;
+  }
+
+  next();
+}
+
+/** Admin or editor. PIN still applies when the admin-area PIN is enabled. */
+export async function requireStaff(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const userId = await authenticateStaffRequest(req, res);
   if (!userId) return;
   req.userId = userId;
 
@@ -220,7 +246,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
   next();
 }
 
-async function authenticateAdminRequest(req: Request, res: Response): Promise<string | null> {
+async function authenticateStaffRequest(req: Request, res: Response): Promise<string | null> {
   const token: string | undefined = req.cookies?.[COOKIE_NAME];
   if (!token) {
     res.status(401).json({ error: "Unauthorized" });
@@ -245,18 +271,20 @@ async function authenticateAdminRequest(req: Request, res: Response): Promise<st
   }
 
   const [user] = await db
-    .select({ isAdmin: usersTable.isAdmin })
+    .select({ isAdmin: usersTable.isAdmin, isEditor: usersTable.isEditor })
     .from(usersTable)
     .where(eq(usersTable.id, userId))
     .limit(1);
 
-  if (!user?.isAdmin) {
+  const role = staffRoleFromFlags(user ?? {});
+  if (!role) {
     logger.warn({ msg: "admin_access_denied", userId, method: req.method, path: req.path });
     res.status(403).json({ error: "Forbidden" });
     return null;
   }
 
-  logger.info({ msg: "admin_access", userId, method: req.method, path: req.path, granted: true });
+  req.staffRole = role;
+  logger.info({ msg: "admin_access", userId, role, method: req.method, path: req.path, granted: true });
   return userId;
 }
 

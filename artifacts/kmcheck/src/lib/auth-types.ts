@@ -4,6 +4,7 @@ export interface AuthUser {
   name?: string | null;
   avatarUrl?: string | null;
   isAdmin: boolean;
+  isEditor?: boolean;
   isBanned: boolean;
   hasPassword: boolean;
   countryCode?: string | null;

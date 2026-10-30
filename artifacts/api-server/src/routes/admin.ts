@@ -8,7 +8,7 @@ import { readFile } from "fs/promises";
 import { tmpdir } from "os";
 import { db, usersTable, vinLookupsTable, vinCatalogTable, paymentsTable, providersTable, pricingTable, systemSettingsTable, systemLogsTable, emailLogsTable, EMAIL_LOG_TYPES, couponsTable, passwordResetTokensTable, loginAttemptsTable, announcementsTable, pendingVinChecksTable, pendingVinCheckRequestsTable, DEFAULT_PRICING, normalizePricingAmounts } from "@workspace/db";
 import { eq, desc, count, sum, sql, gte, like, ilike, lte, and, inArray, gt, or, lt, exists, not, ne, isNull } from "drizzle-orm";
-import { requireAdmin, requireAdminAuth, hashPassword, clampSessionDays } from "../lib/auth";
+import { requireAdmin, requireStaff, requireAdminAuth, hashPassword, clampSessionDays } from "../lib/auth";
 import {
   ADMIN_UNLOCK_DAYS,
   attemptAdminAreaUnlock,
@@ -738,7 +738,7 @@ registerAdminStatsInvalidationHook(() => {
   invalidateAdminAnalyticsCache();
 });
 
-router.get("/admin/stats", requireAdmin, async (req, res) => {
+router.get("/admin/stats", requireStaff, async (req, res) => {
   res.setHeader("Cache-Control", "private, no-store");
   if (req.query.refresh === "1") {
     invalidateAdminStatsCache();
@@ -748,7 +748,7 @@ router.get("/admin/stats", requireAdmin, async (req, res) => {
 });
 
 /** Lean acquisition + ops monitoring — one period, aggregates only. */
-router.get("/admin/analytics", requireAdmin, async (req, res) => {
+router.get("/admin/analytics", requireStaff, async (req, res) => {
   try {
     res.setHeader("Cache-Control", "private, no-store");
     const period = parseAnalyticsPeriod(req.query.period);
@@ -762,7 +762,7 @@ router.get("/admin/analytics", requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/admin/presence-users", requireAdmin, async (req, res) => {
+router.get("/admin/presence-users", requireStaff, async (req, res) => {
   try {
     const periodRaw = String(req.query.period ?? "now");
     if (!["now", "today", "yesterday"].includes(periodRaw)) {
@@ -914,6 +914,7 @@ const ADMIN_USER_CORE_COLUMNS = {
   isBanned: usersTable.isBanned,
   banReason: usersTable.banReason,
   isAdmin: usersTable.isAdmin,
+  isEditor: usersTable.isEditor,
   lastLoginAt: usersTable.lastLoginAt,
   lastLoginIp: usersTable.lastLoginIp,
   signupIp: usersTable.signupIp,
@@ -942,6 +943,7 @@ function withNullAcquisition(row: Record<string, unknown>): DbUser {
     acquisitionClickId: null,
     acquisitionReferrer: null,
     acquisitionCapturedAt: null,
+    isEditor: Boolean((row as { isEditor?: unknown }).isEditor),
   } as DbUser;
 }
 
@@ -1002,6 +1004,7 @@ function toAdminUser(
     acquisitionClickId: user.acquisitionClickId ?? null,
     acquisitionReferrer: user.acquisitionReferrer ?? null,
     acquisitionCapturedAt: user.acquisitionCapturedAt ?? null,
+    isEditor: user.isEditor === true,
     totalChecks: stats?.totalChecks ?? 0,
     totalSpent: stats?.totalSpent ?? 0,
   };
@@ -1020,7 +1023,7 @@ async function loadAdminUserStats(userId: string): Promise<{ totalChecks: number
   };
 }
 
-router.get("/admin/users", requireAdmin, async (req, res) => {
+router.get("/admin/users", requireStaff, async (req, res) => {
   try {
     const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
     const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "50"), 10)));
@@ -1072,7 +1075,7 @@ router.get("/admin/users", requireAdmin, async (req, res) => {
 });
 
 /** Distinct first-touch refer channels among users (for admin filter dropdown). */
-router.get("/admin/users/refer-channels", requireAdmin, async (_req, res) => {
+router.get("/admin/users/refer-channels", requireStaff, async (_req, res) => {
   try {
     const result = await db.execute(sql`
       SELECT
@@ -1100,7 +1103,7 @@ router.get("/admin/users/refer-channels", requireAdmin, async (_req, res) => {
 });
 
 /** Distinct email domains among users (for admin filter dropdown). */
-router.get("/admin/users/email-domains", requireAdmin, async (_req, res) => {
+router.get("/admin/users/email-domains", requireStaff, async (_req, res) => {
   try {
     const result = await db.execute(sql`
       SELECT lower(split_part(email, '@', 2)) AS domain, COUNT(*)::int AS count
@@ -1335,7 +1338,7 @@ async function logAdminAction(
   } catch { /* best-effort */ }
 }
 
-router.get("/admin/users/:userId", requireAdmin, async (req, res) => {
+router.get("/admin/users/:userId", requireStaff, async (req, res) => {
   try {
     const userId = String(req.params.userId ?? "").trim();
     if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
@@ -1358,10 +1361,11 @@ router.post("/admin/users/:userId/ban", requireAdmin, async (req, res) => {
   // Protect admin accounts from being banned
   const [target] = await db.select({
     isAdmin: usersTable.isAdmin,
+    isEditor: usersTable.isEditor,
     email: usersTable.email,
   }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
-  if (target.isAdmin) { res.status(400).json({ error: "Admin accounts cannot be banned" }); return; }
+  if (target.isAdmin || target.isEditor) { res.status(400).json({ error: "Staff accounts cannot be banned" }); return; }
 
   const [user] = await db.update(usersTable)
     .set({ isBanned: true, banReason: reason ?? null, updatedAt: new Date() })
@@ -1415,10 +1419,11 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
     id: usersTable.id,
     email: usersTable.email,
     isAdmin: usersTable.isAdmin,
+    isEditor: usersTable.isEditor,
   }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
-  if (target.isAdmin) { res.status(400).json({ error: "Admin accounts cannot be deleted" }); return; }
+  if (target.isAdmin || target.isEditor) { res.status(400).json({ error: "Staff accounts cannot be deleted" }); return; }
   if (emailConfirm !== target.email.toLowerCase()) {
     res.status(400).json({ error: "Email confirmation does not match this user" });
     return;
@@ -1484,6 +1489,7 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   const [target] = await db
     .select({
       isAdmin: usersTable.isAdmin,
+      isEditor: usersTable.isEditor,
       email: usersTable.email,
       name: usersTable.name,
       phonePrefix: usersTable.phonePrefix,
@@ -1513,8 +1519,8 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
     }
   }
   if (password) {
-    if (target.isAdmin) {
-      res.status(403).json({ error: "Cannot reset another admin account's password from the panel" });
+    if (target.isAdmin || target.isEditor) {
+      res.status(403).json({ error: "Cannot reset another staff account's password from the panel" });
       return;
     }
     if (password.length < 8) { res.status(400).json({ error: "Password must be at least 8 characters" }); return; }
@@ -1561,6 +1567,55 @@ router.patch("/admin/users/:userId", requireAdmin, async (req, res) => {
   const { passwordHash: _pw, ...safeUser } = user;
   await logAdminAction(req.userId!, "admin_edit_user", userId, { fields: Object.keys(updates).filter(k => k !== "updatedAt") });
   res.json(safeUser);
+});
+
+router.post("/admin/users/:userId/role", requireAdmin, async (req, res) => {
+  const userId = String(req.params.userId ?? "").trim();
+  const isEditor = (req.body as { isEditor?: unknown }).isEditor;
+  if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
+  if (typeof isEditor !== "boolean") { res.status(400).json({ error: "isEditor must be a boolean" }); return; }
+
+  if (userId === req.userId) {
+    res.status(400).json({ error: "You cannot change your own staff role" });
+    return;
+  }
+
+  const [target] = await db
+    .select({
+      id: usersTable.id,
+      isAdmin: usersTable.isAdmin,
+      isEditor: usersTable.isEditor,
+      email: usersTable.email,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+  if (!target) { res.status(404).json({ error: "User not found" }); return; }
+  if (target.isAdmin) {
+    res.status(400).json({ error: "Admin accounts cannot be given the editor role" });
+    return;
+  }
+
+  if (target.isEditor === isEditor) {
+    const [current] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (!current) { res.status(404).json({ error: "User not found" }); return; }
+    res.json(toAdminUser(current));
+    return;
+  }
+
+  const [user] = await db.update(usersTable)
+    .set({ isEditor, updatedAt: new Date() })
+    .where(and(eq(usersTable.id, userId), eq(usersTable.isAdmin, false)))
+    .returning();
+  if (!user) {
+    res.status(400).json({ error: "Admin accounts cannot be given the editor role" });
+    return;
+  }
+
+  await logAdminAction(req.userId!, isEditor ? "admin_grant_editor" : "admin_revoke_editor", userId, {
+    email: target.email,
+  });
+  res.json(toAdminUser(user));
 });
 
 // Revoke a user's access to a VIN
@@ -1627,7 +1682,7 @@ router.post("/admin/users/:userId/grant-analysis", requireAdmin, async (req, res
   }
 });
 
-router.get("/admin/users/:userId/history", requireAdmin, async (req, res) => {
+router.get("/admin/users/:userId/history", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "");
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
   const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
@@ -1700,7 +1755,7 @@ router.post("/admin/users/:userId/credits", requireAdmin, async (req, res) => {
 });
 
 // GET /admin/users/:userId/credit-purchases
-router.get("/admin/users/:userId/credit-purchases", requireAdmin, async (req, res) => {
+router.get("/admin/users/:userId/credit-purchases", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "").trim();
   if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
 
@@ -1735,7 +1790,7 @@ router.get("/admin/users/:userId/credit-purchases", requireAdmin, async (req, re
 });
 
 // GET /admin/users/:userId/transactions — all payment activity for this user
-router.get("/admin/users/:userId/transactions", requireAdmin, async (req, res) => {
+router.get("/admin/users/:userId/transactions", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "").trim();
   if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
 
@@ -1784,7 +1839,7 @@ router.get("/admin/users/:userId/transactions", requireAdmin, async (req, res) =
 
 // ── VIN LOOKUPS ───────────────────────────────────────────────────────────────
 
-router.get("/admin/vin", requireAdmin, async (req, res) => {
+router.get("/admin/vin", requireStaff, async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "50"), 10)));
   const offset = (page - 1) * limit;
@@ -1810,7 +1865,7 @@ router.get("/admin/vin", requireAdmin, async (req, res) => {
   res.json({ items, total, page, limit });
 });
 
-router.post("/admin/vin/export", requireAdmin, async (req, res) => {
+router.post("/admin/vin/export", requireStaff, async (req, res) => {
   const body = req.body as { vin?: string; status?: string; provider?: string; fromCache?: boolean | string };
   const vin = body.vin ? String(body.vin) : "";
   const status = body.status ? String(body.status) : undefined;
@@ -3083,7 +3138,7 @@ router.post("/admin/settings/test-social-logins", requireAdmin, async (req, res)
 
 // ── TRANSACTIONS ─────────────────────────────────────────────────────────────
 
-router.get("/admin/transactions", requireAdmin, async (req, res) => {
+router.get("/admin/transactions", requireStaff, async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "50"), 10)));
   const offset = (page - 1) * limit;
@@ -3231,7 +3286,7 @@ router.delete("/admin/transactions/:id", requireAdmin, async (req, res) => {
 
 // ── VIN CATALOG ──────────────────────────────────────────────────────────────
 
-router.post("/admin/vin-catalog", requireAdmin, async (req, res) => {
+router.post("/admin/vin-catalog", requireStaff, async (req, res) => {
   const body = req.body as Record<string, unknown>;
   const vin = String(body.vin ?? "").trim().toUpperCase();
   if (vin.length !== 17) { res.status(400).json({ error: "VIN must be exactly 17 characters" }); return; }
@@ -3261,7 +3316,7 @@ const catalogListableCondition = sql`(
   OR COALESCE((${vinCatalogTable.data}->>'fulfillmentPending')::boolean, false) = false
 )`;
 
-router.get("/admin/vin-catalog", requireAdmin, async (req, res) => {
+router.get("/admin/vin-catalog", requireStaff, async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "50"), 10)));
   const offset = (page - 1) * limit;
@@ -3289,7 +3344,7 @@ router.get("/admin/vin-catalog", requireAdmin, async (req, res) => {
   res.json({ items, total, page, limit, providerStats });
 });
 
-router.get("/admin/vin-catalog/export", requireAdmin, async (req, res) => {
+router.get("/admin/vin-catalog/export", requireStaff, async (req, res) => {
   const format = String(req.query.format ?? "csv").toLowerCase();
   const provider = String(req.query.provider ?? "");
   const where = provider ? eq(vinCatalogTable.providerName, provider) : undefined;
@@ -3609,7 +3664,7 @@ router.post(
 
 // ── VIN CATALOG: BY-VIN DETAIL / EDIT / ASSIGN ───────────────────────────────
 
-router.get("/admin/vin-catalog/by-vin/:vin", requireAdmin, async (req, res) => {
+router.get("/admin/vin-catalog/by-vin/:vin", requireStaff, async (req, res) => {
   const vin = String(req.params.vin ?? "").toUpperCase();
   if (vin.length !== 17) { res.status(400).json({ error: "Invalid VIN" }); return; }
   const assignedPage = Math.max(1, parseInt(String(req.query.assignedPage ?? "1"), 10));
@@ -3641,7 +3696,7 @@ router.get("/admin/vin-catalog/by-vin/:vin", requireAdmin, async (req, res) => {
   res.json({ ...entry, lookupCount, assignedTotal, assignedPage, assignedLimit, assignedUsers: assignedUsers.rows });
 });
 
-router.patch("/admin/vin-catalog/by-vin/:vin", requireAdmin, async (req, res) => {
+router.patch("/admin/vin-catalog/by-vin/:vin", requireStaff, async (req, res) => {
   const vin = String(req.params.vin ?? "").toUpperCase();
   if (vin.length !== 17) { res.status(400).json({ error: "Invalid VIN" }); return; }
   const [entry] = await db.select().from(vinCatalogTable).where(eq(vinCatalogTable.vin, vin)).limit(1);
@@ -4275,7 +4330,7 @@ router.post("/admin/transactions/purge-failed", requireAdmin, async (req, res) =
 
 // ── Pending VIN checks (manual fulfillment before catalog) ───────────────────
 
-router.get("/admin/pending-vin-checks", requireAdmin, async (req, res) => {
+router.get("/admin/pending-vin-checks", requireStaff, async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10));
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "50"), 10)));
   const items = await listPendingVinChecksForAdmin(page, limit);
@@ -4286,14 +4341,14 @@ router.get("/admin/pending-vin-checks", requireAdmin, async (req, res) => {
 });
 
 /** Lightweight count for admin sidebar badge — avoid full /admin/stats. Must stay before /:id. */
-router.get("/admin/pending-vin-checks/count", requireAdmin, async (_req, res) => {
+router.get("/admin/pending-vin-checks/count", requireStaff, async (_req, res) => {
   const [{ open }] = await db.select({ open: count() })
     .from(pendingVinChecksTable)
     .where(eq(pendingVinChecksTable.status, "open"));
   res.json({ open: open ?? 0 });
 });
 
-router.get("/admin/pending-vin-checks/export.json", requireAdmin, async (_req, res) => {
+router.get("/admin/pending-vin-checks/export.json", requireStaff, async (_req, res) => {
   const payload = await buildAllPendingVinExportPayload();
   const date = new Date().toISOString().split("T")[0];
   res.setHeader("Content-Type", "application/json");
@@ -4301,7 +4356,7 @@ router.get("/admin/pending-vin-checks/export.json", requireAdmin, async (_req, r
   res.json(payload);
 });
 
-router.post("/admin/pending-vin-checks/import-json", requireAdmin, upload.single("file"), async (req, res) => {
+router.post("/admin/pending-vin-checks/import-json", requireStaff, upload.single("file"), async (req, res) => {
   let parsed: unknown;
   try {
     if (req.file) {
@@ -4334,7 +4389,7 @@ router.post("/admin/pending-vin-checks/import-json", requireAdmin, upload.single
   }
 });
 
-router.get("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) => {
+router.get("/admin/pending-vin-checks/:id", requireStaff, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
   const row = await getPendingVinCheckById(id);
@@ -4345,7 +4400,7 @@ router.get("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) => {
   res.json(row);
 });
 
-router.patch("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) => {
+router.patch("/admin/pending-vin-checks/:id", requireStaff, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
   const body = req.body as Record<string, unknown>;
@@ -4365,7 +4420,7 @@ router.patch("/admin/pending-vin-checks/:id", requireAdmin, async (req, res) => 
   }
 });
 
-router.post("/admin/pending-vin-checks/:id/publish", requireAdmin, async (req, res) => {
+router.post("/admin/pending-vin-checks/:id/publish", requireStaff, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
   const body = req.body as Record<string, unknown>;
@@ -4388,7 +4443,7 @@ router.post("/admin/pending-vin-checks/:id/publish", requireAdmin, async (req, r
   }
 });
 
-router.get("/admin/pending-vin-checks/:id/export.json", requireAdmin, async (req, res) => {
+router.get("/admin/pending-vin-checks/:id/export.json", requireStaff, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
   const row = await getPendingVinCheckById(id);
@@ -4403,7 +4458,7 @@ router.get("/admin/pending-vin-checks/:id/export.json", requireAdmin, async (req
   res.json(payload);
 });
 
-router.post("/admin/pending-vin-checks/:id/import-json", requireAdmin, upload.single("file"), async (req, res) => {
+router.post("/admin/pending-vin-checks/:id/import-json", requireStaff, upload.single("file"), async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
 

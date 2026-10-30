@@ -5,6 +5,7 @@ export type AuthSessionUser = {
   avatarUrl: string | null;
   passwordHash: string | null;
   isAdmin: boolean;
+  isEditor: boolean;
   isBanned: boolean;
   countryCode: string | null;
   phonePrefix: string | null;
@@ -27,6 +28,7 @@ export function toPublicUser(user: AuthSessionUser) {
     name: user.name,
     avatarUrl: user.avatarUrl,
     isAdmin: user.isAdmin,
+    isEditor: user.isEditor === true,
     isBanned: user.isBanned,
     hasPassword: !!user.passwordHash,
     countryCode: user.countryCode ?? null,

@@ -15,6 +15,8 @@ export const usersTable = pgTable("users", {
   isBanned: boolean("is_banned").notNull().default(false),
   banReason: text("ban_reason"),
   isAdmin: boolean("is_admin").notNull().default(false),
+  /** Limited admin-area role: overview, analytics, users, transactions, VIN tools. */
+  isEditor: boolean("is_editor").notNull().default(false),
   lastLoginAt: timestamp("last_login_at"),
   lastLoginIp: text("last_login_ip"),
   /** Client IP at account creation (register / OAuth). Set once, never overwritten. */

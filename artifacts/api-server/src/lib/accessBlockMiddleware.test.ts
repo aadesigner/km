@@ -39,6 +39,13 @@ describe("accessBlockMiddleware", () => {
     expect(checkAccessBlock).not.toHaveBeenCalled();
   });
 
+  it("bypasses block checks for editors", async () => {
+    const next = vi.fn() as NextFunction;
+    await accessBlockMiddleware(mockReq({ isAdmin: false, isEditor: true }), mockRes(), next);
+    expect(next).toHaveBeenCalledOnce();
+    expect(checkAccessBlock).not.toHaveBeenCalled();
+  });
+
   it("checks IP/country/device blocks for non-admin requests", async () => {
     const next = vi.fn() as NextFunction;
     await accessBlockMiddleware(mockReq({ isAdmin: false }), mockRes(), next);

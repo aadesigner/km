@@ -240,6 +240,7 @@ export interface UserProfile {
   avatarUrl?: string | null;
   isBanned?: boolean;
   isAdmin?: boolean;
+  isEditor?: boolean;
   /**
      * ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
      * @nullable
@@ -538,6 +539,7 @@ export interface AdminUser {
   name?: string | null;
   isBanned: boolean;
   isAdmin: boolean;
+  isEditor?: boolean;
   /** @nullable */
   banReason?: string | null;
   /**

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 import { RisingCompactEuro, RisingInteger } from "@/hooks/use-rising-number";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
 import {
@@ -540,6 +542,8 @@ function PresenceUserList({
 }
 
 export default function AdminOverview() {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const queryClient = useQueryClient();
   const [dashboardRefreshing, setDashboardRefreshing] = useState(false);
   const { data: rawStats, isLoading, isError, error, isFetching, dataUpdatedAt } = useAdminGetStats({
@@ -1069,7 +1073,7 @@ export default function AdminOverview() {
           {[
             { href: "/adminx/analytics", icon: Activity, label: "Analytics" },
             { href: "/adminx/transactions", icon: ReceiptText, label: "Transactions" },
-            { href: "/adminx/security", icon: Server, label: "Security" },
+            ...(fullAdmin ? [{ href: "/adminx/security", icon: Server, label: "Security" }] : []),
           ].map(({ href, icon: Icon, label }) => (
             <Link key={href} href={href}>
               <span className="inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-card px-3 py-2 md:px-3.5 md:py-2.5 text-xs md:text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors shrink-0">

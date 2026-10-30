@@ -1866,6 +1866,9 @@ components:
           type: boolean
         isAdmin:
           type: boolean
+        isEditor:
+          type: boolean
+          description: Limited staff role — overview, analytics, users, transactions, VIN tools
         countryCode:
           type: ["string", "null"]
           description: ISO 3166-1 alpha-2 profile country (AL = Albania / Kosovo)
@@ -2280,6 +2283,9 @@ components:
           type: boolean
         isAdmin:
           type: boolean
+        isEditor:
+          type: boolean
+          description: Limited staff role — overview, analytics, users, transactions, VIN tools
         banReason:
           type: ["string", "null"]
         countryCode:

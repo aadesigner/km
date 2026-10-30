@@ -1,4 +1,6 @@
 import { useRef, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useAdminGetUsers, useAdminBanUser, useAdminUnbanUser, useAdminImportUsers,
@@ -82,6 +84,8 @@ export default function AdminUsers() {
   const [countryFilter, setCountryFilter] = useState("");
   const [hasPhoneFilter, setHasPhoneFilter] = useState<"" | AdminGetUsersHasPhone>("");
   const [emailDomainFilter, setEmailDomainFilter] = useState("");
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const [referFilter, setReferFilter] = useState("");
   const [page, setPage] = useState(1);
   const [importResult, setImportResult] = useState<UserImportResult | null>(null);
@@ -245,6 +249,7 @@ export default function AdminUsers() {
           <h1 className="text-2xl sm:text-3xl font-bold">Users</h1>
           <p className="text-muted-foreground mt-1">{data?.total ?? 0} matching users</p>
         </div>
+        {fullAdmin ? (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
             <Download className="h-4 w-4 mr-1.5" />
@@ -266,6 +271,7 @@ export default function AdminUsers() {
             onChange={handleFileChange}
           />
         </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -453,7 +459,14 @@ export default function AdminUsers() {
                   {users.map((user) => (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="p-4">
-                        <AdminUserQuickEdit user={user} />
+                        {fullAdmin ? (
+                          <AdminUserQuickEdit user={user} />
+                        ) : (
+                          <div>
+                            <p className="font-medium truncate">{user.name || "—"}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        )}
                       </td>
                       <td className="p-4">
                         <UserReferBadge user={user} />
@@ -485,6 +498,8 @@ export default function AdminUsers() {
                       <td className="p-4">
                         {user.isAdmin ? (
                           <Badge variant="secondary" className="bg-primary/10 text-primary border-0">Admin</Badge>
+                        ) : user.isEditor ? (
+                          <Badge variant="secondary" className="bg-sky-100 text-sky-800 border-0">Editor</Badge>
                         ) : (
                           <Badge variant={user.isBanned ? "destructive" : "default"} className={!user.isBanned ? "bg-green-100 text-green-800 border-0" : ""}>
                             {user.isBanned ? "Banned" : "Active"}
@@ -503,7 +518,7 @@ export default function AdminUsers() {
                               Manage
                             </Button>
                           </Link>
-                          {!user.isAdmin && (
+                          {fullAdmin && !user.isAdmin && !user.isEditor && (
                             user.isBanned ? (
                               <Button
                                 size="sm" variant="outline"

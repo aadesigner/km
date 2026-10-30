@@ -14,7 +14,7 @@ export function MaintenanceGuard({ children }: { children: ReactNode }) {
   const { data: status, isLoading: statusLoading } = useMaintenanceStatus();
 
   if (!isLoaded || statusLoading) return children;
-  if (user?.isAdmin) return children;
+  if (user?.isAdmin || user?.isEditor) return children;
   if (isMaintenanceExemptPath(location)) return children;
 
   const blocked = isFrontendUnderMaintenance(location, status);

@@ -5,6 +5,7 @@ import {
   isExemptMaintenanceApiPath,
   type MaintenanceState,
 } from "./maintenancePolicy.js";
+import { isStaffFlags } from "./staffRole.js";
 
 function maintenanceActive(state: MaintenanceState): boolean {
   return state.maintenanceMode || state.maintenanceRestrictions.length > 0;
@@ -32,7 +33,7 @@ export async function maintenanceMiddleware(
     return;
   }
 
-  if (req.isAdmin) {
+  if (isStaffFlags({ isAdmin: req.isAdmin, isEditor: req.isEditor })) {
     next();
     return;
   }

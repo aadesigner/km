@@ -13,6 +13,7 @@ export const authSessionUserSelect = {
   avatarUrl: usersTable.avatarUrl,
   passwordHash: usersTable.passwordHash,
   isAdmin: usersTable.isAdmin,
+  isEditor: usersTable.isEditor,
   isBanned: usersTable.isBanned,
   countryCode: usersTable.countryCode,
   phonePrefix: usersTable.phonePrefix,

@@ -67,6 +67,7 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_referrer text`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_captured_at timestamp`,
   `CREATE INDEX IF NOT EXISTS users_acquisition_bucket_idx ON users (acquisition_bucket)`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_editor boolean NOT NULL DEFAULT false`,
 ];
 
 const TABLE_PATCHES = [

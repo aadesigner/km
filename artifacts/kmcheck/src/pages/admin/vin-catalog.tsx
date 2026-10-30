@@ -19,6 +19,8 @@ import {
   type VinCatalogFormState,
 } from "@/components/admin/vin-catalog-data-form";
 import { mileageColor } from "@/lib/mileage-color";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 
 interface BulkDeleteDialogProps {
   onConfirm: (opts: { all?: boolean; provider?: string; confirmPhrase?: string }) => void;
@@ -239,6 +241,8 @@ interface ImportResult {
 }
 
 export default function AdminVinCatalog() {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -418,6 +422,8 @@ export default function AdminVinCatalog() {
             <Plus className="h-3.5 w-3.5" />
             Add VIN
           </Button>
+          {fullAdmin ? (
+          <>
           <Button
             variant="outline"
             size="sm"
@@ -438,6 +444,8 @@ export default function AdminVinCatalog() {
             {importJsonMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
             {importJsonMutation.isPending ? "Importing…" : "Import JSON"}
           </Button>
+          </>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -458,6 +466,7 @@ export default function AdminVinCatalog() {
             <Download className="h-3.5 w-3.5" />
             {exportLoading === "json" ? "Exporting…" : "JSON"}
           </Button>
+          {fullAdmin ? (
           <Button
             variant="outline"
             size="sm"
@@ -468,6 +477,7 @@ export default function AdminVinCatalog() {
             Bulk Delete
             <ChevronDown className="h-3 w-3" />
           </Button>
+          ) : null}
         </div>
       </div>
 
@@ -554,7 +564,7 @@ export default function AdminVinCatalog() {
       </div>
 
       {/* Bulk selection bar */}
-      {selected.size > 0 && (
+      {fullAdmin && selected.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/10 border border-primary/30 rounded-xl">
           <span className="text-sm font-medium">{selected.size} selected</span>
           <Button
@@ -688,6 +698,7 @@ export default function AdminVinCatalog() {
                                 Manage <ArrowRight className="h-3 w-3" />
                               </Button>
                             </Link>
+                            {fullAdmin ? (
                             <Button
                               size="sm"
                               variant="ghost"
@@ -696,6 +707,7 @@ export default function AdminVinCatalog() {
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
+                            ) : null}
                           </div>
                         </td>
                       </tr>

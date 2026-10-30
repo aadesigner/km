@@ -21,6 +21,8 @@ import {
   Search, Gauge, Users, ShieldCheck, ShieldAlert, Loader2, UserMinus, RefreshCw,
 } from "lucide-react";
 import { AdminVinSaveBar } from "@/components/admin/admin-vin-save-bar";
+import { useAuth } from "@/lib/auth-context";
+import { isFullAdmin } from "@/lib/admin-staff";
 import {
   EMPTY_VIN_CATALOG_FORM,
   VinCatalogDataForm,
@@ -36,6 +38,8 @@ interface UserRow {
 }
 
 export default function AdminVinDetail({ params }: { params: { vin: string } }) {
+  const { user: me } = useAuth();
+  const fullAdmin = isFullAdmin(me);
   const vin = params.vin.toUpperCase();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -281,6 +285,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
             {data.isTaxi && <Badge variant="outline" className="border-amber-400 text-amber-700">Taxi</Badge>}
             {hasAccidents && <Badge variant="destructive">{data.accidentCount} accident{(data.accidentCount ?? 0) > 1 ? "s" : ""}</Badge>}
             {!hasAccidents && !data.isSalvage && <Badge variant="outline" className="border-green-500 text-green-600"><ShieldCheck className="h-3 w-3 mr-1" />Clean</Badge>}
+            {fullAdmin ? (
             <Button
               variant="outline"
               size="sm"
@@ -293,6 +298,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
                 : <RefreshCw className="h-3.5 w-3.5" />}
               {refreshMutation.isPending ? "Refreshing…" : `Refresh from ${refreshSourceLabel}`}
             </Button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -343,6 +349,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
         </CardContent>
       </Card>
 
+      {fullAdmin ? (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -411,6 +418,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
           )}
         </CardContent>
       </Card>
+      ) : null}
 
       {((detail.assignedTotal ?? 0) > 0 || assignedUsers.length > 0) && (
         <Card>
@@ -439,6 +447,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
                       <Button size="sm" variant="ghost" className="h-7 text-xs">View User</Button>
                     </Link>
                   )}
+                  {fullAdmin ? (
                   <Button
                     size="sm" variant="ghost"
                     className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -449,6 +458,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
                       ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       : <UserMinus className="h-3.5 w-3.5" />}
                   </Button>
+                  ) : null}
                 </div>
               ))}
             </div>

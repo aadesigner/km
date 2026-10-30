@@ -38,6 +38,7 @@ import {
   splitRouterLocation,
 } from "@/lib/normalize-app-path";
 import { isAdminAppPath, matchAdminRoute } from "@/lib/admin-routes";
+import { canAccessAdminRoute } from "@/lib/admin-staff";
 
 import AdminNotFound from "@/pages/admin/not-found";
 import Home from "@/pages/home";
@@ -519,8 +520,17 @@ function AdminRouteShell({ children, lazy = false }: { children: ReactNode; lazy
 
 function AdminRouteOutlet() {
   const [location] = useLocation();
+  const { user, isLoaded } = useAuth();
   const { pathname } = splitRouterLocation(location);
   const match = matchAdminRoute(pathname);
+
+  if (isLoaded && user && !canAccessAdminRoute(user, match.id)) {
+    return (
+      <AdminRouteShell>
+        <AdminNotFound />
+      </AdminRouteShell>
+    );
+  }
 
   switch (match.id) {
     case "overview":
