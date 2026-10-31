@@ -6,6 +6,7 @@ import { ReportReveal } from "@/components/report-reveal";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { cleanDisplayText } from "@/lib/report-display";
+import { dedupeVehicleExtras } from "@/lib/history-dedupe";
 import { localizeProviderDate } from "@/lib/korean-provider-text";
 import type { Language } from "@/i18n/context";
 
@@ -27,27 +28,27 @@ type Props = {
   delay?: number;
 };
 
-function sanitizeExtras(extras: VehicleExtraEntry[]): Array<{
+function sanitizeExtras(
+  extras: VehicleExtraEntry[],
+  vehicleYear?: number | null,
+): Array<{
   label: string;
   value: string;
   observedAt: string | null;
 }> {
-  const out: Array<{ label: string; value: string; observedAt: string | null }> = [];
-  const seen = new Set<string>();
-  for (const row of extras) {
-    const label = cleanDisplayText(row.label) ?? cleanDisplayText(row.key);
-    const value = cleanDisplayText(row.value);
-    if (!label || !value) continue;
-    const key = `${label.toLowerCase()}|${value.toLowerCase()}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push({
-      label,
-      value,
-      observedAt: cleanDisplayText(row.observedAt),
-    });
-  }
-  return out;
+  const cleaned = extras.map((row) => ({
+    key: row.key,
+    label: cleanDisplayText(row.label) ?? cleanDisplayText(row.key),
+    value: cleanDisplayText(row.value),
+    observedAt: cleanDisplayText(row.observedAt),
+  })).filter((row): row is { key?: string | null; label: string; value: string; observedAt: string | null } => (
+    Boolean(row.label && row.value)
+  ));
+  return dedupeVehicleExtras(cleaned, vehicleYear).map((row) => ({
+    label: row.label!,
+    value: row.value!,
+    observedAt: row.observedAt ?? null,
+  }));
 }
 
 /** GetCarAPI Extra attribute table — hidden when empty. */
@@ -62,7 +63,7 @@ export function VehicleExtrasSection({
   delay = 0.1,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const rows = sanitizeExtras(extras);
+  const rows = sanitizeExtras(extras, vehicleYear);
   if (!rows.length) return null;
 
   const visible = sliceForHistoryPreview(rows, expanded);

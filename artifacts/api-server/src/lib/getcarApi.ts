@@ -5,7 +5,7 @@
  */
 import { logger } from "./logger.js";
 import type { NormalizedVinData } from "./vinService.js";
-import { dedupeServiceHistory } from "./history-dedupe.js";
+import { dedupeServiceHistory, dedupeVehicleExtras } from "./history-dedupe.js";
 import {
   ensureGetCarApiEnabledLoaded,
   isGetCarApiEnabledCached,
@@ -509,7 +509,6 @@ export function collectGetCarApiExtras(raw: Record<string, unknown>): Array<{
 }> {
   const list = Array.isArray(raw.extra) ? raw.extra as unknown[] : [];
   const out: Array<{ key?: string | null; label: string; value: string; observedAt?: string | null }> = [];
-  const seen = new Set<string>();
 
   for (const item of list.slice(0, 80)) {
     if (!item || typeof item !== "object") continue;
@@ -517,9 +516,6 @@ export function collectGetCarApiExtras(raw: Record<string, unknown>): Array<{
     const label = str(o.label) ?? humanizeToken(str(o.key)) ?? str(o.key);
     const value = str(o.value) ?? str(o.text) ?? str(o.info);
     if (!label || !value) continue;
-    const dedupe = `${label.toLowerCase()}|${value.toLowerCase()}`;
-    if (seen.has(dedupe)) continue;
-    seen.add(dedupe);
     out.push({
       key: str(o.key),
       label,
@@ -527,7 +523,7 @@ export function collectGetCarApiExtras(raw: Record<string, unknown>): Array<{
       observedAt: isoDate(o.observedAt ?? o.date ?? o.seenAt),
     });
   }
-  return out;
+  return dedupeVehicleExtras(out);
 }
 
 /**

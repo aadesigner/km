@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  dedupeAccidents,
+  dedupeAuctionHistory,
   dedupeServiceHistory,
+  dedupeVehicleExtras,
   extractServiceRecordId,
   serviceHistoryDedupeKey,
 } from "./history-dedupe";
@@ -27,5 +30,85 @@ describe("service history performance inspection dedupe", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]?.title).toContain("vehicle condition");
     expect(serviceHistoryDedupeKey(rows[0]!)).toBe("rec:8026005635");
+  });
+});
+
+describe("same-day auction / total-loss / extra collapse", () => {
+  it("keeps one auction row per calendar day", () => {
+    const rows = dedupeAuctionHistory([
+      { date: "2024-01-09", city: "Seoul", lotStatus: "listed" },
+      { date: "January 9, 2024", city: "South Korea", lotStatus: "sold" },
+      { date: "2024-01-09T07:00:00.000Z", finalPrice: 12500 },
+    ], 2017);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.finalPrice).toBe(12500);
+    expect(rows[0]?.lotStatus).toBe("sold");
+  });
+
+  it("keeps auctions on different days", () => {
+    const rows = dedupeAuctionHistory([
+      { date: "2024-01-09", finalPrice: 1000 },
+      { date: "2024-02-01", finalPrice: 2000 },
+    ]);
+    expect(rows).toHaveLength(2);
+  });
+
+  it("collapses same-day total loss variants into one accident", () => {
+    const rows = dedupeAccidents([
+      {
+        date: "2024-01-09",
+        type: "total_loss",
+        severity: "total_loss",
+        description: "Damage: total loss · flood",
+        primaryDamage: "total_loss",
+      },
+      {
+        date: "January 9, 2024",
+        type: "total_loss",
+        description: "Damage: airbag deployed · total loss · flood · theft",
+        primaryDamage: "Total loss",
+      },
+      {
+        date: "2024-01-09T07:00:00.000Z",
+        type: "accident",
+        description: "total loss · 전손",
+      },
+    ], 2017);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.description?.toLowerCase()).toContain("airbag");
+    expect(rows[0]?.description?.toLowerCase()).toContain("theft");
+  });
+
+  it("does not merge a different-day accident", () => {
+    const rows = dedupeAccidents([
+      { date: "2024-01-09", type: "total_loss", description: "total loss" },
+      { date: "2023-06-02", type: "total_loss", description: "total loss" },
+    ]);
+    expect(rows).toHaveLength(2);
+  });
+
+  it("drops marketplace / provider-name extras", () => {
+    const rows = dedupeVehicleExtras([
+      { key: "marketplace", label: "Marketplace", value: "Carstat" },
+      { key: "source", label: "Source", value: "Finn.no" },
+      { key: "doors", label: "Doors", value: "5" },
+      { key: "provider", label: "Provider", value: "AutoScout24" },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.label).toBe("Doors");
+  });
+
+  it("collapses extra rows with the same label", () => {
+    const rows = dedupeVehicleExtras([
+      { key: "damage", label: "Damage", value: "total loss · flood", observedAt: "2024-01-09" },
+      { key: "damage", label: "Damage", value: "total loss · flood · theft · 전손", observedAt: "2024-01-09" },
+      { key: "badges", label: "Badges", value: "Total loss,flood", observedAt: "2024-01-08" },
+      { key: "badges", label: "Badges", value: "Total loss,flood,theft", observedAt: "2024-01-09" },
+    ]);
+    expect(rows).toHaveLength(2);
+    const damage = rows.find((r) => r.label === "Damage");
+    expect(damage?.value?.toLowerCase()).toContain("theft");
+    const badges = rows.find((r) => r.label === "Badges");
+    expect(badges?.value?.toLowerCase()).toContain("theft");
   });
 });

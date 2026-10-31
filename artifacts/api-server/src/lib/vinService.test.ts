@@ -1977,7 +1977,7 @@ describe("WBA5V510XKAJ52378 — provider total loss drives salvage flag", () => 
 
     expect(normalized.country).toBe("kr");
     expect(normalized.isSalvage).toBe(true);
-    expect(normalized.accidentCount).toBe(5);
+    expect(normalized.accidentCount).toBe(4);
 
     const totalLossEvents = (normalized.accidents ?? []).filter((a) => a.severity === "total_loss");
     expect(totalLossEvents.some((a) => a.date?.startsWith("2020-12-05"))).toBe(true);
