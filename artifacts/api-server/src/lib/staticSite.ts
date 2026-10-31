@@ -3,8 +3,8 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { parseVinPagePath, buildLockedHistorySummary, extractLockedPreviewSignals } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
-import { resolveLockedPreviewPhotoSources, vinHasReportData } from "./vinService.js";
-import { buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
+import { resolveLockedPreviewPhotoSources, vinHasCompleteLookup, vinHasReportData } from "./vinService.js";
+import { applyPublicVinIndexPolicy, buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { resolveVinPhotoUrlForClient } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
 import { injectMarketingPageSeoFromPath } from "./marketingSeoHtmlInject.js";
@@ -135,7 +135,10 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
   if (!parsed) return html;
 
   try {
-    const report = await vinHasReportData(parsed.vin);
+    const [report, hasCompleteLookup] = await Promise.all([
+      vinHasReportData(parsed.vin),
+      vinHasCompleteLookup(parsed.vin),
+    ]);
     if (!report) {
       const seo = buildVinOnlyFallbackSeo(parsed.lang, parsed.vin, origin);
       return injectVinPageSeoIntoHtml(html, seo, parsed.lang, origin);
@@ -153,11 +156,14 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
     }
 
     const vehicle = catalogDataToVinSeoVehicle(parsed.vin, d, thumbnailUrl);
-    const seo = buildVinSeoFromCatalogData(parsed.lang, parsed.vin, d, {
-      thumbnailUrl,
-      origin,
-      isUnlocked: false,
-    });
+    const seo = applyPublicVinIndexPolicy(
+      buildVinSeoFromCatalogData(parsed.lang, parsed.vin, d, {
+        thumbnailUrl,
+        origin,
+        isUnlocked: false,
+      }),
+      hasCompleteLookup,
+    );
     const summary = buildLockedHistorySummary(
       parsed.lang,
       vehicle,

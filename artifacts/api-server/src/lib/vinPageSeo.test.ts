@@ -9,7 +9,7 @@ import {
   parseVinPagePath,
 } from "@workspace/vin-page-seo";
 import { injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
-import { catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
+import { applyPublicVinIndexPolicy, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 
 const SAMPLE_HTML = `<!DOCTYPE html>
 <html><head><title>kmcheck.com</title></head><body>
@@ -216,6 +216,25 @@ describe("vin-page-seo", () => {
     expect(seo.noIndex).toBe(true);
     expect(seo.jsonLd).toHaveLength(0);
     expect(seo.ogImage).toBeUndefined();
+  });
+
+  it("noindexes import-only rows even when a preview image exists", () => {
+    const seo = applyPublicVinIndexPolicy(
+      buildVinPageSeo(
+        "en",
+        {
+          vin: "1HGBH41JXMN109186",
+          make: "Honda",
+          model: "Accord",
+          year: 1991,
+          thumbnailUrl: "/api/vin/image?token=abc",
+        },
+        "https://kmcheck.com",
+      ),
+      false,
+    );
+    expect(seo.noIndex).toBe(true);
+    expect(seo.jsonLd).toHaveLength(0);
   });
 
   it("emits WebPage + Vehicle JSON-LD when preview image exists", () => {

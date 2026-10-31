@@ -6,6 +6,7 @@
  * - Never append VINs into the marketing urlset (keeps sitemap-pages.xml small).
  * - One <url> entry per VIN (en loc + xhtml hreflang alternates) — not × langs.
  * - Shard at ~25k URLs so each file stays under Google's 50k / ~50MB limits.
+ * - Only complete lookups with a preview photo; cap 2000 so imports cannot flood Google.
  * - Atomic writes where practical so a half-written file never becomes production.
  */
 import {
@@ -109,7 +110,7 @@ function urlEntryForVin(vin, lastmod) {
     <loc>${ORIGIN}/en${path}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
 ${alternates}
 ${xDefault}
   </url>`;
@@ -163,7 +164,13 @@ try {
        OR jsonb_array_length(COALESCE(data->'photosHd', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'photos360Exterior', '[]'::jsonb)) > 0
      )
-     ORDER BY updated_at DESC LIMIT 50000`,
+     AND COALESCE((data->>'fulfillmentPending')::boolean, false) = false
+     AND EXISTS (
+       SELECT 1 FROM vin_lookups vl
+       WHERE vl.vin = vin_catalog.vin
+         AND vl.status = 'complete'
+     )
+     ORDER BY updated_at DESC LIMIT 2000`,
   );
   rows = result.rows;
   await client.end();

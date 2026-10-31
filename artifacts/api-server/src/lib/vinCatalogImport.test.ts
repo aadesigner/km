@@ -16,6 +16,7 @@ import {
   catalogHasDeliverableReport,
   catalogHasPreviewPhoto,
   catalogIsSeoIndexable,
+  VIN_SITEMAP_MAX_URLS,
   catalogDeliverableFromHint,
   normalizeJsonImportRecord,
   parseCsvBool,
@@ -67,6 +68,10 @@ describe("catalogHasDeliverableReport", () => {
       photos: ["https://cdn.test/1.jpg"],
     };
     expect(catalogIsSeoIndexable(withPhoto)).toBe(true);
+  });
+
+  it("caps public VIN sitemap well below the import flood", () => {
+    expect(VIN_SITEMAP_MAX_URLS).toBe(2_000);
   });
 
   it("catalogDeliverableFromHint matches full-data helper", () => {

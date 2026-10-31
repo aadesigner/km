@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { removeVinUrlBlocks } from "./sitemapMaintenance.js";
 
 describe("removeVinUrlBlocks", () => {
@@ -36,5 +37,14 @@ describe("removeVinUrlBlocks", () => {
     const out = removeVinUrlBlocks(xml, "JM1BPAM7XK1234567");
     expect(out).not.toContain("JM1BPAM7XK1234567");
     expect(out).toContain("OTHERVIN000000001");
+  });
+});
+
+describe("VIN sitemap recovery policy", () => {
+  it("requires a complete lookup and a 2k cap, not the 50k photo dump", () => {
+    const src = readFileSync(new URL("./sitemapMaintenance.ts", import.meta.url), "utf8");
+    expect(src).toContain("CATALOG_HAS_COMPLETE_LOOKUP_SQL");
+    expect(src).toContain("VIN_SITEMAP_MAX_URLS");
+    expect(src).not.toContain("limit(50_000)");
   });
 });

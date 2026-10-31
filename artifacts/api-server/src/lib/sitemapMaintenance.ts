@@ -135,7 +135,7 @@ function urlEntryForVin(vin: string, lastmod: string): string {
     <loc>${ORIGIN}/en${vinPath}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.3</priority>
 ${alternates}
 ${xDefault}
   </url>`;
@@ -188,9 +188,14 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
   if (!publicDir) return null;
   if (!existsSync(path.join(publicDir, "sitemap-pages.xml"))) return null;
 
-  const { desc, sql } = await import("drizzle-orm");
+  const { desc, sql, and } = await import("drizzle-orm");
   const { db, vinCatalogTable } = await import("@workspace/db");
-  const { CATALOG_HAS_PREVIEW_PHOTO_SQL } = await import("./vinCatalogImport.js");
+  const {
+    CATALOG_HAS_PREVIEW_PHOTO_SQL,
+    CATALOG_HAS_COMPLETE_LOOKUP_SQL,
+    CATALOG_NOT_FULFILLMENT_PENDING_SQL,
+    VIN_SITEMAP_MAX_URLS,
+  } = await import("./vinCatalogImport.js");
 
   const today = new Date().toISOString().slice(0, 10);
   const rows = await db
@@ -199,9 +204,13 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
       updatedAt: vinCatalogTable.updatedAt,
     })
     .from(vinCatalogTable)
-    .where(sql.raw(CATALOG_HAS_PREVIEW_PHOTO_SQL))
+    .where(and(
+      sql.raw(CATALOG_HAS_PREVIEW_PHOTO_SQL),
+      sql.raw(CATALOG_NOT_FULFILLMENT_PENDING_SQL),
+      sql.raw(CATALOG_HAS_COMPLETE_LOOKUP_SQL),
+    ))
     .orderBy(desc(vinCatalogTable.updatedAt))
-    .limit(50_000);
+    .limit(VIN_SITEMAP_MAX_URLS);
 
   clearVinShardsInDir(publicDir);
 

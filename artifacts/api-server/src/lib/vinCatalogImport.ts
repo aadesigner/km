@@ -78,12 +78,35 @@ export function catalogIsSeoIndexable(data: unknown): boolean {
   return catalogHasDeliverableReport(data) && catalogHasPreviewPhoto(data);
 }
 
+/**
+ * Hard cap after the GCA marketplace import flooded Google with ~50k VIN URLs.
+ * Keep marketing pages (`sitemap-pages.xml`) as the dominant crawl target.
+ */
+export const VIN_SITEMAP_MAX_URLS = 2_000;
+
 /** SQL fragment for VIN sitemap queries — keep in sync with catalogHasPreviewPhoto. */
 export const CATALOG_HAS_PREVIEW_PHOTO_SQL = `
   (
     jsonb_array_length(COALESCE(data->'photos', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'photosHd', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'photos360Exterior', '[]'::jsonb)) > 0
+  )
+`.trim();
+
+/** JSON-import stubs and unpublished pending rows stay out of Google. */
+export const CATALOG_NOT_FULFILLMENT_PENDING_SQL = `
+  COALESCE((data->>'fulfillmentPending')::boolean, false) = false
+`.trim();
+
+/**
+ * Paid/real reports only — catalog rows from JSON import have no vin_lookups row.
+ * Keep in sync with generate-vin-sitemap.mjs and refreshVinSitemapShards.
+ */
+export const CATALOG_HAS_COMPLETE_LOOKUP_SQL = `
+  EXISTS (
+    SELECT 1 FROM vin_lookups vl
+    WHERE vl.vin = vin_catalog.vin
+      AND vl.status = 'complete'
   )
 `.trim();
 

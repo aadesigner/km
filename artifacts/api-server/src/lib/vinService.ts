@@ -832,6 +832,18 @@ export type VinReportServeBundle = {
   mediaVersion?: number;
 };
 
+/** True when a buyer (or cache-complete lookup) actually ran this VIN — not a JSON-import stub. */
+export async function vinHasCompleteLookup(vin: string): Promise<boolean> {
+  const normalized = vin.trim().toUpperCase();
+  if (!normalized) return false;
+  const [row] = await db
+    .select({ id: vinLookupsTable.id })
+    .from(vinLookupsTable)
+    .where(and(eq(vinLookupsTable.vin, normalized), eq(vinLookupsTable.status, "complete")))
+    .limit(1);
+  return row != null;
+}
+
 /** Catalog entry only — public previews and SEO must not leak removed VINs via orphaned lookups. */
 export async function vinHasReportData(vin: string): Promise<VinReportServeBundle | null> {
   const normalized = vin.trim().toUpperCase();
