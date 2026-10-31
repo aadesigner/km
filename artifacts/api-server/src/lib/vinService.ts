@@ -836,12 +836,17 @@ export type VinReportServeBundle = {
 export async function vinHasCompleteLookup(vin: string): Promise<boolean> {
   const normalized = vin.trim().toUpperCase();
   if (!normalized) return false;
-  const [row] = await db
-    .select({ id: vinLookupsTable.id })
-    .from(vinLookupsTable)
-    .where(and(eq(vinLookupsTable.vin, normalized), eq(vinLookupsTable.status, "complete")))
-    .limit(1);
-  return row != null;
+  try {
+    const [row] = await db
+      .select({ id: vinLookupsTable.id })
+      .from(vinLookupsTable)
+      .where(and(eq(vinLookupsTable.vin, normalized), eq(vinLookupsTable.status, "complete")))
+      .limit(1);
+    return row != null;
+  } catch (err) {
+    logger.warn({ err, vin: normalized }, "vinHasCompleteLookup failed; treat as not indexable");
+    return false;
+  }
 }
 
 /** Catalog entry only — public previews and SEO must not leak removed VINs via orphaned lookups. */

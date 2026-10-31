@@ -18,7 +18,7 @@ import {
   sanitizeAuctionPanoramaUrl,
   splitAuctionPanoramaUrls,
 } from "../lib/vinService.js";
-import { catalogHasDeliverableReport, catalogIsSeoIndexable } from "../lib/vinCatalogImport.js";
+import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger.js";
 import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
@@ -876,10 +876,9 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
 
   const userId = req.userId;
 
-  const [report, ownsReport, hasCompleteLookup] = await Promise.all([
+  const [report, ownsReport] = await Promise.all([
     resolveVinReportForViewer(vin, userId),
     userId ? userOwnsVinReport(userId, vin) : Promise.resolve(false),
-    vinHasCompleteLookup(vin),
   ]);
 
   // Paid / credit unlock can land here while provider fetch is still in flight and
@@ -902,7 +901,6 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
         photos: [],
         inCatalog: false,
         isUnlocked: true,
-        seoIndexable: false,
         status: VIN_FULFILLING_STATUS,
         fulfilling: true,
       });
@@ -946,7 +944,6 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     photos: lockedPreviewPhotos,
     inCatalog,
     isUnlocked,
-    seoIndexable: hasCompleteLookup && catalogIsSeoIndexable(d),
     price: displayPrice,
     currency,
   };
