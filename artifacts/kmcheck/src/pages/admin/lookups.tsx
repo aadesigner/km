@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Search, RefreshCw, Trash2, ImageOff, AlertTriangle, Download } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { isFullAdmin } from "@/lib/admin-staff";
+import { AdminPublicVinLink } from "@/components/admin/admin-public-vin-link";
 
 const STATUS_VARIANTS: Record<
   string,
@@ -378,16 +379,19 @@ export default function AdminLookups() {
                       {vd?.isSalvage && <span className="text-orange-600">Salvage</span>}
                       <span className="ml-auto">{new Date(lookup.createdAt).toLocaleDateString()}</span>
                     </div>
-                    {fullAdmin ? (
                     <div className="flex gap-2">
+                      <AdminPublicVinLink vin={lookup.vin} className="flex-1" />
+                      {fullAdmin ? (
+                      <>
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => refreshVin.mutate({ id: lookup.id })} disabled={refreshVin.isPending}>
                         <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDelete(lookup.id)} disabled={deletingId === lookup.id}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
+                      </>
+                      ) : null}
                     </div>
-                    ) : null}
                   </div>
                 );
               })}
@@ -466,8 +470,10 @@ export default function AdminLookups() {
                           {new Date(lookup.createdAt).toLocaleString()}
                         </td>
                         <td className="p-4 text-right">
-                          {fullAdmin ? (
                           <div className="flex items-center justify-end gap-1.5">
+                            <AdminPublicVinLink vin={lookup.vin} compact />
+                            {fullAdmin ? (
+                            <>
                             <Button
                               size="sm"
                               variant="outline"
@@ -486,8 +492,9 @@ export default function AdminLookups() {
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
+                            </>
+                            ) : null}
                           </div>
-                          ) : null}
                         </td>
                       </tr>
                     );

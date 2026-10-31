@@ -21,8 +21,10 @@ import {
   Search, Gauge, Users, ShieldCheck, ShieldAlert, Loader2, UserMinus, RefreshCw,
 } from "lucide-react";
 import { AdminVinSaveBar } from "@/components/admin/admin-vin-save-bar";
+import { AdminPublicVinLink } from "@/components/admin/admin-public-vin-link";
 import { useAuth } from "@/lib/auth-context";
 import { isFullAdmin } from "@/lib/admin-staff";
+import { catalogDataIsPublished } from "@/lib/public-vin-page";
 import {
   EMPTY_VIN_CATALOG_FORM,
   VinCatalogDataForm,
@@ -263,6 +265,7 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   const data = (detail.data ?? {}) as VinCatalogData;
   const vehicle = [data.year, data.make, data.model].filter(Boolean).join(" ") || "Unknown Vehicle";
   const hasAccidents = (data.accidentCount ?? 0) > 0;
+  const isPublished = catalogDataIsPublished(detail.data);
   const assignedUsers = (detail.assignedUsers ?? []) as Array<{
     id: number; user_id: string; created_at: string; email: string | null; name: string | null;
   }>;
@@ -279,6 +282,11 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
           <div className="flex-1 min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold break-words">{vehicle}</h1>
             <p className="font-mono text-sm text-muted-foreground mt-0.5 break-all">{vin}</p>
+            {isPublished ? (
+              <div className="mt-2">
+                <AdminPublicVinLink vin={vin} label="Open VIN page" />
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {data.isSalvage && <Badge variant="outline" className="border-orange-400 text-orange-600">Salvage</Badge>}

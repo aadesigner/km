@@ -21,6 +21,7 @@ import {
 import { mileageColor } from "@/lib/mileage-color";
 import { useAuth } from "@/lib/auth-context";
 import { isFullAdmin } from "@/lib/admin-staff";
+import { AdminPublicVinLink } from "@/components/admin/admin-public-vin-link";
 
 interface BulkDeleteDialogProps {
   onConfirm: (opts: { all?: boolean; provider?: string; confirmPhrase?: string }) => void;
@@ -693,6 +694,7 @@ export default function AdminVinCatalog() {
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center gap-1 justify-end">
+                            <AdminPublicVinLink vin={item.vin} compact />
                             <Link href={vinPath}>
                               <Button size="sm" variant="ghost" className="gap-1 text-xs h-7">
                                 Manage <ArrowRight className="h-3 w-3" />
