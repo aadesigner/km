@@ -41,10 +41,11 @@ describe("removeVinUrlBlocks", () => {
 });
 
 describe("VIN sitemap recovery policy", () => {
-  it("requires complete lookup, history depth, and a 400 cap", () => {
+  it("requires complete lookup, SEO-worthy history, richness order, and a 400 cap", () => {
     const src = readFileSync(new URL("./sitemapMaintenance.ts", import.meta.url), "utf8");
     expect(src).toContain("CATALOG_HAS_COMPLETE_LOOKUP_SQL");
-    expect(src).toContain("CATALOG_HAS_HISTORY_DEPTH_SQL");
+    expect(src).toContain("CATALOG_HAS_SEO_WORTHY_HISTORY_SQL");
+    expect(src).toContain("CATALOG_SEO_HISTORY_RICHNESS_SQL");
     expect(src).toContain("VIN_SITEMAP_MAX_URLS");
     expect(src).toContain("priority>0.25</priority>");
     expect(src).not.toContain("limit(50_000)");

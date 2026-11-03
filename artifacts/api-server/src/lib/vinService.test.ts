@@ -134,6 +134,22 @@ describe("parseLotOdometerKm", () => {
   it("prefers km when both km and mi are present", () => {
     expect(parseLotOdometerKm({ odometer: { km: 50_000, mi: 100_000 } })).toBe(50_000);
   });
+
+  it("treats flat Copart/IAAI odometer integers as miles", () => {
+    expect(parseLotOdometerKm({
+      odometer: 100_000,
+      domain: { name: "copart.com" },
+      location: { country: { iso: "us" } },
+    })).toBe(160_934);
+  });
+
+  it("keeps flat marketplace odometer as km", () => {
+    expect(parseLotOdometerKm({
+      odometer: 100_000,
+      domain: { name: "encar.com" },
+      location: { country: { iso: "kr" } },
+    })).toBe(100_000);
+  });
 });
 
 describe("resolveVehicleCountry", () => {

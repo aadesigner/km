@@ -192,7 +192,8 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
   const { db, vinCatalogTable } = await import("@workspace/db");
   const {
     CATALOG_HAS_PREVIEW_PHOTO_SQL,
-    CATALOG_HAS_HISTORY_DEPTH_SQL,
+    CATALOG_HAS_SEO_WORTHY_HISTORY_SQL,
+    CATALOG_SEO_HISTORY_RICHNESS_SQL,
     CATALOG_HAS_COMPLETE_LOOKUP_SQL,
     CATALOG_NOT_FULFILLMENT_PENDING_SQL,
     VIN_SITEMAP_MAX_URLS,
@@ -207,11 +208,11 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
     .from(vinCatalogTable)
     .where(and(
       sql.raw(CATALOG_HAS_PREVIEW_PHOTO_SQL),
-      sql.raw(CATALOG_HAS_HISTORY_DEPTH_SQL),
+      sql.raw(CATALOG_HAS_SEO_WORTHY_HISTORY_SQL),
       sql.raw(CATALOG_NOT_FULFILLMENT_PENDING_SQL),
       sql.raw(CATALOG_HAS_COMPLETE_LOOKUP_SQL),
     ))
-    .orderBy(desc(vinCatalogTable.updatedAt))
+    .orderBy(sql.raw(`${CATALOG_SEO_HISTORY_RICHNESS_SQL} DESC`), desc(vinCatalogTable.updatedAt))
     .limit(VIN_SITEMAP_MAX_URLS);
 
   clearVinShardsInDir(publicDir);

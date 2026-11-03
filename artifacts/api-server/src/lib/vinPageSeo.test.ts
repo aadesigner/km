@@ -240,7 +240,7 @@ describe("vin-page-seo", () => {
     expect(blocked.jsonLd).toHaveLength(0);
   });
 
-  it("emits WebPage + Vehicle JSON-LD when preview image exists", () => {
+  it("emits WebPage JSON-LD without Vehicle type when preview image exists", () => {
     const seo = buildVinPageSeo(
       "en",
       {
@@ -253,7 +253,11 @@ describe("vin-page-seo", () => {
       "https://kmcheck.com",
     );
     expect(seo.noIndex).toBe(false);
-    expect(seo.jsonLd).toHaveLength(2);
+    expect(seo.jsonLd).toHaveLength(1);
+    expect(seo.jsonLd[0]).toMatchObject({ "@type": "WebPage" });
+    const blob = JSON.stringify(seo.jsonLd);
+    expect(blob).not.toContain('"@type":"Vehicle"');
+    expect(blob).toContain("CreativeWork");
     expect(seo.canonicalPath).toBe("/en/vin/1HGBH41JXMN109186");
     expect(normalizeVin("1hgbh41jxmn109186")).toBe("1HGBH41JXMN109186");
   });

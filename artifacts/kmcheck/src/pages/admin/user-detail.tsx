@@ -592,6 +592,8 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
   const canEditProfile = fullAdmin || !user.isAdmin;
   const canEditPassword = !user.isAdmin;
   const canEditCredits = !user.isAdmin && (fullAdmin || userId !== authUser?.id);
+  /** Editors + admins may remove normal users only (never admin/editor accounts). */
+  const canDeleteUser = !user.isAdmin && !user.isEditor;
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-6 max-w-5xl min-w-0 w-full">
@@ -1209,7 +1211,7 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
         </div>
       </div>
 
-      {fullAdmin && !user.isAdmin && !user.isEditor && (
+      {canDeleteUser && (
         <Panel className="overflow-hidden border-destructive/30 bg-destructive/[0.03]">
           <div className="p-3.5 md:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0">

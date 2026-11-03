@@ -1398,12 +1398,13 @@ router.post("/admin/users/:userId/unban", requireAdmin, async (req, res) => {
 
 // Permanently delete a user account and all user-owned data.
 // Shared vin_catalog rows are intentionally preserved.
-router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
+// Editors may delete normal users only — never admin/editor/self.
+router.delete("/admin/users/:userId", requireStaff, async (req, res) => {
   const userId = String(req.params.userId ?? "").trim();
   if (!userId) { res.status(400).json({ error: "Invalid user ID" }); return; }
 
-  const adminId = req.userId!;
-  if (userId === adminId) {
+  const actorId = req.userId!;
+  if (userId === actorId) {
     res.status(400).json({ error: "You cannot delete your own account" });
     return;
   }
@@ -1423,7 +1424,13 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
   }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
   if (!target) { res.status(404).json({ error: "User not found" }); return; }
-  if (target.isAdmin || target.isEditor) { res.status(400).json({ error: "Staff accounts cannot be deleted" }); return; }
+  if (target.isAdmin || target.isEditor) {
+    res.status(403).json({
+      error: "Staff accounts cannot be deleted",
+      code: "staff_account_protected",
+    });
+    return;
+  }
   if (emailConfirm !== target.email.toLowerCase()) {
     res.status(400).json({ error: "Email confirmation does not match this user" });
     return;
@@ -1458,11 +1465,12 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
       };
     });
 
-    await logAdminAction(adminId, "admin_delete_user", userId, {
+    await logAdminAction(actorId, "admin_delete_user", userId, {
       email: target.email,
+      byRole: req.staffRole ?? "admin",
       ...result,
     });
-    logger.info({ adminId, userId, email: target.email, ...result }, "User deleted by admin");
+    logger.info({ actorId, staffRole: req.staffRole, userId, email: target.email, ...result }, "User deleted by staff");
 
     res.json({ ok: true, ...result });
   } catch (err) {
@@ -1470,7 +1478,7 @@ router.delete("/admin/users/:userId", requireAdmin, async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    logger.error({ err, adminId, userId }, "Failed to delete user");
+    logger.error({ err, actorId, userId }, "Failed to delete user");
     res.status(500).json({ error: "Failed to delete user. Please try again." });
   }
 });

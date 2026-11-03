@@ -17,6 +17,7 @@ import {
   catalogHasPreviewPhoto,
   catalogIsSeoIndexable,
   catalogHasHistoryDepth,
+  catalogHasSeoWorthyHistory,
   VIN_SITEMAP_MAX_URLS,
   catalogDeliverableFromHint,
   normalizeJsonImportRecord,
@@ -53,7 +54,7 @@ describe("catalogHasDeliverableReport", () => {
     expect(catalogHasDeliverableReport({})).toBe(false);
   });
 
-  it("requires preview photo and history depth for SEO indexability", () => {
+  it("requires preview photo and SEO-worthy history for indexability", () => {
     const withHistoryOnly = {
       make: "Hyundai",
       model: "Elantra",
@@ -62,6 +63,7 @@ describe("catalogHasDeliverableReport", () => {
     };
     expect(catalogHasDeliverableReport(withHistoryOnly)).toBe(true);
     expect(catalogHasHistoryDepth(withHistoryOnly)).toBe(true);
+    expect(catalogHasSeoWorthyHistory(withHistoryOnly)).toBe(false);
     expect(catalogHasPreviewPhoto(withHistoryOnly)).toBe(false);
     expect(catalogIsSeoIndexable(withHistoryOnly)).toBe(false);
 
@@ -75,14 +77,31 @@ describe("catalogHasDeliverableReport", () => {
     expect(catalogHasHistoryDepth(photoOnly)).toBe(false);
     expect(catalogIsSeoIndexable(photoOnly)).toBe(false);
 
-    const withPhotoAndHistory = {
+    // Thin: photo + single mileage reading → stay online, noindex
+    const thinPhotoMileage = {
       ...withHistoryOnly,
       photos: ["https://cdn.test/1.jpg"],
     };
-    expect(catalogIsSeoIndexable(withPhotoAndHistory)).toBe(true);
+    expect(catalogIsSeoIndexable(thinPhotoMileage)).toBe(false);
+
+    const withPhotoAndDeepMileage = {
+      ...thinPhotoMileage,
+      mileageHistory: [
+        { date: "2020-01-01", odometer: 50000 },
+        { date: "2022-01-01", odometer: 80000 },
+      ],
+    };
+    expect(catalogHasSeoWorthyHistory(withPhotoAndDeepMileage)).toBe(true);
+    expect(catalogIsSeoIndexable(withPhotoAndDeepMileage)).toBe(true);
+
+    const withPhotoAndAccidents = {
+      ...photoOnly,
+      accidents: [{ date: "2021-01-01", severity: "minor" }],
+    };
+    expect(catalogIsSeoIndexable(withPhotoAndAccidents)).toBe(true);
 
     expect(catalogIsSeoIndexable({
-      ...withPhotoAndHistory,
+      ...withPhotoAndDeepMileage,
       fulfillmentPending: true,
     })).toBe(false);
   });

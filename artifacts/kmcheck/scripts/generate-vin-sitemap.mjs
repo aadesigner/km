@@ -6,7 +6,7 @@
  * - Never append VINs into the marketing urlset (keeps sitemap-pages.xml small).
  * - One <url> entry per VIN (en loc + xhtml hreflang alternates) — not × langs.
  * - Shard at ~25k URLs so each file stays under Google's 50k / ~50MB limits.
- * - Only complete lookups with preview photo + history depth; cap 400 so marketing pages dominate.
+ * - Only complete lookups with preview photo + SEO-worthy history; cap 400; richer first.
  * - Atomic writes where practical so a half-written file never becomes production.
  */
 import {
@@ -166,12 +166,15 @@ try {
      )
      AND (
        jsonb_array_length(COALESCE(data->'accidents', '[]'::jsonb)) > 0
-       OR jsonb_array_length(COALESCE(data->'mileageHistory', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'ownerHistory', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'insuranceClaims', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb)) > 0
        OR jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb)) > 0
+       OR (
+         SELECT COUNT(*)::int FROM jsonb_array_elements(COALESCE(data->'mileageHistory', '[]'::jsonb)) AS elem
+         WHERE COALESCE((elem->>'odometer')::numeric, 0) > 0
+       ) >= 2
      )
      AND COALESCE((data->>'fulfillmentPending')::boolean, false) = false
      AND EXISTS (
@@ -179,7 +182,16 @@ try {
        WHERE vl.vin = vin_catalog.vin
          AND vl.status = 'complete'
      )
-     ORDER BY updated_at DESC LIMIT 400`,
+     ORDER BY (
+       jsonb_array_length(COALESCE(data->'accidents', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'ownerHistory', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'insuranceClaims', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb))
+       + jsonb_array_length(COALESCE(data->'mileageHistory', '[]'::jsonb))
+     ) DESC, updated_at DESC
+     LIMIT 400`,
   );
   rows = result.rows;
   await client.end();

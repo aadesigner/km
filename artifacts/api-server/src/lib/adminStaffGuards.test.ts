@@ -26,6 +26,7 @@ describe("admin route staff vs admin guards", () => {
     expect(guardFor("get", "/admin/users/:userId")).toBe("staff");
     expect(guardFor("patch", "/admin/users/:userId")).toBe("staff");
     expect(guardFor("post", "/admin/users/:userId/credits")).toBe("staff");
+    expect(guardFor("delete", "/admin/users/:userId")).toBe("staff");
     expect(guardFor("get", "/admin/vin")).toBe("staff");
     expect(guardFor("get", "/admin/transactions")).toBe("staff");
     expect(guardFor("get", "/admin/vin-catalog")).toBe("staff");
@@ -44,7 +45,6 @@ describe("admin route staff vs admin guards", () => {
     expect(guardFor("get", "/admin/security/settings")).toBe("admin");
     expect(guardFor("post", "/admin/users/:userId/role")).toBe("admin");
     expect(guardFor("post", "/admin/users/:userId/ban")).toBe("admin");
-    expect(guardFor("delete", "/admin/users/:userId")).toBe("admin");
     expect(guardFor("post", "/admin/users/:userId/grant-analysis")).toBe("admin");
     expect(guardFor("post", "/admin/vin-catalog/by-vin/:vin/refresh")).toBe("admin");
     expect(guardFor("post", "/admin/vin-catalog/bulk-delete")).toBe("admin");

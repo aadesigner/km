@@ -39,6 +39,7 @@ import {
   ownerHistoryDedupeKey,
   registryHistoryDedupeKey,
 } from "./history-dedupe.js";
+import { filterMileageHistoryForPersist } from "./mileageHistoryRepair.js";
 import { parseKmFromText, resolveLatestOdometerKm } from "@workspace/odometer-resolve";
 import {
   normalizeKrwAmountText,
@@ -2460,7 +2461,11 @@ export function parseLotOdometerKm(lot: Record<string, unknown>): number | null 
     if (Number.isFinite(mi) && mi > 0) return Math.round(mi * KM_PER_MILE);
   }
   const flat = Number(lotOdo);
-  if (Number.isFinite(flat) && flat > 0) return Math.round(flat);
+  if (Number.isFinite(flat) && flat > 0) {
+    // Copart/IAAI flat integers are miles; treat as mi → km so timelines don't zigzag.
+    if (isNorthAmericanAuctionLot(lot)) return Math.round(flat * KM_PER_MILE);
+    return Math.round(flat);
+  }
   return null;
 }
 
@@ -3995,8 +4000,13 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
 
   const vehicleYear = Number(raw.year) || null;
 
-  const sortedMileageHistory = mileageHistory.length > 0
-    ? sortHistoryNewestFirst(dedupeMileageHistory(mileageHistory, vehicleYear))
+  const mileageForTimeline = filterMileageHistoryForPersist(
+    mileageHistory,
+    country,
+    registryHistory,
+  );
+  const sortedMileageHistory = mileageForTimeline.length > 0
+    ? sortHistoryNewestFirst(dedupeMileageHistory(mileageForTimeline, vehicleYear))
     : undefined;
   const sortedOwnerHistory = resolvedOwnerHistory.length > 0
     ? sortHistoryNewestFirst(resolvedOwnerHistory)

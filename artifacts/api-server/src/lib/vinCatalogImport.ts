@@ -79,7 +79,7 @@ function catalogHistoryArrayHasRows(value: unknown): boolean {
 
 /**
  * True when the report has real history depth — not identity/photo stubs.
- * Keep in sync with CATALOG_HAS_HISTORY_DEPTH_SQL.
+ * Keep in sync with CATALOG_HAS_HISTORY_DEPTH_SQL. Used for deliverable checks.
  */
 export function catalogHasHistoryDepth(data: unknown): boolean {
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
@@ -95,15 +95,50 @@ export function catalogHasHistoryDepth(data: unknown): boolean {
   );
 }
 
+function catalogMileageReadingCount(data: unknown): number {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return 0;
+  const mh = (data as Record<string, unknown>).mileageHistory;
+  if (!Array.isArray(mh)) return 0;
+  let n = 0;
+  for (const row of mh) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) continue;
+    const odo = Number((row as { odometer?: unknown }).odometer);
+    if (Number.isFinite(odo) && odo > 0) n += 1;
+  }
+  return n;
+}
+
 /**
- * Google eligibility for a VIN page body: photo + history depth, never pending stubs.
+ * Stricter than deliverable history: accidents/owners/registry/etc., or ≥2 mileage readings.
+ * Single thin mileage stubs stay online but noindex.
+ * Keep in sync with CATALOG_HAS_SEO_WORTHY_HISTORY_SQL.
+ */
+export function catalogHasSeoWorthyHistory(data: unknown): boolean {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const d = data as Record<string, unknown>;
+  if (
+    catalogHistoryArrayHasRows(d.accidents)
+    || catalogHistoryArrayHasRows(d.ownerHistory)
+    || catalogHistoryArrayHasRows(d.insuranceClaims)
+    || catalogHistoryArrayHasRows(d.registryHistory)
+    || catalogHistoryArrayHasRows(d.auctionHistory)
+    || catalogHistoryArrayHasRows(d.serviceHistory)
+  ) {
+    return true;
+  }
+  return catalogMileageReadingCount(data) >= 2;
+}
+
+/**
+ * Google eligibility for a VIN page body: photo + SEO-worthy history, never pending stubs.
  * Runtime also requires a complete vin_lookups row (paid/real check) before indexing.
+ * Thin pages stay crawlable with noindex.
  */
 export function catalogIsSeoIndexable(data: unknown): boolean {
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
   const d = data as Record<string, unknown>;
   if (d.fulfillmentPending === true) return false;
-  return catalogHasPreviewPhoto(data) && catalogHasHistoryDepth(data);
+  return catalogHasPreviewPhoto(data) && catalogHasSeoWorthyHistory(data);
 }
 
 /**
@@ -131,6 +166,38 @@ export const CATALOG_HAS_HISTORY_DEPTH_SQL = `
     OR jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb)) > 0
+  )
+`.trim();
+
+/** Keep in sync with catalogHasSeoWorthyHistory — used for sitemap + index gates. */
+export const CATALOG_HAS_SEO_WORTHY_HISTORY_SQL = `
+  (
+    jsonb_array_length(COALESCE(data->'accidents', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'ownerHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'insuranceClaims', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb)) > 0
+    OR (
+      SELECT COUNT(*)::int FROM jsonb_array_elements(COALESCE(data->'mileageHistory', '[]'::jsonb)) AS elem
+      WHERE COALESCE((elem->>'odometer')::numeric, 0) > 0
+    ) >= 2
+  )
+`.trim();
+
+/**
+ * Prefer richer reports when filling the VIN sitemap cap.
+ * Higher = more history arrays / mileage points.
+ */
+export const CATALOG_SEO_HISTORY_RICHNESS_SQL = `
+  (
+    jsonb_array_length(COALESCE(data->'accidents', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'ownerHistory', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'insuranceClaims', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb))
+    + jsonb_array_length(COALESCE(data->'mileageHistory', '[]'::jsonb))
   )
 `.trim();
 
