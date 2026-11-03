@@ -218,8 +218,8 @@ describe("vin-page-seo", () => {
     expect(seo.ogImage).toBeUndefined();
   });
 
-  it("noindexes import-only rows even when a preview image exists", () => {
-    const seo = applyPublicVinIndexPolicy(
+  it("noindexes rows that fail the public VIN index policy", () => {
+    const indexed = applyPublicVinIndexPolicy(
       buildVinPageSeo(
         "en",
         {
@@ -231,10 +231,13 @@ describe("vin-page-seo", () => {
         },
         "https://kmcheck.com",
       ),
-      false,
+      true,
     );
-    expect(seo.noIndex).toBe(true);
-    expect(seo.jsonLd).toHaveLength(0);
+    expect(indexed.noIndex).toBe(false);
+
+    const blocked = applyPublicVinIndexPolicy(indexed, false);
+    expect(blocked.noIndex).toBe(true);
+    expect(blocked.jsonLd).toHaveLength(0);
   });
 
   it("emits WebPage + Vehicle JSON-LD when preview image exists", () => {

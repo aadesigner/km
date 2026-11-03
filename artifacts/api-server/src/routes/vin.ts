@@ -18,7 +18,7 @@ import {
   sanitizeAuctionPanoramaUrl,
   splitAuctionPanoramaUrls,
 } from "../lib/vinService.js";
-import { catalogHasDeliverableReport } from "../lib/vinCatalogImport.js";
+import { catalogHasDeliverableReport, catalogIsSeoIndexable } from "../lib/vinCatalogImport.js";
 import { logger } from "../lib/logger.js";
 import { decodeVin, decodeCountry, resolveCheckDigitValid, decodeVinDiagnostics, isVehicleTooOldForLookup } from "@workspace/vin-decode";
 import { decodeFreeVin } from "../lib/vinDecodeFree.js";
@@ -859,7 +859,7 @@ router.get("/vin/seo/:vin", publicVinLimiter, async (req, res) => {
       thumbnailUrl: previewPhotos[0] ?? null,
       isUnlocked: false,
     }),
-    hasCompleteLookup,
+    hasCompleteLookup && catalogIsSeoIndexable(d) && previewPhotos.length > 0,
   );
 
   res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
@@ -901,6 +901,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
         photos: [],
         inCatalog: false,
         isUnlocked: true,
+        seoIndexable: false,
         status: VIN_FULFILLING_STATUS,
         fulfilling: true,
       });
@@ -918,8 +919,16 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
   const catalogPhotos = Array.isArray(d.photos)
     ? (d.photos as string[]).filter(Boolean)
     : [];
-  const lockedPreviewSources = await resolveLockedPreviewPhotoSources(vin, d);
+  // SEO flag must never block unlock/checkout — compute separately and fail closed for index only.
+  const [lockedPreviewSources, hasCompleteLookup] = await Promise.all([
+    resolveLockedPreviewPhotoSources(vin, d),
+    vinHasCompleteLookup(vin),
+  ]);
   const lockedPreviewPhotos = proxyPhotoUrls(lockedPreviewSources, mediaVersion);
+  const seoIndexable =
+    hasCompleteLookup
+    && catalogIsSeoIndexable(d)
+    && lockedPreviewPhotos.length > 0;
 
   // 3. Fetch current pricing
   const [pricingRow] = await db
@@ -944,6 +953,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
     photos: lockedPreviewPhotos,
     inCatalog,
     isUnlocked,
+    seoIndexable,
     price: displayPrice,
     currency,
   };

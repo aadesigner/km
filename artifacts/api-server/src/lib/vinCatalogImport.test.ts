@@ -16,6 +16,7 @@ import {
   catalogHasDeliverableReport,
   catalogHasPreviewPhoto,
   catalogIsSeoIndexable,
+  catalogHasHistoryDepth,
   VIN_SITEMAP_MAX_URLS,
   catalogDeliverableFromHint,
   normalizeJsonImportRecord,
@@ -52,7 +53,7 @@ describe("catalogHasDeliverableReport", () => {
     expect(catalogHasDeliverableReport({})).toBe(false);
   });
 
-  it("requires preview photo for SEO indexability", () => {
+  it("requires preview photo and history depth for SEO indexability", () => {
     const withHistoryOnly = {
       make: "Hyundai",
       model: "Elantra",
@@ -60,18 +61,34 @@ describe("catalogHasDeliverableReport", () => {
       mileageHistory: [{ date: "2020-01-01", odometer: 50000 }],
     };
     expect(catalogHasDeliverableReport(withHistoryOnly)).toBe(true);
+    expect(catalogHasHistoryDepth(withHistoryOnly)).toBe(true);
     expect(catalogHasPreviewPhoto(withHistoryOnly)).toBe(false);
     expect(catalogIsSeoIndexable(withHistoryOnly)).toBe(false);
 
-    const withPhoto = {
+    const photoOnly = {
+      make: "Hyundai",
+      model: "Elantra",
+      year: 2018,
+      photos: ["https://cdn.test/1.jpg"],
+    };
+    expect(catalogHasPreviewPhoto(photoOnly)).toBe(true);
+    expect(catalogHasHistoryDepth(photoOnly)).toBe(false);
+    expect(catalogIsSeoIndexable(photoOnly)).toBe(false);
+
+    const withPhotoAndHistory = {
       ...withHistoryOnly,
       photos: ["https://cdn.test/1.jpg"],
     };
-    expect(catalogIsSeoIndexable(withPhoto)).toBe(true);
+    expect(catalogIsSeoIndexable(withPhotoAndHistory)).toBe(true);
+
+    expect(catalogIsSeoIndexable({
+      ...withPhotoAndHistory,
+      fulfillmentPending: true,
+    })).toBe(false);
   });
 
-  it("caps public VIN sitemap well below the import flood", () => {
-    expect(VIN_SITEMAP_MAX_URLS).toBe(2_000);
+  it("caps public VIN sitemap so marketing pages stay dominant", () => {
+    expect(VIN_SITEMAP_MAX_URLS).toBe(400);
   });
 
   it("catalogDeliverableFromHint matches full-data helper", () => {

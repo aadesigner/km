@@ -73,16 +73,44 @@ export function catalogHasPreviewPhoto(data: unknown): boolean {
   );
 }
 
-/** Google/sitemap eligibility — deliverable catalog row with a teaser image only. */
-export function catalogIsSeoIndexable(data: unknown): boolean {
-  return catalogHasDeliverableReport(data) && catalogHasPreviewPhoto(data);
+function catalogHistoryArrayHasRows(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0;
 }
 
 /**
- * Hard cap after the GCA marketplace import flooded Google with ~50k VIN URLs.
- * Keep marketing pages (`sitemap-pages.xml`) as the dominant crawl target.
+ * True when the report has real history depth — not identity/photo stubs.
+ * Keep in sync with CATALOG_HAS_HISTORY_DEPTH_SQL.
  */
-export const VIN_SITEMAP_MAX_URLS = 2_000;
+export function catalogHasHistoryDepth(data: unknown): boolean {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const d = data as Record<string, unknown>;
+  return (
+    catalogHistoryArrayHasRows(d.accidents)
+    || catalogHistoryArrayHasRows(d.mileageHistory)
+    || catalogHistoryArrayHasRows(d.ownerHistory)
+    || catalogHistoryArrayHasRows(d.insuranceClaims)
+    || catalogHistoryArrayHasRows(d.registryHistory)
+    || catalogHistoryArrayHasRows(d.auctionHistory)
+    || catalogHistoryArrayHasRows(d.serviceHistory)
+  );
+}
+
+/**
+ * Google eligibility for a VIN page body: photo + history depth, never pending stubs.
+ * Runtime also requires a complete vin_lookups row (paid/real check) before indexing.
+ */
+export function catalogIsSeoIndexable(data: unknown): boolean {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const d = data as Record<string, unknown>;
+  if (d.fulfillmentPending === true) return false;
+  return catalogHasPreviewPhoto(data) && catalogHasHistoryDepth(data);
+}
+
+/**
+ * Cap VIN locs so marketing pages stay the majority of crawl targets
+ * (~156 page locs vs at most this many VIN locs).
+ */
+export const VIN_SITEMAP_MAX_URLS = 400;
 
 /** SQL fragment for VIN sitemap queries — keep in sync with catalogHasPreviewPhoto. */
 export const CATALOG_HAS_PREVIEW_PHOTO_SQL = `
@@ -90,6 +118,19 @@ export const CATALOG_HAS_PREVIEW_PHOTO_SQL = `
     jsonb_array_length(COALESCE(data->'photos', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'photosHd', '[]'::jsonb)) > 0
     OR jsonb_array_length(COALESCE(data->'photos360Exterior', '[]'::jsonb)) > 0
+  )
+`.trim();
+
+/** Keep in sync with catalogHasHistoryDepth. */
+export const CATALOG_HAS_HISTORY_DEPTH_SQL = `
+  (
+    jsonb_array_length(COALESCE(data->'accidents', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'mileageHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'ownerHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'insuranceClaims', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'registryHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'auctionHistory', '[]'::jsonb)) > 0
+    OR jsonb_array_length(COALESCE(data->'serviceHistory', '[]'::jsonb)) > 0
   )
 `.trim();
 

@@ -135,7 +135,7 @@ function urlEntryForVin(vin: string, lastmod: string): string {
     <loc>${ORIGIN}/en${vinPath}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.25</priority>
 ${alternates}
 ${xDefault}
   </url>`;
@@ -192,6 +192,7 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
   const { db, vinCatalogTable } = await import("@workspace/db");
   const {
     CATALOG_HAS_PREVIEW_PHOTO_SQL,
+    CATALOG_HAS_HISTORY_DEPTH_SQL,
     CATALOG_HAS_COMPLETE_LOOKUP_SQL,
     CATALOG_NOT_FULFILLMENT_PENDING_SQL,
     VIN_SITEMAP_MAX_URLS,
@@ -206,6 +207,7 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
     .from(vinCatalogTable)
     .where(and(
       sql.raw(CATALOG_HAS_PREVIEW_PHOTO_SQL),
+      sql.raw(CATALOG_HAS_HISTORY_DEPTH_SQL),
       sql.raw(CATALOG_NOT_FULFILLMENT_PENDING_SQL),
       sql.raw(CATALOG_HAS_COMPLETE_LOOKUP_SQL),
     ))

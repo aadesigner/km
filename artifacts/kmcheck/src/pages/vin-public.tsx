@@ -198,6 +198,8 @@ type VinPublicReport = {
   providerName: string | null;
   inCatalog: boolean;
   isUnlocked: boolean;
+  /** Server SEO policy — false means force noindex even if a teaser image exists. */
+  seoIndexable?: boolean;
   price?: number | null;
   currency?: string | null;
   odometer?: number | null;
@@ -539,7 +541,7 @@ export default function VinPublic({ params }: Props) {
       jsonLd={notFound ? undefined : pageSeo.jsonLd}
       ogImage={pageSeo.ogImage}
       ogImageAlt={pageSeo.ogImageAlt}
-      noIndex={notFound || pageSeo.noIndex || undefined}
+      noIndex={notFound || pageSeo.noIndex || data?.seoIndexable === false || undefined}
     />
   );
 

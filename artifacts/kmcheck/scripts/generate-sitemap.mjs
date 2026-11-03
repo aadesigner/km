@@ -46,6 +46,15 @@ function pathPriority(path, lang) {
     return "0.95";
   }
   if (path.startsWith("/api-b2b")) return "0.2";
+  // Core conversion pages — keep ahead of VIN inventory (0.25).
+  if (
+    path === "/pricing"
+    || path === "/free-vin-decoder"
+    || path === "/how-it-works"
+    || path === "/faq"
+  ) {
+    return "0.9";
+  }
   if (path.startsWith("/cars")) return "0.85";
   return "0.8";
 }

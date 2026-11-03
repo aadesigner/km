@@ -4,6 +4,7 @@ import path from "node:path";
 import { parseVinPagePath, buildLockedHistorySummary, extractLockedPreviewSignals } from "@workspace/vin-page-seo";
 import { logger } from "./logger.js";
 import { resolveLockedPreviewPhotoSources, vinHasCompleteLookup, vinHasReportData } from "./vinService.js";
+import { catalogIsSeoIndexable } from "./vinCatalogImport.js";
 import { applyPublicVinIndexPolicy, buildVinSeoFromCatalogData, catalogDataToVinSeoVehicle } from "./vinPageSeo.js";
 import { resolveVinPhotoUrlForClient } from "./imageProxy.js";
 import { buildVinOnlyFallbackSeo, injectVinPageSeoIntoHtml } from "./vinSeoHtmlInject.js";
@@ -162,7 +163,7 @@ async function injectVinCatalogSeo(html: string, reqPath: string, origin: string
         origin,
         isUnlocked: false,
       }),
-      hasCompleteLookup,
+      hasCompleteLookup && catalogIsSeoIndexable(d),
     );
     const summary = buildLockedHistorySummary(
       parsed.lang,
