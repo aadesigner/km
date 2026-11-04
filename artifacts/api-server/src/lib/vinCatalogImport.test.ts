@@ -54,7 +54,7 @@ describe("catalogHasDeliverableReport", () => {
     expect(catalogHasDeliverableReport({})).toBe(false);
   });
 
-  it("requires preview photo and SEO-worthy history for indexability", () => {
+  it("keeps VIN pages out of Google (marketing-only SEO policy)", () => {
     const withHistoryOnly = {
       make: "Hyundai",
       model: "Elantra",
@@ -65,49 +65,26 @@ describe("catalogHasDeliverableReport", () => {
     expect(catalogHasHistoryDepth(withHistoryOnly)).toBe(true);
     expect(catalogHasSeoWorthyHistory(withHistoryOnly)).toBe(false);
     expect(catalogHasPreviewPhoto(withHistoryOnly)).toBe(false);
-    expect(catalogIsSeoIndexable(withHistoryOnly)).toBe(false);
-
-    const photoOnly = {
-      make: "Hyundai",
-      model: "Elantra",
-      year: 2018,
-      photos: ["https://cdn.test/1.jpg"],
-    };
-    expect(catalogHasPreviewPhoto(photoOnly)).toBe(true);
-    expect(catalogHasHistoryDepth(photoOnly)).toBe(false);
-    expect(catalogIsSeoIndexable(photoOnly)).toBe(false);
-
-    // Thin: photo + single mileage reading → stay online, noindex
-    const thinPhotoMileage = {
-      ...withHistoryOnly,
-      photos: ["https://cdn.test/1.jpg"],
-    };
-    expect(catalogIsSeoIndexable(thinPhotoMileage)).toBe(false);
 
     const withPhotoAndDeepMileage = {
-      ...thinPhotoMileage,
+      ...withHistoryOnly,
+      photos: ["https://cdn.test/1.jpg"],
       mileageHistory: [
         { date: "2020-01-01", odometer: 50000 },
         { date: "2022-01-01", odometer: 80000 },
       ],
     };
     expect(catalogHasSeoWorthyHistory(withPhotoAndDeepMileage)).toBe(true);
-    expect(catalogIsSeoIndexable(withPhotoAndDeepMileage)).toBe(true);
-
-    const withPhotoAndAccidents = {
-      ...photoOnly,
-      accidents: [{ date: "2021-01-01", severity: "minor" }],
-    };
-    expect(catalogIsSeoIndexable(withPhotoAndAccidents)).toBe(true);
-
+    // Even rich catalog rows stay noindex while PUBLIC_VIN_PAGES_SEO_ENABLED is false.
+    expect(catalogIsSeoIndexable(withPhotoAndDeepMileage)).toBe(false);
     expect(catalogIsSeoIndexable({
       ...withPhotoAndDeepMileage,
-      fulfillmentPending: true,
+      accidents: [{ date: "2021-01-01", severity: "minor" }],
     })).toBe(false);
   });
 
-  it("caps public VIN sitemap so marketing pages stay dominant", () => {
-    expect(VIN_SITEMAP_MAX_URLS).toBe(400);
+  it("disables VIN sitemap so marketing pages own crawl budget", () => {
+    expect(VIN_SITEMAP_MAX_URLS).toBe(0);
   });
 
   it("catalogDeliverableFromHint matches full-data helper", () => {

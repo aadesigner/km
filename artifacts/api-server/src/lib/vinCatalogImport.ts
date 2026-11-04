@@ -130,11 +130,18 @@ export function catalogHasSeoWorthyHistory(data: unknown): boolean {
 }
 
 /**
- * Google eligibility for a VIN page body: photo + SEO-worthy history, never pending stubs.
- * Runtime also requires a complete vin_lookups row (paid/real check) before indexing.
- * Thin pages stay crawlable with noindex.
+ * When false (current policy): public VIN report pages stay online for users
+ * but are never Google-indexed or listed in the VIN sitemap. SEO focuses on
+ * static marketing pages (EN + SQ priority).
+ */
+export const PUBLIC_VIN_PAGES_SEO_ENABLED = false;
+
+/**
+ * Google eligibility for a VIN page body.
+ * Currently always false — VIN inventory is noindex; marketing pages own SEO.
  */
 export function catalogIsSeoIndexable(data: unknown): boolean {
+  if (!PUBLIC_VIN_PAGES_SEO_ENABLED) return false;
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
   const d = data as Record<string, unknown>;
   if (d.fulfillmentPending === true) return false;
@@ -142,10 +149,9 @@ export function catalogIsSeoIndexable(data: unknown): boolean {
 }
 
 /**
- * Cap VIN locs so marketing pages stay the majority of crawl targets
- * (~156 page locs vs at most this many VIN locs).
+ * VIN sitemap URL cap. 0 = no VIN shards (marketing-only SEO policy).
  */
-export const VIN_SITEMAP_MAX_URLS = 400;
+export const VIN_SITEMAP_MAX_URLS = 0;
 
 /** SQL fragment for VIN sitemap queries — keep in sync with catalogHasPreviewPhoto. */
 export const CATALOG_HAS_PREVIEW_PHOTO_SQL = `

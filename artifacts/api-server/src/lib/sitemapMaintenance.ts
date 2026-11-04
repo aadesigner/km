@@ -188,6 +188,17 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
   if (!publicDir) return null;
   if (!existsSync(path.join(publicDir, "sitemap-pages.xml"))) return null;
 
+  const { VIN_SITEMAP_MAX_URLS } = await import("./vinCatalogImport.js");
+
+  const today = new Date().toISOString().slice(0, 10);
+  clearVinShardsInDir(publicDir);
+
+  // Marketing-only SEO: never publish VIN sitemap shards.
+  if (!VIN_SITEMAP_MAX_URLS || VIN_SITEMAP_MAX_URLS <= 0) {
+    writeSitemapIndex(publicDir, [], today);
+    return { publicDir, vinCount: 0, shardCount: 0 };
+  }
+
   const { desc, sql, and } = await import("drizzle-orm");
   const { db, vinCatalogTable } = await import("@workspace/db");
   const {
@@ -196,10 +207,8 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
     CATALOG_SEO_HISTORY_RICHNESS_SQL,
     CATALOG_HAS_COMPLETE_LOOKUP_SQL,
     CATALOG_NOT_FULFILLMENT_PENDING_SQL,
-    VIN_SITEMAP_MAX_URLS,
   } = await import("./vinCatalogImport.js");
 
-  const today = new Date().toISOString().slice(0, 10);
   const rows = await db
     .select({
       vin: vinCatalogTable.vin,
@@ -214,8 +223,6 @@ export async function refreshVinSitemapShards(): Promise<VinSitemapRefreshResult
     ))
     .orderBy(sql.raw(`${CATALOG_SEO_HISTORY_RICHNESS_SQL} DESC`), desc(vinCatalogTable.updatedAt))
     .limit(VIN_SITEMAP_MAX_URLS);
-
-  clearVinShardsInDir(publicDir);
 
   if (rows.length === 0) {
     writeSitemapIndex(publicDir, [], today);

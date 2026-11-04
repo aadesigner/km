@@ -1,22 +1,27 @@
 /**
  * Generates marketing-page sitemaps (no VIN URLs).
  * - public/sitemap-pages.xml  — urlset for indexable marketing routes
- * - public/sitemap.xml        — sitemap index pointing at pages (+ VIN shards later)
+ * - public/sitemap.xml        — sitemap index (pages only; VIN shards cleared)
  *
  * Paths from src/lib/indexable-paths.json via seo-inject.mjs.
- * VIN catalog URLs are written by generate-vin-sitemap.mjs into separate shards.
+ * EN + SQ get higher priority; other locales stay listed at lower priority.
  */
-import { writeFileSync, readdirSync, existsSync } from "node:fs";
+import { writeFileSync, readdirSync, existsSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SUPPORTED_LANGS, HREFLANG_MAP } from "./languages.mjs";
 import { INDEXABLE_PRERENDER_PATHS } from "./seo-inject.mjs";
 
 const ORIGIN = "https://kmcheck.com";
-const LANGS = SUPPORTED_LANGS;
+/** EN + SQ first in the urlset, then remaining langs. */
+const LANGS = [
+  ...SUPPORTED_LANGS.filter((l) => l === "en" || l === "sq"),
+  ...SUPPORTED_LANGS.filter((l) => l !== "en" && l !== "sq"),
+];
 const PATHS = INDEXABLE_PRERENDER_PATHS;
 
 const HREFLANG = HREFLANG_MAP;
+const PRIORITY_LANGS = new Set(["en", "sq"]);
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(dir, "..", "public");
@@ -30,35 +35,35 @@ function loc(lang, path) {
   return path ? `${ORIGIN}/${lang}${path}` : `${ORIGIN}/${lang}`;
 }
 
-/** Keep any existing VIN shards in the index (vin generator owns rewriting them). */
-function listVinShards() {
-  if (!existsSync(publicDir)) return [];
-  return readdirSync(publicDir)
-    .filter((name) => /^sitemap-vins-\d+\.xml$/i.test(name))
-    .sort((a, b) => {
-      const na = Number(a.match(/(\d+)/)?.[1] || 0);
-      const nb = Number(b.match(/(\d+)/)?.[1] || 0);
-      return na - nb;
-    });
+/** Drop VIN shards — marketing-only SEO policy. */
+function clearVinShards() {
+  if (!existsSync(publicDir)) return 0;
+  let n = 0;
+  for (const name of readdirSync(publicDir)) {
+    if (/^sitemap-vins-\d+\.xml$/i.test(name)) {
+      unlinkSync(join(publicDir, name));
+      n += 1;
+    }
+  }
+  return n;
 }
 
 function pathPriority(path, lang) {
+  const primary = PRIORITY_LANGS.has(lang);
   if (path === "") {
-    if (lang === "en" || lang === "sq") return "1.0";
-    return "0.95";
+    return primary ? "1.0" : "0.6";
   }
-  if (path.startsWith("/api-b2b")) return "0.2";
-  // Core conversion pages — keep ahead of VIN inventory (0.25).
+  if (path.startsWith("/api-b2b")) return primary ? "0.35" : "0.15";
   if (
     path === "/pricing"
     || path === "/free-vin-decoder"
     || path === "/how-it-works"
     || path === "/faq"
   ) {
-    return "0.9";
+    return primary ? "0.95" : "0.55";
   }
-  if (path.startsWith("/cars")) return "0.85";
-  return "0.8";
+  if (path.startsWith("/cars")) return primary ? "0.9" : "0.5";
+  return primary ? "0.8" : "0.45";
 }
 
 const urls = PATHS.flatMap((path) =>
@@ -91,15 +96,7 @@ ${urls.join("\n")}
 
 writeFileSync(pagesOut, pagesXml, "utf8");
 
-const vinShards = listVinShards();
-const vinIndexEntries = vinShards
-  .map(
-    (name) => `  <sitemap>
-    <loc>${ORIGIN}/${name}</loc>
-    <lastmod>${lastmod}</lastmod>
-  </sitemap>`,
-  )
-  .join("\n");
+const removedVinShards = clearVinShards();
 
 const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -107,11 +104,12 @@ const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
     <loc>${ORIGIN}/sitemap-pages.xml</loc>
     <lastmod>${lastmod}</lastmod>
   </sitemap>
-${vinIndexEntries ? `${vinIndexEntries}\n` : ""}</sitemapindex>
+</sitemapindex>
 `;
 
 writeFileSync(indexOut, indexXml, "utf8");
 console.log(
-  `Wrote ${urls.length} page URLs → public/sitemap-pages.xml; sitemap index → public/sitemap.xml` +
-    (vinShards.length ? ` (kept ${vinShards.length} VIN shard${vinShards.length === 1 ? "" : "s"})` : ""),
+  `Wrote ${urls.length} page URLs → public/sitemap-pages.xml; sitemap index → public/sitemap.xml (VIN SEO off` +
+    (removedVinShards ? `; removed ${removedVinShards} VIN shard(s)` : "") +
+    `)`,
 );

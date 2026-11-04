@@ -233,6 +233,7 @@ describe("vin-page-seo", () => {
       ),
       true,
     );
+    // Policy helper still allows index when caller passes true — routes pass catalogIsSeoIndexable (false).
     expect(indexed.noIndex).toBe(false);
 
     const blocked = applyPublicVinIndexPolicy(indexed, false);
