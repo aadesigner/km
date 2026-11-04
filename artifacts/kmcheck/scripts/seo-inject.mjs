@@ -12,7 +12,12 @@ import {
 } from "./country-favicon-config.mjs";
 import { isSeoOgPageKey, seoOgImagePath, SEO_OG_WIDTH, SEO_OG_HEIGHT } from "./seo-og-config.mjs";
 import { vinSeoTemplates } from "./vin-seo-templates.mjs";
-import { buildCountryPageJsonLd, buildHomeOrganizationJsonLd, isCountrySeoPageKey } from "./country-page-json-ld.mjs";
+import {
+  buildCountryPageJsonLd,
+  buildHomeOrganizationJsonLd,
+  buildPricingPageJsonLd,
+  isCountrySeoPageKey,
+} from "./country-page-json-ld.mjs";
 import {
   injectMarketingSsrIntoHtml,
   resolveMarketingSsrContent,
@@ -228,6 +233,16 @@ function buildJsonLdScript(resolved) {
 
   if (resolved.pageKey === "home") {
     jsonLd = buildHomeOrganizationJsonLd(SITE_ORIGIN, resolved.description);
+  } else if (resolved.pageKey === "pricing") {
+    // Static SSR offer uses the public discount default; SPA updates with live pricing.
+    jsonLd = buildPricingPageJsonLd({
+      name: resolved.title,
+      description: resolved.description,
+      canonicalUrl: resolved.canonicalUrl,
+      price: 15.99,
+      currency: "EUR",
+      origin: SITE_ORIGIN,
+    });
   } else if (isCountrySeoPageKey(resolved.pageKey)) {
     const absoluteOg = resolved.ogImage
       ? (String(resolved.ogImage).startsWith("/")

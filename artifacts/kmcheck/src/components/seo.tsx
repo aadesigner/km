@@ -219,6 +219,12 @@ export function faqPageJsonLd(items: { q: string; a: string }[]) {
   };
 }
 
+/**
+ * Pricing page structured data.
+ * Do NOT use schema.org Product — GSC Product rich results warn on missing
+ * review/aggregateRating, and we do not have real reviews to publish.
+ * WebPage + Service + Offer describes the VIN report without Product eligibility.
+ */
 export function productOfferJsonLd(params: {
   name: string;
   description: string;
@@ -228,21 +234,34 @@ export function productOfferJsonLd(params: {
 }) {
   const validUntil = new Date();
   validUntil.setFullYear(validUntil.getFullYear() + 1);
+  let origin = "https://kmcheck.com";
+  try {
+    origin = new URL(params.url).origin;
+  } catch {
+    // keep default
+  }
 
   return {
     "@context": "https://schema.org",
-    "@type": "Product",
+    "@type": "WebPage",
+    "@id": `${params.url}#webpage`,
+    url: params.url,
     name: params.name,
     description: params.description,
-    url: params.url,
-    brand: { "@type": "Brand", name: "kmcheck.com" },
-    offers: {
-      "@type": "Offer",
-      url: params.url,
-      priceCurrency: params.currency,
-      price: params.price.toFixed(2),
-      availability: "https://schema.org/OnlineOnly",
-      priceValidUntil: validUntil.toISOString().split("T")[0],
+    isPartOf: { "@type": "WebSite", name: "kmcheck.com", url: origin },
+    mainEntity: {
+      "@type": "Service",
+      name: params.name,
+      description: params.description,
+      provider: { "@type": "Organization", name: "kmcheck.com", url: origin },
+      offers: {
+        "@type": "Offer",
+        url: params.url,
+        priceCurrency: params.currency,
+        price: params.price.toFixed(2),
+        availability: "https://schema.org/OnlineOnly",
+        priceValidUntil: validUntil.toISOString().split("T")[0],
+      },
     },
   };
 }

@@ -84,3 +84,45 @@ export function buildHomeOrganizationJsonLd(origin, description) {
     description,
   };
 }
+
+/**
+ * Pricing page — WebPage + Service + Offer (never Product).
+ * Avoids GSC Product rich-result warnings for missing review/aggregateRating.
+ */
+export function buildPricingPageJsonLd({
+  name,
+  description,
+  canonicalUrl,
+  price,
+  currency = "EUR",
+  origin = "https://kmcheck.com",
+}) {
+  const validUntil = new Date();
+  validUntil.setFullYear(validUntil.getFullYear() + 1);
+  const priceNum = Number(price);
+  const priceStr = Number.isFinite(priceNum) ? priceNum.toFixed(2) : "15.99";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${canonicalUrl}#webpage`,
+    url: canonicalUrl,
+    name,
+    description,
+    isPartOf: { "@type": "WebSite", name: "kmcheck.com", url: origin },
+    mainEntity: {
+      "@type": "Service",
+      name,
+      description,
+      provider: { "@type": "Organization", name: "kmcheck.com", url: origin },
+      offers: {
+        "@type": "Offer",
+        url: canonicalUrl,
+        priceCurrency: currency,
+        price: priceStr,
+        availability: "https://schema.org/OnlineOnly",
+        priceValidUntil: validUntil.toISOString().split("T")[0],
+      },
+    },
+  };
+}

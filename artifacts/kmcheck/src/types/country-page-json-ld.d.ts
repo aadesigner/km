@@ -7,4 +7,18 @@ declare module "../../scripts/country-page-json-ld.mjs" {
     lang: string;
     ogImage?: string;
   }): Record<string, unknown>;
+
+  export function buildPricingPageJsonLd(params: {
+    name: string;
+    description: string;
+    canonicalUrl: string;
+    price: number;
+    currency?: string;
+    origin?: string;
+  }): Record<string, unknown>;
+
+  export function buildHomeOrganizationJsonLd(
+    origin: string,
+    description: string,
+  ): Record<string, unknown>;
 }
