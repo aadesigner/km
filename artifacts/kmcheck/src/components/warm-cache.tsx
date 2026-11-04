@@ -46,14 +46,16 @@ export function WarmCache() {
       prefetchCommonRoutes();
     };
 
+    // Start soon after first paint so pricing/settings/route chunks are ready
+    // for the next click — does not change UI, only warms cache earlier.
     let warmIdleId: number | undefined;
     const startId = window.setTimeout(() => {
       if (typeof window.requestIdleCallback === "function") {
-        warmIdleId = window.requestIdleCallback(warm, { timeout: 20_000 });
+        warmIdleId = window.requestIdleCallback(warm, { timeout: 4_000 });
       } else {
-        window.setTimeout(warm, 12_000);
+        window.setTimeout(warm, 1_500);
       }
-    }, 4_000);
+    }, 1_200);
 
     return () => {
       window.clearTimeout(navStart);

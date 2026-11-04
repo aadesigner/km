@@ -6,7 +6,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const GEO_HINT_CACHE_KEY = "kmcheck_geo_hint_v1";
 const GEO_HINT_TTL_MS = 5 * 60 * 1000;
 /** Never block first paint longer than this waiting on geo. */
-const GEO_FETCH_TIMEOUT_MS = 2_000;
+const GEO_FETCH_TIMEOUT_MS = 700;
 
 export type GeoLanguageResponse = {
   enabled: boolean;
