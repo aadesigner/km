@@ -139,19 +139,25 @@ export function applySeoHead({
   }
 
   const path = canonicalPath ?? (typeof window !== "undefined" ? window.location.pathname : `/${lang}`);
-  const canonical = `${origin}${path}`;
+  // English home canonical is apex `/` → https://kmcheck.com/
+  const canonical = path === "/" ? `${origin}/` : `${origin}${path}`;
   upsertLink("canonical", canonical);
   upsertMeta("og:url", canonical, "property");
 
   removeAlternates();
   if (!noIndex) {
-    const base = stripLangPrefix(path);
+    const base = stripLangPrefix(path === "/" ? "/en" : path);
     SEO_LANGS.forEach((l) => {
-      upsertLink("alternate", `${origin}${buildLocalizedPath(l, base)}`, {
+      const hrefPath = buildLocalizedPath(l, base);
+      const href = hrefPath === "/" ? `${origin}/` : `${origin}${hrefPath}`;
+      upsertLink("alternate", href, {
         hreflang: HREFLANG_MAP[l],
       });
     });
-    upsertLink("alternate", `${origin}${buildLocalizedPath("en", base)}`, { hreflang: "x-default" });
+    const xDefaultPath = buildLocalizedPath("en", base);
+    upsertLink("alternate", xDefaultPath === "/" ? `${origin}/` : `${origin}${xDefaultPath}`, {
+      hreflang: "x-default",
+    });
 
     SEO_LANGS.filter((l) => l !== lang).forEach((l) => {
       upsertMeta("og:locale:alternate", OG_LOCALE_MAP[l], "property");

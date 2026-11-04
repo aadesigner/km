@@ -27,8 +27,21 @@ export const OG_LOCALE_MAP: Record<SeoLang, string> = Object.fromEntries(
  */
 export const INDEXABLE_PATHS = indexablePaths as readonly string[];
 
+/**
+ * English marketing home lives at apex `/` (indexed as kmcheck.com).
+ * Other locales keep `/{lang}` homes.
+ */
+export function localeHomePath(lang: SeoLang | string): string {
+  return lang === "en" ? "/" : `/${lang}`;
+}
+
+export function localeHomeAbsoluteUrl(origin: string, lang: SeoLang | string): string {
+  const base = origin.replace(/\/$/, "");
+  return lang === "en" ? `${base}/` : `${base}/${lang}`;
+}
+
 export function buildLocalizedPath(lang: SeoLang, path: string): string {
-  if (!path || path === "/") return `/${lang}`;
+  if (!path || path === "/") return localeHomePath(lang);
   return `/${lang}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

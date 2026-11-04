@@ -103,6 +103,10 @@ function resolvePageKey(rest: string): string | null {
 
 export function parseMarketingPath(reqPath: string): { pageKey: string; rest: string; lang: string } | null {
   const path = reqPath.replace(/\/$/, "") || "/";
+  // Apex `/` is the indexed English homepage (not /en).
+  if (path === "/" || path === "/index.html") {
+    return { pageKey: "home", rest: "", lang: "en" };
+  }
   const m = path.match(LANG_PATH_RE);
   if (!m) return null;
   const lang = m[1] ?? "en";
@@ -192,10 +196,12 @@ function buildSeoHeadBlock(resolved: MarketingMetaSeo, origin: string): string {
 
   if (!noIndex) {
     for (const l of SEO_LANGS) {
-      const href = rest ? `${origin}/${l}${rest}` : `${origin}/${l}`;
+      const href = rest
+        ? `${origin}/${l}${rest}`
+        : (l === "en" ? `${origin}/` : `${origin}/${l}`);
       lines.push(`<link rel="alternate" hreflang="${HREFLANG_MAP[l]}" href="${escapeHtml(href)}" />`);
     }
-    lines.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(rest ? `${origin}/en${rest}` : `${origin}/en`)}" />`);
+    lines.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(rest ? `${origin}/en${rest}` : `${origin}/`)}" />`);
     for (const l of SEO_LANGS) {
       if (l !== lang) {
         lines.push(`<meta property="og:locale:alternate" content="${OG_LOCALE_MAP[l]}" />`);
@@ -221,7 +227,8 @@ export function resolveMarketingMetaSeo(reqPath: string, siteOrigin: string): Ma
   const seo = b2bSeo
     ?? (page ? (page[lang] ?? page.en) : (seoData as Record<string, Record<string, SeoEntry>>).home.en);
   const ogImage = seoOgImagePath(pageKey === "api_b2b" ? "home" : pageKey, lang);
-  const canonicalPath = rest ? `/${lang}${rest}` : `/${lang}`;
+  const canonicalPath = rest ? `/${lang}${rest}` : (lang === "en" ? "/" : `/${lang}`);
+  const canonicalUrl = canonicalPath === "/" ? `${origin}/` : `${origin}${canonicalPath}`;
 
   return {
     lang,
@@ -232,7 +239,7 @@ export function resolveMarketingMetaSeo(reqPath: string, siteOrigin: string): Ma
     rest,
     noIndex: rest.startsWith("/api-b2b/") || rest === "/sign-up" || rest === "/sign-in",
     canonicalPath,
-    canonicalUrl: `${origin}${canonicalPath}`,
+    canonicalUrl,
     ogImage,
     ogImageAlt: seo.title,
   };

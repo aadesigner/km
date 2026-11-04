@@ -224,17 +224,22 @@ const js = `/* auto-generated — do not edit */
       upsertMeta("og:image:alt", seo.title, "property");
     }
 
-    var canonical = ORIGIN + (rest ? "/" + lang + rest : "/" + lang);
+    // English home canonical is apex https://kmcheck.com/ (indexed main domain).
+    var canonical = rest
+      ? ORIGIN + "/" + lang + rest
+      : (lang === "en" ? ORIGIN + "/" : ORIGIN + "/" + lang);
     upsertLink("canonical", canonical);
     upsertMeta("og:url", canonical, "property");
 
     removeAlternates();
     if (!noIndex) {
       SEO_LANGS.forEach(function (l) {
-        var href = ORIGIN + (rest ? "/" + l + rest : "/" + l);
+        var href = rest
+          ? ORIGIN + "/" + l + rest
+          : (l === "en" ? ORIGIN + "/" : ORIGIN + "/" + l);
         upsertLink("alternate", href, { hreflang: HREFLANG[l] });
       });
-      upsertLink("alternate", ORIGIN + (rest ? "/en" + rest : "/en"), { hreflang: "x-default" });
+      upsertLink("alternate", rest ? ORIGIN + "/en" + rest : ORIGIN + "/", { hreflang: "x-default" });
       SEO_LANGS.forEach(function (l) {
         if (l !== lang) upsertMeta("og:locale:alternate", OG_LOCALE[l], "property");
       });

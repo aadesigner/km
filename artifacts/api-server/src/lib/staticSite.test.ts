@@ -34,9 +34,16 @@ describe("staticSite asset fallback", () => {
     expect(src).toMatch(/redirect:\s*false/);
   });
 
-  it("301-redirects crawlers from / to /en to avoid soft-duplicate English home", () => {
+  it("serves English home to crawlers at apex / so kmcheck.com can be indexed", () => {
     expect(src).toContain("isCrawlerUserAgent");
-    expect(src).toMatch(/req\.path === \"\/\"[\s\S]*isCrawlerUserAgent[\s\S]*redirect\(301,\s*`\/en/);
+    expect(src).toMatch(/req\.path === \"\/\"[\s\S]*isCrawlerUserAgent[\s\S]*sendSpaFile\(publicDir,\s*\"\/en\"/);
+    expect(src).not.toMatch(/redirect\(301,\s*`\/en\$\{q\}`\)/);
+  });
+
+  it("301-redirects trailing-slash marketing URLs to the slash-free sitemap form", () => {
+    expect(src).toContain("req.path.endsWith(\"/\")");
+    expect(src).toMatch(/replace\(\/\\\/\+\$\/,\s*\"\"\)/);
+    expect(src).toMatch(/redirect\(301,\s*`\$\{bare\}\$\{q\}`\)/);
   });
 
   it("injects marketing SEO meta + SSR body in SPA fallback for indexable pages", () => {

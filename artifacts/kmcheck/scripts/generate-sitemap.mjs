@@ -25,6 +25,8 @@ const indexOut = join(publicDir, "sitemap.xml");
 const lastmod = new Date().toISOString().slice(0, 10);
 
 function loc(lang, path) {
+  // English home = apex (https://kmcheck.com/) so GSC indexes the main domain.
+  if (!path && lang === "en") return `${ORIGIN}/`;
   return path ? `${ORIGIN}/${lang}${path}` : `${ORIGIN}/${lang}`;
 }
 

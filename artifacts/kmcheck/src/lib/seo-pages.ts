@@ -137,7 +137,8 @@ export function getSeoEntry(lang: SeoLang, pageKey: SeoPageKey) {
 }
 
 export function buildCanonicalPath(lang: SeoLang, rest: string): string {
-  return rest ? `/${lang}${rest}` : `/${lang}`;
+  if (!rest) return lang === "en" ? "/" : `/${lang}`;
+  return `/${lang}${rest}`;
 }
 
 export function getRouteSeo(
@@ -171,7 +172,7 @@ export function getRouteSeo(
     : getSeoEntry(resolved.lang, pageKey);
   const ogImage = resolvePageOgImage(apiB2b ? "home" : pageKey, resolved.lang, basePath);
   const canonicalPath = buildCanonicalPath(resolved.lang, resolved.rest);
-  const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
+  const canonicalUrl = canonicalPath === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${canonicalPath}`;
   const absoluteOgImage = ogImage
     ? (ogImage.startsWith("http") ? ogImage : `${SITE_ORIGIN}${ogImage}`)
     : undefined;

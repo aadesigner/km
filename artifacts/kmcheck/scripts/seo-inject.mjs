@@ -190,7 +190,11 @@ export function resolveSeoForPath(pathname, basePath = "") {
     ?? b2bSeo
     ?? (page ? (page[lang] ?? page.en ?? seoData.home.en) : seoData.home.en);
   const noIndex = isNoIndexPath(rest, pageKey);
-  const canonicalPath = rest ? `/${lang}${rest}` : `/${lang}`;
+  // English home indexes at apex https://kmcheck.com/ (not /en).
+  const canonicalPath = rest ? `/${lang}${rest}` : (lang === "en" ? "/" : `/${lang}`);
+  const canonicalUrl = canonicalPath === "/"
+    ? `${SITE_ORIGIN}/`
+    : `${SITE_ORIGIN}${canonicalPath}`;
   const dir = lang === "ar" ? "rtl" : "ltr";
   const ogImage = seo.ogImage
     ?? (isSeoOgPageKey(pageKey)
@@ -208,7 +212,7 @@ export function resolveSeoForPath(pathname, basePath = "") {
     rest,
     noIndex,
     canonicalPath,
-    canonicalUrl: `${SITE_ORIGIN}${canonicalPath}`,
+    canonicalUrl,
     ogImage,
     ogImageAlt: seo.ogImageAlt ?? seo.title,
   };
@@ -299,14 +303,16 @@ function buildSeoHeadBlock(resolved) {
 
   if (!noIndex) {
     for (const l of SEO_LANGS) {
-      const href = rest ? `${SITE_ORIGIN}/${l}${rest}` : `${SITE_ORIGIN}/${l}`;
+      const href = rest
+        ? `${SITE_ORIGIN}/${l}${rest}`
+        : (l === "en" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}/${l}`);
       lines.push(
         `<link rel="alternate" hreflang="${HREFLANG_MAP[l]}" href="${escapeHtml(href)}" />`,
       );
     }
     lines.push(
       `<link rel="alternate" hreflang="x-default" href="${escapeHtml(
-        rest ? `${SITE_ORIGIN}/en${rest}` : `${SITE_ORIGIN}/en`,
+        rest ? `${SITE_ORIGIN}/en${rest}` : `${SITE_ORIGIN}/`,
       )}" />`,
     );
     for (const l of SEO_LANGS) {
