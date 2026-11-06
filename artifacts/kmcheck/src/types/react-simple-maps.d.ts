@@ -47,4 +47,18 @@ declare module "react-simple-maps" {
     className?: string;
     style?: CSSProperties;
   }>;
+
+  export const ZoomableGroup: ComponentType<{
+    center?: [number, number];
+    zoom?: number;
+    minZoom?: number;
+    maxZoom?: number;
+    filterZoomEvent?: (event: unknown) => boolean;
+    onMoveStart?: (...args: unknown[]) => void;
+    onMove?: (...args: unknown[]) => void;
+    onMoveEnd?: (...args: unknown[]) => void;
+    translateExtent?: [[number, number], [number, number]];
+    className?: string;
+    children?: ReactNode;
+  }>;
 }

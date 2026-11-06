@@ -7,8 +7,10 @@ import { FlagImg } from "@/components/flag-img";
 import { formatImageFlagAlt } from "@/lib/flag-alt";
 import { Button } from "@/components/ui/button";
 
+type CountrySlug = "usa" | "korea" | "canada" | "china" | "japan" | "uae";
+
 type CountryConfig = {
-  slug: string;
+  slug: CountrySlug;
   flagCode: string;
   name: string;
   count: string;
@@ -139,7 +141,9 @@ function CountryCardLink({
               "group-hover:gap-2.5 transition-[gap] duration-200",
             )}
           >
-            <span>{t("vin_check_for")} {country.name}</span>
+            <span>
+              {t("vin_check_for")} {country.name}
+            </span>
             <ArrowRight className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
