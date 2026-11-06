@@ -28,6 +28,8 @@ export const paymentsTable = pgTable("payments", {
   uniqueIndex("payments_pok_order_id_idx").on(table.pokOrderId),
   index("payments_status_idx").on(table.status),
   index("payments_created_at_idx").on(table.createdAt),
+  index("payments_user_created_idx").on(table.userId, table.createdAt),
+  index("payments_status_created_idx").on(table.status, table.createdAt),
 ]);
 
 export const insertPaymentSchema = createInsertSchema(paymentsTable).omit({ id: true, createdAt: true, updatedAt: true });

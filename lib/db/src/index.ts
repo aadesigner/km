@@ -10,14 +10,18 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const defaultPoolMax = process.env.NODE_ENV === "production" ? 8 : 20;
+// Prod default was 8 — under ad/checkout concurrency that queues requests and
+// feels like multi-second "hangs". Override with PG_POOL_MAX if the host caps lower.
+const defaultPoolMax = process.env.NODE_ENV === "production" ? 16 : 20;
 const pgPoolMax = parseInt(process.env.PG_POOL_MAX ?? String(defaultPoolMax), 10);
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: isNaN(pgPoolMax) || pgPoolMax <= 0 ? defaultPoolMax : pgPoolMax,
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 3_000,
+  connectionTimeoutMillis: 5_000,
+  // Recycle clients to avoid sticky broken sockets after idle Neon/Railway pauses.
+  maxUses: 7_500,
   allowExitOnIdle: false,
 });
 

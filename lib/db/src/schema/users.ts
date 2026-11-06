@@ -48,7 +48,17 @@ export const usersTable = pgTable("users", {
   acquisitionSource: text("acquisition_source"),
   acquisitionMedium: text("acquisition_medium"),
   acquisitionCampaign: text("acquisition_campaign"),
+  /** utm_content — ad creative / placement */
+  acquisitionContent: text("acquisition_content"),
+  /** utm_term — keyword / audience label */
+  acquisitionTerm: text("acquisition_term"),
   acquisitionClickId: text("acquisition_click_id"),
+  /** gclid | fbclid | ttclid | msclkid | other */
+  acquisitionClickIdType: text("acquisition_click_id_type"),
+  /** First-touch landing pathname (+safe query), e.g. /en/checkout */
+  acquisitionLandingPath: text("acquisition_landing_path"),
+  /** mobile | desktop | tablet | in_app */
+  acquisitionDevice: text("acquisition_device"),
   /** External referrer hostname only */
   acquisitionReferrer: text("acquisition_referrer"),
   acquisitionCapturedAt: timestamp("acquisition_captured_at"),
@@ -58,6 +68,8 @@ export const usersTable = pgTable("users", {
   index("users_created_at_idx").on(table.createdAt),
   index("users_last_seen_at_idx").on(table.lastSeenAt),
   index("users_acquisition_bucket_idx").on(table.acquisitionBucket),
+  index("users_acquisition_channel_idx").on(table.acquisitionChannel),
+  index("users_acquisition_campaign_idx").on(table.acquisitionCampaign),
 ]);
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({ createdAt: true, updatedAt: true });

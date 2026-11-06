@@ -1696,6 +1696,7 @@
   "wwc_preview_mileage_clear": "დადასტურებული",
   "wwc_preview_accidents_status": "2 ჩანაწერი",
   "wwc_preview_accidents_n1": "1 ჩანაწერი",
+  "wwc_preview_accidents_n2": "2 ჩანაწერი",
   "wwc_preview_accidents_n3": "3 ჩანაწერი",
   "wwc_preview_accidents_clear": "ჩანაწერები არ არის",
   "wwc_preview_salvage_status": "მონიშნული არ არის",
@@ -1895,5 +1896,7 @@
   "live_city_yokohama": "იოკოჰამა",
   "live_city_fukuoka": "ფუკუოკა",
   "report_no_photo_archive": "ფოტოარქივი ვერ მოიძებნა",
-  "report_no_photo_archive_hint": "ამ VIN-ისთვის მანქანის ფოტოები არ არის ხელმისაწვდომი"
+  "report_no_photo_archive_hint": "ამ VIN-ისთვის მანქანის ფოტოები არ არის ხელმისაწვდომი",
+  "wwc_demo_title_clean": "სუფთა ტიტული",
+  "wwc_demo_title_issued": "ტიტული გაცემულია"
 }

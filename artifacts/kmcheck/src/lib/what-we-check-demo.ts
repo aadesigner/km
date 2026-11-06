@@ -16,6 +16,7 @@ export type WwcDemoHistoryRow = {
 
 export type WwcMileagePoint = {
   year: string;
+  /** Reading in the market's display unit (km or mi). */
   km: number;
   rollback?: boolean;
 };
@@ -39,7 +40,9 @@ export type WwcDemoReport = {
   fuelKey: string;
   colorKey: string;
   bodyKey: string;
+  /** Current odometer in `odometerUnit`. */
   odometer: number;
+  odometerUnit: "km" | "mi";
   score: string;
   scoreLabelKey: "report_caution" | "report_clean" | "report_risk";
   originKey: string;
@@ -57,6 +60,7 @@ export type WwcDemoReport = {
   ownerRows: WwcDemoHistoryRow[];
 };
 
+/** Default / home sample — Korean import with rollback + prior repairs (common buyer risk). */
 const KOREA_DEMO: WwcDemoReport = {
   vin: "KNDPM3AC9K7583241",
   vehicleTitle: "2019 Kia Sportage",
@@ -70,6 +74,7 @@ const KOREA_DEMO: WwcDemoReport = {
   colorKey: "wwc_demo_color_white",
   bodyKey: "wwc_demo_body_suv",
   odometer: 138_640,
+  odometerUnit: "km",
   score: "6.4",
   scoreLabelKey: "report_caution",
   originKey: "country_korea_name",
@@ -77,7 +82,7 @@ const KOREA_DEMO: WwcDemoReport = {
   ownerCount: 3,
   findings: {
     mileage: { labelKey: "mock_label_mileage", valueKey: "wwc_preview_mileage_status", tone: "negative" },
-    accidents: { labelKey: "mock_label_accidents", valueKey: "wwc_preview_accidents_n3", tone: "negative" },
+    accidents: { labelKey: "mock_label_accidents", valueKey: "wwc_preview_accidents_n2", tone: "negative" },
     salvage: { labelKey: "mock_label_salvage", valueKey: "wwc_preview_salvage_status", tone: "positive" },
     theft: { labelKey: "mock_label_stolen", valueKey: "wwc_preview_theft_status", tone: "positive" },
   },
@@ -99,23 +104,19 @@ const KOREA_DEMO: WwcDemoReport = {
   ],
   accidentRows: [
     { date: "2022-06", primary: "", primaryKey: "wwc_demo_event_front", detailKey: "wwc_demo_repair_seoul" },
-    { date: "2021-02", primary: "", primaryKey: "wwc_demo_event_left", detailKey: "wwc_demo_repair_busan" },
     { date: "2020-03", primary: "", primaryKey: "wwc_demo_event_right", detailKey: "wwc_demo_repair_incheon" },
   ],
   salvageRows: [
-    { date: "2024-03", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_encar_clear" },
-    { date: "2023-08", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_kotsa_clear" },
-    { date: "2021-11", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_ins_kr" },
-    { date: "2019-11", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_reg_kr" },
+    { date: "2024-03", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_kotsa_clear" },
+    { date: "2019-11", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_reg_kr" },
   ],
   theftRows: [
     { date: "2024-03", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_kr_police" },
-    { date: "2022-06", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_kr_ins" },
     { date: "2019-11", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_kr_reg" },
   ],
   salvageNoteKey: "wwc_demo_salvage_note_kr",
   theftNoteKey: "wwc_demo_theft_note_kr",
-  accidentHot: { front: true, left: true, right: true, rear: false },
+  accidentHot: { front: true, left: false, right: true, rear: false },
   ownerRows: [
     { date: "2023-01", primary: "", primaryKey: "wwc_demo_owner_private", detailKey: "wwc_demo_row_owner_private" },
     { date: "2021-07", primary: "", primaryKey: "wwc_demo_owner_fleet", detailKey: "wwc_demo_row_owner_fleet" },
@@ -123,6 +124,7 @@ const KOREA_DEMO: WwcDemoReport = {
   ],
 };
 
+/** US sample — miles, title hops TX→NJ, rollback after insurer reading. */
 const USA_DEMO: WwcDemoReport = {
   vin: "2HKRW2H50JH612847",
   vehicleTitle: "2018 Honda CR-V",
@@ -135,7 +137,8 @@ const USA_DEMO: WwcDemoReport = {
   fuelKey: "wwc_demo_fuel_petrol",
   colorKey: "wwc_demo_color_silver",
   bodyKey: "wwc_demo_body_suv",
-  odometer: 142_608,
+  odometer: 88_610,
+  odometerUnit: "mi",
   score: "6.1",
   scoreLabelKey: "report_caution",
   originKey: "country_usa_name",
@@ -143,45 +146,41 @@ const USA_DEMO: WwcDemoReport = {
   ownerCount: 3,
   findings: {
     mileage: { labelKey: "mock_label_mileage", valueKey: "wwc_preview_mileage_status", tone: "negative" },
-    accidents: { labelKey: "mock_label_accidents", valueKey: "wwc_preview_accidents_n3", tone: "negative" },
+    accidents: { labelKey: "mock_label_accidents", valueKey: "wwc_preview_accidents_n2", tone: "negative" },
     salvage: { labelKey: "mock_label_salvage", valueKey: "wwc_preview_salvage_status", tone: "positive" },
     theft: { labelKey: "mock_label_stolen", valueKey: "wwc_preview_theft_status", tone: "positive" },
   },
   mileageChart: [
-    { year: "2018", km: 12_486 },
-    { year: "2019", km: 41_883 },
-    { year: "’21", km: 89_417 },
-    { year: "’21↓", km: 67_240, rollback: true },
-    { year: "2022", km: 98_331 },
-    { year: "2024", km: 142_608 },
+    { year: "2018", km: 7_760 },
+    { year: "2019", km: 26_025 },
+    { year: "Mar 21", km: 55_570 },
+    { year: "Sep 21", km: 41_780, rollback: true },
+    { year: "2022", km: 61_100 },
+    { year: "2024", km: 88_610 },
   ],
   mileageRows: [
-    { date: "2024-02", primary: "142,608 km", detailKey: "wwc_demo_src_copart" },
-    { date: "2022-06", primary: "98,331 km", detailKey: "wwc_demo_src_nj_title" },
-    { date: "2021-09", primary: "67,240 km", detailKey: "wwc_demo_row_rollback" },
-    { date: "2021-03", primary: "89,417 km", detailKey: "wwc_demo_row_insurance" },
-    { date: "2019-11", primary: "41,883 km", detailKey: "wwc_demo_src_tx_inspect" },
-    { date: "2018-08", primary: "12,486 km", detailKey: "wwc_demo_src_tx_title" },
+    { date: "2024-02", primary: "88,610 mi", detailKey: "wwc_demo_src_copart" },
+    { date: "2022-06", primary: "61,100 mi", detailKey: "wwc_demo_src_nj_title" },
+    { date: "2021-09", primary: "41,780 mi", detailKey: "wwc_demo_row_rollback" },
+    { date: "2021-03", primary: "55,570 mi", detailKey: "wwc_demo_row_insurance" },
+    { date: "2019-11", primary: "26,025 mi", detailKey: "wwc_demo_src_tx_inspect" },
+    { date: "2018-08", primary: "7,760 mi", detailKey: "wwc_demo_src_tx_title" },
   ],
   accidentRows: [
     { date: "2022-01", primary: "", primaryKey: "wwc_demo_event_right", detailKey: "wwc_demo_repair_side_newark" },
     { date: "2021-07", primary: "", primaryKey: "wwc_demo_event_front", detailKey: "wwc_demo_repair_front_dallas" },
-    { date: "2019-04", primary: "", primaryKey: "wwc_demo_event_rear", detailKey: "wwc_demo_repair_rear_houston" },
   ],
   salvageRows: [
-    { date: "2024-02", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_copart_none" },
-    { date: "2023-06", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_nmvtis" },
-    { date: "2021-11", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_fl_clean" },
-    { date: "2018-08", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_tx_clean" },
+    { date: "2024-02", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_nmvtis" },
+    { date: "2018-08", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_tx_clean" },
   ],
   theftRows: [
     { date: "2024-02", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_nicb" },
-    { date: "2022-01", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_ncic" },
-    { date: "2019-04", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_us_ins" },
+    { date: "2018-08", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_us_ins" },
   ],
   salvageNoteKey: "wwc_demo_salvage_note_us",
   theftNoteKey: "wwc_demo_theft_note_us",
-  accidentHot: { front: true, left: false, right: true, rear: true },
+  accidentHot: { front: true, left: false, right: true, rear: false },
   ownerRows: [
     { date: "2022-06", primary: "", primaryKey: "wwc_demo_owner_private", detailKey: "wwc_demo_row_owner_private" },
     { date: "2019-11", primary: "", primaryKey: "wwc_demo_owner_private", detailKey: "wwc_demo_row_owner_private" },
@@ -202,7 +201,8 @@ const CANADA_DEMO: WwcDemoReport = {
   colorKey: "wwc_demo_color_grey",
   bodyKey: "wwc_demo_body_suv",
   odometer: 47_918,
-  score: "7.8",
+  odometerUnit: "km",
+  score: "7.2",
   scoreLabelKey: "report_caution",
   originKey: "country_canada_name",
   photoUrl: demoCarPhotoUrl("toyota-rav4.jpg"),
@@ -229,14 +229,11 @@ const CANADA_DEMO: WwcDemoReport = {
     { date: "2023-11", primary: "", primaryKey: "wwc_demo_event_rear", detailKey: "wwc_demo_repair_toronto" },
   ],
   salvageRows: [
-    { date: "2025-01", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_on_clean" },
-    { date: "2024-04", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_canada_auc" },
-    { date: "2023-02", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_ab_clean" },
-    { date: "2022-03", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_on_first" },
+    { date: "2025-01", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_on_clean" },
+    { date: "2022-03", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_on_first" },
   ],
   theftRows: [
     { date: "2025-01", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_cpi" },
-    { date: "2023-11", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_opp" },
     { date: "2022-03", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_ca_ins" },
   ],
   salvageNoteKey: "wwc_demo_salvage_note_ca",
@@ -249,7 +246,7 @@ const CANADA_DEMO: WwcDemoReport = {
 };
 
 const CHINA_DEMO: WwcDemoReport = {
-  vin: "LC0C76C45N0123456",
+  vin: "LC0C76C45N0834712",
   vehicleTitle: "2023 BYD Han",
   make: "BYD",
   model: "Han",
@@ -261,8 +258,9 @@ const CHINA_DEMO: WwcDemoReport = {
   colorKey: "wwc_demo_color_black",
   bodyKey: "wwc_demo_body_sedan",
   odometer: 28_441,
-  score: "8.1",
-  scoreLabelKey: "report_clean",
+  odometerUnit: "km",
+  score: "7.4",
+  scoreLabelKey: "report_caution",
   originKey: "country_china_name",
   photoUrl: demoCarPhotoUrl("byd-han-ev.jpg"),
   ownerCount: 1,
@@ -286,9 +284,8 @@ const CHINA_DEMO: WwcDemoReport = {
     { date: "2024-05", primary: "", primaryKey: "wwc_demo_event_front", detailKey: "wwc_demo_repair_shenzhen" },
   ],
   salvageRows: [
-    { date: "2025-02", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_cn_clear" },
-    { date: "2024-05", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_cn_ins" },
-    { date: "2023-04", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_cn_reg" },
+    { date: "2025-02", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_cn_clear" },
+    { date: "2023-04", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_cn_reg" },
   ],
   theftRows: [
     { date: "2025-02", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_cn_police" },
@@ -303,7 +300,7 @@ const CHINA_DEMO: WwcDemoReport = {
 };
 
 const JAPAN_DEMO: WwcDemoReport = {
-  vin: "JTDKN3DU5A0123456",
+  vin: "JTDKN3DU5A0184729",
   vehicleTitle: "2021 Toyota Prius",
   make: "Toyota",
   model: "Prius",
@@ -315,7 +312,8 @@ const JAPAN_DEMO: WwcDemoReport = {
   colorKey: "wwc_demo_color_white",
   bodyKey: "wwc_demo_body_hatch",
   odometer: 61_273,
-  score: "7.6",
+  odometerUnit: "km",
+  score: "7.1",
   scoreLabelKey: "report_caution",
   originKey: "country_japan_name",
   photoUrl: demoCarPhotoUrl("toyota-prius.jpg"),
@@ -342,9 +340,8 @@ const JAPAN_DEMO: WwcDemoReport = {
     { date: "2023-03", primary: "", primaryKey: "wwc_demo_event_rear", detailKey: "wwc_demo_repair_osaka" },
   ],
   salvageRows: [
-    { date: "2024-10", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_jp_auction" },
-    { date: "2023-11", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_jp_shaken" },
-    { date: "2021-05", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_jp_reg" },
+    { date: "2024-10", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_jp_auction" },
+    { date: "2021-05", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_jp_reg" },
   ],
   theftRows: [
     { date: "2024-10", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_jp_police" },
@@ -360,7 +357,7 @@ const JAPAN_DEMO: WwcDemoReport = {
 };
 
 const UAE_DEMO: WwcDemoReport = {
-  vin: "WDDWF4KB0KR123456",
+  vin: "WDDWF4KB0FR385721",
   vehicleTitle: "2019 Mercedes-Benz C200",
   make: "Mercedes-Benz",
   model: "C-Class",
@@ -372,7 +369,8 @@ const UAE_DEMO: WwcDemoReport = {
   colorKey: "wwc_demo_color_black",
   bodyKey: "wwc_demo_body_sedan",
   odometer: 76_504,
-  score: "7.2",
+  odometerUnit: "km",
+  score: "6.9",
   scoreLabelKey: "report_caution",
   originKey: "country_uae_name",
   photoUrl: demoCarPhotoUrl("mercedes-c-class.jpg"),
@@ -399,9 +397,8 @@ const UAE_DEMO: WwcDemoReport = {
     { date: "2022-08", primary: "", primaryKey: "wwc_demo_event_front", detailKey: "wwc_demo_repair_dubai" },
   ],
   salvageRows: [
-    { date: "2025-01", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_uae_rta" },
-    { date: "2022-08", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_uae_ins" },
-    { date: "2019-09", primary: "", primaryKey: "wwc_preview_salvage_status", detailKey: "wwc_demo_salvage_uae_reg" },
+    { date: "2025-01", primary: "", primaryKey: "wwc_demo_title_clean", detailKey: "wwc_demo_salvage_uae_rta" },
+    { date: "2019-09", primary: "", primaryKey: "wwc_demo_title_issued", detailKey: "wwc_demo_salvage_uae_reg" },
   ],
   theftRows: [
     { date: "2025-01", primary: "", primaryKey: "wwc_preview_theft_status", detailKey: "wwc_demo_theft_uae_police" },

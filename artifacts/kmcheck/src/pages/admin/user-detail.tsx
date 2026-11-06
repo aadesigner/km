@@ -84,7 +84,12 @@ export interface UserRow {
   acquisitionSource?: string | null;
   acquisitionMedium?: string | null;
   acquisitionCampaign?: string | null;
+  acquisitionContent?: string | null;
+  acquisitionTerm?: string | null;
   acquisitionClickId?: string | null;
+  acquisitionClickIdType?: string | null;
+  acquisitionLandingPath?: string | null;
+  acquisitionDevice?: string | null;
   acquisitionReferrer?: string | null;
   acquisitionCapturedAt?: string | null;
 }
@@ -721,15 +726,24 @@ export default function AdminUserDetail({ params }: { params: { userId: string }
                 </p>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                   {user.acquisitionCampaign ? <span>Campaign: {user.acquisitionCampaign}</span> : null}
+                  {user.acquisitionContent ? <span>Content: {user.acquisitionContent}</span> : null}
+                  {user.acquisitionTerm ? <span>Term: {user.acquisitionTerm}</span> : null}
                   {user.acquisitionSource || user.acquisitionMedium ? (
                     <span>
                       UTM: {[user.acquisitionSource, user.acquisitionMedium].filter(Boolean).join(" / ")}
                     </span>
                   ) : null}
+                  {user.acquisitionLandingPath ? (
+                    <span className="font-mono truncate max-w-[16rem]" title={user.acquisitionLandingPath}>
+                      Landed: {user.acquisitionLandingPath}
+                    </span>
+                  ) : null}
+                  {user.acquisitionDevice ? <span>Device: {user.acquisitionDevice}</span> : null}
                   {user.acquisitionReferrer ? <span>From: {user.acquisitionReferrer}</span> : null}
                   {user.acquisitionClickId ? (
                     <span className="font-mono truncate max-w-[14rem]" title={user.acquisitionClickId}>
-                      Click id: {user.acquisitionClickId}
+                      {user.acquisitionClickIdType ? `${user.acquisitionClickIdType}: ` : "Click id: "}
+                      {user.acquisitionClickId}
                     </span>
                   ) : null}
                 </div>

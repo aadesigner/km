@@ -34,6 +34,8 @@ import { optionalStoredCountry, parseUserCountryCode } from "../lib/userCountry.
 import {
   ACQUISITION_COOKIE,
   resolveAcquisitionForSignup,
+  withoutExtendedAcquisitionFields,
+  isMissingColumnError,
   type AcquisitionUserFields,
 } from "../lib/acquisition.js";
 
@@ -48,6 +50,34 @@ function acquisitionFromRequest(req: import("express").Request, body?: unknown):
     ? req.cookies[ACQUISITION_COOKIE]
     : undefined;
   return resolveAcquisitionForSignup(body ?? req.body, cookieRaw);
+}
+
+/** Insert user; if new acquisition_* columns are missing, retry without them. */
+async function insertUserWithAcquisitionFallback<T extends Record<string, unknown>>(
+  values: T,
+  acquisition: AcquisitionUserFields | null,
+  returning: typeof authSessionUserSelect,
+): Promise<AuthSessionUser | undefined> {
+  try {
+    const [created] = await db.insert(usersTable).values(values as typeof values & Record<string, never>).returning(returning);
+    return created;
+  } catch (err) {
+    if (!isMissingColumnError(err) || !acquisition) throw err;
+    logger.warn({ err }, "user insert hit missing acquisition column; retrying without extended fields");
+    const {
+      acquisitionContent: _c,
+      acquisitionTerm: _t,
+      acquisitionClickIdType: _ct,
+      acquisitionLandingPath: _lp,
+      acquisitionDevice: _d,
+      ...rest
+    } = values as T & AcquisitionUserFields;
+    const [created] = await db.insert(usersTable).values({
+      ...rest,
+      ...withoutExtendedAcquisitionFields(acquisition),
+    } as typeof values & Record<string, never>).returning(returning);
+    return created;
+  }
 }
 const OAUTH_LANGS = new Set(["en", "es", "ar", "uk", "ru", "ro", "pl", "ka", "sq"]);
 const OAUTH_LANG_COOKIE = "km_oauth_lang";
@@ -362,19 +392,22 @@ router.post("/auth/register", registerLimiter, async (req, res) => {
 
   let user: AuthSessionUser | undefined;
   try {
-    const [created] = await db.insert(usersTable).values({
-      id,
-      email: normalizedEmail,
-      name: name?.trim() || undefined,
-      passwordHash,
-      isAdmin,
-      countryCode: countryCode ?? null,
-      lastLoginAt: new Date(),
-      lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
-      signupIp: signupIp !== "unknown" ? signupIp : undefined,
-      ...(acquisition ?? {}),
-    }).returning(authSessionUserSelect);
-    user = created;
+    user = await insertUserWithAcquisitionFallback(
+      {
+        id,
+        email: normalizedEmail,
+        name: name?.trim() || undefined,
+        passwordHash,
+        isAdmin,
+        countryCode: countryCode ?? null,
+        lastLoginAt: new Date(),
+        lastLoginIp: signupIp !== "unknown" ? signupIp : undefined,
+        signupIp: signupIp !== "unknown" ? signupIp : undefined,
+        ...(acquisition ?? {}),
+      },
+      acquisition,
+      authSessionUserSelect,
+    );
   } catch (err) {
     if (isPgUniqueViolation(err)) {
       res.status(409).json({ error: "An account with this email already exists" });
@@ -948,21 +981,24 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const id = crypto.randomUUID();
     const acquisition = acquisitionFromRequest(req);
     try {
-      const [created] = await db.insert(usersTable).values({
-        id,
-        email,
-        name: name ?? undefined,
-        avatarUrl: picture ?? undefined,
-        facebookId,
-        authProvider: "facebook",
-        isAdmin,
-        // Country left unset — user picks it on Account (offers / coupons emails).
-        lastLoginAt: new Date(),
-        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        ...(acquisition ?? {}),
-      }).returning(authSessionUserSelect);
-      user = created;
+      user = await insertUserWithAcquisitionFallback(
+        {
+          id,
+          email,
+          name: name ?? undefined,
+          avatarUrl: picture ?? undefined,
+          facebookId,
+          authProvider: "facebook",
+          isAdmin,
+          // Country left unset — user picks it on Account (offers / coupons emails).
+          lastLoginAt: new Date(),
+          lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          ...(acquisition ?? {}),
+        },
+        acquisition,
+        authSessionUserSelect,
+      );
       oauthIsNewAccount = true;
       clearAcquisitionCookie(res);
       logger.info({ msg: "facebook_oauth_register", userId: id, email });
@@ -1180,21 +1216,24 @@ router.get("/auth/google/callback", async (req, res) => {
     const id = crypto.randomUUID();
     const acquisition = acquisitionFromRequest(req);
     try {
-      const [created] = await db.insert(usersTable).values({
-        id,
-        email,
-        name: name ?? undefined,
-        avatarUrl: picture ?? undefined,
-        googleId: googleSub,
-        authProvider: "google",
-        isAdmin,
-        // Country left unset — user picks it on Account (offers / coupons emails).
-        lastLoginAt: new Date(),
-        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        ...(acquisition ?? {}),
-      }).returning(authSessionUserSelect);
-      user = created;
+      user = await insertUserWithAcquisitionFallback(
+        {
+          id,
+          email,
+          name: name ?? undefined,
+          avatarUrl: picture ?? undefined,
+          googleId: googleSub,
+          authProvider: "google",
+          isAdmin,
+          // Country left unset — user picks it on Account (offers / coupons emails).
+          lastLoginAt: new Date(),
+          lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          ...(acquisition ?? {}),
+        },
+        acquisition,
+        authSessionUserSelect,
+      );
       oauthIsNewAccount = true;
       clearAcquisitionCookie(res);
       logger.info({ msg: "google_oauth_register", userId: id, email });
@@ -1414,21 +1453,24 @@ router.get("/auth/linkedin/callback", async (req, res) => {
     const id = crypto.randomUUID();
     const acquisition = acquisitionFromRequest(req);
     try {
-      const [created] = await db.insert(usersTable).values({
-        id,
-        email,
-        name: name ?? undefined,
-        avatarUrl: picture ?? undefined,
-        linkedinId,
-        authProvider: "linkedin",
-        isAdmin,
-        // Country left unset — user picks it on Account (offers / coupons emails).
-        lastLoginAt: new Date(),
-        lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
-        ...(acquisition ?? {}),
-      }).returning(authSessionUserSelect);
-      user = created;
+      user = await insertUserWithAcquisitionFallback(
+        {
+          id,
+          email,
+          name: name ?? undefined,
+          avatarUrl: picture ?? undefined,
+          linkedinId,
+          authProvider: "linkedin",
+          isAdmin,
+          // Country left unset — user picks it on Account (offers / coupons emails).
+          lastLoginAt: new Date(),
+          lastLoginIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          signupIp: oauthIp !== "unknown" ? oauthIp : undefined,
+          ...(acquisition ?? {}),
+        },
+        acquisition,
+        authSessionUserSelect,
+      );
       oauthIsNewAccount = true;
       clearAcquisitionCookie(res);
       logger.info({ msg: "linkedin_oauth_register", userId: id, email });

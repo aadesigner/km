@@ -7,6 +7,7 @@ import { recordedTransactionWhere } from "../lib/recordedPayments.js";
 import { transformVinPhotoData } from "../lib/imageProxy.js";
 import { mediaVersionFromUpdatedAt } from "../lib/vinImageCache.js";
 import { summarizeVinLookupData } from "../lib/vinLookupSummary.js";
+import { vinLookupListSelect } from "../lib/vinLookupListSelect.js";
 import { userHistoryLimiter } from "../lib/expensiveEndpointLimiter.js";
 import { parseUserCountryCode } from "../lib/userCountry.js";
 import { parseUserPhone } from "../lib/userPhone.js";
@@ -291,7 +292,12 @@ router.get("/user/history", requireAuth, userHistoryLimiter, async (req, res) =>
   const summaryView = String(req.query.view ?? "").toLowerCase() === "summary";
 
   const [rows, [{ total }]] = await Promise.all([
-    db.select().from(vinLookupsTable)
+    // Summary/dashboard uses a slim jsonb projection (same shape after summarize).
+    // Full report payload is only loaded when view !== summary.
+    (summaryView
+      ? db.select(vinLookupListSelect).from(vinLookupsTable)
+      : db.select().from(vinLookupsTable)
+    )
       .where(activeUserLookupWhere(userId))
       .orderBy(desc(vinLookupsTable.createdAt))
       .limit(limit)

@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "Потвърден",
   "wwc_preview_accidents_status": "2 записа",
   "wwc_preview_accidents_n1": "1 запис",
+  "wwc_preview_accidents_n2": "2 записа",
   "wwc_preview_accidents_n3": "3 записа",
   "wwc_preview_accidents_clear": "Няма записи",
   "wwc_preview_salvage_status": "Без маркировка",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "Йокохама",
   "live_city_fukuoka": "Фукуока",
   "report_no_photo_archive": "Няма намерен фотоархив",
-  "report_no_photo_archive_hint": "Няма налични снимки на автомобила за този VIN"
+  "report_no_photo_archive_hint": "Няма налични снимки на автомобила за този VIN",
+  "wwc_demo_title_clean": "Чист титул",
+  "wwc_demo_title_issued": "Издаден титул"
 }

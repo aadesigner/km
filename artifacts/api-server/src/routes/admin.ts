@@ -62,6 +62,7 @@ import {
 } from "../lib/adminStats.js";
 import { forEachJsonArrayRecord } from "../lib/streamJsonArray.js";
 import { runCleanupJobs } from "../lib/cleanupJobs.js";
+import { vinLookupListSelect } from "../lib/vinLookupListSelect.js";
 import { invalidateSettingsCache } from "../lib/settingsCache.js";
 import { invalidateFreeDecoderSettingsCache } from "../lib/freeDecoderSettingsCache.js";
 import {
@@ -940,7 +941,12 @@ function withNullAcquisition(row: Record<string, unknown>): DbUser {
     acquisitionSource: null,
     acquisitionMedium: null,
     acquisitionCampaign: null,
+    acquisitionContent: null,
+    acquisitionTerm: null,
     acquisitionClickId: null,
+    acquisitionClickIdType: null,
+    acquisitionLandingPath: null,
+    acquisitionDevice: null,
     acquisitionReferrer: null,
     acquisitionCapturedAt: null,
     isEditor: Boolean((row as { isEditor?: unknown }).isEditor),
@@ -1001,7 +1007,12 @@ function toAdminUser(
     acquisitionSource: user.acquisitionSource ?? null,
     acquisitionMedium: user.acquisitionMedium ?? null,
     acquisitionCampaign: user.acquisitionCampaign ?? null,
+    acquisitionContent: user.acquisitionContent ?? null,
+    acquisitionTerm: user.acquisitionTerm ?? null,
     acquisitionClickId: user.acquisitionClickId ?? null,
+    acquisitionClickIdType: user.acquisitionClickIdType ?? null,
+    acquisitionLandingPath: user.acquisitionLandingPath ?? null,
+    acquisitionDevice: user.acquisitionDevice ?? null,
     acquisitionReferrer: user.acquisitionReferrer ?? null,
     acquisitionCapturedAt: user.acquisitionCapturedAt ?? null,
     isEditor: user.isEditor === true,
@@ -1708,7 +1719,7 @@ router.get("/admin/users/:userId/history", requireStaff, async (req, res) => {
   const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
   const offset = (page - 1) * limit;
   const [items, [{ total }]] = await Promise.all([
-    db.select().from(vinLookupsTable)
+    db.select(vinLookupListSelect).from(vinLookupsTable)
       .where(eq(vinLookupsTable.userId, userId))
       .orderBy(desc(vinLookupsTable.createdAt))
       .limit(limit).offset(offset),
@@ -1899,7 +1910,7 @@ router.get("/admin/vin", requireStaff, async (req, res) => {
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [items, [{ total }]] = await Promise.all([
-    db.select().from(vinLookupsTable).where(where).orderBy(desc(vinLookupsTable.createdAt)).limit(limit).offset(offset),
+    db.select(vinLookupListSelect).from(vinLookupsTable).where(where).orderBy(desc(vinLookupsTable.createdAt)).limit(limit).offset(offset),
     db.select({ total: count() }).from(vinLookupsTable).where(where),
   ]);
 

@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "Подтверждён",
   "wwc_preview_accidents_status": "2 записи",
   "wwc_preview_accidents_n1": "1 запись",
+  "wwc_preview_accidents_n2": "2 записи",
   "wwc_preview_accidents_n3": "3 записи",
   "wwc_preview_accidents_clear": "Записей нет",
   "wwc_preview_salvage_status": "Не отмечен",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "Иокогама",
   "live_city_fukuoka": "Фукуока",
   "report_no_photo_archive": "Фотоархив не найден",
-  "report_no_photo_archive_hint": "Для этого VIN нет фотографий автомобиля"
+  "report_no_photo_archive_hint": "Для этого VIN нет фотографий автомобиля",
+  "wwc_demo_title_clean": "Чистый титул",
+  "wwc_demo_title_issued": "Титул выдан"
 }

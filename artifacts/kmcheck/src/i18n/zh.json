@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "已核实",
   "wwc_preview_accidents_status": "2 条记录",
   "wwc_preview_accidents_n1": "1 条记录",
+  "wwc_preview_accidents_n2": "2 条记录",
   "wwc_preview_accidents_n3": "3 条记录",
   "wwc_preview_accidents_clear": "无记录",
   "wwc_preview_salvage_status": "未标记",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "横滨",
   "live_city_fukuoka": "福冈",
   "report_no_photo_archive": "未找到照片档案",
-  "report_no_photo_archive_hint": "该 VIN 暂无车辆照片"
+  "report_no_photo_archive_hint": "该 VIN 暂无车辆照片",
+  "wwc_demo_title_clean": "清洁车况证明",
+  "wwc_demo_title_issued": "已发证"
 }

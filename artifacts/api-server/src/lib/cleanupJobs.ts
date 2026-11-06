@@ -83,18 +83,37 @@ async function purgeFailedTransactions(days: number): Promise<number> {
   return total;
 }
 
-async function purgeOldLoginAttempts(): Promise<void> {
+async function purgeOldLoginAttempts(): Promise<number> {
   const cutoff = new Date(Date.now() - 7 * 86400 * 1000);
-  await db.delete(loginAttemptsTable).where(lt(loginAttemptsTable.attemptedAt, cutoff));
+  let total = 0;
+  // Batched deletes avoid long exclusive locks that stall login/checkout.
+  for (;;) {
+    const rows = await db
+      .select({ id: loginAttemptsTable.id })
+      .from(loginAttemptsTable)
+      .where(lt(loginAttemptsTable.attemptedAt, cutoff))
+      .limit(500);
+    if (rows.length === 0) break;
+    await db.delete(loginAttemptsTable).where(
+      inArray(loginAttemptsTable.id, rows.map((r) => r.id)),
+    );
+    total += rows.length;
+    if (rows.length < 500) break;
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return total;
 }
 
 export async function runCleanupJobs(): Promise<void> {
   try {
     const settings = await getSettings();
 
-    void purgeOldLoginAttempts().catch((e) =>
-      logger.warn({ err: e }, "cleanup: login_attempts purge failed"),
-    );
+    try {
+      const n = await purgeOldLoginAttempts();
+      if (n > 0) logger.info({ count: n }, "cleanup: login_attempts purged");
+    } catch (e) {
+      logger.warn({ err: e }, "cleanup: login_attempts purge failed");
+    }
 
     const logDays = settings.logRetentionDays > 0
       ? settings.logRetentionDays
@@ -118,8 +137,9 @@ export async function runCleanupJobs(): Promise<void> {
 
 export function scheduleCleanupJobs(): void {
   const SIX_HOURS = 6 * 60 * 60 * 1000;
+  // Delay first run so boot indexes / warmup finish before purge load.
   setTimeout(() => {
     void runCleanupJobs();
     setInterval(() => void runCleanupJobs(), SIX_HOURS);
-  }, 30_000);
+  }, 120_000);
 }

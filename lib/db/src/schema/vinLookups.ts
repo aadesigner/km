@@ -21,6 +21,7 @@ export const vinLookupsTable = pgTable("vin_lookups", {
   index("vin_lookups_created_at_idx").on(table.createdAt),
   index("vin_lookups_vin_status_idx").on(table.vin, table.status),
   index("vin_lookups_user_created_idx").on(table.userId, table.createdAt),
+  index("vin_lookups_payment_id_idx").on(table.paymentId),
 ]);
 
 export const insertVinLookupSchema = createInsertSchema(vinLookupsTable).omit({ id: true, createdAt: true, updatedAt: true });

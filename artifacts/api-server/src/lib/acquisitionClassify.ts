@@ -11,13 +11,22 @@ export type AcquisitionBucket =
   | "direct"
   | "unknown";
 
+export type AcquisitionClickIdType = "gclid" | "fbclid" | "ttclid" | "msclkid" | "other";
+
+export type AcquisitionDevice = "mobile" | "desktop" | "tablet" | "in_app";
+
 export type AcquisitionPayload = {
   bucket: AcquisitionBucket;
   channel: string;
   source?: string | null;
   medium?: string | null;
   campaign?: string | null;
+  content?: string | null;
+  term?: string | null;
   clickId?: string | null;
+  clickIdType?: AcquisitionClickIdType | null;
+  landingPath?: string | null;
+  device?: AcquisitionDevice | null;
   referrer?: string | null;
   capturedAt: string;
 };
@@ -57,9 +66,38 @@ function hostOnly(raw: string | null | undefined): string | null {
   }
 }
 
-function param(sp: URLSearchParams, key: string): string | null {
+function param(sp: URLSearchParams, key: string, max = 128): string | null {
   const v = sp.get(key)?.trim();
-  return v ? v.slice(0, 128) : null;
+  return v ? v.slice(0, max) : null;
+}
+
+function landingPathFromUrl(href: string): string | null {
+  try {
+    const u = new URL(href);
+    const path = (u.pathname || "/").replace(/\/{2,}/g, "/").slice(0, 160);
+    // Keep only safe marketing query keys (no tokens/emails).
+    const keep = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "utm_id"];
+    const q = new URLSearchParams();
+    for (const k of keep) {
+      const v = u.searchParams.get(k)?.trim();
+      if (v) q.set(k, v.slice(0, 64));
+    }
+    const qs = q.toString();
+    const full = qs ? `${path}?${qs}` : path;
+    return full.slice(0, 200) || null;
+  } catch {
+    return null;
+  }
+}
+
+function detectDevice(userAgent: string): AcquisitionDevice {
+  if (!userAgent) return "desktop";
+  if (/Instagram|FBAN|FBAV|FB_IAB|Messenger|TikTok|Twitter|LinkedInApp|WhatsApp/i.test(userAgent)) {
+    return "in_app";
+  }
+  if (/iPad|Tablet|Android(?!.*Mobile)/i.test(userAgent)) return "tablet";
+  if (/Mobi|Android|iPhone|iPod|webOS|BlackBerry|IEMobile/i.test(userAgent)) return "mobile";
+  return "desktop";
 }
 
 function isPaidMedium(medium: string | null): boolean {
@@ -196,6 +234,8 @@ export function classifyAcquisition(
   const source = param(sp, "utm_source");
   const medium = param(sp, "utm_medium");
   const campaign = param(sp, "utm_campaign");
+  const content = param(sp, "utm_content", 128);
+  const term = param(sp, "utm_term", 128);
   const fbclid = param(sp, "fbclid");
   const gclid = param(sp, "gclid");
   const ttclid = param(sp, "ttclid");
@@ -205,23 +245,47 @@ export function classifyAcquisition(
   const brand = sourceBrand(source);
   const social = socialKind(extReferrer) ?? inAppSocial(userAgent);
   const capturedAt = new Date().toISOString();
+  const landingPath = landingPathFromUrl(href);
+  const device = detectDevice(userAgent);
 
   const base = {
     source,
     medium,
     campaign,
+    content,
+    term,
+    landingPath,
+    device,
     referrer: extReferrer,
     capturedAt,
   };
 
   if (gclid) {
-    return { ...base, bucket: "paid_ads", channel: "google_ads", clickId: gclid };
+    return {
+      ...base,
+      bucket: "paid_ads",
+      channel: "google_ads",
+      clickId: gclid,
+      clickIdType: "gclid",
+    };
   }
   if (ttclid) {
-    return { ...base, bucket: "paid_ads", channel: "tiktok_ads", clickId: ttclid };
+    return {
+      ...base,
+      bucket: "paid_ads",
+      channel: "tiktok_ads",
+      clickId: ttclid,
+      clickIdType: "ttclid",
+    };
   }
   if (msclkid) {
-    return { ...base, bucket: "paid_ads", channel: "bing_ads", clickId: msclkid };
+    return {
+      ...base,
+      bucket: "paid_ads",
+      channel: "bing_ads",
+      clickId: msclkid,
+      clickIdType: "msclkid",
+    };
   }
 
   if (isPaidMedium(medium) || medium?.toLowerCase() === "paid_social") {
@@ -231,24 +295,43 @@ export function classifyAcquisition(
       bucket: "paid_ads",
       channel: paidChannel(kind ?? brand, source),
       clickId: fbclid,
+      clickIdType: fbclid ? "fbclid" : null,
     };
   }
 
   if (social) {
-    return { ...base, bucket: "organic_social", channel: organicChannel(social), clickId: fbclid };
+    return {
+      ...base,
+      bucket: "organic_social",
+      channel: organicChannel(social),
+      clickId: fbclid,
+      clickIdType: fbclid ? "fbclid" : null,
+    };
   }
 
   const tagged = brandToSocial(brand);
   if (tagged) {
-    return { ...base, bucket: "organic_social", channel: organicChannel(tagged), clickId: fbclid };
+    return {
+      ...base,
+      bucket: "organic_social",
+      channel: organicChannel(tagged),
+      clickId: fbclid,
+      clickIdType: fbclid ? "fbclid" : null,
+    };
   }
 
   if (fbclid) {
-    return { ...base, bucket: "organic_social", channel: "facebook_social", clickId: fbclid };
+    return {
+      ...base,
+      bucket: "organic_social",
+      channel: "facebook_social",
+      clickId: fbclid,
+      clickIdType: "fbclid",
+    };
   }
 
   if (isGoogleHost(extReferrer) || brand === "google") {
-    return { ...base, bucket: "google", channel: "google_organic", clickId: null };
+    return { ...base, bucket: "google", channel: "google_organic", clickId: null, clickIdType: null };
   }
 
   if (source) {
@@ -257,6 +340,7 @@ export function classifyAcquisition(
       bucket: "referral",
       channel: source.slice(0, 40).toLowerCase(),
       clickId: null,
+      clickIdType: null,
     };
   }
 
@@ -266,6 +350,7 @@ export function classifyAcquisition(
       bucket: "referral",
       channel: "referral",
       clickId: null,
+      clickIdType: null,
     };
   }
 
@@ -274,6 +359,7 @@ export function classifyAcquisition(
     bucket: "direct",
     channel: "direct",
     clickId: null,
+    clickIdType: null,
   };
 }
 

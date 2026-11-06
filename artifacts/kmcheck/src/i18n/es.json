@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "Verificado",
   "wwc_preview_accidents_status": "2 registros",
   "wwc_preview_accidents_n1": "1 registro",
+  "wwc_preview_accidents_n2": "2 registros",
   "wwc_preview_accidents_n3": "3 registros",
   "wwc_preview_accidents_clear": "Sin registros",
   "wwc_preview_salvage_status": "Sin marca",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "Yokohama",
   "live_city_fukuoka": "Fukuoka",
   "report_no_photo_archive": "No se encontró archivo fotográfico",
-  "report_no_photo_archive_hint": "No hay fotos del vehículo para este VIN"
+  "report_no_photo_archive_hint": "No hay fotos del vehículo para este VIN",
+  "wwc_demo_title_clean": "Título limpio",
+  "wwc_demo_title_issued": "Título emitido"
 }

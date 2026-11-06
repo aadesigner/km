@@ -1693,11 +1693,12 @@
   "what_we_check_report_title": "Raport historiku i automjetit",
   "what_we_check_vin_label": "VIN",
   "what_we_check_summary": "Përmbledhje",
-  "what_we_check_disclaimer": "Parapamje ilustruese. Raporti juaj përdor të dhëna reale për VIN-in tuaj.",
+  "what_we_check_disclaimer": "Parapamje shembull — të njëjtat seksione si raporti i paguar. Të dhënat e VIN-it tuaj ndryshojnë.",
   "wwc_preview_mileage_status": "Kilometrazh i manipuluar",
   "wwc_preview_mileage_clear": "I verifikuar",
   "wwc_preview_accidents_status": "2 regjistrime",
   "wwc_preview_accidents_n1": "1 regjistrim",
+  "wwc_preview_accidents_n2": "2 regjistrime",
   "wwc_preview_accidents_n3": "3 regjistrime",
   "wwc_preview_accidents_clear": "Asnjë regjistrim",
   "wwc_preview_salvage_status": "Nuk është shënuar",
@@ -1897,5 +1898,7 @@
   "live_city_yokohama": "Yokohama",
   "live_city_fukuoka": "Fukuoka",
   "report_no_photo_archive": "Nuk u gjetën foto të arkivuara",
-  "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë VIN"
+  "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë VIN",
+  "wwc_demo_title_clean": "Titull i pastër",
+  "wwc_demo_title_issued": "Titull i lëshuar"
 }

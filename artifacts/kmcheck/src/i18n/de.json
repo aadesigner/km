@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "Verifiziert",
   "wwc_preview_accidents_status": "2 Einträge",
   "wwc_preview_accidents_n1": "1 Eintrag",
+  "wwc_preview_accidents_n2": "2 Einträge",
   "wwc_preview_accidents_n3": "3 Einträge",
   "wwc_preview_accidents_clear": "Keine Einträge",
   "wwc_preview_salvage_status": "Nicht markiert",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "Yokohama",
   "live_city_fukuoka": "Fukuoka",
   "report_no_photo_archive": "Kein Fotoarchiv gefunden",
-  "report_no_photo_archive_hint": "Für diese FIN sind keine Fahrzeugfotos verfügbar"
+  "report_no_photo_archive_hint": "Für diese FIN sind keine Fahrzeugfotos verfügbar",
+  "wwc_demo_title_clean": "Sauberer Titel",
+  "wwc_demo_title_issued": "Titel ausgestellt"
 }

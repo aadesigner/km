@@ -66,7 +66,14 @@ const SYSTEM_SETTINGS_PATCHES = [
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_click_id text`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_referrer text`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_captured_at timestamp`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_content text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_term text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_click_id_type text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_landing_path text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS acquisition_device text`,
   `CREATE INDEX IF NOT EXISTS users_acquisition_bucket_idx ON users (acquisition_bucket)`,
+  `CREATE INDEX IF NOT EXISTS users_acquisition_channel_idx ON users (acquisition_channel)`,
+  `CREATE INDEX IF NOT EXISTS users_acquisition_campaign_idx ON users (acquisition_campaign)`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_editor boolean NOT NULL DEFAULT false`,
 ];
 
@@ -139,6 +146,14 @@ const TABLE_PATCHES = [
   `CREATE INDEX IF NOT EXISTS user_devices_user_id_idx ON user_devices (user_id)`,
   `CREATE INDEX IF NOT EXISTS user_devices_device_hash_idx ON user_devices (device_hash)`,
   `CREATE INDEX IF NOT EXISTS user_devices_last_seen_at_idx ON user_devices (last_seen_at)`,
+  // Perf: list/purge/lockout paths (idempotent IF NOT EXISTS)
+  `CREATE INDEX IF NOT EXISTS system_logs_created_at_idx ON system_logs (created_at)`,
+  `CREATE INDEX IF NOT EXISTS system_logs_level_created_at_idx ON system_logs (level, created_at)`,
+  `CREATE INDEX IF NOT EXISTS login_attempts_email_context_attempted_idx ON login_attempts (email, context, attempted_at)`,
+  `CREATE INDEX IF NOT EXISTS payments_user_created_idx ON payments (user_id, created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS payments_status_created_idx ON payments (status, created_at)`,
+  `CREATE INDEX IF NOT EXISTS vin_lookups_payment_id_idx ON vin_lookups (payment_id)`,
+  `CREATE INDEX IF NOT EXISTS vin_lookups_user_active_created_idx ON vin_lookups (user_id, created_at DESC) WHERE status IS DISTINCT FROM 'revoked'`,
 ];
 
 /** Bump the shipped KRW/USD default from 1537 → 1415 (Aug 2026 market). Custom admin rates are left alone. */

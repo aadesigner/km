@@ -97,7 +97,12 @@ export function syncAcquisitionCookie(payload?: AcquisitionPayload | null): void
       source: p.source ?? undefined,
       medium: p.medium ?? undefined,
       campaign: p.campaign ?? undefined,
+      content: p.content ?? undefined,
+      term: p.term ?? undefined,
       clickId: p.clickId ?? undefined,
+      clickIdType: p.clickIdType ?? undefined,
+      landingPath: p.landingPath ?? undefined,
+      device: p.device ?? undefined,
       referrer: p.referrer ?? undefined,
       capturedAt: p.capturedAt,
     };

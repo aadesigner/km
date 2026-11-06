@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "Verificat",
   "wwc_preview_accidents_status": "2 înregistrări",
   "wwc_preview_accidents_n1": "1 înregistrare",
+  "wwc_preview_accidents_n2": "2 înregistrări",
   "wwc_preview_accidents_n3": "3 înregistrări",
   "wwc_preview_accidents_clear": "Fără înregistrări",
   "wwc_preview_salvage_status": "Nemarcat",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "Yokohama",
   "live_city_fukuoka": "Fukuoka",
   "report_no_photo_archive": "Nu s-a găsit arhivă foto",
-  "report_no_photo_archive_hint": "Nu există fotografii ale vehiculului pentru acest VIN"
+  "report_no_photo_archive_hint": "Nu există fotografii ale vehiculului pentru acest VIN",
+  "wwc_demo_title_clean": "Titlu curat",
+  "wwc_demo_title_issued": "Titlu emis"
 }

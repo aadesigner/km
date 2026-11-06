@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { isFullAdmin } from "@/lib/admin-staff";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Search, Ban, CheckCircle2, Settings2, Download, Upload, X, AlertCircle, RefreshCw, AtSign, Megaphone } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { adminUsersQuery } from "@/lib/admin-query-options";
 import { AdminQueryFallback } from "@/components/admin-query-fallback";
 import { queryErrorMessage, showFatalQueryError } from "@/lib/query-error";
@@ -86,8 +86,22 @@ export default function AdminUsers() {
   const [emailDomainFilter, setEmailDomainFilter] = useState("");
   const { user: me } = useAuth();
   const fullAdmin = isFullAdmin(me);
+  const searchString = useSearch();
   const [referFilter, setReferFilter] = useState("");
   const [page, setPage] = useState(1);
+
+  // Analytics → Users drill-down (?refer=meta_ads)
+  useEffect(() => {
+    try {
+      const refer = new URLSearchParams(searchString).get("refer")?.trim() ?? "";
+      if (refer) {
+        setReferFilter(refer);
+        setPage(1);
+      }
+    } catch {
+      // ignore malformed search
+    }
+  }, [searchString]);
   const [importResult, setImportResult] = useState<UserImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);

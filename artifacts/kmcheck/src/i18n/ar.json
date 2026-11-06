@@ -1693,6 +1693,7 @@
   "wwc_preview_mileage_clear": "تم التحقق",
   "wwc_preview_accidents_status": "سجلان",
   "wwc_preview_accidents_n1": "سجل واحد",
+  "wwc_preview_accidents_n2": "سجلان",
   "wwc_preview_accidents_n3": "3 سجلات",
   "wwc_preview_accidents_clear": "لا توجد سجلات",
   "wwc_preview_salvage_status": "غير مُعلَّم",
@@ -1892,5 +1893,7 @@
   "live_city_yokohama": "يوكوهاما",
   "live_city_fukuoka": "فوكوكا",
   "report_no_photo_archive": "لم يُعثر على أرشيف صور",
-  "report_no_photo_archive_hint": "لا تتوفر صور للمركبة لهذا الرقم VIN"
+  "report_no_photo_archive_hint": "لا تتوفر صور للمركبة لهذا الرقم VIN",
+  "wwc_demo_title_clean": "ملكية نظيفة",
+  "wwc_demo_title_issued": "تم إصدار الملكية"
 }

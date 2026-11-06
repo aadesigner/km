@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import {
   RefreshCw, DollarSign, Search, UserPlus, Users, Activity,
   Database, Megaphone, Globe, CreditCard, BarChart3, Target,
-  MousePointerClick, Link2, Filter, Sparkles,
+  MousePointerClick, Link2, Filter, Sparkles, Smartphone,
+  FileText, Tag, ExternalLink, LayoutTemplate,
 } from "lucide-react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { RisingCompactEuro, RisingEuro, RisingInteger } from "@/hooks/use-rising-number";
 import { lazyWithRetry } from "@/lib/lazy-with-retry";
@@ -93,6 +95,11 @@ type AnalyticsPayload = {
   buckets: DimRow[];
   sources: DimRow[];
   mediums: DimRow[];
+  contents?: DimRow[];
+  terms?: DimRow[];
+  landings?: DimRow[];
+  devices?: DimRow[];
+  clickIdTypes?: DimRow[];
   campaigns: Array<{
     campaign: string;
     signups: number;
@@ -163,25 +170,36 @@ function KpiTile({
   label,
   value,
   icon: Icon,
+  hint,
 }: {
   label: string;
   value: ReactNode;
   icon: ElementType;
+  hint?: string;
 }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-card px-3 py-2.5 md:px-3.5 md:py-3 min-w-0">
+    <div className="group relative rounded-xl border border-border/40 bg-gradient-to-b from-card to-card/80 px-3 py-2.5 md:px-3.5 md:py-3 min-w-0 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset] hover:border-border/70 transition-colors">
       <div className="flex items-center justify-between gap-1.5 min-w-0">
-        <span className="text-[10px] md:text-[11px] text-muted-foreground truncate">{label}</span>
-        <Icon className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+        <span className="text-[10px] md:text-[11px] text-muted-foreground truncate tracking-wide">{label}</span>
+        <span className="h-6 w-6 rounded-md bg-primary/8 flex items-center justify-center shrink-0">
+          <Icon className="h-3.5 w-3.5 text-primary/70" />
+        </span>
       </div>
-      <p className="text-base md:text-xl font-bold tabular-nums mt-1 leading-none truncate">{value}</p>
+      <p className="text-base md:text-xl font-bold tabular-nums mt-1.5 leading-none truncate tracking-tight">{value}</p>
+      {hint ? <p className="text-[10px] text-muted-foreground/80 mt-1 truncate">{hint}</p> : null}
     </div>
   );
 }
 
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-lg border border-border/50 bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border/40 bg-card overflow-hidden",
+        "shadow-[0_8px_24px_-18px_rgba(0,0,0,0.35)]",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -369,11 +387,13 @@ export default function AdminAnalytics() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary shrink-0" />
+              <span className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <BarChart3 className="h-4 w-4 text-primary" />
+              </span>
               Analytics
             </h1>
-            <p className="text-xs md:text-sm text-muted-foreground mt-1">
-              Acquisition, conversion &amp; ops
+            <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
+              First-touch acquisition · conversion · ops
               {lastUpdated ? ` · updated ${lastUpdated}` : ""}
             </p>
           </div>
@@ -455,12 +475,18 @@ export default function AdminAnalytics() {
                   Acquisition
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  First-touch channel, source, medium &amp; campaign for {PERIOD_LABELS[period].toLowerCase()}
+                  Channel, UTM, landing &amp; device for {PERIOD_LABELS[period].toLowerCase()} · click a channel to open users
                 </p>
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Coverage</p>
-                <p className="text-sm font-semibold tabular-nums">{fmtPct(summary?.attributedPct)}</p>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Attributed</p>
+                  <p className="text-sm font-semibold tabular-nums">{fmtPct(summary?.attributedPct)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Click IDs</p>
+                  <p className="text-sm font-semibold tabular-nums">{fmtPct(summary?.clickIdPct)}</p>
+                </div>
               </div>
             </div>
             <MixBar parts={mixParts} />
@@ -498,10 +524,17 @@ export default function AdminAnalytics() {
                   {data!.channels.map((row) => {
                     const label = acquisitionChannelShortLabel(row.channel);
                     const color = acquisitionChannelTextClass(row.channel);
+                    const refer = encodeURIComponent(row.channel);
                     return (
-                      <tr key={row.channel} className="hover:bg-muted/30">
+                      <tr key={row.channel} className="hover:bg-muted/25 transition-colors">
                         <td className="px-3.5 py-2 md:px-4 min-w-[9rem]">
-                          <div className={cn("font-medium", color)}>{label}</div>
+                          <Link
+                            href={`/adminx/users?refer=${refer}`}
+                            className={cn("font-medium inline-flex items-center gap-1 hover:underline underline-offset-2", color)}
+                          >
+                            {label}
+                            <ExternalLink className="h-3 w-3 opacity-40" />
+                          </Link>
                           <div className="mt-1 flex items-center gap-2">
                             <ShareBar pct={row.revenueSharePct} className={acquisitionChannelBarClass(row.channel)} />
                             <span className="text-[10px] tabular-nums text-muted-foreground shrink-0 w-9 text-right">
@@ -537,9 +570,11 @@ export default function AdminAnalytics() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <Panel>
-            <PanelHeading icon={Megaphone} title="Campaigns" hint="UTM campaign · signups & buyers" />
+            <PanelHeading icon={Megaphone} title="Campaigns" hint="utm_campaign · signups & buyers" />
             {(data?.campaigns.length ?? 0) === 0 ? (
-              <p className="text-xs text-muted-foreground px-3.5 py-8 text-center">No campaign tags</p>
+              <p className="text-xs text-muted-foreground px-3.5 py-8 text-center">
+                No campaign tags — add <code className="text-[10px]">utm_campaign</code> to ad URLs
+              </p>
             ) : (
               <ul className="divide-y divide-border/30">
                 {data!.campaigns.map((c) => (
@@ -554,6 +589,10 @@ export default function AdminAnalytics() {
                       <span>{c.signups.toLocaleString()} su · {c.buyers.toLocaleString()} buyers</span>
                       <span>{fmtPct(c.conversionPct)}</span>
                     </div>
+                    <ShareBar
+                      pct={summary?.signups ? (c.signups / Math.max(1, summary.signups)) * 100 : 0}
+                      className="bg-violet-500/80"
+                    />
                   </li>
                 ))}
               </ul>
@@ -561,7 +600,7 @@ export default function AdminAnalytics() {
           </Panel>
 
           <Panel>
-            <PanelHeading icon={Globe} title="Sources" hint="utm_source / click source" />
+            <PanelHeading icon={Globe} title="Sources" hint="utm_source" />
             <DimList rows={data?.sources ?? []} empty="No source tags" />
           </Panel>
 
@@ -571,7 +610,34 @@ export default function AdminAnalytics() {
           </Panel>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+          <Panel>
+            <PanelHeading icon={FileText} title="Ad content" hint="utm_content · creative / placement" />
+            <DimList
+              rows={(data?.contents ?? []).filter((r) => r.key !== "untagged")}
+              empty="Tag creatives with utm_content"
+            />
+          </Panel>
+          <Panel>
+            <PanelHeading icon={Tag} title="Terms" hint="utm_term · keyword / audience" />
+            <DimList rows={data?.terms ?? []} empty="Tag audiences with utm_term" />
+          </Panel>
+          <Panel>
+            <PanelHeading icon={LayoutTemplate} title="Landing paths" hint="First page path at capture" />
+            <DimList rows={data?.landings ?? []} empty="No landing paths yet" />
+          </Panel>
+          <Panel>
+            <PanelHeading icon={Smartphone} title="Devices" hint="First-touch device class" />
+            <DimList rows={data?.devices ?? []} empty="No device data" />
+          </Panel>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <Panel>
+            <PanelHeading icon={MousePointerClick} title="Click ID types" hint="gclid / fbclid / ttclid / msclkid" />
+            <DimList rows={data?.clickIdTypes ?? []} empty="No click IDs in period" />
+          </Panel>
+
           <Panel>
             <PanelHeading icon={Link2} title="Referrers" hint="External hostname at first touch" />
             {(data?.referrers.length ?? 0) === 0 ? (
@@ -624,33 +690,31 @@ export default function AdminAnalytics() {
               </ul>
             )}
           </Panel>
-
-          <Panel>
-            <PanelHeading icon={CreditCard} title="Payment mix" />
-            {(data?.paymentMethods.length ?? 0) === 0 ? (
-              <p className="text-xs text-muted-foreground px-3.5 py-8 text-center">No payments</p>
-            ) : (
-              <ul className="divide-y divide-border/30">
-                {data!.paymentMethods.map((m) => {
-                  const share = payTotal > 0 ? Math.round((m.revenue / payTotal) * 1000) / 10 : 0;
-                  return (
-                    <li key={m.method} className="px-3.5 py-2.5 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium">{PAYMENT_METHOD_LABELS[m.method] ?? m.method}</span>
-                        <span className="text-[11px] tabular-nums text-muted-foreground">
-                          {fmtCompact(m.revenue)}
-                          <span className="text-muted-foreground/50"> · </span>
-                          {m.count}
-                        </span>
-                      </div>
-                      <ShareBar pct={share} className="bg-primary/70" />
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Panel>
         </div>
+
+        <Panel>
+          <PanelHeading icon={CreditCard} title="Payment mix" hint="Collected revenue by method in this period" />
+          {(data?.paymentMethods.length ?? 0) === 0 ? (
+            <p className="text-xs text-muted-foreground px-3.5 py-8 text-center">No payments</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
+              {data!.paymentMethods.map((m) => {
+                const share = payTotal > 0 ? Math.round((m.revenue / payTotal) * 1000) / 10 : 0;
+                return (
+                  <div key={m.method} className="px-3.5 py-3.5 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold">{PAYMENT_METHOD_LABELS[m.method] ?? m.method}</span>
+                      <span className="text-[11px] tabular-nums text-muted-foreground">{fmtPct(share)}</span>
+                    </div>
+                    <p className="text-lg font-bold tabular-nums tracking-tight">{fmtCompact(m.revenue)}</p>
+                    <p className="text-[10px] text-muted-foreground tabular-nums">{m.count.toLocaleString()} txns</p>
+                    <ShareBar pct={share} className="bg-primary/70" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
       </div>
     </AdminQueryFallback>
   );
