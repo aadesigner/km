@@ -57,10 +57,10 @@ type BlocksData = {
 };
 
 const DEFAULTS: SecuritySettings = {
-  maxFailedLogins: 5, lockoutMinutes: 30,
-  adminMaxFailedLogins: 3, adminLockoutMinutes: 60,
-  registerMaxPerHour: 5, vinRatePerMinute: 20,
-  recaptchaMinScore: 0.5,
+  maxFailedLogins: 8, lockoutMinutes: 15,
+  adminMaxFailedLogins: 5, adminLockoutMinutes: 30,
+  registerMaxPerHour: 50, vinRatePerMinute: 60,
+  recaptchaMinScore: 0.3,
 };
 
 const LEVEL_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -478,7 +478,7 @@ export default function AdminSecurity() {
               </CardTitle>
               <CardDescription>
                 Minimum score to allow a request through. Score 0.0 = likely bot, 1.0 = likely human.
-                Google's default recommendation is 0.5. Keys are configured in Settings → Bot Protection.
+                Campaign default is 0.3 (Google often cites 0.5). Keys are in Settings → Bot Protection.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1.5">

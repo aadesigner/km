@@ -227,5 +227,34 @@ export async function patchSystemSettingsSchema(): Promise<void> {
     }
   }
 
+  // Ad-friendly security floors: raise tight per-IP signup/VIN caps without
+  // lowering intentionally higher admin values. Shorten long lockouts; ease reCAPTCHA score.
+  try {
+    const result = await db.execute(sql.raw(`
+      UPDATE system_settings SET
+        register_max_per_hour = GREATEST(COALESCE(register_max_per_hour, 0), 50),
+        vin_rate_per_minute = GREATEST(COALESCE(vin_rate_per_minute, 0), 60),
+        max_failed_logins = GREATEST(COALESCE(max_failed_logins, 0), 8),
+        lockout_minutes = LEAST(GREATEST(COALESCE(lockout_minutes, 15), 1), 15),
+        admin_max_failed_logins = GREATEST(COALESCE(admin_max_failed_logins, 0), 5),
+        recaptcha_min_score = LEAST(COALESCE(recaptcha_min_score, 0.5), 0.3),
+        updated_at = NOW()
+      WHERE register_max_per_hour < 50
+         OR vin_rate_per_minute < 60
+         OR max_failed_logins < 8
+         OR lockout_minutes > 15
+         OR admin_max_failed_logins < 5
+         OR COALESCE(recaptcha_min_score, 0.5) > 0.3
+    `));
+    const rowCount = typeof (result as { rowCount?: number }).rowCount === "number"
+      ? (result as { rowCount: number }).rowCount
+      : undefined;
+    if (rowCount && rowCount > 0) {
+      logger.info({ rowCount }, "applied ad-friendly security rate floors");
+    }
+  } catch (err) {
+    logger.warn({ err }, "ad-friendly security floors patch failed");
+  }
+
   logger.info("database schema patches applied");
 }

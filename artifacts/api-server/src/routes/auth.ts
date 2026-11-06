@@ -115,7 +115,7 @@ function oauthSuccessRedirect(
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 40,
   message: { error: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -129,14 +129,14 @@ const registerLimiter = rateLimit({
     const s = await getSettings();
     const v = s.registerMaxPerHour;
     if (v <= 0) {
-      return process.env.NODE_ENV === "production" ? 5 : 0;
+      return process.env.NODE_ENV === "production" ? 50 : 0;
     }
     return v;
   },
   message: { error: "Too many registration attempts. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
-  // Per-IP cap (admin: registerMaxPerHour, default 5). Raise to 20–50 during ad campaigns.
+  // Per-IP cap (admin: registerMaxPerHour, default 50 for ad campaigns).
   // clientIpKey + validate.ip=false so IPv6 / odd X-Forwarded-For cannot 500 the limiter.
   keyGenerator: (req) => clientIpKey(req),
   validate: { ip: false },
@@ -262,7 +262,7 @@ async function checkRecaptcha(
       return { blocked: true, reason: "Security verification is required. Please reload the page and try again." };
     }
 
-    const minScore = opts?.minScore ?? settings.recaptchaMinScore ?? 0.5;
+    const minScore = opts?.minScore ?? settings.recaptchaMinScore ?? 0.3;
     const result = await verifyRecaptchaToken(
       token,
       settings.recaptchaSecretKey,
@@ -471,7 +471,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
 
   const maxFailed = loginContext === "admin"
     ? (settings?.adminMaxFailedLogins ?? 3)
-    : (settings?.maxFailedLogins ?? 5);
+    : (settings?.maxFailedLogins ?? 8);
   const lockoutMins = loginContext === "admin"
     ? (settings?.adminLockoutMinutes ?? 30)
     : (settings?.lockoutMinutes ?? 30);

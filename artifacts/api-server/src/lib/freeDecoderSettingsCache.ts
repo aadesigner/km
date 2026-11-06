@@ -17,7 +17,7 @@ const DEFAULTS: FreeDecoderSettings = {
   freeVinDecoderRequireSignIn: false,
   recaptchaEnabled: false,
   recaptchaSecretKey: null,
-  recaptchaMinScore: 0.5,
+  recaptchaMinScore: 0.3,
 };
 
 let cache: FreeDecoderSettings = { ...DEFAULTS };

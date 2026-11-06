@@ -18,13 +18,13 @@ type CachedSettings = {
 };
 
 const DEFAULTS: CachedSettings = {
-  registerMaxPerHour: 5,
-  vinRatePerMinute: 20,
-  maxFailedLogins: 5,
-  lockoutMinutes: 30,
-  adminMaxFailedLogins: 3,
+  registerMaxPerHour: 50,
+  vinRatePerMinute: 60,
+  maxFailedLogins: 8,
+  lockoutMinutes: 15,
+  adminMaxFailedLogins: 5,
   adminLockoutMinutes: 30,
-  recaptchaMinScore: 0.5,
+  recaptchaMinScore: 0.3,
   maintenanceMode: false,
   maintenanceRestrictions: [],
   maintenanceMessage: null,

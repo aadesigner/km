@@ -2458,8 +2458,8 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       emailSendNoinfo: updates.emailSendNoinfo ?? true,
       emailSendNoinforefund: updates.emailSendNoinforefund ?? true,
       emailSendAdminPendingVin: updates.emailSendAdminPendingVin ?? false,
-      maxFailedLogins: updates.maxFailedLogins ?? 5,
-      lockoutMinutes: updates.lockoutMinutes ?? 30,
+      maxFailedLogins: updates.maxFailedLogins ?? 8,
+      lockoutMinutes: updates.lockoutMinutes ?? 15,
       sessionDays: clampSessionDays(updates.sessionDays ?? 30),
       requireHttps: updates.requireHttps ?? false,
       googleLoginEnabled: updates.googleLoginEnabled ?? true,
@@ -4075,15 +4075,15 @@ router.get("/admin/security/settings", requireAdmin, async (req, res) => {
     .limit(1);
   res.json(row ? {
     ...row,
-    recaptchaMinScore: Number(row.recaptchaMinScore) || 0.5,
+    recaptchaMinScore: Number(row.recaptchaMinScore) || 0.3,
   } : {
-    maxFailedLogins: 5,
-    lockoutMinutes: 30,
-    adminMaxFailedLogins: 3,
-    adminLockoutMinutes: 60,
-    registerMaxPerHour: 5,
-    vinRatePerMinute: 20,
-    recaptchaMinScore: 0.5,
+    maxFailedLogins: 8,
+    lockoutMinutes: 15,
+    adminMaxFailedLogins: 5,
+    adminLockoutMinutes: 30,
+    registerMaxPerHour: 50,
+    vinRatePerMinute: 60,
+    recaptchaMinScore: 0.3,
   });
 });
 
@@ -4147,9 +4147,9 @@ router.get("/admin/security/lockouts", requireAdmin, async (req, res) => {
     .orderBy(desc(systemSettingsTable.id))
     .limit(1);
 
-  const userMax = settings?.maxFailedLogins ?? 5;
-  const adminMax = settings?.adminMaxFailedLogins ?? 3;
-  const userLockoutMs = (settings?.lockoutMinutes ?? 30) * 60 * 1000;
+  const userMax = settings?.maxFailedLogins ?? 8;
+  const adminMax = settings?.adminMaxFailedLogins ?? 5;
+  const userLockoutMs = (settings?.lockoutMinutes ?? 15) * 60 * 1000;
   const adminLockoutMs = (settings?.adminLockoutMinutes ?? 30) * 60 * 1000;
 
   // Attempts in last 24h grouped by (email, ip, context)

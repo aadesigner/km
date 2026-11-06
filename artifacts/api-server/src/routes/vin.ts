@@ -195,7 +195,7 @@ async function checkRecaptchaFreeDecoder(
 ): Promise<{ blocked: boolean; reason?: string }> {
   if (!settings.recaptchaEnabled || !settings.recaptchaSecretKey) return { blocked: false };
   if (!token) return { blocked: true, reason: "Security verification required. Please reload the page and try again." };
-  const minScore = settings.recaptchaMinScore ?? 0.5;
+  const minScore = settings.recaptchaMinScore ?? 0.3;
   const endpoints = [
     "https://www.google.com/recaptcha/api/siteverify",
     "https://www.recaptcha.net/recaptcha/api/siteverify",

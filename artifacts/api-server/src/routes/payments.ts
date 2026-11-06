@@ -43,7 +43,7 @@ import { handlePokWebhook } from "../lib/pokWebhook.js";
 
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 60,
   message: { error: "Too many coupon attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -211,7 +211,7 @@ router.get("/payments/public-settings", async (req, res) => {
 async function verifyRecaptcha(
   token: string,
   secretKey: string,
-  minScore = 0.5,
+  minScore = 0.3,
 ): Promise<boolean> {
   const endpoints = [
     "https://www.google.com/recaptcha/api/siteverify",

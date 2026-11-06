@@ -22,7 +22,7 @@ export function userOrIpKey(req: Request): string {
 /** Pre-checkout VIN peek — calls local-exists when catalog is cold. */
 export const vinPeekLimiter = rateLimit({
   windowMs: 60_000,
-  max: envRateMax("VIN_PEEK_RATE_MAX", 25, 40),
+  max: envRateMax("VIN_PEEK_RATE_MAX", 60, 80),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many VIN preview requests. Please wait a moment." },
@@ -32,7 +32,7 @@ export const vinPeekLimiter = rateLimit({
 /** PayPal order creation — each call may hit local-exists. */
 export const paypalOrderCreateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.PAYPAL_ORDER_RATE_MAX ?? 20),
+  max: Number(process.env.PAYPAL_ORDER_RATE_MAX ?? 60),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many checkout attempts. Please wait before trying again." },
@@ -42,7 +42,7 @@ export const paypalOrderCreateLimiter = rateLimit({
 /** PayPal capture — defense in depth. */
 export const paypalCaptureLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.PAYPAL_CAPTURE_RATE_MAX ?? 30),
+  max: Number(process.env.PAYPAL_CAPTURE_RATE_MAX ?? 60),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment confirmations. Please wait before trying again." },
@@ -52,7 +52,7 @@ export const paypalCaptureLimiter = rateLimit({
 /** POK SDK order creation — may hit local-exists (VIN) or pack pricing. */
 export const pokOrderCreateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.POK_ORDER_RATE_MAX ?? 20),
+  max: Number(process.env.POK_ORDER_RATE_MAX ?? 60),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many checkout attempts. Please wait before trying again." },
@@ -62,7 +62,7 @@ export const pokOrderCreateLimiter = rateLimit({
 /** POK confirm — after GuestCheckoutForm onSuccess. */
 export const pokConfirmLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.POK_CONFIRM_RATE_MAX ?? 30),
+  max: Number(process.env.POK_CONFIRM_RATE_MAX ?? 60),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment confirmations. Please wait before trying again." },
@@ -87,7 +87,7 @@ export const pokWebhookLimiter = rateLimit({
 /** Post-payment lookup — provider path is async but still bounded per user. */
 export const vinLookupUserLimiter = rateLimit({
   windowMs: 60_000,
-  max: envRateMax("VIN_LOOKUP_USER_RATE_MAX", 12, 15),
+  max: envRateMax("VIN_LOOKUP_USER_RATE_MAX", 30, 40),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many report requests. Please wait before trying again." },
@@ -97,7 +97,7 @@ export const vinLookupUserLimiter = rateLimit({
 /** OAuth initiation — redirect spam guard. */
 export const oauthInitLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.OAUTH_INIT_RATE_MAX ?? 40),
+  max: Number(process.env.OAUTH_INIT_RATE_MAX ?? 80),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many sign-in attempts. Please wait and try again." },

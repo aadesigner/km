@@ -29,7 +29,7 @@ export const systemSettingsTable = pgTable("system_settings", {
   recaptchaEnabled: boolean("recaptcha_enabled").notNull().default(false),
   recaptchaSiteKey: text("recaptcha_site_key"),
   recaptchaSecretKey: text("recaptcha_secret_key"),
-  recaptchaMinScore: real("recaptcha_min_score").notNull().default(0.5),
+  recaptchaMinScore: real("recaptcha_min_score").notNull().default(0.3),
   maintenanceMode: boolean("maintenance_mode").notNull().default(false),
   /** When false, blocks new paid VIN lookups and checkout (admins exempt). */
   vinLookupEnabled: boolean("vin_lookup_enabled").notNull().default(true),
@@ -67,15 +67,15 @@ export const systemSettingsTable = pgTable("system_settings", {
   freeVinDecoderEnabled: boolean("free_vin_decoder_enabled").notNull().default(true),
   freeVinDecoderDailyLimit: integer("free_vin_decoder_daily_limit").notNull().default(0),
   freeVinDecoderRequireSignIn: boolean("free_vin_decoder_require_sign_in").notNull().default(false),
-  // Security — user login lockout
-  maxFailedLogins: integer("max_failed_logins").notNull().default(5),
-  lockoutMinutes: integer("lockout_minutes").notNull().default(30),
+  // Security — user login lockout (ad-friendly floors; still blocks brute force)
+  maxFailedLogins: integer("max_failed_logins").notNull().default(8),
+  lockoutMinutes: integer("lockout_minutes").notNull().default(15),
   // Security — admin login lockout (separate counters)
-  adminMaxFailedLogins: integer("admin_max_failed_logins").notNull().default(3),
+  adminMaxFailedLogins: integer("admin_max_failed_logins").notNull().default(5),
   adminLockoutMinutes: integer("admin_lockout_minutes").notNull().default(30),
-  // Security — rate limits
-  registerMaxPerHour: integer("register_max_per_hour").notNull().default(5),
-  vinRatePerMinute: integer("vin_rate_per_minute").notNull().default(20),
+  // Security — rate limits (per IP / per user — raised for Meta ad campaigns)
+  registerMaxPerHour: integer("register_max_per_hour").notNull().default(50),
+  vinRatePerMinute: integer("vin_rate_per_minute").notNull().default(60),
   sessionDays: integer("session_days").notNull().default(30),
   requireHttps: boolean("require_https").notNull().default(false),
   // Google OAuth
