@@ -75,9 +75,19 @@ export function dedupeRegistryHistoryEvents(
 export interface NormalizedVinData {
   /**
    * Opaque report origin stamp. `"getcarapi"` switches Events UI (not Korean registry).
+   * `"carstat_usa"` = Carfax/AutoCheck PDF report (see `pdfReport`).
    * Carstat / local catalog leave this unset.
    */
-  dataSource?: "getcarapi" | null;
+  dataSource?: "getcarapi" | "carstat_usa" | null;
+  /** Present when dataSource is carstat_usa — provider PDF/HTML URLs only (no base64). */
+  pdfReport?: {
+    type: "carfax" | "autocheck";
+    pdfUrl: string | null;
+    htmlUrl: string | null;
+    reportId: number | null;
+    vehicle: string | null;
+    fetchedAt: string;
+  } | null;
   make?: string | null;
   model?: string | null;
   year?: number | null;
@@ -831,6 +841,8 @@ export type VinReportServeBundle = {
   providerName: string | null;
   inCatalog: boolean;
   mediaVersion?: number;
+  /** Owner lookup id when served from a purchased vin_lookups row (for PDF proxy). */
+  lookupId?: number | null;
 };
 
 /** True when a buyer (or cache-complete lookup) actually ran this VIN — not a JSON-import stub. */
@@ -907,6 +919,7 @@ export async function resolveVinReportForViewer(
           providerName: owned.providerName ?? catalogEntry?.providerName ?? null,
           inCatalog: !!catalogEntry?.data,
           mediaVersion: mediaVersionFromUpdatedAt(owned.updatedAt),
+          lookupId: owned.id,
         };
       }
     }
@@ -1368,25 +1381,31 @@ export const PUBLIC_VIN_CHECK_UNAVAILABLE =
   "VIN check is temporarily unavailable. Please try again later.";
 
 /** Which external archive has the VIN (after local catalog miss). */
-export type VinExternalSource = "getcarapi" | "carstat";
+export type VinExternalSource = "getcarapi" | "carstat_usa" | "carstat";
 
 export type VinExternalProbeResult =
-  | { status: "exists"; source: VinExternalSource }
+  | { status: "exists"; source: VinExternalSource; usaReportType?: "carfax" | "autocheck" }
   | { status: "not_found" }
   | { status: "unavailable"; reason: string };
 
 /**
- * Cascade (free checks only): GetCarAPI → Carstat.
- * If GetCarAPI has the VIN, Carstat is never called.
+ * Cascade (free checks only): GetCarAPI → Carstat local → Carstat USA.
+ * Earlier hits short-circuit later providers. Local catalog is checked by callers first.
+ * Does not call paid report endpoints.
  */
 export async function probeExternalVinAvailability(vin: string): Promise<VinExternalProbeResult> {
   const { checkGetCarApiExists, resolveGetCarApiConfig } = await import("./getcarApi.js");
+  const { checkCarstatUsaRecords, resolveCarstatUsaApiConfig } = await import("./carstatUsaApi.js");
   const normalized = vin.trim().toUpperCase();
 
   let getCarMissed = true;
   let getCarDown = false;
+  let carstatMissed = true;
+  let carstatDown = false;
+  let usaMissed = true;
+  let usaDown = false;
 
-  // Admin disable / missing key → skip entirely (catalog → Carstat → pending).
+  // Admin disable / missing key → skip entirely.
   if (await resolveGetCarApiConfig()) {
     const gca = await checkGetCarApiExists(normalized);
     if (gca.status === "exists") {
@@ -1412,15 +1431,32 @@ export async function probeExternalVinAvailability(vin: string): Promise<VinExte
       return { status: "exists", source: "carstat" };
     }
     if (exists.status === "not_found") {
-      return { status: "not_found" };
+      carstatMissed = true;
+    } else {
+      carstatDown = true;
+      carstatMissed = false;
+      logger.warn({ msg: "carstat_probe_unavailable", vin: normalized, reason: exists.reason });
     }
-    // Carstat down: if GetCarAPI already said not_found, treat as not_found → pending path.
-    if (getCarMissed) return { status: "not_found" };
-    return { status: "unavailable", reason: exists.reason || PUBLIC_VIN_CHECK_UNAVAILABLE };
   }
 
-  if (getCarMissed) return { status: "not_found" };
-  if (getCarDown) return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
+  if (await resolveCarstatUsaApiConfig()) {
+    const usa = await checkCarstatUsaRecords(normalized);
+    if (usa.status === "exists") {
+      return { status: "exists", source: "carstat_usa", usaReportType: usa.preferredType };
+    }
+    if (usa.status === "not_found") {
+      usaMissed = true;
+    } else {
+      usaDown = true;
+      usaMissed = false;
+      logger.warn({ msg: "carstat_usa_probe_unavailable", vin: normalized, reason: usa.reason });
+    }
+  }
+
+  if (getCarMissed && carstatMissed && usaMissed) return { status: "not_found" };
+  if (getCarDown || carstatDown || usaDown) {
+    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
+  }
   return { status: "not_found" };
 }
 
@@ -1655,6 +1691,8 @@ export async function fetchFromProvider(
   opts?: {
     force?: boolean;
     preferredSource?: VinExternalSource | null;
+    /** When preferredSource is carstat_usa, which PDF product to fetch. */
+    usaReportType?: "carfax" | "autocheck";
     /** When true with preferredSource, never fall back to the other provider (admin refresh). */
     strictSource?: boolean;
   },
@@ -1663,9 +1701,14 @@ export async function fetchFromProvider(
   return withGlobalVinProviderLock(normalized, async () => {
     // `force` (admin "Refresh from provider") always calls the provider and bypasses
     // the catalog cache, so a partial catalog row can be fully repaired.
+    const { isCarstatUsaPdfPayload } = await import("./carstatUsaApi.js");
+
     if (!opts?.force) {
       const catalogEntry = await getCatalogVin(normalized);
       const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
+      if (catalogData && isCarstatUsaPdfPayload(catalogData)) {
+        return catalogData as unknown as NormalizedVinData;
+      }
       if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
         // Catalog stores NormalizedVinData (or legacy Carstat raw with lots).
         if (Array.isArray(catalogData.lots)) {
@@ -1681,38 +1724,54 @@ export async function fetchFromProvider(
 
     const { fetchGetCarApiReport, normalizeGetCarApiResponse, resolveGetCarApiConfig } =
       await import("./getcarApi.js");
+    const {
+      fetchCarstatUsaReport,
+      resolveCarstatUsaApiConfig,
+      checkCarstatUsaRecords,
+    } = await import("./carstatUsaApi.js");
 
     let source: VinExternalSource | null = opts?.preferredSource ?? null;
+    let usaReportType: "carfax" | "autocheck" | undefined = opts?.usaReportType;
     if (!source) {
       const probe = await probeExternalVinAvailability(normalized);
-      if (probe.status === "exists") source = probe.source;
+      if (probe.status === "exists") {
+        source = probe.source;
+        usaReportType = probe.usaReportType;
+      }
     }
 
     const getCarCfg = await resolveGetCarApiConfig();
+    const transientFallback = (err: unknown) => {
+      const code = err && typeof err === "object" && "code" in err
+        ? String((err as { code?: unknown }).code ?? "")
+        : "";
+      return (
+        !opts?.strictSource
+        && code !== "VIN_NO_DATA"
+        && (
+          code === "PROVIDER_RATE_LIMIT"
+          || code === "PROVIDER_CREDITS"
+          || (err instanceof Error && /rate limited|credits exhausted|timeout|fetch failed|network/i.test(err.message))
+        )
+      );
+    };
 
-    // GetCarAPI hit → try retrieve; on rate-limit/credits/transient, fall through to Carstat if configured.
+    // Post-pay retrieve order: GetCarAPI → Carstat local → Carstat USA.
+    // GetCarAPI hit → try retrieve; on rate-limit/credits/transient, fall through.
     if (source === "getcarapi" && getCarCfg) {
       try {
         const body = await fetchGetCarApiReport(normalized);
         return normalizeGetCarApiResponse(body);
       } catch (err) {
-        const code = err && typeof err === "object" && "code" in err
-          ? String((err as { code?: unknown }).code ?? "")
-          : "";
-        const canFallbackToCarstat =
-          !opts?.strictSource
-          && !!apiKey?.trim()
-          && code !== "VIN_NO_DATA"
-          && (
-            code === "PROVIDER_RATE_LIMIT"
-            || code === "PROVIDER_CREDITS"
-            || (err instanceof Error && /rate limited|credits exhausted|timeout|fetch failed|network/i.test(err.message))
-          );
-        if (canFallbackToCarstat) {
+        if (transientFallback(err)) {
           logger.warn(
             { err, vin: normalized },
-            "GetCarAPI retrieve failed — falling back to Carstat",
+            "GetCarAPI retrieve failed — falling back to Carstat local / USA",
           );
+          source = null;
+        } else if (opts?.strictSource) {
+          logger.error({ err, vin: normalized }, "Error fetching from GetCarAPI");
+          throw err;
         } else {
           logger.error({ err, vin: normalized }, "Error fetching from GetCarAPI");
           throw err;
@@ -1722,25 +1781,81 @@ export async function fetchFromProvider(
       throw new Error("GetCarAPI is not configured");
     }
 
-    // Carstat path (or GetCarAPI miss / retrieve fallback / not configured).
-    // Strict GetCarAPI admin refresh must never overwrite with Carstat.
     if (opts?.strictSource && opts.preferredSource === "getcarapi") {
       throw new Error("GetCarAPI refresh did not return data");
     }
-    if (source === "carstat" || source === "getcarapi" || !source) {
-      if (!apiKey?.trim()) {
+
+    // Carstat local JSON path (before Carstat USA PDF).
+    if (source === "carstat" || source == null) {
+      if (apiKey?.trim()) {
+        const base = normalizeProviderBaseUrl(providerBaseUrl);
+        try {
+          const body = await fetchLocalReport(normalized, base, apiKey);
+          return normalizeCarstatResponse(body);
+        } catch (err) {
+          if (opts?.strictSource && opts.preferredSource === "carstat") {
+            logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
+            throw err;
+          }
+          if (transientFallback(err) || source == null || source === "carstat") {
+            logger.warn(
+              { err, vin: normalized },
+              "Carstat local retrieve failed — falling back to Carstat USA",
+            );
+            source = null;
+          } else {
+            logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
+            throw err;
+          }
+        }
+      } else if (source === "carstat") {
         throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
           code: "VIN_NO_DATA",
         });
       }
-      const base = normalizeProviderBaseUrl(providerBaseUrl);
-      try {
-        const body = await fetchLocalReport(normalized, base, apiKey);
-        return normalizeCarstatResponse(body);
-      } catch (err) {
-        logger.error({ err, vin: normalized, providerBaseUrl }, "Error fetching from provider");
-        throw err;
+    }
+
+    if (opts?.strictSource && opts.preferredSource === "carstat") {
+      throw new Error("Carstat refresh did not return data");
+    }
+
+    // Carstat USA PDF path (after Carstat local miss / fallback).
+    if (source === "carstat_usa" || source == null) {
+      const usaCfg = await resolveCarstatUsaApiConfig();
+      if (usaCfg) {
+        try {
+          let type = usaReportType;
+          if (!type) {
+            const check = await checkCarstatUsaRecords(normalized);
+            if (check.status === "exists") type = check.preferredType;
+          }
+          if (type) {
+            return await fetchCarstatUsaReport(normalized, type);
+          }
+          if (source === "carstat_usa") {
+            throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
+              code: "VIN_NO_DATA",
+            });
+          }
+        } catch (err) {
+          if (opts?.strictSource && opts.preferredSource === "carstat_usa") {
+            logger.error({ err, vin: normalized }, "Error fetching from Carstat USA");
+            throw err;
+          }
+          if (source === "carstat_usa" && !transientFallback(err)) {
+            logger.error({ err, vin: normalized }, "Error fetching from Carstat USA");
+            throw err;
+          }
+          logger.warn({ err, vin: normalized }, "Carstat USA retrieve failed");
+          if (source === "carstat_usa") throw err;
+        }
+      } else if (source === "carstat_usa") {
+        throw new Error("Carstat USA API is not configured");
       }
+    }
+
+    if (opts?.strictSource && opts.preferredSource === "carstat_usa") {
+      throw new Error("Carstat USA refresh did not return data");
     }
 
     throw new Error("No vehicle history data found for this VIN in our database.");

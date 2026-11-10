@@ -52,6 +52,8 @@ export function warmVinImage(url: string): Promise<void> {
   const promise = new Promise<void>((resolve) => {
     const img = new Image();
     img.decoding = "async";
+    // Avoid hotlink 403s on auction CDNs that reject our site Referer.
+    img.referrerPolicy = "no-referrer";
     const finish = () => {
       markVinImageSessionLoaded(url);
       warmInFlight.delete(url);

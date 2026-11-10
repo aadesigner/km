@@ -26,6 +26,8 @@ type Provider = {
   countryCode: string;
   baseUrl?: string;
   apiKey?: string;
+  /** Server omits apiKey; use this to know a key is saved. */
+  hasApiKey?: boolean;
   isActive: boolean;
   rateLimit?: number;
 };
@@ -126,6 +128,9 @@ export default function AdminProviders() {
   const [getcarApiSaving, setGetcarApiSaving] = useState(false);
   const [getcarApiMsg, setGetcarApiMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [getcarApiKeyPresent, setGetcarApiKeyPresent] = useState<boolean | null>(null);
+  const [carstatUsaApiEnabled, setCarstatUsaApiEnabled] = useState(false);
+  const [carstatUsaApiSaving, setCarstatUsaApiSaving] = useState(false);
+  const [carstatUsaApiMsg, setCarstatUsaApiMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const { data: providers = [], isLoading } = useAdminGetProviders();
   const { data: countries = [] } = useGetCountries();
@@ -134,7 +139,11 @@ export default function AdminProviders() {
     queryFn: async () => {
       const resp = await fetch(`${basePath}/api/admin/settings`, { credentials: "include" });
       if (!resp.ok) throw new Error("Failed to load settings");
-      return resp.json() as Promise<{ getcarApiEnabled?: boolean; getcarApiKeyConfigured?: boolean }>;
+      return resp.json() as Promise<{
+        getcarApiEnabled?: boolean;
+        getcarApiKeyConfigured?: boolean;
+        carstatUsaApiEnabled?: boolean;
+      }>;
     },
   });
 
@@ -144,6 +153,9 @@ export default function AdminProviders() {
     }
     if (typeof adminSettings?.getcarApiKeyConfigured === "boolean") {
       setGetcarApiKeyPresent(adminSettings.getcarApiKeyConfigured);
+    }
+    if (typeof adminSettings?.carstatUsaApiEnabled === "boolean") {
+      setCarstatUsaApiEnabled(adminSettings.carstatUsaApiEnabled);
     }
   }, [adminSettings]);
 
@@ -202,6 +214,40 @@ export default function AdminProviders() {
       setGetcarApiMsg({ ok: false, text: "Request failed." });
     } finally {
       setGetcarApiSaving(false);
+    }
+  }
+
+  async function toggleCarstatUsaApi(next: boolean) {
+    setCarstatUsaApiSaving(true);
+    setCarstatUsaApiMsg(null);
+    const prev = carstatUsaApiEnabled;
+    setCarstatUsaApiEnabled(next);
+    try {
+      const resp = await fetch(`${basePath}/api/admin/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ carstatUsaApiEnabled: next }),
+      });
+      if (!resp.ok) {
+        setCarstatUsaApiEnabled(prev);
+        setCarstatUsaApiMsg({ ok: false, text: "Failed to update Carstat USA API. Try again." });
+        return;
+      }
+      const saved = await resp.json() as { carstatUsaApiEnabled?: boolean };
+      if (typeof saved.carstatUsaApiEnabled === "boolean") setCarstatUsaApiEnabled(saved.carstatUsaApiEnabled);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      setCarstatUsaApiMsg({
+        ok: true,
+        text: next
+          ? "Carstat USA API enabled — USA vehicle history PDF checks run after GetCarAPI and Carstat local."
+          : "Carstat USA API disabled — lookups skip USA vehicle history PDF reports.",
+      });
+    } catch {
+      setCarstatUsaApiEnabled(prev);
+      setCarstatUsaApiMsg({ ok: false, text: "Request failed." });
+    } finally {
+      setCarstatUsaApiSaving(false);
     }
   }
 
@@ -404,6 +450,65 @@ export default function AdminProviders() {
             <a href="https://getcarapi.com/api/" target="_blank" rel="noreferrer" className="underline underline-offset-2">
               getcarapi.com/api
             </a>
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ── Carstat USA API (Carfax / AutoCheck PDF) ─────────────────────────── */}
+      <Card className="border-2 border-amber-500/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0">
+              <Globe className="h-5 w-5 text-amber-600 shrink-0" />
+              <div className="min-w-0">
+                <CardTitle className="text-lg">Carstat USA API — vehicle history PDF</CardTitle>
+                <CardDescription className="mt-1">
+                  Cascade after local DB + GetCarAPI + Carstat JSON. Free{" "}
+                  <code className="text-[11px]">check-records</code> before payment; paid PDF after payment.
+                  Uses the same Carstat API key.
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Badge
+                variant={carstatUsaApiEnabled ? "default" : "secondary"}
+                className={carstatUsaApiEnabled ? "bg-green-100 text-green-800 border-0" : ""}
+              >
+                {carstatUsaApiEnabled ? "Enabled" : "Disabled"}
+              </Badge>
+              <Switch
+                id="carstat-usa-api-enabled"
+                checked={carstatUsaApiEnabled}
+                disabled={getcarApiLoading || carstatUsaApiSaving}
+                onCheckedChange={(v) => void toggleCarstatUsaApi(v)}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {carstatUsaApiMsg && (
+            <p className={`text-sm ${carstatUsaApiMsg.ok ? "text-green-600" : "text-red-500"}`}>
+              {carstatUsaApiMsg.text}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Reuses Carstat key above · Endpoints:{" "}
+            <code className="bg-muted px-1 rounded">/api/reports/check-records/&#123;vin&#125;</code>,{" "}
+            <code className="bg-muted px-1 rounded">/api/reports/carfax|autocheck/&#123;vin&#125;</code>
+            {" "}· Docs:{" "}
+            <a
+              href="https://telegra.ph/API-carfax--autocheck-08-04"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2"
+            >
+              telegra.ph API notes
+            </a>
+            {carstatProviders.every((p) => !p.hasApiKey && !p.apiKey) && (
+              <span className="text-amber-700 dark:text-amber-400">
+                {" "}— save a Carstat API key first or this toggle cannot call the API.
+              </span>
+            )}
           </p>
         </CardContent>
       </Card>

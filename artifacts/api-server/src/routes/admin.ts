@@ -21,6 +21,12 @@ import {
 import { clientIpKey } from "../lib/trustedClient.js";
 import { fetchFromProvider, checkVinDeliverable, grantVinReportToUser, syncStampedCatalogToAllLookups, wipeRemovedCatalogVin, wipeRemovedCatalogVins, type VinExternalSource } from "../lib/vinService";
 import { GETCARAPI_PROVIDER_NAME, GETCARAPI_DATA_SOURCE, resolveGetCarApiConfig } from "../lib/getcarApi.js";
+import {
+  CARSTAT_USA_PROVIDER_NAME,
+  CARSTAT_USA_DATA_SOURCE,
+  resolveCarstatUsaApiConfig,
+  type CarstatUsaReportType,
+} from "../lib/carstatUsaApi.js";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "../lib/vinImageCache.js";
 import {
   catalogDataFromCsvRecord,
@@ -69,6 +75,10 @@ import {
   invalidateGetCarApiSettingsCache,
   setGetCarApiEnabledCache,
 } from "../lib/getcarApiSettingsCache.js";
+import {
+  invalidateCarstatUsaApiSettingsCache,
+  setCarstatUsaApiEnabledCache,
+} from "../lib/carstatUsaApiSettingsCache.js";
 import { getEffectiveSystemSettings } from "../lib/systemSettings.js";
 import { sanitizeAdminSettings } from "../lib/adminSettings.js";
 import {
@@ -203,19 +213,27 @@ function requireAdminProviderBudget(req: express.Request, res: express.Response)
   return true;
 }
 
-/** Prefer GetCarAPI when the row was sourced from it (providerName or data.dataSource). */
+/** Prefer the row's original external source (GetCarAPI / Carstat USA / Carstat local). */
 function resolveAdminRefreshSource(
   providerName: string | null | undefined,
   data: unknown,
 ): VinExternalSource {
   const pn = String(providerName ?? "").trim().toLowerCase();
   if (pn === GETCARAPI_PROVIDER_NAME) return "getcarapi";
+  if (pn === CARSTAT_USA_PROVIDER_NAME || pn === "carstat_usa") return "carstat_usa";
   const record = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-  const ds = record?.dataSource;
-  if (typeof ds === "string" && ds.trim().toLowerCase() === GETCARAPI_DATA_SOURCE) {
-    return "getcarapi";
-  }
+  const ds = typeof record?.dataSource === "string" ? record.dataSource.trim().toLowerCase() : "";
+  if (ds === GETCARAPI_DATA_SOURCE) return "getcarapi";
+  if (ds === CARSTAT_USA_DATA_SOURCE) return "carstat_usa";
   return "carstat";
+}
+
+function usaReportTypeFromData(data: unknown): CarstatUsaReportType | undefined {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return undefined;
+  const pr = (data as Record<string, unknown>).pdfReport;
+  if (!pr || typeof pr !== "object" || Array.isArray(pr)) return undefined;
+  const type = (pr as Record<string, unknown>).type;
+  return type === "autocheck" || type === "carfax" ? type : undefined;
 }
 
 async function loadActiveCarstatProvider(): Promise<{
@@ -1998,13 +2016,22 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
       res.status(503).json({ error: "GetCarAPI is not configured or is disabled" });
       return;
     }
+  } else if (refreshSource === "carstat_usa") {
+    if (!(await resolveCarstatUsaApiConfig())) {
+      res.status(503).json({ error: "Carstat USA API is not configured or is disabled" });
+      return;
+    }
   } else if (!carstat) {
     res.status(503).json({ error: "No active provider configured" });
     return;
   }
 
   const providerStamp =
-    refreshSource === "getcarapi" ? GETCARAPI_PROVIDER_NAME : (carstat?.name ?? "carstat");
+    refreshSource === "getcarapi"
+      ? GETCARAPI_PROVIDER_NAME
+      : refreshSource === "carstat_usa"
+        ? CARSTAT_USA_PROVIDER_NAME
+        : (carstat?.name ?? "carstat");
 
   try {
     const oldPhotoUrls = extractVinPhotoUrls(lookup.data);
@@ -2015,6 +2042,7 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
       {
         force: true,
         preferredSource: refreshSource,
+        usaReportType: refreshSource === "carstat_usa" ? usaReportTypeFromData(lookup.data) : undefined,
         strictSource: true,
       },
     );
@@ -2052,7 +2080,12 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
   } catch (err) {
     logger.error({ err, id, refreshSource }, "Force refresh failed");
     const reason = err instanceof Error ? err.message : "";
-    const label = refreshSource === "getcarapi" ? "GetCarAPI" : "provider";
+    const label =
+      refreshSource === "getcarapi"
+        ? "GetCarAPI"
+        : refreshSource === "carstat_usa"
+          ? "Carstat USA"
+          : "provider";
     res.status(502).json({
       error: reason ? `Failed to refresh from ${label}: ${reason}` : `Failed to refresh from ${label}`,
     });
@@ -2063,7 +2096,7 @@ router.post("/admin/vin/:id/refresh", requireAdmin, async (req, res) => {
 
 router.get("/admin/providers", requireAdmin, async (_req, res) => {
   const providers = await db.select().from(providersTable).orderBy(desc(providersTable.createdAt));
-  res.json(providers.map(p => ({ ...p, apiKey: undefined })));
+  res.json(providers.map(p => ({ ...p, apiKey: undefined, hasApiKey: !!p.apiKey?.trim() })));
 });
 
 router.post("/admin/providers", requireAdmin, async (req, res) => {
@@ -2253,6 +2286,7 @@ router.get("/admin/settings", requireAdmin, async (_req, res) => {
       vinLookupEnabled: true,
       getcarApiEnabled: true,
       getcarApiKeyConfigured: !!process.env["GETCARAPI_API_KEY"]?.trim(),
+      carstatUsaApiEnabled: false,
       freeVinDecoderEnabled: true, freeVinDecoderDailyLimit: 0, freeVinDecoderRequireSignIn: false,
       hasPaypalSecret: false, hasRecaptchaSecret: false, hasGoogleSecret: false, hasFacebookSecret: false, hasLinkedInSecret: false, hasSmtpPass: false, hasPokSecret: false,
       googleButtonVisible: false, facebookButtonVisible: false, linkedinButtonVisible: false,
@@ -2272,6 +2306,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     maintenanceMessage: string | null;
     vinLookupEnabled: boolean;
     getcarApiEnabled: boolean;
+    carstatUsaApiEnabled: boolean;
     paypalClientId: string | null; paypalClientSecret: string | null;
     paypalSandbox: boolean; paypalEnableCards: boolean;
     pokMerchantId: string | null; pokKeyId: string | null; pokKeySecret: string | null;
@@ -2433,8 +2468,12 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
     invalidateGetCarApiSettingsCache();
+    invalidateCarstatUsaApiSettingsCache();
     if (typeof updates.getcarApiEnabled === "boolean") {
       setGetCarApiEnabledCache(updates.getcarApiEnabled);
+    }
+    if (typeof updates.carstatUsaApiEnabled === "boolean") {
+      setCarstatUsaApiEnabledCache(updates.carstatUsaApiEnabled);
     }
     if (
       "pokMerchantId" in updates
@@ -2457,6 +2496,7 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
       recaptchaSecretKey: updates.recaptchaSecretKey ?? null,
       maintenanceMode: updates.maintenanceMode ?? false,
       getcarApiEnabled: updates.getcarApiEnabled ?? true,
+      carstatUsaApiEnabled: updates.carstatUsaApiEnabled ?? false,
       freeVinDecoderEnabled: updates.freeVinDecoderEnabled ?? true,
       freeVinDecoderDailyLimit: updates.freeVinDecoderDailyLimit ?? 0,
       freeVinDecoderRequireSignIn: updates.freeVinDecoderRequireSignIn ?? false,
@@ -2490,8 +2530,12 @@ router.patch("/admin/settings", requireAdmin, async (req, res) => {
     invalidateSettingsCache();
     invalidateFreeDecoderSettingsCache();
     invalidateGetCarApiSettingsCache();
+    invalidateCarstatUsaApiSettingsCache();
     if (typeof updates.getcarApiEnabled === "boolean") {
       setGetCarApiEnabledCache(updates.getcarApiEnabled);
+    }
+    if (typeof updates.carstatUsaApiEnabled === "boolean") {
+      setCarstatUsaApiEnabledCache(updates.carstatUsaApiEnabled);
     }
     if (
       "pokMerchantId" in updates
@@ -3836,13 +3880,22 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
       res.status(503).json({ error: "GetCarAPI is not configured or is disabled" });
       return;
     }
+  } else if (refreshSource === "carstat_usa") {
+    if (!(await resolveCarstatUsaApiConfig())) {
+      res.status(503).json({ error: "Carstat USA API is not configured or is disabled" });
+      return;
+    }
   } else if (!carstat) {
     res.status(503).json({ error: "No active provider configured" });
     return;
   }
 
   const providerStamp =
-    refreshSource === "getcarapi" ? GETCARAPI_PROVIDER_NAME : (carstat?.name ?? "carstat");
+    refreshSource === "getcarapi"
+      ? GETCARAPI_PROVIDER_NAME
+      : refreshSource === "carstat_usa"
+        ? CARSTAT_USA_PROVIDER_NAME
+        : (carstat?.name ?? "carstat");
 
   try {
     const oldPhotoUrls = extractVinPhotoUrls(existingEntry?.data);
@@ -3855,6 +3908,7 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
       {
         force: true,
         preferredSource: refreshSource,
+        usaReportType: refreshSource === "carstat_usa" ? usaReportTypeFromData(existingData) : undefined,
         strictSource: true,
       },
     );
@@ -3914,7 +3968,12 @@ router.post("/admin/vin-catalog/by-vin/:vin/refresh", requireAdmin, async (req, 
   } catch (err) {
     logger.error({ err, vin, refreshSource }, "VIN catalog refresh failed");
     const reason = err instanceof Error ? err.message : "";
-    const label = refreshSource === "getcarapi" ? "GetCarAPI" : "provider";
+    const label =
+      refreshSource === "getcarapi"
+        ? "GetCarAPI"
+        : refreshSource === "carstat_usa"
+          ? "Carstat USA"
+          : "provider";
     res.status(502).json({
       error: reason ? `Failed to refresh from ${label}: ${reason}` : `Failed to refresh from ${label}`,
     });
@@ -4719,6 +4778,7 @@ router.post(
       invalidatePricingCache();
       invalidateFreeDecoderSettingsCache();
       invalidateGetCarApiSettingsCache();
+      invalidateCarstatUsaApiSettingsCache();
       invalidatePluginSettingsCache();
 
       await logAdminAction(req.userId!, "admin_backup_restore", "system", {

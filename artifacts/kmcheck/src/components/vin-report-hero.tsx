@@ -275,6 +275,8 @@ function HeroPhotoFrame({
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
+      // Auction/CDN hosts (e.g. import-motor) often 403 when Referer is our site.
+      referrerPolicy="no-referrer"
       className={cn(
         "absolute inset-0 w-full h-full object-cover object-[center_62%] transition-opacity duration-150",
         isActive && ready ? "opacity-100" : "opacity-0",

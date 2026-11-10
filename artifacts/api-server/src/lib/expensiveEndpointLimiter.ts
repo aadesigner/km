@@ -85,6 +85,19 @@ export const pokWebhookLimiter = rateLimit({
 });
 
 /** Post-payment lookup — provider path is async but still bounded per user. */
+/**
+ * USA report PDF/HTML proxy — upstream fetch is expensive; limit retries/abuse.
+ * Authenticated users only in practice (routes use requireAuth).
+ */
+export const vinUsaReportProxyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: envRateMax("VIN_USA_REPORT_PROXY_RATE_MAX", 30, 60),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many report reload requests. Please wait before trying again." },
+  keyGenerator: userOrIpKey,
+});
+
 export const vinLookupUserLimiter = rateLimit({
   windowMs: 60_000,
   max: envRateMax("VIN_LOOKUP_USER_RATE_MAX", 30, 40),

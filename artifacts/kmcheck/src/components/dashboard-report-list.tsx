@@ -132,6 +132,7 @@ function ReportListThumbnail({ sources, alt }: { sources: string[]; alt: string 
         )}
         loading="lazy"
         decoding="async"
+        referrerPolicy="no-referrer"
         onLoad={markReady}
         onError={() => {
           if (srcIndex + 1 < sources.length) {

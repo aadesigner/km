@@ -21,6 +21,8 @@ import {
   isVinEligibleForManualPending,
 } from "./pendingVinService.js";
 import { GETCARAPI_PROVIDER_NAME, resolveGetCarApiConfig } from "./getcarApi.js";
+import { CARSTAT_USA_PROVIDER_NAME, resolveCarstatUsaApiConfig } from "./carstatUsaApi.js";
+import type { VinExternalSource } from "./vinService.js";
 import { finalizePaymentOnFulfillment } from "./recordedPayments.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
 import {
@@ -97,15 +99,17 @@ async function fetchFromProviderWithRetry(
   vin: string,
   baseUrl: string,
   apiKey: string,
-  preferredSource?: "getcarapi" | "carstat" | null,
+  preferredSource?: VinExternalSource | null,
+  usaReportType?: "carfax" | "autocheck",
 ): Promise<Awaited<ReturnType<typeof fetchFromProvider>>> {
+  const opts = { preferredSource, usaReportType };
   try {
-    return await fetchFromProvider(vin, baseUrl, apiKey, { preferredSource });
+    return await fetchFromProvider(vin, baseUrl, apiKey, opts);
   } catch (err) {
     if (!isTransientProviderError(err)) throw err;
     logger.warn({ err, vin }, "Transient provider error — retrying report once");
     await new Promise((r) => setTimeout(r, 2000));
-    return await fetchFromProvider(vin, baseUrl, apiKey, { preferredSource });
+    return await fetchFromProvider(vin, baseUrl, apiKey, opts);
   }
 }
 
@@ -220,14 +224,23 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         return;
       }
 
-        if (!provider.apiKey?.trim() && !(await resolveGetCarApiConfig())) {
+        if (
+          !provider.apiKey?.trim()
+          && !(await resolveGetCarApiConfig())
+          && !(await resolveCarstatUsaApiConfig())
+        ) {
           throw new Error("Provider API key not configured");
         }
 
         const probe = await probeExternalVinAvailability(normalizedVin);
         const preferredSource = probe.status === "exists" ? probe.source : null;
-        // GetCarAPI-only installs: never call Carstat with an empty key.
-        if (!preferredSource && !provider.apiKey?.trim() && (await resolveGetCarApiConfig())) {
+        const usaReportType = probe.status === "exists" ? probe.usaReportType : undefined;
+        // GetCarAPI / Carstat-USA-only installs: never call Carstat local with an empty key.
+        if (
+          !preferredSource
+          && !provider.apiKey?.trim()
+          && ((await resolveGetCarApiConfig()) || (await resolveCarstatUsaApiConfig()))
+        ) {
           throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
             code: "VIN_NO_DATA",
           });
@@ -237,11 +250,20 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           provider.baseUrl,
           provider.apiKey ?? "",
           preferredSource,
+          usaReportType,
         );
+        // Name from delivered payload so fallthrough (e.g. Carstat → USA) is labeled correctly.
+        const deliveredSource = (data as { dataSource?: string | null }).dataSource;
         const reportProviderName =
-          preferredSource === "getcarapi"
+          deliveredSource === "getcarapi"
             ? GETCARAPI_PROVIDER_NAME
-            : (provider.name || GETCARAPI_PROVIDER_NAME);
+            : deliveredSource === "carstat_usa"
+              ? CARSTAT_USA_PROVIDER_NAME
+              : preferredSource === "getcarapi"
+                ? GETCARAPI_PROVIDER_NAME
+                : preferredSource === "carstat_usa"
+                  ? CARSTAT_USA_PROVIDER_NAME
+                  : (provider.name || GETCARAPI_PROVIDER_NAME);
         const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
         await db.update(vinLookupsTable).set({
           status: "complete",
