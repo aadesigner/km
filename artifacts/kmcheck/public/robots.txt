@@ -120,4 +120,5 @@ Disallow: /zh/checkout
 Disallow: /zh/purchases
 Disallow: /zh/vin/processing
 
+# AI assistants: https://kmcheck.com/llms.txt
 Sitemap: https://kmcheck.com/sitemap.xml

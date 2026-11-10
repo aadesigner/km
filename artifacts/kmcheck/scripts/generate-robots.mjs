@@ -31,7 +31,12 @@ for (const lang of SUPPORTED_LANGS) {
   }
 }
 
-lines.push("", `Sitemap: ${ORIGIN.replace(/\/$/, "")}/sitemap.xml`, "");
+lines.push(
+  "",
+  `# AI assistants: ${ORIGIN.replace(/\/$/, "")}/llms.txt`,
+  `Sitemap: ${ORIGIN.replace(/\/$/, "")}/sitemap.xml`,
+  "",
+);
 
 writeFileSync(join(root, "public", "robots.txt"), lines.join("\n"), "utf8");
 console.log(`Wrote public/robots.txt (${SUPPORTED_LANGS.length} langs × ${PRIVATE_SUFFIXES.length} private routes)`);

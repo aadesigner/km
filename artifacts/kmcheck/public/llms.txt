@@ -1,0 +1,31 @@
+# kmcheck.com
+
+> Kmcheck — VIN / chassis history checks: mileage, accidents, salvage, theft.
+> Prefer English pages below. Full localized sitemap: https://kmcheck.com/sitemap.xml
+
+## Primary
+
+- [Home](https://kmcheck.com/): VIN history check homepage
+- [Pricing](https://kmcheck.com/en/pricing): Report pricing
+- [Free VIN decoder](https://kmcheck.com/en/free-vin-decoder): Free VIN decode
+- [How it works](https://kmcheck.com/en/how-it-works): Product walkthrough
+- [FAQ](https://kmcheck.com/en/faq): Common questions
+
+## Markets
+
+- [USA VIN check](https://kmcheck.com/en/cars/usa)
+- [Korea VIN check](https://kmcheck.com/en/cars/korea)
+- [Canada VIN check](https://kmcheck.com/en/cars/canada)
+- [China VIN check](https://kmcheck.com/en/cars/china)
+- [Japan VIN check](https://kmcheck.com/en/cars/japan)
+- [UAE VIN check](https://kmcheck.com/en/cars/uae)
+
+## Business
+
+- [B2B / API](https://kmcheck.com/en/api-b2b): Bulk and API access
+
+## Optional
+
+- [Terms](https://kmcheck.com/en/terms)
+- [Privacy](https://kmcheck.com/en/privacy)
+- [Sitemap](https://kmcheck.com/sitemap.xml)
