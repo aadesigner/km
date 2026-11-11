@@ -8,6 +8,7 @@ import { scheduleCleanupJobs } from "./lib/cleanupJobs.js";
 import { scheduleDbKeepalive } from "./lib/dbKeepalive.js";
 import { refreshVinSitemapShards } from "./lib/sitemapMaintenance.js";
 import { runOneShotCatalogMileageRepairOnBoot } from "./lib/mileageHistoryRepairJob.js";
+import { runOneShotCarstatBadDateWipeOnBoot } from "./lib/carstatBadDateWipeJob.js";
 import { invalidatePublicSettingsCache } from "./routes/payments.js";
 import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
@@ -142,6 +143,10 @@ const server = app.listen(port, "0.0.0.0", async () => {
   // One-shot: strip zigzag NA-auction km from Carstat catalog timelines (idempotent after marker).
   void runOneShotCatalogMileageRepairOnBoot().catch((e) =>
     logger.warn({ err: e }, "Failed one-shot catalog mileage repair"),
+  );
+  // One-shot: drop Carstat events wrongly stamped 2026-09-17/18 (idempotent after marker).
+  void runOneShotCarstatBadDateWipeOnBoot().catch((e) =>
+    logger.warn({ err: e }, "Failed one-shot Carstat bad-date wipe"),
   );
   // VIN shards are written at runtime — Railway build cannot reach postgres.railway.internal.
   void refreshVinSitemapShards()
