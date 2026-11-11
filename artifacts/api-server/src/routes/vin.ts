@@ -309,7 +309,21 @@ async function findUserVinLookupForServe(userId: string, vin: string) {
     ))
     .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.id))
     .limit(1);
-  return fulfilling ?? null;
+  if (fulfilling) return fulfilling;
+
+  // Paid USA/provider fail used to fall through to a synthetic forever-"fulfilling"
+  // response (completed payment + no deliverable row). Surface the error instead.
+  const [errored] = await db
+    .select()
+    .from(vinLookupsTable)
+    .where(and(
+      eq(vinLookupsTable.userId, userId),
+      eq(vinLookupsTable.vin, vin),
+      eq(vinLookupsTable.status, "error"),
+    ))
+    .orderBy(desc(vinLookupsTable.updatedAt), desc(vinLookupsTable.id))
+    .limit(1);
+  return errored ?? null;
 }
 
 async function sendExistingLookupResponse(

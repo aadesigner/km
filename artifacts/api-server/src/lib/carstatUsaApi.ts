@@ -28,6 +28,62 @@ function normalizeCarstatBaseUrl(baseUrl: string): string {
 export const CARSTAT_USA_PROVIDER_NAME = "carstat_usa";
 export const CARSTAT_USA_DATA_SOURCE = "carstat_usa" as const;
 
+/** Carstat is still generating the HTML/PDF — wait/poll, do not hard-fail. */
+export const PROVIDER_GENERATION_IN_PROGRESS = "PROVIDER_GENERATION_IN_PROGRESS";
+/** Single attempt timed out — wait before the next poll (do not immediate re-fetch). */
+export const PROVIDER_USA_TIMEOUT = "PROVIDER_USA_TIMEOUT";
+
+/**
+ * Per-attempt HTTP timeout for /api/reports/{type}/{vin}.
+ * Docs warn +40–60s only for ?pdf=1 — we never send that (HTML + exclude_base_64).
+ * Keep this short; slow generation is handled by wait/poll, not one long hang.
+ */
+const USA_REPORT_ATTEMPT_TIMEOUT_MS = Math.max(
+  8_000,
+  Number(process.env.CARSTAT_USA_REPORT_ATTEMPT_TIMEOUT_MS ?? 20_000) || 20_000,
+);
+/** Total time to keep lookup fulfilling while Carstat generates. */
+const USA_REPORT_MAX_WAIT_MS = Math.max(
+  60_000,
+  Number(process.env.CARSTAT_USA_REPORT_MAX_WAIT_MS ?? 180_000) || 180_000,
+);
+/** First backoff after timeout / "already in progress" (then increases). */
+const USA_REPORT_INITIAL_POLL_MS = Math.max(
+  5_000,
+  Number(process.env.CARSTAT_USA_REPORT_POLL_MS ?? 15_000) || 15_000,
+);
+
+export function isCarstatUsaGenerationInProgressMessage(text: string): boolean {
+  const t = text.toLowerCase();
+  return (
+    t.includes("already in progress")
+    || (t.includes("request rejected") && t.includes("generation"))
+  );
+}
+
+function isTimeoutOrAbort(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  return (
+    err.name === "TimeoutError"
+    || err.name === "AbortError"
+    || msg.includes("timeout")
+    || msg.includes("aborted")
+    || msg.includes("abort")
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function isCarstatUsaRetryableWaitError(err: unknown): boolean {
+  const code = err && typeof err === "object" && "code" in err
+    ? String((err as { code?: unknown }).code ?? "")
+    : "";
+  return code === PROVIDER_GENERATION_IN_PROGRESS || code === PROVIDER_USA_TIMEOUT;
+}
+
 export type CarstatUsaReportType = "carfax" | "autocheck";
 
 export type CarstatUsaPdfReport = {
@@ -231,7 +287,8 @@ export async function checkCarstatUsaRecords(vin: string): Promise<CarstatUsaChe
   }
 }
 
-export async function fetchCarstatUsaReport(
+/** One Carstat USA report attempt — no backoff. Prefer {@link fetchCarstatUsaReport}. */
+export async function fetchCarstatUsaReportOnce(
   vin: string,
   type: CarstatUsaReportType,
 ): Promise<NormalizedVinData> {
@@ -248,8 +305,8 @@ export async function fetchCarstatUsaReport(
   try {
     const res = await fetch(url, {
       headers: providerHeaders(cfg.apiKey),
-      // PDF/HTML URL response can be slow; still avoid ?pdf=1 generation.
-      signal: AbortSignal.timeout(45_000),
+      // HTML URL JSON only (no ?pdf=1). Slow generation → poll, not a long hang.
+      signal: AbortSignal.timeout(USA_REPORT_ATTEMPT_TIMEOUT_MS),
     });
     const text = await res.text();
 
@@ -274,6 +331,12 @@ export async function fetchCarstatUsaReport(
         status: res.status,
         body: text.slice(0, 200),
       });
+      if (isCarstatUsaGenerationInProgressMessage(text)) {
+        throw Object.assign(
+          new Error("Carstat USA report generation is already in progress"),
+          { code: PROVIDER_GENERATION_IN_PROGRESS },
+        );
+      }
       throw Object.assign(new Error(PUBLIC_UNAVAILABLE), { code: "VIN_CHECK_UNAVAILABLE" });
     }
 
@@ -289,6 +352,13 @@ export async function fetchCarstatUsaReport(
     const htmlUrl = str(clean.html);
     // Customer delivery is HTML-only (proxied + sanitized). PDF URL may still be stored server-side.
     if (!htmlUrl) {
+      // Empty HTML often means generation not finished yet — wait/poll instead of hard NO_DATA.
+      if (isCarstatUsaGenerationInProgressMessage(JSON.stringify(clean))) {
+        throw Object.assign(
+          new Error("Carstat USA report generation is already in progress"),
+          { code: PROVIDER_GENERATION_IN_PROGRESS },
+        );
+      }
       throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
         code: "VIN_NO_DATA",
       });
@@ -328,9 +398,72 @@ export async function fetchCarstatUsaReport(
     } as NormalizedVinData & { pdfReport: CarstatUsaPdfReport };
   } catch (err) {
     if (err && typeof err === "object" && "code" in err) throw err;
+    if (isTimeoutOrAbort(err)) {
+      logger.warn({
+        msg: "carstat_usa_report_timeout",
+        vin: normalized,
+        type,
+        timeoutMs: USA_REPORT_ATTEMPT_TIMEOUT_MS,
+      });
+      throw Object.assign(new Error("Carstat USA report timed out"), {
+        code: PROVIDER_USA_TIMEOUT,
+      });
+    }
     const msg = err instanceof Error ? err.message : String(err);
     logger.warn({ msg: "carstat_usa_report_failed", vin: normalized, type, err: msg });
     throw Object.assign(new Error(PUBLIC_UNAVAILABLE), { code: "VIN_CHECK_UNAVAILABLE" });
+  }
+}
+
+/**
+ * Fetch USA HTML report, waiting/polling while Carstat generates.
+ * Keeps the caller (fulfillment) in `fulfilling` — does not immediate-retry after timeout.
+ */
+export async function fetchCarstatUsaReport(
+  vin: string,
+  type: CarstatUsaReportType,
+): Promise<NormalizedVinData> {
+  const normalized = vin.trim().toUpperCase();
+  const started = Date.now();
+  let delayMs = USA_REPORT_INITIAL_POLL_MS;
+  let attempt = 0;
+
+  for (;;) {
+    attempt += 1;
+    try {
+      return await fetchCarstatUsaReportOnce(normalized, type);
+    } catch (err) {
+      if (!isCarstatUsaRetryableWaitError(err)) throw err;
+
+      const elapsed = Date.now() - started;
+      const code = err && typeof err === "object" && "code" in err
+        ? String((err as { code?: unknown }).code ?? "")
+        : "";
+
+      if (elapsed + delayMs >= USA_REPORT_MAX_WAIT_MS) {
+        logger.error({
+          msg: "carstat_usa_report_wait_exhausted",
+          vin: normalized,
+          type,
+          attempt,
+          elapsedMs: elapsed,
+          lastCode: code,
+        });
+        throw Object.assign(new Error(PUBLIC_UNAVAILABLE), { code: "VIN_CHECK_UNAVAILABLE" });
+      }
+
+      logger.warn({
+        msg: "carstat_usa_report_wait_poll",
+        vin: normalized,
+        type,
+        attempt,
+        delayMs,
+        elapsedMs: elapsed,
+        code,
+      });
+      await sleep(delayMs);
+      delayMs = Math.min(Math.round(delayMs * 1.4), 30_000);
+    }
   }
 }
 

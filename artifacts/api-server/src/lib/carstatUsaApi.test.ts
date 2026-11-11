@@ -12,6 +12,10 @@ import {
   parseVehicleLabel,
   stripBase64FromReportBody,
   isCarstatUsaPdfPayload,
+  isCarstatUsaGenerationInProgressMessage,
+  isCarstatUsaRetryableWaitError,
+  PROVIDER_GENERATION_IN_PROGRESS,
+  PROVIDER_USA_TIMEOUT,
 } from "./carstatUsaApi.js";
 
 describe("carstatUsaApi helpers", () => {
@@ -49,6 +53,30 @@ describe("carstatUsaApi helpers", () => {
     });
     expect(cleaned.base64).toBeUndefined();
     expect(cleaned.pdf).toBe("https://x/a.pdf");
+  });
+
+  it("detects generation-in-progress provider messages", () => {
+    expect(
+      isCarstatUsaGenerationInProgressMessage(
+        "request rejected: generation is already in progress for carfax",
+      ),
+    ).toBe(true);
+    expect(isCarstatUsaGenerationInProgressMessage("No records found")).toBe(false);
+    expect(
+      isCarstatUsaRetryableWaitError(
+        Object.assign(new Error("wait"), { code: PROVIDER_GENERATION_IN_PROGRESS }),
+      ),
+    ).toBe(true);
+    expect(
+      isCarstatUsaRetryableWaitError(
+        Object.assign(new Error("timeout"), { code: PROVIDER_USA_TIMEOUT }),
+      ),
+    ).toBe(true);
+    expect(
+      isCarstatUsaRetryableWaitError(
+        Object.assign(new Error("gone"), { code: "VIN_CHECK_UNAVAILABLE" }),
+      ),
+    ).toBe(false);
   });
 
   it("detects carstat_usa HTML report payloads", () => {

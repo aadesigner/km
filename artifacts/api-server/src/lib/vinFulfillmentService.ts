@@ -116,6 +116,9 @@ async function fetchFromProviderWithRetry(
   try {
     return await fetchFromProvider(vin, baseUrl, apiKey, opts);
   } catch (err) {
+    // Carstat USA already wait/polls inside fetchCarstatUsaReport — a blind 2s
+    // re-fetch after timeout causes "generation already in progress" hard fails.
+    if (preferredSource === "carstat_usa") throw err;
     if (!isTransientProviderError(err)) throw err;
     logger.warn({ err, vin }, "Transient provider error — retrying report once");
     await new Promise((r) => setTimeout(r, 2000));
