@@ -31,6 +31,16 @@ import {
   readFrozenKrwPerUsd,
 } from "./krwRate.js";
 import { createConcurrencyLimiter } from "./batchAsync.js";
+import { warmUsaHtmlStore } from "./carstatUsaHtmlStore.js";
+
+/** Best-effort: persist USA HTML snapshot so CDN expiry (~10d) does not break later unlocks. */
+function warmUsaHtmlFromLookupData(vin: string, data: Record<string, unknown>): void {
+  if (data.dataSource !== "carstat_usa") return;
+  const pr = data.pdfReport;
+  if (!pr || typeof pr !== "object" || Array.isArray(pr)) return;
+  const htmlUrl = (pr as { htmlUrl?: unknown }).htmlUrl;
+  warmUsaHtmlStore(vin, typeof htmlUrl === "string" ? htmlUrl : null);
+}
 
 export const VIN_FULFILLING_STATUS = "fulfilling" as const;
 
@@ -163,6 +173,7 @@ async function completeLookupFromCatalog(
     void countFreeCoupon(input.freeCouponPaymentId, input.freeCouponCode);
   }
   void fireVinReadyEmailForUser(lookupId, input.normalizedVin, stampedData, input.user, input.resolvedPayment);
+  warmUsaHtmlFromLookupData(input.normalizedVin, stampedData);
   logger.info({
     msg: "vin_lookup_hit",
     source: "catalog_async",
@@ -220,6 +231,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
+        warmUsaHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
         return;
       }
@@ -278,6 +290,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
+        warmUsaHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "provider_async", vin: normalizedVin, userId, lookupId });
     });
   } catch (err) {

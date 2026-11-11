@@ -27,7 +27,6 @@ import { verifyImageToken, transformVinPhotoData, resolveVinPhotoUrlForClient } 
 import {
   assertAllowedUsaReportUrl,
   redactCarstatUsaDataForClient,
-  sanitizeUsaReportHtml,
 } from "../lib/carstatUsaReportSanitize.js";
 import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt, withVinImageUpstreamSlot } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
@@ -1252,9 +1251,31 @@ router.get("/vin/:id/pdf-proxy", requireAuth, vinUsaReportProxyLimiter, async (r
   }
 });
 
+const USA_HTML_FRAME_CSP = [
+  "default-src 'self' https: data: blob:",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
+  "style-src 'self' 'unsafe-inline' https:",
+  "img-src 'self' https: data: blob:",
+  "font-src 'self' https: data:",
+  "connect-src 'self' https:",
+  "frame-src 'self' https:",
+  "frame-ancestors 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+].join("; ");
+
+function sendUsaHtmlReport(res: import("express").Response, html: string): void {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "private, no-store");
+  // Prefer CSP frame-ancestors over X-Frame-Options (avoids Chrome "content is blocked" conflicts).
+  res.removeHeader("X-Frame-Options");
+  res.setHeader("Content-Security-Policy", USA_HTML_FRAME_CSP);
+  res.send(html);
+}
+
 /**
  * Proxied + sanitized USA HTML report (hides brand logos / outbound provider links).
- * No disk write — fetch, sanitize, respond.
+ * Local gzip snapshot first (survives ~10-day CDN expiry); CDN fetch + store on miss.
  */
 router.get("/vin/:id/html-proxy", requireAuth, vinUsaReportProxyLimiter, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
@@ -1271,51 +1292,30 @@ router.get("/vin/:id/html-proxy", requireAuth, vinUsaReportProxyLimiter, async (
     return;
   }
 
+  const vin = loaded.lookup.vin;
   const htmlUrl = typeof loaded.pr?.htmlUrl === "string" ? loaded.pr.htmlUrl.trim() : "";
-  if (!htmlUrl) {
-    res.status(404).json({ error: "HTML report missing" });
-    return;
-  }
-  try {
-    assertAllowedUsaReportUrl(htmlUrl);
-  } catch {
-    res.status(404).json({ error: "HTML report missing" });
-    return;
-  }
 
   try {
-    const upstream = await fetch(htmlUrl, {
-      signal: AbortSignal.timeout(60_000),
-      headers: { Accept: "text/html,*/*" },
-    });
-    if (!upstream.ok) {
-      logger.warn({ status: upstream.status, lookupId: id }, "carstat_usa_html_proxy_upstream_failed");
-      res.status(502).json({ error: "Could not fetch report" });
+    const { readStoredUsaHtml, fetchSanitizeAndStoreUsaHtml } = await import("../lib/carstatUsaHtmlStore.js");
+    const stored = await readStoredUsaHtml(vin);
+    if (stored) {
+      sendUsaHtmlReport(res, stored);
       return;
     }
-    const raw = await upstream.text();
-    const sanitized = sanitizeUsaReportHtml(raw);
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "private, no-store");
-    // Prefer CSP frame-ancestors over X-Frame-Options (avoids Chrome "content is blocked" conflicts).
-    res.removeHeader("X-Frame-Options");
-    // Override Helmet for this document only: allow report CDN assets; still no framing by third parties.
-    res.setHeader(
-      "Content-Security-Policy",
-      [
-        "default-src 'self' https: data: blob:",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
-        "style-src 'self' 'unsafe-inline' https:",
-        "img-src 'self' https: data: blob:",
-        "font-src 'self' https: data:",
-        "connect-src 'self' https:",
-        "frame-src 'self' https:",
-        "frame-ancestors 'self'",
-        "base-uri 'none'",
-        "form-action 'none'",
-      ].join("; "),
-    );
-    res.send(sanitized);
+
+    if (!htmlUrl) {
+      res.status(404).json({ error: "HTML report missing" });
+      return;
+    }
+    try {
+      assertAllowedUsaReportUrl(htmlUrl);
+    } catch {
+      res.status(404).json({ error: "HTML report missing" });
+      return;
+    }
+
+    const sanitized = await fetchSanitizeAndStoreUsaHtml(vin, htmlUrl);
+    sendUsaHtmlReport(res, sanitized);
   } catch (err) {
     logger.warn({ err, lookupId: id }, "carstat_usa_html_proxy_failed");
     if (!res.headersSent) res.status(502).json({ error: "Could not fetch report" });
