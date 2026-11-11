@@ -148,7 +148,7 @@ function MobileLangPicker({
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const margin = 12;
-    const width = Math.min(288, window.innerWidth - margin * 2);
+    const width = Math.min(220, window.innerWidth - margin * 2);
     // Center under the language trigger, clamped to the viewport.
     const centerX = rect.left + rect.width / 2;
     let left = centerX - width / 2;
@@ -485,21 +485,23 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? <User className="h-3 w-3" />;
 
   const navLink = (active: boolean) => cn(
-    "relative inline-flex items-center gap-1.5 font-medium tracking-wide transition-colors duration-75 outline-none",
-    scrolled ? "px-3.5 py-2 text-[16px]" : "px-4 py-2.5 text-[16px]",
+    "relative inline-flex items-center gap-1.5 px-0 py-1 text-[16px] font-medium tracking-normal transition-colors duration-75 outline-none",
     active
       ? isDarkNav
         ? "text-white"
         : "text-foreground"
       : isDarkNav
-        ? "text-white/60 hover:text-white"
-        : "text-foreground/65 hover:text-foreground",
+        ? "text-white/65 hover:text-white"
+        : "text-[#324157]/90 hover:text-[#324157]",
   );
 
   const navActiveMark = () => (
     <span
       aria-hidden
-      className="pointer-events-none absolute inset-x-3.5 bottom-0 h-[2px] rounded-full bg-primary"
+      className={cn(
+        "pointer-events-none absolute left-0 right-0 -bottom-1 h-px",
+        isDarkNav ? "bg-white/70" : "bg-[#324157]/70",
+      )}
     />
   );
 
@@ -515,22 +517,23 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       scrolled
         ? (resolvedTheme === "dark"
             ? (isDarkNav
-                ? "bg-[#060a14]/95 border-b border-white/20"
-                : "bg-background/97 border-b border-white/15")
-            : "bg-background/97 border-b border-border/70")
+                ? "bg-[#060a14] border-b border-white/20"
+                : "bg-background border-b border-white/15")
+            : "bg-background border-b border-border")
         : isDarkNav
-        ? "bg-gradient-to-b from-black/30 to-transparent border-b border-white/15"
+        ? "bg-transparent border-b border-white/15"
         : (isHeroTransparentNav || isAuthNavPage)
         ? "bg-transparent border-b border-border/30"
         : resolvedTheme === "dark"
-        ? "bg-background/80 border-b border-white/12"
-        : "bg-background/80 border-b border-border/40",
+        ? "bg-background border-b border-white/12"
+        : "bg-background border-b border-border/40",
     )}>
       <div className={cn(
         "max-w-[1400px] mx-auto px-5 flex justify-between items-center gap-4",
         "md:grid md:grid-cols-[auto_1fr_auto] md:gap-6",
         // Fixed height on mobile — logo/height tween caused scroll flicker.
-        "h-16 md:h-[76px] md:transition-[height] md:duration-150 md:ease-out",
+        // Desktop resting height matches weryfikujvin.pl (~72px).
+        "h-16 md:h-[72px] md:transition-[height] md:duration-150 md:ease-out",
         scrolled && "md:h-16",
       )}>
 
@@ -548,9 +551,9 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
           </PrefetchLink>
         </div>
 
-        {/* ── Centered nav links (desktop) — no box ── */}
+        {/* ── Centered nav links (desktop) — weryfikujvin scale ── */}
         <div className="hidden md:flex items-center justify-center justify-self-center min-w-0">
-          <nav className="inline-flex items-center gap-1.5" aria-label="Primary">
+          <nav className="inline-flex items-center gap-7" aria-label="Primary">
             <div
               ref={countryRef}
               className="relative"
@@ -631,12 +634,12 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
             </button>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
-            <div className={cn("h-4 w-px", isDarkNav ? "bg-white/15" : "bg-border/70")} />
+          <div className="hidden md:flex items-center gap-3">
+            <div className={cn("h-5 w-px", isDarkNav ? "bg-white/15" : "bg-border/70")} />
 
             {/* Auth / Check VIN */}
             {!isLoaded ? (
-              <div className="h-9 w-24 rounded-lg bg-muted/80 animate-pulse" aria-hidden />
+              <div className="h-10 w-24 rounded-lg bg-muted/80 animate-pulse" aria-hidden />
             ) : isSignedIn ? (
               <div
                 ref={userRef}
@@ -718,21 +721,21 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <PrefetchLink
                   href={`/${language}/sign-in`}
                   className={cn(
-                    "inline-flex items-center px-2.5 h-9 text-[13px] font-medium tracking-wide transition-colors duration-75",
+                    "inline-flex items-center justify-center px-4 h-10 text-[15px] font-medium tracking-normal rounded-lg border transition-colors duration-75",
                     isDarkNav
-                      ? "text-white/55 hover:text-white"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "border-white/35 text-white hover:bg-white/10"
+                      : "border-foreground/20 text-foreground hover:bg-muted/60",
                   )}
                 >
                   {t("sign_in")}
                 </PrefetchLink>
                 <Button
                   size="sm"
-                  className="h-9 px-3.5 text-[13px] font-semibold tracking-wide rounded-lg shadow-none transition-opacity duration-75 hover:opacity-90"
+                  className="h-10 px-4 text-[15px] font-medium tracking-normal rounded-lg shadow-none transition-opacity duration-75 hover:opacity-90"
                   asChild
                 >
                   <PrefetchLink href={`/${language}`}>{t("check_vin")}</PrefetchLink>
@@ -773,10 +776,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useLayoutEffect(() => {
     const apply = () => {
-      // Mobile navbar is fixed h-16 (64px); desktop resting height is 76px.
+      // Mobile navbar is fixed h-16 (64px); desktop resting height is 72px.
       const navbarHeight =
         typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches
-          ? 76
+          ? 72
           : 64;
       document.documentElement.style.setProperty(
         "--site-header-offset",
@@ -809,7 +812,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           showClientNav && `md:pb-0 ${CLIENT_MOBILE_NAV_PADDING}`,
         )}
       >
-        <main className="overflow-x-hidden pt-[var(--site-header-offset,76px)] print:pt-0">
+        <main className="overflow-x-hidden pt-[var(--site-header-offset,72px)] print:pt-0">
           {children}
         </main>
         <Footer />
