@@ -7,7 +7,7 @@ import { useTranslation } from "@/i18n/context";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 /** Soft client cap — server proxy also rate-limits. */
-const MAX_MANUAL_RETRIES = 1;
+const MAX_MANUAL_RETRIES = 3;
 const RETRY_COOLDOWN_MS = 8_000;
 
 export type CarstatUsaPdfReportMeta = {
@@ -39,7 +39,8 @@ function withPdfViewerParams(url: string): string {
 
 /**
  * Vehicle history report view.
- * Only embeds our authenticated proxies — never provider CDN URLs in the DOM.
+ * Prefers sanitized HTML mirror when available (brand hide); PDF otherwise.
+ * Loads via authenticated fetch → blob so errors aren't painted as a blank “success”.
  */
 export function CarstatUsaPdfReport({
   vin,
@@ -50,8 +51,10 @@ export function CarstatUsaPdfReport({
 }: Props) {
   const { t } = useTranslation();
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const blobUrlRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [embedSrc, setEmbedSrc] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [cooldownUntil, setCooldownUntil] = useState(0);
@@ -61,8 +64,9 @@ export function CarstatUsaPdfReport({
   const hasHtml = pdfReport.hasHtml === true || !!(pdfReport.htmlUrl && pdfReport.htmlUrl.trim());
   const canProxy = lookupId != null && lookupId > 0;
 
+  // HTML first when present — sanitized brand hide; PDF as fallback.
   const mode: "pdf" | "html" | null =
-    canProxy && hasPdf ? "pdf" : canProxy && hasHtml ? "html" : null;
+    canProxy && hasHtml ? "html" : canProxy && hasPdf ? "pdf" : null;
 
   const proxyPath =
     mode === "pdf"
@@ -71,19 +75,65 @@ export function CarstatUsaPdfReport({
         ? `${basePath}/api/vin/${lookupId}/html-proxy`
         : null;
 
-  const embedSrc =
-    mode === "pdf" && proxyPath
-      ? withPdfViewerParams(proxyPath)
-      : proxyPath;
-
   const retriesLeft = Math.max(0, MAX_MANUAL_RETRIES - retryCount);
   const onCooldown = cooldownLeft > 0;
   const canRetry = !loading && retriesLeft > 0 && !onCooldown;
 
+  const revokeBlob = useCallback(() => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    setLoading(true);
-    setFailed(false);
-  }, [embedSrc, reloadKey]);
+    let cancelled = false;
+
+    async function load() {
+      revokeBlob();
+      setEmbedSrc(null);
+      setLoading(true);
+      setFailed(false);
+
+      if (!proxyPath || !mode) {
+        setLoading(false);
+        setFailed(true);
+        return;
+      }
+
+      try {
+        const res = await fetch(proxyPath, {
+          credentials: "include",
+          headers: { Accept: mode === "pdf" ? "application/pdf,*/*" : "text/html,*/*" },
+        });
+        if (!res.ok) {
+          if (!cancelled) {
+            setLoading(false);
+            setFailed(true);
+          }
+          return;
+        }
+        const blob = await res.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
+        setEmbedSrc(mode === "pdf" ? withPdfViewerParams(url) : url);
+        setLoading(false);
+        setFailed(false);
+      } catch {
+        if (!cancelled) {
+          setLoading(false);
+          setFailed(true);
+        }
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+      revokeBlob();
+    };
+  }, [proxyPath, mode, reloadKey, revokeBlob]);
 
   useEffect(() => {
     if (cooldownUntil <= Date.now()) {
@@ -98,16 +148,6 @@ export function CarstatUsaPdfReport({
     const id = window.setInterval(tick, 250);
     return () => window.clearInterval(id);
   }, [cooldownUntil]);
-
-  const markReady = useCallback(() => {
-    setLoading(false);
-    setFailed(false);
-  }, []);
-
-  const markFailed = useCallback(() => {
-    setLoading(false);
-    setFailed(true);
-  }, []);
 
   const handlePrint = useCallback(() => {
     const frame = frameRef.current;
@@ -156,7 +196,7 @@ export function CarstatUsaPdfReport({
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight truncate">{vehicleTitle}</h2>
           <p className="font-mono text-xs text-muted-foreground">{vin}</p>
         </div>
-        {embedSrc && (
+        {proxyPath && (
           <div className="flex flex-wrap items-center gap-1.5 shrink-0">
             {retriesLeft > 0 ? (
               <Button
@@ -182,7 +222,7 @@ export function CarstatUsaPdfReport({
               size="sm"
               className="rounded-xl h-9"
               onClick={handlePrint}
-              disabled={loading || failed}
+              disabled={loading || failed || !embedSrc}
             >
               <Printer className="h-3.5 w-3.5 mr-1.5" />
               {t("vin_result_print")}
@@ -191,7 +231,7 @@ export function CarstatUsaPdfReport({
         )}
       </div>
 
-      {embedSrc ? (
+      {proxyPath ? (
         <div
           className={cn(
             "relative w-full overflow-hidden rounded-xl border border-border/60 bg-neutral-100 dark:bg-neutral-950",
@@ -226,20 +266,20 @@ export function CarstatUsaPdfReport({
             </div>
           )}
 
-          <iframe
-            key={`${mode}-${reloadKey}`}
-            ref={frameRef}
-            title={title}
-            src={embedSrc}
-            className={cn(
-              "absolute inset-0 h-full w-full border-0 bg-background",
-              (loading || failed) && "opacity-0",
-            )}
-            referrerPolicy="no-referrer"
-            sandbox={mode === "html" ? "allow-same-origin allow-scripts allow-modals" : undefined}
-            onLoad={markReady}
-            onError={markFailed}
-          />
+          {embedSrc ? (
+            <iframe
+              key={`${mode}-${reloadKey}`}
+              ref={frameRef}
+              title={title}
+              src={embedSrc}
+              className={cn(
+                "absolute inset-0 h-full w-full border-0 bg-background",
+                (loading || failed) && "opacity-0",
+              )}
+              referrerPolicy="no-referrer"
+              sandbox={mode === "html" ? "allow-same-origin allow-scripts allow-modals" : undefined}
+            />
+          ) : null}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-16">
