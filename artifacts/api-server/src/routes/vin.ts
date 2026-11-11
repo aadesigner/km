@@ -1242,6 +1242,8 @@ router.get("/vin/:id/pdf-proxy", requireAuth, vinUsaReportProxyLimiter, async (r
     res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/pdf");
     res.setHeader("Cache-Control", "private, no-store");
     res.setHeader("Content-Disposition", `inline; filename="vin-report-${loaded.lookup.vin}.pdf"`);
+    // Override Helmet CSP so the PDF frame is not treated as a blocked document.
+    res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'self'; object-src 'self' blob:;");
     const { Readable } = await import("node:stream");
     await pipeline(Readable.fromWeb(upstream.body as import("node:stream/web").ReadableStream), res);
   } catch (err) {
@@ -1295,7 +1297,24 @@ router.get("/vin/:id/html-proxy", requireAuth, vinUsaReportProxyLimiter, async (
     const sanitized = sanitizeUsaReportHtml(raw);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "private, no-store");
-    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // Prefer CSP frame-ancestors over X-Frame-Options (avoids Chrome "content is blocked" conflicts).
+    res.removeHeader("X-Frame-Options");
+    // Override Helmet for this document only: allow report CDN assets; still no framing by third parties.
+    res.setHeader(
+      "Content-Security-Policy",
+      [
+        "default-src 'self' https: data: blob:",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
+        "style-src 'self' 'unsafe-inline' https:",
+        "img-src 'self' https: data: blob:",
+        "font-src 'self' https: data:",
+        "connect-src 'self' https:",
+        "frame-src 'self' https:",
+        "frame-ancestors 'self'",
+        "base-uri 'none'",
+        "form-action 'none'",
+      ].join("; "),
+    );
     res.send(sanitized);
   } catch (err) {
     logger.warn({ err, lookupId: id }, "carstat_usa_html_proxy_failed");

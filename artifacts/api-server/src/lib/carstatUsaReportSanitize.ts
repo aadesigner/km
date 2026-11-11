@@ -6,9 +6,6 @@
 const PROVIDER_HOST_RE =
   /(?:^|\.)(?:carfax\.com|carfax\.io|carfaxonline\.com|carstat\.dev|import-motor\.com|report-cars\.b-cdn\.net|b-cdn\.net|reportdelivery\.production\.aws\.carfax\.io|vhrjs\.s3\.|storage\.beget\.cloud)$/i;
 
-const PROVIDER_HREF_RE =
-  /https?:\/\/[^\s"'<>]*(?:carfax|carstat|autocheck|import-motor|report-cars\.b-cdn|reportdelivery\.production\.aws\.carfax)[^\s"'<>]*/gi;
-
 /** Hosts we will fetch for HTML/PDF proxy (SSRF allowlist). */
 const ALLOWED_REPORT_HOST_SUFFIXES = [
   "report-cars.b-cdn.net",
@@ -143,7 +140,13 @@ export function sanitizeUsaReportHtml(html: string): string {
 
   out = out.replace(/<title[^>]*>[\s\S]*?<\/title>/i, "<title>Vehicle history report</title>");
 
-  // Neutralize provider absolute links (keep structure; clicks blocked + CSS hides many).
+  // Provider HTML often ships CSP / XFO metas → Chrome "This content is blocked" inside our iframe.
+  out = out.replace(
+    /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?(?:Content-Security-Policy|X-Frame-Options)["']?[^>]*>/gi,
+    "",
+  );
+
+  // Neutralize navigation <a href> only — never rewrite script/link/img asset URLs or the report blanks out.
   out = out.replace(
     /(<a\b[^>]*\bhref\s*=\s*)(["'])(https?:\/\/[^"']+)\2/gi,
     (full, prefix: string, quote: string, href: string) => {
@@ -162,9 +165,6 @@ export function sanitizeUsaReportHtml(html: string): string {
       return full;
     },
   );
-
-  // Soft-scrub leftover provider URLs in plain attributes (srcset etc. left alone for assets).
-  out = out.replace(PROVIDER_HREF_RE, "#");
 
   if (/<\/head>/i.test(out)) {
     out = out.replace(/<\/head>/i, `${BRAND_HIDE_CSS}${BRAND_GUARD_JS}</head>`);

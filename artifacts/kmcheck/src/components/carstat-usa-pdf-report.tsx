@@ -30,17 +30,9 @@ type Props = {
   className?: string;
 };
 
-/** Chrome/Edge inline PDF chrome: hide toolbar, fit width. */
-function withPdfViewerParams(url: string): string {
-  const hash = "toolbar=0&navpanes=0&scrollbar=1&view=FitH";
-  const base = url.split("#")[0] ?? url;
-  return `${base}#${hash}`;
-}
-
 /**
- * Vehicle history report view.
- * Prefers sanitized HTML mirror when available (brand hide); PDF otherwise.
- * Loads via authenticated fetch → blob so errors aren't painted as a blank “success”.
+ * Carstat USA report view — HTML mirror only (authenticated /html-proxy).
+ * Never embeds provider CDN URLs; never uses the PDF path in the customer UI.
  */
 export function CarstatUsaPdfReport({
   vin,
@@ -51,7 +43,6 @@ export function CarstatUsaPdfReport({
 }: Props) {
   const { t } = useTranslation();
   const frameRef = useRef<HTMLIFrameElement>(null);
-  const blobUrlRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [embedSrc, setEmbedSrc] = useState<string | null>(null);
@@ -60,64 +51,46 @@ export function CarstatUsaPdfReport({
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownLeft, setCooldownLeft] = useState(0);
 
-  const hasPdf = pdfReport.hasPdf === true || !!(pdfReport.pdfUrl && pdfReport.pdfUrl.trim());
   const hasHtml = pdfReport.hasHtml === true || !!(pdfReport.htmlUrl && pdfReport.htmlUrl.trim());
-  const canProxy = lookupId != null && lookupId > 0;
-
-  // HTML first when present — sanitized brand hide; PDF as fallback.
-  const mode: "pdf" | "html" | null =
-    canProxy && hasHtml ? "html" : canProxy && hasPdf ? "pdf" : null;
-
-  const proxyPath =
-    mode === "pdf"
-      ? `${basePath}/api/vin/${lookupId}/pdf-proxy`
-      : mode === "html"
-        ? `${basePath}/api/vin/${lookupId}/html-proxy`
-        : null;
+  const canProxy = lookupId != null && lookupId > 0 && hasHtml;
+  const proxyPath = canProxy ? `${basePath}/api/vin/${lookupId}/html-proxy` : null;
 
   const retriesLeft = Math.max(0, MAX_MANUAL_RETRIES - retryCount);
   const onCooldown = cooldownLeft > 0;
   const canRetry = !loading && retriesLeft > 0 && !onCooldown;
 
-  const revokeBlob = useCallback(() => {
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      revokeBlob();
       setEmbedSrc(null);
       setLoading(true);
       setFailed(false);
 
-      if (!proxyPath || !mode) {
+      if (!proxyPath) {
         setLoading(false);
         setFailed(true);
         return;
       }
 
       try {
+        // Prefetch with credentials + client-guard header so JSON errors never paint in the iframe.
         const res = await fetch(proxyPath, {
           credentials: "include",
-          headers: { Accept: mode === "pdf" ? "application/pdf,*/*" : "text/html,*/*" },
+          headers: { Accept: "text/html,*/*" },
         });
         if (!res.ok) {
+          try { await res.body?.cancel(); } catch { /* ignore */ }
           if (!cancelled) {
             setLoading(false);
             setFailed(true);
           }
           return;
         }
-        const blob = await res.blob();
+        try { await res.body?.cancel(); } catch { /* ignore */ }
         if (cancelled) return;
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        setEmbedSrc(mode === "pdf" ? withPdfViewerParams(url) : url);
+        // Same-origin proxy (guard-exempt navigation) — sanitized HTML + report CSP.
+        setEmbedSrc(proxyPath);
         setLoading(false);
         setFailed(false);
       } catch {
@@ -131,9 +104,8 @@ export function CarstatUsaPdfReport({
     void load();
     return () => {
       cancelled = true;
-      revokeBlob();
     };
-  }, [proxyPath, mode, reloadKey, revokeBlob]);
+  }, [proxyPath, reloadKey]);
 
   useEffect(() => {
     if (cooldownUntil <= Date.now()) {
@@ -158,20 +130,21 @@ export function CarstatUsaPdfReport({
         return;
       }
     } catch {
-      /* cross-origin PDF plugin — fall through */
+      /* ignore */
     }
     if (!proxyPath) return;
     const w = window.open(proxyPath, "_blank", "noopener,noreferrer");
     if (!w) return;
-    const tryPrint = () => {
-      try {
-        w.focus();
-        w.print();
-      } catch {
-        /* ignore */
-      }
-    };
-    w.addEventListener("load", () => window.setTimeout(tryPrint, 400));
+    w.addEventListener("load", () => {
+      window.setTimeout(() => {
+        try {
+          w.focus();
+          w.print();
+        } catch {
+          /* ignore */
+        }
+      }, 400);
+    });
   }, [proxyPath]);
 
   const handleReload = useCallback(() => {
@@ -268,7 +241,7 @@ export function CarstatUsaPdfReport({
 
           {embedSrc ? (
             <iframe
-              key={`${mode}-${reloadKey}`}
+              key={`html-${reloadKey}`}
               ref={frameRef}
               title={title}
               src={embedSrc}
@@ -277,7 +250,11 @@ export function CarstatUsaPdfReport({
                 (loading || failed) && "opacity-0",
               )}
               referrerPolicy="no-referrer"
-              sandbox={mode === "html" ? "allow-same-origin allow-scripts allow-modals" : undefined}
+              sandbox="allow-same-origin allow-scripts allow-modals"
+              onLoad={() => {
+                setLoading(false);
+                setFailed(false);
+              }}
             />
           ) : null}
         </div>

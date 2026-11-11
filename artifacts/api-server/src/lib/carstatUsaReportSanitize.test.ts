@@ -35,7 +35,12 @@ describe("carstatUsaReportSanitize", () => {
   });
 
   it("sanitizes HTML title, injects brand hide, and neuters carfax links", () => {
-    const html = `<!DOCTYPE html><html><head><title>CARFAX Vehicle History</title></head><body>
+    const html = `<!DOCTYPE html><html><head>
+      <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+      <meta http-equiv="X-Frame-Options" content="DENY">
+      <title>CARFAX Vehicle History</title>
+      <link rel="stylesheet" href="https://static.carfax.com/app.css">
+    </head><body>
       <img src="https://vhrjs.s3.us-east-1.amazonaws.com/CarfaxLogo.svg" alt="CARFAX">
       <a href="https://www.carfax.com/company/about">about</a>
     </body></html>`;
@@ -44,5 +49,9 @@ describe("carstatUsaReportSanitize", () => {
     expect(out).toContain("km-usa-brand-hide");
     expect(out).toContain('href="#"');
     expect(out).not.toContain("https://www.carfax.com/company/about");
+    expect(out).not.toContain("frame-ancestors");
+    expect(out).not.toContain("X-Frame-Options");
+    // Asset URLs must survive (report would otherwise blank / CSP-block).
+    expect(out).toContain("https://static.carfax.com/app.css");
   });
 });

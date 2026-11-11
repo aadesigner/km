@@ -51,13 +51,19 @@ describe("carstatUsaApi helpers", () => {
     expect(cleaned.pdf).toBe("https://x/a.pdf");
   });
 
-  it("detects carstat_usa PDF payloads", () => {
+  it("detects carstat_usa HTML report payloads", () => {
+    expect(
+      isCarstatUsaPdfPayload({
+        dataSource: "carstat_usa",
+        pdfReport: { type: "carfax", pdfUrl: "https://x/a.pdf", htmlUrl: "https://x/a.html" },
+      }),
+    ).toBe(true);
     expect(
       isCarstatUsaPdfPayload({
         dataSource: "carstat_usa",
         pdfReport: { type: "carfax", pdfUrl: "https://x/a.pdf", htmlUrl: null },
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(isCarstatUsaPdfPayload({ dataSource: "getcarapi" })).toBe(false);
     expect(
       isCarstatUsaPdfPayload({

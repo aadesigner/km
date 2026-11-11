@@ -287,7 +287,8 @@ export async function fetchCarstatUsaReport(
     const clean = stripBase64FromReportBody(body);
     const pdfUrl = str(clean.pdf);
     const htmlUrl = str(clean.html);
-    if (!pdfUrl && !htmlUrl) {
+    // Customer delivery is HTML-only (proxied + sanitized). PDF URL may still be stored server-side.
+    if (!htmlUrl) {
       throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
         code: "VIN_NO_DATA",
       });
@@ -359,5 +360,5 @@ export function isCarstatUsaPdfPayload(data: unknown): data is NormalizedVinData
   const pr = d.pdfReport;
   if (!pr || typeof pr !== "object" || Array.isArray(pr)) return false;
   const p = pr as Record<string, unknown>;
-  return typeof p.pdfUrl === "string" || typeof p.htmlUrl === "string";
+  return typeof p.htmlUrl === "string" && p.htmlUrl.trim().length > 0;
 }
