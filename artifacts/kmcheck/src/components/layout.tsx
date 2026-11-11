@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, useLayoutEffect, useSyncExter
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { PrefetchLink } from "@/components/prefetch-link";
-import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation, ensureDict } from "@/i18n/context";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
@@ -192,6 +191,9 @@ function MobileLangPicker({
     setMounted(true);
   }, []);
 
+  // Warm flags as soon as the control mounts — don't wait for first open.
+  usePrefetchPickerFlags(true);
+
   useLayoutEffect(() => {
     if (!open) return;
     updateMenuPosition();
@@ -229,8 +231,6 @@ function MobileLangPicker({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
 
-  usePrefetchPickerFlags(open);
-
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -247,40 +247,33 @@ function MobileLangPicker({
     ? { onMouseEnter: openMenu, onMouseLeave: scheduleClose }
     : {};
 
-  const menu = mounted
+  // Instant open — no Framer Motion; animation was adding perceived lag.
+  const menu = mounted && open
     ? createPortal(
-        <AnimatePresence>
-          {open && (
-              <motion.div
-                ref={menuRef}
-                role="menu"
-                aria-label="Language"
-                initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                transition={{ duration: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                style={{ ...menuStyle, transformOrigin: "top center" }}
-                className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
-                {...hoverProps}
-              >
-                <LangPickerList
-                  language={language as Language}
-                  layout="mobile"
-                  hrefForLanguage={(code) =>
-                    replaceLangInPath(
-                      typeof window !== "undefined" ? window.location.pathname : `/${language}`,
-                      language as Language,
-                      code,
-                    )
-                  }
-                  onSelect={(code) => {
-                    close();
-                    requestAnimationFrame(() => onLanguageChange(code));
-                  }}
-                />
-              </motion.div>
-          )}
-        </AnimatePresence>,
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label="Language"
+          style={{ ...menuStyle, transformOrigin: "top center" }}
+          className="rounded-2xl border border-border/80 bg-background shadow-2xl shadow-black/15 p-2"
+          {...hoverProps}
+        >
+          <LangPickerList
+            language={language as Language}
+            layout="mobile"
+            hrefForLanguage={(code) =>
+              replaceLangInPath(
+                typeof window !== "undefined" ? window.location.pathname : `/${language}`,
+                language as Language,
+                code,
+              )
+            }
+            onSelect={(code) => {
+              close();
+              requestAnimationFrame(() => onLanguageChange(code));
+            }}
+          />
+        </div>,
         document.body,
       )
     : null;

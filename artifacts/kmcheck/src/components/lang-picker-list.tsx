@@ -82,7 +82,8 @@ export function LangPickerList({
             <FlagImg
               code={l.flag}
               variant={flagVariant}
-              priority={active}
+              // Eager in open picker — lazy flags make the dropdown feel sluggish.
+              priority
               alt={formatImageFlagAlt(l.label, t)}
             />
             <span className={cn(
