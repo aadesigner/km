@@ -12,6 +12,8 @@ const MAX_MANUAL_RETRIES = 4;
 const FIRST_RETRY_AFTER_MS = 5 * 60 * 1000;
 /** Later refreshes: once per day. */
 const LATER_RETRY_AFTER_MS = 24 * 60 * 60 * 1000;
+/** Auto-retries on first open before showing the hard failure (provider mirror warm). */
+const AUTO_RETRY_DELAYS_MS = [1_500, 3_000, 6_000];
 
 export type CarstatUsaPdfReportMeta = {
   type: "carfax" | "autocheck";
@@ -91,8 +93,8 @@ function formatWait(ms: number): string {
 }
 
 /**
- * Carstat USA report view — HTML mirror only (authenticated /html-proxy).
- * Never embeds provider CDN URLs; never uses the PDF path in the customer UI.
+ * Carstat USA report view — HTML mirror via authenticated /html-proxy.
+ * Falls back to /pdf-proxy when HTML is missing but PDF exists (legacy rows).
  */
 export function CarstatUsaPdfReport({
   vin,
@@ -115,14 +117,26 @@ export function CarstatUsaPdfReport({
   const [now, setNow] = useState(() => Date.now());
 
   const hasHtml = pdfReport.hasHtml === true || !!(pdfReport.htmlUrl && pdfReport.htmlUrl.trim());
-  const canProxy = lookupId != null && lookupId > 0 && hasHtml;
-  const proxyPath = canProxy ? `${basePath}/api/vin/${lookupId}/html-proxy` : null;
+  const hasPdf = pdfReport.hasPdf === true || !!(pdfReport.pdfUrl && pdfReport.pdfUrl.trim());
+  const canProxy = lookupId != null && lookupId > 0 && (hasHtml || hasPdf);
+  const mode: "html" | "pdf" | null = !canProxy
+    ? null
+    : hasHtml
+      ? "html"
+      : "pdf";
+  const proxyPath = canProxy && mode
+    ? `${basePath}/api/vin/${lookupId}/${mode === "html" ? "html-proxy" : "pdf-proxy"}`
+    : null;
 
   const retriesLeft = Math.max(0, MAX_MANUAL_RETRIES - retryState.count);
   const allowedAt = nextRetryAt(retryState);
   const waitMs = allowedAt == null ? 0 : Math.max(0, allowedAt - now);
   const onCooldown = allowedAt != null && waitMs > 0;
-  const canRetry = !loading && retriesLeft > 0 && !onCooldown && allowedAt != null;
+  // Always allow an immediate retry after an automatic load failure (count still 0).
+  const canRetry =
+    !loading
+    && retriesLeft > 0
+    && (retryState.count === 0 || (!onCooldown && allowedAt != null));
 
   useEffect(() => {
     if (lookupId == null || lookupId <= 0) return;
@@ -137,6 +151,30 @@ export function CarstatUsaPdfReport({
 
   useEffect(() => {
     let cancelled = false;
+    let timer: number | undefined;
+
+    async function attempt(autoAttempt: number): Promise<boolean> {
+      if (!proxyPath || lookupId == null) return false;
+      const res = await fetch(proxyPath, {
+        credentials: "include",
+        headers: { Accept: mode === "pdf" ? "application/pdf,*/*" : "text/html,*/*" },
+      });
+      if (!res.ok) {
+        try { await res.body?.cancel(); } catch { /* ignore */ }
+        return false;
+      }
+      try { await res.body?.cancel(); } catch { /* ignore */ }
+      if (cancelled) return false;
+      setEmbedSrc(proxyPath);
+      setLoading(false);
+      setFailed(false);
+      setRetryState((prev) => {
+        const next = { ...prev, openedAt: prev.openedAt || Date.now() };
+        writeRetryState(lookupId, vin, next);
+        return next;
+      });
+      return true;
+    }
 
     async function load() {
       setEmbedSrc(null);
@@ -150,33 +188,24 @@ export function CarstatUsaPdfReport({
       }
 
       try {
-        const res = await fetch(proxyPath, {
-          credentials: "include",
-          headers: { Accept: "text/html,*/*" },
-        });
-        if (!res.ok) {
-          try { await res.body?.cancel(); } catch { /* ignore */ }
-          if (!cancelled) {
-            setLoading(false);
-            setFailed(true);
-            setRetryState((prev) => {
-              const next = { ...prev, openedAt: prev.openedAt || Date.now() };
-              writeRetryState(lookupId, vin, next);
-              return next;
-            });
-          }
-          return;
+        if (await attempt(0)) return;
+        for (let i = 0; i < AUTO_RETRY_DELAYS_MS.length; i++) {
+          if (cancelled) return;
+          await new Promise<void>((resolve) => {
+            timer = window.setTimeout(resolve, AUTO_RETRY_DELAYS_MS[i]);
+          });
+          if (cancelled) return;
+          if (await attempt(i + 1)) return;
         }
-        try { await res.body?.cancel(); } catch { /* ignore */ }
-        if (cancelled) return;
-        setEmbedSrc(proxyPath);
-        setLoading(false);
-        setFailed(false);
-        setRetryState((prev) => {
-          const next = { ...prev, openedAt: prev.openedAt || Date.now() };
-          writeRetryState(lookupId, vin, next);
-          return next;
-        });
+        if (!cancelled) {
+          setLoading(false);
+          setFailed(true);
+          setRetryState((prev) => {
+            const next = { ...prev, openedAt: prev.openedAt || Date.now() };
+            writeRetryState(lookupId, vin, next);
+            return next;
+          });
+        }
       } catch {
         if (!cancelled) {
           setLoading(false);
@@ -188,8 +217,9 @@ export function CarstatUsaPdfReport({
     void load();
     return () => {
       cancelled = true;
+      if (timer != null) window.clearTimeout(timer);
     };
-  }, [proxyPath, reloadKey, lookupId, vin]);
+  }, [proxyPath, reloadKey, lookupId, vin, mode]);
 
   const handlePrint = useCallback(() => {
     const frame = frameRef.current;
@@ -220,14 +250,18 @@ export function CarstatUsaPdfReport({
   const handleReload = useCallback(() => {
     if (loading || lookupId == null) return;
     const current = readRetryState(lookupId, vin);
-    const gate = nextRetryAt(current);
-    if (gate == null || Date.now() < gate) return;
+    // count===0 → free retry after first auto-load failure (no 5‑min lock).
+    if (current.count > 0) {
+      const gate = nextRetryAt(current);
+      if (gate == null || Date.now() < gate) return;
+    }
     if (current.count >= MAX_MANUAL_RETRIES) return;
 
     const next: RetryState = {
       ...current,
-      count: current.count + 1,
+      count: current.count === 0 ? 1 : current.count + 1,
       lastRetryAt: Date.now(),
+      openedAt: current.openedAt || Date.now(),
     };
     writeRetryState(lookupId, vin, next);
     setRetryState(next);
@@ -259,13 +293,13 @@ export function CarstatUsaPdfReport({
                 onClick={handleReload}
                 disabled={!canRetry}
                 title={
-                  onCooldown
+                  onCooldown && retryState.count > 0
                     ? `${t("retry")} (${waitLabel})`
                     : `${t("retry")} (${retriesLeft}/${MAX_MANUAL_RETRIES})`
                 }
               >
                 <RotateCcw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
-                {onCooldown ? `${t("retry")} ${waitLabel}` : t("retry")}
+                {onCooldown && retryState.count > 0 ? `${t("retry")} ${waitLabel}` : t("retry")}
               </Button>
             ) : null}
             <Button
@@ -312,7 +346,7 @@ export function CarstatUsaPdfReport({
                 <p className="text-xs text-muted-foreground text-center">
                   {retriesLeft <= 0
                     ? "Retry limit reached."
-                    : onCooldown
+                    : onCooldown && retryState.count > 0
                       ? `${t("retry")} available in ${waitLabel}`
                       : `${t("retry")} unavailable`}
                 </p>
@@ -322,7 +356,7 @@ export function CarstatUsaPdfReport({
 
           {embedSrc ? (
             <iframe
-              key={`html-${reloadKey}`}
+              key={`${mode}-${reloadKey}`}
               ref={frameRef}
               title={title}
               src={embedSrc}

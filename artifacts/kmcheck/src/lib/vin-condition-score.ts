@@ -180,7 +180,8 @@ function singleAccidentPenalty(severity?: string | null): number {
   const s = (severity ?? "").toLowerCase();
   // Heavy hits lower the score, but not so hard that one major tanks the rating.
   if (s.includes("total")) return 1.7;
-  if (s.includes("major") || s.includes("severe") || s.includes("heavy")) return 1.15;
+  // Major used to be 1.15 — too brutal vs moderate (0.3); keep clearly above moderate, below total.
+  if (s.includes("major") || s.includes("severe") || s.includes("heavy")) return 0.7;
   if (s.includes("moderate")) return 0.3;
   if (s.includes("minor") || s.includes("light")) return 0.1;
   return 0.2;

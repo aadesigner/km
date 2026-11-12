@@ -35,13 +35,27 @@ import { createConcurrencyLimiter } from "./batchAsync.js";
 import { warmUsaHtmlStore } from "./carstatUsaHtmlStore.js";
 import { warmVhrHtmlStore } from "./carstatVhrHtmlStore.js";
 
-/** Best-effort: persist USA HTML snapshot so CDN expiry (~10d) does not break later unlocks. */
-function warmUsaHtmlFromLookupData(vin: string, data: Record<string, unknown>): void {
+/**
+ * Persist USA HTML snapshot before the client hits /html-proxy.
+ * Awaited on fulfill so "complete" is not visible until the mirror is warm (or failed soft).
+ */
+async function warmUsaHtmlFromLookupData(vin: string, data: Record<string, unknown>): Promise<void> {
   if (data.dataSource !== "carstat_usa") return;
   const pr = data.pdfReport;
   if (!pr || typeof pr !== "object" || Array.isArray(pr)) return;
   const htmlUrl = (pr as { htmlUrl?: unknown }).htmlUrl;
-  warmUsaHtmlStore(vin, typeof htmlUrl === "string" ? htmlUrl : null);
+  const url = typeof htmlUrl === "string" ? htmlUrl.trim() : "";
+  if (!url) return;
+  try {
+    const { readStoredUsaHtml, fetchSanitizeAndStoreUsaHtml } = await import("./carstatUsaHtmlStore.js");
+    const existing = await readStoredUsaHtml(vin);
+    if (existing) return;
+    await fetchSanitizeAndStoreUsaHtml(vin, url);
+  } catch (err) {
+    // Soft-fail: proxy can still fetch CDN on demand.
+    logger.warn({ err, vin }, "carstat_usa_html_warm_await_failed");
+    warmUsaHtmlStore(vin, url);
+  }
 }
 
 /** Best-effort: persist VHR HTML snapshot(s) per sourceId. */
@@ -184,6 +198,8 @@ async function completeLookupFromCatalog(
   const catalogData = catalogEntry.data as Record<string, unknown>;
   const enriched = await enrichVinReportDataForServe(input.normalizedVin, catalogData);
   const stampedData = await stampLookupReportData(enriched ?? catalogData);
+  // Warm HTML mirror while still "fulfilling" so the first /html-proxy hit is ready.
+  await warmUsaHtmlFromLookupData(input.normalizedVin, stampedData);
   await db.update(vinLookupsTable).set({
     status: "complete",
     data: stampedData,
@@ -197,7 +213,6 @@ async function completeLookupFromCatalog(
     void countFreeCoupon(input.freeCouponPaymentId, input.freeCouponCode);
   }
   void fireVinReadyEmailForUser(lookupId, input.normalizedVin, stampedData, input.user, input.resolvedPayment);
-  warmUsaHtmlFromLookupData(input.normalizedVin, stampedData);
   logger.info({
     msg: "vin_lookup_hit",
     source: "catalog_async",
@@ -243,6 +258,8 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           primaryUpdatedAt: cached.updatedAt,
         });
         const stampedData = await stampLookupReportData(enriched ?? cachedData);
+        await warmUsaHtmlFromLookupData(normalizedVin, stampedData);
+        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         await db.update(vinLookupsTable).set({
           status: "complete",
           data: stampedData,
@@ -255,8 +272,6 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
-        warmUsaHtmlFromLookupData(normalizedVin, stampedData);
-        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
         return;
       }
@@ -311,6 +326,8 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
                       ? CARSTAT_USA_PROVIDER_NAME
                       : (provider.name || GETCARAPI_PROVIDER_NAME);
         const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
+        await warmUsaHtmlFromLookupData(normalizedVin, stampedData);
+        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         await db.update(vinLookupsTable).set({
           status: "complete",
           data: stampedData,
@@ -324,8 +341,6 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           void countFreeCoupon(freeCouponPaymentId, freeCouponCode);
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
-        warmUsaHtmlFromLookupData(normalizedVin, stampedData);
-        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "provider_async", vin: normalizedVin, userId, lookupId });
     });
   } catch (err) {

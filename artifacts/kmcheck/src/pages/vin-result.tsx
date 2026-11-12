@@ -126,6 +126,7 @@ import {
   sanitizeInsuranceClaims,
   sanitizeMileageHistory,
   ensureInitialRegistrationMileage,
+  ensureRegistryMileageHistory,
   ensureExportRegistryEvent,
   resolveFirstRegistrationDate,
   formatMileageHistorySource,
@@ -844,12 +845,24 @@ export default function VinResult({ params }: Props) {
   // Do not useMemo here — this runs after early returns; conditional hooks crash the page
   // when loading → pending_manual/complete (e.g. right after PayPal redirect).
   const { photos, photosHd, photoAlternates } = resolveReportPhotoSets(data);
+  const registryForMileage = ensureExportRegistryEvent(
+    enrichRegistryHistoryDates(
+      repairDatedRecords(data?.registryHistory, data?.year),
+      [...(data?.mileageHistory ?? []), ...(data?.ownerHistory ?? [])],
+      data?.year,
+    ),
+    data?.mileageHistory,
+    data?.vehicleExtras,
+  );
   const mileageHistory = sortHistoryNewestFirst(
     ensureInitialRegistrationMileage(
-      sanitizeMileageHistory(repairDatedRecords(data?.mileageHistory, data?.year), data?.year),
+      ensureRegistryMileageHistory(
+        sanitizeMileageHistory(repairDatedRecords(data?.mileageHistory, data?.year), data?.year),
+        registryForMileage,
+      ),
       {
         firstRegistrationDate: resolveFirstRegistrationDate(
-          data?.registryHistory,
+          registryForMileage,
           data?.vehicleExtras,
         ),
         vehicleYear: data?.year,
@@ -860,15 +873,7 @@ export default function VinResult({ params }: Props) {
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data?.auctionHistory, data?.year));
   const registryHistory = sortHistoryNewestFirst(
     sanitizeRegistryHistory(
-      ensureExportRegistryEvent(
-        enrichRegistryHistoryDates(
-          repairDatedRecords(data?.registryHistory, data?.year),
-          [...(data?.mileageHistory ?? []), ...(data?.ownerHistory ?? [])],
-          data?.year,
-        ),
-        data?.mileageHistory,
-        data?.vehicleExtras,
-      ),
+      registryForMileage,
       data?.year,
       { listingOdometer: data?.odometer },
     ),

@@ -54,6 +54,7 @@ import {
   stripRegistrySubtitleNoise,
   isEncarMileageTypoLine,
   sanitizeRegistryLocation,
+  REGISTRY_TYPES_WITHOUT_MILEAGE,
 } from "@workspace/korean-registry";
 
 export { parseKmFromText, resolveLatestOdometerKm } from "@workspace/odometer-resolve";
@@ -3766,6 +3767,35 @@ export function extractRegistryHistoryFromLots(
   return sortHistoryNewestFirst(dedupeRegistryHistoryEvents(events));
 }
 
+/** Copy dated KOTSA/Encar registry km into mileageHistory (local Carstat). */
+export function mileageEntriesFromRegistryHistory(
+  registry: RegistryHistoryEvent[],
+): NonNullable<NormalizedVinData["mileageHistory"]> {
+  const out: NonNullable<NormalizedVinData["mileageHistory"]> = [];
+  const seen = new Set<string>();
+  for (const event of registry) {
+    const type = String(event.type ?? "").trim().toLowerCase();
+    if (REGISTRY_TYPES_WITHOUT_MILEAGE.has(type)) continue;
+    const km = Number(event.mileage);
+    if (!Number.isFinite(km) || km <= 0) continue;
+    const date = typeof event.date === "string" ? event.date.trim() : "";
+    if (!date) continue;
+    const rounded = Math.round(km);
+    const key = `${date}|${rounded}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const title = typeof event.title === "string" ? event.title : "";
+    const source =
+      type === "inspection" || /inspect/i.test(title) ? "Korean inspection"
+      : type === "owner_change" ? "Korean ownership"
+      : type === "export" || /export/i.test(title) ? "Export declaration"
+      : type === "first_registration" || type === "delivery" ? "First registration"
+      : "Korean registry";
+    out.push({ date, odometer: rounded, unit: "km", source });
+  }
+  return out;
+}
+
 /** Korean manufacturer recalls from details.history — kept out of registry timeline. */
 export function extractRecallHistoryFromLots(
   lots: Array<Record<string, unknown>>,
@@ -4187,19 +4217,30 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     }
 
     if (km) {
-      mileageHistory.push({
-        date: saleD,
-        odometer: km,
-        unit: "km",
-        source: isNorthAmericanAuctionLot(l) ? "na_auction" : "listing",
-        condition,
-        damage,
-        primaryDamage,
-        secondaryDamage,
-        auctionPrice,
-        lotStatus,
-        titleStatus: lotTitle,
-      });
+      const isNaAuction = isNorthAmericanAuctionLot(l);
+      // Listing/Encar lots: km + date only on the mileage timeline (no sale price / lot chips).
+      mileageHistory.push(
+        isNaAuction
+          ? {
+              date: saleD,
+              odometer: km,
+              unit: "km",
+              source: "na_auction",
+              condition,
+              damage,
+              primaryDamage,
+              secondaryDamage,
+              auctionPrice,
+              lotStatus,
+              titleStatus: lotTitle,
+            }
+          : {
+              date: saleD,
+              odometer: km,
+              unit: "km",
+              source: "listing",
+            },
+      );
     }
 
     // Ownership event per auction lot only — Encar/marketplace listings are not owner changes.
@@ -4308,7 +4349,7 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   const vehicleYear = Number(raw.year) || null;
 
   const mileageForTimeline = filterMileageHistoryForPersist(
-    mileageHistory,
+    [...mileageHistory, ...mileageEntriesFromRegistryHistory(registryHistory)],
     country,
     registryHistory,
   );

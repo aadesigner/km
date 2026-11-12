@@ -1481,13 +1481,38 @@ router.get("/vin/:id", requireAuth, async (req, res) => {
   }
 
   if (!lookup) {
-    // Purchased but lookup still pending — serve catalog/cache data when available
+    // Purchased but lookup row missing (revoked / race) — serve catalog and materialize
+    // an owned complete row so USA/VHR /html-proxy has a real lookupId (> 0).
     if (isVinString && (await userOwnsVinReport(userId, rawId))) {
-      const report = await vinHasReportData(rawId);
+      const report = await resolveVinReportForViewer(rawId, userId);
       if (report) {
+        let serveId = report.lookupId && report.lookupId > 0 ? report.lookupId : 0;
+        const ds = report.dataSource?.dataSource;
+        if (
+          serveId <= 0
+          && (ds === "carstat_usa" || ds === "carstat_vhr")
+          && catalogHasDeliverableReport(report.dataSource)
+        ) {
+          try {
+            const [created] = await db
+              .insert(vinLookupsTable)
+              .values({
+                userId,
+                vin: rawId,
+                status: "complete",
+                data: report.dataSource,
+                providerName: report.providerName,
+                fromCache: true,
+              })
+              .returning({ id: vinLookupsTable.id });
+            if (created?.id) serveId = created.id;
+          } catch (err) {
+            logger.warn({ err, vin: rawId, userId }, "usa_vhr_proxy_lookup_materialize_failed");
+          }
+        }
         res.setHeader("Cache-Control", "private, no-store");
         res.json({
-          id: 0,
+          id: serveId,
           vin: rawId,
           userId,
           status: "complete",

@@ -29,8 +29,21 @@ describe("carstatUsaReportSanitize", () => {
     expect(pr.hasPdf).toBe(false);
   });
 
+  it("keeps hasHtml after a second redact (URLs already null)", () => {
+    const once = redactCarstatUsaDataForClient({
+      dataSource: "carstat_usa",
+      pdfReport: {
+        type: "carfax",
+        htmlUrl: "https://report-cars.b-cdn.net/reports/carfax/x.html",
+      },
+    });
+    const twice = redactCarstatUsaDataForClient(once);
+    expect((twice.pdfReport as { hasHtml?: boolean }).hasHtml).toBe(true);
+  });
+
   it("allows known report CDN hosts only", () => {
     expect(() => assertAllowedUsaReportUrl("https://report-cars.b-cdn.net/a.html")).not.toThrow();
+    expect(() => assertAllowedUsaReportUrl("https://storage.beget.cloud/a.html")).not.toThrow();
     expect(() => assertAllowedUsaReportUrl("https://evil.example/a.html")).toThrow();
   });
 

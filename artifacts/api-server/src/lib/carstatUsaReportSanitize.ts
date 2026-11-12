@@ -12,6 +12,9 @@ const ALLOWED_REPORT_HOST_SUFFIXES = [
   "b-cdn.net",
   "carstat.dev",
   "api.carstat.dev",
+  // Seen on older Carstat mirrors / CDN fallthrough (still SSRF-scoped).
+  "storage.beget.cloud",
+  "import-motor.com",
 ];
 
 export function assertAllowedUsaReportUrl(url: string): URL {
@@ -55,12 +58,13 @@ export function redactCarstatUsaDataForClient(
   const p = pr as Record<string, unknown>;
   const pdfUrl = typeof p.pdfUrl === "string" ? p.pdfUrl.trim() : "";
   const htmlUrl = typeof p.htmlUrl === "string" ? p.htmlUrl.trim() : "";
+  // Preserve flags if a prior redact already nulled URLs (never wipe hasHtml on double-redact).
   const redacted: ClientUsaPdfReport = {
     type: typeof p.type === "string" ? p.type : "carfax",
     vehicle: typeof p.vehicle === "string" ? p.vehicle : null,
     fetchedAt: typeof p.fetchedAt === "string" ? p.fetchedAt : null,
-    hasPdf: !!pdfUrl,
-    hasHtml: !!htmlUrl,
+    hasPdf: !!pdfUrl || p.hasPdf === true,
+    hasHtml: !!htmlUrl || p.hasHtml === true,
     pdfUrl: null,
     htmlUrl: null,
   };

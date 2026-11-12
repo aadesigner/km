@@ -17,6 +17,7 @@ import {
   sanitizeKoreanRepairKrwAmount,
   stripRegistrySubtitleNoise,
   sanitizeRegistryLocation,
+  REGISTRY_TYPES_WITHOUT_MILEAGE,
 } from "@workspace/korean-registry";
 import {
   dedupeAccidents,
@@ -355,6 +356,8 @@ export function sanitizeOwnerHistory<T extends OwnerHistoryLike>(
   );
 }
 
+const FIRST_REG_SOURCE = "First registration";
+
 export function sanitizeMileageHistory<T extends MileageHistoryLike>(
   entries: T[] | null | undefined,
   vehicleYear?: number | null,
@@ -374,25 +377,96 @@ export function sanitizeMileageHistory<T extends MileageHistoryLike>(
         const odo = e.odometer ?? (e as { mileage?: number | null }).mileage;
         return odo != null && Number(odo) > 0;
       })
-      .map((entry) => ({
-        ...entry,
-        odometer: entry.odometer ?? (entry as { mileage?: number | null }).mileage,
-        date: cleanDisplayText(entry.date),
-        source: cleanDisplayText(entry.source),
-        condition: cleanDisplayText(entry.condition),
-        damage: cleanDisplayText(entry.damage),
-        primaryDamage: cleanDisplayText(entry.primaryDamage),
-        secondaryDamage: cleanDisplayText(entry.secondaryDamage),
-        lotStatus: sanitizeAuctionLotStatus(entry.lotStatus),
-        titleStatus: cleanDisplayText(entry.titleStatus),
-        location: cleanDisplayText(entry.location),
-        description: cleanDisplayText(entry.description),
-      })),
+      .map((entry) => {
+        const source = cleanDisplayText(entry.source);
+        // Local Carstat Encar/listing lots — keep km/date only; don't show sale price on mileage timeline.
+        const isPlainListing = /^listing$/i.test(source ?? "");
+        return {
+          ...entry,
+          odometer: entry.odometer ?? (entry as { mileage?: number | null }).mileage,
+          date: cleanDisplayText(entry.date),
+          source,
+          condition: isPlainListing ? null : cleanDisplayText(entry.condition),
+          damage: isPlainListing ? null : cleanDisplayText(entry.damage),
+          primaryDamage: isPlainListing ? null : cleanDisplayText(entry.primaryDamage),
+          secondaryDamage: isPlainListing ? null : cleanDisplayText(entry.secondaryDamage),
+          lotStatus: isPlainListing ? null : sanitizeAuctionLotStatus(entry.lotStatus),
+          titleStatus: isPlainListing ? null : cleanDisplayText(entry.titleStatus),
+          location: cleanDisplayText(entry.location),
+          description: cleanDisplayText(entry.description),
+          ...(isPlainListing ? { auctionPrice: null, currency: null } : {}),
+        };
+      }),
     vehicleYear,
   );
 }
 
-const FIRST_REG_SOURCE = "First registration";
+function registryMileageSource(
+  type?: string | null,
+  title?: string | null,
+): string {
+  const t = (type ?? "").trim().toLowerCase();
+  if (t === "inspection") return "Korean inspection";
+  if (t === "owner_change") return "Korean ownership";
+  if (t === "export") return "Export declaration";
+  if (t === "first_registration" || t === "delivery") return FIRST_REG_SOURCE;
+  if (/export/i.test(title ?? "")) return "Export declaration";
+  if (/inspect/i.test(title ?? "")) return "Korean inspection";
+  return "Korean registry";
+}
+
+/**
+ * Local Carstat keeps KOTSA/Encar km on registryHistory only. Mirror dated registry
+ * readings into the mileage timeline (same idea as VHR Korean insurance).
+ */
+export function ensureRegistryMileageHistory<T extends MileageHistoryLike>(
+  mileage: T[],
+  registry?: Array<{
+    date?: string | null;
+    type?: string | null;
+    title?: string | null;
+    mileage?: number | null;
+  }> | null,
+): T[] {
+  if (!registry?.length) return mileage;
+
+  const existingKeys = new Set(
+    mileage.map((row) => {
+      const odo = Number(row.odometer);
+      const date = cleanDisplayText(row.date) ?? "";
+      return Number.isFinite(odo) && odo > 0 ? `${date}|${Math.round(odo)}` : "";
+    }).filter(Boolean),
+  );
+  const existingOdo = new Set(
+    mileage
+      .map((row) => Number(row.odometer))
+      .filter((n) => Number.isFinite(n) && n > 0)
+      .map((n) => Math.round(n)),
+  );
+
+  const extras: T[] = [];
+  for (const event of registry) {
+    const type = (event.type ?? "").trim().toLowerCase();
+    if (REGISTRY_TYPES_WITHOUT_MILEAGE.has(type)) continue;
+    const km = Number(event.mileage);
+    if (!Number.isFinite(km) || km <= 0) continue;
+    const date = cleanDisplayText(event.date);
+    if (!date) continue;
+    const rounded = Math.round(km);
+    const key = `${date}|${rounded}`;
+    if (existingKeys.has(key) || existingOdo.has(rounded)) continue;
+    extras.push({
+      date,
+      odometer: rounded,
+      unit: "km",
+      source: registryMileageSource(event.type, event.title),
+    } as T);
+    existingKeys.add(key);
+    existingOdo.add(rounded);
+  }
+
+  return extras.length > 0 ? [...mileage, ...extras] : mileage;
+}
 
 function looksLikeDateText(value: string): boolean {
   return /^\d{4}([-/]\d{1,2}([-/]\d{1,2})?)?/.test(value.trim())

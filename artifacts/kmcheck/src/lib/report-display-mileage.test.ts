@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   ensureInitialRegistrationMileage,
+  ensureRegistryMileageHistory,
   resolveFirstRegistrationDate,
   formatMileageHistorySource,
+  sanitizeMileageHistory,
 } from "./report-display";
 
 describe("ensureInitialRegistrationMileage", () => {
@@ -43,5 +45,48 @@ describe("formatMileageHistorySource", () => {
     const t = (k: string) => (k === "registry_field_first_registration" ? "First registration" : k);
     expect(formatMileageHistorySource("First registration", t)).toBe("First registration");
     expect(formatMileageHistorySource("Initial registration", t)).toBe("First registration");
+  });
+});
+
+describe("ensureRegistryMileageHistory", () => {
+  it("adds dated Korean registry km into the mileage timeline", () => {
+    const out = ensureRegistryMileageHistory(
+      [{ date: "2025-12-20", odometer: 156_676, unit: "km", source: "listing" }],
+      [
+        { date: "2024-02-24", type: "inspection", title: "Car inspection completed", mileage: 77_675 },
+        { date: "2023-06-01", type: "owner_change", title: "Owner change", mileage: 62_100 },
+        { date: null, type: "inspection", title: "No date", mileage: 50_000 },
+      ],
+    );
+    expect(out.some((e) => e.odometer === 77_675 && e.source === "Korean inspection")).toBe(true);
+    expect(out.some((e) => e.odometer === 62_100 && e.source === "Korean ownership")).toBe(true);
+    expect(out.some((e) => e.odometer === 50_000)).toBe(false);
+  });
+
+  it("does not duplicate an existing odometer reading", () => {
+    const out = ensureRegistryMileageHistory(
+      [{ date: "2024-02-24", odometer: 77_675, unit: "km", source: "Korean inspection" }],
+      [{ date: "2024-02-24", type: "inspection", mileage: 77_675 }],
+    );
+    expect(out).toHaveLength(1);
+  });
+});
+
+describe("sanitizeMileageHistory listing price", () => {
+  it("strips sale price and lot chips from listing mileage rows", () => {
+    const out = sanitizeMileageHistory([
+      {
+        date: "2025-12-20",
+        odometer: 156_676,
+        unit: "km",
+        source: "listing",
+        auctionPrice: 8196,
+        condition: "Run & Drives",
+      },
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]?.auctionPrice).toBeNull();
+    expect(out[0]?.condition).toBeNull();
+    expect(out[0]?.odometer).toBe(156_676);
   });
 });

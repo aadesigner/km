@@ -41,6 +41,17 @@ describe("catalogHasDeliverableReport", () => {
     })).toBe(false);
   });
 
+  it("requires htmlUrl for carstat_usa (PDF-only is not deliverable)", () => {
+    expect(catalogHasDeliverableReport({
+      dataSource: "carstat_usa",
+      pdfReport: { type: "carfax", pdfUrl: "https://report-cars.b-cdn.net/a.pdf", htmlUrl: null },
+    })).toBe(false);
+    expect(catalogHasDeliverableReport({
+      dataSource: "carstat_usa",
+      pdfReport: { type: "carfax", pdfUrl: null, htmlUrl: "https://report-cars.b-cdn.net/a.html" },
+    })).toBe(true);
+  });
+
   it("accepts published catalog with history", () => {
     expect(catalogHasDeliverableReport({
       make: "Hyundai",

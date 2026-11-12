@@ -8,15 +8,12 @@ const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/i;
 export function catalogHasDeliverableReport(data: unknown): boolean {
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
   const d = data as Record<string, unknown>;
-  // Carstat USA PDF reports store URLs, not history arrays.
+  // Carstat USA — customer UI is HTML-proxy only; PDF-only rows are not deliverable.
   if (d.dataSource === "carstat_usa") {
     const pr = d.pdfReport;
     if (pr && typeof pr === "object" && !Array.isArray(pr)) {
       const p = pr as Record<string, unknown>;
-      if (
-        (typeof p.pdfUrl === "string" && p.pdfUrl.trim())
-        || (typeof p.htmlUrl === "string" && p.htmlUrl.trim())
-      ) {
+      if (typeof p.htmlUrl === "string" && p.htmlUrl.trim()) {
         return d.fulfillmentPending !== true;
       }
     }

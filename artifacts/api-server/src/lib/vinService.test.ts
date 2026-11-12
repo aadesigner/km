@@ -466,11 +466,12 @@ describe("normalizeCarstatResponse", () => {
         location: { country: { iso: "de" } },
         details: {
           history: [{
-            date: "March 1",
+            date: "2024-03-01",
             content: [{
               title: "Car inspection completed",
               sub: "regular inspection\nMileage 45,000km",
               "Driving distance during inspection": "45,000km",
+              "Inspection date": "2024-03-01",
             }],
           }],
         },
@@ -479,7 +480,9 @@ describe("normalizeCarstatResponse", () => {
 
     expect(normalized.registryHistory).toHaveLength(1);
     expect(normalized.registryHistory?.[0]?.mileage).toBe(45_000);
+    expect(normalized.registryHistory?.[0]?.date).toBeTruthy();
     expect(normalized.country).toBe("de");
+    expect(normalized.mileageHistory?.some((m) => m.odometer === 45_000 && m.source === "Korean inspection")).toBe(true);
   });
 
   it("maps Korea Encar: insurance claims populate accident history while keeping separate sections", () => {
