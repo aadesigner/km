@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   dedupeAccidents,
   dedupeAuctionHistory,
+  dedupeMileageHistory,
   dedupeServiceHistory,
   dedupeVehicleExtras,
   extractServiceRecordId,
@@ -110,5 +111,61 @@ describe("same-day auction / total-loss / extra collapse", () => {
     expect(damage?.value?.toLowerCase()).toContain("theft");
     const badges = rows.find((r) => r.label === "Badges");
     expect(badges?.value?.toLowerCase()).toContain("theft");
+  });
+
+  it("does not shred thousands separators when merging money extras", () => {
+    const rows = dedupeVehicleExtras([
+      { key: "pre_accident_a", label: "Pre-accident value", value: "20,200 USD" },
+      { key: "pre_accident_b", label: "Pre-accident value", value: "21,600 USD" },
+      { key: "pre_accident_krw", label: "Pre-accident value", value: "24,009,000 KRW" },
+    ]);
+    const usd = rows.find((r) => /USD/.test(r.value ?? ""));
+    const krw = rows.find((r) => /KRW/.test(r.value ?? ""));
+    expect(usd?.value).toMatch(/20,200/);
+    expect(usd?.value).toMatch(/21,600/);
+    expect(usd?.value).not.toMatch(/^20 · 200/);
+    expect(krw?.value).toBe("24,009,000 KRW");
+  });
+});
+
+describe("dedupeMileageHistory", () => {
+  it("merges same-day near-duplicate auction scrapes into one Copart row", () => {
+    const rows = dedupeMileageHistory([
+      {
+        date: "2026-08-12",
+        odometer: 93580,
+        source: "US Auction",
+        primaryDamage: "Cosmetic",
+        auctionPrice: 11200,
+      },
+      {
+        date: "2026-08-12",
+        odometer: 93540,
+        source: "Copart",
+        primaryDamage: "Front Bumper Repaired",
+        secondaryDamage: "Minor Body Scratches",
+        auctionPrice: 11200,
+      },
+      {
+        date: "2026-08-12",
+        odometer: 93500,
+        source: "Korean Marketplace",
+        primaryDamage: "Cosmetic",
+        auctionPrice: 18500,
+      },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.source).toBe("Copart");
+    expect(rows[0]?.odometer).toBe(93540);
+    expect(rows[0]?.primaryDamage).toBe("Front Bumper Repaired");
+    expect(rows[0]?.secondaryDamage).toBe("Minor Body Scratches");
+  });
+
+  it("keeps far-apart same-day readings (possible rollback)", () => {
+    const rows = dedupeMileageHistory([
+      { date: "2026-08-12", odometer: 93540, source: "Copart" },
+      { date: "2026-08-12", odometer: 41000, source: "Encar" },
+    ]);
+    expect(rows).toHaveLength(2);
   });
 });

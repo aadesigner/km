@@ -1,4 +1,5 @@
 import type { Language } from "@/i18n/context";
+import { extractHistoryPeriodDate } from "@/lib/history-sort";
 import {
   localizeProviderDate,
   looksLikeProviderDate,
@@ -31,6 +32,7 @@ const TYPE_KEYS: Record<string, string> = {
   no_insurance: "registry_type_no_insurance",
   insurance_event: "registry_type_insurance_event",
   recall: "registry_type_recall",
+  export: "registry_type_export",
   other: "registry_type_other",
 };
 
@@ -186,6 +188,9 @@ export function localizeRegistryDate(
   vehicleYear?: number | null,
   vehicleCountry?: string | null,
 ): string | null {
+  // Keep uninsured-style ranges ("2025-12~2026-06") readable as-is.
+  const period = extractHistoryPeriodDate(date);
+  if (period && /[~～]/.test(period)) return period;
   return localizeProviderDate(date, language, vehicleYear, vehicleCountry);
 }
 

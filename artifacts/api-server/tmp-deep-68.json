@@ -1,0 +1,545 @@
+{
+  "accidents_detail": {
+    "car_number": "287러8406",
+    "has_uninsured_period": true,
+    "uninsured_period_text": "2025-12~2026-06",
+    "items": [
+      {
+        "index": 1,
+        "date": "2025-04-26",
+        "scheme": false,
+        "parts": [],
+        "parts_description": [],
+        "parts_categories": {
+          "paint": [],
+          "detach": [],
+          "replace": [],
+          "sheet_metal": [],
+          "repair": [],
+          "other": []
+        },
+        "param_list": "",
+        "position_data": "",
+        "left": [],
+        "center": [
+          {
+            "type": "2",
+            "parts": 1986250,
+            "labor": 1181540,
+            "paint": 1220930,
+            "estimate": 4388720,
+            "paid": 6217990,
+            "reserve": 0,
+            "type2": "",
+            "ctx": {
+              "hasScheme": false,
+              "targetColumn": "center",
+              "currentType": "2",
+              "dateRaw": 20250426,
+              "car_number": "287러8406",
+              "index": 1
+            }
+          }
+        ],
+        "right": []
+      },
+      {
+        "index": 2,
+        "date": "2024-11-08",
+        "scheme": true,
+        "parts": {
+          "10": "paint",
+          "12": "paint",
+          "21": "repair",
+          "23": "repair",
+          "24": "repair",
+          "25": "paint",
+          "08": "both",
+          "02": "paint",
+          "06": "paint"
+        },
+        "parts_description": [
+          "Rear TPMS Sensor (Left) (Removable)",
+          "Rear door (left) surface repair (painting)",
+          "Rear door belt molding (eyebrow molding) (left) (replacement)",
+          "Rear door outside handle (left) (detachable)",
+          "Rear bumper color primer (painting)",
+          "Rear bumper assembly (replacement)",
+          "Rear bumper under cover (side) (right) (removable)",
+          "Rear bumper under cover (side) (left) (removable)",
+          "Rear combination lamp (right) (removable)",
+          "Rear combination lamp (left) (removable)",
+          "Rear Quarter Panel (Fuel Filler Side | Rear Fender | Outer) (Left) (Sheet Metal)",
+          "Rear fender (left) surface repair (painting)",
+          "Rear pillar trim (left) (removable)",
+          "Side step (left) surface repair (painting)",
+          "Side Step Panel (Outer) (Left) (Sheet Metal)",
+          "Quarter glass (left) (removable)",
+          "Tire and Wheel (Rear) (Left) (Removable)",
+          "Front door (left) (painted)",
+          "Front door (left) (replace)",
+          "Front door glass (left) (removable)"
+        ],
+        "parts_categories": {
+          "paint": [
+            "Rear door (left) surface repair (painting)",
+            "Rear bumper color primer (painting)",
+            "Rear fender (left) surface repair (painting)",
+            "Side step (left) surface repair (painting)",
+            "Front door (left) (painted)"
+          ],
+          "detach": [
+            "Rear TPMS Sensor (Left) (Removable)",
+            "Rear door outside handle (left) (detachable)",
+            "Rear bumper under cover (side) (right) (removable)",
+            "Rear bumper under cover (side) (left) (removable)",
+            "Rear combination lamp (right) (removable)",
+            "Rear combination lamp (left) (removable)",
+            "Rear pillar trim (left) (removable)",
+            "Quarter glass (left) (removable)",
+            "Tire and Wheel (Rear) (Left) (Removable)",
+            "Front door glass (left) (removable)"
+          ],
+          "replace": [
+            "Rear door belt molding (eyebrow molding) (left) (replacement)",
+            "Rear bumper assembly (replacement)",
+            "Front door (left) (replace)"
+          ],
+          "sheet_metal": [
+            "Rear Quarter Panel (Fuel Filler Side | Rear Fender | Outer) (Left) (Sheet Metal)",
+            "Side Step Panel (Outer) (Left) (Sheet Metal)"
+          ],
+          "repair": [],
+          "other": []
+        },
+        "param_list": "108 208 121 123 124 202 206 210 212 225",
+        "position_data": "",
+        "left": [
+          {
+            "type": "1",
+            "parts": 730740,
+            "labor": 554580,
+            "paint": 1148160,
+            "estimate": 2433480,
+            "paid": 67680,
+            "reserve": 0,
+            "type2": "",
+            "ctx": {
+              "hasScheme": true,
+              "targetColumn": "left",
+              "currentType": "1",
+              "dateRaw": 20241108,
+              "car_number": "287러8406",
+              "index": 2
+            }
+          }
+        ],
+        "center": [],
+        "right": [
+          {
+            "type": "3",
+            "parts": 772060,
+            "labor": 449180,
+            "paint": 408350,
+            "estimate": 1629590,
+            "paid": 199200,
+            "reserve": 0,
+            "type2": "",
+            "ctx": {
+              "hasScheme": true,
+              "targetColumn": "left",
+              "currentType": "3",
+              "dateRaw": 20241108,
+              "car_number": "287러8406",
+              "index": 2
+            }
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "date": "2021-12-31",
+        "scheme": true,
+        "parts": {
+          "20": "repair",
+          "01": "both"
+        },
+        "parts_description": [
+          "Radiator grille (removable)",
+          "Front TPMS Sensor (Right) (Replace)",
+          "Front bumper surface repair (painting)",
+          "Front bumper cover (repair)",
+          "Front bumper cover (overhaul)",
+          "Front bumper cover (removable)",
+          "Wheel (Front) (Right) (Replace)"
+        ],
+        "parts_categories": {
+          "paint": [
+            "Front bumper surface repair (painting)"
+          ],
+          "detach": [
+            "Radiator grille (removable)",
+            "Front bumper cover (removable)"
+          ],
+          "replace": [
+            "Front TPMS Sensor (Right) (Replace)",
+            "Wheel (Front) (Right) (Replace)"
+          ],
+          "sheet_metal": [],
+          "repair": [
+            "Front bumper cover (repair)"
+          ],
+          "other": [
+            "Front bumper cover (overhaul)"
+          ]
+        },
+        "param_list": "101 201 120",
+        "position_data": "",
+        "left": [
+          {
+            "type": "1",
+            "parts": 255070,
+            "labor": 137000,
+            "paint": 274280,
+            "estimate": 666350,
+            "paid": 531280,
+            "reserve": 0,
+            "type2": "",
+            "ctx": {
+              "hasScheme": true,
+              "targetColumn": "left",
+              "currentType": "1",
+              "dateRaw": 20211231,
+              "car_number": "287러8406",
+              "index": 3
+            }
+          }
+        ],
+        "center": [],
+        "right": []
+      },
+      {
+        "index": 4,
+        "date": "2021-10-05",
+        "scheme": true,
+        "parts": {
+          "13": "paint",
+          "23": "repair",
+          "04": "both",
+          "02": "paint"
+        },
+        "parts_description": [
+          "Rear bumper (painted)",
+          "Rear bumper assembly (replacement)",
+          "Rear combination lamp (right) (replace)",
+          "Rear combination lamp (left) (removable)",
+          "Rear combination lamp (attached to trunk lid) (right) (removable)",
+          "Rear combination lamp (attached to trunk lid) (left) (removable)",
+          "Rear Quarter Panel (Rear Fender|Outer) (Right) (Sheet Metal)",
+          "Rear fender (right) surface repair (painting)",
+          "Rear pillar trim (right) (removable)",
+          "Back panel (sheet metal)",
+          "Back panel trim (removable)",
+          "Number light assembly (right) (removable)",
+          "Number light assembly (left) (removable)",
+          "Quarter glass (right) (removable)",
+          "Trunk lid surface repair (painting)",
+          "Trunk lid (sheet metal)",
+          "Trunk lid reflector (removable)",
+          "Trunk lid outside handle (removable)",
+          "Trunk lid trim (removable)",
+          "Rear detection sensor (replacement)"
+        ],
+        "parts_categories": {
+          "paint": [
+            "Rear bumper (painted)",
+            "Rear fender (right) surface repair (painting)",
+            "Trunk lid surface repair (painting)"
+          ],
+          "detach": [
+            "Rear combination lamp (left) (removable)",
+            "Rear combination lamp (attached to trunk lid) (right) (removable)",
+            "Rear combination lamp (attached to trunk lid) (left) (removable)",
+            "Rear pillar trim (right) (removable)",
+            "Back panel trim (removable)",
+            "Number light assembly (right) (removable)",
+            "Number light assembly (left) (removable)",
+            "Quarter glass (right) (removable)",
+            "Trunk lid reflector (removable)",
+            "Trunk lid outside handle (removable)",
+            "Trunk lid trim (removable)"
+          ],
+          "replace": [
+            "Rear bumper assembly (replacement)",
+            "Rear combination lamp (right) (replace)",
+            "Rear detection sensor (replacement)"
+          ],
+          "sheet_metal": [
+            "Rear Quarter Panel (Rear Fender|Outer) (Right) (Sheet Metal)",
+            "Back panel (sheet metal)",
+            "Trunk lid (sheet metal)"
+          ],
+          "repair": [],
+          "other": []
+        },
+        "param_list": "104 204 123 202 213",
+        "position_data": "",
+        "left": [],
+        "center": [
+          {
+            "type": "2",
+            "parts": 319800,
+            "labor": 455510,
+            "paint": 628049,
+            "estimate": 1403359,
+            "paid": 2101795,
+            "reserve": 0,
+            "type2": "",
+            "ctx": {
+              "hasScheme": true,
+              "targetColumn": "center",
+              "currentType": "2",
+              "dateRaw": 20211005,
+              "car_number": "287러8406",
+              "index": 4
+            }
+          }
+        ],
+        "right": []
+      }
+    ],
+    "totals": {
+      "my_damage": 8891909,
+      "other_damage": 1629590
+    },
+    "scheme": {
+      "type": "1",
+      "scheme_desc": {
+        "10": "Front fender (left)",
+        "11": "Front fender (right)",
+        "12": "Rear fender (left)",
+        "13": "Rear fender (right)",
+        "14": "Windshield",
+        "15": "Sunroof",
+        "16": "Loop",
+        "17": "Sliding door (left)",
+        "18": "Sliding door (right)",
+        "19": "Rear window",
+        "20": "Grille",
+        "21": "Headlamp (left)",
+        "22": "Headlamp (right)",
+        "23": "Rear combination (left)",
+        "24": "Rear combination (right)",
+        "25": "Side step (left)",
+        "26": "Side step (right)",
+        "27": "Center pillar (left)",
+        "28": "Center pillar (right)",
+        "01": "Front bumper",
+        "02": "Rear bumper",
+        "03": "Bonnet",
+        "04": "Trunk lid",
+        "05": "Backdoor",
+        "06": "Front door (left)",
+        "07": "Front door (right)",
+        "08": "Rear door (left)",
+        "09": "Rear door (right)"
+      }
+    },
+    "aggregate": {
+      "scheme": true,
+      "parts": {
+        "10": "paint",
+        "12": "paint",
+        "13": "paint",
+        "20": "repair",
+        "21": "repair",
+        "23": "repair",
+        "24": "repair",
+        "25": "paint",
+        "08": "both",
+        "02": "paint",
+        "06": "paint",
+        "01": "both",
+        "04": "both"
+      },
+      "parts_description": [
+        "Rear TPMS Sensor (Left) (Removable)",
+        "Rear door (left) surface repair (painting)",
+        "Rear door belt molding (eyebrow molding) (left) (replacement)",
+        "Rear door outside handle (left) (detachable)",
+        "Rear bumper color primer (painting)",
+        "Rear bumper assembly (replacement)",
+        "Rear bumper under cover (side) (right) (removable)",
+        "Rear bumper under cover (side) (left) (removable)",
+        "Rear combination lamp (right) (removable)",
+        "Rear combination lamp (left) (removable)",
+        "Rear Quarter Panel (Fuel Filler Side | Rear Fender | Outer) (Left) (Sheet Metal)",
+        "Rear fender (left) surface repair (painting)",
+        "Rear pillar trim (left) (removable)",
+        "Side step (left) surface repair (painting)",
+        "Side Step Panel (Outer) (Left) (Sheet Metal)",
+        "Quarter glass (left) (removable)",
+        "Tire and Wheel (Rear) (Left) (Removable)",
+        "Front door (left) (painted)",
+        "Front door (left) (replace)",
+        "Front door glass (left) (removable)",
+        "Radiator grille (removable)",
+        "Front TPMS Sensor (Right) (Replace)",
+        "Front bumper surface repair (painting)",
+        "Front bumper cover (repair)",
+        "Front bumper cover (overhaul)",
+        "Front bumper cover (removable)",
+        "Wheel (Front) (Right) (Replace)",
+        "Rear bumper (painted)",
+        "Rear combination lamp (right) (replace)",
+        "Rear combination lamp (attached to trunk lid) (right) (removable)",
+        "Rear combination lamp (attached to trunk lid) (left) (removable)",
+        "Rear Quarter Panel (Rear Fender|Outer) (Right) (Sheet Metal)",
+        "Rear fender (right) surface repair (painting)",
+        "Rear pillar trim (right) (removable)",
+        "Back panel (sheet metal)",
+        "Back panel trim (removable)",
+        "Number light assembly (right) (removable)",
+        "Number light assembly (left) (removable)",
+        "Quarter glass (right) (removable)",
+        "Trunk lid surface repair (painting)",
+        "Trunk lid (sheet metal)",
+        "Trunk lid reflector (removable)",
+        "Trunk lid outside handle (removable)",
+        "Trunk lid trim (removable)",
+        "Rear detection sensor (replacement)"
+      ],
+      "parts_categories": {
+        "paint": [
+          "Rear door (left) surface repair (painting)",
+          "Rear bumper color primer (painting)",
+          "Rear fender (left) surface repair (painting)",
+          "Side step (left) surface repair (painting)",
+          "Front door (left) (painted)",
+          "Front bumper surface repair (painting)",
+          "Rear bumper (painted)",
+          "Rear fender (right) surface repair (painting)",
+          "Trunk lid surface repair (painting)"
+        ],
+        "detach": [
+          "Rear TPMS Sensor (Left) (Removable)",
+          "Rear door outside handle (left) (detachable)",
+          "Rear bumper under cover (side) (right) (removable)",
+          "Rear bumper under cover (side) (left) (removable)",
+          "Rear combination lamp (right) (removable)",
+          "Rear combination lamp (left) (removable)",
+          "Rear pillar trim (left) (removable)",
+          "Quarter glass (left) (removable)",
+          "Tire and Wheel (Rear) (Left) (Removable)",
+          "Front door glass (left) (removable)",
+          "Radiator grille (removable)",
+          "Front bumper cover (removable)",
+          "Rear combination lamp (attached to trunk lid) (right) (removable)",
+          "Rear combination lamp (attached to trunk lid) (left) (removable)",
+          "Rear pillar trim (right) (removable)",
+          "Back panel trim (removable)",
+          "Number light assembly (right) (removable)",
+          "Number light assembly (left) (removable)",
+          "Quarter glass (right) (removable)",
+          "Trunk lid reflector (removable)",
+          "Trunk lid outside handle (removable)",
+          "Trunk lid trim (removable)"
+        ],
+        "replace": [
+          "Rear door belt molding (eyebrow molding) (left) (replacement)",
+          "Rear bumper assembly (replacement)",
+          "Front door (left) (replace)",
+          "Front TPMS Sensor (Right) (Replace)",
+          "Wheel (Front) (Right) (Replace)",
+          "Rear combination lamp (right) (replace)",
+          "Rear detection sensor (replacement)"
+        ],
+        "sheet_metal": [
+          "Rear Quarter Panel (Fuel Filler Side | Rear Fender | Outer) (Left) (Sheet Metal)",
+          "Side Step Panel (Outer) (Left) (Sheet Metal)",
+          "Rear Quarter Panel (Rear Fender|Outer) (Right) (Sheet Metal)",
+          "Back panel (sheet metal)",
+          "Trunk lid (sheet metal)"
+        ],
+        "repair": [
+          "Front bumper cover (repair)"
+        ],
+        "other": [
+          "Front bumper cover (overhaul)"
+        ]
+      },
+      "param_list": "108 208 121 123 124 202 206 210 212 225 101 201 120 104 204 213"
+    }
+  },
+  "ownership": {
+    "owner_changes": [
+      {
+        "date": "2026-01-20",
+        "type": "Termination of information provision",
+        "number": "-",
+        "usage": "-"
+      },
+      {
+        "date": "2025-12-24",
+        "type": "Change of Owner",
+        "number": "-",
+        "usage": "Private passenger car"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "Initial registration",
+        "number": "287러XXXX",
+        "usage": "Private passenger car"
+      }
+    ],
+    "number_changes": [
+      {
+        "date": "2026-01-20",
+        "type": "Termination of information provision",
+        "number": "-",
+        "usage": "-"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "Initial registration",
+        "number": "287러XXXX",
+        "usage": "Private passenger car"
+      }
+    ],
+    "owner_count": 1,
+    "number_count": 0
+  },
+  "special_conditions": {
+    "total_loss": {
+      "date": null,
+      "count": 0
+    },
+    "theft": {
+      "date": null,
+      "count": 0
+    },
+    "flood": {
+      "date": null,
+      "count": 0
+    }
+  },
+  "usage_history": {
+    "government": false,
+    "business": false,
+    "rent": false
+  },
+  "summary": {
+    "total_loss": 0,
+    "theft": 0,
+    "flood": 0,
+    "usage_exists": false,
+    "my_damage_count": 4,
+    "my_damage_sum": 8891909,
+    "other_damage_count": 1,
+    "other_damage_sum": 1629590,
+    "owner_count": 1,
+    "number_count": 0,
+    "report_date": "2026-01-19",
+    "registration_number": "287러8406"
+  }
+}

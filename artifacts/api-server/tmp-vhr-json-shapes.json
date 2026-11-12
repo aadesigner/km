@@ -1,0 +1,58 @@
+{
+  "auction1": {
+    "sourceId": 1,
+    "http": 200,
+    "status": "completed",
+    "files": {
+      "json": "https://v-h-r.b-cdn.net/vhr/examples/7FARW2H56JE022576/00f62eda40dbda3170b80c8a498c0e269a410b2725b0a884b20708519e6c0bc5.json",
+      "html": "https://v-h-r.b-cdn.net/vhr/examples/7FARW2H56JE022576/bed452661b243e4d5defdbdb52ae1ec4e4c11e5b298b87217ea1c096e8d02c0a.html"
+    },
+    "sectionTypes": [
+      "vehicles",
+      "listings"
+    ],
+    "jsonTopKeys": [
+      "schema_version",
+      "report_id",
+      "vin",
+      "generated_at",
+      "example_note",
+      "source",
+      "language",
+      "localization"
+    ],
+    "sample": "{\"schema_version\":2,\"report_id\":null,\"vin\":\"7FARW2H56JE022576\",\"generated_at\":\"2026-10-05T09:00:00Z\",\"example_note\":\"FREE DEMONSTRATION. Vehicle details and events are fictional. Photographs are illustrative. No payment is charged.\",\"source\":{\"id\":1,\"name\":\"USA Insurance Auctions & Korea History\",\"status\":\"available\",\"preview\":{\"has_data\":true,\"thumbnail_url\":\"https://v-h-r.b-cdn.net/vhr/media/017760110fc426b7d79008da1c0427467829a05cd60dcfdb3ca4a5a9a0b39f42.webp\",\"records_count\":3},\"sections\":[{\"type\":\"vehicles\",\"title\":\"Vehicle information\",\"items\":[{\"vin\":\"7farw2h56je022576\",\"title\":\"2018 Honda CR-V EX AWD\",\"year\":2018,\"manufacturer_id\":90,\"model_id\":901,\"generation_id\":9001,\"vehicle_type\":1,\"body_type\":5,\"fuel\":4,\"transmission\":1,\"drive_wheel\":3,\"color\":9,\"hp\":190,\"cylinders\":4,\"body_type_label\":\"suv\",\"color_label\":\"grey\",\"fuel_label\":\"gasoline\",\"transmission_label\":\"automatic\",\"drive_wheel_label\":\"all\",\"vehicle_type_label\":\"automobile\"}]},{\"type\":\"listings\",\"title\":\"Auction and Encar history\",\"items\":[{\"vin\":\"7FARW2H56JE022576\",\"vehicle_title\":\"2018 Honda CR-V EX AWD\",\"lot\":\"DEMO-022576-1\",\"domain_id\":3,\"title\":\"2018 Honda CR-V EX AWD\",\"sale_date\":\"2026-04-15T14:00:00Z\",\"bid\":10700,\"final_bid\":11200,\"final_price\":11550,\"buy_now_price\":13200,\"status\":6,\"archived\":true,\"odometer_km\":89420,\"odometer_mi\":55563,\"odometer_status\":1,\"main_damage_id\":1,\"second_damage_id\":2,\"condition\":0,\"keys_available\":true,\"airbags\":1,\"pre_accident_price\":20200,\"estimate_repair_price\":1750,\"actual_cash_value\":19700,\"country_id\":1,\"state_id\":12,\"city_id\":1201,\"currency\":\"USD\",\"images\":[\"https://v-h-r.b-cdn.net/vhr/media/017760110fc426b7d79008da1c0427467829a05cd60dcfdb3ca4a5a9a0b39f42.webp\",\"https://v-h-r.b-cdn.net/vhr/media/0d61f374ace5f42d797b32d1a5d778ed5d32141eb814a58eaa4260951c6d4069.webp\"],\"price_history\":[{\"date\":\"2026-04-10\",\"price\":9700,\"bid\":9000,\"final_bid\":0,\"extern_final_bid\":0,\"auction_final_bid\":0,\"buy_now_price\":14200,\"sale_date\":\"2026-04-15\",\"status\":10,\"created_at\":\"2026-04-10T08:00:00Z\"},{\"date\":\"2026-04-15\",\"price\":11200,\"bid\":10700,\"final_bid\":11200,\"extern_final_bid\":11200,\"auction_final_bid\":11200,\"buy_now_price\":0,\"sale_date\":\"2026-04-15\",\"status\":6,\"created_at\":\"2026-04-15T14:30:00Z\"}],\"condition_label\":\"run and drives\",\"odometer_status_label\":\"actual\",\"status_label\":\"sold\",\"airbags_label\":\"intact\",\"marketplace\":\"copart.com\",\"listing_type\":\"auction\"},{\"vin\":\"7FARW2H56JE022576\",\"vehicle_title\":\"2018 Honda CR-V EX AWD\",\"lot\":\"DEMO-022576-2\",\"domain_id\":1"
+  },
+  "inspections4": {
+    "sourceId": 4,
+    "http": 200,
+    "status": "completed",
+    "files": {
+      "json": "https://v-h-r.b-cdn.net/vhr/examples/7FARW2H56JE022576/f1c2603af0125c7bd1634a8bc922953002dc67c1358d5ebc4b07b6070bc20a98.json",
+      "html": "https://v-h-r.b-cdn.net/vhr/examples/7FARW2H56JE022576/a65262e85c739c40de61dd53a8cd7759c5bba897a1577f6bd168e13123653c61.html"
+    },
+    "sectionTypes": [
+      "inspections"
+    ],
+    "jsonTopKeys": [
+      "schema_version",
+      "report_id",
+      "vin",
+      "generated_at",
+      "example_note",
+      "source",
+      "language",
+      "localization"
+    ],
+    "sample": "{\"schema_version\":2,\"report_id\":null,\"vin\":\"7FARW2H56JE022576\",\"generated_at\":\"2026-10-05T09:00:00Z\",\"example_note\":\"FREE DEMONSTRATION. Vehicle details and events are fictional. Photographs are illustrative. No payment is charged.\",\"source\":{\"id\":4,\"name\":\"Vehicle Inspections\",\"status\":\"available\",\"preview\":{\"exists\":true,\"records_count\":1},\"sections\":[{\"type\":\"inspections\",\"title\":\"Vehicle inspection reports\",\"items\":[{\"schema_version\":1,\"mapper_contract_version\":1,\"report_id\":\"DEMO-022576-INSPECTION\",\"language\":\"en\",\"created_at\":\"2026-09-18T10:30:00Z\",\"system_updated_at\":\"2026-09-18T10:30:00Z\",\"vehicle_ref\":{\"vin\":\"7FARW2H56JE022576\",\"domain_id\":41,\"listing_id\":\"DEMO-022576-2\",\"site_car_id\":900001},\"vehicle_snapshot\":{\"vin\":\"7FARW2H56JE022576\",\"title\":\"2018 Honda CR-V EX AWD\",\"make\":\"Honda\",\"model\":\"CR-V\",\"year\":2018,\"body_type\":\"suv\",\"fuel\":\"gasoline\",\"engine_size\":1498,\"hp\":190,\"transmission\":\"automatic\",\"drive_wheel\":\"all\",\"color\":\"grey\",\"odometer\":{\"value\":93420,\"unit\":\"km\"}},\"source\":{\"source_key\":\"demonstration\",\"source_type\":\"external_api\",\"source_report_id\":\"DEMO-022576\",\"source_language\":\"en\",\"mapper_version\":\"1\",\"imported_at\":\"2026-09-18T10:30:00Z\"},\"access\":{\"attach_to_listing\":true},\"media\":[{\"id\":\"media-1\",\"type_key\":\"photo\",\"description\":\"Illustrative vehicle photo, not verified for this VIN.\",\"block_id\":\"body\",\"checked_item_id\":\"check-1\",\"sort_order\":0,\"image\":\"https://v-h-r.b-cdn.net/vhr/media/017760110fc426b7d79008da1c0427467829a05cd60dcfdb3ca4a5a9a0b39f42.webp\"}],\"files\":[{\"id\":\"document-1\",\"type_key\":\"inspection_report\",\"original_name\":\"demonstration-report.pdf\",\"extension\":\"pdf\",\"description\":\"Demonstration attachment; opens the saved local sample report.\",\"sort_order\":0,\"url\":\"https://v-h-r.b-cdn.net/vhr/documents/c2c008b2c88ec352b8efa55d81bea4692eac4d333d5f067a3eb953f844830827.pdf\"}],\"limitations\":[{\"code\":\"synthetic_example\",\"description\":\"All records are fictional. Original supplier attachments depend on the source and may be unavailable.\"}],\"uuid\":\"00000000-0000-4000-8000-000000022576\",\"inspected_at\":\"2026-09-18T10:30:00Z\",\"valid_until\":\"2026-11-18T10:30:00Z\",\"updated_at\":\"2026-09-18T10:30:00Z\",\"participants\":[{\"role_key\":\"inspector\",\"organization_name\":\"Demonstration inspection center\",\"source_label\":\"Independent technical assessment\"}],\"conclusions\":{\"overall_result_key\":\"issue\",\"accident_status_key\":\"issue\",\"water_damage_status_key\":\"ok\",\"fire_damage_status_key\":\"ok\",\"chemical_damage_status_key\":\"ok\",\"biohazard_status_key\":\"o"
+  },
+  "korean68": {
+    "sourceId": 68,
+    "http": 200,
+    "status": "not_found",
+    "files": {},
+    "sectionTypes": [],
+    "jsonTopKeys": [],
+    "sample": null
+  }
+}

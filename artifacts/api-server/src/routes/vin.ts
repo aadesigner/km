@@ -28,6 +28,10 @@ import {
   assertAllowedUsaReportUrl,
   redactCarstatUsaDataForClient,
 } from "../lib/carstatUsaReportSanitize.js";
+import {
+  assertAllowedVhrReportUrl,
+  redactCarstatVhrDataForClient,
+} from "../lib/carstatVhrReportSanitize.js";
 import { getOrFetchVinImage, getMemoryCachedVinImage, resolveVinImageDiskHit, getVinImageDiskHit, mediaVersionFromUpdatedAt, withVinImageUpstreamSlot } from "../lib/vinImageCache.js";
 import { signVinShareToken, verifyVinShareToken } from "../lib/vinShareToken.js";
 import { getSettings } from "../lib/settingsCache.js";
@@ -252,7 +256,7 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   if (Array.isArray(transformed.photos360Interior)) {
     transformed.photos360Interior = (transformed.photos360Interior as string[]).slice(0, MAX_VIN_SPIN_PHOTOS);
   }
-  return redactCarstatUsaDataForClient(transformed);
+  return redactCarstatVhrDataForClient(redactCarstatUsaDataForClient(transformed));
 }
 
 function proxyPhotoUrls(
@@ -1042,7 +1046,7 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
       auctionHistory: Array.isArray(d.auctionHistory) ? d.auctionHistory : [],
       marketData: (d.marketData as Record<string, unknown> | null) ?? null,
       krwPerUsd: readFrozenKrwPerUsd(d),
-      ...(d.dataSource === "getcarapi" || d.dataSource === "carstat_usa"
+      ...(d.dataSource === "getcarapi" || d.dataSource === "carstat_usa" || d.dataSource === "carstat_vhr"
         ? { dataSource: d.dataSource }
         : {}),
       ...(d.dataSource === "carstat_usa" && d.pdfReport && typeof d.pdfReport === "object"
@@ -1051,6 +1055,22 @@ router.get("/vin/public/:vin", publicVinLimiter, optionalAuth, async (req, res) 
               dataSource: "carstat_usa",
               pdfReport: d.pdfReport,
             }).pdfReport,
+            lookupId: ownedLookupId ?? null,
+          }
+        : {}),
+      ...(d.dataSource === "carstat_vhr"
+        ? {
+            ...(() => {
+              const redacted = redactCarstatVhrDataForClient({
+                dataSource: "carstat_vhr",
+                vhrReports: d.vhrReports,
+                vhrReport: d.vhrReport,
+              });
+              return {
+                vhrReports: redacted.vhrReports,
+                vhrReport: redacted.vhrReport,
+              };
+            })(),
             lookupId: ownedLookupId ?? null,
           }
         : {}),
@@ -1212,6 +1232,29 @@ async function loadOwnedUsaLookup(req: { userId?: string }, id: number) {
   return { lookup, pr };
 }
 
+async function loadOwnedVhrLookup(req: { userId?: string }, id: number) {
+  const userId = req.userId!;
+  const [lookup] = await db.select().from(vinLookupsTable).where(eq(vinLookupsTable.id, id)).limit(1);
+  if (!lookup) return { error: 404 as const };
+  const [user] = await db
+    .select({ isAdmin: usersTable.isAdmin })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+  if (lookup.userId !== userId && !user?.isAdmin) return { error: 404 as const };
+  if (lookup.status === "revoked" && !user?.isAdmin) return { error: 403 as const };
+  const data = lookup.data as Record<string, unknown> | null;
+  if (!data || data.dataSource !== "carstat_vhr") return { error: 404 as const };
+  const list = Array.isArray(data.vhrReports) ? data.vhrReports : [];
+  const reports = list.filter(
+    (r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r),
+  );
+  if (!reports.length && data.vhrReport && typeof data.vhrReport === "object" && !Array.isArray(data.vhrReport)) {
+    reports.push(data.vhrReport as Record<string, unknown>);
+  }
+  return { lookup, reports };
+}
+
 /**
  * Stream USA PDF bytes for an owned lookup (avoids hotlink/CORS; no disk write).
  */
@@ -1288,8 +1331,9 @@ function sendUsaHtmlReport(res: import("express").Response, html: string): void 
 }
 
 /**
- * Proxied + sanitized USA HTML report (hides brand logos / outbound provider links).
- * Local gzip snapshot first (survives ~10-day CDN expiry); CDN fetch + store on miss.
+ * Proxied + sanitized HTML report (USA or VHR).
+ * Query `sourceId` required for multi-report VHR lookups.
+ * Local gzip snapshot first; CDN fetch + store on miss.
  */
 router.get("/vin/:id/html-proxy", requireAuth, vinUsaReportProxyLimiter, async (req, res) => {
   const id = parseInt(String(req.params.id ?? ""), 10);
@@ -1298,8 +1342,88 @@ router.get("/vin/:id/html-proxy", requireAuth, vinUsaReportProxyLimiter, async (
     return;
   }
 
+  const sourceIdRaw = req.query.sourceId;
+  const sourceId =
+    sourceIdRaw != null && String(sourceIdRaw).trim() !== ""
+      ? Number(sourceIdRaw)
+      : null;
+
+  // VHR path when sourceId is present or lookup is carstat_vhr.
+  if (sourceId != null && Number.isFinite(sourceId)) {
+    const loaded = await loadOwnedVhrLookup(req, id);
+    if ("error" in loaded) {
+      res.status(loaded.error).json({
+        error: loaded.error === 403 ? "Access to this report has been revoked" : "VIN lookup not found",
+      });
+      return;
+    }
+    const report = loaded.reports.find((r) => Number(r.sourceId) === sourceId);
+    if (!report) {
+      res.status(404).json({ error: "HTML report missing" });
+      return;
+    }
+    const vin = loaded.lookup.vin;
+    const htmlUrl = typeof report.htmlUrl === "string" ? report.htmlUrl.trim() : "";
+    try {
+      const { readStoredVhrHtml, fetchSanitizeAndStoreVhrHtml } = await import("../lib/carstatVhrHtmlStore.js");
+      const stored = await readStoredVhrHtml(vin, sourceId);
+      if (stored) {
+        sendUsaHtmlReport(res, stored);
+        return;
+      }
+      if (!htmlUrl) {
+        res.status(404).json({ error: "HTML report missing" });
+        return;
+      }
+      try {
+        assertAllowedVhrReportUrl(htmlUrl);
+      } catch {
+        res.status(404).json({ error: "HTML report missing" });
+        return;
+      }
+      const sanitized = await fetchSanitizeAndStoreVhrHtml(vin, sourceId, htmlUrl);
+      sendUsaHtmlReport(res, sanitized);
+    } catch (err) {
+      logger.warn({ err, lookupId: id, sourceId }, "carstat_vhr_html_proxy_failed");
+      if (!res.headersSent) res.status(502).json({ error: "Could not fetch report" });
+    }
+    return;
+  }
+
   const loaded = await loadOwnedUsaLookup(req, id);
   if ("error" in loaded) {
+    // Fallback: single VHR report without sourceId query → first report.
+    const vhr = await loadOwnedVhrLookup(req, id);
+    if (!("error" in vhr) && vhr.reports.length) {
+      const report = vhr.reports[0]!;
+      const sid = Number(report.sourceId);
+      const vin = vhr.lookup.vin;
+      const htmlUrl = typeof report.htmlUrl === "string" ? report.htmlUrl.trim() : "";
+      try {
+        const { readStoredVhrHtml, fetchSanitizeAndStoreVhrHtml } = await import("../lib/carstatVhrHtmlStore.js");
+        const stored = Number.isFinite(sid) ? await readStoredVhrHtml(vin, sid) : null;
+        if (stored) {
+          sendUsaHtmlReport(res, stored);
+          return;
+        }
+        if (!htmlUrl || !Number.isFinite(sid)) {
+          res.status(404).json({ error: "HTML report missing" });
+          return;
+        }
+        try {
+          assertAllowedVhrReportUrl(htmlUrl);
+        } catch {
+          res.status(404).json({ error: "HTML report missing" });
+          return;
+        }
+        const sanitized = await fetchSanitizeAndStoreVhrHtml(vin, sid, htmlUrl);
+        sendUsaHtmlReport(res, sanitized);
+      } catch (err) {
+        logger.warn({ err, lookupId: id }, "carstat_vhr_html_proxy_failed");
+        if (!res.headersSent) res.status(502).json({ error: "Could not fetch report" });
+      }
+      return;
+    }
     res.status(loaded.error).json({
       error: loaded.error === 403 ? "Access to this report has been revoked" : "VIN lookup not found",
     });

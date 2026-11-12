@@ -82,5 +82,5 @@ export function formatKoreanWonDisplay(
 }
 
 export function textContainsWon(value: string): boolean {
-  return /won|₩/i.test(value);
+  return /won|₩|\bKRW\b|원/i.test(value);
 }

@@ -168,7 +168,7 @@ export function parseKrwFromText(text: string | null | undefined): number | null
     return Number.isFinite(n) ? Math.round(n * 1_000_000) : null;
   }
 
-  const wonSuffix = trimmed.match(/([\d,]+)\s*won/i);
+  const wonSuffix = trimmed.match(/([\d,]+)\s*(?:won|KRW|WON|원)\b/i);
   if (wonSuffix) {
     const n = parseInt(wonSuffix[1]!.replace(/,/g, ""), 10);
     return Number.isFinite(n) && n > 0 ? n : null;

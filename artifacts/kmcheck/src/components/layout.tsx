@@ -484,8 +484,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
         ? "text-white"
         : "text-foreground"
       : isDarkNav
-        ? "text-white/65 hover:text-white"
-        : "text-[#324157]/90 hover:text-[#324157]",
+        ? "text-white/80 hover:text-white"
+        : resolvedTheme === "dark"
+          // Light-mode navy (#324157) is nearly invisible on dark backgrounds.
+          ? "text-foreground/75 hover:text-foreground"
+          : "text-[#324157]/90 hover:text-[#324157]",
   );
 
   const navActiveMark = () => (
@@ -493,7 +496,11 @@ export function Navbar({ announcementOffset = 0 }: { announcementOffset?: number
       aria-hidden
       className={cn(
         "pointer-events-none absolute left-0 right-0 -bottom-1 h-px",
-        isDarkNav ? "bg-white/70" : "bg-[#324157]/70",
+        isDarkNav
+          ? "bg-white/70"
+          : resolvedTheme === "dark"
+            ? "bg-foreground/70"
+            : "bg-[#324157]/70",
       )}
     />
   );

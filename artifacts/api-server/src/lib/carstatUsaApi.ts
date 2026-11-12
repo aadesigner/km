@@ -245,11 +245,26 @@ export function getCarstatUsaApiConfigSync(
   return credentials;
 }
 
-export async function checkCarstatUsaRecords(vin: string): Promise<CarstatUsaCheckResult> {
+/** Checkout probe uses a shorter timeout so peek stays snappy under load. */
+const PROBE_CHECK_RECORDS_TIMEOUT_MS = Math.max(
+  2_000,
+  Number(process.env.CARSTAT_USA_PROBE_TIMEOUT_MS ?? 4_000) || 4_000,
+);
+const FULFILL_CHECK_RECORDS_TIMEOUT_MS = 12_000;
+
+export async function checkCarstatUsaRecords(
+  vin: string,
+  opts?: { phase?: "probe" | "fulfill" },
+): Promise<CarstatUsaCheckResult> {
   const cfg = await resolveCarstatUsaApiConfig();
   if (!cfg) {
     return { status: "unavailable", reason: "Carstat USA API disabled or Carstat key missing" };
   }
+
+  const phase = opts?.phase === "probe" ? "probe" : "fulfill";
+  const timeoutMs = phase === "probe"
+    ? PROBE_CHECK_RECORDS_TIMEOUT_MS
+    : FULFILL_CHECK_RECORDS_TIMEOUT_MS;
 
   const normalized = vin.trim().toUpperCase();
   const url = checkRecordsUrl(cfg.baseUrl, normalized);
@@ -257,7 +272,7 @@ export async function checkCarstatUsaRecords(vin: string): Promise<CarstatUsaChe
   try {
     const res = await fetch(url, {
       headers: providerHeaders(cfg.apiKey),
-      signal: AbortSignal.timeout(12_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     const text = await res.text();
 
@@ -306,7 +321,7 @@ export async function checkCarstatUsaRecords(vin: string): Promise<CarstatUsaChe
     return { status: "exists", records, preferredType };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logger.warn({ msg: "carstat_usa_check_records_failed", vin: normalized, err: msg });
+    logger.warn({ msg: "carstat_usa_check_records_failed", vin: normalized, err: msg, phase });
     return { status: "unavailable", reason: PUBLIC_UNAVAILABLE };
   }
 }

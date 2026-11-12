@@ -29,6 +29,7 @@ import { VinPrintSummary } from "@/components/vin-print-summary";
 import { VinReportShareCard } from "@/components/vin-report-share-card";
 import { buildAccidentPrintHighlights, buildInsurancePrintHighlights, buildMileagePrintRows, buildOwnerPrintRows, buildRegistryPrintRows, buildAuctionPrintRows } from "@/lib/build-print-summary";
 import { CarstatUsaPdfReport } from "@/components/carstat-usa-pdf-report";
+import { CarstatVhrReport } from "@/components/carstat-vhr-report";
 import { VinReportHero } from "@/components/vin-report-hero";
 import {
   VinReportStatusGrid,
@@ -69,9 +70,10 @@ import { sortHistoryNewestFirst } from "@/lib/history-sort";
 import { translateKoreanProviderPhrase, localizeProviderDate } from "@/lib/korean-provider-text";
 import { formatMarketAuctionDate } from "@/lib/market-chart-data";
 import {
-  formatAccidentDescription,
+  formatAccidentNarrativeDescription,
   formatAccidentType,
   localizeAccidentDate,
+  resolveAccidentCostBreakdown,
   resolveAccidentSeverityForDisplay,
   accidentSeverityStyle,
   ACCIDENT_SEVERITY_I18N_KEYS,
@@ -88,8 +90,12 @@ import { VIN_REPORT_QUERY_OPTIONS } from "@/lib/vin-report-cache";
 import { prefetchVinImages } from "@/lib/vin-image-cache";
 import { resolveReportPhotoSets } from "@/lib/report-photos";
 import { KoreanWonAmount } from "@/components/korean-won-amount";
-import { formatAmountPlain, resolveAmountDisplayCurrency } from "@/lib/korean-currency";
-import { VinMarketDataSection } from "@/components/vin-market-data-section";
+import {
+  formatAmountPlain,
+  normalizeAmountCurrency,
+  resolveAmountDisplayCurrency,
+} from "@/lib/korean-currency";
+import { shouldShowMarketDataSection, VinMarketDataSection } from "@/components/vin-market-data-section";
 import { InsuranceClaimsSection } from "@/components/insurance-claims-section";
 import { FloodDamageSection } from "@/components/flood-damage-section";
 import { TaxiUseSection } from "@/components/taxi-use-section";
@@ -114,7 +120,6 @@ import {
 } from "@/components/vin-locked-preview";
 import {
   cleanDisplayStr,
-  hasMeaningfulMarketData,
   hasMileageData,
   hasOwnershipData,
   hasSafetyData,
@@ -122,6 +127,10 @@ import {
   sanitizeAuctionHistory,
   sanitizeInsuranceClaims,
   sanitizeMileageHistory,
+  ensureInitialRegistrationMileage,
+  ensureExportRegistryEvent,
+  resolveFirstRegistrationDate,
+  formatMileageHistorySource,
   sanitizeOwnerHistory,
   sanitizeServiceHistory,
   enrichRegistryHistoryDates,
@@ -141,6 +150,9 @@ type Accident = {
   airbagDeployed?: boolean | null;
   odometerAtLoss?: number | null;
   lossAmount?: number | null;
+  partCost?: number | null;
+  laborCost?: number | null;
+  paintingCost?: number | null;
   currency?: string | null;
 };
 
@@ -148,12 +160,15 @@ type MileageEntry = {
   date?: string | null;
   odometer?: number | null;
   unit?: string | null;
+  /** Provider / record origin (e.g. Korean insurance, Export declaration). */
+  source?: string | null;
   condition?: string | null;
   damage?: string | null;
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   titleStatus?: string | null;
   auctionPrice?: number | null;
+  currency?: string | null;
   lotStatus?: string | null;
   location?: string | null;
   /** Admin-entered notes / services at this reading. */
@@ -183,6 +198,7 @@ type AuctionEntry = {
   buyNowPrice?: number | null;
   finalPrice?: number | null;
   lotStatus?: string | null;
+  currency?: string | null;
 };
 
 type VinPublicReport = {
@@ -238,8 +254,8 @@ type VinPublicReport = {
   insuranceClaims?: InsuranceClaimEntry[] | null;
   registryHistory?: RegistryHistoryEntry[] | null;
   recallHistory?: RegistryHistoryEntry[] | null;
-  /** Opaque: `"getcarapi"` → Events; `"carstat_usa"` → PDF viewer. */
-  dataSource?: "getcarapi" | "carstat_usa" | null;
+  /** Opaque: `"getcarapi"` → Events; `"carstat_usa"` → USA HTML; `"carstat_vhr"` → VHR HTML. */
+  dataSource?: "getcarapi" | "carstat_usa" | "carstat_vhr" | null;
   pdfReport?: {
     type: "carfax" | "autocheck";
     pdfUrl?: string | null;
@@ -249,6 +265,30 @@ type VinPublicReport = {
     reportId?: number | null;
     vehicle?: string | null;
     fetchedAt?: string;
+  } | null;
+  vhrReports?: Array<{
+    sourceId: number;
+    sourceName: string;
+    htmlUrl?: string | null;
+    jsonUrl?: string | null;
+    hasHtml?: boolean;
+    hasJson?: boolean;
+    reportId?: string | null;
+    requestId?: string | null;
+    fetchedAt?: string | null;
+    chargedUsd?: number | null;
+  }> | null;
+  vhrReport?: {
+    sourceId: number;
+    sourceName: string;
+    htmlUrl?: string | null;
+    jsonUrl?: string | null;
+    hasHtml?: boolean;
+    hasJson?: boolean;
+    reportId?: string | null;
+    requestId?: string | null;
+    fetchedAt?: string | null;
+    chargedUsd?: number | null;
   } | null;
   lookupId?: number | null;
   serviceHistory?: ServiceHistoryEntry[] | null;
@@ -351,7 +391,14 @@ function MileageTimeline({
         const cond = translateLotStatus(t, cleanStr(entry.condition));
         const primaryDmg = translateDamageLabel(t, cleanStr(entry.primaryDamage) ?? cleanStr(entry.damage));
         const secondaryDmg = translateDamageLabel(t, cleanStr(entry.secondaryDamage));
-        const status = translateLotStatus(t, cleanStr(entry.lotStatus));
+        const sourceLabel = formatMileageHistorySource(entry.source, t);
+        const statusRaw = translateLotStatus(t, cleanStr(entry.lotStatus));
+        const statusClean = statusRaw && !/#\d{4,}\b/.test(statusRaw) ? statusRaw : null;
+        const status =
+          statusClean
+          && (!sourceLabel || statusClean.toLowerCase() !== sourceLabel.toLowerCase())
+            ? statusClean
+            : null;
         const titleLabel = translateTitleStatus(t, cleanStr(entry.titleStatus));
         const servicesNote = cleanStr(entry.description);
         const locationLabel = entry.location
@@ -362,9 +409,11 @@ function MileageTimeline({
             <div className={cn("absolute left-0 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-background ring-2", col.dot)} />
             {!isLast && <div className="absolute left-[6px] top-5 bottom-0 w-0.5 bg-border" />}
             <div className={cn("pb-5", isLast && "pb-0")}>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                {entry.date ? localizeProviderDate(entry.date, language, vehicleYear, vehicleCountry) : null}
-              </p>
+              {entry.date ? (
+                <p className="text-xs text-muted-foreground mb-0.5">
+                  {localizeProviderDate(entry.date, language, vehicleYear, vehicleCountry)}
+                </p>
+              ) : null}
               <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className={cn("font-black tabular-nums", col.text, isFirst ? "text-2xl" : "text-lg")}>
                   {isFirst ? (
@@ -376,10 +425,26 @@ function MileageTimeline({
                 <span className="text-sm text-muted-foreground">{entry.unit ?? "km"}</span>
                 {isFirst && <Badge variant="secondary" className="text-[10px] ml-1">{t("latest")}</Badge>}
               </div>
+              {sourceLabel ? (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {sourceLabel}
+                </p>
+              ) : null}
               {entry.auctionPrice != null && (
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1 mt-1">
                   <DollarSign className="h-3 w-3 shrink-0" />
-                  {entry.auctionPrice.toLocaleString()}
+                  {formatAmountPlain(
+                    entry.auctionPrice,
+                    normalizeAmountCurrency(entry.currency)
+                      ?? (entry.auctionPrice >= 1_000_000 && /encar|korean/i.test(entry.source ?? "")
+                        ? "KRW"
+                        : null)
+                      ?? (/european/i.test(entry.source ?? "") ? "EUR" : null)
+                      ?? resolveAmountDisplayCurrency({
+                        currency: entry.currency,
+                        vehicleCountry,
+                      }),
+                  )}
                 </p>
               )}
               {locationLabel && (
@@ -664,8 +729,47 @@ export default function VinPublic({ params }: Props) {
     );
   }
 
+  // VHR → normal structured report UI when JSON mapped; HTML iframe only as last resort.
+  if (data.isUnlocked && data.dataSource === "carstat_vhr") {
+    const hasStructured =
+      !!(data.make && String(data.make).trim())
+      || typeof data.year === "number"
+      || (Array.isArray(data.mileageHistory) && data.mileageHistory.length > 0)
+      || (Array.isArray(data.auctionHistory) && data.auctionHistory.length > 0)
+      || (Array.isArray(data.accidents) && data.accidents.length > 0)
+      || (Array.isArray(data.insuranceClaims) && data.insuranceClaims.length > 0)
+      || (Array.isArray(data.vehicleExtras) && data.vehicleExtras.length > 0)
+      || (Array.isArray(data.photos) && data.photos.length > 0);
+    if (!hasStructured) {
+      const vhrList = data.vhrReports?.length
+        ? data.vhrReports
+        : data.vhrReport
+          ? [data.vhrReport]
+          : [];
+      if (vhrList.length) {
+        const vhrTitle = [data.year ? String(data.year) : null, data.make, data.model]
+          .filter(Boolean)
+          .join(" ")
+          || `${t("report_for")} ${vin}`;
+        return (
+          <>
+            {seoBlock}
+            <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-3">
+              <CarstatVhrReport
+                vin={vin}
+                lookupId={data.lookupId ?? null}
+                vehicleTitle={vhrTitle}
+                reports={vhrList}
+              />
+            </div>
+          </>
+        );
+      }
+    }
+  }
+
   const insuranceClaims = sortHistoryNewestFirst(
-    sanitizeInsuranceClaims(repairDatedRecords(data.insuranceClaims, data.year), data.year),
+    sanitizeInsuranceClaims(repairDatedRecords(data.insuranceClaims, data.year), data.year, data.country),
   );
   const accidentSeverityCtx = {
     vehicleCountry: data.country,
@@ -673,7 +777,11 @@ export default function VinPublic({ params }: Props) {
     hasKoreanInsuranceClaims: insuranceClaims.length > 0,
   };
   const accidents = sortHistoryNewestFirst(
-    sanitizeAccidents(repairDatedRecords(data.accidents, data.year), data.year).map((acc) => ({
+    sanitizeAccidents(
+      repairDatedRecords(data.accidents, data.year),
+      data.year,
+      data.country,
+    ).map((acc) => ({
       ...acc,
       severity: resolveAccidentSeverityForDisplay(acc, accidentSeverityCtx),
     })),
@@ -687,17 +795,30 @@ export default function VinPublic({ params }: Props) {
     : photoAlternates.slice(0, heroPhotos.length);
   const lightboxPhotos = data.isUnlocked ? photosHd : photosHd.slice(0, 1);
   const mileageHistory = sortHistoryNewestFirst(
-    sanitizeMileageHistory(repairDatedRecords(data.mileageHistory, data.year), data.year),
+    ensureInitialRegistrationMileage(
+      sanitizeMileageHistory(repairDatedRecords(data.mileageHistory, data.year), data.year),
+      {
+        firstRegistrationDate: resolveFirstRegistrationDate(
+          data.registryHistory,
+          data.vehicleExtras,
+        ),
+        vehicleYear: data.year,
+      },
+    ),
   );
   const ownerHistory = sortHistoryNewestFirst(sanitizeOwnerHistory(data.ownerHistory, data.year));
   const auctionHistory = sortHistoryNewestFirst(sanitizeAuctionHistory(data.auctionHistory, data.year));
   const marketData = data.marketData ?? null;
   const registryHistory = sortHistoryNewestFirst(
     sanitizeRegistryHistory(
-      enrichRegistryHistoryDates(
-        repairDatedRecords(data.registryHistory, data.year),
-        [...(data.mileageHistory ?? []), ...(data.ownerHistory ?? [])],
-        data.year,
+      ensureExportRegistryEvent(
+        enrichRegistryHistoryDates(
+          repairDatedRecords(data.registryHistory, data.year),
+          [...(data.mileageHistory ?? []), ...(data.ownerHistory ?? [])],
+          data.year,
+        ),
+        data.mileageHistory,
+        data.vehicleExtras,
       ),
       data.year,
       { listingOdometer: data.odometer },
@@ -752,7 +873,7 @@ export default function VinPublic({ params }: Props) {
   const showAuctionSection = data.isUnlocked && auctionHistory.length > 0;
   const showSafetySection = data.isUnlocked && hasSafetyData(data.salvage, data.stolen);
   const showRecallSection = data.isUnlocked && recallHistory.length > 0;
-  const showMarketDataSection = data.isUnlocked && hasMeaningfulMarketData(marketData);
+  const showMarketDataSection = data.isUnlocked && shouldShowMarketDataSection(marketData, vehicleExtras);
 
   const odoMax = 300000;
   const odoPct = odometer ? Math.min(100, (odometer / odoMax) * 100) : 0;
@@ -1071,14 +1192,39 @@ export default function VinPublic({ params }: Props) {
                         const tierLabel = isTierSev
                           ? (translateValue(acc.severity, SEVERITY_KEYS, t) ?? acc.severity)
                           : null;
+                        const costs = resolveAccidentCostBreakdown(acc, insuranceClaims);
+                        const narrative = formatAccidentNarrativeDescription(t, language, acc.description);
                         const headerLabel = tierLabel
-                          || formatAccidentDescription(t, language, acc.description)
+                          || narrative
                           || (acc.type ? formatAccidentType(t, acc.type) : null)
                           || (!isTierSev && acc.severity
                             ? acc.severity.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
                             : null)
                           || t("sev_unknown");
-                        const hasExtra = acc.type || acc.primaryDamage || acc.secondaryDamage || acc.airbagDeployed != null || acc.odometerAtLoss != null || acc.lossAmount != null || acc.description;
+                        const moneyCode = resolveAmountDisplayCurrency({
+                          currency: acc.currency,
+                          vehicleCountry: data.country,
+                          accidentType: acc.type,
+                          accidentCountry: acc.country,
+                          hasKoreanInsuranceClaims: insuranceClaims.length > 0,
+                        });
+                        const renderMoney = (amount: number) =>
+                          moneyCode === "KRW" ? (
+                            <KoreanWonAmount krw={amount} krwPerUsd={krwPerUsd} />
+                          ) : (
+                            formatAmountPlain(amount, moneyCode)
+                          );
+                        const hasExtra = Boolean(
+                          acc.type
+                          || acc.primaryDamage
+                          || acc.secondaryDamage
+                          || acc.airbagDeployed != null
+                          || acc.odometerAtLoss != null
+                          || costs.lossAmount != null
+                          || costs.partCost != null
+                          || costs.laborCost != null
+                          || costs.paintingCost != null,
+                        );
                         return (
                           <div key={i} className={`rounded-xl border ${style.card}`}>
                             <div className="p-4">
@@ -1112,10 +1258,10 @@ export default function VinPublic({ params }: Props) {
                                         : fmtCountry(acc.country)}
                                     </p>
                                   )}
-                                  {cleanStr(acc.description) && (
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {formatAccidentDescription(t, language, acc.description)}
-                                  </p>
+                                  {costs.lossAmount != null && (
+                                    <p className="text-sm font-semibold tabular-nums mt-1">
+                                      {renderMoney(costs.lossAmount)}
+                                    </p>
                                   )}
                                 </div>
                               </div>
@@ -1155,25 +1301,28 @@ export default function VinPublic({ params }: Props) {
                                           <p className="text-xs font-medium">{acc.odometerAtLoss.toLocaleString()} km</p>
                                         </div>
                                       )}
-                                      {acc.lossAmount != null && (
+                                      {costs.lossAmount != null && (
                                         <div>
                                           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("loss_amount")}</p>
-                                          <p className="text-xs font-medium">
-                                            {(() => {
-                                              const code = resolveAmountDisplayCurrency({
-                                                currency: acc.currency,
-                                                vehicleCountry: data.country,
-                                                accidentType: acc.type,
-                                                accidentCountry: acc.country,
-                                                hasKoreanInsuranceClaims: insuranceClaims.length > 0,
-                                              });
-                                              return code === "KRW" ? (
-                                                <KoreanWonAmount krw={acc.lossAmount} krwPerUsd={krwPerUsd} />
-                                              ) : (
-                                                formatAmountPlain(acc.lossAmount, code)
-                                              );
-                                            })()}
-                                          </p>
+                                          <p className="text-xs font-medium">{renderMoney(costs.lossAmount)}</p>
+                                        </div>
+                                      )}
+                                      {costs.partCost != null && (
+                                        <div>
+                                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_part_cost")}</p>
+                                          <p className="text-xs font-medium">{renderMoney(costs.partCost)}</p>
+                                        </div>
+                                      )}
+                                      {costs.laborCost != null && (
+                                        <div>
+                                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_labor_cost")}</p>
+                                          <p className="text-xs font-medium">{renderMoney(costs.laborCost)}</p>
+                                        </div>
+                                      )}
+                                      {costs.paintingCost != null && (
+                                        <div>
+                                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("insurance_claim_painting_cost")}</p>
+                                          <p className="text-xs font-medium">{renderMoney(costs.paintingCost)}</p>
                                         </div>
                                       )}
                                       {acc.airbagDeployed != null && (
@@ -1230,6 +1379,21 @@ export default function VinPublic({ params }: Props) {
                 </div>
               </VinReportSection>
             </ReportReveal>
+            )}
+
+            {/* Korea repair parts + damage map — directly under accidents */}
+            {data.isUnlocked && (
+              <VehicleExtrasSection
+                extras={vehicleExtras}
+                vehicleYear={data.year}
+                vehicleCountry={data.country}
+                t={t}
+                language={language}
+                variant="public"
+                delay={0.152}
+                onlyCategories={["korean_repairs"]}
+                krwPerUsd={krwPerUsd}
+              />
             )}
 
             {/* Taxi use — below accidents, above safety */}
@@ -1584,12 +1748,15 @@ export default function VinPublic({ params }: Props) {
               language={language}
               variant="public"
               delay={0.119}
+              excludeCategories={["korean_repairs"]}
+              krwPerUsd={krwPerUsd}
             />
 
-            {showMarketDataSection && marketData && (
+            {showMarketDataSection && (
               <VinMarketDataSection
-                marketData={marketData}
+                marketData={marketData ?? {}}
                 auctionHistory={auctionHistory}
+                vehicleExtras={vehicleExtras}
                 t={t}
                 language={language}
                 vehicleCountry={data.country}

@@ -14,6 +14,8 @@ import { patchSystemSettingsSchema } from "./lib/schemaPatches.js";
 import { getEffectiveSystemSettings, consolidateSystemSettingsRows } from "./lib/systemSettings.js";
 import { setGetCarApiEnabledCache } from "./lib/getcarApiSettingsCache.js";
 import { setCarstatUsaApiEnabledCache } from "./lib/carstatUsaApiSettingsCache.js";
+import { setCarstatVhrApiEnabledCache } from "./lib/carstatVhrApiSettingsCache.js";
+import { setCarstatLocalApiEnabledCache } from "./lib/carstatLocalApiSettingsCache.js";
 
 process.on("uncaughtException", (err) => {
   logger.error({ err }, "Uncaught exception");
@@ -124,11 +126,17 @@ const server = app.listen(port, "0.0.0.0", async () => {
       if (typeof s?.getcarApiEnabled === "boolean") {
         setGetCarApiEnabledCache(s.getcarApiEnabled);
       }
+      if (typeof s?.carstatLocalApiEnabled === "boolean") {
+        setCarstatLocalApiEnabledCache(s.carstatLocalApiEnabled);
+      }
       if (typeof s?.carstatUsaApiEnabled === "boolean") {
         setCarstatUsaApiEnabledCache(s.carstatUsaApiEnabled);
       }
+      if (typeof s?.carstatVhrApiEnabled === "boolean") {
+        setCarstatVhrApiEnabledCache(s.carstatVhrApiEnabled);
+      }
     })
-    .catch((e) => logger.warn({ err: e }, "Failed to warm GetCarAPI / Carstat USA enabled cache"));
+    .catch((e) => logger.warn({ err: e }, "Failed to warm provider enabled caches"));
   void migrateCarstatBaseUrls().catch((e) =>
     logger.warn({ err: e }, "Failed to migrate Carstat provider base URLs"),
   );

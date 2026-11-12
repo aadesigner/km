@@ -1,0 +1,112 @@
+[
+  {
+    "vin": "7FARW2H56JE022576",
+    "status": "completed",
+    "eligible": [
+      {
+        "id": 1,
+        "name": "USA Insurance Auctions & Korea History",
+        "records": 3,
+        "price": 0
+      },
+      {
+        "id": 2,
+        "name": "Vehicle Archive Alpha",
+        "records": 3,
+        "price": 0
+      },
+      {
+        "id": 3,
+        "name": "Vehicle Archive Beta",
+        "records": 2,
+        "price": 0
+      },
+      {
+        "id": 4,
+        "name": "Vehicle Inspections",
+        "records": 1,
+        "price": 0
+      },
+      {
+        "id": 5,
+        "name": "Vehicle History",
+        "records": 1,
+        "price": 0
+      },
+      {
+        "id": 6,
+        "name": "US Dealer Listings",
+        "records": 1,
+        "price": 0
+      }
+    ],
+    "selected": [
+      {
+        "id": 1,
+        "name": "USA Insurance Auctions & Korea History",
+        "price": 0
+      },
+      {
+        "id": 2,
+        "name": "Vehicle Archive Alpha",
+        "price": 0
+      },
+      {
+        "id": 3,
+        "name": "Vehicle Archive Beta",
+        "price": 0
+      }
+    ]
+  },
+  {
+    "vin": "KNAF241BEMA915413",
+    "status": "completed",
+    "eligible": [
+      {
+        "id": 68,
+        "name": "Korean Insurance History",
+        "records": 0,
+        "price": 0
+      }
+    ],
+    "selected": [
+      {
+        "id": 68,
+        "name": "Korean Insurance History",
+        "price": 0
+      }
+    ]
+  },
+  {
+    "vin": "KMTG341ABMU089876",
+    "status": "completed",
+    "eligible": [
+      {
+        "id": 4,
+        "name": "Vehicle Inspections",
+        "records": 1,
+        "price": 0
+      }
+    ],
+    "selected": []
+  },
+  {
+    "vin": "KMHB3518BNW003977",
+    "status": "completed",
+    "eligible": [
+      {
+        "id": 5,
+        "name": "Vehicle History",
+        "records": 1,
+        "price": 0
+      }
+    ],
+    "selected": [
+      {
+        "id": 5,
+        "name": "Vehicle History",
+        "price": 0
+      }
+    ]
+  }
+]

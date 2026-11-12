@@ -8,10 +8,11 @@ import { KmcheckLogo } from "@/components/logo";
 import { DemoCarPhoto } from "@/components/demo-car-photo";
 import { AnimatedMileageKm } from "@/components/vin-mileage-animated";
 import type { WhatWeCheckFeature, WhatWeCheckMarket } from "@/lib/what-we-check-features";
-import { getWhatWeCheckDemoReport, type WwcDemoFinding } from "@/lib/what-we-check-demo";
+import { getWhatWeCheckDemoReport, type WwcAccidentHot, type WwcDemoFinding } from "@/lib/what-we-check-demo";
 import { scoreStylesForDisplay } from "@/lib/vin-condition-score";
 import { localizeProviderDate } from "@/lib/korean-provider-text";
 import type { Language } from "@/lib/languages";
+import { CarDamageDiagram } from "@/components/car-damage-diagram";
 
 function usePreviewMotionOff() {
   const reduced = useReducedMotion();
@@ -252,6 +253,23 @@ function MileageDemo({
   );
 }
 
+/** Map coarse demo hot zones → repair-part extras our body diagram understands. */
+function demoAccidentHotToExtras(hot: WwcAccidentHot) {
+  const parts: string[] = [];
+  if (hot.front) parts.push("Front bumper");
+  if (hot.left) parts.push("Front door left", "Front fender left");
+  if (hot.right) parts.push("Front door right", "Front fender right");
+  if (hot.rear) parts.push("Rear bumper");
+  if (!parts.length) return [];
+  return [
+    {
+      key: "kr_parts_repair",
+      label: "Repair parts · Repair",
+      value: parts.join("; "),
+    },
+  ];
+}
+
 function AccidentDemo({
   t,
   hot,
@@ -259,57 +277,15 @@ function AccidentDemo({
   t: (k: string) => string;
   hot: ReturnType<typeof getWhatWeCheckDemoReport>["accidentHot"];
 }) {
-  const bodyPath =
-    "M 50 3 C 59 3 68 7 71 16 L 75 28 Q 78 38 78 48 L 79 64 L 78 80 Q 77 94 73 104 L 70 114 C 67 123 59 127 50 127 C 41 127 33 123 30 114 L 27 104 Q 23 94 22 80 L 21 64 L 22 48 Q 22 38 25 28 L 29 16 C 32 7 41 3 50 3 Z";
-  const zones = [
-    { id: "front" as const, hot: hot.front, d: "M 35 6 L 65 6 L 62 40 L 38 40 Z", labelKey: "wwc_demo_event_front" },
-    { id: "left" as const, hot: hot.left, d: "M 24 38 L 38 40 L 38 90 L 24 94 Z", labelKey: "wwc_demo_event_left" },
-    { id: "right" as const, hot: hot.right, d: "M 76 38 L 62 40 L 62 90 L 76 94 Z", labelKey: "wwc_demo_event_right" },
-    { id: "rear" as const, hot: hot.rear, d: "M 38 96 L 62 96 L 64 118 L 36 118 Z", labelKey: "wwc_demo_event_rear" },
-  ];
-  const hotZones = zones.filter((z) => z.hot);
-
-  return (
-    <div className="rounded-xl border border-border/60 bg-background p-3.5">
-      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground mb-3">
-        {t("wwc_demo_accident_map")}
-      </p>
-      <div className="flex items-center gap-4">
-        <svg viewBox="0 0 100 132" className="h-28 w-auto shrink-0 text-foreground" aria-hidden>
-          <ellipse cx="50" cy="124" rx="26" ry="3.5" fill="currentColor" fillOpacity="0.06" />
-          <path
-            d={bodyPath}
-            fill="currentColor"
-            fillOpacity="0.06"
-            stroke="currentColor"
-            strokeOpacity="0.2"
-            strokeWidth="1.2"
-            strokeLinejoin="round"
-          />
-          {zones.map((z) => (
-            <path
-              key={z.id}
-              d={z.d}
-              fill={z.hot ? "#ef4444" : "currentColor"}
-              fillOpacity={z.hot ? 0.35 : 0.03}
-              stroke={z.hot ? "#b91c1c" : "currentColor"}
-              strokeOpacity={z.hot ? 0.85 : 0.08}
-              strokeWidth="1"
-              strokeLinejoin="round"
-            />
-          ))}
-        </svg>
-        <ul className="space-y-2 min-w-0">
-          {hotZones.map((z) => (
-            <li key={z.id} className="flex items-center gap-2 text-xs font-semibold text-red-800 dark:text-red-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
-              {t(z.labelKey)}
-            </li>
-          ))}
-        </ul>
+  const extras = demoAccidentHotToExtras(hot);
+  if (!extras.length) {
+    return (
+      <div className="rounded-xl border border-border/60 bg-background px-3.5 py-3 text-xs text-muted-foreground">
+        {t("demo_none_found")}
       </div>
-    </div>
-  );
+    );
+  }
+  return <CarDamageDiagram extras={extras} t={t} compact className="border-border/60" />;
 }
 
 function ClearStatusDemo({ clearLabel, note }: { clearLabel: string; note: string }) {

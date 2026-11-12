@@ -1,0 +1,634 @@
+{
+  "perSource": {
+    "1": {
+      "sourceId": 1,
+      "sectionTypes": [
+        "vehicles",
+        "listings"
+      ],
+      "mappedCounts": {
+        "accidents": 3,
+        "claims": 1,
+        "auction": 9,
+        "mileage": 4,
+        "owners": 0,
+        "registry": 0,
+        "service": 0,
+        "recall": 0,
+        "extras": 27,
+        "photos": 4
+      },
+      "identity": {
+        "make": "Honda",
+        "model": "CR-V",
+        "year": 2018,
+        "odometer": 93420,
+        "country": "United States"
+      },
+      "flags": {
+        "flood": null,
+        "salvage": null,
+        "taxi": null,
+        "stolen": null
+      },
+      "market": {
+        "estimatedValue": 21100,
+        "currency": "USD",
+        "lastAuctionPrice": 12950,
+        "lastAuctionDate": "2026-06-15"
+      },
+      "extraLabels": [
+        "Drive",
+        "Vehicle type",
+        "Actual cash value (ACV)",
+        "Pre-accident value",
+        "Estimated repair cost",
+        "Keys",
+        "Airbags",
+        "Odometer status",
+        "Actual cash value (ACV)",
+        "Pre-accident value",
+        "Estimated repair cost",
+        "Keys",
+        "Airbags",
+        "Odometer status",
+        "Actual cash value (ACV)",
+        "Pre-accident value",
+        "Keys",
+        "Airbags",
+        "Odometer status",
+        "Korean inspection",
+        "Front Bumper",
+        "Rear Right Door",
+        "Safety",
+        "Comfort",
+        "Multimedia",
+        "Average price",
+        "Average price"
+      ]
+    },
+    "2": {
+      "sourceId": 2,
+      "sectionTypes": [
+        "vehicles",
+        "listings",
+        "equipment"
+      ],
+      "mappedCounts": {
+        "accidents": 0,
+        "claims": 0,
+        "auction": 9,
+        "mileage": 3,
+        "owners": 0,
+        "registry": 0,
+        "service": 1,
+        "recall": 0,
+        "extras": 21,
+        "photos": 4
+      },
+      "identity": {
+        "make": "Honda",
+        "model": "CR-V",
+        "year": 2018,
+        "odometer": 93580,
+        "country": "United States"
+      },
+      "flags": {
+        "flood": null,
+        "salvage": null,
+        "taxi": null,
+        "stolen": null
+      },
+      "market": {
+        "estimatedValue": 17050,
+        "currency": "USD",
+        "lastAuctionPrice": 19950,
+        "lastAuctionDate": "2026-08-12"
+      },
+      "extraLabels": [
+        "Drive",
+        "Keys",
+        "Seller type",
+        "Emission standard",
+        "CO₂",
+        "Safety",
+        "Comfort",
+        "Infotainment",
+        "Warranty",
+        "Listing notes",
+        "CO₂",
+        "CO₂",
+        "Adaptive cruise control",
+        "Blind spot monitoring",
+        "Panoramic sunroof",
+        "Heated front seats",
+        "Rear parking camera",
+        "LED headlights",
+        "Apple CarPlay / Android Auto",
+        "Keyless entry",
+        "Average price"
+      ]
+    },
+    "3": {
+      "sourceId": 3,
+      "sectionTypes": [
+        "listings"
+      ],
+      "mappedCounts": {
+        "accidents": 0,
+        "claims": 0,
+        "auction": 6,
+        "mileage": 2,
+        "owners": 0,
+        "registry": 0,
+        "service": 0,
+        "recall": 0,
+        "extras": 25,
+        "photos": 3
+      },
+      "identity": {
+        "make": "Honda",
+        "model": "CR-V",
+        "year": 2018,
+        "odometer": 93540,
+        "country": "United States"
+      },
+      "flags": {
+        "flood": null,
+        "salvage": null,
+        "taxi": null,
+        "stolen": null
+      },
+      "market": {
+        "estimatedValue": 20450,
+        "currency": "EUR",
+        "lastAuctionPrice": 19950,
+        "lastAuctionDate": "2026-08-12"
+      },
+      "extraLabels": [
+        "Price without tax",
+        "Keys",
+        "Seller type",
+        "Days to sell",
+        "Emission standard",
+        "Seats",
+        "Doors",
+        "Drive",
+        "CO₂",
+        "Interior color",
+        "Extra wheels",
+        "Curb weight",
+        "Dimensions (L×W×H)",
+        "Listing damage note",
+        "Price without tax",
+        "Seats",
+        "Doors",
+        "Drive",
+        "CO₂",
+        "Interior color",
+        "Extra wheels",
+        "Curb weight",
+        "Dimensions (L×W×H)",
+        "Average price",
+        "Average price"
+      ]
+    },
+    "4": {
+      "sourceId": 4,
+      "sectionTypes": [
+        "inspections"
+      ],
+      "mappedCounts": {
+        "accidents": 3,
+        "claims": 0,
+        "auction": 0,
+        "mileage": 1,
+        "owners": 0,
+        "registry": 1,
+        "service": 1,
+        "recall": 1,
+        "extras": 15,
+        "photos": 3
+      },
+      "identity": {
+        "make": "Genesis",
+        "model": "G70",
+        "year": 2021,
+        "odometer": 98583,
+        "country": "South Korea"
+      },
+      "flags": {
+        "flood": null,
+        "salvage": null,
+        "taxi": null,
+        "stolen": null
+      },
+      "market": {
+        "estimatedValue": null,
+        "currency": "USD",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "extraLabels": [
+        "First registration",
+        "Accident history",
+        "Special history",
+        "Front door left",
+        "Front fender right",
+        "Recall completion status",
+        "Exterior",
+        "Powertrain",
+        "Mechanical",
+        "Brakes",
+        "Electrical",
+        "Equipment Operation",
+        "Documents",
+        "Inspection summary",
+        "Inspection accident status"
+      ],
+      "inspectionStats": {
+        "ok": 37,
+        "issue": 3,
+        "blocks": 7,
+        "claims": 3
+      }
+    },
+    "5": {
+      "sourceId": 5,
+      "sectionTypes": [
+        "history"
+      ],
+      "mappedCounts": {
+        "accidents": 0,
+        "claims": 0,
+        "auction": 0,
+        "mileage": 1,
+        "owners": 3,
+        "registry": 7,
+        "service": 0,
+        "recall": 0,
+        "extras": 8,
+        "photos": 0
+      },
+      "identity": {
+        "make": "Hyundai",
+        "model": "CASPER",
+        "year": 2022,
+        "odometer": 75647,
+        "country": "South Korea"
+      },
+      "flags": {
+        "flood": false,
+        "salvage": false,
+        "taxi": false,
+        "stolen": null
+      },
+      "market": {
+        "estimatedValue": null,
+        "currency": "USD",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "extraLabels": [
+        "History coverage",
+        "History limitation",
+        "Business",
+        "Water/Flood Damage",
+        "Government",
+        "Rental",
+        "Special Usage",
+        "Total Loss"
+      ]
+    },
+    "68": {
+      "sourceId": 68,
+      "sectionTypes": [
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance",
+        "korean_insurance"
+      ],
+      "mappedCounts": {
+        "accidents": 4,
+        "claims": 4,
+        "auction": 0,
+        "mileage": 3,
+        "owners": 3,
+        "registry": 9,
+        "service": 0,
+        "recall": 0,
+        "extras": 58,
+        "photos": 0
+      },
+      "identity": {
+        "make": "Kia",
+        "model": "K3",
+        "year": 2021,
+        "odometer": 106526,
+        "country": "South Korea"
+      },
+      "flags": {
+        "flood": false,
+        "salvage": false,
+        "taxi": false,
+        "stolen": false
+      },
+      "market": {
+        "estimatedValue": 8875000,
+        "currency": "KRW",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "extraLabels": [
+        "Trim options",
+        "First registration",
+        "Abs",
+        "Adaptive Cruise",
+        "Aeb",
+        "Fcw Warning",
+        "Adaptive Lights",
+        "Parking Assist Brake",
+        "Rear Camera",
+        "Brake Assist",
+        "Blind Spot",
+        "Daytime Lights",
+        "Smart Key",
+        "Fcw",
+        "Auto Wipers",
+        "Lane Keep",
+        "Tpms",
+        "Parking Sensors",
+        "Parking Assist",
+        "Rear Parking Sensor",
+        "Government",
+        "Business",
+        "Rent",
+        "Termination of information provision",
+        "Initial registration",
+        "Total loss",
+        "Theft",
+        "Flood",
+        "Total own damage",
+        "Total other-party damage",
+        "Repair parts · Paint",
+        "Repair parts · Detach",
+        "Repair parts · Replace",
+        "Repair parts · Sheet Metal",
+        "Repair parts · Repair",
+        "Repair parts · Other",
+        "All repaired parts",
+        "Uninsured period",
+        "Insurance plate",
+        "Korean market price",
+        "Market low",
+        "Market high",
+        "Recall campaigns",
+        "Export date",
+        "Export fuel",
+        "Export color",
+        "Seats",
+        "Engine displacement",
+        "Export total loss",
+        "Dimensions (L×W×H)",
+        "Total loss events",
+        "Theft events",
+        "Flood events",
+        "Own damage claims",
+        "Other-party claims",
+        "Owners",
+        "Registration number",
+        "Insurance report date"
+      ],
+      "koreaSections": [
+        "car_info",
+        "specifications",
+        "usage_history",
+        "ownership",
+        "special_conditions",
+        "accidents_detail",
+        "mileage",
+        "price",
+        "recall_campaigns",
+        "export_declaration",
+        "summary"
+      ]
+    }
+  },
+  "combined": {
+    "identity": {
+      "make": "Honda",
+      "model": "K3",
+      "year": 2021,
+      "odometer": 106526,
+      "country": "United States"
+    },
+    "counts": {
+      "accidents": 10,
+      "claims": 5,
+      "auction": 22,
+      "mileage": 14,
+      "owners": 6,
+      "registry": 17,
+      "service": 2,
+      "recall": 1,
+      "extras": 151,
+      "photos": 7
+    },
+    "flags": {
+      "flood": false,
+      "salvage": false,
+      "taxi": false,
+      "stolen": false
+    },
+    "market": {
+      "estimatedValue": 21100,
+      "currency": "USD",
+      "lastAuctionPrice": 19950,
+      "lastAuctionDate": "2026-08-12"
+    },
+    "sampleAccidents": [
+      {
+        "date": "2026-09-18",
+        "description": "Front Bumper: Repainted",
+        "type": "inspection",
+        "primaryDamage": "Front Bumper",
+        "country": "KR"
+      },
+      {
+        "date": "2026-09-18",
+        "description": "Rear Right Door: Replaced",
+        "type": "inspection",
+        "primaryDamage": "Rear Right Door",
+        "country": "KR"
+      },
+      {
+        "date": "2026-02-03",
+        "description": "Korean insurance accident",
+        "type": "insurance",
+        "lossAmount": 1280000,
+        "currency": "KRW",
+        "country": "KR"
+      },
+      {
+        "date": "2026-09-08",
+        "description": "Simple repair history",
+        "type": "simple_repair",
+        "primaryDamage": "Simple repair history",
+        "country": "US"
+      },
+      {
+        "date": "2026-09-08",
+        "description": "Front door left: Repaired or welded",
+        "type": "inspection",
+        "primaryDamage": "Front door left",
+        "severity": "cosmetic",
+        "country": "US"
+      }
+    ],
+    "sampleClaims": [
+      {
+        "date": "2026-02-03",
+        "type": "Insurance claim",
+        "lossAmount": 1280000,
+        "description": "Own damage 1,280,000 KRW · Third party 0 KRW"
+      },
+      {
+        "date": "2025-04-26",
+        "type": "Insurance claim",
+        "lossAmount": 6217990,
+        "partCost": 1986250,
+        "laborCost": 1181540,
+        "paintingCost": 1220930,
+        "description": "Paid 6,217,990 KRW · Parts 1,986,250 KRW · Labor 1,181,540 KRW · Paint 1,220,930 KRW"
+      },
+      {
+        "date": "2024-11-08",
+        "type": "Insurance claim",
+        "lossAmount": 67680,
+        "partCost": 1502800,
+        "laborCost": 1003760,
+        "paintingCost": 1556510,
+        "description": "Rear TPMS Sensor (Left) (Removable); Rear door (left) surface repair (painting); Rear door belt molding (eyebrow molding) (left) (replacement); Rear door outside handle (left) (detachable); Rear bumper color primer (painting); Rear bumper assembly (replacement); Rear bumper under cover (side) (right) (removable); Rear bumper under cover (side) (left) (removable); Rear combination lamp (right) (removable); Rear combination lamp (left) (removable); Rear Quarter Panel (Fuel Filler Side | Rear Fender | Outer) (Left) (Sheet Metal); Rear fender (left) surface repair (painting); Rear pillar trim (left) (removable); Side step (left) surface repair (painting); Side Step Panel (Outer) (Left) (Sheet Metal); Quarter glass (left) (removable); Tire and Wheel (Rear) (Left) (Removable); Front door (left) (painted); Front door (left) (replace); Front door glass (left) (removable)"
+      }
+    ],
+    "sampleRegistry": [
+      {
+        "date": "2026-09-08",
+        "type": "simple_repair",
+        "title": "Simple repair history",
+        "subtitle": "Recorded finding"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "flood_history",
+        "title": "Water/Flood Damage",
+        "subtitle": "Not present"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "government_use_history",
+        "title": "Government",
+        "subtitle": "Present"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "special_use_history",
+        "title": "Special Usage",
+        "subtitle": "Present"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "total_loss_history",
+        "title": "Total Loss",
+        "subtitle": "Not present"
+      }
+    ],
+    "sampleAuction": [
+      {
+        "date": "2026-04-15",
+        "city": null,
+        "state": null,
+        "country": "US",
+        "condition": "Run And Drives",
+        "damage": "Front End",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "titleStatus": null,
+        "openingBid": 10700,
+        "buyNowPrice": 13200,
+        "finalPrice": 11550,
+        "lotStatus": "Copart · Sold · #DEMO-022576-1",
+        "currency": "USD"
+      },
+      {
+        "date": "2026-04-10",
+        "city": null,
+        "state": null,
+        "country": "US",
+        "condition": "Run And Drives",
+        "damage": "Front End",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "titleStatus": null,
+        "openingBid": null,
+        "buyNowPrice": null,
+        "finalPrice": 9700,
+        "lotStatus": "Price history",
+        "currency": "USD"
+      },
+      {
+        "date": "2026-04-15",
+        "city": null,
+        "state": null,
+        "country": "US",
+        "condition": "Run And Drives",
+        "damage": "Front End",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "titleStatus": null,
+        "openingBid": null,
+        "buyNowPrice": null,
+        "finalPrice": 11200,
+        "lotStatus": "Price history",
+        "currency": "USD"
+      }
+    ]
+  },
+  "gaps": [],
+  "krPlusAuction": {
+    "identity": {
+      "make": "Kia",
+      "model": "K3",
+      "year": 2021,
+      "odometer": 106526,
+      "country": "South Korea"
+    },
+    "counts": {
+      "accidents": 10,
+      "claims": 5,
+      "auction": 9,
+      "mileage": 8,
+      "owners": 3,
+      "registry": 10,
+      "service": 1,
+      "recall": 1,
+      "extras": 100
+    },
+    "market": {
+      "estimatedValue": 24008500,
+      "currency": "KRW",
+      "lastAuctionPrice": 24000350,
+      "lastAuctionDate": "2026-08-15"
+    },
+    "hasKrClaims": true,
+    "hasAuction": true,
+    "hasInspectionService": true
+  }
+}

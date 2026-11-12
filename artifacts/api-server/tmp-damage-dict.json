@@ -1,0 +1,57 @@
+{
+  "https://carstat.dev/api/vhr/dictionaries": {
+    "status": 404,
+    "body": "{\n    \"message\": \"The route api/vhr/dictionaries could not be found.\"\n}"
+  },
+  "https://carstat.dev/api/vhr/damage-types": {
+    "status": 404,
+    "body": "{\n    \"message\": \"The route api/vhr/damage-types could not be found.\"\n}"
+  },
+  "https://carstat.dev/api/vhr/enums": {
+    "status": 404,
+    "body": "{\n    \"message\": \"The route api/vhr/enums could not be found.\"\n}"
+  },
+  "https://carstat.dev/api/dictionaries/damage": {
+    "status": 404,
+    "body": "{\n    \"message\": \"The route api/dictionaries/damage could not be found.\"\n}"
+  },
+  "https://carstat.dev/api/vhr/sources/1": {
+    "status": 404,
+    "body": "{\n    \"message\": \"The route api/vhr/sources/1 could not be found.\"\n}"
+  },
+  "buyStatus": "completed",
+  "buyFiles": {
+    "json": "https://v-h-r.b-cdn.net/vhr/examples/7FARW2H56JE022576/00f62eda40dbda3170b80c8a498c0e269a410b2725b0a884b20708519e6c0bc5.json"
+  },
+  "listingDamageFields": {
+    "lot": "DEMO-022576-1",
+    "main_damage_id": 1,
+    "second_damage_id": 2,
+    "condition": 0,
+    "airbags": 1,
+    "pre_accident_price": 20200,
+    "estimate_repair_price": 1750,
+    "currency": "USD",
+    "condition_label": "run and drives",
+    "odometer_status_label": "actual",
+    "status_label": "sold",
+    "airbags_label": "intact",
+    "marketplace": "copart.com"
+  },
+  "hasFrontEnd": false,
+  "hasDamageName": false,
+  "damageMentions": [
+    "damage_id",
+    "damage_id",
+    "damage_id",
+    "damage_id",
+    "damage_id",
+    "damage_id",
+    "damage",
+    "damage",
+    "damage",
+    "damage",
+    "damage",
+    "damage"
+  ]
+}

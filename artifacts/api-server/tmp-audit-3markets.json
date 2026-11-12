@@ -1,0 +1,227 @@
+{
+  "vin": "7FARW2H56JE022576",
+  "perSource": {
+    "1": {
+      "name": "USA Insurance Auctions & Korea History",
+      "rawListingCount": 3,
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "trim": "EX AWD",
+      "country": "United States",
+      "color": "grey",
+      "fuelType": "Gasoline",
+      "bodyType": "Suv",
+      "engine": null,
+      "hp": 190,
+      "odometer": 90920,
+      "photos": 1,
+      "mileage": [
+        {
+          "date": "2026-04-15",
+          "unit": "km",
+          "source": "Copart"
+        },
+        {
+          "date": "2026-06-15",
+          "unit": "km",
+          "source": "IAAI"
+        }
+      ],
+      "auctions": [
+        {
+          "date": "2026-04-15",
+          "currency": "USD",
+          "damage": "Front End"
+        },
+        {
+          "date": "2026-06-15",
+          "currency": "USD",
+          "damage": "Front End"
+        }
+      ],
+      "accidents": [],
+      "claims": [],
+      "extrasCount": 25,
+      "extrasSample": [
+        "Drive=All",
+        "Vehicle type=Automobile",
+        "Fuel=Gasoline",
+        "Body=Suv",
+        "Transmission=Automatic",
+        "Color=Grey",
+        "Cylinders=4",
+        "Horsepower=190 hp",
+        "Odometer (miles)=55,563 mi",
+        "Listing archived=Yes",
+        "Actual cash value (ACV)=19,700 USD",
+        "Pre-accident value=20,200 USD"
+      ]
+    },
+    "2": {
+      "name": "Vehicle Archive Alpha",
+      "rawListingCount": 3,
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "trim": "EX AWD",
+      "country": "United States",
+      "color": null,
+      "fuelType": "Gasoline",
+      "bodyType": "SUV",
+      "engine": "1498 cc",
+      "hp": 190,
+      "odometer": 93580,
+      "photos": 1,
+      "mileage": [
+        {
+          "date": "2026-08-12",
+          "unit": "km",
+          "source": "US Auction"
+        }
+      ],
+      "auctions": [
+        {
+          "date": "2026-08-12",
+          "currency": "USD",
+          "damage": "Cosmetic"
+        }
+      ],
+      "accidents": [],
+      "claims": [],
+      "extrasCount": 24,
+      "extrasSample": [
+        "Drive=AWD",
+        "Fuel=Gasoline",
+        "Body=SUV",
+        "Transmission=Automatic",
+        "Horsepower=190 hp",
+        "Listing archived=Yes",
+        "First seen=2026-07-02",
+        "Last seen=2026-08-12",
+        "Keys=Yes",
+        "Seller type=dealer",
+        "Safety=ABS, ESC, blind-spot monitoring",
+        "Comfort=heated seats, climate control"
+      ]
+    },
+    "3": {
+      "name": "Vehicle Archive Beta",
+      "rawListingCount": 2,
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "trim": "EX AWD",
+      "country": "United States",
+      "color": "Grey",
+      "fuelType": "Petrol",
+      "bodyType": "SUV / Crossover",
+      "engine": "1.5L gasoline",
+      "hp": 190,
+      "odometer": 93540,
+      "photos": 1,
+      "mileage": [
+        {
+          "date": "2026-08-12",
+          "unit": "km",
+          "source": "Copart"
+        }
+      ],
+      "auctions": [
+        {
+          "date": "2026-08-12",
+          "currency": "USD",
+          "damage": "Front bumper repaired"
+        }
+      ],
+      "accidents": [],
+      "claims": [],
+      "extrasCount": 15,
+      "extrasSample": [
+        "First seen=2026-07-02",
+        "Condition class=Used",
+        "Price without tax=9,411.76 USD",
+        "Keys=2",
+        "Seller type=Dealer",
+        "Days to sell=41",
+        "Seats=5",
+        "Doors=5",
+        "Drive=AWD/4WD",
+        "Interior color=Black",
+        "Extra wheels=Yes",
+        "Curb weight=1645 kg"
+      ]
+    }
+  },
+  "merged": {
+    "make": "Honda",
+    "model": "CR-V",
+    "year": 2018,
+    "trim": "EX AWD",
+    "country": "United States",
+    "color": "grey",
+    "fuelType": "Gasoline",
+    "bodyType": "Suv",
+    "engine": "1498 cc",
+    "hp": 190,
+    "odometer": 93580,
+    "photos": 1,
+    "mileage": [
+      {
+        "date": "2026-04-15",
+        "unit": "km",
+        "source": "Copart"
+      },
+      {
+        "date": "2026-06-15",
+        "unit": "km",
+        "source": "IAAI"
+      },
+      {
+        "date": "2026-08-12",
+        "unit": "km",
+        "source": "Copart"
+      }
+    ],
+    "auctions": [
+      {
+        "date": "2026-04-15",
+        "currency": "USD",
+        "damage": "Front End"
+      },
+      {
+        "date": "2026-06-15",
+        "currency": "USD",
+        "damage": "Front End"
+      },
+      {
+        "date": "2026-08-12",
+        "currency": "USD",
+        "damage": "Cosmetic"
+      },
+      {
+        "date": "2026-08-12",
+        "currency": "USD",
+        "damage": "Front bumper repaired"
+      }
+    ],
+    "accidents": [],
+    "claims": [],
+    "extrasCount": 58,
+    "extrasSample": [
+      "Drive=All",
+      "Vehicle type=Automobile",
+      "Fuel=Gasoline",
+      "Body=Suv",
+      "Transmission=Automatic",
+      "Color=Grey",
+      "Cylinders=4",
+      "Horsepower=190 hp",
+      "Odometer (miles)=55,563 mi",
+      "Listing archived=Yes",
+      "Actual cash value (ACV)=19,700 USD",
+      "Pre-accident value=20,200 USD"
+    ]
+  },
+  "issues": []
+}

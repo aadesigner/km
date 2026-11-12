@@ -39,10 +39,20 @@ export const systemSettingsTable = pgTable("system_settings", {
    */
   getcarApiEnabled: boolean("getcar_api_enabled").notNull().default(true),
   /**
+   * When false, skip normal Carstat local listings (local-exists / local-report).
+   * Cascade continues to VHR → USA → pending. Default true.
+   */
+  carstatLocalApiEnabled: boolean("carstat_local_api_enabled").notNull().default(true),
+  /**
    * When true, enable Carstat USA API (Carfax/AutoCheck PDF reports).
    * Uses the same Carstat API key. Default false — opt-in to avoid surprise token spend.
    */
   carstatUsaApiEnabled: boolean("carstat_usa_api_enabled").notNull().default(false),
+  /**
+   * When true, enable Carstat VHR V2 (auction/archive + Korean Insurance HTML reports).
+   * Uses the same Carstat API key. Default false — opt-in to avoid surprise VHR spend.
+   */
+  carstatVhrApiEnabled: boolean("carstat_vhr_api_enabled").notNull().default(false),
   /** Partial blocks when maintenanceMode is false: free_decoder | checkout | vin_reports */
   maintenanceRestrictions: jsonb("maintenance_restrictions").$type<string[]>().notNull().default([]),
   maintenanceMessage: text("maintenance_message"),

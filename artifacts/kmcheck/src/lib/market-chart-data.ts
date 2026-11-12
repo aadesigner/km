@@ -12,7 +12,14 @@ import {
 export type MarketChartPoint = {
   label: string;
   value: number;
-  kind: "estimated" | "last_auction" | "auction_history";
+  kind: "estimated" | "last_auction" | "auction_history" | "range_low" | "range_high";
+};
+
+export type MarketPriceRange = {
+  low: number;
+  high: number;
+  mid?: number | null;
+  currency: string;
 };
 
 type MarketDataSlice = {
@@ -22,9 +29,67 @@ type MarketDataSlice = {
   currency?: string | null;
 };
 
+type ExtraLike = {
+  key?: string | null;
+  label?: string | null;
+  value?: string | null;
+};
+
+function parseMoneyToken(raw: string | null | undefined): number | null {
+  if (!raw) return null;
+  const avg = raw.match(/avg\s*([\d,.\s]+)\s*(KRW|WON|₩)?/i);
+  if (avg?.[1]) {
+    const n = Number(avg[1].replace(/[,\s]/g, ""));
+    if (Number.isFinite(n) && n > 0) return Math.round(n);
+  }
+  const plain = raw.match(/([\d,.\s]+)\s*(KRW|WON|₩)?/i);
+  if (!plain?.[1]) return null;
+  const n = Number(plain[1].replace(/[,\s]/g, ""));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round(n);
+}
+
+/** Pull Korea insurance market low/high (and optional midpoint) out of vehicleExtras. */
+export function extractMarketPriceRangeFromExtras(
+  extras: ExtraLike[] | null | undefined,
+): MarketPriceRange | null {
+  if (!extras?.length) return null;
+  let low: number | null = null;
+  let high: number | null = null;
+  let mid: number | null = null;
+
+  for (const row of extras) {
+    const key = (row.key ?? "").trim().toLowerCase();
+    const label = (row.label ?? "").trim().toLowerCase();
+    const value = row.value ?? "";
+    const amount = parseMoneyToken(value);
+    if (amount == null) continue;
+
+    if (key.includes("market_price_low") || label === "market low") {
+      low = amount;
+      continue;
+    }
+    if (key.includes("market_price_high") || label === "market high") {
+      high = amount;
+      continue;
+    }
+    if (
+      key === "kr_market_price"
+      || label === "korean market price"
+      || label.includes("korean market price")
+    ) {
+      mid = amount;
+    }
+  }
+
+  if (low == null || high == null || high < low) return null;
+  return { low, high, mid, currency: "KRW" };
+}
+
 type AuctionSlice = {
   date?: string | null;
   finalPrice?: number | null;
+  currency?: string | null;
 };
 
 /** True when market figures should be treated as KRW and converted to USD for display. */
@@ -66,8 +131,9 @@ export function buildMarketChartPoints(
   language: Language,
   vehicleCountry?: string | null,
   krwPerUsd?: number | null,
+  priceRange?: MarketPriceRange | null,
 ): MarketChartPoint[] {
-  const currency = marketData?.currency ?? null;
+  const currency = priceRange?.currency ?? marketData?.currency ?? null;
   const toUsd = (v: number) =>
     toMarketDisplayUsd(v, { currency, vehicleCountry, krwPerUsd });
 
@@ -75,17 +141,38 @@ export function buildMarketChartPoints(
     .filter((e) => e.finalPrice != null && e.finalPrice > 0)
     .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
 
-  if (history.length >= 2) {
-    return history.map((e, i) => ({
+  // Prefer rows in the marketData currency so KRW millions never plot as EUR/USD.
+  const marketCur = (currency ?? "").toUpperCase();
+  const historyForChart = marketCur
+    ? history.filter((e) => !e.currency || String(e.currency).toUpperCase() === marketCur)
+    : history;
+
+  if (historyForChart.length >= 2) {
+    return historyForChart.map((e, i) => ({
       label: translateProviderChartLabel(e.date, language, vehicleCountry) ?? String(i + 1),
-      value: toUsd(e.finalPrice!),
+      value: toMarketDisplayUsd(e.finalPrice!, {
+        currency: e.currency ?? currency,
+        vehicleCountry,
+        krwPerUsd,
+      }),
       kind: "auction_history",
     }));
   }
 
   const points: MarketChartPoint[] = [];
-  const est = marketData?.estimatedValue;
+  const est =
+    marketData?.estimatedValue
+    ?? (priceRange?.mid != null && priceRange.mid > 0 ? priceRange.mid : null);
   const auction = marketData?.lastAuctionPrice;
+
+  if (priceRange && priceRange.low > 0 && priceRange.high >= priceRange.low) {
+    points.push({ label: t("chart_price_low"), value: toUsd(priceRange.low), kind: "range_low" });
+    if (est != null && est > 0) {
+      points.push({ label: t("chart_est_value"), value: toUsd(est), kind: "estimated" });
+    }
+    points.push({ label: t("chart_price_high"), value: toUsd(priceRange.high), kind: "range_high" });
+    return points;
+  }
 
   if (est != null && est > 0) {
     points.push({ label: t("chart_est_value"), value: toUsd(est), kind: "estimated" });
@@ -98,10 +185,14 @@ export function buildMarketChartPoints(
     points.push({ label: auctionLabel, value: toUsd(auction), kind: "last_auction" });
   }
 
-  if (points.length === 0 && history.length === 1) {
+  if (points.length === 0 && historyForChart.length === 1) {
     points.push({
-      label: translateProviderChartLabel(history[0].date, language, vehicleCountry) ?? "1",
-      value: toUsd(history[0].finalPrice!),
+      label: translateProviderChartLabel(historyForChart[0].date, language, vehicleCountry) ?? "1",
+      value: toMarketDisplayUsd(historyForChart[0].finalPrice!, {
+        currency: historyForChart[0].currency ?? currency,
+        vehicleCountry,
+        krwPerUsd,
+      }),
       kind: "last_auction",
     });
   }

@@ -1,0 +1,282 @@
+{
+  "source68Meta": {
+    "id": 68,
+    "name": "Korean Insurance History",
+    "description": "Korean insurance claims, repairs, ownership, mileage, equipment, export declarations and recall campaigns.",
+    "supported_formats": [
+      "json",
+      "html",
+      "pdf"
+    ],
+    "currency": "USD",
+    "check_is_free": true,
+    "demo_vins": [
+      "KNAF241BEMA915413",
+      "KMHGE41ABBU141129",
+      "KMHD641EELU077852"
+    ],
+    "price_usd": 3,
+    "regular_price_usd": null,
+    "available_languages": [
+      "en",
+      "ru"
+    ],
+    "data_categories": [
+      "history",
+      "equipment"
+    ],
+    "possible_overlaps": [
+      {
+        "source_id": 6,
+        "categories": [
+          "history",
+          "equipment"
+        ]
+      },
+      {
+        "source_id": 5,
+        "categories": [
+          "history"
+        ]
+      },
+      {
+        "source_id": 2,
+        "categories": [
+          "equipment"
+        ]
+      },
+      {
+        "source_id": 36,
+        "categories": [
+          "history"
+        ]
+      }
+    ],
+    "overlap_notice": "Sources are sold separately. The same listing, auction event, photograph, inspection or history event may appear in more than one source. Buying several sources does not guarantee unique records; compare previews before purchasing."
+  },
+  "reportCountsBySource": {
+    "4": 1,
+    "6": 1,
+    "34": 2,
+    "36": 1,
+    "68": 9
+  },
+  "vinsWithPastSource68Reports": [
+    "KNAF141BEPA956413",
+    "ZAM57TSA3F1137599",
+    "WAUZZZ8KXFA080527",
+    "1VWZZZA3ZDC025546",
+    "WBAXA1103CDX23464",
+    "WAUZZZ4G2CN102672",
+    "WAUZZZ4H7EN010243",
+    "WAUZZZ4G8CN002558",
+    "KMHJ581ADHU209919"
+  ],
+  "candidateCount": 17,
+  "checked": 17,
+  "hits": [],
+  "sampleWithAny68Object": [
+    {
+      "vin": "7FARW2H56JE022576",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 0,
+        "status": "not_found"
+      },
+      "s4": {
+        "has": true,
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ]
+      }
+    },
+    {
+      "vin": "KMTG341ABMU089876",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 0,
+        "status": "not_found"
+      },
+      "s4": {
+        "has": true,
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ]
+      }
+    },
+    {
+      "vin": "WVWZZZ3C4KE000001",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 0,
+        "status": "not_found"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "WDDHF0CB3EA952710",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": true,
+        "records": 3,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ]
+      }
+    },
+    {
+      "vin": "KNAF141BEPA956413",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "ZAM57TSA3F1137599",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "WAUZZZ8KXFA080527",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "WAUZZZ4H7EN010243",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "WAUZZZ4G8CN002558",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    },
+    {
+      "vin": "KMHJ581ADHU209919",
+      "s68": {
+        "has": false,
+        "records": null,
+        "formats": [],
+        "langs": [
+          "en",
+          "ru"
+        ],
+        "price": 3,
+        "status": "pending"
+      },
+      "s4": {
+        "has": false,
+        "records": 0,
+        "formats": []
+      }
+    }
+  ]
+}

@@ -1,16 +1,20 @@
+import { sanitizeReportPhotosForVehicle } from "@/lib/demo-car-photos";
+
 /** Resolve display (hero/thumbs) vs HD (lightbox) photo lists from report data. */
 export function resolveReportPhotoSets(data: {
   photos?: string[] | null;
   photosHd?: string[] | null;
   photoAlternates?: Array<string | null> | null;
   thumbnailUrl?: string | null;
+  make?: string | null;
+  model?: string | null;
 } | null | undefined): {
   photos: string[];
   photosHd: string[];
   photoAlternates: Array<string | null>;
 } {
   if (!data) return { photos: [], photosHd: [], photoAlternates: [] };
-  const photos = (
+  const rawPhotos = (
     Array.isArray(data.photos) && data.photos.length > 0
       ? data.photos
       : data.thumbnailUrl
@@ -18,10 +22,21 @@ export function resolveReportPhotoSets(data: {
         : []
   ).filter((p): p is string => typeof p === "string" && p.length > 0);
 
+  const photos = sanitizeReportPhotosForVehicle({
+    photos: rawPhotos,
+    make: data.make,
+    model: data.model,
+  });
+
   const hdRaw = Array.isArray(data.photosHd)
     ? data.photosHd.filter((p): p is string => typeof p === "string" && p.length > 0)
     : [];
-  const photosHd = hdRaw.length > 0 ? hdRaw : photos;
+  const photosHdRaw = hdRaw.length > 0 ? hdRaw : rawPhotos;
+  const photosHd = sanitizeReportPhotosForVehicle({
+    photos: photosHdRaw,
+    make: data.make,
+    model: data.model,
+  });
 
   const rawAlts = Array.isArray(data.photoAlternates) ? data.photoAlternates : [];
   const photoAlternates = photos.map((_, i) => {

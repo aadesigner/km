@@ -10,6 +10,7 @@ import { translateTitleStatus } from "@/lib/translate-title-status";
 import { translateLotStatus } from "@/lib/translate-lot-status";
 import { cleanDisplayStr, type AuctionHistoryLike } from "@/lib/report-display";
 import { formatLocationLabel, countryLabelsFromT, type CountryLabelOverrides } from "@/lib/format-country-name";
+import { formatAmountPlain, normalizeAmountCurrency } from "@/lib/korean-currency";
 import type { Language } from "@/i18n/context";
 import { cn } from "@/lib/utils";
 
@@ -25,8 +26,9 @@ function cleanStr(v: string | null | undefined): string | null {
   return cleanDisplayStr(v);
 }
 
-function formatUsd(amount: number): string {
-  return `$${Math.round(amount).toLocaleString()}`;
+function formatAuctionAmount(amount: number, currency?: string | null): string {
+  const code = normalizeAmountCurrency(currency) ?? "USD";
+  return formatAmountPlain(amount, code);
 }
 
 function MetaRow({ label, value }: { label: string; value: string }) {
@@ -116,7 +118,7 @@ function AuctionLotCard({
           <div className="flex shrink-0 items-center gap-2">
             {entry.finalPrice != null ? (
               <p className="text-sm font-semibold tabular-nums text-primary">
-                {formatUsd(entry.finalPrice)}
+                {formatAuctionAmount(entry.finalPrice, entry.currency)}
               </p>
             ) : null}
             {hasDetails ? (
@@ -155,19 +157,19 @@ function AuctionLotCard({
               {entry.openingBid != null ? (
                 <div>
                   <p className="text-[10px] text-muted-foreground">{t("auction_opening_bid")}</p>
-                  <p className="text-sm font-medium tabular-nums">{formatUsd(entry.openingBid)}</p>
+                  <p className="text-sm font-medium tabular-nums">{formatAuctionAmount(entry.openingBid, entry.currency)}</p>
                 </div>
               ) : null}
               {entry.buyNowPrice != null ? (
                 <div>
                   <p className="text-[10px] text-muted-foreground">{t("auction_buy_now")}</p>
-                  <p className="text-sm font-medium tabular-nums">{formatUsd(entry.buyNowPrice)}</p>
+                  <p className="text-sm font-medium tabular-nums">{formatAuctionAmount(entry.buyNowPrice, entry.currency)}</p>
                 </div>
               ) : null}
               {entry.finalPrice != null ? (
                 <div>
                   <p className="text-[10px] font-medium text-primary">{t("auction_final_price")}</p>
-                  <p className="text-sm font-semibold tabular-nums text-primary">{formatUsd(entry.finalPrice)}</p>
+                  <p className="text-sm font-semibold tabular-nums text-primary">{formatAuctionAmount(entry.finalPrice, entry.currency)}</p>
                 </div>
               ) : null}
             </div>

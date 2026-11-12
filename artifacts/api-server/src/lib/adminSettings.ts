@@ -23,8 +23,12 @@ export function sanitizeAdminSettings(settings: SettingsRow) {
     ...safe,
     getcarApiEnabled: (settings as SettingsRow & { getcarApiEnabled?: boolean }).getcarApiEnabled ?? true,
     getcarApiKeyConfigured: !!process.env["GETCARAPI_API_KEY"]?.trim(),
+    carstatLocalApiEnabled:
+      (settings as SettingsRow & { carstatLocalApiEnabled?: boolean }).carstatLocalApiEnabled ?? true,
     carstatUsaApiEnabled:
       (settings as SettingsRow & { carstatUsaApiEnabled?: boolean }).carstatUsaApiEnabled ?? false,
+    carstatVhrApiEnabled:
+      (settings as SettingsRow & { carstatVhrApiEnabled?: boolean }).carstatVhrApiEnabled ?? false,
     hasPaypalSecret: !!paypalClientSecret?.trim(),
     hasRecaptchaSecret: !!recaptchaSecretKey?.trim(),
     hasGoogleSecret: !!googleClientSecret?.trim(),

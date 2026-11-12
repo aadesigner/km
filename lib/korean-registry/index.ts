@@ -66,7 +66,16 @@ export function resolveRegistryDisplayMileage(
   if (TYPES_WITHOUT_MILEAGE.has(type)) return null;
 
   const explicit = hasExplicitRegistryMileage(event);
-  if (!explicit && type !== "inspection" && type !== "owner_change") return null;
+  // Export declaration / first registration carry real recorded km from KR insurance.
+  if (
+    !explicit
+    && type !== "inspection"
+    && type !== "owner_change"
+    && type !== "export"
+    && type !== "first_registration"
+  ) {
+    return null;
+  }
 
   if (opts?.listingOdometer != null && mileage === opts.listingOdometer && !explicit) {
     return null;
@@ -80,7 +89,7 @@ export function normalizeKrwAmountText(value: string | null | undefined): string
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
-  if (/won|₩|million/i.test(trimmed)) return trimmed;
+  if (/won|₩|million|\bKRW\b|원/i.test(trimmed)) return trimmed;
 
   const digits = trimmed.replace(/[^\d]/g, "");
   // 5–8 digits: typical repair band. 9+ digits are usually list prices (100M+ KRW).
@@ -104,7 +113,7 @@ export function parseKrwAmountFromText(text: string | null | undefined): number 
     return Number.isFinite(n) ? Math.round(n * 1_000_000) : null;
   }
 
-  const wonSuffix = normalized.match(/([\d,]+)\s*won/i);
+  const wonSuffix = normalized.match(/([\d,]+)\s*(?:won|KRW|WON|원)\b/i);
   if (wonSuffix) {
     const n = parseInt(wonSuffix[1]!.replace(/,/g, ""), 10);
     return Number.isFinite(n) && n > 0 ? n : null;

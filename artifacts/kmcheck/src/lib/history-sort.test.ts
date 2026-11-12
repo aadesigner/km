@@ -6,6 +6,25 @@ describe("historyDateSortKey", () => {
     expect(historyDateSortKey("2025-04-24")).toBeGreaterThan(historyDateSortKey("2024-08-05"));
     expect(historyDateSortKey("May 18, 2021")).toBeGreaterThan(historyDateSortKey("April 16, 2019"));
   });
+
+  it("sorts uninsured period ranges by end date", () => {
+    expect(historyDateSortKey("2025-12~2026-06")).toBeGreaterThan(
+      historyDateSortKey("March 17, 2021"),
+    );
+    expect(historyDateSortKey("2023-01-01 ~ 2023-02-15")).toBeGreaterThan(
+      historyDateSortKey("2022-12-01"),
+    );
+  });
+});
+
+describe("sortHistoryNewestFirst with uninsured periods", () => {
+  it("places 2025-2026 uninsured period above 2021 first registration", () => {
+    const rows = sortHistoryNewestFirst([
+      { date: "March 17, 2021", type: "first_registration" },
+      { date: "2025-12~2026-06", type: "no_insurance" },
+    ]);
+    expect(rows.map((r) => r.type)).toEqual(["no_insurance", "first_registration"]);
+  });
 });
 
 describe("sortHistoryNewestFirst", () => {

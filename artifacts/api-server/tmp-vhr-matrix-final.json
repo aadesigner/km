@@ -1,0 +1,181 @@
+{
+  "matrix": [
+    {
+      "vin": "7FARW2H56JE022576",
+      "sourceId": 1,
+      "status": "completed",
+      "structured": true,
+      "make": "Honda",
+      "year": 2018,
+      "country": "United States",
+      "mileage": 4,
+      "auctions": 3,
+      "accidents": 3,
+      "insurance": 1,
+      "owners": 0,
+      "extras": 6,
+      "photos": 4,
+      "flooded": null
+    },
+    {
+      "vin": "7FARW2H56JE022576",
+      "sourceId": 2,
+      "status": "completed",
+      "structured": true,
+      "make": "Honda",
+      "year": 2018,
+      "country": "United States",
+      "mileage": 3,
+      "auctions": 3,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 0,
+      "extras": 8,
+      "photos": 4,
+      "flooded": null
+    },
+    {
+      "vin": "7FARW2H56JE022576",
+      "sourceId": 3,
+      "status": "completed",
+      "structured": true,
+      "make": "Honda",
+      "year": null,
+      "country": "United States",
+      "mileage": 2,
+      "auctions": 2,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 0,
+      "extras": 0,
+      "photos": 3,
+      "flooded": null
+    },
+    {
+      "vin": "7FARW2H56JE022576",
+      "sourceId": 5,
+      "status": "completed",
+      "structured": true,
+      "make": "Honda",
+      "year": 2018,
+      "country": "United States",
+      "mileage": 0,
+      "auctions": 0,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 1,
+      "extras": 13,
+      "photos": 0,
+      "flooded": false
+    },
+    {
+      "vin": "KMUHCESB1SU250832",
+      "sourceId": 2,
+      "status": "completed",
+      "structured": true,
+      "make": "genesis",
+      "year": 2025,
+      "country": "South Korea",
+      "mileage": 3,
+      "auctions": 3,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 0,
+      "extras": 0,
+      "photos": 9,
+      "flooded": null
+    },
+    {
+      "vin": "KNAKR814DNA244958",
+      "sourceId": 3,
+      "status": "completed",
+      "structured": true,
+      "make": "Kia",
+      "year": null,
+      "country": "South Korea",
+      "mileage": 0,
+      "auctions": 1,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 0,
+      "extras": 0,
+      "photos": 24,
+      "flooded": null
+    },
+    {
+      "vin": "KMHB3518BNW003977",
+      "sourceId": 5,
+      "status": "completed",
+      "structured": true,
+      "make": "HYUNDAI",
+      "year": 2022,
+      "country": "South Korea",
+      "mileage": 1,
+      "auctions": 0,
+      "accidents": 0,
+      "insurance": 0,
+      "owners": 3,
+      "extras": 6,
+      "photos": 0,
+      "flooded": false
+    },
+    {
+      "vin": "KNAF241BEMA915413",
+      "sourceId": 68,
+      "status": "completed",
+      "structured": true,
+      "make": "Kia",
+      "year": 2021,
+      "country": "South Korea",
+      "mileage": 0,
+      "auctions": 0,
+      "accidents": 4,
+      "insurance": 4,
+      "owners": 3,
+      "extras": 25,
+      "photos": 0,
+      "flooded": false
+    },
+    {
+      "vin": "KMHGE41ABBU141129",
+      "sourceId": 68,
+      "status": "completed",
+      "structured": true,
+      "make": "Hyundai",
+      "year": 2011,
+      "country": "South Korea",
+      "mileage": 0,
+      "auctions": 0,
+      "accidents": 10,
+      "insurance": 10,
+      "owners": 8,
+      "extras": 15,
+      "photos": 0,
+      "flooded": false
+    }
+  ],
+  "selects": [
+    {
+      "vin": "7FARW2H56JE022576",
+      "selected": [
+        1
+      ]
+    },
+    {
+      "vin": "KMTG341ABMU089876",
+      "selected": []
+    },
+    {
+      "vin": "KNAF241BEMA915413",
+      "selected": [
+        68
+      ]
+    },
+    {
+      "vin": "KMHB3518BNW003977",
+      "selected": [
+        5
+      ]
+    }
+  ]
+}

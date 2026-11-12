@@ -1,0 +1,596 @@
+{
+  "usaAuction123": {
+    "label": "USA 1+2+3",
+    "identity": {
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "country": "United States",
+      "odometer": 93580
+    },
+    "market": {
+      "estimatedValue": 21100,
+      "currency": "USD",
+      "lastAuctionPrice": 19950,
+      "lastAuctionDate": "2026-08-12"
+    },
+    "counts": {
+      "auctionHistory": 22,
+      "insuranceClaims": 1,
+      "accidents": 3,
+      "owners": 0,
+      "mileage": 9,
+      "registry": 0,
+      "recalls": 0,
+      "service": 1,
+      "extras": 70
+    },
+    "flags": {
+      "flooded": null,
+      "stolen": null,
+      "salvage": null
+    },
+    "claimPaid": [
+      {
+        "date": "2026-02-03",
+        "type": "Insurance claim",
+        "paid": 1280000
+      }
+    ],
+    "accidentPaid": [
+      {
+        "date": "2026-02-03",
+        "type": "insurance",
+        "paid": 1280000,
+        "currency": "KRW"
+      }
+    ],
+    "registryTypes": {},
+    "keyExtras": [
+      "Average price",
+      "Average price",
+      "Average price"
+    ],
+    "sampleMileage": [
+      {
+        "date": "2026-04-15",
+        "odometer": 89420,
+        "unit": "km",
+        "source": "Copart",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "auctionPrice": 11550,
+        "lotStatus": "Copart · Sold · #DEMO-022576-1"
+      },
+      {
+        "date": "2026-06-15",
+        "odometer": 90920,
+        "unit": "km",
+        "source": "IAAI",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "auctionPrice": 12950,
+        "lotStatus": "IAAI · Sold · #DEMO-022576-2"
+      },
+      {
+        "date": "2026-08-15",
+        "odometer": 92420,
+        "unit": "km",
+        "source": "Encar",
+        "primaryDamage": "Front End",
+        "secondaryDamage": "Rear End",
+        "auctionPrice": 24000350,
+        "lotStatus": "Encar · Listing · Sold · #DEMO-022576-3"
+      },
+      {
+        "date": "2026-09-18",
+        "odometer": 93420,
+        "unit": "km",
+        "source": "Korean inspection"
+      },
+      {
+        "date": "2026-08-12",
+        "odometer": 93420,
+        "unit": "km",
+        "source": "European Marketplace",
+        "primaryDamage": "Cosmetic",
+        "secondaryDamage": null,
+        "auctionPrice": 19950,
+        "lotStatus": "European Marketplace"
+      }
+    ],
+    "sampleRegistry": []
+  },
+  "korea68": {
+    "label": "KR insurance 68",
+    "identity": {
+      "make": "Kia",
+      "model": "K3",
+      "year": 2021,
+      "country": "South Korea",
+      "odometer": 106526
+    },
+    "market": {
+      "estimatedValue": 8875000,
+      "currency": "KRW",
+      "lastAuctionPrice": null,
+      "lastAuctionDate": null
+    },
+    "counts": {
+      "auctionHistory": 0,
+      "insuranceClaims": 5,
+      "accidents": 4,
+      "owners": 3,
+      "mileage": 4,
+      "registry": 12,
+      "recalls": 0,
+      "service": 0,
+      "extras": 58
+    },
+    "flags": {
+      "flooded": false,
+      "stolen": false,
+      "salvage": false
+    },
+    "claimPaid": [
+      {
+        "date": "2025-04-26",
+        "type": "insurance_third_party_own_damage",
+        "paid": 6217990
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance_own_damage",
+        "paid": 67680
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance_third_party",
+        "paid": 199200
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance_own_damage",
+        "paid": 531280
+      },
+      {
+        "date": "2021-10-05",
+        "type": "insurance_third_party_own_damage",
+        "paid": 2101795
+      }
+    ],
+    "accidentPaid": [
+      {
+        "date": "2025-04-26",
+        "type": "insurance",
+        "paid": 6217990,
+        "currency": "KRW"
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance",
+        "paid": 266880,
+        "currency": "KRW"
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance",
+        "paid": 531280,
+        "currency": "KRW"
+      },
+      {
+        "date": "2021-10-05",
+        "type": "insurance",
+        "paid": 2101795,
+        "currency": "KRW"
+      }
+    ],
+    "registryTypes": {
+      "insurance": 4,
+      "ownership": 3,
+      "registration": 2,
+      "no_insurance": 1,
+      "first_registration": 1,
+      "export": 1
+    },
+    "keyExtras": [
+      "First registration",
+      "Total loss",
+      "Theft",
+      "Flood",
+      "Total own damage",
+      "Repair parts · Paint",
+      "Repair parts · Detach",
+      "Repair parts · Replace",
+      "Repair parts · Sheet Metal",
+      "Repair parts · Repair",
+      "Repair parts · Other",
+      "All repaired parts",
+      "Uninsured period",
+      "Korean market price",
+      "Recall campaigns",
+      "Export date",
+      "Export fuel",
+      "Export color",
+      "Export total loss",
+      "Total loss events",
+      "Theft events",
+      "Flood events",
+      "Own damage claims"
+    ],
+    "sampleMileage": [
+      {
+        "date": "2025-04-18",
+        "odometer": 93000,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2024-04-15",
+        "odometer": 75383,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2023-04-17",
+        "odometer": 57661,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2026-02-01",
+        "odometer": 106526,
+        "unit": "km",
+        "source": "Export declaration"
+      }
+    ],
+    "sampleRegistry": [
+      {
+        "date": "2026-01-20",
+        "type": "ownership",
+        "title": "Termination of information provision"
+      },
+      {
+        "date": "2025-12-24",
+        "type": "ownership",
+        "title": "Change of Owner"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "ownership",
+        "title": "Initial registration"
+      },
+      {
+        "date": "2026-01-20",
+        "type": "registration",
+        "title": "Termination of information provision"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "registration",
+        "title": "Initial registration"
+      },
+      {
+        "date": "2025-04-26",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "6,217,990 KRW"
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "266,880 KRW"
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "531,280 KRW"
+      }
+    ]
+  },
+  "korea68plus4": {
+    "label": "KR 68 + inspections 4",
+    "identity": {
+      "make": "Kia",
+      "model": "K3",
+      "year": 2021,
+      "country": "South Korea",
+      "odometer": 106526
+    },
+    "market": {
+      "estimatedValue": 8875000,
+      "currency": "KRW",
+      "lastAuctionPrice": null,
+      "lastAuctionDate": null
+    },
+    "counts": {
+      "auctionHistory": 0,
+      "insuranceClaims": 5,
+      "accidents": 7,
+      "owners": 3,
+      "mileage": 5,
+      "registry": 14,
+      "recalls": 1,
+      "service": 1,
+      "extras": 73
+    },
+    "flags": {
+      "flooded": false,
+      "stolen": false,
+      "salvage": false
+    },
+    "claimPaid": [
+      {
+        "date": "2025-04-26",
+        "type": "insurance_third_party_own_damage",
+        "paid": 6217990
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance_own_damage",
+        "paid": 67680
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance_third_party",
+        "paid": 199200
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance_own_damage",
+        "paid": 531280
+      },
+      {
+        "date": "2021-10-05",
+        "type": "insurance_third_party_own_damage",
+        "paid": 2101795
+      }
+    ],
+    "accidentPaid": [
+      {
+        "date": "2025-04-26",
+        "type": "insurance",
+        "paid": 6217990,
+        "currency": "KRW"
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance",
+        "paid": 266880,
+        "currency": "KRW"
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance",
+        "paid": 531280,
+        "currency": "KRW"
+      },
+      {
+        "date": "2021-10-05",
+        "type": "insurance",
+        "paid": 2101795,
+        "currency": "KRW"
+      }
+    ],
+    "registryTypes": {
+      "insurance": 4,
+      "ownership": 3,
+      "registration": 2,
+      "first_registration": 2,
+      "no_insurance": 1,
+      "export": 1,
+      "simple_repair": 1
+    },
+    "keyExtras": [
+      "First registration",
+      "Total loss",
+      "Theft",
+      "Flood",
+      "Total own damage",
+      "Repair parts · Paint",
+      "Repair parts · Detach",
+      "Repair parts · Replace",
+      "Repair parts · Sheet Metal",
+      "Repair parts · Repair",
+      "Repair parts · Other",
+      "All repaired parts",
+      "Uninsured period",
+      "Korean market price",
+      "Recall campaigns",
+      "Export date",
+      "Export fuel",
+      "Export color",
+      "Export total loss",
+      "Total loss events",
+      "Theft events",
+      "Flood events",
+      "Own damage claims",
+      "First registration",
+      "Recall completion status"
+    ],
+    "sampleMileage": [
+      {
+        "date": "2025-04-18",
+        "odometer": 93000,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2024-04-15",
+        "odometer": 75383,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2023-04-17",
+        "odometer": 57661,
+        "unit": "km",
+        "source": "Car insurance company"
+      },
+      {
+        "date": "2026-02-01",
+        "odometer": 106526,
+        "unit": "km",
+        "source": "Export declaration"
+      },
+      {
+        "date": "2026-09-08",
+        "odometer": 98583,
+        "unit": "km",
+        "source": "inspection"
+      }
+    ],
+    "sampleRegistry": [
+      {
+        "date": "2026-01-20",
+        "type": "ownership",
+        "title": "Termination of information provision"
+      },
+      {
+        "date": "2025-12-24",
+        "type": "ownership",
+        "title": "Change of Owner"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "ownership",
+        "title": "Initial registration"
+      },
+      {
+        "date": "2026-01-20",
+        "type": "registration",
+        "title": "Termination of information provision"
+      },
+      {
+        "date": "2021-03-17",
+        "type": "registration",
+        "title": "Initial registration"
+      },
+      {
+        "date": "2025-04-26",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "6,217,990 KRW"
+      },
+      {
+        "date": "2024-11-08",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "266,880 KRW"
+      },
+      {
+        "date": "2021-12-31",
+        "type": "insurance",
+        "title": "Insurance accident",
+        "amount": "531,280 KRW"
+      }
+    ]
+  },
+  "history5": {
+    "label": "History 5",
+    "identity": {
+      "make": "Hyundai",
+      "model": "CASPER",
+      "year": 2022,
+      "country": "South Korea",
+      "odometer": 75647
+    },
+    "market": {
+      "estimatedValue": null,
+      "currency": "USD",
+      "lastAuctionPrice": null,
+      "lastAuctionDate": null
+    },
+    "counts": {
+      "auctionHistory": 0,
+      "insuranceClaims": 0,
+      "accidents": 0,
+      "owners": 3,
+      "mileage": 1,
+      "registry": 7,
+      "recalls": 0,
+      "service": 0,
+      "extras": 8
+    },
+    "flags": {
+      "flooded": false,
+      "stolen": null,
+      "salvage": false
+    },
+    "claimPaid": [],
+    "accidentPaid": [],
+    "registryTypes": {
+      "owner_change": 3,
+      "flood_history": 1,
+      "government_use_history": 1,
+      "special_use_history": 1,
+      "total_loss_history": 1
+    },
+    "keyExtras": [
+      "Water/Flood Damage",
+      "Total Loss"
+    ],
+    "sampleMileage": [
+      {
+        "date": "2026-08-30",
+        "odometer": 75647,
+        "unit": "km",
+        "source": "autobellglobal"
+      }
+    ],
+    "sampleRegistry": [
+      {
+        "date": "2026-08-30",
+        "type": "flood_history",
+        "title": "Water/Flood Damage"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "government_use_history",
+        "title": "Government"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "special_use_history",
+        "title": "Special Usage"
+      },
+      {
+        "date": "2026-08-30",
+        "type": "total_loss_history",
+        "title": "Total Loss"
+      },
+      {
+        "date": "2026-03-11",
+        "type": "owner_change",
+        "title": "Transfer of Ownership"
+      },
+      {
+        "date": "2026-03-16",
+        "type": "owner_change",
+        "title": "Transfer of Ownership"
+      },
+      {
+        "date": null,
+        "type": "owner_change",
+        "title": "Transfer of Ownership"
+      }
+    ]
+  },
+  "nov2024Check": {
+    "accidentPaid": 266880,
+    "claimCount": 2,
+    "claimTypes": [
+      {
+        "type": "insurance_own_damage",
+        "paid": 67680
+      },
+      {
+        "type": "insurance_third_party",
+        "paid": 199200
+      }
+    ],
+    "expectedAccidentPaid": 266880
+  }
+}

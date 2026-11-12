@@ -1,0 +1,199 @@
+{
+  "localizationKeys": [
+    "requested_languages",
+    "returned_languages",
+    "fallback_language",
+    "fields",
+    "source_text_translated"
+  ],
+  "sourceKeys": [
+    "id",
+    "name",
+    "status",
+    "preview",
+    "sections"
+  ],
+  "hasDamageDict": false,
+  "localizationTop": [
+    "requested_languages",
+    "returned_languages",
+    "fallback_language",
+    "fields",
+    "source_text_translated"
+  ],
+  "fieldsMeta": [],
+  "termTranslations": null,
+  "listing0terms": null,
+  "sample": [
+    {
+      "marketplace": "copart.com",
+      "listing_type": "auction",
+      "sale_date": "2026-04-15T14:00:00Z",
+      "odometer_km": 89420,
+      "final_price": 11550,
+      "main_damage_id": 1,
+      "second_damage_id": 2,
+      "condition_label": "run and drives",
+      "status_label": "sold",
+      "keys": [
+        "vehicle_title",
+        "lot",
+        "title",
+        "status",
+        "odometer_status",
+        "main_damage_id",
+        "second_damage_id",
+        "condition",
+        "airbags",
+        "condition_label",
+        "odometer_status_label",
+        "status_label",
+        "airbags_label",
+        "marketplace"
+      ],
+      "allLabels": {
+        "main_damage_id": 1,
+        "second_damage_id": 2,
+        "condition_label": "run and drives",
+        "odometer_status_label": "actual",
+        "status_label": "sold",
+        "airbags_label": "intact"
+      }
+    },
+    {
+      "marketplace": "iaai.com",
+      "listing_type": "auction",
+      "sale_date": "2026-06-15T14:00:00Z",
+      "odometer_km": 90920,
+      "final_price": 12950,
+      "main_damage_id": 1,
+      "second_damage_id": 2,
+      "condition_label": "run and drives",
+      "status_label": "sold",
+      "keys": [
+        "vehicle_title",
+        "lot",
+        "title",
+        "status",
+        "odometer_status",
+        "main_damage_id",
+        "second_damage_id",
+        "condition",
+        "airbags",
+        "condition_label",
+        "odometer_status_label",
+        "status_label",
+        "airbags_label",
+        "marketplace"
+      ],
+      "allLabels": {
+        "main_damage_id": 1,
+        "second_damage_id": 2,
+        "condition_label": "run and drives",
+        "odometer_status_label": "actual",
+        "status_label": "sold",
+        "airbags_label": "intact"
+      }
+    },
+    {
+      "marketplace": "encar.com",
+      "listing_type": "marketplace",
+      "sale_date": "2026-08-15T14:00:00Z",
+      "odometer_km": 92420,
+      "final_price": 24000350,
+      "main_damage_id": 1,
+      "second_damage_id": 2,
+      "condition_label": "run and drives",
+      "status_label": "sold",
+      "keys": [
+        "vehicle_title",
+        "lot",
+        "title",
+        "status",
+        "odometer_status",
+        "main_damage_id",
+        "second_damage_id",
+        "condition",
+        "airbags",
+        "condition_label",
+        "odometer_status_label",
+        "status_label",
+        "airbags_label",
+        "marketplace"
+      ],
+      "allLabels": {
+        "main_damage_id": 1,
+        "second_damage_id": 2,
+        "condition_label": "run and drives",
+        "odometer_status_label": "actual",
+        "status_label": "sold",
+        "airbags_label": "intact"
+      }
+    }
+  ],
+  "listing0full": {
+    "vin": "7FARW2H56JE022576",
+    "vehicle_title": "2018 Honda CR-V EX AWD",
+    "lot": "DEMO-022576-1",
+    "domain_id": 3,
+    "title": "2018 Honda CR-V EX AWD",
+    "sale_date": "2026-04-15T14:00:00Z",
+    "bid": 10700,
+    "final_bid": 11200,
+    "final_price": 11550,
+    "buy_now_price": 13200,
+    "status": 6,
+    "archived": true,
+    "odometer_km": 89420,
+    "odometer_mi": 55563,
+    "odometer_status": 1,
+    "main_damage_id": 1,
+    "second_damage_id": 2,
+    "condition": 0,
+    "keys_available": true,
+    "airbags": 1,
+    "pre_accident_price": 20200,
+    "estimate_repair_price": 1750,
+    "actual_cash_value": 19700,
+    "country_id": 1,
+    "state_id": 12,
+    "city_id": 1201,
+    "currency": "USD",
+    "images": [
+      "https://v-h-r.b-cdn.net/vhr/media/017760110fc426b7d79008da1c0427467829a05cd60dcfdb3ca4a5a9a0b39f42.webp",
+      "https://v-h-r.b-cdn.net/vhr/media/0d61f374ace5f42d797b32d1a5d778ed5d32141eb814a58eaa4260951c6d4069.webp"
+    ],
+    "price_history": [
+      {
+        "date": "2026-04-10",
+        "price": 9700,
+        "bid": 9000,
+        "final_bid": 0,
+        "extern_final_bid": 0,
+        "auction_final_bid": 0,
+        "buy_now_price": 14200,
+        "sale_date": "2026-04-15",
+        "status": 10,
+        "created_at": "2026-04-10T08:00:00Z"
+      },
+      {
+        "date": "2026-04-15",
+        "price": 11200,
+        "bid": 10700,
+        "final_bid": 11200,
+        "extern_final_bid": 11200,
+        "auction_final_bid": 11200,
+        "buy_now_price": 0,
+        "sale_date": "2026-04-15",
+        "status": 6,
+        "created_at": "2026-04-15T14:30:00Z"
+      }
+    ],
+    "condition_label": "run and drives",
+    "odometer_status_label": "actual",
+    "status_label": "sold",
+    "airbags_label": "intact",
+    "marketplace": "copart.com",
+    "listing_type": "auction"
+  }
+}

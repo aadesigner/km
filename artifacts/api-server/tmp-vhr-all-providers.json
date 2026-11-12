@@ -1,0 +1,627 @@
+[
+  {
+    "vin": "7FARW2H56JE022576",
+    "note": "USA auctions + archives + inspections + history",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 1,
+        "name": "USA Insurance Auctions & Korea History",
+        "records": 3,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Vehicle Archive Alpha",
+        "records": 3,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Vehicle Archive Beta",
+        "records": 2,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      },
+      {
+        "id": 4,
+        "name": "Vehicle Inspections",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Vehicle History",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      1
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 1,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": 2018,
+        "country": "United States",
+        "mileage": 4,
+        "auctions": 3,
+        "accidents": 3,
+        "insurance": 1,
+        "extras": 6,
+        "photos": 4
+      }
+    ],
+    "probeOtherEligible": [
+      {
+        "sourceId": 2,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings",
+          "equipment"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": 2018,
+        "country": "United States",
+        "mileage": 3,
+        "auctions": 3,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 8,
+        "photos": 4
+      },
+      {
+        "sourceId": 3,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "listings"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": null,
+        "country": "United States",
+        "mileage": 2,
+        "auctions": 2,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 3
+      },
+      {
+        "sourceId": 4,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "inspections"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": 2018,
+        "country": "United States",
+        "mileage": 1,
+        "auctions": 0,
+        "accidents": 1,
+        "insurance": 0,
+        "extras": 4,
+        "photos": 1
+      },
+      {
+        "sourceId": 5,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "history"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": null,
+        "country": "United States",
+        "mileage": 0,
+        "auctions": 0,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 0
+      }
+    ]
+  },
+  {
+    "vin": "1C4RJGAG3PC525071",
+    "note": "USA auctions + archive beta",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 1,
+        "name": "USA Insurance Auctions & Korea History",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Vehicle Archive Beta",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      1
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 1,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings"
+        ],
+        "structured": true,
+        "make": "Jeep",
+        "year": 2023,
+        "country": "United States",
+        "mileage": 1,
+        "auctions": 1,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 13
+      }
+    ],
+    "probeOtherEligible": [
+      {
+        "sourceId": 3,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "listings"
+        ],
+        "structured": true,
+        "make": "Jeep",
+        "year": 2023,
+        "country": "United States",
+        "mileage": 0,
+        "auctions": 1,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 0
+      }
+    ]
+  },
+  {
+    "vin": "KMUHCESB1SU250832",
+    "note": "Archive Alpha",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 2,
+        "name": "Vehicle Archive Alpha",
+        "records": 3,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      2
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 2,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings"
+        ],
+        "structured": true,
+        "make": "genesis",
+        "year": 2025,
+        "country": "South Korea",
+        "mileage": 3,
+        "auctions": 3,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 9
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "5YFB4MDE0TP377402",
+    "note": "USA auctions + dealer",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 1,
+        "name": "USA Insurance Auctions & Korea History",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      1
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 1,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings"
+        ],
+        "structured": true,
+        "make": "Toyota",
+        "year": 2026,
+        "country": "United States",
+        "mileage": 0,
+        "auctions": 1,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 13
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "KNAKR814DNA244958",
+    "note": "Archive Beta",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 3,
+        "name": "Vehicle Archive Beta",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      3
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 3,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "listings"
+        ],
+        "structured": true,
+        "make": "Kia",
+        "year": null,
+        "country": "South Korea",
+        "mileage": 0,
+        "auctions": 1,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 24
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "KMTG341ABMU089876",
+    "note": "Inspections only",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 4,
+        "name": "Vehicle Inspections",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [],
+    "boughtSelected": [],
+    "probeOtherEligible": [
+      {
+        "sourceId": 4,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "inspections"
+        ],
+        "structured": true,
+        "make": "G70",
+        "year": 2021,
+        "country": "South Korea",
+        "mileage": 0,
+        "auctions": 0,
+        "accidents": 3,
+        "insurance": 0,
+        "extras": 3,
+        "photos": 3
+      }
+    ]
+  },
+  {
+    "vin": "KMHB3518BNW003977",
+    "note": "Vehicle History",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 5,
+        "name": "Vehicle History",
+        "records": 1,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      5
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 5,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "history"
+        ],
+        "structured": true,
+        "make": "Hyundai",
+        "year": null,
+        "country": "South Korea",
+        "mileage": 0,
+        "auctions": 0,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 0
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "KNAF241BEMA915413",
+    "note": "Korean Insurance demo",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 68,
+        "name": "Korean Insurance History",
+        "records": 0,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en",
+          "ru"
+        ]
+      }
+    ],
+    "selected": [
+      68
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 68,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance"
+        ],
+        "structured": true,
+        "make": "Kia",
+        "year": null,
+        "country": "South Korea",
+        "mileage": 0,
+        "auctions": 0,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 0
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "KMHGE41ABBU141129",
+    "note": "Korean Insurance demo",
+    "checkStatus": "completed",
+    "eligibleUsed": [
+      {
+        "id": 68,
+        "name": "Korean Insurance History",
+        "records": 0,
+        "formats": [
+          "json",
+          "html",
+          "pdf"
+        ],
+        "langs": [
+          "en"
+        ]
+      }
+    ],
+    "selected": [
+      68
+    ],
+    "boughtSelected": [
+      {
+        "sourceId": 68,
+        "http": 200,
+        "status": "completed",
+        "hasJson": true,
+        "hasHtml": true,
+        "sectionTypes": [
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance",
+          "korean_insurance"
+        ],
+        "structured": true,
+        "make": "Hyundai",
+        "year": null,
+        "country": "South Korea",
+        "mileage": 0,
+        "auctions": 0,
+        "accidents": 0,
+        "insurance": 0,
+        "extras": 0,
+        "photos": 0
+      }
+    ],
+    "probeOtherEligible": []
+  },
+  {
+    "vin": "KMHD641EELU077852",
+    "note": "Korean Insurance demo",
+    "checkStatus": "completed",
+    "eligibleUsed": [],
+    "selected": [],
+    "boughtSelected": [],
+    "probeOtherEligible": []
+  }
+]

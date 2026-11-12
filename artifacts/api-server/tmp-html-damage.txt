@@ -1,0 +1,15 @@
+[value=all]):checked) .tl__year{display:none}.histwrap:has(.filters input[value=damage]:checked) .tl__row:not([data-group=damage]){display:none}.histwrap:has(.filters input[value=service]:checked) .tl
+---
+ne}.histwrap:has(.filters input[value=damage]:checked) .tl__row:not([data-group=damage]){display:none}.histwrap:has(.filters input[value=service]:checked) .tl__row:not([data-group=service]){display:no
+---
+ <div><dt>Value before damage</dt><dd class="mono">$20,200</dd></div> 
+---
+ <div><dt>Value before damage</dt><dd class="mono">$21,600</dd></div> 
+---
+ <div><dt>Value before damage</dt><dd class="mono">₩24,009,000</dd></div> 
+---
+ration</dt><dd>normal</dd></div><div><dt>Korean history inspect chassis · Frame damage</dt><dd>No</dd></div><div><dt>Korean history inspect chassis · Corrosion</dt><dd>none</dd></div><div><dt>Korean h
+---
+· Roof</dt><dd>original</dd></div><div><dt>Korean history inspect outer · Water damage</dt><dd>No</dd></div><div><dt>Korean history inspect outer · Fire damage</dt><dd>No</dd></div><div><dt>Korean his
+---
+ Water damage</dt><dd>No</dd></div><div><dt>Korean history inspect outer · Fire damage</dt><dd>No</dd></div><div><dt>Korean history insurance · Total loss</dt><dd>No</dd></div><div><dt>Korean history 

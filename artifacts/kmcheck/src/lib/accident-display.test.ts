@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   resolveAccidentSeverityForDisplay,
   accidentSeverityStyle,
+  isPartsListAccidentDescription,
+  resolveAccidentCostBreakdown,
 } from "./accident-display";
 
 describe("resolveAccidentSeverityForDisplay", () => {
@@ -27,5 +29,34 @@ describe("accidentSeverityStyle", () => {
     const style = accidentSeverityStyle("unknown");
     expect(style.card).toContain("border-border");
     expect(style.dot).not.toContain("yellow");
+  });
+});
+
+describe("accident cost vs parts list", () => {
+  it("detects repaired-parts dumps", () => {
+    expect(
+      isPartsListAccidentDescription(
+        "Rear door (left) surface repair (painting); Rear bumper assembly (replacement)",
+      ),
+    ).toBe(true);
+    expect(
+      isPartsListAccidentDescription(
+        "Paid 266,880 KRW · Parts 1,502,800 KRW · Labor 1,003,760 KRW · Paint 1,556,510 KRW",
+      ),
+    ).toBe(false);
+  });
+
+  it("resolves parts/labor/paint from same-day insurance claims", () => {
+    const costs = resolveAccidentCostBreakdown(
+      { date: "2024-11-08", lossAmount: 266880, description: "Rear door (left) (replace); Rear bumper (replacement)" },
+      [
+        { date: "2024-11-08", lossAmount: 67680, partCost: 10000, laborCost: 20000, paintingCost: 5000 },
+        { date: "2024-11-08", lossAmount: 199200, partCost: 80000, laborCost: 40000, paintingCost: 20000 },
+      ],
+    );
+    expect(costs.partCost).toBe(90000);
+    expect(costs.laborCost).toBe(60000);
+    expect(costs.paintingCost).toBe(25000);
+    expect(costs.lossAmount).toBe(266880);
   });
 });

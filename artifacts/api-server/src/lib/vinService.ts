@@ -40,6 +40,7 @@ import {
   registryHistoryDedupeKey,
 } from "./history-dedupe.js";
 import { filterMileageHistoryForPersist } from "./mileageHistoryRepair.js";
+import { translateNormalizedReportRuToEn, translateRuToEn } from "./carstatVhrRuTranslate.js";
 import { parseKmFromText, resolveLatestOdometerKm } from "@workspace/odometer-resolve";
 import {
   normalizeKrwAmountText,
@@ -76,9 +77,10 @@ export interface NormalizedVinData {
   /**
    * Opaque report origin stamp. `"getcarapi"` switches Events UI (not Korean registry).
    * `"carstat_usa"` = Carfax/AutoCheck PDF report (see `pdfReport`).
+   * `"carstat_vhr"` = Carstat VHR V2 HTML report(s) (see `vhrReports`).
    * Carstat / local catalog leave this unset.
    */
-  dataSource?: "getcarapi" | "carstat_usa" | null;
+  dataSource?: "getcarapi" | "carstat_usa" | "carstat_vhr" | null;
   /** Present when dataSource is carstat_usa — provider PDF/HTML URLs only (no base64). */
   pdfReport?: {
     type: "carfax" | "autocheck";
@@ -87,6 +89,28 @@ export interface NormalizedVinData {
     reportId: number | null;
     vehicle: string | null;
     fetchedAt: string;
+  } | null;
+  /** Present when dataSource is carstat_vhr — one or more HTML reports. */
+  vhrReports?: Array<{
+    sourceId: number;
+    sourceName: string;
+    htmlUrl: string | null;
+    jsonUrl: string | null;
+    reportId: string | null;
+    requestId: string | null;
+    fetchedAt: string;
+    chargedUsd: number | null;
+  }> | null;
+  /** Convenience: first successful VHR report (compat). */
+  vhrReport?: {
+    sourceId: number;
+    sourceName: string;
+    htmlUrl: string | null;
+    jsonUrl: string | null;
+    reportId: string | null;
+    requestId: string | null;
+    fetchedAt: string;
+    chargedUsd: number | null;
   } | null;
   make?: string | null;
   model?: string | null;
@@ -146,6 +170,10 @@ export interface NormalizedVinData {
     airbagDeployed?: boolean | null;
     odometerAtLoss?: number | null;
     lossAmount?: number | null;
+    /** Korea insurance cost split — amounts, not part name lists. */
+    partCost?: number | null;
+    laborCost?: number | null;
+    paintingCost?: number | null;
     currency?: string | null;
   }>;
   /** Korean / regional insurance payout history — not the same as collision accidents. */
@@ -168,6 +196,8 @@ export interface NormalizedVinData {
     primaryDamage?: string | null;
     secondaryDamage?: string | null;
     auctionPrice?: number | null;
+    /** Currency for auctionPrice when known (USD / KRW / EUR). */
+    currency?: string | null;
     lotStatus?: string | null;
     titleStatus?: string | null;
     /** Manual admin annotation only — never set by provider normalize. */
@@ -216,6 +246,7 @@ export interface NormalizedVinData {
     buyNowPrice?: number | null;
     finalPrice?: number | null;
     lotStatus?: string | null;
+    currency?: string | null;
   }>;
   titleStatus?: string | null;
   /** Korean KOTSA / Encar registry timeline from details.history. */
@@ -698,7 +729,9 @@ export async function enrichVinReportDataForServe(
     primaryData,
     primaryUpdatedAt,
   ) ?? primaryData;
-  return applyMissingFloodFlagsForServe(merged) ?? merged;
+  const withFlags = applyMissingFloodFlagsForServe(merged) ?? merged;
+  // Cached reports may still hold Carstat RU labels — translate on every serve.
+  return translateNormalizedReportRuToEn(withFlags);
 }
 
 /** Push stamped catalog report data to every lookup row for a VIN (admin save / publish). */
@@ -1381,83 +1414,194 @@ export const PUBLIC_VIN_CHECK_UNAVAILABLE =
   "VIN check is temporarily unavailable. Please try again later.";
 
 /** Which external archive has the VIN (after local catalog miss). */
-export type VinExternalSource = "getcarapi" | "carstat_usa" | "carstat";
+export type VinExternalSource = "getcarapi" | "carstat" | "carstat_vhr" | "carstat_usa";
 
 export type VinExternalProbeResult =
   | { status: "exists"; source: VinExternalSource; usaReportType?: "carfax" | "autocheck" }
   | { status: "not_found" }
   | { status: "unavailable"; reason: string };
 
+/** Shared across peek + payment create + fulfillment mode resolve (same VIN). */
+const EXTERNAL_PROBE_CACHE_TTL_MS = 5 * 60_000;
+const externalProbeCache = new Map<string, { expiresAt: number; result: VinExternalProbeResult }>();
+const externalProbeInflight = new Map<string, Promise<VinExternalProbeResult>>();
+
+function readExternalProbeCache(vin: string): VinExternalProbeResult | null {
+  const hit = externalProbeCache.get(vin);
+  if (!hit) return null;
+  if (Date.now() >= hit.expiresAt) {
+    externalProbeCache.delete(vin);
+    return null;
+  }
+  return hit.result;
+}
+
+function writeExternalProbeCache(vin: string, result: VinExternalProbeResult): void {
+  // Only cache definitive answers — never stick a transient outage.
+  if (result.status !== "exists" && result.status !== "not_found") return;
+  externalProbeCache.set(vin, {
+    expiresAt: Date.now() + EXTERNAL_PROBE_CACHE_TTL_MS,
+    result,
+  });
+}
+
 /**
- * Cascade (free checks only): GetCarAPI → Carstat local → Carstat USA.
- * Earlier hits short-circuit later providers. Local catalog is checked by callers first.
+ * Cascade (free checks only): GetCarAPI → Carstat local → Carstat VHR → Carstat USA.
+ * Preference order is unchanged; early stages run in parallel, then VHR+USA.
+ * In-flight singleflight + short TTL cache keep peek/pay/heavy traffic snappy.
+ * Carstat local is skipped when admin disables carstatLocalApiEnabled.
  * Does not call paid report endpoints.
  */
 export async function probeExternalVinAvailability(vin: string): Promise<VinExternalProbeResult> {
-  const { checkGetCarApiExists, resolveGetCarApiConfig } = await import("./getcarApi.js");
-  const { checkCarstatUsaRecords, resolveCarstatUsaApiConfig } = await import("./carstatUsaApi.js");
   const normalized = vin.trim().toUpperCase();
+  const cached = readExternalProbeCache(normalized);
+  if (cached) {
+    logger.info({ msg: "external_probe_cache_hit", vin: normalized, status: cached.status });
+    return cached;
+  }
+
+  const inflight = externalProbeInflight.get(normalized);
+  if (inflight) return inflight;
+
+  const run = probeExternalVinAvailabilityUncached(normalized)
+    .then((result) => {
+      writeExternalProbeCache(normalized, result);
+      return result;
+    })
+    .finally(() => {
+      externalProbeInflight.delete(normalized);
+    });
+  externalProbeInflight.set(normalized, run);
+  return run;
+}
+
+async function probeExternalVinAvailabilityUncached(normalized: string): Promise<VinExternalProbeResult> {
+  const started = Date.now();
+  const { checkGetCarApiExists, resolveGetCarApiConfig } = await import("./getcarApi.js");
+  const { checkCarstatVhrAvailability, resolveCarstatVhrApiConfig } = await import("./carstatVhrApi.js");
+  const { checkCarstatUsaRecords, resolveCarstatUsaApiConfig } = await import("./carstatUsaApi.js");
+  const { resolveCarstatLocalApiEnabled } = await import("./carstatLocalApiSettingsCache.js");
 
   let getCarMissed = true;
   let getCarDown = false;
   let carstatMissed = true;
   let carstatDown = false;
+  let vhrMissed = true;
+  let vhrDown = false;
   let usaMissed = true;
   let usaDown = false;
 
-  // Admin disable / missing key → skip entirely.
-  if (await resolveGetCarApiConfig()) {
-    const gca = await checkGetCarApiExists(normalized);
-    if (gca.status === "exists") {
+  // Resolve toggles / credentials together, then run GetCarAPI + local in parallel.
+  const [getCarCfg, carstatLocalEnabled, providerRows] = await Promise.all([
+    resolveGetCarApiConfig(),
+    resolveCarstatLocalApiEnabled(),
+    db.select().from(providersTable)
+      .where(and(eq(providersTable.isActive, true)))
+      .orderBy(providersTable.id)
+      .limit(1),
+  ]);
+  const provider = providerRows[0];
+
+  const [gcaResult, localResult] = await Promise.all([
+    getCarCfg
+      ? checkGetCarApiExists(normalized)
+      : Promise.resolve(null),
+    carstatLocalEnabled && provider?.apiKey?.trim()
+      ? checkLocalExists(normalized, provider.baseUrl, provider.apiKey)
+      : Promise.resolve(null),
+  ]);
+
+  if (gcaResult) {
+    if (gcaResult.status === "exists") {
+      logger.info({ msg: "external_probe_done", vin: normalized, source: "getcarapi", elapsedMs: Date.now() - started });
       return { status: "exists", source: "getcarapi" };
     }
-    if (gca.status === "not_found") {
+    if (gcaResult.status === "not_found") {
       getCarMissed = true;
     } else {
       getCarDown = true;
       getCarMissed = false;
-      logger.warn({ msg: "getcarapi_probe_unavailable", vin: normalized, reason: gca.reason });
+      logger.warn({ msg: "getcarapi_probe_unavailable", vin: normalized, reason: gcaResult.reason });
     }
   }
 
-  const [provider] = await db.select().from(providersTable)
-    .where(and(eq(providersTable.isActive, true)))
-    .orderBy(providersTable.id)
-    .limit(1);
-
-  if (provider?.apiKey?.trim()) {
-    const exists = await checkLocalExists(normalized, provider.baseUrl, provider.apiKey);
-    if (exists.status === "exists") {
+  if (localResult) {
+    if (localResult.status === "exists") {
+      logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat", elapsedMs: Date.now() - started });
       return { status: "exists", source: "carstat" };
     }
-    if (exists.status === "not_found") {
+    if (localResult.status === "not_found") {
       carstatMissed = true;
     } else {
       carstatDown = true;
       carstatMissed = false;
-      logger.warn({ msg: "carstat_probe_unavailable", vin: normalized, reason: exists.reason });
+      logger.warn({ msg: "carstat_probe_unavailable", vin: normalized, reason: localResult.reason });
+    }
+  } else if (!carstatLocalEnabled) {
+    // Admin disabled local listings — treat as miss and continue to VHR / USA.
+    carstatMissed = true;
+  }
+
+  // VHR + USA in parallel after early miss (VHR still preferred when both hit).
+  const [vhrCfg, usaCfg] = await Promise.all([
+    resolveCarstatVhrApiConfig(),
+    resolveCarstatUsaApiConfig(),
+  ]);
+  const [vhrResult, usaResult] = await Promise.all([
+    vhrCfg
+      ? checkCarstatVhrAvailability(normalized, { phase: "probe" })
+      : Promise.resolve(null),
+    usaCfg
+      ? checkCarstatUsaRecords(normalized, { phase: "probe" })
+      : Promise.resolve(null),
+  ]);
+
+  if (vhrResult) {
+    if (vhrResult.status === "exists") {
+      logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat_vhr", elapsedMs: Date.now() - started });
+      return { status: "exists", source: "carstat_vhr" };
+    }
+    if (vhrResult.status === "not_found") {
+      vhrMissed = true;
+    } else {
+      vhrDown = true;
+      vhrMissed = false;
+      logger.warn({ msg: "carstat_vhr_probe_unavailable", vin: normalized, reason: vhrResult.reason });
     }
   }
 
-  if (await resolveCarstatUsaApiConfig()) {
-    const usa = await checkCarstatUsaRecords(normalized);
-    if (usa.status === "exists") {
-      return { status: "exists", source: "carstat_usa", usaReportType: usa.preferredType };
+  if (usaResult) {
+    if (usaResult.status === "exists") {
+      logger.info({
+        msg: "external_probe_done",
+        vin: normalized,
+        source: "carstat_usa",
+        elapsedMs: Date.now() - started,
+      });
+      return { status: "exists", source: "carstat_usa", usaReportType: usaResult.preferredType };
     }
-    if (usa.status === "not_found") {
+    if (usaResult.status === "not_found") {
       usaMissed = true;
     } else {
       usaDown = true;
       usaMissed = false;
-      logger.warn({ msg: "carstat_usa_probe_unavailable", vin: normalized, reason: usa.reason });
+      logger.warn({ msg: "carstat_usa_probe_unavailable", vin: normalized, reason: usaResult.reason });
     }
   }
 
-  if (getCarMissed && carstatMissed && usaMissed) return { status: "not_found" };
-  if (getCarDown || carstatDown || usaDown) {
-    return { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE };
-  }
-  return { status: "not_found" };
+  const result: VinExternalProbeResult = (getCarMissed && carstatMissed && vhrMissed && usaMissed)
+    ? { status: "not_found" }
+    : (getCarDown || carstatDown || vhrDown || usaDown)
+      ? { status: "unavailable", reason: PUBLIC_VIN_CHECK_UNAVAILABLE }
+      : { status: "not_found" };
+
+  logger.info({
+    msg: "external_probe_done",
+    vin: normalized,
+    status: result.status,
+    elapsedMs: Date.now() - started,
+  });
+  return result;
 }
 
 function parseProviderReportError(status: number, text: string): LocalExistsResult | null {
@@ -1702,11 +1846,15 @@ export async function fetchFromProvider(
     // `force` (admin "Refresh from provider") always calls the provider and bypasses
     // the catalog cache, so a partial catalog row can be fully repaired.
     const { isCarstatUsaPdfPayload } = await import("./carstatUsaApi.js");
+    const { isCarstatVhrPayload } = await import("./carstatVhrApi.js");
 
     if (!opts?.force) {
       const catalogEntry = await getCatalogVin(normalized);
       const catalogData = (catalogEntry?.data as Record<string, unknown> | null) ?? null;
       if (catalogData && isCarstatUsaPdfPayload(catalogData)) {
+        return catalogData as unknown as NormalizedVinData;
+      }
+      if (catalogData && isCarstatVhrPayload(catalogData)) {
         return catalogData as unknown as NormalizedVinData;
       }
       if (catalogEntry && catalogData && catalogHasDeliverableReport(catalogData)) {
@@ -1724,6 +1872,10 @@ export async function fetchFromProvider(
 
     const { fetchGetCarApiReport, normalizeGetCarApiResponse, resolveGetCarApiConfig } =
       await import("./getcarApi.js");
+    const {
+      fetchCarstatVhrReport,
+      resolveCarstatVhrApiConfig,
+    } = await import("./carstatVhrApi.js");
     const {
       fetchCarstatUsaReport,
       resolveCarstatUsaApiConfig,
@@ -1756,7 +1908,7 @@ export async function fetchFromProvider(
       );
     };
 
-    // Post-pay retrieve order: GetCarAPI → Carstat local → Carstat USA.
+    // Post-pay retrieve order: GetCarAPI → Carstat local → Carstat VHR → Carstat USA.
     // GetCarAPI hit → try retrieve; on rate-limit/credits/transient, fall through.
     if (source === "getcarapi" && getCarCfg) {
       try {
@@ -1766,7 +1918,7 @@ export async function fetchFromProvider(
         if (transientFallback(err)) {
           logger.warn(
             { err, vin: normalized },
-            "GetCarAPI retrieve failed — falling back to Carstat local / USA",
+            "GetCarAPI retrieve failed — falling back to Carstat local / VHR / USA",
           );
           source = null;
         } else if (opts?.strictSource) {
@@ -1785,8 +1937,11 @@ export async function fetchFromProvider(
       throw new Error("GetCarAPI refresh did not return data");
     }
 
-    // Carstat local JSON path (before Carstat USA PDF).
-    if (source === "carstat" || source == null) {
+    // Carstat local JSON path (before VHR / USA). Skip when admin disabled listings.
+    const { resolveCarstatLocalApiEnabled } = await import("./carstatLocalApiSettingsCache.js");
+    const carstatLocalEnabled = await resolveCarstatLocalApiEnabled();
+
+    if ((source === "carstat" || source == null) && carstatLocalEnabled) {
       if (apiKey?.trim()) {
         const base = normalizeProviderBaseUrl(providerBaseUrl);
         try {
@@ -1800,7 +1955,7 @@ export async function fetchFromProvider(
           if (transientFallback(err) || source == null || source === "carstat") {
             logger.warn(
               { err, vin: normalized },
-              "Carstat local retrieve failed — falling back to Carstat USA",
+              "Carstat local retrieve failed — falling back to Carstat VHR / USA",
             );
             source = null;
           } else {
@@ -1813,13 +1968,50 @@ export async function fetchFromProvider(
           code: "VIN_NO_DATA",
         });
       }
+    } else if (source === "carstat" && !carstatLocalEnabled) {
+      if (opts?.strictSource) {
+        throw new Error("Carstat local listings API is disabled");
+      }
+      logger.info({ msg: "carstat_local_skipped_disabled", vin: normalized });
+      source = null;
     }
 
     if (opts?.strictSource && opts.preferredSource === "carstat") {
       throw new Error("Carstat refresh did not return data");
     }
 
-    // Carstat USA PDF path (after Carstat local miss / fallback).
+    // Carstat VHR V2 path (after Carstat local, before USA).
+    if (source === "carstat_vhr" || source == null) {
+      const vhrCfg = await resolveCarstatVhrApiConfig();
+      if (vhrCfg) {
+        try {
+          return await fetchCarstatVhrReport(normalized);
+        } catch (err) {
+          if (opts?.strictSource && opts.preferredSource === "carstat_vhr") {
+            logger.error({ err, vin: normalized }, "Error fetching from Carstat VHR");
+            throw err;
+          }
+          if (source === "carstat_vhr" && !transientFallback(err)) {
+            logger.error({ err, vin: normalized }, "Error fetching from Carstat VHR");
+            throw err;
+          }
+          logger.warn({ err, vin: normalized }, "Carstat VHR retrieve failed — falling back to USA");
+          if (source === "carstat_vhr") {
+            source = null;
+          } else {
+            source = null;
+          }
+        }
+      } else if (source === "carstat_vhr") {
+        throw new Error("Carstat VHR API is not configured");
+      }
+    }
+
+    if (opts?.strictSource && opts.preferredSource === "carstat_vhr") {
+      throw new Error("Carstat VHR refresh did not return data");
+    }
+
+    // Carstat USA PDF path (after VHR miss / fallback).
     if (source === "carstat_usa" || source == null) {
       const usaCfg = await resolveCarstatUsaApiConfig();
       if (usaCfg) {
@@ -4166,16 +4358,16 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
   );
   const repairedAuction = applyEncarDateRepairs(sortedAuctionHistory, vehicleYear) ?? sortedAuctionHistory;
 
-  return {
+  const normalizedLocal: NormalizedVinData = {
     make: str(mfr.name),
     model: str(mdl.name),
     year: vehicleYear,
     trim: str(gen.name),
     engine: engineName,
     transmission: str(transmissionObj.name),
-    fuelType: str(fuelObj.name),
-    bodyType: str(bodyType.name),
-    color: str(colorObj.name),
+    fuelType: translateRuToEn(str(fuelObj.name) ?? "") || str(fuelObj.name),
+    bodyType: translateRuToEn(str(bodyType.name) ?? "") || str(bodyType.name),
+    color: translateRuToEn(str(colorObj.name) ?? "") || str(colorObj.name),
     country,
     odometer: resolvedOdometer,
     accidentCount: resolvedAccidentCount,
@@ -4207,4 +4399,5 @@ export function normalizeCarstatResponse(body: Record<string, unknown>): Normali
     auctionHistory: repairedAuction,
     marketData: buildMarketDataFromLots(lots, repairedAuction, vehicleYear),
   };
+  return translateNormalizedReportRuToEn(normalizedLocal as Record<string, unknown>) as NormalizedVinData;
 }

@@ -1,5 +1,5 @@
 import type { PrintSummaryHighlight } from "@/components/vin-print-summary";
-import { formatAccidentDescription, formatAccidentType, localizeAccidentDate, ACCIDENT_SEVERITY_I18N_KEYS } from "@/lib/accident-display";
+import { formatAccidentNarrativeDescription, formatAccidentType, localizeAccidentDate, ACCIDENT_SEVERITY_I18N_KEYS } from "@/lib/accident-display";
 import { translateInsuranceClaimType, formatInsuranceAmount } from "@/lib/insurance-claims";
 import { localizeProviderDate } from "@/lib/korean-provider-text";
 import { localizeRegistrySubtitle, translateRegistryEventType } from "@/lib/registry-history";
@@ -86,6 +86,7 @@ type ClaimLike = {
 type MileageLike = {
   date?: string | null;
   odometer?: number | null;
+  source?: string | null;
   primaryDamage?: string | null;
   damage?: string | null;
   titleStatus?: string | null;
@@ -133,8 +134,7 @@ export function buildAccidentPrintHighlights(
   return accidents.slice(0, PRINT_ACCIDENT_LIMIT).map((acc) => {
     const damage = translateDamageLabel(t, acc.primaryDamage)
       ?? translateDamageLabel(t, acc.secondaryDamage)
-      ?? formatAccidentDescription(t, language, acc.description)
-      ?? acc.description;
+      ?? formatAccidentNarrativeDescription(t, language, acc.description);
     const severity = trSeverity(t, acc.severity);
     const typeLabel = formatAccidentType(t, acc.type);
     const parts = [severity, typeLabel, damage].filter(Boolean);
@@ -195,7 +195,7 @@ export function buildMileagePrintRows(
     const location = entry.location
       ? formatLocationLabel(entry.location, language, countryLabels)
       : null;
-    const detail = [damage, entry.titleStatus, entry.lotStatus, location, entry.description]
+    const detail = [entry.source, damage, entry.titleStatus, entry.lotStatus, location, entry.description]
       .filter(Boolean)
       .join(" · ") || null;
     return {

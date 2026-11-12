@@ -1,0 +1,107 @@
+{
+  "schema_version": 2,
+  "report_id": null,
+  "vin": "5YFB4MDE0TP377402",
+  "generated_at": "2026-10-24T00:20:00Z",
+  "example_note": "FREE SAVED EXAMPLE. Captured supplier data; no new supplier request or payment is made when this VIN is checked or its reports are opened.",
+  "source": {
+    "id": 1,
+    "name": "USA Insurance Auctions & Korea History",
+    "status": "available",
+    "preview": {
+      "has_data": true,
+      "records_count": 1,
+      "thumbnail_url": "https://v-h-r.b-cdn.net/vhr/media/4e87ab356678c1a7300cde09282b3f11554063e2e4008a3bed3d7f18bfce4b38.webp"
+    },
+    "sections": [
+      {
+        "type": "vehicles",
+        "items": [
+          {
+            "hp": null,
+            "vin": "5yfb4mde0tp377402",
+            "fuel": 4,
+            "year": 2026,
+            "color": 15,
+            "title": "2026 Toyota Corola",
+            "model_id": 876,
+            "body_type": 1,
+            "cylinders": 4,
+            "fuel_label": "gasoline",
+            "color_label": "black",
+            "drive_wheel": null,
+            "transmission": 1,
+            "vehicle_type": 1,
+            "generation_id": null,
+            "body_type_label": "sedan",
+            "manufacturer_id": 140,
+            "transmission_label": "automatic",
+            "vehicle_type_label": "automobile"
+          }
+        ],
+        "title": "Vehicle information"
+      },
+      {
+        "type": "listings",
+        "items": [
+          {
+            "bid": 0,
+            "lot": "72438206",
+            "vin": "5YFB4MDE0TP377402",
+            "images": [
+              "https://v-h-r.b-cdn.net/vhr/media/4e87ab356678c1a7300cde09282b3f11554063e2e4008a3bed3d7f18bfce4b38.webp",
+              "https://v-h-r.b-cdn.net/vhr/media/2612d61aa6f9a5d6657a9c33f0713e2e9ec657b6c4a30a52d0f8608a1025abee.webp",
+              "https://v-h-r.b-cdn.net/vhr/media/fd324c4d7800eb7a07b547c1068aa4ecf6a849befec12c6c169a1a50d1652035.webp",
+              "https://v-h-r.b-cdn.net/vhr/media/c9fde709d90cd7ac9fb405a1ccfa3a3ec165c425f6ef533edd3342f741ccf255.webp",
+              "https://v-h-r.b-cdn.net/vhr/media/763057951cfd2d73310a8ad30819f95cb5f944d9f6951891b421522ecae65a18.webp",
+              "https://v-h-r.b-cdn.net/vhr/media/8ef1199c94d680eabcf7da8cec81b5b176586b341591abf600bd58d616624ea6.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/f1918ac1538285d4736184569debad5792669e38196faf64677237828e09734a.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/2ccdcc9b1c2b0e6ffd305be7fb77c48581596c4a4f8af52a64a1dee2e82d1c6c.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/68075c361779d2e85e5246e7996a21748a8f8604386bf4f569dac438ee63ff56.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/c6ee34cc46ba3168cb130d9f56e6489488ef08d895e719968098940287bcf48b.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/8c2ea771b7e934eb0694e0b070487da6bbfd01ba0a6c18b08217d243be54966a.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/97ba833772cac86fdabdb881b9b4d6f6afce5ac06860f300d811b4b0bee08186.jpg",
+              "https://v-h-r.b-cdn.net/vhr/media/7a06f2b1e248ae513d4d9d6b6c28296751ff5410b3bbe675b538e32561b26d14.jpg"
+            ],
+            "status": null,
+            "airbags": null,
+            "city_id": 29,
+            "archived": false,
+            "currency": "USD",
+            "state_id": 90,
+            "condition": 0,
+            "domain_id": 3,
+            "final_bid": null,
+            "sale_date": null,
+            "country_id": 1,
+            "marketplace": "copart.com",
+            "odometer_km": 32955,
+            "odometer_mi": 20477,
+            "buy_now_price": 0,
+            "price_history": [],
+            "vehicle_title": "2026 Toyota Corola",
+            "keys_available": true,
+            "main_damage_id": 3,
+            "condition_label": "run and drives",
+            "odometer_status": null,
+            "second_damage_id": null,
+            "actual_cash_value": null,
+            "pre_accident_price": -1,
+            "estimate_repair_price": null
+          }
+        ],
+        "title": "Auction and Encar history"
+      }
+    ]
+  },
+  "language": "en",
+  "localization": {
+    "requested_languages": [
+      "en"
+    ],
+    "returned_languages": [],
+    "fallback_language": "en",
+    "fields": [],
+    "source_text_translated": false
+  }
+}

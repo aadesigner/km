@@ -1176,7 +1176,7 @@ export function VinCatalogHistorySections({
       </CatalogAccordionPanel>
 
       <CatalogListSection
-        title="Auction history"
+        title="Auction & sale history"
         tone="auction"
         items={form.auctionHistory}
         emptyItem={() => ({

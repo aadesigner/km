@@ -2,6 +2,7 @@
 const ALLOWED_HOST_SUFFIXES = [
   "carstat.dev",
   "api.carstat.dev",
+  "v-h-r.b-cdn.net",
 ];
 
 export function isAllowedImageHost(hostname: string): boolean {

@@ -20,6 +20,7 @@ import { validateCheckDigit } from "@workspace/vin-decode";
 import { logger } from "./logger.js";
 import { transformVinPhotoData } from "./imageProxy.js";
 import { redactCarstatUsaDataForClient } from "./carstatUsaReportSanitize.js";
+import { redactCarstatVhrDataForClient } from "./carstatVhrReportSanitize.js";
 import { extractVinPhotoUrls, invalidateVinImageCache } from "./vinImageCache.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
 import { firePendingVinAdminNotification } from "./pendingVinAdminEmail.js";
@@ -64,7 +65,7 @@ function transformVinPhotos(data: unknown, mediaVersion?: number): unknown {
   if (Array.isArray(transformed.photos360Interior)) {
     transformed.photos360Interior = (transformed.photos360Interior as string[]).slice(0, 72);
   }
-  return redactCarstatUsaDataForClient(transformed);
+  return redactCarstatVhrDataForClient(redactCarstatUsaDataForClient(transformed));
 }
 
 export const PENDING_MANUAL_LOOKUP_STATUS = "pending_manual" as const;

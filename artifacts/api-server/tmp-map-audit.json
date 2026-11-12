@@ -1,0 +1,645 @@
+{
+  "1": {
+    "sourceId": 1,
+    "sections": [
+      {
+        "type": "vehicles",
+        "count": 1,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "title",
+          "year",
+          "manufacturer_id",
+          "model_id",
+          "generation_id",
+          "vehicle_type",
+          "body_type",
+          "fuel",
+          "transmission",
+          "drive_wheel",
+          "color",
+          "hp",
+          "cylinders",
+          "body_type_label",
+          "color_label",
+          "fuel_label",
+          "transmission_label",
+          "drive_wheel_label",
+          "vehicle_type_label"
+        ]
+      },
+      {
+        "type": "listings",
+        "count": 3,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "vehicle_title",
+          "lot",
+          "domain_id",
+          "title",
+          "sale_date",
+          "bid",
+          "final_bid",
+          "final_price",
+          "buy_now_price",
+          "status",
+          "archived",
+          "odometer_km",
+          "odometer_mi",
+          "odometer_status",
+          "main_damage_id",
+          "second_damage_id",
+          "condition",
+          "keys_available",
+          "airbags",
+          "pre_accident_price",
+          "estimate_repair_price",
+          "actual_cash_value",
+          "country_id",
+          "state_id",
+          "city_id",
+          "currency",
+          "images",
+          "price_history",
+          "condition_label",
+          "odometer_status_label",
+          "status_label",
+          "airbags_label",
+          "marketplace",
+          "listing_type"
+        ]
+      }
+    ],
+    "mapped": {
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "country": "United States",
+      "odometer": 93420,
+      "accidents": 3,
+      "insuranceClaims": 1,
+      "auctionHistory": 9,
+      "mileageHistory": 4,
+      "ownerHistory": 0,
+      "serviceHistory": 0,
+      "recallHistory": 0,
+      "registryHistory": 0,
+      "vehicleExtras": 27,
+      "marketData": {
+        "estimatedValue": 24008500,
+        "currency": "KRW",
+        "lastAuctionPrice": 24000350,
+        "lastAuctionDate": "2026-08-15"
+      },
+      "isFlooded": null,
+      "ownerCount": null,
+      "accidentCount": 3,
+      "photos": 4
+    }
+  },
+  "2": {
+    "sourceId": 2,
+    "sections": [
+      {
+        "type": "vehicles",
+        "count": 1,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "year",
+          "title",
+          "body_type",
+          "fuel",
+          "transmission",
+          "drive_wheel",
+          "color",
+          "engine_size",
+          "hp",
+          "option_ids"
+        ]
+      },
+      {
+        "type": "listings",
+        "count": 3,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "listing_id",
+          "domain_id",
+          "title",
+          "archived",
+          "created_at",
+          "last_seen_at",
+          "updated_at",
+          "auction_at",
+          "odometer",
+          "price",
+          "currency_id",
+          "price_history",
+          "damage",
+          "second_damage",
+          "condition",
+          "airbag_state",
+          "keys_available",
+          "country_iso",
+          "location_details",
+          "source_data",
+          "marketplace",
+          "images",
+          "option_ids"
+        ]
+      },
+      {
+        "type": "equipment",
+        "count": 1,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "option_ids",
+          "options",
+          "listing_options",
+          "unresolved_option_ids",
+          "taxonomy_status"
+        ]
+      }
+    ],
+    "mapped": {
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "country": "United States",
+      "odometer": 93580,
+      "accidents": 0,
+      "insuranceClaims": 0,
+      "auctionHistory": 9,
+      "mileageHistory": 3,
+      "ownerHistory": 0,
+      "serviceHistory": 1,
+      "recallHistory": 0,
+      "registryHistory": 0,
+      "vehicleExtras": 21,
+      "marketData": {
+        "estimatedValue": 17050,
+        "currency": "USD",
+        "lastAuctionPrice": 11200,
+        "lastAuctionDate": "2026-08-12"
+      },
+      "isFlooded": null,
+      "ownerCount": null,
+      "accidentCount": null,
+      "photos": 4
+    }
+  },
+  "3": {
+    "sourceId": 3,
+    "sections": [
+      {
+        "type": "listings",
+        "count": 2,
+        "korea_section": null,
+        "keys": [
+          "vin",
+          "make",
+          "model",
+          "first_reg_year",
+          "body_type",
+          "body_color",
+          "body_clean_type",
+          "trim_line",
+          "fuel_type",
+          "gear_box",
+          "engine_size",
+          "engine_descr",
+          "hp",
+          "co2",
+          "mileage",
+          "mileage_name",
+          "damaged",
+          "main_damage",
+          "second_damage",
+          "price",
+          "price_with_tax",
+          "price_without_tax",
+          "currency",
+          "price_history",
+          "seller_country",
+          "seller_location",
+          "auction_name",
+          "main_img",
+          "images",
+          "sale_date",
+          "first_seen",
+          "origin_country",
+          "emission_standard",
+          "seats",
+          "seller_type",
+          "driving",
+          "used",
+          "keys",
+          "extra_wheels_set",
+          "battery_size",
+          "numbers_doors",
+          "weight",
+          "length",
+          "width",
+          "height",
+          "interior_color",
+          "four_wheel",
+          "numbers_gears",
+          "days_to_sell"
+        ]
+      }
+    ],
+    "mapped": {
+      "make": "Honda",
+      "model": "CR-V",
+      "year": 2018,
+      "country": "United States",
+      "odometer": 93540,
+      "accidents": 0,
+      "insuranceClaims": 0,
+      "auctionHistory": 6,
+      "mileageHistory": 2,
+      "ownerHistory": 0,
+      "serviceHistory": 0,
+      "recallHistory": 0,
+      "registryHistory": 0,
+      "vehicleExtras": 16,
+      "marketData": {
+        "estimatedValue": 11700,
+        "currency": "USD",
+        "lastAuctionPrice": 11200,
+        "lastAuctionDate": "2026-08-12"
+      },
+      "isFlooded": null,
+      "ownerCount": null,
+      "accidentCount": null,
+      "photos": 3
+    }
+  },
+  "4": {
+    "sourceId": 4,
+    "sections": [
+      {
+        "type": "inspections",
+        "count": 1,
+        "korea_section": null,
+        "keys": [
+          "inspected_at",
+          "system_updated_at",
+          "access",
+          "inspection_blocks",
+          "conclusions",
+          "created_at",
+          "language",
+          "source",
+          "media",
+          "mapper_contract_version",
+          "schema_version",
+          "source_claims",
+          "report_id",
+          "checked_items",
+          "vehicle_snapshot",
+          "vehicle_ref",
+          "status",
+          "visibility"
+        ]
+      }
+    ],
+    "mapped": {
+      "make": "Genesis",
+      "model": "G70",
+      "year": 2021,
+      "country": "South Korea",
+      "odometer": 98583,
+      "accidents": 3,
+      "insuranceClaims": 0,
+      "auctionHistory": 0,
+      "mileageHistory": 1,
+      "ownerHistory": 0,
+      "serviceHistory": 1,
+      "recallHistory": 1,
+      "registryHistory": 1,
+      "vehicleExtras": 15,
+      "marketData": {
+        "estimatedValue": null,
+        "currency": "USD",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "isFlooded": null,
+      "ownerCount": null,
+      "accidentCount": 3,
+      "photos": 3
+    }
+  },
+  "5": {
+    "sourceId": 5,
+    "sections": [
+      {
+        "type": "history",
+        "count": 1,
+        "korea_section": null,
+        "keys": [
+          "coverage",
+          "summary",
+          "system_updated_at",
+          "checked_at",
+          "access",
+          "language",
+          "source",
+          "mapper_contract_version",
+          "schema_version",
+          "checks",
+          "report_id",
+          "vehicle_snapshot",
+          "vehicle_ref",
+          "events",
+          "limitations",
+          "status",
+          "visibility"
+        ]
+      }
+    ],
+    "mapped": {
+      "make": "HYUNDAI",
+      "model": "CASPER",
+      "year": 2022,
+      "country": "South Korea",
+      "odometer": 75647,
+      "accidents": 0,
+      "insuranceClaims": 0,
+      "auctionHistory": 0,
+      "mileageHistory": 1,
+      "ownerHistory": 3,
+      "serviceHistory": 0,
+      "recallHistory": 0,
+      "registryHistory": 9,
+      "vehicleExtras": 8,
+      "marketData": {
+        "estimatedValue": null,
+        "currency": "USD",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "isFlooded": false,
+      "ownerCount": 3,
+      "accidentCount": null,
+      "photos": 0
+    }
+  },
+  "68": {
+    "sourceId": 68,
+    "sections": [
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "car_info",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "car_info",
+          "dataKeys": [
+            "brand",
+            "model",
+            "engine",
+            "fuel",
+            "trim",
+            "trim_options",
+            "year",
+            "body",
+            "type",
+            "first_date"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "specifications",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "specifications",
+          "dataKeys": [
+            "abs",
+            "around_view",
+            "adaptive_cruise",
+            "aeb",
+            "fcw_warning",
+            "adaptive_lights",
+            "parking_assist_brake",
+            "rear_camera",
+            "brake_assist",
+            "blind_spot",
+            "built_in_cam",
+            "daytime_lights",
+            "smart_key",
+            "fcw",
+            "hud",
+            "auto_wipers",
+            "lane_keep",
+            "tpms",
+            "parking_sensors",
+            "parking_assist",
+            "rear_parking_sensor"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "usage_history",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "usage_history",
+          "dataKeys": [
+            "government",
+            "business",
+            "rent"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "ownership",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "ownership",
+          "dataKeys": [
+            "owner_changes",
+            "number_changes",
+            "owner_count",
+            "number_count"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "special_conditions",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "special_conditions",
+          "dataKeys": [
+            "total_loss",
+            "theft",
+            "flood"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "accidents_detail",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "accidents_detail",
+          "dataKeys": [
+            "car_number",
+            "has_uninsured_period",
+            "uninsured_period_text",
+            "items",
+            "totals",
+            "scheme",
+            "aggregate"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "mileage",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "mileage",
+          "dataKeys": [
+            "has_data",
+            "list",
+            "last"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "price",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "price",
+          "dataKeys": "string"
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "recall_campaigns",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "recall_campaigns",
+          "dataKeys": [
+            "status",
+            "data"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "export_declaration",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "export_declaration",
+          "dataKeys": [
+            "status",
+            "data",
+            "response_language"
+          ]
+        }
+      },
+      {
+        "type": "korean_insurance",
+        "count": 1,
+        "korea_section": "summary",
+        "keys": [
+          "korea_section",
+          "data"
+        ],
+        "sample": {
+          "korea_section": "summary",
+          "dataKeys": [
+            "total_loss",
+            "theft",
+            "flood",
+            "usage_exists",
+            "my_damage_count",
+            "my_damage_sum",
+            "other_damage_count",
+            "other_damage_sum",
+            "owner_count",
+            "number_count",
+            "report_date",
+            "registration_number"
+          ]
+        }
+      }
+    ],
+    "mapped": {
+      "make": "Kia",
+      "model": "K3",
+      "year": 2021,
+      "country": "South Korea",
+      "odometer": 106526,
+      "accidents": 4,
+      "insuranceClaims": 4,
+      "auctionHistory": 0,
+      "mileageHistory": 3,
+      "ownerHistory": 3,
+      "serviceHistory": 0,
+      "recallHistory": 0,
+      "registryHistory": 9,
+      "vehicleExtras": 57,
+      "marketData": {
+        "estimatedValue": 8875000,
+        "currency": "KRW",
+        "lastAuctionPrice": null,
+        "lastAuctionDate": null
+      },
+      "isFlooded": false,
+      "ownerCount": 1,
+      "accidentCount": 4,
+      "photos": 0
+    }
+  }
+}

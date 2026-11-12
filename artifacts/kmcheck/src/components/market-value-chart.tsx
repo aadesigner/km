@@ -16,6 +16,7 @@ import {
   marketCurrencySymbol,
   marketValuesAreKrw,
   type MarketChartPoint,
+  type MarketPriceRange,
 } from "@/lib/market-chart-data";
 
 type MarketDataSlice = {
@@ -33,6 +34,7 @@ type AuctionSlice = {
 type MarketValueChartProps = {
   marketData: MarketDataSlice | null | undefined;
   auctionHistory?: AuctionSlice[] | null;
+  priceRange?: MarketPriceRange | null;
   t: (key: string) => string;
   language: Language;
   vehicleCountry?: string | null;
@@ -44,12 +46,15 @@ type MarketValueChartProps = {
 
 function tooltipLabel(kind: MarketChartPoint["kind"], t: (key: string) => string): string {
   if (kind === "estimated") return t("estimated_value");
+  if (kind === "range_low") return t("market_price_low");
+  if (kind === "range_high") return t("market_price_high");
   return t("last_auction_price");
 }
 
 export function MarketValueChart({
   marketData,
   auctionHistory,
+  priceRange,
   t,
   language,
   vehicleCountry,
@@ -64,18 +69,22 @@ export function MarketValueChart({
     language,
     vehicleCountry,
     krwPerUsd,
+    priceRange,
   );
   if (points.length === 0) return null;
 
   const sample =
     marketData?.estimatedValue
+    ?? priceRange?.mid
+    ?? priceRange?.high
     ?? marketData?.lastAuctionPrice
     ?? auctionHistory?.find((a) => a.finalPrice != null)?.finalPrice
     ?? null;
+  const sourceCurrency = priceRange?.currency ?? marketData?.currency;
   // Korean market figures are converted to USD for the chart.
-  const displayCurrency = marketValuesAreKrw(marketData?.currency, vehicleCountry, sample)
+  const displayCurrency = marketValuesAreKrw(sourceCurrency, vehicleCountry, sample)
     ? "USD"
-    : (marketData?.currency ?? "USD");
+    : (sourceCurrency ?? "USD");
   const symbol = marketCurrencySymbol(displayCurrency);
 
   return (
@@ -95,6 +104,14 @@ export function MarketValueChart({
               <linearGradient id="mktBarHistory" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#6ee7b7" stopOpacity={0.85} />
                 <stop offset="100%" stopColor="#10b981" stopOpacity={0.75} />
+              </linearGradient>
+              <linearGradient id="mktBarLow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#7dd3fc" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.8} />
+              </linearGradient>
+              <linearGradient id="mktBarHigh" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6ee7b7" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
               </linearGradient>
             </defs>
           ) : null}
@@ -139,16 +156,20 @@ export function MarketValueChart({
             radius={[4, 4, 0, 0]}
             maxBarSize={premium ? 40 : 36}
           >
-            {premium
+                {premium
               ? points.map((p, i) => (
                   <Cell
                     key={`${p.kind}-${i}`}
                     fill={
                       p.kind === "estimated"
                         ? "url(#mktBarEst)"
-                        : p.kind === "last_auction"
-                          ? "url(#mktBarAuction)"
-                          : "url(#mktBarHistory)"
+                        : p.kind === "range_low"
+                          ? "url(#mktBarLow)"
+                          : p.kind === "range_high"
+                            ? "url(#mktBarHigh)"
+                            : p.kind === "last_auction"
+                              ? "url(#mktBarAuction)"
+                              : "url(#mktBarHistory)"
                     }
                   />
                 ))
@@ -158,7 +179,11 @@ export function MarketValueChart({
                     fill={
                       p.kind === "estimated"
                         ? "hsl(215 16% 52%)"
-                        : "hsl(var(--primary))"
+                        : p.kind === "range_low"
+                          ? "hsl(199 89% 48%)"
+                          : p.kind === "range_high"
+                            ? "hsl(160 84% 39%)"
+                            : "hsl(var(--primary))"
                     }
                   />
                 ))}

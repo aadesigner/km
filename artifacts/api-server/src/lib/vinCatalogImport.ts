@@ -21,6 +21,24 @@ export function catalogHasDeliverableReport(data: unknown): boolean {
       }
     }
   }
+  // Carstat VHR — deliverable when structured report fields exist, or a json/html artifact URL.
+  if (d.dataSource === "carstat_vhr") {
+    if (typeof d.make === "string" && d.make.trim()) return d.fulfillmentPending !== true;
+    if (typeof d.year === "number" && Number.isFinite(d.year)) return d.fulfillmentPending !== true;
+    const historyArrays = [d.mileageHistory, d.auctionHistory, d.accidents, d.insuranceClaims, d.photos];
+    if (historyArrays.some((a) => Array.isArray(a) && a.length > 0)) {
+      return d.fulfillmentPending !== true;
+    }
+    const list = Array.isArray(d.vhrReports) ? d.vhrReports : null;
+    const hasArtifact = !!list?.some((r) => {
+      if (!r || typeof r !== "object" || Array.isArray(r)) return false;
+      const html = (r as { htmlUrl?: unknown }).htmlUrl;
+      const json = (r as { jsonUrl?: unknown }).jsonUrl;
+      return (typeof html === "string" && html.trim().length > 0)
+        || (typeof json === "string" && json.trim().length > 0);
+    });
+    if (hasArtifact) return d.fulfillmentPending !== true;
+  }
   return catalogDeliverableFromHint({
     fulfillmentPending: d.fulfillmentPending === true,
     accidentsLen: Array.isArray(d.accidents) ? d.accidents.length : 0,
@@ -573,6 +591,19 @@ export function sanitizeCatalogPayload(input: Record<string, unknown>): Record<s
     out.pdfReport = input.pdfReport;
   }
 
+  // Carstat VHR artifacts — keep server-side URLs so HTML proxy + catalog refresh work.
+  // Client redaction strips htmlUrl/jsonUrl/cost IDs at serve time.
+  if (Array.isArray(input.vhrReports)) {
+    out.vhrReports = input.vhrReports;
+  }
+  if (
+    input.vhrReport
+    && typeof input.vhrReport === "object"
+    && !Array.isArray(input.vhrReport)
+  ) {
+    out.vhrReport = input.vhrReport;
+  }
+
   return out;
 }
 
@@ -614,6 +645,24 @@ export function mergeCatalogData(
       continue;
     }
     if (Array.isArray(value)) merged[key] = value;
+  }
+
+  if (Array.isArray(incoming.vhrReports)) {
+    merged.vhrReports = incoming.vhrReports;
+  }
+  if (
+    incoming.vhrReport
+    && typeof incoming.vhrReport === "object"
+    && !Array.isArray(incoming.vhrReport)
+  ) {
+    merged.vhrReport = incoming.vhrReport;
+  }
+  if (
+    incoming.pdfReport
+    && typeof incoming.pdfReport === "object"
+    && !Array.isArray(incoming.pdfReport)
+  ) {
+    merged.pdfReport = incoming.pdfReport;
   }
 
   return merged;

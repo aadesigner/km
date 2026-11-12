@@ -1,0 +1,165 @@
+{
+  "coverage": {
+    "period_end": "2026-08-30T00:00:00+00:00",
+    "period_start": "2026-03-11T00:00:00+00:00",
+    "completeness_key": "partial",
+    "section_keys": [
+      "insurance",
+      "ownership",
+      "usage"
+    ]
+  },
+  "summary": {
+    "owner_change_count": 3
+  },
+  "system_updated_at": "2026-09-15T23:13:17+00:00",
+  "checked_at": "2026-08-30T00:00:00+00:00",
+  "access": {
+    "attach_to_listing": true
+  },
+  "language": "en",
+  "source": {
+    "imported_at": "2026-09-15T23:13:17+00:00",
+    "source_language": "en",
+    "mapper_version": "autobellglobal-vehicle-history-v1",
+    "source_type": "external_api",
+    "source_report_id": "GV122283",
+    "source_key": "autobellglobal"
+  },
+  "mapper_contract_version": 1,
+  "schema_version": 1,
+  "checks": [
+    {
+      "result_key": "not_present",
+      "source_label": "Business",
+      "id": "business_use_history",
+      "source_code": "N",
+      "type_key": "business_use_history",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "result_key": "not_present",
+      "source_label": "Water/Flood Damage",
+      "id": "flood_history",
+      "source_code": "0",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "result_key": "present",
+      "source_label": "Government",
+      "id": "government_use_history",
+      "source_code": "Y",
+      "type_key": "government_use_history",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "result_key": "not_present",
+      "source_label": "Rental",
+      "id": "rental_use_history",
+      "source_code": "N",
+      "type_key": "rental_use_history",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "result_key": "present",
+      "source_label": "Special Usage",
+      "id": "special_use_history",
+      "source_code": "Y",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "result_key": "not_present",
+      "source_label": "Total Loss",
+      "id": "total_loss_history",
+      "source_code": "0",
+      "type_key": "total_loss_history",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    }
+  ],
+  "report_id": "vehicle_history_listing_55605_ad081b0baf87fc295fde1d243eb23004739630fd5820df7af99c2ce4c5eb16f5",
+  "vehicle_snapshot": {
+    "listing_id": "GV122283",
+    "color": "White",
+    "year": 2022,
+    "source_domain": "autobellglobal.com",
+    "engine_volume_cc": 998,
+    "title": "HYUNDAI CASPER Gasoline 1.0",
+    "body_style": "City Car",
+    "badge": "Gasoline 1.0",
+    "transmission": "Automatic",
+    "model": "CASPER",
+    "vin": "kmhb3518bnw003977",
+    "mileage_km": 75647,
+    "fuel_type": "Gasoline",
+    "brand": "HYUNDAI"
+  },
+  "vehicle_ref": {
+    "domain_id": 55605,
+    "vin": "kmhb3518bnw003977",
+    "listing_id": "GV122283"
+  },
+  "events": [
+    {
+      "occurred_at": "2026-03-11T00:00:00+00:00",
+      "date_precision_key": "day",
+      "source_label": "Transfer of Ownership",
+      "details": [
+        {
+          "value_text": "Personal Car",
+          "source_code": "R20205_2",
+          "source_label": "usage"
+        }
+      ],
+      "id": "owner-change-2026-03-11-unknown-r20205-2",
+      "type_key": "owner_change",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "occurred_at": "2026-03-16T00:00:00+00:00",
+      "date_precision_key": "day",
+      "source_label": "Transfer of Ownership",
+      "details": [
+        {
+          "value_text": "Personal Car",
+          "source_code": "R20205_2",
+          "source_label": "usage"
+        }
+      ],
+      "id": "owner-change-2026-03-16-unknown-r20205-2",
+      "type_key": "owner_change",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    },
+    {
+      "date_precision_key": "unknown",
+      "source_label": "Transfer of Ownership",
+      "details": [
+        {
+          "value_text": "Personal Car",
+          "source_code": "R20205_2",
+          "source_label": "usage"
+        }
+      ],
+      "id": "owner-change-undated-unknown-r20205-2",
+      "type_key": "owner_change",
+      "evidence_type_key": "insurance_database",
+      "verification_key": "source_reported"
+    }
+  ],
+  "limitations": [
+    {
+      "description": "The source provides selected insurance indicators and ownership changes; these do not establish the absence of other accidents or claims.",
+      "id": "insurance-summary-coverage",
+      "type_key": "other"
+    }
+  ],
+  "status": "published",
+  "visibility": "public"
+}

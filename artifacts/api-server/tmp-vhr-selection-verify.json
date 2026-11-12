@@ -1,0 +1,58 @@
+[
+  {
+    "vin": "7FARW2H56JE022576",
+    "selected": [
+      1
+    ],
+    "eligibleIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "bought": [
+      {
+        "sourceId": 1,
+        "status": "completed",
+        "hasJson": true,
+        "sectionTypes": [
+          "vehicles",
+          "listings"
+        ],
+        "structured": true,
+        "make": "Honda",
+        "year": 2018,
+        "mileage": 3,
+        "auctions": 3
+      }
+    ]
+  },
+  {
+    "vin": "KMTG341ABMU089876",
+    "selected": [],
+    "eligibleIds": [
+      4
+    ],
+    "bought": []
+  },
+  {
+    "vin": "KNAF141BEPA956413",
+    "selected": [],
+    "eligibleIds": [],
+    "bought": []
+  },
+  {
+    "vin": "KMHJ581ADHU209919",
+    "selected": [],
+    "eligibleIds": [],
+    "bought": []
+  },
+  {
+    "vin": "WVWZZZ3C4KE000001",
+    "selected": [],
+    "eligibleIds": [],
+    "bought": []
+  }
+]

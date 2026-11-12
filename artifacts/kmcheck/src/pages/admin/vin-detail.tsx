@@ -79,13 +79,18 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
   const isUsaPdfReport =
     detail?.providerName === "carstat_usa"
     || catalogDataSource === "carstat_usa";
+  const isVhrReport =
+    detail?.providerName === "carstat_vhr"
+    || catalogDataSource === "carstat_vhr";
   const refreshSourceLabel =
     detail?.providerName === "getcarapi"
     || catalogDataSource === "getcarapi"
       ? "GetCarAPI"
       : isUsaPdfReport
         ? "Carstat USA"
-        : "Carstat";
+        : isVhrReport
+          ? "Carstat VHR"
+          : "Carstat";
 
   const refreshMutation = useAdminRefreshVinCatalog({
     mutation: {
@@ -104,9 +109,11 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
             ? "GetCarAPI"
             : payload.refreshedFrom === "carstat_usa"
               ? "Carstat USA"
-              : payload.refreshedFrom === "carstat"
-                ? "Carstat"
-                : refreshSourceLabel;
+              : payload.refreshedFrom === "carstat_vhr"
+                ? "Carstat VHR"
+                : payload.refreshedFrom === "carstat"
+                  ? "Carstat"
+                  : refreshSourceLabel;
         const ownerLen = typeof payload.ownerHistoryLen === "number"
           ? payload.ownerHistoryLen
           : (Array.isArray(payload.data?.ownerHistory) ? payload.data.ownerHistory.length : 0);
@@ -115,7 +122,10 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
         const isUsa = fromLabel === "Carstat USA"
           || payload.refreshedFrom === "carstat_usa"
           || (payload.data as { dataSource?: string } | undefined)?.dataSource === "carstat_usa";
-        if (ownerLen <= 0 && !isGetCarApi && !isUsa) {
+        const isVhr = fromLabel === "Carstat VHR"
+          || payload.refreshedFrom === "carstat_vhr"
+          || (payload.data as { dataSource?: string } | undefined)?.dataSource === "carstat_vhr";
+        if (ownerLen <= 0 && !isGetCarApi && !isUsa && !isVhr) {
           setRefreshMsg({
             ok: false,
             text: ownerCount && ownerCount > 0
@@ -127,9 +137,11 @@ export default function AdminVinDetail({ params }: { params: { vin: string } }) 
             ok: true,
             text: isUsa
               ? `Refreshed from ${fromLabel} — vehicle history PDF/HTML updated. Catalog and lookups synced.`
-              : ownerLen > 0
-                ? `Refreshed from ${fromLabel} — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`
-                : `Refreshed from ${fromLabel}. Catalog and lookups updated.`,
+              : isVhr
+                ? `Refreshed from ${fromLabel} — auction/archive/insurance report updated. Catalog and lookups synced.`
+                : ownerLen > 0
+                  ? `Refreshed from ${fromLabel} — ${ownerLen} owner record(s) saved. Catalog and lookups updated.`
+                  : `Refreshed from ${fromLabel}. Catalog and lookups updated.`,
           });
         }
         if (payload.data) {

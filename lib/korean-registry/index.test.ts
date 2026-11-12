@@ -39,6 +39,14 @@ describe("resolveRegistryDisplayMileage", () => {
       details: [{ label: "Inspection category", value: "regular inspection" }],
     }, { listingOdometer: 301_000 })).toBeNull();
   });
+
+  it("keeps export declaration mileage on the registry timeline", () => {
+    expect(resolveRegistryDisplayMileage({
+      type: "export",
+      mileage: 94_210,
+      title: "Export declaration",
+    })).toBe(94_210);
+  });
 });
 
 describe("normalizeKrwAmountText", () => {
@@ -122,6 +130,11 @@ describe("resolveKoreanDisplayKrw", () => {
 
   it("still caps repair costs", () => {
     expect(resolveKoreanDisplayKrw("306,000,000 won", "Total repair cost")).toBeNull();
+  });
+
+  it("parses KRW-suffixed insurance totals", () => {
+    expect(resolveKoreanDisplayKrw("8,891,909 KRW", "Total own damage")).toBe(8_891_909);
+    expect(resolveKoreanDisplayKrw("1,629,590 KRW", "Total other-party damage")).toBe(1_629_590);
   });
 });
 

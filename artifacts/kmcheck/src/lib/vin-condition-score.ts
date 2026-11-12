@@ -7,6 +7,8 @@ export type VinScoreAccident = {
 export type VinScoreMileageEntry = {
   odometer?: number | null;
   date?: string | null;
+  /** Copart/IAAI/Encar scrapes often disagree — used to widen rollback noise budget. */
+  source?: string | null;
 };
 
 export type VinScoreInput = {
@@ -85,29 +87,44 @@ const RED = {
     "bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(239,68,68,0.04),transparent_68%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_100%_100%,rgba(248,113,113,0.045),transparent_68%)]",
 };
 
-/** Ignore tiny same-year odometer dips (listing republish noise). */
-export const MILEAGE_ROLLBACK_IGNORE_MAX_KM = 50;
+/**
+ * Absolute floor for “noise” dips between records (insurance / inspection variance).
+ * Example: 174,245 → 174,087 (−158 km) must not look like odometer fraud.
+ */
+export const MILEAGE_ROLLBACK_IGNORE_MAX_KM = 500;
+/** Also ignore dips within this fraction of the earlier reading (0.25%). */
+export const MILEAGE_ROLLBACK_IGNORE_PCT = 0.0025;
 
-function readingYear(date: string | null | undefined): number | null {
-  if (!date) return null;
-  const iso = date.trim().slice(0, 10);
-  if (/^\d{4}-\d{2}-\d{2}/.test(iso)) {
-    const y = Number(iso.slice(0, 4));
-    return Number.isFinite(y) ? y : null;
-  }
-  const y = Date.parse(date);
-  if (!Number.isFinite(y)) return null;
-  return new Date(y).getUTCFullYear();
+/** Max km drop treated as recording noise for a given earlier reading. */
+export function mileageRollbackNoiseBudgetKm(prevKm: number): number {
+  const pct = Math.max(0, prevKm) * MILEAGE_ROLLBACK_IGNORE_PCT;
+  return Math.max(MILEAGE_ROLLBACK_IGNORE_MAX_KM, pct);
 }
+
+function isAuctionOrMarketplaceSource(source?: string | null): boolean {
+  return /copart|iaai|encar|manheim|marketplace|auction|listing|autobell|european|korean marketplace/i.test(
+    source ?? "",
+  );
+}
+
+/** Wider budget when comparing scrapes from different auction/marketplace sources. */
+export const MILEAGE_ROLLBACK_LISTING_NOISE_MAX_KM = 2_500;
 
 /**
  * True when a later dated reading is meaningfully lower than an earlier one.
- * Drops of ≤50 km within the same calendar year are ignored (common listing noise).
+ * Small dips (≤500 km or ≤0.25%) are treated as source variance, not rollback.
+ * Auction/marketplace scrapes (Copart vs Encar vs IAAI) get a wider noise budget —
+ * demo/multi-source archives often disagree by 1–2k km without real rollback.
  */
 export function hasMileageRollback(history: VinScoreMileageEntry[]): boolean {
   const dated = [...history]
     .filter((e) => e.odometer != null && e.date)
-    .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+    .sort((a, b) => {
+      const byDate = (a.date ?? "").localeCompare(b.date ?? "");
+      if (byDate !== 0) return byDate;
+      // Same calendar day: ascending km so same-day scrapes never look like a rollback.
+      return (a.odometer ?? 0) - (b.odometer ?? 0);
+    });
   for (let i = 1; i < dated.length; i++) {
     const prev = dated[i - 1]!;
     const curr = dated[i]!;
@@ -115,10 +132,12 @@ export function hasMileageRollback(history: VinScoreMileageEntry[]): boolean {
     const currKm = curr.odometer ?? 0;
     if (currKm >= prevKm) continue;
     const drop = prevKm - currKm;
-    const prevY = readingYear(prev.date);
-    const currY = readingYear(curr.date);
-    const sameYear = prevY != null && currY != null && prevY === currY;
-    if (sameYear && drop <= MILEAGE_ROLLBACK_IGNORE_MAX_KM) continue;
+    const listingNoise =
+      isAuctionOrMarketplaceSource(prev.source) || isAuctionOrMarketplaceSource(curr.source);
+    const budget = listingNoise
+      ? Math.max(mileageRollbackNoiseBudgetKm(prevKm), MILEAGE_ROLLBACK_LISTING_NOISE_MAX_KM)
+      : mileageRollbackNoiseBudgetKm(prevKm);
+    if (drop <= budget) continue;
     return true;
   }
   return false;
@@ -159,11 +178,12 @@ export function floodPenalty(isFlooded: boolean | null | undefined, scoreBefore:
 
 function singleAccidentPenalty(severity?: string | null): number {
   const s = (severity ?? "").toLowerCase();
-  if (s.includes("total")) return 1.4;
-  if (s.includes("major") || s.includes("severe")) return 0.65;
-  if (s.includes("moderate")) return 0.28;
+  // Heavy hits lower the score, but not so hard that one major tanks the rating.
+  if (s.includes("total")) return 1.7;
+  if (s.includes("major") || s.includes("severe") || s.includes("heavy")) return 1.15;
+  if (s.includes("moderate")) return 0.3;
   if (s.includes("minor") || s.includes("light")) return 0.1;
-  return 0.18;
+  return 0.2;
 }
 
 const ACCIDENT_DIMINISH = [1, 0.75, 0.55, 0.4, 0.3, 0.25];
@@ -180,7 +200,7 @@ function accidentsPenalty(input: VinScoreInput): number {
   for (let i = 0; i < penalties.length; i++) {
     sum += penalties[i]! * (ACCIDENT_DIMINISH[i] ?? 0.2);
   }
-  return Math.min(sum, 2.6);
+  return Math.min(sum, 2.8);
 }
 
 /** Higher km under 130k shaves points; very low km for age may indicate rollback risk. */

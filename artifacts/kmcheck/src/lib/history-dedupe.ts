@@ -38,9 +38,14 @@ function pickPositiveNumber(
 }
 
 function splitStampParts(value: string): string[] {
-  return value
+  // Protect thousands separators so "20,200 USD" / "24.009.000 KRW" are not
+  // shredded into "20 · 200 USD" when merging same-label extras.
+  const protectedValue = value
+    .replace(/(\d),(\d{3})\b/g, "$1\u2011$2")
+    .replace(/(\d)\.(\d{3})\b/g, "$1\u2011$2");
+  return protectedValue
     .split(/[·|,;/]+/)
-    .map((part) => part.trim())
+    .map((part) => part.replace(/\u2011/g, ",").trim())
     .filter(Boolean);
 }
 
@@ -234,16 +239,98 @@ export function dedupeOwnerHistory<T extends OwnerHistoryLike>(
 export type MileageHistoryLike = {
   date?: string | null;
   odometer?: number | null;
+  unit?: string | null;
+  source?: string | null;
   condition?: string | null;
   damage?: string | null;
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   auctionPrice?: number | null;
+  currency?: string | null;
   lotStatus?: string | null;
   titleStatus?: string | null;
   location?: string | null;
   description?: string | null;
 };
+
+/** Prefer real auction houses over Archive Alpha placeholder market labels. */
+export function mileageSourceRank(source: string | null | undefined): number {
+  const s = normalizeToken(source);
+  if (!s) return 0;
+  if (/copart/.test(s)) return 100;
+  if (/iaai|insurance\s*auto\s*auction/.test(s)) return 95;
+  if (/encar/.test(s)) return 85;
+  if (/manheim/.test(s)) return 80;
+  if (/korean\s*inspection|inspection|registry|insurance|export/.test(s)) return 70;
+  if (/first\s*registration|initial\s*registration/.test(s)) return 60;
+  if (/european\s*marketplace|korean\s*marketplace|us\s*auction|^listing$|^marketplace$/.test(s)) {
+    return 5;
+  }
+  return 40;
+}
+
+export function isWeakMileageSource(source: string | null | undefined): boolean {
+  return mileageSourceRank(source) <= 5;
+}
+
+/** Same-day scrapes often disagree by tens of km — not three real readings. */
+export function sameDayOdometersClose(a: number, b: number): boolean {
+  const left = Number(a);
+  const right = Number(b);
+  if (!Number.isFinite(left) || !Number.isFinite(right) || left <= 0 || right <= 0) return false;
+  const diff = Math.abs(left - right);
+  if (diff <= 500) return true;
+  const max = Math.max(left, right);
+  return max > 0 && diff / max <= 0.015;
+}
+
+function mileageDamageRichness(entry: MileageHistoryLike): number {
+  const primary = (entry.primaryDamage ?? entry.damage ?? "").trim();
+  const secondary = (entry.secondaryDamage ?? "").trim();
+  let score = primary.length + (secondary ? secondary.length + 12 : 0);
+  if (/^cosmetic$/i.test(primary) && !secondary) score -= 8;
+  return score;
+}
+
+export function mergeMileageHistoryEntries<T extends MileageHistoryLike>(a: T, b: T): T {
+  const aRank = mileageSourceRank(a.source);
+  const bRank = mileageSourceRank(b.source);
+  const preferA =
+    aRank > bRank
+    || (aRank === bRank && mileageDamageRichness(a) >= mileageDamageRichness(b));
+  const primary = preferA ? a : b;
+  const secondary = preferA ? b : a;
+  const aOdo = Number(a.odometer);
+  const bOdo = Number(b.odometer);
+  const odometer =
+    preferA && Number.isFinite(aOdo) && aOdo > 0
+      ? aOdo
+      : (!preferA && Number.isFinite(bOdo) && bOdo > 0
+        ? bOdo
+        : pickPositiveNumber(a.odometer, b.odometer) ?? a.odometer ?? b.odometer);
+
+  return {
+    ...secondary,
+    ...primary,
+    date: primary.date || secondary.date,
+    odometer,
+    unit: primary.unit || secondary.unit,
+    source: primary.source || secondary.source,
+    condition: pickLongerText(primary.condition, secondary.condition),
+    damage: pickLongerText(primary.damage, secondary.damage),
+    primaryDamage:
+      mileageDamageRichness(primary) >= mileageDamageRichness(secondary)
+        ? (primary.primaryDamage || primary.damage || secondary.primaryDamage || secondary.damage)
+        : (secondary.primaryDamage || secondary.damage || primary.primaryDamage || primary.damage),
+    secondaryDamage: primary.secondaryDamage || secondary.secondaryDamage,
+    auctionPrice: primary.auctionPrice ?? secondary.auctionPrice,
+    currency: primary.currency || secondary.currency,
+    lotStatus: pickAuctionLotStatus(primary.lotStatus, secondary.lotStatus),
+    titleStatus: pickLongerText(primary.titleStatus, secondary.titleStatus),
+    location: pickLongerText(primary.location, secondary.location),
+    description: pickLongerText(primary.description, secondary.description),
+  };
+}
 
 export function mileageHistoryDedupeKey(
   entry: MileageHistoryLike,
@@ -255,11 +342,63 @@ export function mileageHistoryDedupeKey(
   return `${date}|${odometer}|${primary}`;
 }
 
+/**
+ * Collapse provider mashups: same calendar day + near-equal odometer
+ * (Copart 93,540 / US Auction 93,580 / Korean Marketplace 93,500) → one row.
+ * Far-apart same-day readings (possible rollback) stay separate.
+ */
 export function dedupeMileageHistory<T extends MileageHistoryLike>(
   entries: T[],
   vehicleYear?: number | null,
 ): T[] {
-  return dedupeByKey(entries, (entry) => mileageHistoryDedupeKey(entry, vehicleYear));
+  if (entries.length <= 1) return entries;
+
+  const byDate = new Map<string, T[]>();
+  const undated: T[] = [];
+  for (const entry of entries) {
+    const dateKey = normalizedDateKey(entry.date, vehicleYear);
+    if (!dateKey) {
+      undated.push(entry);
+      continue;
+    }
+    const bucket = byDate.get(dateKey) ?? [];
+    bucket.push(entry);
+    byDate.set(dateKey, bucket);
+  }
+
+  const out: T[] = [...undated];
+  for (const group of byDate.values()) {
+    const clusters: T[][] = [];
+    for (const entry of group) {
+      const odo = Number(entry.odometer);
+      let placed = false;
+      for (const cluster of clusters) {
+        const seed = Number(cluster[0]?.odometer);
+        if (
+          Number.isFinite(odo)
+          && Number.isFinite(seed)
+          && sameDayOdometersClose(odo, seed)
+        ) {
+          cluster.push(entry);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) clusters.push([entry]);
+    }
+
+    for (const cluster of clusters) {
+      // Drop weak marketplace stubs when a real house reading exists in the cluster.
+      const hasStrong = cluster.some((e) => !isWeakMileageSource(e.source));
+      const usable = hasStrong
+        ? cluster.filter((e) => !isWeakMileageSource(e.source))
+        : cluster;
+      const merged = usable.reduce((acc, cur) => mergeMileageHistoryEntries(acc, cur));
+      out.push(merged);
+    }
+  }
+
+  return out;
 }
 
 export type AuctionHistoryLike = {
@@ -276,6 +415,7 @@ export type AuctionHistoryLike = {
   buyNowPrice?: number | null;
   finalPrice?: number | null;
   lotStatus?: string | null;
+  currency?: string | null;
 };
 
 export function auctionHistoryDedupeKey(
@@ -332,6 +472,9 @@ export type AccidentLike = {
   primaryDamage?: string | null;
   secondaryDamage?: string | null;
   lossAmount?: number | null;
+  partCost?: number | null;
+  laborCost?: number | null;
+  paintingCost?: number | null;
   currency?: string | null;
   odometerAtLoss?: number | null;
   airbagDeployed?: boolean | null;
@@ -350,6 +493,14 @@ export function accidentDedupeKey(
   return `undated|${family}|${desc}|${primary}`;
 }
 
+function isPartsDumpDescription(value?: string | null): boolean {
+  const raw = (value ?? "").trim();
+  if (!raw) return false;
+  if (/paid\s*[\d,.\s]+/i.test(raw) && /(parts|labor|paint)\s*[\d,.\s]+/i.test(raw)) return false;
+  return (raw.match(/;/g) ?? []).length >= 2
+    || /removable|replacement|sheet metal|surface repair|detachable/i.test(raw);
+}
+
 function mergeAccidentEntries<T extends AccidentLike>(a: T, b: T): T {
   const merged = mergeDefinedFields(
     a as T & Record<string, unknown>,
@@ -365,14 +516,23 @@ function mergeAccidentEntries<T extends AccidentLike>(a: T, b: T): T {
     : a.airbagDeployed === false || b.airbagDeployed === false
       ? false
       : a.airbagDeployed ?? b.airbagDeployed ?? null;
+  // Prefer money summaries over repaired-parts dumps in accident descriptions.
+  const description = isPartsDumpDescription(a.description) && !isPartsDumpDescription(b.description)
+    ? b.description
+    : isPartsDumpDescription(b.description) && !isPartsDumpDescription(a.description)
+      ? a.description
+      : mergeStampLikeText(a.description, b.description);
   return {
     ...merged,
     type: pickLongerText(a.type, b.type) ?? merged.type,
     severity: severity ?? merged.severity,
-    description: mergeStampLikeText(a.description, b.description) ?? merged.description,
+    description: description ?? merged.description,
     primaryDamage: mergeStampLikeText(a.primaryDamage, b.primaryDamage) ?? merged.primaryDamage,
     secondaryDamage: mergeStampLikeText(a.secondaryDamage, b.secondaryDamage) ?? merged.secondaryDamage,
     lossAmount: pickPositiveNumber(a.lossAmount, b.lossAmount) ?? merged.lossAmount,
+    partCost: pickPositiveNumber(a.partCost, b.partCost) ?? merged.partCost,
+    laborCost: pickPositiveNumber(a.laborCost, b.laborCost) ?? merged.laborCost,
+    paintingCost: pickPositiveNumber(a.paintingCost, b.paintingCost) ?? merged.paintingCost,
     odometerAtLoss: pickPositiveNumber(a.odometerAtLoss, b.odometerAtLoss) ?? merged.odometerAtLoss,
     airbagDeployed,
   };
@@ -506,11 +666,17 @@ export type RegistryHistoryLike = {
   details?: Array<{ label: string; value: string }>;
 };
 
+function isPlaceholderRegistryText(value?: string | null): boolean {
+  const t = (value ?? "").trim();
+  if (!t) return true;
+  return /^[-–—·.\s]+$/.test(t);
+}
+
 function registryEventRichness(event: RegistryHistoryLike): number {
   let score = 0;
   if (event.date) score += 4;
-  if (event.subtitle) score += 2;
-  if (event.amount) score += 2;
+  if (event.subtitle && !isPlaceholderRegistryText(event.subtitle)) score += 2;
+  if (event.amount && !isPlaceholderRegistryText(event.amount)) score += 2;
   if (event.location) score += 1;
   score += event.details?.length ?? 0;
   if (event.mileage != null) score += 1;
@@ -523,7 +689,11 @@ export function registryHistoryDedupeKey(
 ): string {
   const title = normalizeToken(event.title).slice(0, 80);
   const date = normalizedDateKey(event.date, vehicleYear);
-  const type = event.type ?? "other";
+  let type = event.type ?? "other";
+  // Korea insurance repeats the same ownership/registration row in two arrays.
+  if (title && (type === "ownership" || type === "registration")) {
+    type = "ownership_or_registration";
+  }
   const mileage = event.mileage ?? -1;
   const amount = normalizeToken(event.amount).slice(0, 48);
   // Empty same-day shells (no title/mileage/amount) collapse regardless of type.
@@ -565,9 +735,24 @@ function extraLabelKey(entry: VehicleExtraLike): string {
   return raw.replace(/\s+/g, "_");
 }
 
+function currencyTokenFromExtraValue(value: string | null | undefined): string {
+  const raw = String(value ?? "");
+  const m = raw.match(/\b(USD|EUR|GBP|KRW|CAD|AUD|JPY|CHF)\b/i);
+  return m?.[1]?.toUpperCase() ?? "";
+}
+
 export function vehicleExtraDedupeKey(entry: VehicleExtraLike): string {
   const label = extraLabelKey(entry);
   if (!label) return `raw:${normalizeToken(entry.value)}`;
+  // Money rows must not merge across currencies (USD + KRW → "20 · 200 USD · … KRW").
+  if (
+    /^(pre_accident_value|pre-accident value|actual cash value \(acv\)|actual_cash_value|estimated repair cost|average price|price without tax)$/i
+      .test(label)
+    || /pre.?accident|actual cash|estimated repair|average price|price without tax/i.test(label)
+  ) {
+    const ccy = currencyTokenFromExtraValue(entry.value);
+    if (ccy) return `label:${label}|${ccy}`;
+  }
   return `label:${label}`;
 }
 

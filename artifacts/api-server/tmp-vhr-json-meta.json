@@ -1,0 +1,142 @@
+{
+  "listCount": 14,
+  "withJsonCount": 0,
+  "sampleFiles": {
+    "pdf": "https://v-h-r.b-cdn.net/vhr/KNAF141BEPA956413-12bcb6c5-4514-4278-8ec2-630b52e92391.pdf"
+  },
+  "detailStatus": 200,
+  "detailFiles": {
+    "pdf": "https://v-h-r.b-cdn.net/vhr/KNAF141BEPA956413-12bcb6c5-4514-4278-8ec2-630b52e92391.pdf"
+  },
+  "detailKeys": [
+    "request_id",
+    "report_id",
+    "vin",
+    "source_id",
+    "status",
+    "currency",
+    "language",
+    "charged_amount_usd",
+    "files",
+    "status_url"
+  ],
+  "checkVin": "7FARW2H56JE022576",
+  "checkStatus": "completed",
+  "eligible": [
+    {
+      "id": 1,
+      "name": "USA Insurance Auctions & Korea History",
+      "price": 0,
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 3
+    },
+    {
+      "id": 2,
+      "name": "Vehicle Archive Alpha",
+      "price": 0,
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 3
+    },
+    {
+      "id": 3,
+      "name": "Vehicle Archive Beta",
+      "price": 0,
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 2
+    },
+    {
+      "id": 4,
+      "name": "Vehicle Inspections",
+      "price": 0,
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 1
+    },
+    {
+      "id": 5,
+      "name": "Vehicle History",
+      "price": 0,
+      "langs": [
+        "en",
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 1
+    },
+    {
+      "id": 6,
+      "name": "US Dealer Listings",
+      "price": 0,
+      "langs": [
+        "en"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ],
+      "records": 1
+    },
+    {
+      "id": 35,
+      "name": "Belarus Listing History",
+      "price": 0,
+      "langs": [
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "Belarus Official History",
+      "price": 0,
+      "langs": [
+        "ru"
+      ],
+      "formats": [
+        "json",
+        "html",
+        "pdf"
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { localizeProviderDate, translateKoreanProviderText, translateProviderDateInText } from "@/lib/korean-provider-text";
 import { formatMilesInParens } from "@/lib/format-km-with-miles";
-import { ACCIDENT_SEVERITY_I18N_KEYS, formatAccidentDescription } from "@/lib/accident-display";
+import { ACCIDENT_SEVERITY_I18N_KEYS, formatAccidentNarrativeDescription } from "@/lib/accident-display";
 import { translateMappedValue } from "@/lib/vehicle-attr-options";
 import { translateDamageLabel } from "@/lib/translate-damage-label";
 import {
@@ -850,7 +850,7 @@ function eventFacts(
       );
     }
     if (event.description) {
-      const desc = formatAccidentDescription(t, language, event.description);
+      const desc = formatAccidentNarrativeDescription(t, language, event.description);
       // Skip generic "Accident" / damage text already covered by Primary Damage.
       if (
         desc
@@ -894,7 +894,10 @@ function eventFacts(
   if (event.lotStatus) {
     const lot = translateLotStatus(t, event.lotStatus)
       ?? localizeTimelineText(t, language, event.lotStatus);
-    pushUniqueFact(facts, lot);
+    // Skip lot numbers and marketplace names already implied by the event.
+    if (lot && !/#\d{4,}\b/.test(lot)) {
+      pushUniqueFact(facts, lot);
+    }
   }
   if (event.lossAmount != null && event.lossAmount > 0) {
     pushUniqueFact(

@@ -22,6 +22,7 @@ import {
 } from "./pendingVinService.js";
 import { GETCARAPI_PROVIDER_NAME, resolveGetCarApiConfig } from "./getcarApi.js";
 import { CARSTAT_USA_PROVIDER_NAME, resolveCarstatUsaApiConfig } from "./carstatUsaApi.js";
+import { CARSTAT_VHR_PROVIDER_NAME, resolveCarstatVhrApiConfig } from "./carstatVhrApi.js";
 import type { VinExternalSource } from "./vinService.js";
 import { finalizePaymentOnFulfillment } from "./recordedPayments.js";
 import { fireVinReadyEmailForUser } from "./vinReadyEmail.js";
@@ -32,6 +33,7 @@ import {
 } from "./krwRate.js";
 import { createConcurrencyLimiter } from "./batchAsync.js";
 import { warmUsaHtmlStore } from "./carstatUsaHtmlStore.js";
+import { warmVhrHtmlStore } from "./carstatVhrHtmlStore.js";
 
 /** Best-effort: persist USA HTML snapshot so CDN expiry (~10d) does not break later unlocks. */
 function warmUsaHtmlFromLookupData(vin: string, data: Record<string, unknown>): void {
@@ -40,6 +42,24 @@ function warmUsaHtmlFromLookupData(vin: string, data: Record<string, unknown>): 
   if (!pr || typeof pr !== "object" || Array.isArray(pr)) return;
   const htmlUrl = (pr as { htmlUrl?: unknown }).htmlUrl;
   warmUsaHtmlStore(vin, typeof htmlUrl === "string" ? htmlUrl : null);
+}
+
+/** Best-effort: persist VHR HTML snapshot(s) per sourceId. */
+function warmVhrHtmlFromLookupData(vin: string, data: Record<string, unknown>): void {
+  if (data.dataSource !== "carstat_vhr") return;
+  const list = Array.isArray(data.vhrReports) ? data.vhrReports : null;
+  const reports = list?.length
+    ? list
+    : data.vhrReport && typeof data.vhrReport === "object" && !Array.isArray(data.vhrReport)
+      ? [data.vhrReport]
+      : [];
+  for (const r of reports) {
+    if (!r || typeof r !== "object" || Array.isArray(r)) continue;
+    const sourceId = Number((r as { sourceId?: unknown }).sourceId);
+    const htmlUrl = (r as { htmlUrl?: unknown }).htmlUrl;
+    if (!Number.isFinite(sourceId)) continue;
+    warmVhrHtmlStore(vin, sourceId, typeof htmlUrl === "string" ? htmlUrl : null);
+  }
 }
 
 export const VIN_FULFILLING_STATUS = "fulfilling" as const;
@@ -118,7 +138,8 @@ async function fetchFromProviderWithRetry(
   } catch (err) {
     // Carstat USA already wait/polls inside fetchCarstatUsaReport — a blind 2s
     // re-fetch after timeout causes "generation already in progress" hard fails.
-    if (preferredSource === "carstat_usa") throw err;
+    // VHR / USA already wait/poll inside their fetch helpers — no blind re-POST.
+    if (preferredSource === "carstat_usa" || preferredSource === "carstat_vhr") throw err;
     if (!isTransientProviderError(err)) throw err;
     logger.warn({ err, vin }, "Transient provider error — retrying report once");
     await new Promise((r) => setTimeout(r, 2000));
@@ -235,6 +256,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
         warmUsaHtmlFromLookupData(normalizedVin, stampedData);
+        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "cache_async", vin: normalizedVin, userId, lookupId });
         return;
       }
@@ -242,6 +264,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         if (
           !provider.apiKey?.trim()
           && !(await resolveGetCarApiConfig())
+          && !(await resolveCarstatVhrApiConfig())
           && !(await resolveCarstatUsaApiConfig())
         ) {
           throw new Error("Provider API key not configured");
@@ -250,11 +273,15 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         const probe = await probeExternalVinAvailability(normalizedVin);
         const preferredSource = probe.status === "exists" ? probe.source : null;
         const usaReportType = probe.status === "exists" ? probe.usaReportType : undefined;
-        // GetCarAPI / Carstat-USA-only installs: never call Carstat local with an empty key.
+        // GetCarAPI / VHR / USA-only installs: never call Carstat local with an empty key.
         if (
           !preferredSource
           && !provider.apiKey?.trim()
-          && ((await resolveGetCarApiConfig()) || (await resolveCarstatUsaApiConfig()))
+          && (
+            (await resolveGetCarApiConfig())
+            || (await resolveCarstatVhrApiConfig())
+            || (await resolveCarstatUsaApiConfig())
+          )
         ) {
           throw Object.assign(new Error("No vehicle history data found for this VIN in our database."), {
             code: "VIN_NO_DATA",
@@ -267,18 +294,22 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
           preferredSource,
           usaReportType,
         );
-        // Name from delivered payload so fallthrough (e.g. Carstat → USA) is labeled correctly.
+        // Name from delivered payload so fallthrough (e.g. Carstat → VHR → USA) is labeled correctly.
         const deliveredSource = (data as { dataSource?: string | null }).dataSource;
         const reportProviderName =
           deliveredSource === "getcarapi"
             ? GETCARAPI_PROVIDER_NAME
-            : deliveredSource === "carstat_usa"
-              ? CARSTAT_USA_PROVIDER_NAME
-              : preferredSource === "getcarapi"
-                ? GETCARAPI_PROVIDER_NAME
-                : preferredSource === "carstat_usa"
-                  ? CARSTAT_USA_PROVIDER_NAME
-                  : (provider.name || GETCARAPI_PROVIDER_NAME);
+            : deliveredSource === "carstat_vhr"
+              ? CARSTAT_VHR_PROVIDER_NAME
+              : deliveredSource === "carstat_usa"
+                ? CARSTAT_USA_PROVIDER_NAME
+                : preferredSource === "getcarapi"
+                  ? GETCARAPI_PROVIDER_NAME
+                  : preferredSource === "carstat_vhr"
+                    ? CARSTAT_VHR_PROVIDER_NAME
+                    : preferredSource === "carstat_usa"
+                      ? CARSTAT_USA_PROVIDER_NAME
+                      : (provider.name || GETCARAPI_PROVIDER_NAME);
         const stampedData = await stampLookupReportData(data as unknown as Record<string, unknown>);
         await db.update(vinLookupsTable).set({
           status: "complete",
@@ -294,6 +325,7 @@ async function runProviderFulfillmentJob(lookupId: number, input: ProviderFulfil
         }
         void fireVinReadyEmailForUser(lookupId, normalizedVin, stampedData, user, resolvedPayment);
         warmUsaHtmlFromLookupData(normalizedVin, stampedData);
+        warmVhrHtmlFromLookupData(normalizedVin, stampedData);
         logger.info({ msg: "vin_lookup_hit", source: "provider_async", vin: normalizedVin, userId, lookupId });
     });
   } catch (err) {

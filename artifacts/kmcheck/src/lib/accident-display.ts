@@ -56,6 +56,115 @@ export function formatAccidentDescription(
   return translateProviderDateInText(withPhrases, language) ?? withPhrases;
 }
 
+/** True when description is a repaired-parts dump (belongs in Korea repair parts, not accidents). */
+export function isPartsListAccidentDescription(description?: string | null): boolean {
+  const raw = description?.trim();
+  if (!raw) return false;
+  // Structured money summary is OK to keep as narrative fallback.
+  if (/paid\s*[\d,.\s]+/i.test(raw) && /(parts|labor|paint)\s*[\d,.\s]+/i.test(raw)) {
+    return false;
+  }
+  if ((raw.match(/;/g) ?? []).length >= 2) return true;
+  if (
+    /removable|replacement|sheet metal|surface repair|detachable|repainted|\(painted\)|\(replace\)|\(repair\)/i.test(
+      raw,
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** Narrative line for accident cards — never the part-replaced dump. */
+export function formatAccidentNarrativeDescription(
+  t: (key: string) => string,
+  language: Language,
+  description?: string | null,
+): string | null {
+  if (isPartsListAccidentDescription(description)) return null;
+  return formatAccidentDescription(t, language, description);
+}
+
+export type AccidentCostBreakdown = {
+  lossAmount: number | null;
+  partCost: number | null;
+  laborCost: number | null;
+  paintingCost: number | null;
+};
+
+function positiveOrNull(n: number | null | undefined): number | null {
+  return n != null && Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function parseMoneyTokenFromDesc(raw: string, label: RegExp): number | null {
+  const m = raw.match(label);
+  if (!m?.[1]) return null;
+  const n = Number(m[1].replace(/[,\s]/g, ""));
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+}
+
+/**
+ * Resolve paid / parts / labor / paint for accident expand UI.
+ * Prefers accident fields, then same-day insurance claims, then moneyDesc parse.
+ */
+export function resolveAccidentCostBreakdown(
+  accident: {
+    date?: string | null;
+    description?: string | null;
+    lossAmount?: number | null;
+    partCost?: number | null;
+    laborCost?: number | null;
+    paintingCost?: number | null;
+  },
+  claims?: Array<{
+    date?: string | null;
+    lossAmount?: number | null;
+    partCost?: number | null;
+    laborCost?: number | null;
+    paintingCost?: number | null;
+  }> | null,
+): AccidentCostBreakdown {
+  let lossAmount = positiveOrNull(accident.lossAmount);
+  let partCost = positiveOrNull(accident.partCost);
+  let laborCost = positiveOrNull(accident.laborCost);
+  let paintingCost = positiveOrNull(accident.paintingCost);
+
+  if ((partCost == null || laborCost == null || paintingCost == null) && claims?.length) {
+    const day = (accident.date ?? "").slice(0, 10);
+    if (day) {
+      const sameDay = claims.filter((c) => (c.date ?? "").slice(0, 10) === day);
+      if (sameDay.length) {
+        const sum = (pick: (c: (typeof sameDay)[number]) => number | null | undefined) => {
+          let total = 0;
+          let any = false;
+          for (const c of sameDay) {
+            const v = positiveOrNull(pick(c));
+            if (v != null) {
+              total += v;
+              any = true;
+            }
+          }
+          return any ? total : null;
+        };
+        partCost = partCost ?? sum((c) => c.partCost);
+        laborCost = laborCost ?? sum((c) => c.laborCost);
+        paintingCost = paintingCost ?? sum((c) => c.paintingCost);
+        lossAmount = lossAmount ?? sum((c) => c.lossAmount);
+      }
+    }
+  }
+
+  const desc = accident.description ?? "";
+  if (desc && !isPartsListAccidentDescription(desc)) {
+    lossAmount = lossAmount ?? parseMoneyTokenFromDesc(desc, /paid\s*([\d,.\s]+)/i);
+    partCost = partCost ?? parseMoneyTokenFromDesc(desc, /parts\s*([\d,.\s]+)/i);
+    laborCost = laborCost ?? parseMoneyTokenFromDesc(desc, /labor\s*([\d,.\s]+)/i);
+    paintingCost = paintingCost ?? parseMoneyTokenFromDesc(desc, /paint(?:ing)?\s*([\d,.\s]+)/i);
+  }
+
+  return { lossAmount, partCost, laborCost, paintingCost };
+}
+
 export type AccidentSeverityContext = {
   vehicleCountry?: string | null;
   krwPerUsd?: number | null;

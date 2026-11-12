@@ -97,7 +97,8 @@ export function accidentsForScoring(input: AccidentSignalInput): AccidentSignal[
   const provided = input.accidents ?? [];
   const dated = dedupeAccidentsForScoring(provided.filter(accidentHasDate));
   if (dated.length > 0) return dated;
-  if (provided.length > 0) return [];
+  // Undated provider accidents still count — returning [] made heavy-damage cars look Clean.
+  if (provided.length > 0) return dedupeAccidentsForScoring(provided);
 
   const count = input.accidentCount ?? 0;
   if (count > 0) {

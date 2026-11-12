@@ -274,6 +274,33 @@ describe("sanitizeCatalogPayload", () => {
     });
   });
 
+  it("preserves carstat_vhr vhrReports so catalog refresh can re-proxy HTML", () => {
+    const data = sanitizeCatalogPayload({
+      dataSource: "carstat_vhr",
+      make: "Hyundai",
+      vhrReports: [
+        {
+          sourceId: 2,
+          sourceName: "Archive Alpha",
+          htmlUrl: "https://v-h-r.b-cdn.net/a.html",
+          jsonUrl: "https://v-h-r.b-cdn.net/a.json",
+        },
+      ],
+      vhrReport: {
+        sourceId: 2,
+        htmlUrl: "https://v-h-r.b-cdn.net/a.html",
+      },
+    });
+    expect(data.dataSource).toBe("carstat_vhr");
+    expect(data.vhrReports).toHaveLength(1);
+    expect((data.vhrReports as Array<Record<string, unknown>>)[0]?.htmlUrl).toBe(
+      "https://v-h-r.b-cdn.net/a.html",
+    );
+    expect((data.vhrReport as Record<string, unknown>).htmlUrl).toBe(
+      "https://v-h-r.b-cdn.net/a.html",
+    );
+  });
+
   it("keeps 360 fields through normalize → sanitize (admin provider refresh)", () => {
     const exterior = Array.from({ length: 16 }, (_, i) => `https://cdn.example.com/ext-${i}.jpg`);
     const interior = Array.from({ length: 12 }, (_, i) => `https://cdn.example.com/int-${i}.jpg`);
