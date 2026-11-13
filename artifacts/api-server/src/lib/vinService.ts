@@ -1533,26 +1533,29 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
   ]);
   const provider = providerRows[0];
 
-  const gcaPromise = getCarCfg
-    ? checkGetCarApiExists(normalized)
-    : Promise.resolve(null);
-  const localPromise = carstatLocalEnabled && provider?.apiKey?.trim()
-    ? checkLocalExists(normalized, provider.baseUrl, provider.apiKey)
-    : Promise.resolve(null);
-  const vhrPromise = vhrCfg
-    ? checkCarstatVhrAvailability(normalized, { phase: "probe" })
-    : Promise.resolve(null);
-  const usaPromise = usaCfg
-    ? checkCarstatUsaRecords(normalized, { phase: "probe" })
-    : Promise.resolve(null);
+  // Await every free check together, then pick by preference. Wall clock ≈ slowest
+  // provider (not GetCar/local hang + VHR). Probe timeouts stay short so an 8s
+  // GetCar/local stall cannot keep checkout peek spinning.
+  const [gcaResult, localResult, vhrResult, usaResult] = await Promise.all([
+    getCarCfg
+      ? checkGetCarApiExists(normalized, { phase: "probe" })
+      : Promise.resolve(null),
+    carstatLocalEnabled && provider?.apiKey?.trim()
+      ? checkLocalExists(normalized, provider.baseUrl, provider.apiKey, { phase: "probe" })
+      : Promise.resolve(null),
+    vhrCfg
+      ? checkCarstatVhrAvailability(normalized, { phase: "probe" })
+      : Promise.resolve(null),
+    usaCfg
+      ? checkCarstatUsaRecords(normalized, { phase: "probe" })
+      : Promise.resolve(null),
+  ]);
 
-  const [gcaResult, localResult] = await Promise.all([gcaPromise, localPromise]);
-
+  if (gcaResult?.status === "exists") {
+    logger.info({ msg: "external_probe_done", vin: normalized, source: "getcarapi", elapsedMs: Date.now() - started });
+    return { status: "exists", source: "getcarapi" };
+  }
   if (gcaResult) {
-    if (gcaResult.status === "exists") {
-      logger.info({ msg: "external_probe_done", vin: normalized, source: "getcarapi", elapsedMs: Date.now() - started });
-      return { status: "exists", source: "getcarapi" };
-    }
     if (gcaResult.status === "not_found") {
       getCarMissed = true;
     } else {
@@ -1562,11 +1565,11 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
     }
   }
 
+  if (localResult?.status === "exists") {
+    logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat", elapsedMs: Date.now() - started });
+    return { status: "exists", source: "carstat" };
+  }
   if (localResult) {
-    if (localResult.status === "exists") {
-      logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat", elapsedMs: Date.now() - started });
-      return { status: "exists", source: "carstat" };
-    }
     if (localResult.status === "not_found") {
       carstatMissed = true;
     } else {
@@ -1575,18 +1578,14 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
       logger.warn({ msg: "carstat_probe_unavailable", vin: normalized, reason: localResult.reason });
     }
   } else if (!carstatLocalEnabled) {
-    // Admin disabled local listings — treat as miss and continue to VHR / USA.
     carstatMissed = true;
   }
 
-  // VHR + USA were already started with GetCar/local — await the in-flight probes.
-  const [vhrResult, usaResult] = await Promise.all([vhrPromise, usaPromise]);
-
+  if (vhrResult?.status === "exists") {
+    logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat_vhr", elapsedMs: Date.now() - started });
+    return { status: "exists", source: "carstat_vhr" };
+  }
   if (vhrResult) {
-    if (vhrResult.status === "exists") {
-      logger.info({ msg: "external_probe_done", vin: normalized, source: "carstat_vhr", elapsedMs: Date.now() - started });
-      return { status: "exists", source: "carstat_vhr" };
-    }
     if (vhrResult.status === "not_found") {
       vhrMissed = true;
     } else {
@@ -1596,16 +1595,16 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
     }
   }
 
+  if (usaResult?.status === "exists") {
+    logger.info({
+      msg: "external_probe_done",
+      vin: normalized,
+      source: "carstat_usa",
+      elapsedMs: Date.now() - started,
+    });
+    return { status: "exists", source: "carstat_usa", usaReportType: usaResult.preferredType };
+  }
   if (usaResult) {
-    if (usaResult.status === "exists") {
-      logger.info({
-        msg: "external_probe_done",
-        vin: normalized,
-        source: "carstat_usa",
-        elapsedMs: Date.now() - started,
-      });
-      return { status: "exists", source: "carstat_usa", usaReportType: usaResult.preferredType };
-    }
     if (usaResult.status === "not_found") {
       usaMissed = true;
     } else {
@@ -1747,11 +1746,22 @@ function writeLocalExistsCache(vin: string, providerBaseUrl: string, result: Loc
   });
 }
 
+/** Checkout peek budget — keep short so a slow local-exists cannot block VHR/USA. */
+const LOCAL_EXISTS_PROBE_TIMEOUT_MS = Math.max(
+  1_500,
+  Number(process.env.CARSTAT_LOCAL_PROBE_TIMEOUT_MS ?? 3_500) || 3_500,
+);
+const LOCAL_EXISTS_TIMEOUT_MS = Math.max(
+  3_000,
+  Number(process.env.CARSTAT_LOCAL_EXISTS_TIMEOUT_MS ?? 8_000) || 8_000,
+);
+
 /** Strict pre-payment gate — local-exists only, no fail-open. */
 export async function checkLocalExists(
   vin: string,
   providerBaseUrl: string,
   apiKey: string,
+  opts?: { phase?: "probe" | "fulfill" },
 ): Promise<LocalExistsResult> {
   const base = normalizeProviderBaseUrl(providerBaseUrl);
   const cached = readLocalExistsCache(vin, base);
@@ -1762,9 +1772,10 @@ export async function checkLocalExists(
 
   const url = localExistsUrl(base, vin);
   const headers = providerHeaders(apiKey);
+  const timeoutMs = opts?.phase === "probe" ? LOCAL_EXISTS_PROBE_TIMEOUT_MS : LOCAL_EXISTS_TIMEOUT_MS;
 
   try {
-    const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
     const text = await res.text();
 
     if (res.ok) {
