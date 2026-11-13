@@ -285,6 +285,35 @@ function titleCaseLabel(raw: string | null): string | null {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * Carstat inspection rows often ship map meta as the description:
+ * "Marked in abnormal body parts section · Body map position 31: Replaced"
+ * Keep "Front fender: Replaced" — drop the body-map crumbs.
+ */
+export function simplifyInspectionAccidentDescription(
+  part: string | null | undefined,
+  rawDesc: string | null | undefined,
+): string {
+  const partLabel = (part ?? "").trim();
+  let desc = (rawDesc ?? "").trim();
+  desc = desc
+    .replace(/Marked in abnormal body parts? section\s*[·•|,:\-]?\s*/gi, "")
+    .replace(/Body map positions?\s*\d+\s*:?\s*/gi, "")
+    .replace(/^\s*[·•|,:\-]\s*/g, "")
+    .replace(/\s*[·•]\s*/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  const actionMatch = desc.match(
+    /\b(Repaired or welded|Replaced|Repaired|Repainted|Welded|Removed|Damaged)\b/i,
+  );
+  let action = (actionMatch?.[1] ?? desc).trim();
+  if (actionMatch?.[1]) {
+    action = action.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\s+Or\s+/g, " or ");
+  }
+  if (partLabel && action) return `${partLabel}: ${action}`;
+  return partLabel || action || "Inspection finding";
+}
+
 function prettyMarketplace(raw: string | null): string | null {
   if (!raw) return null;
   const host = raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split("/")[0] ?? raw;
@@ -1288,7 +1317,7 @@ export function normalizeCarstatVhrJsonPayloads(
                 if (action && /replac|repair|repaint|accident/i.test(action)) {
                   accidents.push({
                     date: inspDate,
-                    description: `${part}: ${action}`,
+                    description: simplifyInspectionAccidentDescription(part, action),
                     type: "inspection",
                     primaryDamage: part,
                     country: "KR",
@@ -1469,7 +1498,10 @@ export function normalizeCarstatVhrJsonPayloads(
             }
             accidents.push({
               date: inspDate,
-              description: [label, desc && !isPresentFinding(desc) ? desc : null].filter(Boolean).join(": ") || label,
+              description: simplifyInspectionAccidentDescription(
+                label,
+                desc && !isPresentFinding(desc) ? desc : null,
+              ),
               type: str(claim.type_key) ?? "inspection",
               primaryDamage: label,
               country: country ?? "KR",
@@ -1553,7 +1585,7 @@ export function normalizeCarstatVhrJsonPayloads(
             if (looksAccident) {
               accidents.push({
                 date: inspDate,
-                description: `${label}: ${desc}`,
+                description: simplifyInspectionAccidentDescription(label, desc),
                 type: "inspection",
                 primaryDamage: label,
                 severity: str(row.accident_relevance_key),
@@ -2394,8 +2426,26 @@ export function normalizeCarstatVhrJsonPayloads(
   }
 
   const vin = vinEarly;
-  // decodedCountry already set from early WMI decode; keep country authoritative.
-  if (decodedCountry) country = decodedCountry;
+  // WMI decode is manufacturing origin (WDD → Germany). Catalog `country` is the
+  // report market. Real Korean insurance history on an EU import must stay KR —
+  // do not overwrite with the plant country. NA-origin VINs keep WMI (KR stubs cleaned below).
+  const hasKoreanMarketEvidence =
+    sawKoreanInsurance
+    && (
+      koreanVinEarly
+      || insuranceClaims.some((c) => {
+        const ccy = String(c.currency ?? "").toUpperCase();
+        return ccy === "KRW" || (typeof c.lossAmount === "number" && c.lossAmount > 0);
+      })
+      || accidents.some((a) => /^KR$/i.test(String(a.country ?? "")))
+    );
+  if (hasKoreanMarketEvidence && !isNorthAmericanCountry(decodedCountry)) {
+    country = "KR";
+  } else if (decodedCountry) {
+    country = decodedCountry;
+  } else if (hasKoreanMarketEvidence) {
+    country = "KR";
+  }
 
   // Korean insurance identity wins for Korean VINs / KR reports (amazing integrated merge).
   const koreanVin = koreanVinEarly;

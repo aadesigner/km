@@ -3,6 +3,7 @@ import {
   hasStructuredVhrReport,
   normalizeCarstatVhrJsonPayloads,
   parseVehicleTitle,
+  simplifyInspectionAccidentDescription,
 } from "./carstatVhrNormalize.js";
 
 describe("carstatVhrNormalize", () => {
@@ -1226,5 +1227,46 @@ describe("carstatVhrNormalize", () => {
     expect(out.marketData?.estimatedValue).toBe(19700);
     expect(out.marketData?.lastAuctionPrice).toBe(11550);
     expect(out.country).toMatch(/United States|US/i);
+  });
+
+  it("simplifies body-map inspection accident titles", () => {
+    expect(
+      simplifyInspectionAccidentDescription(
+        "Front fender",
+        "Marked in abnormal body parts section · Body map position 31: Replaced",
+      ),
+    ).toBe("Front fender: Replaced");
+    expect(
+      simplifyInspectionAccidentDescription("Front Bumper", "Cosmetic repair"),
+    ).toBe("Front Bumper: Cosmetic repair");
+  });
+
+  it("keeps KR as catalog country for EU WMI cars with real Korean insurance", () => {
+    const out = normalizeCarstatVhrJsonPayloads([
+      {
+        schema_version: 2,
+        vin: "WDDHF0CB9EA796317",
+        source: {
+          id: 68,
+          sections: [
+            {
+              type: "korean_insurance",
+              items: [{
+                korea_section: "accidents_detail",
+                data: {
+                  items: [{
+                    date: "2021-06-15",
+                    center: [{ type: "1", paid: 850000, parts: 400000, labor: 300000, paint: 150000 }],
+                  }],
+                },
+              }],
+            },
+          ],
+        },
+      },
+    ], { vin: "WDDHF0CB9EA796317" });
+
+    expect(out.country).toMatch(/^KR$|Korea/i);
+    expect(out.accidents?.length).toBeGreaterThanOrEqual(1);
   });
 });
