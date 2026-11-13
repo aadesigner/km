@@ -1518,25 +1518,35 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
   let usaMissed = true;
   let usaDown = false;
 
-  // Resolve toggles / credentials together, then run GetCarAPI + local in parallel.
-  const [getCarCfg, carstatLocalEnabled, providerRows] = await Promise.all([
+  // Resolve toggles / credentials together, then fire all free checks in parallel.
+  // Preference order is unchanged (GetCar → local → VHR → USA); we only overlap
+  // latency so KR/VHR peeks no longer wait for GetCar+local to finish first.
+  const [getCarCfg, carstatLocalEnabled, providerRows, vhrCfg, usaCfg] = await Promise.all([
     resolveGetCarApiConfig(),
     resolveCarstatLocalApiEnabled(),
     db.select().from(providersTable)
       .where(and(eq(providersTable.isActive, true)))
       .orderBy(providersTable.id)
       .limit(1),
+    resolveCarstatVhrApiConfig(),
+    resolveCarstatUsaApiConfig(),
   ]);
   const provider = providerRows[0];
 
-  const [gcaResult, localResult] = await Promise.all([
-    getCarCfg
-      ? checkGetCarApiExists(normalized)
-      : Promise.resolve(null),
-    carstatLocalEnabled && provider?.apiKey?.trim()
-      ? checkLocalExists(normalized, provider.baseUrl, provider.apiKey)
-      : Promise.resolve(null),
-  ]);
+  const gcaPromise = getCarCfg
+    ? checkGetCarApiExists(normalized)
+    : Promise.resolve(null);
+  const localPromise = carstatLocalEnabled && provider?.apiKey?.trim()
+    ? checkLocalExists(normalized, provider.baseUrl, provider.apiKey)
+    : Promise.resolve(null);
+  const vhrPromise = vhrCfg
+    ? checkCarstatVhrAvailability(normalized, { phase: "probe" })
+    : Promise.resolve(null);
+  const usaPromise = usaCfg
+    ? checkCarstatUsaRecords(normalized, { phase: "probe" })
+    : Promise.resolve(null);
+
+  const [gcaResult, localResult] = await Promise.all([gcaPromise, localPromise]);
 
   if (gcaResult) {
     if (gcaResult.status === "exists") {
@@ -1569,19 +1579,8 @@ async function probeExternalVinAvailabilityUncached(normalized: string): Promise
     carstatMissed = true;
   }
 
-  // VHR + USA in parallel after early miss (VHR still preferred when both hit).
-  const [vhrCfg, usaCfg] = await Promise.all([
-    resolveCarstatVhrApiConfig(),
-    resolveCarstatUsaApiConfig(),
-  ]);
-  const [vhrResult, usaResult] = await Promise.all([
-    vhrCfg
-      ? checkCarstatVhrAvailability(normalized, { phase: "probe" })
-      : Promise.resolve(null),
-    usaCfg
-      ? checkCarstatUsaRecords(normalized, { phase: "probe" })
-      : Promise.resolve(null),
-  ]);
+  // VHR + USA were already started with GetCar/local — await the in-flight probes.
+  const [vhrResult, usaResult] = await Promise.all([vhrPromise, usaPromise]);
 
   if (vhrResult) {
     if (vhrResult.status === "exists") {
