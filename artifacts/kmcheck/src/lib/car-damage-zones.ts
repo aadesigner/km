@@ -160,21 +160,49 @@ function splitPartItems(value: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Display + dedupe key for repair-part chips on the body diagram.
+ * Carstat often repeats the same panel across paint/repair/replace rows
+ * ("Trunk interior (repair)" ×3) and glues actions ("tailgateRepaired").
+ */
+export function normalizeDamagePartLabel(raw: string): string {
+  let s = raw.trim();
+  s = s.replace(
+    /([a-zA-Z/])(Repaired|Replaced|Painted|Overhauled|Repainted|Replacement)\b/g,
+    "$1 $2",
+  );
+  s = s.replace(
+    /\s*\((?:replace(?:ment)?|repair(?:ed)?|painting|paint|sheet\s*metal|overhaul|detach(?:able)?|removable)\)\s*/gi,
+    " ",
+  );
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
+function partDedupeKey(label: string): string {
+  return normalizeDamagePartLabel(label).toLowerCase();
+}
+
 export function parseCarDamageFromRepairExtras(
   extras: Array<{ key?: string | null; label?: string | null; value?: string | null }>,
 ): CarDamageHit[] {
   const byZone = new Map<CarDamageZoneId, CarDamageHit>();
 
   const bump = (zone: CarDamageZoneId, severity: DamageSeverity, label: string) => {
+    const display = normalizeDamagePartLabel(label);
+    if (!display) return;
+    const key = partDedupeKey(display);
     const existing = byZone.get(zone);
     if (!existing) {
-      byZone.set(zone, { zone, severity, labels: [label] });
+      byZone.set(zone, { zone, severity, labels: [display] });
       return;
     }
     if (SEVERITY_RANK[severity] > SEVERITY_RANK[existing.severity]) {
       existing.severity = severity;
     }
-    if (!existing.labels.includes(label)) existing.labels.push(label);
+    if (!existing.labels.some((l) => partDedupeKey(l) === key)) {
+      existing.labels.push(display);
+    }
   };
 
   for (const row of extras) {

@@ -29,6 +29,8 @@ import {
 } from "./carstatVhrNormalize.js";
 import {
   payloadContainsCyrillic,
+  payloadContainsHangul,
+  translateVhrJsonKoToEn,
   translateVhrJsonRuToEn,
 } from "./carstatVhrRuTranslate.js";
 
@@ -720,13 +722,16 @@ export async function fetchCarstatVhrReport(
         if (report.jsonUrl) {
           const payload = await fetchVhrJsonPayload(report.jsonUrl);
           if (payload) {
-            // RU (or mixed Cyrillic) string leaves → English before normalize.
-            // Carstat often ships RU option/body labels even when language=en (Alpha/Beta/68).
+            // RU / Hangul string leaves → English before normalize.
+            // Carstat often ships RU option labels and Korean inspection notes even when language=en.
+            let next = payload;
             const needsRuTranslate =
               selected.language === "ru"
               || selected.sourceId === VHR_KOREAN_INSURANCE_ID
-              || payloadContainsCyrillic(payload);
-            jsonPayload = needsRuTranslate ? translateVhrJsonRuToEn(payload) : payload;
+              || payloadContainsCyrillic(next);
+            if (needsRuTranslate) next = translateVhrJsonRuToEn(next);
+            if (payloadContainsHangul(next)) next = translateVhrJsonKoToEn(next);
+            jsonPayload = next;
           }
         }
         logger.info({

@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   DAMAGE_SEVERITY_META,
+  normalizeDamagePartLabel,
   parseCarDamageFromRepairExtras,
   type CarDamageHit,
   type CarDamageZoneId,
@@ -61,7 +62,7 @@ function severityLabelKey(sev: DamageSeverity): string {
 }
 
 function shortPartLabel(label: string): string {
-  return label
+  return normalizeDamagePartLabel(label)
     .replace(/\s*\([^)]*\)\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   DAMAGE_SEVERITY_META,
+  normalizeDamagePartLabel,
   type DamageSeverity,
 } from "@/lib/car-damage-zones";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
@@ -47,7 +48,7 @@ function splitParts(value: string): string[] {
 }
 
 function shortName(name: string): string {
-  return name
+  return normalizeDamagePartLabel(name)
     .replace(/\s*\([^)]*\)\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();

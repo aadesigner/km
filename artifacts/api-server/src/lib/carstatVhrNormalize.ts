@@ -10,6 +10,7 @@ import {
 } from "./carstatDemoPhotos.js";
 import {
   payloadContainsCyrillic,
+  translateKoToEn,
   translateNormalizedReportRuToEn,
   translateRuToEn,
   translateVhrJsonRuToEn,
@@ -1614,7 +1615,8 @@ export function normalizeCarstatVhrJsonPayloads(
               : null;
           if (conclusions) {
             const score = str(conclusions.evaluation_score);
-            const notes = str(conclusions.notes);
+            const notesRaw = str(conclusions.notes);
+            const notes = notesRaw ? translateKoToEn(translateRuToEn(notesRaw)) : null;
             const overall = titleCaseLabel(str(conclusions.overall_result_key));
             const accidentStatus = titleCaseLabel(str(conclusions.accident_status_key));
             pushExtra(vehicleExtras, "inspection_summary", "Inspection summary", [score, notes, overall].filter(Boolean).join(" — ") || null, inspDate);
@@ -2151,16 +2153,36 @@ export function normalizeCarstatVhrJsonPayloads(
             pushExtra(vehicleExtras, "kr_export_color", "Export color", str(exportData.color_name));
             pushExtra(vehicleExtras, "kr_export_seats", "Seats", exportData.seats_count);
             pushExtra(vehicleExtras, "kr_export_engine", "Engine displacement", exportData.engine_displacement != null ? `${exportData.engine_displacement} cc` : null);
-            pushExtra(
-              vehicleExtras,
-              "kr_export_total_loss",
-              "Export total loss",
+            const exportTotalLossDesc =
               exportData.is_total_loss === true
                 ? (str(exportData.total_loss_description) ?? "Yes")
                 : exportData.is_total_loss === false
                   ? "No"
-                  : null,
+                  : null;
+            pushExtra(
+              vehicleExtras,
+              "kr_export_total_loss",
+              "Export total loss",
+              exportTotalLossDesc,
             );
+            // Export declaration total-loss flag drives salvage / total-loss title (same as KR special_conditions).
+            if (exportData.is_total_loss === true) {
+              isSalvage = true;
+              registryHistory.push({
+                date: exportDate,
+                type: "total_loss",
+                title: "Total loss",
+                subtitle: str(exportData.total_loss_description) ?? "Recorded on export declaration",
+              });
+              accidents.push({
+                date: exportDate,
+                description: "Total loss recorded on Korean export declaration",
+                type: "total_loss",
+                country: "KR",
+              });
+            } else if (exportData.is_total_loss === false && isSalvage == null) {
+              isSalvage = false;
+            }
             if (exportData.length != null || exportData.width != null || exportData.height != null) {
               pushExtra(
                 vehicleExtras,

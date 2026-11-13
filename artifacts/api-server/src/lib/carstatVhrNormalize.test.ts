@@ -837,6 +837,40 @@ describe("carstatVhrNormalize", () => {
     expect(out.registryHistory?.some((e) => e.type === "first_registration" && e.date === "2021-03-17")).toBe(true);
     expect(out.registryHistory?.some((e) => e.type === "export" && e.date === "2026-02-01")).toBe(true);
     expect(out.registryHistory?.some((e) => e.type === "no_insurance")).toBe(true);
+    expect(out.vehicleExtras?.some((x) => x.label === "Export total loss" && x.value === "No")).toBe(true);
+  });
+
+  it("flags salvage when export declaration marks total loss", () => {
+    const out = normalizeCarstatVhrJsonPayloads([
+      {
+        schema_version: 2,
+        vin: "KNAF241BEMA915413",
+        source: {
+          id: 68,
+          sections: [{
+            type: "korean_insurance",
+            items: [{
+              korea_section: "export_declaration",
+              data: {
+                status: "done",
+                data: {
+                  export_date: "2026-02-01",
+                  model_name: "K3",
+                  is_total_loss: true,
+                  total_loss_description: "Economic total loss",
+                  mileage: 106526,
+                },
+              },
+            }],
+          }],
+        },
+      },
+    ], { vin: "KNAF241BEMA915413" });
+
+    expect(out.isSalvage).toBe(true);
+    expect(out.vehicleExtras?.some((x) => x.label === "Export total loss" && /Economic total loss|Yes/i.test(x.value ?? ""))).toBe(true);
+    expect(out.accidents?.some((a) => a.type === "total_loss")).toBe(true);
+    expect(out.registryHistory?.some((e) => e.type === "total_loss")).toBe(true);
   });
 
   it("does not let korean_insurance car_info overwrite US WMI identity/country", () => {

@@ -1,7 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { parseCarDamageFromRepairExtras } from "./car-damage-zones";
+import {
+  normalizeDamagePartLabel,
+  parseCarDamageFromRepairExtras,
+} from "./car-damage-zones";
 
 describe("parseCarDamageFromRepairExtras", () => {
+  it("dedupes the same panel across repair/paint/replace rows", () => {
+    expect(normalizeDamagePartLabel("Trunk / tailgateRepaired")).toBe("Trunk / tailgate Repaired");
+    const hits = parseCarDamageFromRepairExtras([
+      {
+        key: "kr_parts_repair",
+        label: "Repair parts · Repair",
+        value: "Trunk interior (repair); Trunk / tailgateRepaired",
+      },
+      {
+        key: "kr_parts_paint",
+        label: "Repair parts · Paint",
+        value: "Trunk interior (painting)",
+      },
+      {
+        key: "kr_parts_replace",
+        label: "Repair parts · Replace",
+        value: "Trunk interior (replacement)",
+      },
+    ]);
+    const trunk = hits.find((h) => h.zone === "trunk");
+    expect(trunk).toBeTruthy();
+    expect(trunk!.labels.filter((l) => /trunk interior/i.test(l))).toHaveLength(1);
+    expect(trunk!.labels.some((l) => /tailgate\s+Repaired/i.test(l))).toBe(true);
+  });
+
   it("maps Korea repair part rows onto body zones with severity", () => {
     const hits = parseCarDamageFromRepairExtras([
       {
