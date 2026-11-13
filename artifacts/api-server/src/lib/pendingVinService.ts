@@ -92,6 +92,29 @@ export async function resolveVinFulfillmentMode(vin: string): Promise<VinFulfill
   const { probeExternalVinAvailability } = await import("./vinService.js");
   const probe = await probeExternalVinAvailability(normalized);
   if (probe.status === "exists") return "standard";
+
+  // Peek/probe uses a short timeout and soft-misses slow/partial VHR checks as not_found.
+  // That is fine for a snappy pre-pay CTA, but at payment time a false miss parks a paid
+  // VIN in manual pending even when KR insurance (or other buyable sources) exist.
+  // Re-check VHR with the fulfill budget before committing to pending.
+  try {
+    const { checkCarstatVhrAvailability, resolveCarstatVhrApiConfig } = await import("./carstatVhrApi.js");
+    if (await resolveCarstatVhrApiConfig()) {
+      const vhr = await checkCarstatVhrAvailability(normalized, { phase: "fulfill" });
+      if (vhr.status === "exists") {
+        logger.info({
+          msg: "fulfillment_mode_vhr_recheck_exists",
+          vin: normalized,
+          probeStatus: probe.status,
+          selected: vhr.selectedSources.map((s) => s.sourceId),
+        });
+        return "standard";
+      }
+    }
+  } catch (err) {
+    logger.warn({ msg: "fulfillment_mode_vhr_recheck_failed", vin: normalized, err });
+  }
+
   if (probe.status === "unavailable") {
     // Provider down — still allow manual if decode is trustworthy
     return (await isVinEligibleForManualPending(normalized)) ? "manual_pending" : "standard";

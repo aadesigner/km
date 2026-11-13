@@ -68,10 +68,12 @@ const CHECK_ATTEMPT_TIMEOUT_MS = Math.max(
   8_000,
   Number(process.env.CARSTAT_VHR_CHECK_TIMEOUT_MS ?? 15_000) || 15_000,
 );
-/** Pre-pay peek/probe must stay snappy — never sit on VHR 202 polling. */
+/** Pre-pay peek/probe must stay snappy — never sit on VHR 202 polling.
+ *  Default was 2.5s; Carstat often lands ~2–4s with status "partial", so a tight
+ *  budget soft-misses real KR hits and routes paid VINs to manual pending. */
 const PROBE_CHECK_BUDGET_MS = Math.max(
   1_500,
-  Number(process.env.CARSTAT_VHR_PROBE_BUDGET_MS ?? 2_500) || 2_500,
+  Number(process.env.CARSTAT_VHR_PROBE_BUDGET_MS ?? 6_000) || 6_000,
 );
 const REPORT_ATTEMPT_TIMEOUT_MS = Math.max(
   8_000,
@@ -172,13 +174,18 @@ function str(v: unknown): string | null {
 
 function isTerminalStatus(status: string | null | undefined): boolean {
   const s = (status ?? "").toLowerCase();
+  // Carstat check finals: completed | partial (some sources failed) | failed | not_found.
+  // "partial" must be terminal — otherwise we poll for minutes and probe soft-misses
+  // buyable KR/auction sources that already arrived on the first response.
   return (
     s === "completed"
     || s === "complete"
+    || s === "partial"
     || s === "failed"
     || s === "error"
     || s === "cancelled"
     || s === "canceled"
+    || s === "not_found"
   );
 }
 
