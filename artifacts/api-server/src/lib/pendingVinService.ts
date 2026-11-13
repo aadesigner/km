@@ -97,8 +97,13 @@ export async function resolveVinFulfillmentMode(vin: string): Promise<VinFulfill
   // That is fine for a snappy pre-pay CTA, but at payment time a false miss parks a paid
   // VIN in manual pending even when KR insurance (or other buyable sources) exist.
   // Re-check VHR with the fulfill budget before committing to pending.
+  // Peek never asks source 68 (KR check quota); fulfill may include 68 or force-buy it.
   try {
-    const { checkCarstatVhrAvailability, resolveCarstatVhrApiConfig } = await import("./carstatVhrApi.js");
+    const {
+      checkCarstatVhrAvailability,
+      resolveCarstatVhrApiConfig,
+      shouldForceKoreanInsuranceReport,
+    } = await import("./carstatVhrApi.js");
     if (await resolveCarstatVhrApiConfig()) {
       const vhr = await checkCarstatVhrAvailability(normalized, { phase: "fulfill" });
       if (vhr.status === "exists") {
@@ -107,6 +112,18 @@ export async function resolveVinFulfillmentMode(vin: string): Promise<VinFulfill
           vin: normalized,
           probeStatus: probe.status,
           selected: vhr.selectedSources.map((s) => s.sourceId),
+        });
+        return "standard";
+      }
+      // Korean-market VINs (K* / Korea country / inspections): force:true on 68 if needed.
+      const forceGate = await shouldForceKoreanInsuranceReport(normalized);
+      if (forceGate.force) {
+        logger.info({
+          msg: "fulfillment_mode_vhr_force_68_eligible",
+          vin: normalized,
+          probeStatus: probe.status,
+          vhrStatus: vhr.status,
+          reason: forceGate.reason,
         });
         return "standard";
       }

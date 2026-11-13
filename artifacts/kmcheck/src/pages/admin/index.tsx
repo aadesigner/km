@@ -720,6 +720,60 @@ export default function AdminOverview() {
           </Button>
         </div>
 
+        {/* Korean Insurance check meter — first-page ops signal */}
+        {stats?.koreanInsuranceChecks != null && (
+          <Panel
+            className={cn(
+              "px-3.5 py-3 md:px-4 md:py-3.5",
+              stats.koreanInsuranceChecks.exhausted || !stats.koreanInsuranceChecks.canSpend
+                ? "border-amber-500/35 bg-amber-500/5"
+                : "border-primary/25 bg-primary/[0.03]",
+            )}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div
+                  className={cn(
+                    "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ring-1",
+                    stats.koreanInsuranceChecks.exhausted || !stats.koreanInsuranceChecks.canSpend
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/20"
+                      : "bg-primary/10 text-primary ring-primary/15",
+                  )}
+                >
+                  <Zap className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs md:text-sm font-semibold truncate">
+                    Korean Insurance checks
+                  </p>
+                  <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                    {stats.koreanInsuranceChecks.exhausted
+                      ? "Quota exhausted — paying reports refill +10; peeks never ask KR"
+                      : stats.koreanInsuranceChecks.canSpend
+                        ? "Availability asks for source 68 (peeks skip KR)"
+                        : "Low quota — post-pay uses force buy for K* VINs"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 sm:gap-3 shrink-0 sm:pl-2">
+                <span className="text-2xl md:text-3xl font-bold tabular-nums leading-none">
+                  {stats.koreanInsuranceChecks.remaining == null
+                    ? "—"
+                    : stats.koreanInsuranceChecks.remaining}
+                </span>
+                <span className="text-[11px] md:text-xs text-muted-foreground">
+                  {stats.koreanInsuranceChecks.remaining == null
+                    ? "unavailable — refresh to retry"
+                    : "checks left"}
+                  {stats.koreanInsuranceChecks.spentSinceRefill > 0
+                    ? ` · ${stats.koreanInsuranceChecks.spentSinceRefill} used since refill`
+                    : ""}
+                </span>
+              </div>
+            </div>
+          </Panel>
+        )}
+
         {/* Pending alert */}
         {(derived?.pendingOpen ?? 0) > 0 && (
           <Link href="/adminx/pending-vin-checks">
