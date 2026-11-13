@@ -708,71 +708,38 @@ export default function AdminOverview() {
               </p>
             )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => { void handleDashboardRefresh(); }}
-            disabled={statsRefreshing}
-            className="h-9 md:h-10 gap-1.5 px-3 text-xs md:text-sm shrink-0"
-          >
-            <RefreshCw className={cn("h-4 w-4", statsRefreshing && "animate-spin")} />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
-        </div>
-
-        {/* Korean Insurance check meter — first-page ops signal */}
-        {stats?.koreanInsuranceChecks != null && (
-          <Panel
-            className={cn(
-              "px-3.5 py-3 md:px-4 md:py-3.5",
-              stats.koreanInsuranceChecks.exhausted || !stats.koreanInsuranceChecks.canSpend
-                ? "border-amber-500/35 bg-amber-500/5"
-                : "border-primary/25 bg-primary/[0.03]",
-            )}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div
-                  className={cn(
-                    "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ring-1",
-                    stats.koreanInsuranceChecks.exhausted || !stats.koreanInsuranceChecks.canSpend
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/20"
-                      : "bg-primary/10 text-primary ring-primary/15",
-                  )}
-                >
-                  <Zap className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs md:text-sm font-semibold truncate">
-                    Korean Insurance checks
-                  </p>
-                  <p className="text-[11px] md:text-xs text-muted-foreground truncate">
-                    {stats.koreanInsuranceChecks.exhausted
-                      ? "Quota exhausted — paying reports refill +10; peeks never ask KR"
-                      : stats.koreanInsuranceChecks.canSpend
-                        ? "Availability asks for source 68 (peeks skip KR)"
-                        : "Low quota — post-pay uses force buy for K* VINs"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2 sm:gap-3 shrink-0 sm:pl-2">
-                <span className="text-2xl md:text-3xl font-bold tabular-nums leading-none">
+          <div className="flex items-center gap-2 shrink-0">
+            {stats?.koreanInsuranceChecks != null && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] md:text-xs tabular-nums",
+                  stats.koreanInsuranceChecks.exhausted || !stats.koreanInsuranceChecks.canSpend
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300"
+                    : "border-border/60 bg-muted/40 text-muted-foreground",
+                )}
+                title="Korean Insurance availability checks left (source 68). At ≤2 we stop KR checks and force-buy after pay."
+              >
+                <Zap className="h-3 w-3 shrink-0 opacity-80" />
+                <span className="font-semibold text-foreground">
                   {stats.koreanInsuranceChecks.remaining == null
                     ? "—"
                     : stats.koreanInsuranceChecks.remaining}
                 </span>
-                <span className="text-[11px] md:text-xs text-muted-foreground">
-                  {stats.koreanInsuranceChecks.remaining == null
-                    ? "unavailable — refresh to retry"
-                    : "checks left"}
-                  {stats.koreanInsuranceChecks.spentSinceRefill > 0
-                    ? ` · ${stats.koreanInsuranceChecks.spentSinceRefill} used since refill`
-                    : ""}
-                </span>
-              </div>
-            </div>
-          </Panel>
-        )}
+                <span className="text-muted-foreground">KR left</span>
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { void handleDashboardRefresh(); }}
+              disabled={statsRefreshing}
+              className="h-9 md:h-10 gap-1.5 px-3 text-xs md:text-sm shrink-0"
+            >
+              <RefreshCw className={cn("h-4 w-4", statsRefreshing && "animate-spin")} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
+        </div>
 
         {/* Pending alert */}
         {(derived?.pendingOpen ?? 0) > 0 && (

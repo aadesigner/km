@@ -50,9 +50,10 @@ describe("carstatVhrQuota", () => {
     expect(parseKoreanInsuranceRemaining({})).toBeNull();
   });
 
-  it("blocks KR checks when remaining ≤ spare", () => {
+  it("blocks KR checks when remaining ≤ 2 (force threshold)", () => {
+    expect(KR_CHECK_SPARE).toBe(2);
     __resetKoreanInsuranceCheckQuotaForTests({
-      remaining: KR_CHECK_SPARE,
+      remaining: 2,
       fetchedAt: Date.now(),
       exhausted: false,
       spentSinceRefill: 0,
@@ -60,7 +61,15 @@ describe("carstatVhrQuota", () => {
     expect(canIncludeKoreanInsuranceInCheck()).toBe(false);
 
     __resetKoreanInsuranceCheckQuotaForTests({
-      remaining: KR_CHECK_SPARE + 1,
+      remaining: 1,
+      fetchedAt: Date.now(),
+      exhausted: false,
+      spentSinceRefill: 0,
+    });
+    expect(canIncludeKoreanInsuranceInCheck()).toBe(false);
+
+    __resetKoreanInsuranceCheckQuotaForTests({
+      remaining: 3,
       fetchedAt: Date.now(),
       exhausted: false,
       spentSinceRefill: 0,

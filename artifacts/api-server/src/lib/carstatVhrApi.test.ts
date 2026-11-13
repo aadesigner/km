@@ -230,7 +230,7 @@ describe("carstatVhrApi selection", () => {
     expect(selectVhrSourcesToBuy([src({ id: 1, name: "USA Insurance Auctions" })])).toEqual([]);
   });
 
-  it("adds inspections only together with korean insurance", () => {
+  it("adds inspections together with korean insurance", () => {
     const selected = selectVhrSourcesToBuy([
       src({ id: 2, records: 3 }),
       src({ id: 4, name: "Vehicle Inspections", records: 8 }),
@@ -254,12 +254,12 @@ describe("carstatVhrApi selection", () => {
     expect(koreanOnly.map((s) => s.sourceId)).toEqual([68]);
   });
 
-  it("never buys inspections alone — falls back to vehicle history", () => {
+  it("pairs inspections with vehicle history when both match (no KR required)", () => {
     const selected = selectVhrSourcesToBuy([
       src({ id: 4, name: "Vehicle Inspections", records: 2 }),
-      src({ id: 5, records: 9 }),
+      src({ id: 5, name: "Vehicle History", records: 9 }),
     ]);
-    expect(selected.map((s) => s.sourceId)).toEqual([5]);
+    expect(selected.map((s) => s.sourceId)).toEqual([5, 4]);
   });
 
   it("returns empty when only inspections is eligible", () => {

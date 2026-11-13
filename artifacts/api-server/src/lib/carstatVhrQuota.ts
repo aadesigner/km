@@ -12,8 +12,11 @@ const QUOTA_REFRESH_MS = Math.max(
   15_000,
   Number(process.env.CARSTAT_VHR_QUOTA_REFRESH_MS ?? 60_000) || 60_000,
 );
-/** Keep one spare check; never include 68 when remaining ≤ this. */
-export const KR_CHECK_SPARE = 1;
+/**
+ * Keep 2 spare KR availability checks. When remaining ≤ 2 we never include
+ * source 68 in /checks and post-pay uses force:true instead.
+ */
+export const KR_CHECK_SPARE = 2;
 /** Soft ceiling of KR-including checks between paid refills. */
 export const KR_CHECK_SOFT_CEILING = 9;
 
