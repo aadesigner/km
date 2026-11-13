@@ -89,4 +89,23 @@ describe("sanitizeMileageHistory listing price", () => {
     expect(out[0]?.condition).toBeNull();
     expect(out[0]?.odometer).toBe(156_676);
   });
+
+  it("strips legacy Carstat lots that omit source but still carry sale chips", () => {
+    const out = sanitizeMileageHistory([
+      {
+        date: null,
+        odometer: 137_498,
+        unit: "km",
+        auctionPrice: 9597,
+        condition: "run_and_drives",
+        lotStatus: "sold",
+      },
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]?.source).toBe("listing");
+    expect(out[0]?.auctionPrice).toBeNull();
+    expect(out[0]?.condition).toBeNull();
+    expect(out[0]?.lotStatus).toBeNull();
+    expect(out[0]?.odometer).toBe(137_498);
+  });
 });

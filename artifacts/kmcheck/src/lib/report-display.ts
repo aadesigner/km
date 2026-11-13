@@ -378,23 +378,29 @@ export function sanitizeMileageHistory<T extends MileageHistoryLike>(
         return odo != null && Number(odo) > 0;
       })
       .map((entry) => {
-        const source = cleanDisplayText(entry.source);
-        // Local Carstat Encar/listing lots — keep km/date only; don't show sale price on mileage timeline.
-        const isPlainListing = /^listing$/i.test(source ?? "");
+        const rawSource = cleanDisplayText(entry.source);
+        // Legacy local Carstat lots often omitted `source` while still carrying listing
+        // sale chips (₩ price, run_and_drives). Treat missing/listing/marketplace as
+        // km+date only — sale price/condition belong on the auction timeline.
+        const isNaAuction = /^na_auction$/i.test(rawSource ?? "");
+        const source = rawSource || (isNaAuction ? "na_auction" : "listing");
+        const stripSaleMeta = !isNaAuction;
         return {
           ...entry,
           odometer: entry.odometer ?? (entry as { mileage?: number | null }).mileage,
           date: cleanDisplayText(entry.date),
           source,
-          condition: isPlainListing ? null : cleanDisplayText(entry.condition),
-          damage: isPlainListing ? null : cleanDisplayText(entry.damage),
-          primaryDamage: isPlainListing ? null : cleanDisplayText(entry.primaryDamage),
-          secondaryDamage: isPlainListing ? null : cleanDisplayText(entry.secondaryDamage),
-          lotStatus: isPlainListing ? null : sanitizeAuctionLotStatus(entry.lotStatus),
-          titleStatus: isPlainListing ? null : cleanDisplayText(entry.titleStatus),
+          condition: stripSaleMeta ? null : cleanDisplayText(entry.condition),
+          damage: stripSaleMeta ? null : cleanDisplayText(entry.damage),
+          primaryDamage: stripSaleMeta ? null : cleanDisplayText(entry.primaryDamage),
+          secondaryDamage: stripSaleMeta ? null : cleanDisplayText(entry.secondaryDamage),
+          lotStatus: stripSaleMeta ? null : sanitizeAuctionLotStatus(entry.lotStatus),
+          titleStatus: stripSaleMeta ? null : cleanDisplayText(entry.titleStatus),
           location: cleanDisplayText(entry.location),
           description: cleanDisplayText(entry.description),
-          ...(isPlainListing ? { auctionPrice: null, currency: null } : {}),
+          // Never show listing/auction sale amounts on the mileage timeline.
+          auctionPrice: null,
+          currency: null,
         };
       }),
     vehicleYear,
