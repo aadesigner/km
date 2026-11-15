@@ -7,8 +7,8 @@
  * - 80–140k lime / light green-yellow
  * - 140–180k amber / yellow
  * - 180–240k light orange
- * - 240–300k deep orange
- * - 300k+   red
+ * - 240–275k deep orange
+ * - 275k+   red
  */
 export function mileageColor(km: number): { bar: string; dot: string; text: string } {
   if (km < 80_000) {
@@ -39,7 +39,7 @@ export function mileageColor(km: number): { bar: string; dot: string; text: stri
       text: "text-orange-700 dark:text-orange-300",
     };
   }
-  if (km < 300_000) {
+  if (km < 275_000) {
     return {
       bar: "bg-orange-600",
       dot: "bg-orange-600 ring-orange-600/30",
