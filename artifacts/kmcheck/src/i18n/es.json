@@ -1967,5 +1967,9 @@
   "repair_parts_list_heading": "Piezas por tipo de trabajo",
   "repair_parts_hint_replace": "Piezas retiradas y sustituidas por componentes nuevos o usados.",
   "repair_parts_hint_sheet_metal": "Trabajo estructural / chapistería en la carrocería.",
-  "repair_parts_hint_other": "Otros ítems de reparación del registro de seguros de Corea."
+  "repair_parts_hint_other": "Otros ítems de reparación del registro de seguros de Corea.",
+  "provider_vehicle_number_change": "Cambio de número de vehículo",
+  "provider_termination_of_information": "Fin del suministro de información",
+  "provider_insurance_accident": "Accidente de seguro",
+  "provider_simple_repair_history": "Historial de reparaciones simples"
 }

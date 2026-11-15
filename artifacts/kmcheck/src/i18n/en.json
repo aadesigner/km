@@ -1985,5 +1985,9 @@
   "repair_parts_hint_replace": "Parts removed and replaced with new or used components.",
   "repair_parts_hint_repair": "Repaired, overhauled, or detached and refitted parts.",
   "repair_parts_hint_paint": "Surfaces that were painted or re-finished.",
-  "repair_parts_hint_other": "Other repair items from the Korean insurance record."
+  "repair_parts_hint_other": "Other repair items from the Korean insurance record.",
+  "provider_vehicle_number_change": "Vehicle number change",
+  "provider_termination_of_information": "Termination of information provision",
+  "provider_insurance_accident": "Insurance accident",
+  "provider_simple_repair_history": "Simple repair history"
 }

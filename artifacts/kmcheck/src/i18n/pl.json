@@ -1967,5 +1967,9 @@
   "repair_parts_list_heading": "Części według typu prac",
   "repair_parts_hint_replace": "Części wymontowane i wymienione na nowe lub używane.",
   "repair_parts_hint_sheet_metal": "Prace konstrukcyjne / blacharskie na nadwoziu.",
-  "repair_parts_hint_other": "Inne pozycje naprawy z koreańskiego rekordu ubezpieczeniowego."
+  "repair_parts_hint_other": "Inne pozycje naprawy z koreańskiego rekordu ubezpieczeniowego.",
+  "provider_vehicle_number_change": "Zmiana numeru pojazdu",
+  "provider_termination_of_information": "Zakończenie udostępniania informacji",
+  "provider_insurance_accident": "Szkoda ubezpieczeniowa",
+  "provider_simple_repair_history": "Historia prostych napraw"
 }

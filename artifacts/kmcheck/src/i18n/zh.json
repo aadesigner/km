@@ -1967,5 +1967,9 @@
   "repair_parts_list_heading": "按工种分类的部件",
   "repair_parts_hint_replace": "拆下并以新件或旧件更换的部件。",
   "repair_parts_hint_sheet_metal": "车身钣金/结构性作业。",
-  "repair_parts_hint_other": "韩国保险记录中的其他维修项目。"
+  "repair_parts_hint_other": "韩国保险记录中的其他维修项目。",
+  "provider_vehicle_number_change": "车辆号码变更",
+  "provider_termination_of_information": "终止信息提供",
+  "provider_insurance_accident": "保险事故",
+  "provider_simple_repair_history": "简单维修历史"
 }

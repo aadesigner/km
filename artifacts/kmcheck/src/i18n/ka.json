@@ -1970,5 +1970,9 @@
   "repair_parts_list_heading": "ნაწილები სამუშაოს ტიპის მიხედვით",
   "repair_parts_hint_replace": "მოხსნილი და ახალი ან მეორადი ნაწილებით შეცვლილი დეტალები.",
   "repair_parts_hint_sheet_metal": "კუზოვის / თუნუქის სამუშაოები.",
-  "repair_parts_hint_other": "სხვა სარემონტო პოზიციები კორეული სადაზღვევო ჩანაწერიდან."
+  "repair_parts_hint_other": "სხვა სარემონტო პოზიციები კორეული სადაზღვევო ჩანაწერიდან.",
+  "provider_vehicle_number_change": "ავტომობილის ნომრის შეცვლა",
+  "provider_termination_of_information": "ინფორმაციის მიწოდების შეწყვეტა",
+  "provider_insurance_accident": "სადაზღვევო ავარია",
+  "provider_simple_repair_history": "მარტივი რემონტის ისტორია"
 }

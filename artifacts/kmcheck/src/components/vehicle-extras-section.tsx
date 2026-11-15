@@ -17,7 +17,7 @@ import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { cleanDisplayText } from "@/lib/report-display";
 import { dedupeVehicleExtras } from "@/lib/history-dedupe";
-import { localizeProviderDate } from "@/lib/korean-provider-text";
+import { localizeProviderDate, translateKoreanProviderText } from "@/lib/korean-provider-text";
 import {
   partitionVehicleExtras,
   VEHICLE_EXTRA_SECTION_META,
@@ -88,6 +88,7 @@ const CATEGORY_ICON: Record<VehicleExtraCategoryId, LucideIcon> = {
 
 function sanitizeCategoryRows(
   rows: CategorizedVehicleExtra[],
+  t: (key: string) => string,
   vehicleYear?: number | null,
 ): DisplayRow[] {
   const cleaned: Array<{
@@ -97,11 +98,14 @@ function sanitizeCategoryRows(
     observedAt: string | null;
   }> = [];
   for (const row of rows) {
-    const label = cleanDisplayText(row.label);
+    const rawLabel = cleanDisplayText(row.label);
     const value = cleanDisplayText(row.value);
-    if (!label || !value) continue;
+    if (!rawLabel || !value) continue;
     // Provider placeholders like "-" are noise in attribute tables.
     if (value === "-" || value === "—") continue;
+    const translatedLabel = translateKoreanProviderText(t, rawLabel);
+    const label =
+      translatedLabel && translatedLabel !== rawLabel ? translatedLabel : rawLabel;
     cleaned.push({
       key: row.key,
       label,
@@ -319,7 +323,7 @@ export function VehicleExtrasSection({
     : CATEGORY_ORDER.filter((id) => !excludeCategories?.includes(id));
   const sections = allowed
     .map((id) => {
-      const rows = sanitizeCategoryRows(partitioned[id], vehicleYear);
+      const rows = sanitizeCategoryRows(partitioned[id], t, vehicleYear);
       if (!rows.length) return null;
       // Equipment may collapse to empty after hiding "No" flags
       if (id === "equipment") {

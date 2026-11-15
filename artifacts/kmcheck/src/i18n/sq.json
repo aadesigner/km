@@ -1905,7 +1905,7 @@
   "report_no_photo_archive_hint": "Nuk ka foto të makinës për këtë VIN",
   "wwc_demo_title_clean": "Titull i pastër",
   "wwc_demo_title_issued": "Titull i lëshuar",
-  "report_equipment_options": "Pajisje & veçori",
+  "report_equipment_options": "Pajisje & opsione",
   "report_equipment_options_note": "Opsionet e montuara në këtë automjet — siguri, komfort, multimedia etj.",
   "report_listing_market_details": "Detaje të shpalljes",
   "report_listing_market_details_note": "Të dhëna shtesë nga shpalljet dhe ankandet: çmimet, lloji i shitësit, statusi i kilometrazhit dhe kur u pa shpallja.",
@@ -1972,5 +1972,9 @@
   "repair_parts_list_heading": "Pjesë sipas llojit të punës",
   "repair_parts_hint_replace": "Pjesë të hequra dhe të zëvendësuara me komponentë të rinj ose të përdorur.",
   "repair_parts_hint_sheet_metal": "Punë strukturore / llambari në karroceri.",
-  "repair_parts_hint_other": "Zëra të tjerë riparimi nga dosja e sigurimit koreane."
+  "repair_parts_hint_other": "Zëra të tjerë riparimi nga dosja e sigurimit koreane.",
+  "provider_vehicle_number_change": "Ndryshim i numrit të automjetit",
+  "provider_termination_of_information": "Ndërprerje e ofrimit të informacionit",
+  "provider_insurance_accident": "Aksident sigurimi",
+  "provider_simple_repair_history": "Histori riparimesh të thjeshta"
 }

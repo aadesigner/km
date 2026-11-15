@@ -1967,5 +1967,9 @@
   "repair_parts_list_heading": "Детали по типу работ",
   "repair_parts_hint_replace": "Снятые и заменённые на новые или б/у детали.",
   "repair_parts_hint_sheet_metal": "Кузовные / жестяные работы по кузову.",
-  "repair_parts_hint_other": "Прочие позиции ремонта из корейской страховки."
+  "repair_parts_hint_other": "Прочие позиции ремонта из корейской страховки.",
+  "provider_vehicle_number_change": "Смена номера автомобиля",
+  "provider_termination_of_information": "Прекращение предоставления информации",
+  "provider_insurance_accident": "Страховое происшествие",
+  "provider_simple_repair_history": "История простых ремонтов"
 }

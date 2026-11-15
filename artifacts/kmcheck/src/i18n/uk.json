@@ -1967,5 +1967,9 @@
   "repair_parts_list_heading": "Деталі за типом робіт",
   "repair_parts_hint_replace": "Зняті та замінені на нові або вживані деталі.",
   "repair_parts_hint_sheet_metal": "Кузовні / бляхарські роботи.",
-  "repair_parts_hint_other": "Інші позиції ремонту з корейського страхового запису."
+  "repair_parts_hint_other": "Інші позиції ремонту з корейського страхового запису.",
+  "provider_vehicle_number_change": "Зміна номера автомобіля",
+  "provider_termination_of_information": "Припинення надання інформації",
+  "provider_insurance_accident": "Страхова подія",
+  "provider_simple_repair_history": "Історія простих ремонтів"
 }
