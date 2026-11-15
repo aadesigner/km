@@ -1111,6 +1111,18 @@ export default function VinResult({ params }: Props) {
             odometerKm={odometer && odoCol ? odometer : null}
             mileageLabel={t("mileage")}
             formatMiles={(km) => statusGridMilesParen(km, t)}
+            onMileageClick={
+              showMileageSection
+                ? () => {
+                    document.getElementById("vin-report-mileage")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                : undefined
+            }
+            mileageManipulated={mileageRollback}
+            mileageManipulatedLabel={t("mileage_manipulated_badge")}
             originLabel={fmtCountry(data?.country)}
             originFlagCode={resolveCountryIso2(data?.country)?.toLowerCase() ?? null}
             originEyebrow={t("country")}
@@ -1173,6 +1185,7 @@ export default function VinResult({ params }: Props) {
         {/* Mileage + pending search */}
         {showMileageSection && !isPendingManual ? (
         <ReportReveal delay={0.1} y={16}>
+          <div id="vin-report-mileage" className="scroll-mt-24">
           <VinReportSection accent="orange">
             <VinReportSectionHeader
               icon={Gauge}
@@ -1250,6 +1263,7 @@ export default function VinResult({ params }: Props) {
             ) : null}
           </div>
           </VinReportSection>
+          </div>
         </ReportReveal>
         ) : null}
 

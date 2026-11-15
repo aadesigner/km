@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CheckCircle2, XCircle, MapPin } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mileageColor } from "@/lib/mileage-color";
 import { formatMilesInParens } from "@/lib/format-km-with-miles";
@@ -19,6 +19,12 @@ type Props = {
   odometerKm?: number | null;
   formatMiles?: (km: number) => string;
   mileageLabel?: string;
+  /** Jump to the mileage section (e.g. mobile scroll). */
+  onMileageClick?: () => void;
+  /** True when history has a later reading lower than an earlier one. */
+  mileageManipulated?: boolean;
+  /** Short badge text, e.g. "Manipulated". */
+  mileageManipulatedLabel?: string;
   /** Localized country / market name shown beside mileage on desktop. */
   originLabel?: string | null;
   originFlagCode?: string | null;
@@ -128,6 +134,9 @@ export function VinReportStatusGrid({
   odometerKm,
   formatMiles,
   mileageLabel = "Mileage",
+  onMileageClick,
+  mileageManipulated = false,
+  mileageManipulatedLabel,
   originLabel,
   originFlagCode,
   originEyebrow,
@@ -145,6 +154,7 @@ export function VinReportStatusGrid({
       : 0;
   const hasMileage = Boolean(odoCol && odometerKm != null);
   const hasOrigin = Boolean(originLabel?.trim());
+  const MileageBox = onMileageClick ? "button" : "div";
 
   return (
     <div className={cn("w-full min-w-0 space-y-1.5", className)}>
@@ -157,12 +167,18 @@ export function VinReportStatusGrid({
           )}
         >
           {hasMileage && odometerKm != null && odoCol ? (
-            <div
+            <MileageBox
+              type={onMileageClick ? "button" : undefined}
+              onClick={onMileageClick}
               className={cn(
-                "relative min-w-0 overflow-hidden rounded-xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5",
-                "border-border/55 bg-gradient-to-br from-background via-background to-muted/40",
+                "relative min-w-0 overflow-hidden rounded-xl border px-2.5 py-2 sm:px-3.5 sm:py-2.5 text-left",
+                mileageManipulated
+                  ? "border-amber-300/80 bg-gradient-to-br from-amber-50/80 via-background to-muted/40 dark:border-amber-700/55 dark:from-amber-950/40"
+                  : "border-border/55 bg-gradient-to-br from-background via-background to-muted/40",
                 "shadow-[inset_0_1px_0_0_hsl(var(--foreground)/0.04)]",
                 hasOrigin ? "w-1/2 flex-[0_0_50%]" : "w-full",
+                onMileageClick
+                  && "cursor-pointer transition-colors hover:brightness-[0.98] dark:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
               )}
             >
               <div
@@ -191,8 +207,22 @@ export function VinReportStatusGrid({
                       style={{ width: `${Math.max(4, gaugePct)}%` }}
                     />
                   </div>
+                  {mileageManipulated ? (
+                    <span
+                      className={cn(
+                        "mt-1.5 inline-flex max-w-full items-center gap-1 rounded-md border px-1.5 py-0.5",
+                        "border-amber-300/80 bg-amber-50 text-amber-800",
+                        "dark:border-amber-700/60 dark:bg-amber-950/60 dark:text-amber-300",
+                      )}
+                    >
+                      <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden />
+                      <span className="text-[9px] sm:text-[10px] font-bold leading-none truncate">
+                        {mileageManipulatedLabel ?? "Manipulated"}
+                      </span>
+                    </span>
+                  ) : null}
                 </div>
-            </div>
+            </MileageBox>
           ) : null}
 
           {hasOrigin && originLabel ? (
