@@ -89,7 +89,9 @@ const CATEGORY_ICON: Record<VehicleExtraCategoryId, LucideIcon> = {
 function sanitizeCategoryRows(
   rows: CategorizedVehicleExtra[],
   t: (key: string) => string,
+  language: Language,
   vehicleYear?: number | null,
+  vehicleCountry?: string | null,
 ): DisplayRow[] {
   const cleaned: Array<{
     key?: string | null;
@@ -99,13 +101,18 @@ function sanitizeCategoryRows(
   }> = [];
   for (const row of rows) {
     const rawLabel = cleanDisplayText(row.label);
-    const value = cleanDisplayText(row.value);
-    if (!rawLabel || !value) continue;
+    const rawValue = cleanDisplayText(row.value);
+    if (!rawLabel || !rawValue) continue;
     // Provider placeholders like "-" are noise in attribute tables.
-    if (value === "-" || value === "—") continue;
+    if (rawValue === "-" || rawValue === "—") continue;
     const translatedLabel = translateKoreanProviderText(t, rawLabel);
     const label =
       translatedLabel && translatedLabel !== rawLabel ? translatedLabel : rawLabel;
+    const translatedValue = translateKoreanProviderText(t, rawValue);
+    let value =
+      translatedValue && translatedValue !== rawValue ? translatedValue : rawValue;
+    const localizedDate = localizeProviderDate(rawValue, language, vehicleYear, vehicleCountry);
+    if (localizedDate) value = localizedDate;
     cleaned.push({
       key: row.key,
       label,
@@ -323,7 +330,7 @@ export function VehicleExtrasSection({
     : CATEGORY_ORDER.filter((id) => !excludeCategories?.includes(id));
   const sections = allowed
     .map((id) => {
-      const rows = sanitizeCategoryRows(partitioned[id], t, vehicleYear);
+      const rows = sanitizeCategoryRows(partitioned[id], t, language, vehicleYear, vehicleCountry);
       if (!rows.length) return null;
       // Equipment may collapse to empty after hiding "No" flags
       if (id === "equipment") {

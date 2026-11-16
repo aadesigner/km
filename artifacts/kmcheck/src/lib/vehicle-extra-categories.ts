@@ -370,24 +370,66 @@ export const VEHICLE_EXTRA_SECTION_META: Record<
 };
 
 /** True/yes-style feature values suitable for chip display. */
+/** Includes localized Yes/No after extras phrase translation. */
+const AFFIRMATIVE_FEATURE_VALUES = new Set([
+  "yes",
+  "true",
+  "y",
+  "1",
+  "po", // sq
+  "ja", // de
+  "oui", // fr
+  "sí",
+  "si", // es
+  "tak", // pl
+  "da", // ro/bg
+  "да", // ru/bg
+  "так", // uk
+  "نعم", // ar
+  "是", // zh
+  "კი", // ka
+]);
+
+const NEGATIVE_FEATURE_VALUES = new Set([
+  "no",
+  "false",
+  "n",
+  "0",
+  "-",
+  "—",
+  "none",
+  "none recorded",
+  "not present",
+  "jo", // sq
+  "nein", // de
+  "non", // fr
+  "nie", // pl
+  "nu", // ro
+  "не", // bg/ru
+  "ні", // uk
+  "لا", // ar
+  "否", // zh
+  "არა", // ka
+  "asnjë e regjistruar",
+  "keine erfasst",
+  "aucun enregistré",
+  "ninguno registrado",
+  "brak zapisów",
+  "niciuna înregistrată",
+  "няма записани",
+  "не зафиксировано",
+  "не зафіксовано",
+  "لا يوجد مسجّل",
+  "无记录",
+  "არ არის ჩაწერილი",
+]);
+
 export function isAffirmativeFeatureValue(value: string | null | undefined): boolean {
-  const v = norm(value);
-  return v === "yes" || v === "true" || v === "y" || v === "1";
+  return AFFIRMATIVE_FEATURE_VALUES.has(norm(value));
 }
 
 export function isNegativeFeatureValue(value: string | null | undefined): boolean {
-  const v = norm(value);
-  return (
-    v === "no" ||
-    v === "false" ||
-    v === "n" ||
-    v === "0" ||
-    v === "-" ||
-    v === "—" ||
-    v === "none" ||
-    v === "none recorded" ||
-    v === "not present"
-  );
+  return NEGATIVE_FEATURE_VALUES.has(norm(value));
 }
 
 /** Split comma/semicolon option lists into individual chip labels. */

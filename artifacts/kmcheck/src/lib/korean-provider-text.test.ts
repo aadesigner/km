@@ -264,6 +264,42 @@ describe("translateKoreanProviderPhrase", () => {
     expect(translateKoreanProviderText(trSq, "Initial registration")).toBe(dict.registry_field_first_registration);
     expect(translateKoreanProviderText(trSq, "First registration")).toBe(dict.registry_field_first_registration);
   });
+
+  it("translates VHR usage / export container titles", () => {
+    const dict: Record<string, string> = {
+      provider_usage_rent: "Qira",
+      provider_usage_rental: "Me qira",
+      provider_usage_business: "Biznes",
+      provider_usage_government: "Qeveritare",
+      provider_usage_special: "Përdorim special",
+      provider_export_date: "Data e eksportit",
+      provider_export_fuel: "Karburanti i eksportit",
+      provider_export_color: "Ngjyra e eksportit",
+      provider_export_total_loss: "Humbje totale në eksport",
+      registry_type_export: "Deklarata e eksportit",
+      provider_total_loss: "Humbje totale",
+      provider_yes: "Po",
+      provider_no: "Jo",
+      provider_uninsured_period: "Periudhë pa sigurim",
+      report_history_notes: "Mbulimi i historikut",
+    };
+    const trSq = (key: string) => dict[key] ?? key;
+    expect(translateKoreanProviderText(trSq, "Rent")).toBe("Qira");
+    expect(translateKoreanProviderText(trSq, "Rental")).toBe("Me qira");
+    expect(translateKoreanProviderText(trSq, "Business")).toBe("Biznes");
+    expect(translateKoreanProviderText(trSq, "Government")).toBe("Qeveritare");
+    expect(translateKoreanProviderText(trSq, "Special Usage")).toBe("Përdorim special");
+    expect(translateKoreanProviderText(trSq, "Export date")).toBe("Data e eksportit");
+    expect(translateKoreanProviderText(trSq, "Export fuel")).toBe("Karburanti i eksportit");
+    expect(translateKoreanProviderText(trSq, "Export color")).toBe("Ngjyra e eksportit");
+    expect(translateKoreanProviderText(trSq, "Export total loss")).toBe("Humbje totale në eksport");
+    expect(translateKoreanProviderText(trSq, "Export declaration")).toBe("Deklarata e eksportit");
+    expect(translateKoreanProviderText(trSq, "Total loss")).toBe("Humbje totale");
+    expect(translateKoreanProviderText(trSq, "Yes")).toBe("Po");
+    expect(translateKoreanProviderText(trSq, "No")).toBe("Jo");
+    expect(translateKoreanProviderText(trSq, "Uninsured period")).toBe("Periudhë pa sigurim");
+    expect(translateKoreanProviderText(trSq, "History coverage")).toBe("Mbulimi i historikut");
+  });
 });
 
 describe("translateProviderMultiline", () => {
