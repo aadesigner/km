@@ -277,6 +277,8 @@ describe("translateKoreanProviderPhrase", () => {
       provider_export_color: "Ngjyra e eksportit",
       provider_export_total_loss: "Humbje totale në eksport",
       registry_type_export: "Deklarata e eksportit",
+      provider_mileage_source_insurance: "Kompani sigurimi makinash",
+      provider_mileage_source_used_car_mall: "Treg makinash të përdorura",
       provider_total_loss: "Humbje totale",
       provider_yes: "Po",
       provider_no: "Jo",
@@ -294,6 +296,8 @@ describe("translateKoreanProviderPhrase", () => {
     expect(translateKoreanProviderText(trSq, "Export color")).toBe("Ngjyra e eksportit");
     expect(translateKoreanProviderText(trSq, "Export total loss")).toBe("Humbje totale në eksport");
     expect(translateKoreanProviderText(trSq, "Export declaration")).toBe("Deklarata e eksportit");
+    expect(translateKoreanProviderText(trSq, "Car insurance company")).toBe("Kompani sigurimi makinash");
+    expect(translateKoreanProviderText(trSq, "Used car shopping mall")).toBe("Treg makinash të përdorura");
     expect(translateKoreanProviderText(trSq, "Total loss")).toBe("Humbje totale");
     expect(translateKoreanProviderText(trSq, "Yes")).toBe("Po");
     expect(translateKoreanProviderText(trSq, "No")).toBe("Jo");

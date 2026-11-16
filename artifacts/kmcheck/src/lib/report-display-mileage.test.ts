@@ -46,6 +46,18 @@ describe("formatMileageHistorySource", () => {
     expect(formatMileageHistorySource("First registration", t)).toBe("First registration");
     expect(formatMileageHistorySource("Initial registration", t)).toBe("First registration");
   });
+
+  it("localizes insurance / export / used-car-mall sources", () => {
+    const dict: Record<string, string> = {
+      provider_mileage_source_insurance: "Kompani sigurimi makinash",
+      provider_mileage_source_used_car_mall: "Treg makinash të përdorura",
+      registry_type_export: "Deklarata e eksportit",
+    };
+    const t = (k: string) => dict[k] ?? k;
+    expect(formatMileageHistorySource("Car insurance company", t)).toBe("Kompani sigurimi makinash");
+    expect(formatMileageHistorySource("Used car shopping mall", t)).toBe("Treg makinash të përdorura");
+    expect(formatMileageHistorySource("Export declaration", t)).toBe("Deklarata e eksportit");
+  });
 });
 
 describe("ensureRegistryMileageHistory", () => {
