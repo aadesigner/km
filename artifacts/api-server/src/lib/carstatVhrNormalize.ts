@@ -572,6 +572,33 @@ function sectionsOf(body: Record<string, unknown>): Array<Record<string, unknown
   return sections.filter((s): s is Record<string, unknown> => !!s && typeof s === "object" && !Array.isArray(s));
 }
 
+/** Carstat Archive Alpha (2) / Archive Beta (3). */
+function payloadSourceId(body: Record<string, unknown>): number | null {
+  const source =
+    body.source && typeof body.source === "object" && !Array.isArray(body.source)
+      ? (body.source as Record<string, unknown>)
+      : null;
+  const id = num(source?.id);
+  return id != null && Number.isFinite(id) ? id : null;
+}
+
+const VHR_ARCHIVE_SOURCE_IDS = new Set([2, 3]);
+
+function mileageRowKey(date: string | null | undefined, odometer: number | null | undefined, source: string | null | undefined): string {
+  return `${date ?? ""}|${odometer ?? ""}|${source ?? ""}`;
+}
+
+/** Archive Alpha playground NA label + common archive listing marketplace names. */
+function isArchiveListingMileageSource(source: string | null | undefined): boolean {
+  const s = String(source ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!s) return false;
+  return (
+    /^us\s*auction$/.test(s)
+    || /^european\s*vehicle\s*auction$/.test(s)
+    || /^listing$/.test(s)
+  );
+}
+
 function itemsOf(section: Record<string, unknown>): Array<Record<string, unknown>> {
   const items = section.items;
   if (!Array.isArray(items)) return [];
@@ -733,6 +760,16 @@ export function normalizeCarstatVhrJsonPayloads(
   let ownerCount: number | null = null;
   let accidentCountHint: number | null = null;
   let sawKoreanInsurance = false;
+  /** Encar / KR inspection dossier (not just a stray listing stub). */
+  let sawKoreanInspection = false;
+  /**
+   * Source-68 payload with real market history (export, ownership, claims, mileage, …).
+   * car_info / specs alone stay weak so NA mashups do not flip country.
+   */
+  let koreanInsuranceStrong = false;
+  /** Mileage rows pushed from Archive Alpha/Beta listings — drop when KR insurance is present. */
+  const archiveListingMileageKeys = new Set<string>();
+  let sawHistoryMileage = false;
   let krIdentity: {
     make?: string | null;
     model?: string | null;
@@ -779,6 +816,8 @@ export function normalizeCarstatVhrJsonPayloads(
   for (const rawPayload of translatedPayloads) {
     if (!rawPayload || typeof rawPayload !== "object" || Array.isArray(rawPayload)) continue;
     const body = rawPayload as Record<string, unknown>;
+    const payloadId = payloadSourceId(body);
+    const payloadIsArchive = payloadId != null && VHR_ARCHIVE_SOURCE_IDS.has(payloadId);
 
     for (const section of sectionsOf(body)) {
       const type = str(section.type)?.toLowerCase() ?? "";
@@ -958,6 +997,9 @@ export function normalizeCarstatVhrJsonPayloads(
 
           // Always keep the reading — Copart/demo rows often omit sale_date.
           if (odo != null) {
+            if (payloadIsArchive || isArchiveListingMileageSource(marketplace)) {
+              archiveListingMileageKeys.add(mileageRowKey(date, odo, marketplace));
+            }
             mileageHistory.push({
               date,
               odometer: odo,
@@ -1262,6 +1304,7 @@ export function normalizeCarstatVhrJsonPayloads(
             const inspOdo = num(inspectOuter?.odometer_km)
               ?? num((inspect?.vehicle as Record<string, unknown> | undefined)?.mileage_km);
             if (allowFullKoreanListingDossier && inspDate && inspOdo != null) {
+              sawKoreanInspection = true;
               mileageHistory.push({
                 date: inspDate,
                 odometer: inspOdo,
@@ -1304,6 +1347,7 @@ export function normalizeCarstatVhrJsonPayloads(
             }
 
             if (allowFullKoreanListingDossier) {
+              sawKoreanInspection = true;
               const overall = titleCaseLabel(str(inspect?.overall_result));
               pushExtra(vehicleExtras, "korean_inspection_result", "Korean inspection", overall, inspDate);
 
@@ -1544,6 +1588,7 @@ export function normalizeCarstatVhrJsonPayloads(
               if (/odometer/i.test(str(mm.type_key) ?? "") || /odometer/i.test(str(mm.id) ?? "")) {
                 if (odometer == null || val > odometer) odometer = val;
                 if (inspDate) {
+                  sawKoreanInspection = true;
                   mileageHistory.push({
                     date: inspDate,
                     odometer: val,
@@ -1709,6 +1754,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "usage_history") {
+            koreanInsuranceStrong = true;
             for (const [k, v] of Object.entries(data)) {
               const yes = v === true || v === "1" || v === 1 || v === "Y" || v === "yes";
               const no = v === false || v === "0" || v === 0 || v === "N" || v === "no";
@@ -1725,6 +1771,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "ownership") {
+            koreanInsuranceStrong = true;
             const oc = num(data.owner_count);
             if (oc != null) ownerCount = ownerCount ?? oc;
             const meaningfulKrField = (v: unknown): string | null => {
@@ -1795,6 +1842,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "special_conditions") {
+            koreanInsuranceStrong = true;
             const flood =
               data.flood && typeof data.flood === "object" && !Array.isArray(data.flood)
                 ? (data.flood as Record<string, unknown>)
@@ -1864,6 +1912,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "accidents_detail") {
+            koreanInsuranceStrong = true;
             const items = Array.isArray(data.items) ? data.items : [];
             for (const claim of items) {
               if (!claim || typeof claim !== "object" || Array.isArray(claim)) continue;
@@ -2022,6 +2071,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "mileage") {
+            koreanInsuranceStrong = true;
             const list = Array.isArray(data.list) ? data.list : [];
             for (const row of list) {
               if (!row || typeof row !== "object" || Array.isArray(row)) continue;
@@ -2059,6 +2109,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "price") {
+            koreanInsuranceStrong = true;
             const rawPrice =
               typeof item.data === "string" || typeof item.data === "number"
                 ? item.data
@@ -2082,6 +2133,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "recall_campaigns") {
+            koreanInsuranceStrong = true;
             const status = str(data.status) ?? str(item.status);
             const recallData = data.data ?? data.campaigns ?? data.items;
             if (Array.isArray(recallData)) {
@@ -2108,6 +2160,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "export_declaration") {
+            koreanInsuranceStrong = true;
             const exportData =
               data.data && typeof data.data === "object" && !Array.isArray(data.data)
                 ? (data.data as Record<string, unknown>)
@@ -2196,6 +2249,7 @@ export function normalizeCarstatVhrJsonPayloads(
           }
 
           if (koreaSection === "summary") {
+            koreanInsuranceStrong = true;
             const oc = num(data.owner_count);
             if (oc != null) ownerCount = ownerCount ?? oc;
             const myDmg = num(data.my_damage_count) ?? 0;
@@ -2253,6 +2307,7 @@ export function normalizeCarstatVhrJsonPayloads(
               if (odometer == null || snapOdo > odometer) odometer = snapOdo;
               const checked = dateOnly(item.checked_at);
               if (checked) {
+                sawHistoryMileage = true;
                 mileageHistory.push({
                   date: checked,
                   odometer: snapOdo,
@@ -2448,25 +2503,28 @@ export function normalizeCarstatVhrJsonPayloads(
   }
 
   const vin = vinEarly;
-  // WMI decode is manufacturing origin (WDD → Germany). Catalog `country` is the
-  // report market. Real Korean insurance history on an EU import must stay KR —
-  // do not overwrite with the plant country. NA-origin VINs keep WMI (KR stubs cleaned below).
-  const hasKoreanMarketEvidence =
-    sawKoreanInsurance
-    && (
-      koreanVinEarly
-      || insuranceClaims.some((c) => {
-        const ccy = String(c.currency ?? "").toUpperCase();
-        return ccy === "KRW" || (typeof c.lossAmount === "number" && c.lossAmount > 0);
-      })
-      || accidents.some((a) => /^KR$/i.test(String(a.country ?? "")))
+  // WMI decode is manufacturing origin (1VW → USA, WDD → Germany). Catalog `country`
+  // is the report market. Real Korean insurance / inspection dossiers win for ANY WMI
+  // (US/EU imports sold in Korea). Weak source-68 car_info stubs on NA VINs stay WMI.
+  const hasKoreanClaimEvidence =
+    insuranceClaims.some((c) => {
+      const ccy = String(c.currency ?? "").toUpperCase();
+      return ccy === "KRW" || (typeof c.lossAmount === "number" && c.lossAmount > 0);
+    })
+    || accidents.some((a) => /^KR$/i.test(String(a.country ?? "")))
+    || mileageHistory.some((m) =>
+      /korean\s*(insurance|inspection)|export\s*declaration|car\s*insurance\s*company/i
+        .test(String(m.source ?? "")),
     );
-  if (hasKoreanMarketEvidence && !isNorthAmericanCountry(decodedCountry)) {
+  const hasKoreanMarketEvidence =
+    sawKoreanInspection
+    || koreanInsuranceStrong
+    || hasKoreanClaimEvidence
+    || (sawKoreanInsurance && koreanVinEarly);
+  if (hasKoreanMarketEvidence) {
     country = "KR";
   } else if (decodedCountry) {
     country = decodedCountry;
-  } else if (hasKoreanMarketEvidence) {
-    country = "KR";
   }
 
   // Korean insurance identity wins for Korean VINs / KR reports (amazing integrated merge).
@@ -2509,9 +2567,9 @@ export function normalizeCarstatVhrJsonPayloads(
     : [];
   const krwCurrency = estimateCandidates.filter((c) => c.currency.toUpperCase() === "KRW");
   const estimatePool =
-    sawKoreanInsurance && koreanVin && krwCurrency.length > 0
+    hasKoreanMarketEvidence && krwCurrency.length > 0
       ? krwCurrency
-      : originLooksWestern && hardCurrency.length > 0
+      : originLooksWestern && !hasKoreanMarketEvidence && hardCurrency.length > 0
         ? hardCurrency
         : sameCurrency.length > 0
           ? sameCurrency
@@ -2551,7 +2609,8 @@ export function normalizeCarstatVhrJsonPayloads(
   });
 
   // Final market hygiene: NA-origin cars must not keep Euro/KR pollution or mashup auctions.
-  const naOrigin = isNorthAmericanCountry(decodedCountry ?? country);
+  // Skip when this report is a real Korean market dossier (insurance / inspection).
+  const naOrigin = isNorthAmericanCountry(decodedCountry ?? country) && !hasKoreanMarketEvidence;
   const koreanVinFinal = !!vin && /^K/i.test(vin);
   const cleanedExtras = naOrigin
     ? vehicleExtras.filter((extra) => {
@@ -2581,7 +2640,7 @@ export function normalizeCarstatVhrJsonPayloads(
     return true;
   });
 
-  const cleanedAuctions = naOrigin && !koreanVin
+  const cleanedAuctions = naOrigin && !koreanVin && !hasKoreanMarketEvidence
     ? auctionHistory.filter((row) => {
       const city = String(row.city ?? "");
       const state = String(row.state ?? "");
@@ -2596,17 +2655,47 @@ export function normalizeCarstatVhrJsonPayloads(
     })
     : auctionHistory;
 
-  const cleanedMileage = naOrigin && !koreanVin
-    ? mileageHistory.filter((row) => {
-      const src = String(row.source ?? "");
+  // With Korean insurance (or preferred history miles), drop Archive Alpha/Beta listing
+  // odometer rows — keep KR insurance / export / history / inspection readings only.
+  const preferKrOrHistoryMileage =
+    sawKoreanInsurance
+    || sawHistoryMileage
+    || mileageHistory.some((m) =>
+      /korean\s*(insurance|inspection)|car\s*insurance\s*company|export\s*declaration/i
+        .test(String(m.source ?? "")),
+    );
+
+  let cleanedMileage = mileageHistory.filter((row) => {
+    const src = String(row.source ?? "");
+    if (preferKrOrHistoryMileage) {
+      const key = mileageRowKey(
+        row.date ?? null,
+        row.odometer ?? null,
+        row.source ?? null,
+      );
+      if (archiveListingMileageKeys.has(key) || isArchiveListingMileageSource(src)) {
+        return false;
+      }
+    }
+    if (naOrigin && !koreanVin && !hasKoreanMarketEvidence) {
       if (/encar|korean|european\s*(marketplace|vehicle|auction)|mobile\.de|autoscout/i.test(src)) {
         return false;
       }
-      return true;
-    })
-    : mileageHistory;
+    }
+    return true;
+  });
 
-  const cleanedClaims = !koreanVinFinal && naOrigin
+  // Latest odometer must follow remaining preferred readings (not dropped archive rows).
+  if (preferKrOrHistoryMileage && cleanedMileage.length > 0) {
+    let bestOdo: number | null = null;
+    for (const row of cleanedMileage) {
+      const o = typeof row.odometer === "number" ? row.odometer : null;
+      if (o != null && (bestOdo == null || o > bestOdo)) bestOdo = o;
+    }
+    if (bestOdo != null) odometer = bestOdo;
+  }
+
+  const cleanedClaims = !koreanVinFinal && naOrigin && !hasKoreanMarketEvidence
     ? insuranceClaims.filter((c) => {
       const currency = String(c.currency ?? "").toUpperCase();
       if (currency === "KRW") return false;
@@ -2624,7 +2713,7 @@ export function normalizeCarstatVhrJsonPayloads(
     })
     : insuranceClaims;
 
-  const cleanedAccidents = !koreanVinFinal && naOrigin
+  const cleanedAccidents = !koreanVinFinal && naOrigin && !hasKoreanMarketEvidence
     ? accidents.filter((a) => {
       if (/^KR$/i.test(String(a.country ?? ""))) return false;
       if (/korean insurance/i.test(String(a.description ?? ""))) return false;

@@ -1303,4 +1303,117 @@ describe("carstatVhrNormalize", () => {
     expect(out.country).toMatch(/^KR$|Korea/i);
     expect(out.accidents?.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("sets KR catalog country for NA WMI cars with real Korean insurance (export)", () => {
+    const out = normalizeCarstatVhrJsonPayloads(
+      [
+        {
+          schema_version: 2,
+          source: {
+            id: 68,
+            sections: [
+              {
+                type: "korean_insurance",
+                items: [
+                  {
+                    korea_section: "export_declaration",
+                    data: {
+                      status: "done",
+                      data: {
+                        export_date: "2026-02-01",
+                        model_name: "Passat",
+                        fuel_name: "Gasoline",
+                        mileage: 106526,
+                        is_total_loss: false,
+                      },
+                    },
+                  },
+                  {
+                    korea_section: "mileage",
+                    data: {
+                      list: [
+                        { date: "2025-04-18", km: "93000", source: "Car insurance company" },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+      { vin: "1VWZZZA3ZFC082483" },
+    );
+
+    expect(out.country).toMatch(/^KR$|Korea/i);
+    expect(out.mileageHistory?.some((m) => m.source === "Export declaration" || m.source === "Car insurance company")).toBe(true);
+    expect(out.registryHistory?.some((e) => e.type === "export")).toBe(true);
+  });
+
+  it("drops Archive Alpha/Beta listing mileage when Korean insurance mileage exists", () => {
+    const out = normalizeCarstatVhrJsonPayloads(
+      [
+        {
+          schema_version: 2,
+          source: {
+            id: 2,
+            name: "Archive Alpha",
+            sections: [
+              {
+                type: "listings",
+                items: [{
+                  marketplace: "US auction",
+                  sale_date: "2024-01-10",
+                  odometer_km: 45000,
+                  final_bid: 12000,
+                  currency: "USD",
+                }],
+              },
+            ],
+          },
+        },
+        {
+          schema_version: 2,
+          source: {
+            id: 68,
+            name: "Korean Insurance History",
+            sections: [
+              {
+                type: "korean_insurance",
+                items: [
+                  {
+                    korea_section: "mileage",
+                    data: {
+                      list: [
+                        { date: "2025-04-18", km: "93000", source: "Car insurance company" },
+                        { date: "2024-04-15", km: "75383", source: "Car insurance company" },
+                      ],
+                    },
+                  },
+                  {
+                    korea_section: "export_declaration",
+                    data: {
+                      status: "done",
+                      data: {
+                        export_date: "2026-02-01",
+                        mileage: 106526,
+                        is_total_loss: false,
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+      { vin: "KNAF241BEMA915413" },
+    );
+
+    expect(out.mileageHistory?.some((m) => /us\s*auction/i.test(String(m.source ?? "")))).toBe(false);
+    expect(out.mileageHistory?.some((m) => m.odometer === 45000)).toBe(false);
+    expect(out.mileageHistory?.some((m) => m.odometer === 93000 && /insurance/i.test(String(m.source ?? "")))).toBe(true);
+    expect(out.mileageHistory?.some((m) => m.odometer === 106526 && m.source === "Export declaration")).toBe(true);
+    expect(out.odometer).toBe(106526);
+  });
 });
