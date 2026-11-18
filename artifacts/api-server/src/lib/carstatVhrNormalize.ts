@@ -1358,16 +1358,8 @@ export function normalizeCarstatVhrJsonPayloads(
                 const part = titleCaseLabel(str(p.part));
                 const action = titleCaseLabel(str(p.action));
                 if (!part) continue;
+                // Panel replacements stay in extras / Korea repair map — never accident history.
                 pushExtra(vehicleExtras, `kr_panel_${str(p.part) ?? part}`, part, action ?? "Noted", inspDate);
-                if (action && /replac|repair|repaint|accident/i.test(action)) {
-                  accidents.push({
-                    date: inspDate,
-                    description: simplifyInspectionAccidentDescription(part, action),
-                    type: "inspection",
-                    primaryDamage: part,
-                    country: "KR",
-                  });
-                }
               }
 
               const options =
@@ -1524,7 +1516,8 @@ export function normalizeCarstatVhrJsonPayloads(
             if (hd && !photosHd.includes(hd)) photosHd.push(hd);
           }
 
-          // Source claims: only actionable findings (never “없음” / ok).
+          // Source claims: inspection findings stay in extras / registry — never invent
+          // accident-history rows from panel/simple-repair notes (WMI country must not leak).
           const claims = Array.isArray(item.source_claims) ? item.source_claims : [];
           for (const c of claims) {
             if (!c || typeof c !== "object" || Array.isArray(c)) continue;
@@ -1541,16 +1534,15 @@ export function normalizeCarstatVhrJsonPayloads(
               );
               continue;
             }
-            accidents.push({
-              date: inspDate,
-              description: simplifyInspectionAccidentDescription(
-                label,
-                desc && !isPresentFinding(desc) ? desc : null,
-              ),
-              type: str(claim.type_key) ?? "inspection",
-              primaryDamage: label,
-              country: country ?? "KR",
-            });
+            pushExtra(
+              vehicleExtras,
+              str(claim.id) ?? `claim_${label}`,
+              label,
+              desc && !isPresentFinding(desc)
+                ? simplifyInspectionAccidentDescription(label, desc)
+                : "Recorded finding",
+              inspDate,
+            );
             registryHistory.push({
               date: inspDate,
               type: str(claim.type_key) ?? "inspection",
@@ -1613,29 +1605,13 @@ export function normalizeCarstatVhrJsonPayloads(
               ? row.issue_type_keys.map((x) => str(x)).filter(Boolean)
               : [];
             pushExtra(vehicleExtras, str(row.id) ?? str(row.part_key) ?? label, label, desc, inspDate);
-
+            // Body-panel / cosmetic inspection issues stay in extras — never accident history.
             if (issueTypes.some((t) => /recall/i.test(t ?? "")) || /recall/i.test(label)) {
               recallHistory.push({
                 date: inspDate,
                 type: "recall",
                 title: label,
                 subtitle: desc,
-              });
-              continue;
-            }
-
-            const looksAccident =
-              issueTypes.some((t) => /accident|repair|weld|replace|paint/i.test(t ?? ""))
-              || /accident|repair|weld|replac/i.test(desc)
-              || str(row.accident_relevance_key) != null;
-            if (looksAccident) {
-              accidents.push({
-                date: inspDate,
-                description: simplifyInspectionAccidentDescription(label, desc),
-                type: "inspection",
-                primaryDamage: label,
-                severity: str(row.accident_relevance_key),
-                country: country ?? "KR",
               });
             }
           }
@@ -2417,7 +2393,7 @@ export function normalizeCarstatVhrJsonPayloads(
                 date: checkedAt,
                 description: "Total loss recorded in Korean vehicle history",
                 type: "total_loss",
-                country: country ?? "KR",
+                country: "KR",
               });
             }
             if (isFlood) {
@@ -2425,7 +2401,7 @@ export function normalizeCarstatVhrJsonPayloads(
                 date: checkedAt,
                 description: "Flood / water damage recorded in Korean vehicle history",
                 type: "flood",
-                country: country ?? "KR",
+                country: "KR",
               });
             }
           }
@@ -2469,7 +2445,7 @@ export function normalizeCarstatVhrJsonPayloads(
                 date: evDate,
                 description: [label, subtitle].filter(Boolean).join(" — "),
                 type: typeKey || "history",
-                country: country ?? "KR",
+                country: "KR",
               });
             }
             if (typeKey.includes("insurance") || /insurance|claim/i.test(label ?? "")) {
@@ -2525,6 +2501,20 @@ export function normalizeCarstatVhrJsonPayloads(
     country = "KR";
   } else if (decodedCountry) {
     country = decodedCountry;
+  }
+
+  // Korean dossier accidents must never keep WMI plant country (e.g. Germany on a KR inspection).
+  if (hasKoreanMarketEvidence || sawKoreanInsurance || sawKoreanInspection) {
+    for (const a of accidents) {
+      const blob = `${a.type ?? ""} ${a.description ?? ""} ${a.country ?? ""}`;
+      if (
+        /^KR$/i.test(String(a.country ?? ""))
+        || /korean|inspection|insurance|total_loss|flood|theft/i.test(blob)
+        || a.country == null
+      ) {
+        a.country = "KR";
+      }
+    }
   }
 
   // Korean insurance identity wins for Korean VINs / KR reports (amazing integrated merge).

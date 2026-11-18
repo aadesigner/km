@@ -2,6 +2,7 @@ import type { Language } from "@/i18n/context";
 import { formatCountryName } from "@/lib/format-country-name";
 import { formatKoreanWonFromText, isKoreanCountry } from "@/lib/korean-currency";
 import { sanitizeReportIsoDate } from "@/lib/encar-date-repair";
+import { translateBodyRepairExtrasText } from "@/lib/translate-damage-label";
 import { isRegistryRepairCostLabel, sanitizeKoreanRepairAmountText } from "@workspace/korean-registry";
 
 const LOCALE_BY_LANG: Record<Language, string> = {
@@ -459,6 +460,16 @@ const PHRASE_KEYS: Record<string, string> = {
   seats: "provider_seats",
   yes: "provider_yes",
   no: "provider_no",
+  // Listing / repair extras
+  odometer: "provider_odometer",
+  "odometer reading": "provider_odometer",
+  "odometer status": "provider_odometer_status",
+  replaced: "damage_severity_replace",
+  replacement: "damage_severity_replace",
+  repaired: "damage_severity_repair",
+  painted: "damage_severity_paint",
+  overhauled: "damage_severity_repair",
+  "sheet metal": "damage_severity_sheet_metal",
 };
 
 const PHRASE_PATTERNS: Array<{ pattern: RegExp; key: string }> = [
@@ -1004,6 +1015,11 @@ export function translateKoreanProviderText(
   if (!text) return null;
   const exact = translateKoreanProviderPhrase(t, text);
   if (exact && normalizePhrase(exact) !== normalizePhrase(text)) return exact;
+
+  const bodyOrRepair = translateBodyRepairExtrasText(t, text);
+  if (bodyOrRepair && normalizePhrase(bodyOrRepair) !== normalizePhrase(text)) {
+    return bodyOrRepair;
+  }
 
   let result = text;
   for (const { pattern, key } of PHRASE_PATTERNS) {

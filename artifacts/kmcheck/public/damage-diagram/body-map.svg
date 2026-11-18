@@ -4,61 +4,120 @@
 		<style type="text/css">
 			.st0   {display: none;}
 			.st1   {fill: none;
-					stroke: #000000;
-					stroke-width: 1;}
-			/* replace = blue hatch */
+					stroke: #334155;
+					stroke-width: 1.15;
+					stroke-linejoin: round;}
+			/* replace = blue hatch — visible stroke so color reads before selection */
 			.st2 {fill: url(#blueHatch);
-					stroke: #000000;
-					stroke-width: 0;}
-			/* repair = red hatch (opposite angle) */
+					stroke: #38bdf8;
+					stroke-width: 1.35;
+					stroke-linejoin: round;}
+			/* repair = red hatch */
 			.st3 {fill: url(#redHatch);
-					stroke: #000000;
-					stroke-width: 0;}
+					stroke: #f87171;
+					stroke-width: 1.35;
+					stroke-linejoin: round;}
 			/* paint = yellow hatch */
 			.st4 {fill: url(#YellowHatch);
-					stroke: #000000;
-					stroke-width: 0;}
-			/* Undamaged panels — transparent fill (keep hit-testing); hatch only when damaged */
+					stroke: #eab308;
+					stroke-width: 1.35;
+					stroke-linejoin: round;}
+			/* Undamaged panels — transparent fill (keep hit-testing) */
 			.st5 {fill: transparent;
-					stroke: #000000;
+					stroke: transparent;
 					stroke-width: 0;}
 			/* sheet metal = dense dark red */
 			.st6 {fill: url(#sheetHatch);
-					stroke: #000000;
-					stroke-width: 0;}
+					stroke: #ef4444;
+					stroke-width: 1.35;
+					stroke-linejoin: round;}
 			.km-active {
 					stroke: #0f172a !important;
-					stroke-width: 2.8 !important;
-					filter: drop-shadow(0 0 3px rgba(15,23,42,0.55));
+					stroke-width: 2.6 !important;
+					filter: drop-shadow(0 0 4px rgba(15,23,42,0.45));
+					opacity: 1 !important;
 			}
-			/* Night mode (html.dark): light skeleton so outlines read on dark UI */
+			/* Fade non-focused parts while hovering / selecting a damage */
+			.km-dim {
+					opacity: 0.28 !important;
+					transition: opacity 140ms ease;
+			}
+			.km-damage {
+					transition: opacity 140ms ease;
+			}
+			/* Night mode: muted slate skeleton + brighter damage fills */
 			:root.dark .st1,
 			.dark .st1,
 			html.dark .st1 {
-					stroke: #e2e8f0 !important;
+					stroke: #94a3b8 !important;
+					stroke-opacity: 0.9;
+			}
+			:root.dark .st2,
+			.dark .st2,
+			html.dark .st2 {
+					stroke: #7dd3fc !important;
+			}
+			:root.dark .st3,
+			.dark .st3,
+			html.dark .st3 {
+					stroke: #fca5a5 !important;
+			}
+			:root.dark .st4,
+			.dark .st4,
+			html.dark .st4 {
+					stroke: #fde047 !important;
+			}
+			:root.dark .st6,
+			.dark .st6,
+			html.dark .st6 {
+					stroke: #fb7185 !important;
 			}
 			:root.dark .km-active,
 			.dark .km-active,
 			html.dark .km-active {
 					stroke: #f8fafc !important;
-					filter: drop-shadow(0 0 3px rgba(248,250,252,0.45));
+					filter: drop-shadow(0 0 5px rgba(125, 211, 252, 0.55));
 			}
+			:root.dark #redHatch rect,
+			.dark #redHatch rect,
+			html.dark #redHatch rect { fill: #7f1d1d !important; }
+			:root.dark #redHatch path,
+			.dark #redHatch path,
+			html.dark #redHatch path { stroke: #fca5a5 !important; stroke-opacity: 1 !important; }
+			:root.dark #blueHatch rect,
+			.dark #blueHatch rect,
+			html.dark #blueHatch rect { fill: #0c4a6e !important; }
+			:root.dark #blueHatch path,
+			.dark #blueHatch path,
+			html.dark #blueHatch path { stroke: #7dd3fc !important; stroke-opacity: 1 !important; }
+			:root.dark #YellowHatch rect,
+			.dark #YellowHatch rect,
+			html.dark #YellowHatch rect { fill: #713f12 !important; }
+			:root.dark #YellowHatch path,
+			.dark #YellowHatch path,
+			html.dark #YellowHatch path { stroke: #fde047 !important; stroke-opacity: 1 !important; }
+			:root.dark #sheetHatch rect,
+			.dark #sheetHatch rect,
+			html.dark #sheetHatch rect { fill: #881337 !important; }
+			:root.dark #sheetHatch path,
+			.dark #sheetHatch path,
+			html.dark #sheetHatch path { stroke: #fb7185 !important; stroke-opacity: 1 !important; }
 		</style>
 		<pattern id="redHatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
-			<rect width="9" height="9" fill="#fff5f5"></rect>
-			<path d="M0 4.5 H9" stroke="#fca5a5" stroke-width="2.4" stroke-opacity="0.85"></path>
+			<rect width="9" height="9" fill="#fecaca"></rect>
+			<path d="M0 4.5 H9" stroke="#ef4444" stroke-width="2.6" stroke-opacity="0.95"></path>
 		</pattern>
 		<pattern id="blueHatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(-45)">
-			<rect width="9" height="9" fill="#f0f9ff"></rect>
-			<path d="M0 4.5 H9" stroke="#7dd3fc" stroke-width="2.4" stroke-opacity="0.85"></path>
+			<rect width="9" height="9" fill="#bae6fd"></rect>
+			<path d="M0 4.5 H9" stroke="#0ea5e9" stroke-width="2.6" stroke-opacity="0.95"></path>
 		</pattern>
 		<pattern id="YellowHatch" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(-45)">
-			<rect width="9" height="9" fill="#fefce8"></rect>
-			<path d="M0 4.5 H9" stroke="#e4e639" stroke-width="2.4" stroke-opacity="0.8"></path>
+			<rect width="9" height="9" fill="#fef08a"></rect>
+			<path d="M0 4.5 H9" stroke="#ca8a04" stroke-width="2.6" stroke-opacity="0.95"></path>
 		</pattern>
 		<pattern id="sheetHatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
-			<rect width="7" height="7" fill="#fff1f2"></rect>
-			<path d="M0 3.5 H7" stroke="#f87171" stroke-width="2.2" stroke-opacity="0.85"></path>
+			<rect width="7" height="7" fill="#fecdd3"></rect>
+			<path d="M0 3.5 H7" stroke="#e11d48" stroke-width="2.4" stroke-opacity="0.95"></path>
 		</pattern>
 	</defs>
 	

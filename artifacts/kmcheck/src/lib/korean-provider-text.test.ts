@@ -304,6 +304,26 @@ describe("translateKoreanProviderPhrase", () => {
     expect(translateKoreanProviderText(trSq, "Uninsured period")).toBe("Periudhë pa sigurim");
     expect(translateKoreanProviderText(trSq, "History coverage")).toBe("Mbulimi i historikut");
   });
+
+  it("translates odometer, body panels and repair actions", () => {
+    const dict: Record<string, string> = {
+      provider_odometer: "Odometri",
+      damage_zone_front_fender_l: "Krahu i përparmë (i majtë)",
+      damage_zone_front_fender_r: "Krahu i përparmë (i djathtë)",
+      damage_zone_front_door_r: "Dera e përparme (e djathtë)",
+      damage_zone_hood: "Kapota",
+      damage_severity_replace: "I zëvendësuar",
+      damage_severity_paint: "I lyer",
+    };
+    const trSq = (key: string) => dict[key] ?? key;
+    expect(translateKoreanProviderText(trSq, "Odometer")).toBe("Odometri");
+    expect(translateKoreanProviderText(trSq, "Front fender left")).toBe("Krahu i përparmë (i majtë)");
+    expect(translateKoreanProviderText(trSq, "Front fender right")).toBe("Krahu i përparmë (i djathtë)");
+    expect(translateKoreanProviderText(trSq, "Front door right")).toBe("Dera e përparme (e djathtë)");
+    expect(translateKoreanProviderText(trSq, "Replaced")).toBe("I zëvendësuar");
+    expect(translateKoreanProviderText(trSq, "Painted")).toBe("I lyer");
+    expect(translateKoreanProviderText(trSq, "Hood; Front bumper")).toContain("Kapota");
+  });
 });
 
 describe("translateProviderMultiline", () => {

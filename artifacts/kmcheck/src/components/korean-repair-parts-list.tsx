@@ -7,6 +7,7 @@ import {
 } from "@/lib/car-damage-zones";
 import { HistoryShowAllButton } from "@/components/history-show-all-button";
 import { HISTORY_PREVIEW_LIMIT } from "@/lib/history-section-limit";
+import { translateBodyPanelLabel } from "@/lib/translate-damage-label";
 
 type DisplayRow = { label: string; value: string; observedAt: string | null };
 
@@ -129,7 +130,7 @@ export function KoreanRepairPartsList({ rows, t }: Props) {
                   key={label}
                   className="inline-flex items-center rounded-md border border-border/70 bg-muted/40 px-2 py-1 text-[11px] font-medium text-foreground"
                 >
-                  {label}
+                  {translateBodyPanelLabel(t, label) ?? label}
                 </span>
               ))}
             </div>
