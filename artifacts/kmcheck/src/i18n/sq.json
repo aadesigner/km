@@ -2025,6 +2025,6 @@
   "provider_mileage_source_insurance": "Kompani sigurimi makinash",
   "provider_mileage_source_used_car_mall": "Treg makinash të përdorura",
   "provider_mileage_source_korean_insurance": "Sigurimi korean",
-  "provider_odometer": "Odometri",
-  "provider_odometer_status": "Gjendja e odometrit"
+  "provider_odometer": "Kilometrazhi",
+  "provider_odometer_status": "Gjendja e kilometrazhit"
 }

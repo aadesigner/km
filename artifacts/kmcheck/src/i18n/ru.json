@@ -2020,6 +2020,6 @@
   "provider_mileage_source_insurance": "Автостраховая компания",
   "provider_mileage_source_used_car_mall": "Площадка подержанных авто",
   "provider_mileage_source_korean_insurance": "Корейская страховка",
-  "provider_odometer": "Одометр",
-  "provider_odometer_status": "Состояние одометра"
+  "provider_odometer": "Пробег",
+  "provider_odometer_status": "Состояние пробега"
 }

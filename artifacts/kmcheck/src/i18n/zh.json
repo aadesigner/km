@@ -2020,6 +2020,6 @@
   "provider_mileage_source_insurance": "车险公司",
   "provider_mileage_source_used_car_mall": "二手车商城",
   "provider_mileage_source_korean_insurance": "韩国保险",
-  "provider_odometer": "里程表",
-  "provider_odometer_status": "里程表状态"
+  "provider_odometer": "里程",
+  "provider_odometer_status": "里程状态"
 }

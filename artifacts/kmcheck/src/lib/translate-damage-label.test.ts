@@ -6,7 +6,7 @@ import {
 } from "./translate-damage-label";
 
 const dict: Record<string, string> = {
-  provider_odometer: "Odometri",
+  provider_odometer: "Kilometrazhi",
   damage_zone_front_fender_l: "Krahu i përparmë (i majtë)",
   damage_zone_front_door_r: "Dera e përparme (e djathtë)",
   damage_zone_hood: "Kapota",
@@ -33,7 +33,7 @@ describe("translateRepairActionLabel", () => {
 
 describe("translateBodyRepairExtrasText", () => {
   it("translates odometer and multi-part panel lists", () => {
-    expect(translateBodyRepairExtrasText(t, "Odometer")).toBe("Odometri");
+    expect(translateBodyRepairExtrasText(t, "Odometer")).toBe("Kilometrazhi");
     expect(translateBodyRepairExtrasText(t, "Hood; Front bumper")).toBe(
       "Kapota; Parafangu i përparmë",
     );

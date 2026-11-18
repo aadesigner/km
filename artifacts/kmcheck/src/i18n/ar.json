@@ -2020,6 +2020,6 @@
   "provider_mileage_source_insurance": "شركة تأمين السيارات",
   "provider_mileage_source_used_car_mall": "سوق السيارات المستعملة",
   "provider_mileage_source_korean_insurance": "التأمين الكوري",
-  "provider_odometer": "عداد المسافة",
-  "provider_odometer_status": "حالة عداد المسافة"
+  "provider_odometer": "عداد الكيلومترات",
+  "provider_odometer_status": "حالة عداد الكيلومترات"
 }

@@ -2023,6 +2023,6 @@
   "provider_mileage_source_insurance": "ავტოდაზღვევის კომპანია",
   "provider_mileage_source_used_car_mall": "მეორადი ავტომობილების ბაზარი",
   "provider_mileage_source_korean_insurance": "კორეული დაზღვევა",
-  "provider_odometer": "ოდომეტრი",
-  "provider_odometer_status": "ოდომეტრის მდგომარეობა"
+  "provider_odometer": "გარბენი",
+  "provider_odometer_status": "გარბენის მდგომარეობა"
 }

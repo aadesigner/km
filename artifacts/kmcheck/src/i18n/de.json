@@ -2020,6 +2020,6 @@
   "provider_mileage_source_insurance": "Kfz-Versicherungsgesellschaft",
   "provider_mileage_source_used_car_mall": "Gebrauchtwagen-Marktplatz",
   "provider_mileage_source_korean_insurance": "Koreanische Versicherung",
-  "provider_odometer": "Kilometerzähler",
-  "provider_odometer_status": "Kilometerzähler-Status"
+  "provider_odometer": "Kilometerstand",
+  "provider_odometer_status": "Zustand des Kilometerstands"
 }

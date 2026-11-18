@@ -307,7 +307,7 @@ describe("translateKoreanProviderPhrase", () => {
 
   it("translates odometer, body panels and repair actions", () => {
     const dict: Record<string, string> = {
-      provider_odometer: "Odometri",
+      provider_odometer: "Kilometrazhi",
       damage_zone_front_fender_l: "Krahu i përparmë (i majtë)",
       damage_zone_front_fender_r: "Krahu i përparmë (i djathtë)",
       damage_zone_front_door_r: "Dera e përparme (e djathtë)",
@@ -316,7 +316,7 @@ describe("translateKoreanProviderPhrase", () => {
       damage_severity_paint: "I lyer",
     };
     const trSq = (key: string) => dict[key] ?? key;
-    expect(translateKoreanProviderText(trSq, "Odometer")).toBe("Odometri");
+    expect(translateKoreanProviderText(trSq, "Odometer")).toBe("Kilometrazhi");
     expect(translateKoreanProviderText(trSq, "Front fender left")).toBe("Krahu i përparmë (i majtë)");
     expect(translateKoreanProviderText(trSq, "Front fender right")).toBe("Krahu i përparmë (i djathtë)");
     expect(translateKoreanProviderText(trSq, "Front door right")).toBe("Dera e përparme (e djathtë)");

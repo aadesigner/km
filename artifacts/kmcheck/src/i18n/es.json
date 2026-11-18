@@ -2020,6 +2020,6 @@
   "provider_mileage_source_insurance": "Compañía de seguros de auto",
   "provider_mileage_source_used_car_mall": "Mercado de coches de ocasión",
   "provider_mileage_source_korean_insurance": "Seguro coreano",
-  "provider_odometer": "Cuentakilómetros",
-  "provider_odometer_status": "Estado del cuentakilómetros"
+  "provider_odometer": "Kilometraje",
+  "provider_odometer_status": "Estado del kilometraje"
 }
