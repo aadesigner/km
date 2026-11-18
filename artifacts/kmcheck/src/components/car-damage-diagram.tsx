@@ -150,7 +150,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/damage-diagram/body-map.svg");
+        const res = await fetch("/damage-diagram/body-map.svg?v=neutral-dark-2");
         if (!res.ok) return;
         let markup = await res.text();
         // Scope pattern ids so multiple instances don't clash (incl. dark-mode CSS selectors).
@@ -331,7 +331,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
     <div
       ref={rootRef}
       className={cn(
-        "rounded-xl border border-border/70 bg-slate-50 dark:bg-slate-950/50",
+        "rounded-xl border border-border/70 bg-zinc-50 dark:bg-zinc-950",
         compact ? "p-2.5 sm:p-3" : "p-3 sm:p-4",
         className,
       )}
@@ -350,14 +350,14 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
           <div
             ref={hostRef}
             className={cn(
-              "w-full rounded-lg bg-white dark:bg-slate-900/80 [&_svg]:w-full [&_svg]:h-auto",
+              "w-full rounded-lg bg-zinc-100 dark:bg-zinc-900 [&_svg]:w-full [&_svg]:h-auto",
               compact && "max-h-[220px] overflow-hidden [&_svg]:max-h-[220px] [&_svg]:object-contain",
             )}
           />
           {!svgLoaded ? (
             <div
               className={cn(
-                "w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800",
+                "w-full animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800",
                 compact ? "h-[180px]" : "aspect-[706/889]",
               )}
             />
@@ -368,8 +368,8 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
               const meta = DAMAGE_SEVERITY_META[sev];
               const angle = sev === "repair" || sev === "sheet_metal" ? 45 : -45;
               return (
-                <div key={sev} className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
-                  <svg width="34" height="14" className="border border-slate-300 dark:border-slate-600 overflow-hidden rounded-[2px]">
+                <div key={sev} className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-300">
+                  <svg width="34" height="14" className="border border-zinc-300 dark:border-zinc-600 overflow-hidden rounded-[2px]">
                     <defs>
                       <pattern
                         id={`${uid}-leg-${sev}`}
@@ -382,10 +382,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                           width="9"
                           height="9"
                           className={cn(
-                            sev === "replace" && "fill-slate-600 dark:fill-slate-800",
-                            sev === "repair" && "fill-red-800 dark:fill-red-950",
-                            sev === "paint" && "fill-amber-800 dark:fill-amber-950",
-                            sev === "sheet_metal" && "fill-rose-800 dark:fill-rose-950",
+                            sev === "replace" && "fill-zinc-600 dark:fill-zinc-950",
+                            sev === "repair" && "fill-red-900 dark:fill-red-950",
+                            sev === "paint" && "fill-amber-900 dark:fill-amber-950",
+                            sev === "sheet_metal" && "fill-rose-900 dark:fill-rose-950",
                           )}
                         />
                         <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />
@@ -403,7 +403,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
         {!compact ? (
           <div className="w-full space-y-2.5">
             <div className="rounded-lg border border-border/60 overflow-hidden">
-              <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border-b border-border/50 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border-b border-border/50 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("damage_diagram_repair_zones")}
               </div>
               <ul className="divide-y divide-border/40 max-h-[280px] sm:max-h-none overflow-y-auto">
@@ -424,12 +424,12 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2 text-left border-l-[3px] transition-colors",
                           selected
-                            ? "bg-slate-100 dark:bg-slate-800 border-l-slate-700 dark:border-l-slate-300"
+                            ? "bg-zinc-100 dark:bg-zinc-800 border-l-zinc-700 dark:border-l-zinc-300"
                             : "border-l-transparent hover:bg-muted/30",
                         )}
                         style={selected ? { boxShadow: `inset 0 0 0 1px ${meta.stroke}33` } : undefined}
                       >
-                        <svg width="28" height="12" className="shrink-0 border border-slate-300 dark:border-slate-600 overflow-hidden rounded-[2px]">
+                        <svg width="28" height="12" className="shrink-0 border border-zinc-300 dark:border-zinc-600 overflow-hidden rounded-[2px]">
                           <defs>
                             <pattern
                               id={`${uid}-row-${hit.zone}`}
@@ -442,10 +442,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                                 width="9"
                                 height="9"
                                 className={cn(
-                                  hit.severity === "replace" && "fill-slate-600 dark:fill-slate-800",
-                                  hit.severity === "repair" && "fill-red-800 dark:fill-red-950",
-                                  hit.severity === "paint" && "fill-amber-800 dark:fill-amber-950",
-                                  hit.severity === "sheet_metal" && "fill-rose-800 dark:fill-rose-950",
+                                  hit.severity === "replace" && "fill-zinc-600 dark:fill-zinc-950",
+                                  hit.severity === "repair" && "fill-red-900 dark:fill-red-950",
+                                  hit.severity === "paint" && "fill-amber-900 dark:fill-amber-950",
+                                  hit.severity === "sheet_metal" && "fill-rose-900 dark:fill-rose-950",
                                 )}
                               />
                               <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />
@@ -469,7 +469,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
               </ul>
             </div>
 
-            <div className="rounded-lg border border-border/60 px-3 py-2.5 min-h-[5rem] bg-slate-50/80 dark:bg-slate-900/50">
+            <div className="rounded-lg border border-border/60 px-3 py-2.5 min-h-[5rem] bg-zinc-50/80 dark:bg-zinc-900/60">
               {activeHit ? (
                 <div className="space-y-1.5">
                   <p className="text-xs font-semibold">
