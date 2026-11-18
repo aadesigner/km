@@ -58,6 +58,12 @@ describe("formatMileageHistorySource", () => {
     expect(formatMileageHistorySource("Used car shopping mall", t)).toBe("Treg makinash të përdorura");
     expect(formatMileageHistorySource("Export declaration", t)).toBe("Deklarata e eksportit");
   });
+
+  it("localizes bare inspection source", () => {
+    const t = (k: string) => (k === "provider_inspection" ? "Inspektim" : k);
+    expect(formatMileageHistorySource("inspection", t)).toBe("Inspektim");
+    expect(formatMileageHistorySource("Inspection", t)).toBe("Inspektim");
+  });
 });
 
 describe("ensureRegistryMileageHistory", () => {

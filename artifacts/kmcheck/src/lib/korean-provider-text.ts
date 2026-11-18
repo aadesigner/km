@@ -447,6 +447,7 @@ const PHRASE_KEYS: Record<string, string> = {
   "trim options": "provider_trim_options",
   "none recorded": "provider_none_recorded",
   "korean inspection": "provider_korean_inspection",
+  inspection: "provider_inspection",
   "inspection summary": "provider_inspection_summary",
   "inspection accident status": "provider_inspection_accident_status",
   "korean market price": "provider_korean_market_price",
@@ -470,6 +471,8 @@ const PHRASE_KEYS: Record<string, string> = {
   painted: "damage_severity_paint",
   overhauled: "damage_severity_repair",
   "sheet metal": "damage_severity_sheet_metal",
+  manipulated: "mileage_manipulated_badge",
+  "manipulated mileage": "mileage_manipulated_badge",
 };
 
 const PHRASE_PATTERNS: Array<{ pattern: RegExp; key: string }> = [
@@ -546,6 +549,8 @@ const PHRASE_PATTERNS: Array<{ pattern: RegExp; key: string }> = [
   { pattern: /\bkorean inspection\b/gi, key: "provider_korean_inspection" },
   { pattern: /\binspection summary\b/gi, key: "provider_inspection_summary" },
   { pattern: /\binspection accident status\b/gi, key: "provider_inspection_accident_status" },
+  // Bare "inspection" last so longer phrases above win first.
+  { pattern: /\binspection\b/gi, key: "provider_inspection" },
   { pattern: /\bkorean market price\b/gi, key: "provider_korean_market_price" },
   { pattern: /\bmarket low\b/gi, key: "provider_market_low" },
   { pattern: /\bmarket high\b/gi, key: "provider_market_high" },

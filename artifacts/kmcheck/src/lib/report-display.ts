@@ -662,6 +662,10 @@ export function formatMileageHistorySource(
   if (/^(first|initial)\s+registration$/i.test(raw) || /^first_registration$/i.test(raw)) {
     return t("registry_field_first_registration");
   }
+  if (/^inspection$/i.test(raw)) {
+    const label = t("provider_inspection");
+    if (label !== "provider_inspection") return label;
+  }
   const translated = translateKoreanProviderText(t, raw);
   if (translated && translated !== raw) return translated;
   return raw;

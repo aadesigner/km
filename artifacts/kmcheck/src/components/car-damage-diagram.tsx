@@ -54,7 +54,7 @@ const PANEL_TO_ZONE: Record<string, CarDamageZoneId> = Object.fromEntries(
 function hatchClass(sev: DamageSeverity): string {
   if (sev === "paint") return "st4";
   if (sev === "repair") return "st3"; // red
-  if (sev === "replace") return "st2"; // blue
+  if (sev === "replace") return "st2"; // steel/slate
   return "st6"; // sheet_metal
 }
 
@@ -331,7 +331,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
     <div
       ref={rootRef}
       className={cn(
-        "rounded-xl border border-border/70 bg-white dark:bg-slate-950/40",
+        "rounded-xl border border-border/70 bg-slate-50 dark:bg-slate-950/50",
         compact ? "p-2.5 sm:p-3" : "p-3 sm:p-4",
         className,
       )}
@@ -350,7 +350,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
           <div
             ref={hostRef}
             className={cn(
-              "w-full [&_svg]:w-full [&_svg]:h-auto",
+              "w-full rounded-lg bg-white dark:bg-slate-900/80 [&_svg]:w-full [&_svg]:h-auto",
               compact && "max-h-[220px] overflow-hidden [&_svg]:max-h-[220px] [&_svg]:object-contain",
             )}
           />
@@ -382,10 +382,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                           width="9"
                           height="9"
                           className={cn(
-                            sev === "replace" && "fill-sky-200 dark:fill-sky-900",
-                            sev === "repair" && "fill-red-200 dark:fill-red-900",
-                            sev === "paint" && "fill-yellow-200 dark:fill-yellow-900",
-                            sev === "sheet_metal" && "fill-rose-200 dark:fill-rose-950",
+                            sev === "replace" && "fill-slate-600 dark:fill-slate-800",
+                            sev === "repair" && "fill-red-800 dark:fill-red-950",
+                            sev === "paint" && "fill-amber-800 dark:fill-amber-950",
+                            sev === "sheet_metal" && "fill-rose-800 dark:fill-rose-950",
                           )}
                         />
                         <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />
@@ -424,7 +424,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2 text-left border-l-[3px] transition-colors",
                           selected
-                            ? "bg-slate-100 dark:bg-slate-800 border-l-slate-900 dark:border-l-sky-300"
+                            ? "bg-slate-100 dark:bg-slate-800 border-l-slate-700 dark:border-l-slate-300"
                             : "border-l-transparent hover:bg-muted/30",
                         )}
                         style={selected ? { boxShadow: `inset 0 0 0 1px ${meta.stroke}33` } : undefined}
@@ -442,10 +442,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                                 width="9"
                                 height="9"
                                 className={cn(
-                                  hit.severity === "replace" && "fill-sky-200 dark:fill-sky-900",
-                                  hit.severity === "repair" && "fill-red-200 dark:fill-red-900",
-                                  hit.severity === "paint" && "fill-yellow-200 dark:fill-yellow-900",
-                                  hit.severity === "sheet_metal" && "fill-rose-200 dark:fill-rose-950",
+                                  hit.severity === "replace" && "fill-slate-600 dark:fill-slate-800",
+                                  hit.severity === "repair" && "fill-red-800 dark:fill-red-950",
+                                  hit.severity === "paint" && "fill-amber-800 dark:fill-amber-950",
+                                  hit.severity === "sheet_metal" && "fill-rose-800 dark:fill-rose-950",
                                 )}
                               />
                               <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />

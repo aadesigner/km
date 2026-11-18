@@ -323,6 +323,12 @@ describe("translateKoreanProviderPhrase", () => {
     expect(translateKoreanProviderText(trSq, "Replaced")).toBe("I zëvendësuar");
     expect(translateKoreanProviderText(trSq, "Painted")).toBe("I lyer");
     expect(translateKoreanProviderText(trSq, "Hood; Front bumper")).toContain("Kapota");
+    expect(
+      translateKoreanProviderText(
+        (key) => ({ mileage_manipulated_badge: "I manipuluar" }[key] ?? key),
+        "Manipulated",
+      ),
+    ).toBe("I manipuluar");
   });
 });
 

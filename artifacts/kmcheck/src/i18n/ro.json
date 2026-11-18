@@ -1933,7 +1933,7 @@
   "damage_diagram_drag": "Trage pentru a roti · apasă un panou deteriorat",
   "damage_diagram_loading": "Se încarcă mașina 3D…",
   "damage_diagram_hover": "Hover or focus a highlighted panel to see repair details.",
-  "damage_diagram_aria": "Car body damage map",
+  "damage_diagram_aria": "Hartă daune caroserie",
   "damage_severity_paint": "Vopsit",
   "damage_severity_repair": "Reparat",
   "damage_severity_replace": "Înlocuit",
@@ -1966,7 +1966,7 @@
   "repair_parts_parts_label": "piese",
   "repair_parts_list_heading": "Piese după tipul lucrării",
   "repair_parts_hint_replace": "Piese demontate și înlocuite cu componente noi sau second-hand.",
-  "repair_parts_hint_sheet_metal": "Lucrări structurale / tinichigerie pe caroserie.",
+  "repair_parts_hint_sheet_metal": "Lucrări de tinichigerie / caroserie pe structură.",
   "repair_parts_hint_other": "Alte elemente de reparație din înregistrarea de asigurare din Coreea.",
   "provider_vehicle_number_change": "Schimbare număr vehicul",
   "provider_termination_of_information": "Încetarea furnizării de informații",
@@ -1975,7 +1975,7 @@
   "mileage_manipulated_badge": "Manipulat",
   "provider_usage_rent": "Închiriere",
   "provider_usage_rental": "Vehicul închiriat",
-  "provider_usage_business": "Business",
+  "provider_usage_business": "Companie",
   "provider_usage_government": "Guvernamental",
   "provider_usage_special": "Utilizare specială",
   "provider_usage_taxi": "Taxi",
@@ -2021,5 +2021,10 @@
   "provider_mileage_source_used_car_mall": "Piață de mașini second-hand",
   "provider_mileage_source_korean_insurance": "Asigurare coreeană",
   "provider_odometer": "Kilometraj",
-  "provider_odometer_status": "Starea kilometrajului"
+  "provider_odometer_status": "Starea kilometrajului",
+  "registry_field_license_plate": "Număr de înmatriculare",
+  "registry_field_diagnosis": "Diagnostic",
+  "registry_field_location": "Locație",
+  "registry_field_amount": "Sumă",
+  "provider_inspection": "Inspecție"
 }

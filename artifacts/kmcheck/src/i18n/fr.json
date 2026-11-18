@@ -1933,7 +1933,7 @@
   "damage_diagram_drag": "Glisser pour tourner · cliquer un panneau endommagé",
   "damage_diagram_loading": "Chargement de la voiture 3D…",
   "damage_diagram_hover": "Survolez un panneau pour voir les détails.",
-  "damage_diagram_aria": "Car body damage map",
+  "damage_diagram_aria": "Carte des dommages de carrosserie",
   "damage_severity_paint": "Peint",
   "damage_severity_repair": "Réparé",
   "damage_severity_replace": "Remplacé",
@@ -1966,7 +1966,7 @@
   "repair_parts_parts_label": "pièces",
   "repair_parts_list_heading": "Pièces par type de travaux",
   "repair_parts_hint_replace": "Pièces retirées et remplacées par des éléments neufs ou d’occasion.",
-  "repair_parts_hint_sheet_metal": "Travaux de structure / tôlerie sur la carrosserie.",
+  "repair_parts_hint_sheet_metal": "Travaux de carrosserie / tôlerie sur la structure.",
   "repair_parts_hint_other": "Autres éléments de réparation du dossier d’assurance coréen.",
   "provider_vehicle_number_change": "Changement de numéro du véhicule",
   "provider_termination_of_information": "Fin de la fourniture d'informations",
@@ -2021,5 +2021,10 @@
   "provider_mileage_source_used_car_mall": "Place de marché de voitures d'occasion",
   "provider_mileage_source_korean_insurance": "Assurance coréenne",
   "provider_odometer": "Kilométrage",
-  "provider_odometer_status": "État du kilométrage"
+  "provider_odometer_status": "État du kilométrage",
+  "registry_field_license_plate": "Plaque d’immatriculation",
+  "registry_field_diagnosis": "Diagnostic",
+  "registry_field_location": "Lieu",
+  "registry_field_amount": "Montant",
+  "provider_inspection": "Contrôle"
 }

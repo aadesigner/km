@@ -10,7 +10,7 @@ const dict: Record<string, string> = {
   damage_zone_front_fender_l: "Krahu i përparmë (i majtë)",
   damage_zone_front_door_r: "Dera e përparme (e djathtë)",
   damage_zone_hood: "Kapota",
-  damage_zone_front_bumper: "Parafangu i përparmë",
+  damage_zone_front_bumper: "Parakolp i përparmë",
   damage_severity_replace: "I zëvendësuar",
 };
 
@@ -35,7 +35,7 @@ describe("translateBodyRepairExtrasText", () => {
   it("translates odometer and multi-part panel lists", () => {
     expect(translateBodyRepairExtrasText(t, "Odometer")).toBe("Kilometrazhi");
     expect(translateBodyRepairExtrasText(t, "Hood; Front bumper")).toBe(
-      "Kapota; Parafangu i përparmë",
+      "Kapota; Parakolp i përparmë",
     );
   });
 });

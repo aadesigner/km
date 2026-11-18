@@ -1933,7 +1933,7 @@
   "damage_diagram_drag": "Влачете за завъртане · кликнете върху повреден панел",
   "damage_diagram_loading": "Зареждане на 3D кола…",
   "damage_diagram_hover": "Hover or focus a highlighted panel to see repair details.",
-  "damage_diagram_aria": "Car body damage map",
+  "damage_diagram_aria": "Карта на повредите по каросерията",
   "damage_severity_paint": "Боядисан",
   "damage_severity_repair": "Ремонтиран",
   "damage_severity_replace": "Сменен",
@@ -1966,7 +1966,7 @@
   "repair_parts_parts_label": "части",
   "repair_parts_list_heading": "Части по вид работа",
   "repair_parts_hint_replace": "Свалени и заменени с нови или употребявани части.",
-  "repair_parts_hint_sheet_metal": "Структурна / тенекеджийска работа по купето.",
+  "repair_parts_hint_sheet_metal": "Тенекеджийска / каросерийна работа по купето.",
   "repair_parts_hint_other": "Други ремонтни позиции от корейския застрахователен запис.",
   "provider_vehicle_number_change": "Смяна на номер на превозното средство",
   "provider_termination_of_information": "Прекратяване на предоставянето на информация",
@@ -2021,5 +2021,10 @@
   "provider_mileage_source_used_car_mall": "Пазар за употребявани автомобили",
   "provider_mileage_source_korean_insurance": "Корейска застраховка",
   "provider_odometer": "Пробег",
-  "provider_odometer_status": "Състояние на пробега"
+  "provider_odometer_status": "Състояние на пробега",
+  "registry_field_license_plate": "Регистрационен номер",
+  "registry_field_diagnosis": "Диагноза",
+  "registry_field_location": "Местоположение",
+  "registry_field_amount": "Сума",
+  "provider_inspection": "Преглед"
 }
