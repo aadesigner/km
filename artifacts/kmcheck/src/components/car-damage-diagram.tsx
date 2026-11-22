@@ -150,7 +150,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/damage-diagram/body-map.svg?v=neutral-dark-2");
+        const res = await fetch("/damage-diagram/body-map.svg?v=soft-light-1");
         if (!res.ok) return;
         let markup = await res.text();
         // Scope pattern ids so multiple instances don't clash (incl. dark-mode CSS selectors).
@@ -331,7 +331,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
     <div
       ref={rootRef}
       className={cn(
-        "rounded-xl border border-border/70 bg-zinc-50 dark:bg-zinc-950",
+        "rounded-xl border border-border/70 bg-zinc-50/80 dark:bg-transparent",
         compact ? "p-2.5 sm:p-3" : "p-3 sm:p-4",
         className,
       )}
@@ -350,14 +350,14 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
           <div
             ref={hostRef}
             className={cn(
-              "w-full rounded-lg bg-zinc-100 dark:bg-zinc-900 [&_svg]:w-full [&_svg]:h-auto",
+              "w-full rounded-lg bg-zinc-100/50 dark:bg-transparent [&_svg]:w-full [&_svg]:h-auto",
               compact && "max-h-[220px] overflow-hidden [&_svg]:max-h-[220px] [&_svg]:object-contain",
             )}
           />
           {!svgLoaded ? (
             <div
               className={cn(
-                "w-full animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800",
+                "w-full animate-pulse rounded-md bg-zinc-200/70 dark:bg-transparent dark:border dark:border-border/40",
                 compact ? "h-[180px]" : "aspect-[706/889]",
               )}
             />
@@ -382,10 +382,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                           width="9"
                           height="9"
                           className={cn(
-                            sev === "replace" && "fill-zinc-600 dark:fill-zinc-950",
-                            sev === "repair" && "fill-red-900 dark:fill-red-950",
-                            sev === "paint" && "fill-amber-900 dark:fill-amber-950",
-                            sev === "sheet_metal" && "fill-rose-900 dark:fill-rose-950",
+                            sev === "replace" && "fill-zinc-200 dark:fill-zinc-700/50",
+                            sev === "repair" && "fill-red-200 dark:fill-red-900/45",
+                            sev === "paint" && "fill-amber-200 dark:fill-amber-900/40",
+                            sev === "sheet_metal" && "fill-rose-200 dark:fill-rose-900/45",
                           )}
                         />
                         <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />
@@ -402,8 +402,8 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
 
         {!compact ? (
           <div className="w-full space-y-2.5">
-            <div className="rounded-lg border border-border/60 overflow-hidden">
-              <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border-b border-border/50 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="rounded-lg border border-border/60 overflow-hidden dark:bg-transparent">
+              <div className="px-3 py-1.5 bg-zinc-50/80 dark:bg-transparent border-b border-border/50 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("damage_diagram_repair_zones")}
               </div>
               <ul className="divide-y divide-border/40 max-h-[280px] sm:max-h-none overflow-y-auto">
@@ -424,7 +424,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2 text-left border-l-[3px] transition-colors",
                           selected
-                            ? "bg-zinc-100 dark:bg-zinc-800 border-l-zinc-700 dark:border-l-zinc-300"
+                            ? "bg-zinc-100/80 dark:bg-muted/25 border-l-zinc-500 dark:border-l-zinc-300"
                             : "border-l-transparent hover:bg-muted/30",
                         )}
                         style={selected ? { boxShadow: `inset 0 0 0 1px ${meta.stroke}33` } : undefined}
@@ -442,10 +442,10 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
                                 width="9"
                                 height="9"
                                 className={cn(
-                                  hit.severity === "replace" && "fill-zinc-600 dark:fill-zinc-950",
-                                  hit.severity === "repair" && "fill-red-900 dark:fill-red-950",
-                                  hit.severity === "paint" && "fill-amber-900 dark:fill-amber-950",
-                                  hit.severity === "sheet_metal" && "fill-rose-900 dark:fill-rose-950",
+                                  hit.severity === "replace" && "fill-zinc-200 dark:fill-zinc-700/50",
+                                  hit.severity === "repair" && "fill-red-200 dark:fill-red-900/45",
+                                  hit.severity === "paint" && "fill-amber-200 dark:fill-amber-900/40",
+                                  hit.severity === "sheet_metal" && "fill-rose-200 dark:fill-rose-900/45",
                                 )}
                               />
                               <path d="M0 4.5 H9" stroke={meta.hatch} strokeWidth="2.4" />
@@ -469,7 +469,7 @@ export function CarDamageDiagram({ extras, t, className, compact = false }: Prop
               </ul>
             </div>
 
-            <div className="rounded-lg border border-border/60 px-3 py-2.5 min-h-[5rem] bg-zinc-50/80 dark:bg-zinc-900/60">
+            <div className="rounded-lg border border-border/60 px-3 py-2.5 min-h-[5rem] bg-zinc-50/60 dark:bg-transparent">
               {activeHit ? (
                 <div className="space-y-1.5">
                   <p className="text-xs font-semibold">
