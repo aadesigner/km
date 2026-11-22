@@ -189,10 +189,29 @@ function parseKmish(v: unknown): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   const s = str(v);
   if (!s) return null;
+  // Prefer an explicit km token so "13,300,000 KRW" / "13300 / 2024" cannot become odo.
+  const kmToken = s.match(/(\d[\d\s.,]*)\s*(?:km|킬로)/i);
+  if (kmToken?.[1]) {
+    const n = Number(kmToken[1].replace(/[^\d]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  }
+  if (/krw|₩|won\b|\$|usd|eur|€/i.test(s)) return null;
   const cleaned = s.replace(/[^\d]/g, "");
   if (!cleaned) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Drop KRW-scale / impossible odometer values (listing prices often land in odo fields as
+ * 8–9 digit integers like 13_300_000 → chart axis "13.3M km" / "13300k").
+ */
+function plausibleOdometerKm(km: number | null | undefined): number | null {
+  if (km == null || !Number.isFinite(km) || km < 0) return null;
+  if (km === 0) return 0;
+  // Real passenger-car odo almost never reaches 1M km; KRW asks commonly do.
+  if (km >= 1_000_000) return null;
+  return km;
 }
 
 function localizedText(v: unknown, lang = "en"): string | null {
@@ -1307,8 +1326,10 @@ export function normalizeCarstatVhrJsonPayloads(
               dateOnly(inspectOuter?.inspection_date)
               ?? dateOnly(inspect?.inspection_date)
               ?? date;
-            const inspOdo = num(inspectOuter?.odometer_km)
-              ?? num((inspect?.vehicle as Record<string, unknown> | undefined)?.mileage_km);
+            const inspOdo = plausibleOdometerKm(
+              num(inspectOuter?.odometer_km)
+                ?? num((inspect?.vehicle as Record<string, unknown> | undefined)?.mileage_km),
+            );
             if (allowFullKoreanListingDossier && inspDate && inspOdo != null) {
               sawKoreanInspection = true;
               mileageHistory.push({
@@ -1442,6 +1463,8 @@ export function normalizeCarstatVhrJsonPayloads(
       if (type === "inspections" || type === "inspection") {
         for (const item of itemsOf(section)) {
           const inspDate = dateOnly(item.inspected_at ?? item.created_at);
+          /** Inspection-local odo only — never the report-wide max (prices leak there). */
+          let inspectionMileage: number | null = null;
           const snap =
             item.vehicle_snapshot && typeof item.vehicle_snapshot === "object" && !Array.isArray(item.vehicle_snapshot)
               ? (item.vehicle_snapshot as Record<string, unknown>)
@@ -1461,8 +1484,11 @@ export function normalizeCarstatVhrJsonPayloads(
               snap.odometer && typeof snap.odometer === "object" && !Array.isArray(snap.odometer)
                 ? (snap.odometer as Record<string, unknown>)
                 : null;
-            const snapOdo = num(odoObj?.value ?? snap.odometer ?? snap.mileage_km ?? snap.mileage);
+            const snapOdo = plausibleOdometerKm(
+              num(odoObj?.value ?? snap.odometer ?? snap.mileage_km ?? snap.mileage),
+            );
             if (snapOdo != null) {
+              inspectionMileage = snapOdo;
               if (odometer == null || snapOdo > odometer) odometer = snapOdo;
               if (inspDate) {
                 mileageHistory.push({
@@ -1585,12 +1611,15 @@ export function normalizeCarstatVhrJsonPayloads(
                 inspDate,
               );
               if (/odometer/i.test(str(mm.type_key) ?? "") || /odometer/i.test(str(mm.id) ?? "")) {
-                if (odometer == null || val > odometer) odometer = val;
+                const odoVal = plausibleOdometerKm(val);
+                if (odoVal == null) continue;
+                inspectionMileage = odoVal;
+                if (odometer == null || odoVal > odometer) odometer = odoVal;
                 if (inspDate) {
                   sawKoreanInspection = true;
                   mileageHistory.push({
                     date: inspDate,
-                    odometer: val,
+                    odometer: odoVal,
                     unit: unit === "km" || unit === "mi" ? unit : "km",
                     source: "Korean inspection",
                   });
@@ -1654,7 +1683,7 @@ export function normalizeCarstatVhrJsonPayloads(
           if (inspDate && (issueCount > 0 || okCount > 0)) {
             serviceHistory.push({
               date: inspDate,
-              mileage: odometer,
+              mileage: inspectionMileage,
               title: "Vehicle inspection",
               description: `${okCount} passed · ${issueCount} issue${issueCount === 1 ? "" : "s"}`,
               details: detailsFromPairs([
@@ -2068,7 +2097,7 @@ export function normalizeCarstatVhrJsonPayloads(
               if (!row || typeof row !== "object" || Array.isArray(row)) continue;
               const r = row as Record<string, unknown>;
               const mDate = dateOnly(r.date) ?? dateOnly(String(r.date_view ?? "").replace(/\//g, "-"));
-              const mOdo = parseKmish(r.km ?? r.odometer ?? r.mileage);
+              const mOdo = plausibleOdometerKm(parseKmish(r.km ?? r.odometer ?? r.mileage));
               if (mDate && mOdo != null) {
                 mileageHistory.push({
                   date: mDate,
@@ -2085,7 +2114,7 @@ export function normalizeCarstatVhrJsonPayloads(
                 : null;
             if (last) {
               const mDate = dateOnly(last.date);
-              const mOdo = parseKmish(last.km);
+              const mOdo = plausibleOdometerKm(parseKmish(last.km));
               if (mDate && mOdo != null) {
                 mileageHistory.push({
                   date: mDate,
@@ -2687,6 +2716,10 @@ export function normalizeCarstatVhrJsonPayloads(
         return false;
       }
     }
+    // Quarantine KRW-scale / age-impossible odo (never plot as mileage).
+    if (plausibleOdometerKm(row.odometer) == null && (row.odometer ?? 0) > 0) {
+      return false;
+    }
     return true;
   });
 
@@ -2698,6 +2731,13 @@ export function normalizeCarstatVhrJsonPayloads(
       if (o != null && (bestOdo == null || o > bestOdo)) bestOdo = o;
     }
     if (bestOdo != null) odometer = bestOdo;
+  }
+
+  // Scrub service rows that still carry a leaked global max / price-as-km.
+  for (const row of serviceHistory) {
+    if (row.mileage != null && plausibleOdometerKm(row.mileage) == null) {
+      row.mileage = null;
+    }
   }
 
   const cleanedClaims = !koreanVinFinal && naOrigin && !hasKoreanMarketEvidence
