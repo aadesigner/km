@@ -9,16 +9,20 @@
 			.st4 {fill: url(#YellowHatch); stroke: #fbbf24; stroke-width: 1.35; stroke-linejoin: round;}
 			.st5 {fill: #f4f4f5; stroke: #a3a3a3; stroke-width: 0.75; stroke-linejoin: round;}
 			.st6 {fill: url(#sheetHatch); stroke: #fb7185; stroke-width: 1.35; stroke-linejoin: round;}
-			.km-active { stroke: #171717 !important; stroke-width: 2.6 !important; filter: drop-shadow(0 0 3px rgba(23,23,23,0.35)); opacity: 1 !important; }
-			.km-dim { opacity: 0.3 !important; transition: opacity 140ms ease; }
-			.km-damage { transition: opacity 140ms ease; }
+			.km-active { stroke: #171717 !important; stroke-width: 2.6 !important; opacity: 1 !important; }
+			.km-dim { opacity: 0.32 !important; }
+			.km-damage { opacity: 1; }
+			.km-marker-ring { display: none; }
+			.km-marker-selected .km-marker-ring { display: inline; }
+			.km-marker-selected .km-marker-dot { r: 14; stroke-width: 2.2; }
+			.km-marker-dim { opacity: 0.32; }
 			:root.dark .st1, .dark .st1, html.dark .st1 { stroke: #a3a3a3 !important; stroke-opacity: 0.9; }
 			:root.dark .st2, .dark .st2, html.dark .st2 { stroke: #a3a3a3 !important; }
 			:root.dark .st3, .dark .st3, html.dark .st3 { stroke: #f87171 !important; }
 			:root.dark .st4, .dark .st4, html.dark .st4 { stroke: #fbbf24 !important; }
 			:root.dark .st5, .dark .st5, html.dark .st5 { fill: rgba(63,63,70,0.28) !important; stroke: #71717a !important; }
 			:root.dark .st6, .dark .st6, html.dark .st6 { stroke: #fb7185 !important; }
-			:root.dark .km-active, .dark .km-active, html.dark .km-active { stroke: #fafafa !important; filter: drop-shadow(0 0 4px rgba(250,250,250,0.25)); }
+			:root.dark .km-active, .dark .km-active, html.dark .km-active { stroke: #fafafa !important; }
 			:root.dark [id$="redHatch"] rect, .dark [id$="redHatch"] rect, html.dark [id$="redHatch"] rect { fill: rgba(127,29,29,0.45) !important; }
 			:root.dark [id$="redHatch"] path, .dark [id$="redHatch"] path, html.dark [id$="redHatch"] path { stroke: #fca5a5 !important; stroke-opacity: 0.95 !important; stroke-width: 2.6 !important; }
 			:root.dark [id$="blueHatch"] rect, .dark [id$="blueHatch"] rect, html.dark [id$="blueHatch"] rect { fill: rgba(63,63,70,0.4) !important; }
