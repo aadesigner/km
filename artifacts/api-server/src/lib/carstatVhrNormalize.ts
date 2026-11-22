@@ -3,6 +3,7 @@
  * UI uses our report sections (mileage / auctions / accidents / extras) — not provider HTML.
  */
 import { decodeVin } from "@workspace/vin-decode";
+import { inferAccidentSeverityFromLossAmount } from "@workspace/accident-severity";
 import type { NormalizedVinData } from "./vinService.js";
 import {
   isCarstatIllustrativeDemoPayload,
@@ -15,6 +16,11 @@ import {
   translateRuToEn,
   translateVhrJsonRuToEn,
 } from "./carstatVhrRuTranslate.js";
+
+/** KRW payout → minor/moderate/major for report accident cards (matches GetCar path). */
+function severityFromKoreanLoss(amount: number | null | undefined): string | null {
+  return inferAccidentSeverityFromLossAmount(amount, { amountCurrency: "KRW" });
+}
 
 function str(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -1342,6 +1348,7 @@ export function normalizeCarstatVhrJsonPayloads(
                   lossAmount: amount,
                   currency: claimCurrency,
                   country: "KR",
+                  severity: severityFromKoreanLoss(amount),
                 });
               }
             }
@@ -1966,18 +1973,26 @@ export function normalizeCarstatVhrJsonPayloads(
                   description: claimDesc,
                 });
               }
-              accidents.push({
-                date: claimDate,
-                // Money summary only — part name lists belong in Korea repair parts.
-                description: moneyDesc ?? partsCountDesc ?? "Korean insurance accident",
-                type: "insurance",
-                lossAmount: paid,
-                partCost: parts || null,
-                laborCost: labor || null,
-                paintingCost: paint || null,
-                currency: "KRW",
-                country: "KR",
-              });
+              {
+                const lossForSeverity =
+                  paid
+                  ?? ((parts || 0) + (labor || 0) + (paint || 0) > 0
+                    ? (parts || 0) + (labor || 0) + (paint || 0)
+                    : null);
+                accidents.push({
+                  date: claimDate,
+                  // Money summary only — part name lists belong in Korea repair parts.
+                  description: moneyDesc ?? partsCountDesc ?? "Korean insurance accident",
+                  type: "insurance",
+                  lossAmount: paid ?? lossForSeverity,
+                  partCost: parts || null,
+                  laborCost: labor || null,
+                  paintingCost: paint || null,
+                  currency: "KRW",
+                  country: "KR",
+                  severity: severityFromKoreanLoss(lossForSeverity),
+                });
+              }
               registryHistory.push({
                 date: claimDate,
                 type: "insurance",

@@ -553,13 +553,17 @@ function interpolateKm(sortKey: number, series: MileagePoint[]): number {
   return last.km;
 }
 
-function buildMileageSeries(events: TimelineEvent[]): MileagePoint[] {
+/** Mileage line points: production @ 0 + `mileage` events only (not accident/service km). */
+export function buildMileageSeries(events: TimelineEvent[]): MileagePoint[] {
   const points: MileagePoint[] = [];
   for (const event of events) {
     if (event.type === "production") {
       points.push({ sortKey: event.sortKey, km: 0 });
       continue;
     }
+    // Line must match mileageHistory / rollback logic — accident/service/owner km
+    // on the same timeline used to draw false up→down→up zigzags.
+    if (event.type !== "mileage") continue;
     if (event.mileage != null && event.mileage > 0) {
       points.push({ sortKey: event.sortKey, km: event.mileage });
     }
@@ -569,7 +573,8 @@ function buildMileageSeries(events: TimelineEvent[]): MileagePoint[] {
   for (const p of points) {
     const prev = out[out.length - 1];
     if (prev && prev.sortKey === p.sortKey) {
-      prev.km = p.km;
+      // Same calendar day → keep the highest reading (noise scrapes).
+      if (p.km > prev.km) prev.km = p.km;
       continue;
     }
     out.push({ ...p });

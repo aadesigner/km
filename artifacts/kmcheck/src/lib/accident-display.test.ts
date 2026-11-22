@@ -22,6 +22,43 @@ describe("resolveAccidentSeverityForDisplay", () => {
     expect(resolveAccidentSeverityForDisplay({ lossAmount: 500 }, {})).toBe("minor");
     expect(resolveAccidentSeverityForDisplay({ lossAmount: 5000 }, {})).toBe("major");
   });
+
+  it("infers from KRW parts/labor/paint when lossAmount is missing", () => {
+    expect(
+      resolveAccidentSeverityForDisplay(
+        {
+          type: "insurance",
+          country: "KR",
+          currency: "KRW",
+          partCost: 1_502_800,
+          laborCost: 1_003_760,
+          paintingCost: 1_556_510,
+        },
+        { vehicleCountry: "KR", hasKoreanInsuranceClaims: true },
+      ),
+    ).toBe("moderate");
+  });
+
+  it("infers from same-day insurance claims when accident has no amount", () => {
+    expect(
+      resolveAccidentSeverityForDisplay(
+        {
+          date: "2024-11-08",
+          type: "insurance",
+          country: "KR",
+          currency: "KRW",
+          description: "Rear door (left) (replace)",
+        },
+        {
+          vehicleCountry: "KR",
+          hasKoreanInsuranceClaims: true,
+          insuranceClaims: [
+            { date: "2024-11-08", lossAmount: 266_880, partCost: 90_000, laborCost: 60_000, paintingCost: 25_000 },
+          ],
+        },
+      ),
+    ).toBe("minor");
+  });
 });
 
 describe("accidentSeverityStyle", () => {

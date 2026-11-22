@@ -169,6 +169,14 @@ export type AccidentSeverityContext = {
   vehicleCountry?: string | null;
   krwPerUsd?: number | null;
   hasKoreanInsuranceClaims?: boolean;
+  /** Same-day claims fill loss when accident.lossAmount is empty (KR insurance + inspection reports). */
+  insuranceClaims?: Array<{
+    date?: string | null;
+    lossAmount?: number | null;
+    partCost?: number | null;
+    laborCost?: number | null;
+    paintingCost?: number | null;
+  }> | null;
 };
 
 /** USD tiers: under $1,300 small · $1,300–$2,999 moderate · $3,000+ major */
@@ -176,6 +184,11 @@ export function resolveAccidentSeverityForDisplay(
   accident: {
     severity?: string | null;
     lossAmount?: number | null;
+    partCost?: number | null;
+    laborCost?: number | null;
+    paintingCost?: number | null;
+    date?: string | null;
+    description?: string | null;
     type?: string | null;
     country?: string | null;
     currency?: string | null;
@@ -185,7 +198,14 @@ export function resolveAccidentSeverityForDisplay(
   const raw = accident.severity?.toLowerCase().trim();
   if (raw === "total_loss" || raw === "total loss") return "total_loss";
 
-  if (accident.lossAmount != null && accident.lossAmount > 0) {
+  const costs = resolveAccidentCostBreakdown(accident, ctx.insuranceClaims);
+  const amountFromParts =
+    (costs.partCost ?? 0) + (costs.laborCost ?? 0) + (costs.paintingCost ?? 0);
+  const amount =
+    costs.lossAmount
+    ?? (amountFromParts > 0 ? amountFromParts : null);
+
+  if (amount != null && amount > 0) {
     const asKrw = shouldFormatAccidentLossAsKrw({
       currency: accident.currency,
       vehicleCountry: ctx.vehicleCountry,
@@ -193,7 +213,7 @@ export function resolveAccidentSeverityForDisplay(
       accidentCountry: accident.country,
       hasKoreanInsuranceClaims: ctx.hasKoreanInsuranceClaims,
     });
-    const fromAmount = inferAccidentSeverityFromLossAmount(accident.lossAmount, {
+    const fromAmount = inferAccidentSeverityFromLossAmount(amount, {
       amountCurrency: asKrw ? "KRW" : "USD",
       krwPerUsd: ctx.krwPerUsd,
     });

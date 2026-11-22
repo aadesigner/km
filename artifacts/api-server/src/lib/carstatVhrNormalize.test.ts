@@ -1278,6 +1278,7 @@ describe("carstatVhrNormalize", () => {
     expect(out.auctionHistory?.length).toBeGreaterThan(0);
     expect(out.insuranceClaims?.some((c) => c.lossAmount === 6217990)).toBe(true);
     expect(out.accidents?.some((a) => a.type === "insurance")).toBe(true);
+    expect(out.accidents?.find((a) => a.type === "insurance" && a.lossAmount === 6217990)?.severity).toBe("major");
     expect(out.registryHistory?.some((e) => e.type === "insurance" || e.type === "ownership")).toBe(true);
     expect(out.serviceHistory?.some((s) => /inspection/i.test(s.title ?? ""))).toBe(true);
     expect(out.vehicleExtras?.some((x) => x.label === "Trim options")).toBe(true);
