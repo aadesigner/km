@@ -18,6 +18,7 @@ export type AcquisitionBucket =
   | "paid_ads"
   | "organic_social"
   | "google"
+  | "offline"
   | "referral"
   | "direct"
   | "unknown";
@@ -152,6 +153,7 @@ export const ACQUISITION_BUCKET_LABELS: Record<AcquisitionBucket, string> = {
   paid_ads: "Paid ads",
   organic_social: "Organic social",
   google: "Google",
+  offline: "QR / offline",
   referral: "Referral sites",
   direct: "Direct",
   unknown: "Unknown",
@@ -180,6 +182,9 @@ export const ACQUISITION_CHANNEL_SHORT: Record<string, string> = {
   x_social: "X social",
   linkedin_ads: "LinkedIn ads",
   linkedin_social: "LinkedIn",
+  qr: "QR",
+  qr_van: "QR van",
+  offline: "Offline",
   referral: "Referral",
   direct: "Direct",
   paid_ads: "Ads",
@@ -190,6 +195,8 @@ export const ACQUISITION_CHANNEL_SHORT: Record<string, string> = {
 export function acquisitionChannelShortLabel(channel: string): string {
   const key = channel.trim().toLowerCase();
   if (ACQUISITION_CHANNEL_SHORT[key]) return ACQUISITION_CHANNEL_SHORT[key];
+  if (key.startsWith("qr_")) return `QR ${key.slice(3).replace(/_/g, " ")}`;
+  if (key.startsWith("offline_")) return `Offline ${key.slice(8).replace(/_/g, " ")}`;
   if (key.endsWith("_ads")) return key.replace(/_ads$/, " ads").replace(/_/g, " ");
   if (key.endsWith("_social")) return key.replace(/_social$/, " social").replace(/_/g, " ");
   return key.replace(/_/g, " ") || "Other";
@@ -274,6 +281,11 @@ const ACQ_BRAND: Record<string, { text: string; tint: string; bar: string }> = {
     tint: "bg-rose-50 text-rose-700 border-rose-200/80",
     bar: "bg-rose-400",
   },
+  offline: {
+    text: "text-emerald-700",
+    tint: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+    bar: "bg-emerald-500",
+  },
   other: {
     text: "text-slate-500",
     tint: "bg-slate-100 text-slate-600 border-slate-200/80",
@@ -304,6 +316,7 @@ function acquisitionBrandKey(channel: string | null | undefined): keyof typeof A
   }
   if (key === "bing_ads" || key.startsWith("bing")) return "bing";
   if (key === "messenger" || key.startsWith("messenger") || key === "msg") return "messenger";
+  if (key === "qr" || key.startsWith("qr_") || key.startsWith("offline") || key === "van") return "offline";
   if (key.startsWith("whatsapp")) return "organic_social";
   if (key.startsWith("youtube") || key.startsWith("pinterest") || key.startsWith("reddit") || key.startsWith("snapchat")) {
     return "organic_social";

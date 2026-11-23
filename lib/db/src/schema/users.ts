@@ -40,7 +40,7 @@ export const usersTable = pgTable("users", {
   creditBalance: integer("credit_balance").notNull().default(0),
   /**
    * First-touch acquisition (set once at signup).
-   * Bucket: paid_ads | organic_social | google | referral | direct | unknown
+   * Bucket: paid_ads | organic_social | google | offline | referral | direct | unknown
    */
   acquisitionBucket: text("acquisition_bucket"),
   /** Fine channel e.g. meta_ads, instagram_social, google_organic, direct */

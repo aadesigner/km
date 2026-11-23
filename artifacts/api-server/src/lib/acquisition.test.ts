@@ -27,6 +27,18 @@ describe("acquisition sanitize", () => {
     expect(sanitizeAcquisitionPayload({ bucket: "hack", channel: "x" })).toBeNull();
   });
 
+  it("accepts offline / QR van bucket", () => {
+    const p = sanitizeAcquisitionPayload({
+      bucket: "offline",
+      channel: "qr_van",
+      source: "van",
+      medium: "qr",
+      capturedAt: new Date().toISOString(),
+    });
+    expect(p?.bucket).toBe("offline");
+    expect(p?.channel).toBe("qr_van");
+  });
+
   it("parses base64url cookie", () => {
     const json = JSON.stringify({
       bucket: "direct",

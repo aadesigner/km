@@ -9,6 +9,7 @@ export type AcquisitionBucket =
   | "paid_ads"
   | "organic_social"
   | "google"
+  | "offline"
   | "referral"
   | "direct"
   | "unknown";
@@ -52,6 +53,7 @@ const BUCKETS = new Set<AcquisitionBucket>([
   "paid_ads",
   "organic_social",
   "google",
+  "offline",
   "referral",
   "direct",
   "unknown",

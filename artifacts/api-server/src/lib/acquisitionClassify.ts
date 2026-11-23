@@ -7,6 +7,7 @@ export type AcquisitionBucket =
   | "paid_ads"
   | "organic_social"
   | "google"
+  | "offline"
   | "referral"
   | "direct"
   | "unknown";
@@ -42,6 +43,44 @@ const PAID_MEDIUMS = new Set([
   "retargeting",
   "remarketing",
 ]);
+
+/** QR / print / local campaigns (e.g. ?utm_source=van&utm_medium=qr). */
+const OFFLINE_MEDIUMS = new Set([
+  "qr",
+  "qrcode",
+  "qr_code",
+  "qr-code",
+  "offline",
+  "print",
+  "flyer",
+  "poster",
+  "event",
+  "local",
+  "ooh",
+  "outdoor",
+]);
+
+/** Known offline campaign sources even without utm_medium (QR stickers, vans, etc.). */
+const OFFLINE_SOURCES = new Set([
+  "van",
+  "qr",
+  "qrcode",
+  "flyer",
+  "poster",
+  "event",
+  "offline",
+  "print",
+]);
+
+const BUCKET_RANK: Record<AcquisitionBucket, number> = {
+  paid_ads: 60,
+  google: 50,
+  organic_social: 40,
+  offline: 35,
+  referral: 25,
+  direct: 10,
+  unknown: 0,
+};
 
 type SocialKind =
   | "instagram"
@@ -103,6 +142,31 @@ function detectDevice(userAgent: string): AcquisitionDevice {
 function isPaidMedium(medium: string | null): boolean {
   if (!medium) return false;
   return PAID_MEDIUMS.has(medium.toLowerCase());
+}
+
+function isOfflineMedium(medium: string | null): boolean {
+  if (!medium) return false;
+  const m = medium.toLowerCase();
+  return OFFLINE_MEDIUMS.has(m) || m.startsWith("qr");
+}
+
+function isOfflineSource(source: string | null): boolean {
+  if (!source) return false;
+  const s = source.toLowerCase();
+  return OFFLINE_SOURCES.has(s) || s.startsWith("qr_") || s.startsWith("qr-");
+}
+
+/** Stable offline channel id: qr_van, offline_flyer, qr, … */
+function offlineChannel(source: string | null, medium: string | null): string {
+  const s = (source ?? "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 28);
+  const m = (medium ?? "").toLowerCase();
+  const qrish = !m || m.startsWith("qr") || m === "qrcode" || m === "qr_code" || m === "qr-code";
+  if (s) return `${qrish ? "qr" : "offline"}_${s}`.slice(0, 40);
+  return qrish ? "qr" : "offline";
+}
+
+function hasUtmSignal(p: Pick<AcquisitionPayload, "source" | "medium" | "campaign" | "content" | "term" | "clickId">): boolean {
+  return Boolean(p.source || p.medium || p.campaign || p.content || p.term || p.clickId);
 }
 
 function socialKind(host: string | null): SocialKind | null {
@@ -299,6 +363,17 @@ export function classifyAcquisition(
     };
   }
 
+  // QR / print / local campaigns before generic social/referral so van+qr stays visible.
+  if (isOfflineMedium(medium) || isOfflineSource(source)) {
+    return {
+      ...base,
+      bucket: "offline",
+      channel: offlineChannel(source, medium),
+      clickId: fbclid,
+      clickIdType: fbclid ? "fbclid" : null,
+    };
+  }
+
   if (social) {
     return {
       ...base,
@@ -363,15 +438,44 @@ export function classifyAcquisition(
   };
 }
 
+function acquisitionStrength(p: AcquisitionPayload): number {
+  let score = BUCKET_RANK[p.bucket] ?? 0;
+  if (hasUtmSignal(p)) score += 8;
+  if (p.clickId) score += 6;
+  if (p.campaign) score += 2;
+  if (p.landingPath && p.landingPath.includes("utm_")) score += 1;
+  // Prefer specific social over generic facebook when Meta wraps Insta/Messenger.
+  if (p.channel === "instagram_social" || p.channel === "messenger") score += 1;
+  return score;
+}
+
+/**
+ * First-touch lock: keep the first meaningful source.
+ * Only upgrade from weak (direct/unknown), refine Meta family, or replace
+ * bare untagged referral with a tagged campaign (QR / UTM).
+ */
 export function isStrongerAcquisition(
   existing: AcquisitionPayload,
   incoming: AcquisitionPayload,
 ): boolean {
-  const existingWeak = existing.bucket === "direct" || existing.bucket === "unknown";
-  const incomingWeak = incoming.bucket === "direct" || incoming.bucket === "unknown";
-  if (existingWeak && !incomingWeak) return true;
   if (existing.channel === "facebook_social" && incoming.channel === "instagram_social") return true;
   if (existing.channel === "facebook_social" && incoming.channel === "messenger") return true;
+
+  const existingWeak = existing.bucket === "direct" || existing.bucket === "unknown";
+  if (existingWeak) {
+    return acquisitionStrength(incoming) > acquisitionStrength(existing);
+  }
+
+  // Untagged referrer → QR/offline or other UTM campaign on a later pageview.
+  if (
+    existing.bucket === "referral"
+    && !hasUtmSignal(existing)
+    && hasUtmSignal(incoming)
+    && acquisitionStrength(incoming) > acquisitionStrength(existing)
+  ) {
+    return true;
+  }
+
   return false;
 }
 

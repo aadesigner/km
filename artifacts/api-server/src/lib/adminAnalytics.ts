@@ -29,6 +29,7 @@ export const ANALYTICS_BUCKET_ORDER = [
   "paid_ads",
   "organic_social",
   "google",
+  "offline",
   "referral",
   "direct",
   "unknown",

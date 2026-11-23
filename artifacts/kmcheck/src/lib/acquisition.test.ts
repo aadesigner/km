@@ -143,6 +143,18 @@ describe("classifyAcquisition", () => {
     expect(r.channel).toBe("direct");
   });
 
+  it("maps QR van utm to offline qr_van", () => {
+    const r = classifyAcquisition("https://kmcheck.com/sq/?utm_source=van&utm_medium=qr", "");
+    expect(r.bucket).toBe("offline");
+    expect(r.channel).toBe("qr_van");
+  });
+
+  it("maps utm_source=van alone to offline qr_van", () => {
+    const r = classifyAcquisition("https://kmcheck.com/sq/?utm_source=van", "");
+    expect(r.bucket).toBe("offline");
+    expect(r.channel).toBe("qr_van");
+  });
+
   it("upgrades a direct first hit when Instagram arrives later", () => {
     const first = classifyAcquisition("https://kmcheck.com/en/", "");
     const later = classifyAcquisition("https://kmcheck.com/sq/?fbclid=Ig", "https://l.instagram.com/");

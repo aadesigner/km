@@ -35,7 +35,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     label: "Analytics",
     items: [
       { href: "/adminx", label: "Overview", icon: BarChart3, exact: true },
-      { href: "/adminx/analytics", label: "Analytics", icon: Activity },
+      { href: "/adminx/analytics", label: "Acquisition", icon: Activity },
     ],
   },
   {

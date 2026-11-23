@@ -114,13 +114,29 @@ export function syncAcquisitionCookie(payload?: AcquisitionPayload | null): void
   }
 }
 
-/** Capture first real source. Safe to call on every navigation. */
+function acquisitionFingerprint(p: AcquisitionPayload): string {
+  return [
+    p.bucket,
+    p.channel,
+    p.source ?? "",
+    p.medium ?? "",
+    p.campaign ?? "",
+    p.clickId ?? "",
+    p.landingPath ?? "",
+  ].join("|");
+}
+
+/** Capture first real source. Safe to call on every navigation (no-op when unchanged). */
 export function captureAcquisitionOnce(): AcquisitionPayload {
   const incoming = classifyAcquisition();
   const stored = readStored()?.payload ?? null;
   const fromCookie = readCookiePayload();
   const existing = pickStrongerAcquisition(stored, fromCookie);
   const next = existing && !isStrongerAcquisition(existing, incoming) ? existing : incoming;
+  // Avoid rewriting localStorage + cookie on every SPA route when first-touch is stable.
+  if (existing && acquisitionFingerprint(existing) === acquisitionFingerprint(next)) {
+    return existing;
+  }
   writeStored(next);
   syncAcquisitionCookie(next);
   return next;
