@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "Корейска застраховка",
   "provider_odometer": "Пробег",
   "provider_odometer_status": "Състояние на пробега",
-  "provider_inspection": "Преглед"
+  "provider_inspection": "Преглед",
+  "usa_report_units_disclaimer": "Американските и канадските автомобили показват мили (не км). Датите са месец/ден/година (ММ/ДД/ГГГГ)."
 }

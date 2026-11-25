@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "韩国保险",
   "provider_odometer": "里程",
   "provider_odometer_status": "里程状态",
-  "provider_inspection": "检验"
+  "provider_inspection": "检验",
+  "usa_report_units_disclaimer": "美国和加拿大车辆里程以英里计（非公里）。日期格式为月/日/年（MM/DD/YYYY）。"
 }

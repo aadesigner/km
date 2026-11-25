@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "التأمين الكوري",
   "provider_odometer": "عداد الكيلومترات",
   "provider_odometer_status": "حالة عداد الكيلومترات",
-  "provider_inspection": "فحص"
+  "provider_inspection": "فحص",
+  "usa_report_units_disclaimer": "مركبات الولايات المتحدة وكندا تستخدم الأميال بدل الكيلومترات. التواريخ بصيغة شهر/يوم/سنة (MM/DD/YYYY)."
 }

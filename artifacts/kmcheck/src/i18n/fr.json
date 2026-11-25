@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "Assurance coréenne",
   "provider_odometer": "Kilométrage",
   "provider_odometer_status": "État du kilométrage",
-  "provider_inspection": "Contrôle"
+  "provider_inspection": "Contrôle",
+  "usa_report_units_disclaimer": "Les véhicules américains et canadiens affichent le kilométrage en miles (pas en km). Les dates sont au format mois/jour/année (MM/JJ/AAAA)."
 }

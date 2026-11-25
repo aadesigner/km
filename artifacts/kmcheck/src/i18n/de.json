@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "Koreanische Versicherung",
   "provider_odometer": "Kilometerstand",
   "provider_odometer_status": "Zustand des Kilometerstands",
-  "provider_inspection": "Prüfung"
+  "provider_inspection": "Prüfung",
+  "usa_report_units_disclaimer": "US-amerikanische und kanadische Fahrzeuge zeigen Meilen statt Kilometer. Daten stehen im Format Monat/Tag/Jahr (MM/TT/JJJJ)."
 }

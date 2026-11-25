@@ -2034,5 +2034,6 @@
   "provider_mileage_source_korean_insurance": "Koreańskie ubezpieczenie",
   "provider_odometer": "Przebieg",
   "provider_odometer_status": "Stan przebiegu",
-  "provider_inspection": "Przegląd"
+  "provider_inspection": "Przegląd",
+  "usa_report_units_disclaimer": "Pojazdy z USA i Kanady podają przebieg w milach (nie w km). Daty mają format miesiąc/dzień/rok (MM/DD/RRRR)."
 }

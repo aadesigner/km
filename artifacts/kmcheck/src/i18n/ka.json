@@ -2035,5 +2035,6 @@
   "provider_mileage_source_korean_insurance": "კორეული დაზღვევა",
   "provider_odometer": "გარბენი",
   "provider_odometer_status": "გარბენის მდგომარეობა",
-  "provider_inspection": "შემოწმება"
+  "provider_inspection": "შემოწმება",
+  "usa_report_units_disclaimer": "აშშ-სა და კანადის ავტომობილები აჩვენებს მილებს (არა კმ-ს). თარიღებია თვე/დღე/წელი (თთ/დდ/წწწწ)."
 }

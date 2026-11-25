@@ -2040,5 +2040,6 @@
   "provider_mileage_source_korean_insurance": "Korean insurance",
   "provider_odometer": "Odometer",
   "provider_odometer_status": "Odometer status",
-  "provider_inspection": "Inspection"
+  "provider_inspection": "Inspection",
+  "usa_report_units_disclaimer": "US and Canadian vehicles show mileage in miles (not km). Dates use month/day/year (MM/DD/YYYY)."
 }
