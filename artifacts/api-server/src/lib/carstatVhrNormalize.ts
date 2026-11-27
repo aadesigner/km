@@ -546,6 +546,77 @@ function pushExtra(
   extras.push({ key, label: labelEn, value: text, observedAt });
 }
 
+type RepairPartCategory = "paint" | "repair" | "replace" | "sheet_metal";
+
+function repairPartCategoryFromIssueTypes(
+  issueTypes: Array<string | null>,
+  description?: string | null,
+): RepairPartCategory {
+  const blob = [...issueTypes, description ?? ""].filter(Boolean).join(" ").toLowerCase();
+  if (/sheet\s*metal|판금/.test(blob)) return "sheet_metal";
+  if (/replac|교환|교체/.test(blob)) return "replace";
+  if (/paint|도색|도장|painted/.test(blob)) return "paint";
+  return "repair";
+}
+
+function normalizeRepairPartName(raw: string): string {
+  return raw
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Merge part names into kr_parts_* without duplicating (insurance + inspection + history). */
+function pushRepairPartExtra(
+  extras: NonNullable<NormalizedVinData["vehicleExtras"]>,
+  category: RepairPartCategory,
+  partName: string,
+  observedAt: string | null = null,
+): void {
+  const part = normalizeRepairPartName(partName);
+  if (!part || part.length < 2) return;
+  const key = `kr_parts_${category}`;
+  const label = `Repair parts · ${titleCaseLabel(category) ?? category}`;
+  const partKey = part.toLowerCase();
+  const existing = extras.find((e) => e.key === key);
+  if (existing) {
+    const parts = String(existing.value ?? "")
+      .split(/\s*;\s*/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.some((p) => p.toLowerCase() === partKey)) return;
+    parts.push(part);
+    existing.value = parts.join("; ");
+    if (observedAt && !existing.observedAt) existing.observedAt = observedAt;
+    return;
+  }
+  extras.push({ key, label, value: part, observedAt });
+}
+
+const BODY_PANEL_NAME_RE =
+  /bumper|fender|door|hood|bonnet|trunk|tailgate|grille|quarter|sill|roof|panel|mirror|lamp|light|lid|spoiler|rocker|pillar|wheel\s*arch|radiator|support/;
+
+function isInspectionBodyDamageItem(row: Record<string, unknown>): boolean {
+  const mapId = str(row.visual_map_id)?.toLowerCase() ?? "";
+  const block = str(row.block_key)?.toLowerCase() ?? "";
+  const partKey = str(row.part_key)?.toLowerCase() ?? "";
+  const partLabel = str(row.part_label)?.toLowerCase() ?? "";
+  const issueTypes = Array.isArray(row.issue_type_keys)
+    ? row.issue_type_keys.map((x) => str(x)).filter(Boolean)
+    : [];
+  if (mapId === "body_map" || mapId.includes("body")) return true;
+  if (block === "exterior" && issueTypes.some((t) => /repair|replac|paint|accident|weld/i.test(t ?? ""))) {
+    return true;
+  }
+  if (/^(body_|front_|rear_|left_|right_)/.test(partKey)) return true;
+  if (BODY_PANEL_NAME_RE.test(partKey) || BODY_PANEL_NAME_RE.test(partLabel)) return true;
+  if (issueTypes.some((t) => /accident|paint|replac|repair|weld|sheet/i.test(t ?? "")) && BODY_PANEL_NAME_RE.test(`${partKey} ${partLabel}`)) {
+    return true;
+  }
+  return false;
+}
+
 /** Korean/EN “none / absent” markers — must never become accident rows. */
 function isAbsentFinding(raw: unknown): boolean {
   const s = str(raw)?.toLowerCase();
@@ -599,9 +670,13 @@ const HISTORY_FIELD_LABELS: Record<string, string> = {
   repair_estimate: "Repair estimate",
   wage: "Labor",
   usage: "Usage",
+  seq: "Owner #",
+  type: "Event type",
+  body: "Body type",
   owner_count: "Owners",
   has_rent_use_record: "Rental use record",
   accident_count: "Accident records",
+  has_leakage: "Leakage recorded",
   flood_history: "Water / flood damage",
   total_loss_history: "Total loss",
   rental_use_history: "Rental",
@@ -613,7 +688,7 @@ const HISTORY_FIELD_LABELS: Record<string, string> = {
 
 const HISTORY_EVENT_TITLES: Record<string, string> = {
   owner_change: "Owner change",
-  transfer_of_ownership: "Transfer of ownership",
+  transfer_of_ownership: "Transfer of Ownership",
   first_registration: "First registration",
   registration_change: "Registration change",
   number_change: "Plate / registration change",
@@ -636,36 +711,82 @@ const HISTORY_DETAIL_SKIP_KEYS = new Set([
   "date_precision_key",
 ]);
 
-function humanizeHistoryFieldLabel(raw: string | null | undefined): string {
-  const key = (raw ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
-  if (!key) return "Detail";
+/** Auction / marketplace fields that must never appear on Korean registry rows. */
+const HISTORY_DETAIL_AUCTION_SKIP_KEYS = new Set([
+  "bids_count",
+  "bid_count",
+  "bids",
+  "bid",
+  "opening_bid",
+  "buy_now",
+  "buy_now_price",
+  "lot",
+  "lot_number",
+  "lot_id",
+  "auction_id",
+  "auction_name",
+  "auction_at",
+  "final_price",
+  "sale_price",
+  "marketplace",
+]);
+
+function normalizeHistoryEventKey(raw: string | null | undefined): string {
+  return (raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s*\+\s*/g, "+")
+    .replace(/[\s-]+/g, "_");
+}
+
+function mapHistoryEventKey(key: string): string | null {
+  if (!key) return null;
+  if (key.includes("+")) {
+    const parts = key.split("+").map((p) => p.trim()).filter(Boolean);
+    const titles = parts.map((p) => HISTORY_EVENT_TITLES[p] ?? null).filter((t): t is string => !!t);
+    if (titles.length) return [...new Set(titles)].join(" + ");
+    return null;
+  }
+  return HISTORY_EVENT_TITLES[key] ?? null;
+}
+
+function isGenericHistoryDetailLabel(raw: string | null | undefined): boolean {
+  const key = normalizeHistoryEventKey(raw);
+  return !key || /^detail(_?\d+)?$/.test(key) || key === "value" || key === "value_text";
+}
+
+function humanizeHistoryFieldLabel(raw: string | null | undefined): string | null {
+  const key = normalizeHistoryEventKey(raw);
+  if (!key || isGenericHistoryDetailLabel(key)) return null;
+  if (HISTORY_DETAIL_AUCTION_SKIP_KEYS.has(key)) return null;
   if (HISTORY_FIELD_LABELS[key]) return HISTORY_FIELD_LABELS[key];
-  return titleCaseLabel(key) ?? "Detail";
+  return titleCaseLabel(key);
 }
 
 function historyEventTitle(typeKey: string, sourceLabel: string | null): string {
-  const rawKey = (typeKey || "").trim().toLowerCase();
+  const rawKey = normalizeHistoryEventKey(typeKey);
   const cleanedLabel = sourceLabel?.trim() || null;
+  const labelKey = normalizeHistoryEventKey(cleanedLabel);
   const labelIsRawKey = !!cleanedLabel && /^[a-z0-9_+]+$/i.test(cleanedLabel);
 
-  // Combined type keys (e.g. my_car_accident_list+my_car_current_owner_accident_list).
-  if (rawKey.includes("+")) {
-    const parts = rawKey.split("+").map((p) => p.trim()).filter(Boolean);
-    const titles = parts.map((p) => HISTORY_EVENT_TITLES[p] ?? titleCaseLabel(p) ?? p);
-    const unique = [...new Set(titles.filter(Boolean))];
-    if (unique.length) return unique.join(" + ");
+  // Spaced API keys ("my car accident list") and snake_case keys map to human titles.
+  const fromLabel = mapHistoryEventKey(labelKey);
+  if (fromLabel) {
+    // Keep the provider's casing when it already matches the mapped title.
+    if (cleanedLabel && !labelIsRawKey && cleanedLabel.toLowerCase() === fromLabel.toLowerCase()) {
+      return cleanedLabel;
+    }
+    return fromLabel;
   }
 
-  // Prefer a real human source_label over our type-key map.
+  // Prefer a real human source_label (e.g. "Transfer of Ownership") over the type-key map.
   if (cleanedLabel && !labelIsRawKey) {
-    if (/_/.test(cleanedLabel)) return titleCaseLabel(cleanedLabel) ?? cleanedLabel;
     return cleanedLabel;
   }
 
-  if (labelIsRawKey && HISTORY_EVENT_TITLES[cleanedLabel!.toLowerCase()]) {
-    return HISTORY_EVENT_TITLES[cleanedLabel!.toLowerCase()];
-  }
-  if (rawKey && HISTORY_EVENT_TITLES[rawKey]) return HISTORY_EVENT_TITLES[rawKey];
+  const fromType = mapHistoryEventKey(rawKey);
+  if (fromType) return fromType;
+
   if (cleanedLabel) return titleCaseLabel(cleanedLabel) ?? cleanedLabel;
   return titleCaseLabel(rawKey) ?? "History event";
 }
@@ -709,13 +830,45 @@ function pushHistoryDetailPair(
 ): void {
   const value = detailValueAsText(valueRaw);
   if (!value) return;
+  const key = normalizeHistoryEventKey(labelRaw);
+  if (HISTORY_DETAIL_SKIP_KEYS.has(key) || HISTORY_DETAIL_AUCTION_SKIP_KEYS.has(key)) return;
+  if (isGenericHistoryDetailLabel(key)) return;
   const label = humanizeHistoryFieldLabel(labelRaw);
+  if (!label) return;
   // Skip rows where the "value" is just the field key repeated.
   const normLabel = label.toLowerCase().replace(/[\s_-]+/g, "");
   const normValue = value.toLowerCase().replace(/[\s_-]+/g, "");
   if (normLabel && normLabel === normValue) return;
   if (/^[a-z][a-z0-9_]*$/i.test(value) && HISTORY_FIELD_LABELS[value.toLowerCase()]) return;
   out.push({ label, value });
+}
+
+/**
+ * Drop owner-change noise (seq / type that only restates the title) and auction junk.
+ */
+function refineHistoryEventDetails(
+  title: string,
+  typeKey: string,
+  pairs: Array<{ label: string; value: string }>,
+): Array<{ label: string; value: string }> {
+  const titleNorm = title.toLowerCase().replace(/[\s_-]+/g, "");
+  const isOwner = /owner/i.test(typeKey) || /owner/i.test(title);
+  const out: Array<{ label: string; value: string }> = [];
+  for (const p of pairs) {
+    const labelKey = normalizeHistoryEventKey(p.label);
+    if (HISTORY_DETAIL_AUCTION_SKIP_KEYS.has(labelKey) || isGenericHistoryDetailLabel(labelKey)) {
+      continue;
+    }
+    const valueNorm = p.value.toLowerCase().replace(/[\s_-]+/g, "");
+    // "Event type: Owner change" under an Owner change card is noise.
+    if (isOwner && (/^(event_type|type|seq|owner)$/.test(labelKey) || labelKey === "owner_#")) {
+      if (valueNorm === titleNorm || /^\d+$/.test(p.value.trim())) continue;
+      if (/owner\s*change|transfer\s*of\s*ownership/i.test(p.value)) continue;
+    }
+    if (valueNorm && valueNorm === titleNorm) continue;
+    out.push(p);
+  }
+  return detailsFromPairs(out);
 }
 
 /**
@@ -727,8 +880,8 @@ function extractHistoryEventDetails(details: unknown): Array<{ label: string; va
   const out: Array<{ label: string; value: string }> = [];
 
   for (const d of details) {
+    // Bare primitives without a field name are not useful (became "Detail 1/2").
     if (typeof d === "string" || typeof d === "number" || typeof d === "boolean") {
-      pushHistoryDetailPair(out, "Detail", d);
       continue;
     }
     if (!d || typeof d !== "object" || Array.isArray(d)) continue;
@@ -766,7 +919,10 @@ function extractHistoryEventDetails(details: unknown): Array<{ label: string; va
       }
       // Prefer explicit value_text when present (e.g. summary line).
       if (str(row.value_text) && out.length === 0) {
-        pushHistoryDetailPair(out, str(row.source_label) ?? "Detail", row.value_text);
+        const summaryLabel = str(row.source_label);
+        if (summaryLabel && !isGenericHistoryDetailLabel(summaryLabel)) {
+          pushHistoryDetailPair(out, summaryLabel, row.value_text);
+        }
       }
       continue;
     }
@@ -779,6 +935,15 @@ function extractHistoryEventDetails(details: unknown): Array<{ label: string; va
       ?? detailValueAsText(row.value_bool);
     // Never fall back to source_label as the displayed value (that produced the dumps).
     if (!value) continue;
+    // Classify unlabeled numeric/text rows from known source_label values.
+    if (!label || isGenericHistoryDetailLabel(label)) {
+      if (/^\d+$/.test(value)) continue; // orphan sequence numbers
+      // Usage / body style text can stand alone under a better label.
+      if (/personal|commercial|business|rental|passenger|cargo|truck/i.test(value)) {
+        pushHistoryDetailPair(out, /passenger|cargo|truck|body/i.test(value) ? "body" : "usage", value);
+      }
+      continue;
+    }
     pushHistoryDetailPair(out, label, value);
   }
 
@@ -789,15 +954,23 @@ function formatHistoryDetailsSubtitle(
   pairs: Array<{ label: string; value: string }>,
 ): string | null {
   if (!pairs.length) return null;
+  // Prefer human facts over ordinals / event-type restatements.
+  const useful = pairs.filter((p) => {
+    const key = normalizeHistoryEventKey(p.label);
+    if (/^(owner|#|seq|event_type|type)$/.test(key) || key === "owner_#") return false;
+    if (HISTORY_DETAIL_AUCTION_SKIP_KEYS.has(key)) return false;
+    return true;
+  });
+  const use = useful.length ? useful : pairs;
   // Short values (usage, registration codes) → values only.
-  const valuesOnly = pairs.every(
+  const valuesOnly = use.every(
     (p) => p.value.length <= 40 && !/payout|estimate|labor|paint|amount|count/i.test(p.label),
   );
   if (valuesOnly) {
-    const vals = [...new Set(pairs.map((p) => p.value))];
+    const vals = [...new Set(use.map((p) => p.value))];
     return vals.join(" · ") || null;
   }
-  return pairs.map((p) => `${p.label}: ${p.value}`).join(" · ");
+  return use.map((p) => `${p.label}: ${p.value}`).join(" · ");
 }
 
 function historyAccidentMoney(pairs: Array<{ label: string; value: string }>): {
@@ -1625,11 +1798,17 @@ export function normalizeCarstatVhrJsonPayloads(
               for (const panel of panels) {
                 if (!panel || typeof panel !== "object" || Array.isArray(panel)) continue;
                 const p = panel as Record<string, unknown>;
-                const part = titleCaseLabel(str(p.part));
-                const action = titleCaseLabel(str(p.action));
+                const partRaw = str(p.part);
+                const part = titleCaseLabel(partRaw) ?? partRaw;
+                const action = titleCaseLabel(str(p.action)) ?? str(p.action);
                 if (!part) continue;
-                // Panel replacements stay in extras / Korea repair map — never accident history.
-                pushExtra(vehicleExtras, `kr_panel_${str(p.part) ?? part}`, part, action ?? "Noted", inspDate);
+                // Feed the body diagram (merge/dedupe) — never invent accident-history rows.
+                pushRepairPartExtra(
+                  vehicleExtras,
+                  repairPartCategoryFromIssueTypes([action], action),
+                  part,
+                  inspDate,
+                );
               }
 
               const options =
@@ -1882,8 +2061,23 @@ export function normalizeCarstatVhrJsonPayloads(
             const issueTypes = Array.isArray(row.issue_type_keys)
               ? row.issue_type_keys.map((x) => str(x)).filter(Boolean)
               : [];
-            pushExtra(vehicleExtras, str(row.id) ?? str(row.part_key) ?? label, label, desc, inspDate);
-            // Body-panel / cosmetic inspection issues stay in extras — never accident history.
+            // Body-map / exterior panel damage → kr_parts_* for our diagram (merged, no dupes).
+            if (isInspectionBodyDamageItem(row)) {
+              const partName =
+                str(row.part_label)
+                ?? titleCaseLabel(str(row.part_key))
+                ?? label;
+              if (partName) {
+                pushRepairPartExtra(
+                  vehicleExtras,
+                  repairPartCategoryFromIssueTypes(issueTypes, desc),
+                  partName,
+                  inspDate,
+                );
+              }
+            } else {
+              pushExtra(vehicleExtras, str(row.id) ?? str(row.part_key) ?? label, label, desc, inspDate);
+            }
             if (issueTypes.some((t) => /recall/i.test(t ?? "")) || /recall/i.test(label)) {
               recallHistory.push({
                 date: inspDate,
@@ -2294,21 +2488,24 @@ export function normalizeCarstatVhrJsonPayloads(
               if (cats) {
                 for (const [cat, vals] of Object.entries(cats)) {
                   if (!Array.isArray(vals) || !vals.length) continue;
-                  const joined = vals.map((v) => str(v)).filter(Boolean).slice(0, 12).join("; ");
-                  if (!joined) continue;
-                  pushExtra(vehicleExtras, `kr_parts_${cat}`, `Repair parts · ${titleCaseLabel(cat) ?? cat}`, joined);
+                  const category = repairPartCategoryFromIssueTypes([cat], cat);
+                  for (const v of vals) {
+                    const part = str(v);
+                    if (!part) continue;
+                    pushRepairPartExtra(vehicleExtras, category, part, null);
+                  }
                 }
               }
               const allParts = Array.isArray(aggregate.parts_description)
                 ? aggregate.parts_description.map((x) => str(x)).filter(Boolean)
                 : [];
-              if (allParts.length) {
-                pushExtra(
-                  vehicleExtras,
-                  "kr_parts_all",
-                  "All repaired parts",
-                  allParts.slice(0, 20).join("; ") + (allParts.length > 20 ? ` (+${allParts.length - 20} more)` : ""),
-                );
+              // Prefer category rows for the diagram; keep a short all-parts summary only when
+              // no category rows were produced.
+              const hasCategoryParts = vehicleExtras.some((e) => /^kr_parts_(paint|repair|replace|sheet_metal)$/.test(e.key ?? ""));
+              if (allParts.length && !hasCategoryParts) {
+                for (const part of allParts.slice(0, 20)) {
+                  if (part) pushRepairPartExtra(vehicleExtras, "repair", part, null);
+                }
               }
             }
 
@@ -2709,7 +2906,11 @@ export function normalizeCarstatVhrJsonPayloads(
             const evDate = dateOnly(e.occurred_at ?? e.date);
             const typeKey = str(e.type_key) ?? "";
             const title = historyEventTitle(typeKey, str(e.source_label));
-            const structuredDetails = extractHistoryEventDetails(e.details);
+            const structuredDetails = refineHistoryEventDetails(
+              title,
+              typeKey,
+              extractHistoryEventDetails(e.details),
+            );
             const subtitle = formatHistoryDetailsSubtitle(structuredDetails);
             const isOwnerEvent =
               typeKey.includes("owner")
@@ -2757,6 +2958,17 @@ export function normalizeCarstatVhrJsonPayloads(
 
             if (isAccidentEvent) {
               const money = historyAccidentMoney(structuredDetails);
+              // Component / part names on accident bags → body diagram (merge, no dupes).
+              for (const d of structuredDetails) {
+                if (!/components?/i.test(d.label)) continue;
+                const parts = d.value.split(/[,;/|]+/).map((p) => p.trim()).filter((p) => p.length >= 2);
+                const cat: RepairPartCategory = money.paint ? "paint" : "repair";
+                for (const part of parts) {
+                  if (BODY_PANEL_NAME_RE.test(part.toLowerCase()) || part.length >= 3) {
+                    pushRepairPartExtra(vehicleExtras, cat, part, evDate);
+                  }
+                }
+              }
               const moneyDesc =
                 [
                   money.krw != null ? `Paid ${money.krw.toLocaleString()} KRW` : null,

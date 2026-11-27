@@ -9,6 +9,10 @@ import {
   translateProviderMultiline,
   translateRegistryFieldValue,
 } from "@/lib/korean-provider-text";
+import {
+  sanitizeHistoryEventSubtitle,
+  sanitizeHistoryEventTitle,
+} from "@/lib/sanitize-history-dump";
 
 export type RegistryHistoryEntry = {
   date?: string | null;
@@ -116,9 +120,10 @@ function formatRegistryEventTitle(
   rawTitle: string,
   language?: Language,
 ): string {
+  const scrubbed = sanitizeHistoryEventTitle(rawTitle) ?? rawTitle;
   // Prefer full text translator (exact phrases + embedded patterns).
-  const fromText = translateKoreanProviderText(t, rawTitle);
-  const base = fromText && fromText !== rawTitle ? fromText : rawTitle;
+  const fromText = translateKoreanProviderText(t, scrubbed);
+  const base = fromText && fromText !== scrubbed ? fromText : scrubbed;
 
   if (!language) return base;
 
@@ -203,7 +208,8 @@ export function localizeRegistrySubtitle(
   country?: string | null,
   krwPerUsd?: number | null,
 ): string | null {
-  return translateProviderMultiline(t, language, subtitle, { country, krwPerUsd });
+  const scrubbed = sanitizeHistoryEventSubtitle(subtitle) ?? subtitle;
+  return translateProviderMultiline(t, language, scrubbed, { country, krwPerUsd });
 }
 
 export function localizeRegistryAmount(

@@ -59,6 +59,26 @@ describe("sanitizeInsuranceClaims for US-origin cars", () => {
     );
     expect(out).toHaveLength(1);
   });
+
+  it("scrubs cached dump titles and descriptions", () => {
+    const out = sanitizeInsuranceClaims(
+      [
+        {
+          date: "2024-05-12",
+          type: "other_car_accident_list",
+          lossAmount: null,
+          description:
+            "3 · amount · component · insurance_amount · 607만원 · insurance_money · false · true · painting · repair_estimate_amount · reserve_amount · repair_estimate · wage",
+        },
+      ],
+      2018,
+      "South Korea",
+    );
+    expect(out).toHaveLength(1);
+    expect(out[0]?.type).toBe("Other vehicle accident");
+    expect(out[0]?.description ?? "").toMatch(/6,?070,?000|Insurance payout/i);
+    expect(out[0]?.description ?? "").not.toMatch(/insurance_amount|repair_estimate_amount/);
+  });
 });
 
 describe("sanitizeAccidents for US-origin cars", () => {

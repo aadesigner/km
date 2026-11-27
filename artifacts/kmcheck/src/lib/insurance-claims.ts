@@ -1,13 +1,18 @@
 import type { Language } from "@/i18n/context";
 import {
   localizeProviderDate,
-  translateInsuranceClaimDescription,
+  translateInsuranceClaimDescription as translateInsuranceClaimDescriptionBase,
+  translateKoreanProviderText,
 } from "@/lib/korean-provider-text";
 import {
   formatKoreanWonPlain,
   formatAmountPlain,
   resolveAmountDisplayCurrency,
 } from "@/lib/korean-currency";
+import {
+  sanitizeHistoryEventDescription,
+  sanitizeHistoryEventTitle,
+} from "@/lib/sanitize-history-dump";
 
 export type InsuranceClaimEntry = {
   date?: string | null;
@@ -37,7 +42,8 @@ export function translateInsuranceClaimType(
     const translated = t(key);
     if (translated !== key) return translated;
   }
-  return type.replace(/_/g, " ");
+  const human = sanitizeHistoryEventTitle(type) ?? type.replace(/_/g, " ");
+  return translateKoreanProviderText(t, human) ?? human;
 }
 
 export function localizeInsuranceClaimDate(
@@ -49,7 +55,15 @@ export function localizeInsuranceClaimDate(
   return localizeProviderDate(date, language, vehicleYear, vehicleCountry);
 }
 
-export { translateInsuranceClaimDescription };
+export function translateInsuranceClaimDescription(
+  t: (key: string) => string,
+  description: string | null | undefined,
+): string | null {
+  const scrubbed = sanitizeHistoryEventDescription(description);
+  if (!scrubbed) return null;
+  const withPhrases = translateKoreanProviderText(t, scrubbed) ?? scrubbed;
+  return translateInsuranceClaimDescriptionBase(t, withPhrases) ?? withPhrases;
+}
 
 export function formatInsuranceAmount(
   amount: number,

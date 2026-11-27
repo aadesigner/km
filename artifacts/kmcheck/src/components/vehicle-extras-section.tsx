@@ -18,6 +18,7 @@ import { sliceForHistoryPreview } from "@/lib/history-section-limit";
 import { cleanDisplayText } from "@/lib/report-display";
 import { dedupeVehicleExtras } from "@/lib/history-dedupe";
 import { localizeProviderDate, translateKoreanProviderText } from "@/lib/korean-provider-text";
+import { sanitizeVehicleExtraLabel } from "@/lib/sanitize-history-dump";
 import {
   partitionVehicleExtras,
   VEHICLE_EXTRA_SECTION_META,
@@ -100,7 +101,10 @@ function sanitizeCategoryRows(
     observedAt: string | null;
   }> = [];
   for (const row of rows) {
-    const rawLabel = cleanDisplayText(row.label);
+    const rawLabel =
+      sanitizeVehicleExtraLabel(cleanDisplayText(row.label))
+      ?? sanitizeVehicleExtraLabel(cleanDisplayText(row.key))
+      ?? cleanDisplayText(row.label);
     const rawValue = cleanDisplayText(row.value);
     if (!rawLabel || !rawValue) continue;
     // Provider placeholders like "-" are noise in attribute tables.

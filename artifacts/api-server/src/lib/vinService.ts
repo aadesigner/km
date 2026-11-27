@@ -3142,6 +3142,31 @@ const REGISTRY_LOCATION_KEYS = [
   "Address when purchasing",
 ] as const;
 
+/** Auction/marketplace fields that do not belong on Korean registry timeline rows. */
+const REGISTRY_AUCTION_NOISE_KEYS = new Set([
+  "bids count",
+  "bid count",
+  "bids_count",
+  "bid_count",
+  "bids",
+  "bid",
+  "opening bid",
+  "opening_bid",
+  "buy now",
+  "buy_now",
+  "buy now price",
+  "lot",
+  "lot number",
+  "lot_number",
+  "lot id",
+  "auction id",
+  "auction name",
+  "auction_at",
+  "final price",
+  "sale price",
+  "marketplace",
+]);
+
 function stripHtmlText(value: string): string {
   return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -3685,6 +3710,10 @@ function mapKoreanRegistryContentItem(
     if (!isMeaningfulProviderText(value)) continue;
 
     const keyLower = key.toLowerCase();
+    const keyNorm = keyLower.replace(/[\s-]+/g, "_");
+    if (REGISTRY_AUCTION_NOISE_KEYS.has(keyLower) || REGISTRY_AUCTION_NOISE_KEYS.has(keyNorm)) {
+      continue;
+    }
     if (REGISTRY_MILEAGE_KEYS.some((k) => k.toLowerCase() === keyLower)) {
       const parsed = parseKmFromText(value);
       if (parsed != null) {

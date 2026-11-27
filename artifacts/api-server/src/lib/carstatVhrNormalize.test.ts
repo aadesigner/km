@@ -1160,7 +1160,9 @@ describe("carstatVhrNormalize", () => {
     expect(out.make).toMatch(/Genesis|Hyundai|Kia/i);
     expect(out.accidents?.some((a) => /없음|Accident history/i.test(a.description ?? ""))).toBe(false);
     expect(out.accidents?.some((a) => /Front door left|Simple repair/i.test(a.description ?? "") || a.primaryDamage === "Front door left" || a.primaryDamage === "Simple repair history")).toBe(false);
-    expect(out.vehicleExtras?.some((x) => x.label === "Front door left")).toBe(true);
+    expect(out.vehicleExtras?.some((x) =>
+      /^kr_parts_/.test(x.key ?? "") && /Front Door Left/i.test(x.value ?? ""),
+    )).toBe(true);
     expect(out.vehicleExtras?.some((x) => /Simple repair/i.test(x.label ?? ""))).toBe(true);
     expect(out.vehicleExtras?.some((x) => x.label === "Accident history" && /none|clear|ok/i.test(x.value))).toBe(true);
   });
@@ -1218,7 +1220,9 @@ describe("carstatVhrNormalize", () => {
 
     expect(out.country).toMatch(/^KR$|Korea/i);
     expect(out.accidents?.some((a) => /Front fender/i.test(`${a.description ?? ""} ${a.primaryDamage ?? ""}`))).toBe(false);
-    expect(out.vehicleExtras?.some((x) => /Front fender left/i.test(x.label ?? ""))).toBe(true);
+    expect(out.vehicleExtras?.some((x) =>
+      /^kr_parts_/.test(x.key ?? "") && /Front Fender Left/i.test(x.value ?? ""),
+    )).toBe(true);
     const moneyAccidents = (out.accidents ?? []).filter((a) => a.type === "insurance" || (a.lossAmount ?? 0) > 0);
     expect(moneyAccidents.length).toBeGreaterThanOrEqual(1);
     expect(moneyAccidents.every((a) => /^KR$/i.test(String(a.country ?? "")))).toBe(true);
@@ -1371,6 +1375,142 @@ describe("carstatVhrNormalize", () => {
 
     expect(out.vehicleExtras?.some((x) => x.label === "Rental use record" && x.value === "Yes")).toBe(true);
     expect(out.vehicleExtras?.some((x) => x.label === "Accident records" && x.value === "2")).toBe(true);
+
+    const ownerEv = out.registryHistory?.find((e) => e.title === "Owner change");
+    expect(ownerEv).toBeTruthy();
+    // seq / type that only restates the title must not become "Detail 1/2"
+    expect(ownerEv?.details ?? []).toEqual([]);
+    expect(ownerEv?.subtitle ?? "").not.toMatch(/detail|^\s*1\b/i);
+
+    const ownTitle = out.registryHistory?.find((e) =>
+      /Own vehicle accident/i.test(e.title ?? "") && /current owner/i.test(e.title ?? ""),
+    );
+    expect(ownTitle?.title).toBe("Own vehicle accident + Accident under current owner");
+  });
+
+  it("maps spaced accident titles and drops auction bids_count from history details", () => {
+    const out = normalizeCarstatVhrJsonPayloads([
+      {
+        schema_version: 2,
+        source: {
+          id: 5,
+          sections: [{
+            type: "history",
+            items: [{
+              checked_at: "2024-05-12T00:00:00+00:00",
+              events: [
+                {
+                  occurred_at: "2024-05-12T00:00:00+00:00",
+                  type_key: "my_car_accident_list",
+                  source_label: "my car accident list",
+                  details: [{
+                    amount: 1,
+                    insurance_amount: "98만원",
+                    painting: false,
+                    bids_count: 7,
+                  }],
+                },
+                {
+                  occurred_at: "2020-09-07T00:00:00+00:00",
+                  type_key: "owner_change",
+                  source_label: "Owner change",
+                  details: [
+                    { value_text: "1", source_label: "seq" },
+                    { value_text: "Owner change", source_label: "type" },
+                    { value_text: "Personal use", source_label: "usage" },
+                    { value_text: "3", source_label: "bids_count" },
+                  ],
+                },
+              ],
+            }],
+          }],
+        },
+      },
+    ], { vin: "KNAG3418BJA000001" });
+
+    const accident = out.registryHistory?.find((e) => /Own vehicle accident/i.test(e.title ?? ""));
+    expect(accident?.title).toBe("Own vehicle accident");
+    expect(JSON.stringify(accident?.details ?? [])).not.toMatch(/bids/i);
+    expect(accident?.subtitle ?? "").not.toMatch(/bids/i);
+
+    const owner = out.registryHistory?.find((e) => e.title === "Owner change");
+    expect(owner?.subtitle).toMatch(/Personal use/i);
+    expect(owner?.subtitle ?? "").not.toMatch(/bids|Owner change|^\s*1\b/i);
+    expect(owner?.details?.some((d) => /bids|detail/i.test(d.label))).toBeFalsy();
+    expect(owner?.details?.some((d) => d.label === "Usage")).toBe(true);
+  });
+
+  it("maps inspection body_map markers into kr_parts_* (merged, no dupes)", () => {
+    const out = normalizeCarstatVhrJsonPayloads([
+      {
+        schema_version: 2,
+        source: {
+          id: 4,
+          sections: [{
+            type: "inspections",
+            items: [{
+              inspected_at: "2024-06-01T00:00:00Z",
+              vehicle_snapshot: { title: "Kia K5", year: 2018, mileage_km: 80_000 },
+              checked_items: [
+                {
+                  result_key: "issue",
+                  visual_map_id: "body_map",
+                  part_key: "front_bumper",
+                  part_label: "Front bumper",
+                  description: "Painted",
+                  issue_type_keys: ["painted"],
+                },
+                {
+                  result_key: "issue",
+                  visual_map_id: "body_map",
+                  part_key: "hood",
+                  part_label: "Hood",
+                  description: "Replaced",
+                  issue_type_keys: ["replaced"],
+                },
+                {
+                  result_key: "issue",
+                  block_key: "exterior",
+                  part_label: "Front bumper",
+                  description: "Painted again",
+                  issue_type_keys: ["painted"],
+                },
+              ],
+            }],
+          }],
+        },
+      },
+      {
+        schema_version: 2,
+        source: {
+          id: 68,
+          sections: [{
+            type: "korean_insurance",
+            items: [{
+              korea_section: "accidents_detail",
+              data: {
+                items: [],
+                aggregate: {
+                  parts_categories: {
+                    paint: ["Front bumper", "Rear bumper"],
+                    replace: ["Hood"],
+                  },
+                },
+              },
+            }],
+          }],
+        },
+      },
+    ], { vin: "KNAG3418BJA000001" });
+
+    const paint = out.vehicleExtras?.find((x) => x.key === "kr_parts_paint");
+    const replace = out.vehicleExtras?.find((x) => x.key === "kr_parts_replace");
+    expect(paint?.value).toMatch(/Front Bumper/i);
+    expect(paint?.value).toMatch(/Rear Bumper/i);
+    // Front bumper painted twice (inspection + insurance) → single entry
+    expect((paint?.value ?? "").split(";").filter((p) => /front bumper/i.test(p)).length).toBe(1);
+    expect(replace?.value).toMatch(/Hood/i);
+    expect((replace?.value ?? "").split(";").filter((p) => /hood/i.test(p)).length).toBe(1);
   });
 
   it("merges auction archives + Korean insurance into one coherent report", () => {

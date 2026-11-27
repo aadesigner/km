@@ -113,11 +113,16 @@ export function categorizeVehicleExtra(
   if (
     matchesAny(blob, [
       /^kr_usage_/,
+      /^has_rent_use/,
+      /^accident_count$/,
+      /^has_leakage$/,
       /\bgovernment\b/,
       /\bbusiness\b/,
       /\brent\b/,
       /\brental\b/,
       /\bspecial usage\b/,
+      /\baccident records\b/,
+      /\bleakage\b/,
     ])
   ) {
     return "history";

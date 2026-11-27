@@ -18,6 +18,7 @@ import { translateTitleStatus } from "@/lib/translate-title-status";
 import { cleanDisplayText } from "@/lib/report-display";
 import { formatLocationLabel, countryLabelsFromT } from "@/lib/format-country-name";
 import { translateRegistryFieldLabel } from "@/lib/registry-history";
+import { sanitizeHistoryEventDescription } from "@/lib/sanitize-history-dump";
 import type { Language } from "@/i18n/context";
 import {
   TIMELINE_EVENT_TYPES,
@@ -792,7 +793,8 @@ function localizeTimelineText(
   language: Language,
   value: string | null | undefined,
 ): string | null {
-  const raw = cleanDisplayText(value);
+  const scrubbed = sanitizeHistoryEventDescription(cleanDisplayText(value)) ?? cleanDisplayText(value);
+  const raw = cleanDisplayText(scrubbed);
   if (!raw) return null;
   const claim = translateKnownClaimType(t, raw);
   if (claim) return claim;

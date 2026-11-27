@@ -9,6 +9,12 @@ import { extractHistoryPeriodDate } from "@/lib/history-sort";
 import { isKoreanSourcedAccidentType, normalizeAmountCurrency } from "@/lib/korean-currency";
 import { translateKoreanProviderText } from "@/lib/korean-provider-text";
 import {
+  sanitizeHistoryEventDescription,
+  sanitizeHistoryEventSubtitle,
+  sanitizeHistoryEventTitle,
+  sanitizeRegistryDetailLabel,
+} from "@/lib/sanitize-history-dump";
+import {
   normalizeKrwAmountText,
   resolveRegistryDisplayMileage,
   resolveRegistryDisplayAmount,
@@ -185,8 +191,23 @@ export type RegistryDetailRow = { label: string; value: string };
 
 export function sanitizeRegistryDetailRows(
   rows: RegistryDetailRow[] | null | undefined,
+  eventTitle?: string | null,
 ): RegistryDetailRow[] {
-  return (rows ?? []).filter((row) => isDisplayableValue(row.value));
+  const titleNorm = (eventTitle ?? "").toLowerCase().replace(/[\s_-]+/g, "");
+  return (rows ?? [])
+    .map((row) => {
+      const label = sanitizeRegistryDetailLabel(row.label);
+      if (!label) return null;
+      if (!isDisplayableValue(row.value)) return null;
+      const valueNorm = String(row.value).toLowerCase().replace(/[\s_-]+/g, "");
+      // Drop "Event type: Owner change" under an Owner change card.
+      if (titleNorm && valueNorm === titleNorm) return null;
+      if (/^(owner\s*#|event type|seq)$/i.test(label) && (/^\d+$/.test(String(row.value).trim()) || /owner\s*change/i.test(String(row.value)))) {
+        return null;
+      }
+      return { label, value: row.value };
+    })
+    .filter((row): row is RegistryDetailRow => row != null);
 }
 
 /** Status-check noise that used to appear as fake timeline rows ("Government · Present"). */
@@ -210,7 +231,8 @@ export function sanitizeRegistryHistoryEvent<T extends RegistryHistoryLike>(
 ): T | null {
   if (isRegistryStatusCheckNoise(event)) return null;
 
-  const details = sanitizeRegistryDetailRows(event.details)?.map((row) => ({
+  const title = sanitizeHistoryEventTitle(cleanDisplayText(event.title));
+  const details = sanitizeRegistryDetailRows(event.details, title)?.map((row) => ({
     ...row,
     value: isRegistryRepairCostLabel(row.label)
       ? (sanitizeKoreanRepairAmountText(row.value) ?? row.value)
@@ -218,19 +240,21 @@ export function sanitizeRegistryHistoryEvent<T extends RegistryHistoryLike>(
         ? (formatKoreanListPriceAmountText(row.value)
           ?? normalizeKrwAmountText(row.value)
           ?? row.value)
-        : row.value,
+        : (sanitizeHistoryEventSubtitle(row.value, title) ?? row.value),
   }));
   const amount = resolveRegistryDisplayAmount({ ...event, details });
   const location = sanitizeRegistryLocation(cleanDisplayText(event.location));
   let date = cleanDisplayText(event.date);
-  const title = cleanDisplayText(event.title);
 
   const displayMileage = resolveRegistryDisplayMileage(
     { ...event, details },
     { listingOdometer: opts?.listingOdometer },
   );
 
-  let subtitle = stripRegistrySubtitleNoise(cleanDisplayText(event.subtitle), displayMileage);
+  let subtitle = stripRegistrySubtitleNoise(
+    sanitizeHistoryEventSubtitle(cleanDisplayText(event.subtitle), title),
+    displayMileage,
+  );
 
   // Uninsured periods often arrive with date=null and the range only in subtitle
   // ("2025-12~2026-06"). Copy into date so newest-first sort uses the range end.
@@ -818,6 +842,7 @@ export function sanitizeAccidents<T extends AccidentLike>(
       })
       .map((entry) => ({
         ...entry,
+        description: sanitizeHistoryEventDescription(entry.description) ?? entry.description,
         // Keep provider KRW cleanup for Korean-sourced rows without an explicit USD tag.
         lossAmount:
           isKoreanSourcedAccidentType(entry.type)
@@ -871,6 +896,8 @@ export function sanitizeInsuranceClaims<T extends InsuranceClaimLike>(
       .filter((claim) => !(dropKorean && isKoreanMarketInsuranceClaim(claim)))
       .map((claim) => ({
         ...claim,
+        type: sanitizeHistoryEventTitle(claim.type) ?? claim.type,
+        description: sanitizeHistoryEventDescription(claim.description) ?? claim.description,
         lossAmount:
           normalizeAmountCurrency(claim.currency) === "USD"
             ? claim.lossAmount

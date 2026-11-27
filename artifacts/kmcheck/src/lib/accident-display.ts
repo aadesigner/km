@@ -7,6 +7,7 @@ import {
   localizeProviderDate,
   translateProviderDateInText,
 } from "@/lib/korean-provider-text";
+import { sanitizeHistoryEventDescription } from "@/lib/sanitize-history-dump";
 
 const ACCIDENT_TYPE_KEYS: Record<string, string> = {
   auction: "accident_type_auction",
@@ -44,7 +45,8 @@ export function formatAccidentDescription(
   language: Language,
   description?: string | null,
 ): string | null {
-  const raw = description?.trim();
+  const scrubbed = sanitizeHistoryEventDescription(description?.trim() ?? null);
+  const raw = scrubbed?.trim();
   if (!raw) return null;
 
   const claimLabel = translateInsuranceClaimType(t, raw);
