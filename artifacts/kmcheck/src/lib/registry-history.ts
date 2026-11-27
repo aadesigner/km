@@ -30,9 +30,13 @@ const TYPE_KEYS: Record<string, string> = {
   owner_change: "registry_type_owner_change",
   no_insurance: "registry_type_no_insurance",
   insurance_event: "registry_type_insurance_event",
+  insurance: "provider_insurance_accident",
   recall: "registry_type_recall",
   export: "registry_type_export",
   other: "registry_type_other",
+  other_car_accident_list: "provider_other_vehicle_accident",
+  my_car_accident_list: "provider_own_vehicle_accident",
+  my_car_current_owner_accident_list: "provider_accident_current_owner",
 };
 
 const GENERIC_EVENT_TYPES = new Set(["other", "event", "unknown"]);
