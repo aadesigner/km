@@ -237,6 +237,7 @@
   "pricing_report_title": "Informe VIN completo",
   "pricing_plan_pack3_title": "3 informes",
   "pricing_plan_pack5_title": "5 informes",
+  "pricing_plan_pack10_title": "10 informes",
   "pricing_plan_reports_included": "{n} informes VIN completos incluidos",
   "pricing_per_n_reports": "for {n} reports",
   "pricing_plan_credits_count": "{n} informes incluidos",

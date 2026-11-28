@@ -329,6 +329,7 @@ export type CreateCreditPackOrderInputPackId = typeof CreateCreditPackOrderInput
 export const CreateCreditPackOrderInputPackId = {
   pack3: 'pack3',
   pack5: 'pack5',
+  pack10: 'pack10',
 } as const;
 
 export interface CreateCreditPackOrderInput {
@@ -341,6 +342,7 @@ export type CreateCreditPackOrderResultPackId = typeof CreateCreditPackOrderResu
 export const CreateCreditPackOrderResultPackId = {
   pack3: 'pack3',
   pack5: 'pack5',
+  pack10: 'pack10',
 } as const;
 
 export interface CreateCreditPackOrderResult {

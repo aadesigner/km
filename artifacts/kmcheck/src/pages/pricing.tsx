@@ -2,12 +2,13 @@ import { useTranslation } from "@/i18n/context";
 import { useDisplayPrice } from "@/hooks/use-display-price";
 import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
-import { useState, useMemo, type FormEvent } from "react";
+import { useState, useMemo, useRef, useCallback, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  CheckCircle2, RotateCcw,
+  CheckCircle2, RotateCcw, ChevronLeft, ChevronRight,
   CreditCard, UserCircle, Zap, FileText, Coins,
 } from "lucide-react";
 import { EnterReveal } from "@/components/enter-reveal";
@@ -18,7 +19,7 @@ import { getTestimonials } from "@/data/testimonials";
 import { TestimonialsSlider } from "@/components/testimonials-slider";
 import { HeroVinForm } from "@/components/hero-vin-form";
 import { AUTH_RETURN_PATH_KEY, redirectGuestForVinCheckout } from "@/lib/checkout-vin-flow";
-import { CREDIT_PACKS, type CreditPackId } from "@/lib/creditPacks";
+import { CREDIT_PACKS, CREDIT_PACK_IDS, type CreditPackId } from "@/lib/creditPacks";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
@@ -123,6 +124,39 @@ export default function Pricing() {
   const [vin, setVin] = useState("");
   const [vinError, setVinError] = useState("");
   const [selectedPack, setSelectedPack] = useState<CreditPackId>("pack3");
+  const [packSlideDir, setPackSlideDir] = useState<1 | -1>(1);
+  const packSwipeRef = useRef<{ x: number; y: number } | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  const selectedPackIndex = CREDIT_PACK_IDS.indexOf(selectedPack);
+
+  const goToPack = useCallback((id: CreditPackId, dir?: 1 | -1) => {
+    if (id === selectedPack) return;
+    const from = CREDIT_PACK_IDS.indexOf(selectedPack);
+    const to = CREDIT_PACK_IDS.indexOf(id);
+    setPackSlideDir(dir ?? (to > from ? 1 : -1));
+    setSelectedPack(id);
+  }, [selectedPack]);
+
+  const stepPack = useCallback((dir: 1 | -1) => {
+    const next =
+      (selectedPackIndex + dir + CREDIT_PACK_IDS.length) % CREDIT_PACK_IDS.length;
+    goToPack(CREDIT_PACK_IDS[next], dir);
+  }, [goToPack, selectedPackIndex]);
+
+  const onPackPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    packSwipeRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const onPackPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const start = packSwipeRef.current;
+    packSwipeRef.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    stepPack(dx < 0 ? 1 : -1);
+  };
 
   const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
   const displayPrice =
@@ -286,59 +320,126 @@ export default function Pricing() {
                 </div>
               </div>
 
-              <div className="px-6 sm:px-8 py-6 flex-1 flex flex-col gap-5">
+              <div className="px-5 sm:px-8 py-6 flex-1 flex flex-col gap-5">
                 <div
-                  className="grid grid-cols-2 gap-3"
-                  role="radiogroup"
+                  className="relative"
+                  role="group"
+                  aria-roledescription="carousel"
                   aria-label={t("pricing_packs_section")}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      stepPack(-1);
+                    } else if (e.key === "ArrowRight") {
+                      e.preventDefault();
+                      stepPack(1);
+                    }
+                  }}
                 >
-                  {(["pack3", "pack5"] as const).map((id) => {
-                    const active = selectedPack === id;
-                    const option = CREDIT_PACKS[id];
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        onClick={() => setSelectedPack(id)}
-                        className={cn(
-                          "relative rounded-xl px-3 py-4 text-center transition-all duration-200",
-                          "border outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                          active
-                            ? "border-primary/40 bg-primary/[0.06] shadow-md shadow-primary/10 ring-1 ring-primary/25"
-                            : "border-border/70 bg-muted/25 hover:bg-muted/45 hover:border-border",
-                        )}
-                      >
-                        {id === "pack3" && (
-                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-2 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
-                            {t("pricing_best_value")}
+                  <div className="flex items-stretch gap-1.5 sm:gap-2">
+                    <button
+                      type="button"
+                      aria-label={t("pricing_plan_pack3_title")}
+                      onClick={() => stepPack(-1)}
+                      className="shrink-0 self-center inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+
+                    <div
+                      className="relative flex-1 min-w-0 overflow-hidden touch-pan-y select-none"
+                      onPointerDown={onPackPointerDown}
+                      onPointerUp={onPackPointerUp}
+                      onPointerCancel={() => {
+                        packSwipeRef.current = null;
+                      }}
+                    >
+                      <AnimatePresence mode="wait" custom={packSlideDir} initial={false}>
+                        <motion.div
+                          key={selectedPack}
+                          role="group"
+                          aria-roledescription="slide"
+                          aria-label={t(`pricing_plan_${selectedPack}_title`)}
+                          custom={packSlideDir}
+                          variants={{
+                            enter: (d: number) => ({
+                              x: reduceMotion ? 0 : d * 56,
+                              opacity: 0,
+                            }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (d: number) => ({
+                              x: reduceMotion ? 0 : d * -56,
+                              opacity: 0,
+                            }),
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
+                          className="relative rounded-xl border border-primary/35 bg-primary/[0.06] px-3 py-5 sm:px-4 sm:py-6 text-center shadow-md shadow-primary/10 ring-1 ring-primary/20"
+                        >
+                          {selectedPack === "pack10" && (
+                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-2 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
+                              {t("pricing_best_value")}
+                            </span>
+                          )}
+                          <span className="block text-sm font-semibold tracking-tight text-foreground">
+                            {t(`pricing_plan_${selectedPack}_title`)}
                           </span>
-                        )}
-                        <span className={cn(
-                          "block text-sm font-semibold tracking-tight",
-                          active ? "text-foreground" : "text-muted-foreground",
-                        )}>
-                          {t(`pricing_plan_${id}_title`)}
-                        </span>
-                        <span className={cn(
-                          "mt-2 inline-flex items-baseline justify-center gap-0.5 tabular-nums leading-none",
-                          active ? "text-primary" : "text-foreground",
-                        )}>
-                          <span className="text-base font-semibold opacity-80">{currencySymbol}</span>
-                          <span className="text-[2.15rem] font-black tracking-tighter">
-                            {option.unitPrice.toFixed(2).split(".")[0]}
+                          <span className="mt-2 inline-flex items-baseline justify-center gap-0.5 tabular-nums leading-none text-primary">
+                            <span className="text-base font-semibold opacity-80">{currencySymbol}</span>
+                            <span className="text-[2.35rem] sm:text-[2.55rem] font-black tracking-tighter">
+                              {selectedPackData.unitPrice.toFixed(2).split(".")[0]}
+                            </span>
+                            <span className="text-base font-bold opacity-70">
+                              .{selectedPackData.unitPrice.toFixed(2).split(".")[1]}
+                            </span>
                           </span>
-                          <span className="text-base font-bold opacity-70">
-                            .{option.unitPrice.toFixed(2).split(".")[1]}
+                          <span className="block mt-1.5 text-[11px] text-muted-foreground">
+                            {t("per_report").toLowerCase()}
                           </span>
-                        </span>
-                        <span className="block mt-1.5 text-[11px] text-muted-foreground">
-                          {t("per_report").toLowerCase()}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <p className="mt-3 text-[11px] text-muted-foreground/80 tabular-nums">
+                            {currencySymbol}{selectedPackData.totalPrice.toFixed(2)} · {selectedPackData.credits}×
+                          </p>
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+
+                    <button
+                      type="button"
+                      aria-label={t("pricing_plan_pack10_title")}
+                      onClick={() => stepPack(1)}
+                      className="shrink-0 self-center inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div
+                    className="mt-3.5 flex items-center justify-center gap-2"
+                    role="tablist"
+                    aria-label={t("pricing_packs_section")}
+                  >
+                    {CREDIT_PACK_IDS.map((id) => {
+                      const active = selectedPack === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          aria-label={t(`pricing_plan_${id}_title`)}
+                          onClick={() => goToPack(id)}
+                          className={cn(
+                            "h-2 rounded-full transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            active
+                              ? "w-6 bg-primary"
+                              : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50",
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="text-center space-y-1">

@@ -1,3 +1,5 @@
+import { isCreditPackId } from "@/lib/creditPacks";
+
 export const PENDING_VIN_KEY = "pending_vin";
 export const CHECKOUT_VIN_KEY = "checkout_vin";
 /** Survives some sessionStorage loss (tab restore); cleared when checkout consumes it. */
@@ -271,7 +273,7 @@ export function readPaypalCreditPackSession(): PaypalCreditPackSession | null {
     const orderId = parsed.orderId?.toUpperCase() ?? "";
     const packId = parsed.packId ?? "";
     if (!PAYPAL_ORDER_ID_RE.test(orderId)) return null;
-    if (packId !== "pack3" && packId !== "pack5") return null;
+    if (!isCreditPackId(packId)) return null;
     const phase =
       parsed.phase === "capture" ? "capture" : parsed.phase === "approval" ? "approval" : undefined;
     return { orderId, packId, phase };

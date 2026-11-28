@@ -26,7 +26,7 @@ import {
   paypalAmountsMatch,
 } from "../lib/paypalCapture.js";
 import { paypalOrderCreateLimiter, paypalCaptureLimiter, pokOrderCreateLimiter, pokConfirmLimiter, pokWebhookLimiter } from "../lib/expensiveEndpointLimiter.js";
-import { getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
+import { creditPackAmountValue, getCreditPack, isCreditPackId } from "../lib/creditPacks.js";
 import { completeCreditPackPayment } from "../lib/creditRedemption.js";
 import { invalidateAdminStatsCache } from "../lib/adminStatsInvalidation.js";
 import { vinReportPaymentLabel } from "../lib/vinReportPaymentLabel.js";
@@ -719,7 +719,7 @@ router.post("/payments/create-credit-pack-order", paypalOrderCreateLimiter, requ
   const { packId } = req.body as { packId?: string };
 
   if (!isCreditPackId(packId)) {
-    res.status(400).json({ error: "Invalid pack. Use pack3 or pack5.", code: "INVALID_PACK" });
+    res.status(400).json({ error: "Invalid pack. Use pack3, pack5, or pack10.", code: "INVALID_PACK" });
     return;
   }
 
@@ -737,7 +737,7 @@ router.post("/payments/create-credit-pack-order", paypalOrderCreateLimiter, requ
   try {
     const { token: ppToken, base } = await getPaypalAccessTokenCached(clientId, clientSecret, sandbox);
     const userEmail = user.email ?? "";
-    const amountValue = pack.totalPrice.toFixed(2);
+    const amountValue = creditPackAmountValue(pack);
 
     const orderResp = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",
@@ -1443,7 +1443,7 @@ router.post("/payments/create-pok-credit-pack-order", pokOrderCreateLimiter, req
   const { packId } = req.body as { packId?: string };
 
   if (!isCreditPackId(packId)) {
-    res.status(400).json({ error: "Invalid pack. Use pack3 or pack5.", code: "INVALID_PACK" });
+    res.status(400).json({ error: "Invalid pack. Use pack3, pack5, or pack10.", code: "INVALID_PACK" });
     return;
   }
 
@@ -1460,7 +1460,7 @@ router.post("/payments/create-pok-credit-pack-order", pokOrderCreateLimiter, req
 
   try {
     const order = await createPokSdkOrder({
-      amount: Number(pack.totalPrice.toFixed(2)),
+      amount: Number(creditPackAmountValue(pack)),
       currencyCode: pack.currency,
       description: `Kmcheck credit pack — ${pack.credits} credits`,
       merchantCustomReference: `pack|${userId}|${pack.id}|${Date.now()}`,

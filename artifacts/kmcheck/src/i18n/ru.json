@@ -237,6 +237,7 @@
   "pricing_report_title": "Полный отчёт VIN",
   "pricing_plan_pack3_title": "3 отчёта",
   "pricing_plan_pack5_title": "5 отчётов",
+  "pricing_plan_pack10_title": "10 отчётов",
   "pricing_plan_reports_included": "{n} полных VIN-отчётов включено",
   "pricing_per_n_reports": "for {n} reports",
   "pricing_plan_credits_count": "{n} отчётов включено",

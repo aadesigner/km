@@ -558,13 +558,13 @@ export const GetCurrentPricingResponse = zod.object({
  * @summary Create a PayPal order for a prepaid credit pack
  */
 export const CreateCreditPackOrderBody = zod.object({
-  "packId": zod.enum(['pack3', 'pack5'])
+  "packId": zod.enum(['pack3', 'pack5', 'pack10'])
 })
 
 export const CreateCreditPackOrderResponse = zod.object({
   "orderId": zod.string(),
   "paymentId": zod.number(),
-  "packId": zod.enum(['pack3', 'pack5']),
+  "packId": zod.enum(['pack3', 'pack5', 'pack10']),
   "credits": zod.number(),
   "finalPrice": zod.number(),
   "currency": zod.string()

@@ -483,7 +483,7 @@ export default function CreditsCheckout({ params }: Props) {
           >
             <div className="relative px-4 sm:px-7 pt-3.5 pb-3 lg:pt-7 lg:pb-6 text-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 dark:from-[#010a05] dark:via-[#052e16] dark:to-[#047857]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_80%_at_50%_-30%,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
-              {pack.id === "pack3" && (
+              {pack.id === "pack10" && (
                 <Badge className="absolute top-3 right-3 lg:top-4 lg:right-4 rounded-full bg-orange-500 text-white border-0 text-[10px] font-bold">
                   {t("pricing_best_value")}
                 </Badge>

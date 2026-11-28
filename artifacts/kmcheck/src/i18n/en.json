@@ -242,6 +242,7 @@
   "pricing_report_title": "Full VIN Report",
   "pricing_plan_pack3_title": "3 Reports",
   "pricing_plan_pack5_title": "5 Reports",
+  "pricing_plan_pack10_title": "10 Reports",
   "pricing_plan_reports_included": "{n} full VIN reports included",
   "pricing_per_n_reports": "for {n} reports",
   "pricing_plan_credits_count": "{n} reports included",

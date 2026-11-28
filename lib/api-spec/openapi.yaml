@@ -1973,7 +1973,7 @@ components:
       properties:
         packId:
           type: string
-          enum: [pack3, pack5]
+          enum: [pack3, pack5, pack10]
 
     CreateCreditPackOrderResult:
       type: object
@@ -1985,7 +1985,7 @@ components:
           type: integer
         packId:
           type: string
-          enum: [pack3, pack5]
+          enum: [pack3, pack5, pack10]
         credits:
           type: integer
         finalPrice:
