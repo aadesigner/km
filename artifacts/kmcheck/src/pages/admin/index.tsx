@@ -178,7 +178,7 @@ function StatCell({
       return (
         <p
           className={cn(
-            "text-[10px] md:text-[13px] leading-snug tracking-tight line-clamp-2",
+            "text-[11px] md:text-[13px] leading-snug tracking-tight line-clamp-2",
             opts?.className,
           )}
           title={titleHint}
@@ -223,58 +223,58 @@ function StatCell({
         "flex h-full flex-col min-w-0",
         isMain
           ? [
-              "px-2.5 py-2.5 sm:px-3.5 sm:py-3",
-              "border-t-[3px] border-t-primary bg-gradient-to-b from-primary/[0.05] to-card",
-              "md:px-5 md:py-4 md:rounded-xl md:shadow-sm",
+              "px-4 py-3.5 sm:px-4 sm:py-4",
+              "border-t-[3px] border-t-primary bg-gradient-to-b from-primary/[0.06] to-card",
+              "md:px-5 md:py-5 md:rounded-xl md:shadow-md md:shadow-primary/5",
             ]
-          : "px-3 py-2.5 sm:px-3.5 sm:py-3 md:px-4 md:py-3.5",
+          : "px-3.5 py-3 sm:px-4 sm:py-3.5 md:px-4 md:py-4",
         highlight && "border-primary/30 bg-primary/[0.03]",
         selected && "ring-2 ring-primary/50 border-primary/40",
         interactive && !selected && "hover:bg-muted/20",
       )}
     >
       {isMain ? (
-        <div className="flex flex-col flex-1 min-h-0 min-w-0">
-          <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+        <div className="flex flex-col flex-1 min-h-0 min-w-0 gap-0.5">
+          <div className="flex items-start justify-between gap-2">
             {Icon ? (
-              <div className="h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/10">
-                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-primary" />
+              <div className="h-10 w-10 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/15">
+                <Icon className="h-5 w-5 md:h-5 md:w-5 text-primary" />
               </div>
             ) : (
               <span />
             )}
-            <TrendBadge value={trend ?? null} compact />
+            <TrendBadge value={trend ?? null} />
           </div>
-          <p className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground mt-2 sm:mt-2.5 truncate leading-tight">
+          <p className="text-xs sm:text-sm md:text-[15px] font-medium text-muted-foreground mt-2.5 sm:mt-3 truncate leading-tight">
             {label}
           </p>
-          <p className="text-base sm:text-xl md:text-3xl lg:text-[2rem] font-bold tabular-nums tracking-tight mt-1 leading-none min-w-0 truncate">
+          <p className="text-2xl sm:text-2xl md:text-3xl lg:text-[2.15rem] font-bold tabular-nums tracking-tight mt-1.5 leading-none min-w-0 truncate">
             {value}
           </p>
           {subMetric ? (
-            <p className="text-[9px] sm:text-[11px] md:text-xs text-muted-foreground mt-1.5 leading-snug line-clamp-2 break-words">
+            <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground mt-2 leading-snug line-clamp-2 break-words">
               {subMetric}
             </p>
           ) : null}
-          {renderSourceBreakdown({ className: "mt-1.5 sm:mt-2 hidden sm:block" })}
+          {renderSourceBreakdown({ className: "mt-2 sm:mt-2.5" })}
           {compareLabel && trend != null && (
-            <p className="text-[9px] sm:text-[11px] md:text-sm text-muted-foreground mt-1 truncate">
+            <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground mt-1.5 truncate">
               {compareLabel}
             </p>
           )}
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-1.5 min-w-0">
-            <span className="text-[11px] md:text-sm text-muted-foreground truncate leading-tight">{label}</span>
-            {Icon && <Icon className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary/60 shrink-0" />}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="text-xs sm:text-sm md:text-[15px] text-muted-foreground truncate leading-tight">{label}</span>
+            {Icon && <Icon className="h-4 w-4 md:h-4.5 md:w-4.5 text-primary/60 shrink-0" />}
           </div>
-          <div className="flex items-baseline gap-1.5 mt-1 md:mt-1.5 min-w-0">
-            <span className="text-lg md:text-2xl font-bold tabular-nums leading-none truncate">{value}</span>
+          <div className="flex items-baseline gap-1.5 mt-1.5 md:mt-2 min-w-0">
+            <span className="text-xl sm:text-2xl md:text-[1.75rem] font-bold tabular-nums leading-none truncate">{value}</span>
             <TrendBadge value={trend ?? null} compact />
           </div>
           {subMetric ? (
-            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 leading-snug line-clamp-2 break-words">{subMetric}</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-1.5 leading-snug line-clamp-2 break-words">{subMetric}</p>
           ) : null}
           {renderSourceBreakdown({ className: "mt-1.5" })}
           {compareLabel && trend != null && (
@@ -859,7 +859,7 @@ export default function AdminOverview() {
           <div className="mb-2.5 md:mb-3">
             <PillTabs<DashboardPeriod> value={period} options={PERIODS.map((p) => ({ id: p, label: PERIOD_LABELS[p] }))} onChange={(id) => setPeriod(id)} />
           </div>
-          <div className="grid grid-cols-3 items-stretch gap-2 sm:gap-3 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 items-stretch gap-3 sm:gap-3 md:gap-5">
             <StatCell
               size="main"
               label="Bruto"
@@ -1031,7 +1031,7 @@ export default function AdminOverview() {
         {/* Lifetime + ops strip */}
         <section>
           <SectionHead title="Totals" icon={Zap} />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
             <StatCell
               label="All-time bruto"
               value={derived?.totalRevStr ?? "—"}

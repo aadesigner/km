@@ -123,26 +123,43 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const [vin, setVin] = useState("");
   const [vinError, setVinError] = useState("");
+  const PACKS_PER_VIEW = 2;
+  const packPageMax = Math.max(0, CREDIT_PACK_IDS.length - PACKS_PER_VIEW);
   const [selectedPack, setSelectedPack] = useState<CreditPackId>("pack3");
+  const [packPage, setPackPage] = useState(0);
   const [packSlideDir, setPackSlideDir] = useState<1 | -1>(1);
   const packSwipeRef = useRef<{ x: number; y: number } | null>(null);
   const reduceMotion = useReducedMotion();
 
-  const selectedPackIndex = CREDIT_PACK_IDS.indexOf(selectedPack);
+  const visiblePackIds = CREDIT_PACK_IDS.slice(packPage, packPage + PACKS_PER_VIEW);
 
-  const goToPack = useCallback((id: CreditPackId, dir?: 1 | -1) => {
-    if (id === selectedPack) return;
-    const from = CREDIT_PACK_IDS.indexOf(selectedPack);
-    const to = CREDIT_PACK_IDS.indexOf(id);
-    setPackSlideDir(dir ?? (to > from ? 1 : -1));
+  const ensurePackVisible = useCallback((id: CreditPackId) => {
+    const idx = CREDIT_PACK_IDS.indexOf(id);
+    if (idx < 0) return;
+    setPackPage((prev) => {
+      if (idx < prev) return idx;
+      if (idx > prev + PACKS_PER_VIEW - 1) return Math.min(idx - PACKS_PER_VIEW + 1, packPageMax);
+      return prev;
+    });
+  }, [packPageMax]);
+
+  const selectPack = useCallback((id: CreditPackId) => {
     setSelectedPack(id);
-  }, [selectedPack]);
+    ensurePackVisible(id);
+  }, [ensurePackVisible]);
 
-  const stepPack = useCallback((dir: 1 | -1) => {
-    const next =
-      (selectedPackIndex + dir + CREDIT_PACK_IDS.length) % CREDIT_PACK_IDS.length;
-    goToPack(CREDIT_PACK_IDS[next], dir);
-  }, [goToPack, selectedPackIndex]);
+  const stepPackPage = useCallback((dir: 1 | -1) => {
+    const next = Math.min(packPageMax, Math.max(0, packPage + dir));
+    if (next === packPage) return;
+    setPackSlideDir(dir);
+    setPackPage(next);
+    const firstVisible = CREDIT_PACK_IDS[next];
+    const secondVisible = CREDIT_PACK_IDS[next + 1];
+    setSelectedPack((cur) => {
+      if (cur === firstVisible || cur === secondVisible) return cur;
+      return dir > 0 ? (secondVisible ?? firstVisible) : firstVisible;
+    });
+  }, [packPage, packPageMax]);
 
   const onPackPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     packSwipeRef.current = { x: e.clientX, y: e.clientY };
@@ -155,7 +172,7 @@ export default function Pricing() {
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
     if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-    stepPack(dx < 0 ? 1 : -1);
+    stepPackPage(dx < 0 ? 1 : -1);
   };
 
   const TESTIMONIALS = useMemo(() => getTestimonials(language), [language]);
@@ -329,19 +346,25 @@ export default function Pricing() {
                   onKeyDown={(e) => {
                     if (e.key === "ArrowLeft") {
                       e.preventDefault();
-                      stepPack(-1);
+                      stepPackPage(-1);
                     } else if (e.key === "ArrowRight") {
                       e.preventDefault();
-                      stepPack(1);
+                      stepPackPage(1);
                     }
                   }}
                 >
-                  <div className="flex items-stretch gap-1.5 sm:gap-2">
+                  <div className="flex items-stretch gap-1 sm:gap-2">
                     <button
                       type="button"
                       aria-label={t("pricing_plan_pack3_title")}
-                      onClick={() => stepPack(-1)}
-                      className="shrink-0 self-center inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      disabled={packPage <= 0}
+                      onClick={() => stepPackPage(-1)}
+                      className={cn(
+                        "shrink-0 self-center inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                        packPage <= 0
+                          ? "border-border/40 text-muted-foreground/35 cursor-not-allowed"
+                          : "border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground",
+                      )}
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </button>
@@ -356,19 +379,18 @@ export default function Pricing() {
                     >
                       <AnimatePresence mode="wait" custom={packSlideDir} initial={false}>
                         <motion.div
-                          key={selectedPack}
+                          key={packPage}
                           role="group"
                           aria-roledescription="slide"
-                          aria-label={t(`pricing_plan_${selectedPack}_title`)}
                           custom={packSlideDir}
                           variants={{
                             enter: (d: number) => ({
-                              x: reduceMotion ? 0 : d * 56,
+                              x: reduceMotion ? 0 : d * 48,
                               opacity: 0,
                             }),
                             center: { x: 0, opacity: 1 },
                             exit: (d: number) => ({
-                              x: reduceMotion ? 0 : d * -56,
+                              x: reduceMotion ? 0 : d * -48,
                               opacity: 0,
                             }),
                           }}
@@ -376,31 +398,59 @@ export default function Pricing() {
                           animate="center"
                           exit="exit"
                           transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-                          className="relative rounded-xl border border-primary/35 bg-primary/[0.06] px-3 py-5 sm:px-4 sm:py-6 text-center shadow-md shadow-primary/10 ring-1 ring-primary/20"
+                          className="grid grid-cols-2 gap-2.5 sm:gap-3"
                         >
-                          {selectedPack === "pack10" && (
-                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-2 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
-                              {t("pricing_best_value")}
-                            </span>
-                          )}
-                          <span className="block text-sm font-semibold tracking-tight text-foreground">
-                            {t(`pricing_plan_${selectedPack}_title`)}
-                          </span>
-                          <span className="mt-2 inline-flex items-baseline justify-center gap-0.5 tabular-nums leading-none text-primary">
-                            <span className="text-base font-semibold opacity-80">{currencySymbol}</span>
-                            <span className="text-[2.35rem] sm:text-[2.55rem] font-black tracking-tighter">
-                              {selectedPackData.unitPrice.toFixed(2).split(".")[0]}
-                            </span>
-                            <span className="text-base font-bold opacity-70">
-                              .{selectedPackData.unitPrice.toFixed(2).split(".")[1]}
-                            </span>
-                          </span>
-                          <span className="block mt-1.5 text-[11px] text-muted-foreground">
-                            {t("per_report").toLowerCase()}
-                          </span>
-                          <p className="mt-3 text-[11px] text-muted-foreground/80 tabular-nums">
-                            {currencySymbol}{selectedPackData.totalPrice.toFixed(2)} · {selectedPackData.credits}×
-                          </p>
+                          {visiblePackIds.map((id) => {
+                            const option = CREDIT_PACKS[id];
+                            const active = selectedPack === id;
+                            const [whole, fraction] = option.unitPrice.toFixed(2).split(".");
+                            return (
+                              <button
+                                key={id}
+                                type="button"
+                                role="radio"
+                                aria-checked={active}
+                                onClick={() => selectPack(id)}
+                                className={cn(
+                                  "relative rounded-xl px-2.5 py-4 sm:px-3 sm:py-5 text-center transition-all duration-200",
+                                  "border outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                                  active
+                                    ? "border-primary/45 bg-primary/[0.07] shadow-md shadow-primary/10 ring-1 ring-primary/25"
+                                    : "border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-border",
+                                )}
+                              >
+                                {id === "pack10" && (
+                                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-1.5 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
+                                    {t("pricing_best_value")}
+                                  </span>
+                                )}
+                                <span className={cn(
+                                  "block text-[12px] sm:text-sm font-semibold tracking-tight leading-tight",
+                                  active ? "text-foreground" : "text-muted-foreground",
+                                )}>
+                                  {t(`pricing_plan_${id}_title`)}
+                                </span>
+                                <span className={cn(
+                                  "mt-2 inline-flex items-baseline justify-center gap-0.5 tabular-nums leading-none",
+                                  active ? "text-primary" : "text-foreground",
+                                )}>
+                                  <span className="text-sm font-semibold opacity-80">{currencySymbol}</span>
+                                  <span className="text-[1.85rem] sm:text-[2.1rem] font-black tracking-tighter">
+                                    {whole}
+                                  </span>
+                                  <span className="text-sm font-bold opacity-70">
+                                    .{fraction}
+                                  </span>
+                                </span>
+                                <span className="block mt-1 text-[10px] sm:text-[11px] text-muted-foreground">
+                                  {t("per_report").toLowerCase()}
+                                </span>
+                                <span className="block mt-2 text-[10px] sm:text-[11px] tabular-nums text-muted-foreground/85">
+                                  {currencySymbol}{option.totalPrice.toFixed(2)}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </motion.div>
                       </AnimatePresence>
                     </div>
@@ -408,38 +458,55 @@ export default function Pricing() {
                     <button
                       type="button"
                       aria-label={t("pricing_plan_pack10_title")}
-                      onClick={() => stepPack(1)}
-                      className="shrink-0 self-center inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      disabled={packPage >= packPageMax}
+                      onClick={() => stepPackPage(1)}
+                      className={cn(
+                        "shrink-0 self-center inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                        packPage >= packPageMax
+                          ? "border-border/40 text-muted-foreground/35 cursor-not-allowed"
+                          : "border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/55 hover:text-foreground",
+                      )}
                     >
                       <ChevronRight className="h-5 w-5" />
                     </button>
                   </div>
 
-                  <div
-                    className="mt-3.5 flex items-center justify-center gap-2"
-                    role="tablist"
-                    aria-label={t("pricing_packs_section")}
-                  >
-                    {CREDIT_PACK_IDS.map((id) => {
-                      const active = selectedPack === id;
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          role="tab"
-                          aria-selected={active}
-                          aria-label={t(`pricing_plan_${id}_title`)}
-                          onClick={() => goToPack(id)}
-                          className={cn(
-                            "h-2 rounded-full transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                            active
-                              ? "w-6 bg-primary"
-                              : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50",
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
+                  {packPageMax > 0 && (
+                    <div
+                      className="mt-3.5 flex items-center justify-center gap-2"
+                      role="tablist"
+                      aria-label={t("pricing_packs_section")}
+                    >
+                      {Array.from({ length: packPageMax + 1 }, (_, page) => {
+                        const active = packPage === page;
+                        return (
+                          <button
+                            key={page}
+                            type="button"
+                            role="tab"
+                            aria-selected={active}
+                            aria-label={`${page + 1}`}
+                            onClick={() => {
+                              if (page === packPage) return;
+                              setPackSlideDir(page > packPage ? 1 : -1);
+                              setPackPage(page);
+                              const first = CREDIT_PACK_IDS[page];
+                              const second = CREDIT_PACK_IDS[page + 1];
+                              setSelectedPack((cur) =>
+                                cur === first || cur === second ? cur : (first ?? cur),
+                              );
+                            }}
+                            className={cn(
+                              "h-2 rounded-full transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              active
+                                ? "w-6 bg-primary"
+                                : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50",
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="text-center space-y-1">

@@ -903,7 +903,7 @@ function buildAdminUserWhere(
   const conditions = [];
   const search = searchRaw.trim();
   if (search) {
-    conditions.push(or(like(usersTable.email, `%${search}%`), like(usersTable.name, `%${search}%`))!);
+    conditions.push(or(ilike(usersTable.email, `%${search}%`), ilike(usersTable.name, `%${search}%`))!);
   }
   if (status === "banned") conditions.push(eq(usersTable.isBanned, true));
   if (status === "active") conditions.push(eq(usersTable.isBanned, false));
