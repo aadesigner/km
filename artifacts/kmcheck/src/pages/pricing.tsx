@@ -370,7 +370,7 @@ export default function Pricing() {
                     </button>
 
                     <div
-                      className="relative flex-1 min-w-0 overflow-hidden touch-pan-y select-none"
+                      className="relative flex-1 min-w-0 overflow-hidden touch-pan-y select-none pt-3"
                       onPointerDown={onPackPointerDown}
                       onPointerUp={onPackPointerUp}
                       onPointerCancel={() => {
@@ -414,13 +414,14 @@ export default function Pricing() {
                                 className={cn(
                                   "relative rounded-xl px-2.5 py-4 sm:px-3 sm:py-5 text-center transition-all duration-200",
                                   "border outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                                  id === "pack10" && "pt-5 sm:pt-6",
                                   active
                                     ? "border-primary/45 bg-primary/[0.07] shadow-md shadow-primary/10 ring-1 ring-primary/25"
                                     : "border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-border",
                                 )}
                               >
                                 {id === "pack10" && (
-                                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-1.5 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
+                                  <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-[9px] font-bold uppercase tracking-wide text-primary bg-background px-1.5 py-0.5 rounded-full border border-primary/30 shadow-sm whitespace-nowrap">
                                     {t("pricing_best_value")}
                                   </span>
                                 )}
