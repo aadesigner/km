@@ -256,7 +256,7 @@ function StatCell({
               {subMetric}
             </p>
           ) : null}
-          {renderSourceBreakdown({ className: "mt-1.5 sm:mt-2 hidden sm:block" })}
+          {renderSourceBreakdown({ className: "mt-1.5 sm:mt-2" })}
           {compareLabel && trend != null && (
             <p className="text-[10px] sm:text-[11px] md:text-sm text-muted-foreground mt-1 truncate">
               {compareLabel}
