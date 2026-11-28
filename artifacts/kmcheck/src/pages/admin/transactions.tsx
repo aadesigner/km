@@ -44,6 +44,8 @@ type AdminTransaction = {
 
 type Summary = {
   totalRevenue: number;
+  totalNetRevenue?: number;
+  totalProcessorFees?: number;
   counts: Record<string, number>;
 };
 
@@ -159,18 +161,27 @@ function useTransactions(page: number, status: string, search: string) {
   });
 }
 
-function SummaryCard({ label, value, icon, className }: {
-  label: string; value: string; icon: React.ReactNode; className?: string;
+function SummaryCard({ label, value, subMetric, icon, className }: {
+  label: string;
+  value: string;
+  subMetric?: string | null;
+  icon: React.ReactNode;
+  className?: string;
 }) {
   return (
     <Card className={className}>
-      <CardContent className="p-4 flex items-center gap-3">
+      <CardContent className="p-3.5 sm:p-4 flex items-center gap-3 min-w-0">
         <div className="h-9 w-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
           {icon}
         </div>
-        <div>
-          <p className="text-2xl font-black tabular-nums leading-tight">{value}</p>
-          <p className="text-xs text-muted-foreground font-medium">{label}</p>
+        <div className="min-w-0">
+          <p className="text-xl sm:text-2xl font-black tabular-nums leading-tight truncate">{value}</p>
+          {subMetric ? (
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+              {subMetric}
+            </p>
+          ) : null}
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">{label}</p>
         </div>
       </CardContent>
     </Card>
@@ -292,8 +303,13 @@ export default function AdminTransactions() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard
-          label="Total Revenue"
+          label="Bruto"
           value={summary ? `€${summary.totalRevenue.toFixed(2)}` : "—"}
+          subMetric={
+            summary
+              ? `Neto €${Number(summary.totalNetRevenue ?? Math.max(0, summary.totalRevenue - (summary.totalProcessorFees ?? 0))).toFixed(2)} · Fees €${Number(summary.totalProcessorFees ?? 0).toFixed(2)}`
+              : null
+          }
           icon={<DollarSign className="h-4 w-4 text-green-600" />}
         />
         <SummaryCard

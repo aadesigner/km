@@ -3380,7 +3380,7 @@ router.get("/admin/transactions", requireStaff, async (req, res) => {
     .from(paymentsTable)
     .leftJoin(usersTable, eq(paymentsTable.userId, usersTable.id));
 
-  const [rawItems, countResult, summaryResult] = await Promise.all([
+  const [rawItems, countResult, summaryResult, netSummaryResult] = await Promise.all([
     (where ? baseQuery.where(where) : baseQuery)
       .orderBy(desc(paymentsTable.createdAt))
       .limit(limit)
@@ -3405,6 +3405,13 @@ router.get("/admin/transactions", requireStaff, async (req, res) => {
           )
         )
       GROUP BY status
+    `),
+    db.execute(sql`
+      SELECT
+        COALESCE(SUM(${sql.raw(SQL_PAYMENT_ESTIMATED_NET)}), 0)::float AS total_net_revenue,
+        COALESCE(SUM(${sql.raw(SQL_PAYMENT_ESTIMATED_FEE)}), 0)::float AS total_processor_fees
+      FROM payments p
+      WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
     `),
   ]);
 
@@ -3432,13 +3439,19 @@ router.get("/admin/transactions", requireStaff, async (req, res) => {
   }
   // Keep revoked amounts in revenue (pending credit/remove must not deduct).
   const totalRevenue = sumCollectedRevenue(statusRows);
+  const netRow = (netSummaryResult.rows[0] ?? {}) as {
+    total_net_revenue?: number;
+    total_processor_fees?: number;
+  };
+  const totalNetRevenue = Number(netRow.total_net_revenue ?? 0);
+  const totalProcessorFees = Number(netRow.total_processor_fees ?? 0);
 
   res.json({
     items,
     total: countResult[0]?.total ?? 0,
     page,
     limit,
-    summary: { totalRevenue, counts },
+    summary: { totalRevenue, totalNetRevenue, totalProcessorFees, counts },
   });
 });
 
