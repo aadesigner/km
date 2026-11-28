@@ -57,6 +57,7 @@ describe("derivePeriodMetrics", () => {
   it("returns today metrics with yesterday comparison", () => {
     const m = derivePeriodMetrics(baseStats, "today");
     expect(m.revenue).toBe(100);
+    expect(m.revenueGross).toBe(100);
     expect(m.checks).toBe(5);
     expect(m.signups).toBe(3);
     expect(m.revenueTrend).toBe(25);
@@ -75,6 +76,17 @@ describe("derivePeriodMetrics", () => {
     expect(m.checks).toBe(80);
     expect(m.signups).toBe(40);
     expect(m.checksTrend).toBe(33);
+  });
+
+  it("derives neto/fees from payment method rows without changing bruto", () => {
+    const m = derivePeriodMetrics(baseStats, "today", [
+      { method: "paypal", count: 5, revenue: 100 },
+    ]);
+    expect(m.revenue).toBe(100);
+    expect(m.revenueGross).toBe(100);
+    // 100*0.039 + 5*0.30 = 5.4
+    expect(m.processorFees).toBe(5.4);
+    expect(m.revenueNet).toBe(94.6);
   });
 });
 

@@ -142,6 +142,10 @@ import {
   sumCollectedRevenue,
   SQL_COLLECTED_REVENUE_ROW_FILTER,
 } from "../lib/recordedPayments.js";
+import {
+  SQL_PAYMENT_ESTIMATED_FEE,
+  SQL_PAYMENT_ESTIMATED_NET,
+} from "../lib/payment-processor-fees.js";
 import { invalidateAdminStatsCache, registerAdminStatsInvalidationHook } from "../lib/adminStatsInvalidation.js";
 import { validateAnalyticsSettingsPatch, validateAnalyticsSettingsMerged } from "../lib/analyticsIds.js";
 import { validateProviderBaseUrl } from "../lib/providerUrl.js";
@@ -456,6 +460,11 @@ async function loadAdminStatsPayload() {
         (SELECT COUNT(*) FROM vin_lookups)::int AS total_vin_checks,
         (SELECT COALESCE(SUM(p.amount), 0)::float FROM payments p
          WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}) AS total_revenue,
+        (SELECT COALESCE(SUM(${sql.raw(SQL_PAYMENT_ESTIMATED_NET)}), 0)::float FROM payments p
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}) AS total_net_revenue,
+        (SELECT COALESCE(SUM(${sql.raw(SQL_PAYMENT_ESTIMATED_FEE)}), 0)::float FROM payments p
+         WHERE ${sql.raw(SQL_COLLECTED_REVENUE_ROW_FILTER)}
+           AND COALESCE(p.amount, 0) > 0) AS total_processor_fees,
         (SELECT COUNT(*)::int FROM payments p
          WHERE p.status IN ('completed', 'revoked')) AS qualifying_payment_count,
         (SELECT COALESCE(AVG(p.amount), 0)::float FROM payments p
@@ -647,6 +656,8 @@ async function loadAdminStatsPayload() {
 
   const agg = (aggregatesRaw.rows[0] ?? {}) as {
     total_users?: number; total_vin_checks?: number; total_revenue?: number;
+    total_net_revenue?: number;
+    total_processor_fees?: number;
     qualifying_payment_count?: number;
     avg_paid_order_value?: number;
     revenue_this_week?: number; revenue_last_week?: number;
@@ -674,6 +685,8 @@ async function loadAdminStatsPayload() {
   const cutoff30Str = utcDateIsoDaysAgo(29);
 
   const totalRevenue = Number(agg.total_revenue ?? 0);
+  const totalNetRevenue = Number(agg.total_net_revenue ?? 0);
+  const totalProcessorFees = Number(agg.total_processor_fees ?? 0);
   const qualifyingPaymentCount = Number(agg.qualifying_payment_count ?? 0);
   const revenueThisWeek = Number(agg.revenue_this_week ?? 0);
   const revenueLastWeek = Number(agg.revenue_last_week ?? 0);
@@ -738,6 +751,8 @@ async function loadAdminStatsPayload() {
     totalUsers: Number(agg.total_users ?? 0),
     totalVinChecks: Number(agg.total_vin_checks ?? 0),
     totalRevenue,
+    totalNetRevenue,
+    totalProcessorFees,
     qualifyingPaymentCount,
     avgOrderValue: Number(agg.avg_paid_order_value ?? 0),
     revenueThisWeek,

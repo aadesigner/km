@@ -1,3 +1,5 @@
+import { netFromGrossAndMethodRows } from "./payment-processor-fees";
+
 export type DaySeries = { date: string; count?: number; revenue?: number };
 
 export type DashboardPeriod = "today" | "yesterday" | "week" | "month" | "lastMonth" | "quarter" | "year";
@@ -44,6 +46,10 @@ export type ExtendedStats = {
   totalUsers: number;
   totalVinChecks: number;
   totalRevenue: number;
+  /** All-time estimated neto after PayPal/POK fees (display-only). */
+  totalNetRevenue?: number;
+  /** All-time estimated processor fees (display-only). */
+  totalProcessorFees?: number;
   qualifyingPaymentCount?: number;
   avgOrderValue?: number;
   revenueThisWeek?: number;
@@ -513,7 +519,11 @@ export function sumSeriesInUtcWindow(
 }
 
 export type PeriodMetrics = {
+  /** Bruto (customer paid) — charts/trends still use this. */
   revenue: number;
+  revenueGross: number;
+  revenueNet: number;
+  processorFees: number;
   checks: number;
   signups: number;
   revenueTrend: number | null;
@@ -521,7 +531,24 @@ export type PeriodMetrics = {
   signupsTrend: number | null;
 };
 
-export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPeriod): PeriodMetrics {
+function withRevenueNet(
+  base: Omit<PeriodMetrics, "revenueGross" | "revenueNet" | "processorFees">,
+  methodRows?: PaymentMethodStat[] | null,
+): PeriodMetrics {
+  const net = netFromGrossAndMethodRows(base.revenue, methodRows);
+  return {
+    ...base,
+    revenueGross: net.revenueGross,
+    revenueNet: net.revenueNet,
+    processorFees: net.processorFees,
+  };
+}
+
+export function derivePeriodMetrics(
+  stats: ExtendedStats,
+  period: DashboardPeriod,
+  methodRows?: PaymentMethodStat[] | null,
+): PeriodMetrics {
   const checksSeries = stats.checksByDay90 ?? stats.checksByDay30 ?? [];
   const revenueSeries = stats.revenueByDay90 ?? stats.revenueByDay30 ?? [];
   const usersSeries = stats.usersByDay90 ?? stats.usersByDay ?? [];
@@ -541,9 +568,11 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
   const quarterStartIso = utcDateKeyDaysAgo(89);
   const yearStartIso = utcYearStartIso();
 
+  const methods = methodRows ?? stats.paymentsByMethod?.[period] ?? null;
+
   switch (period) {
     case "today":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueToday ?? sumSeriesInUtcWindow(revenueSeries, "revenue", todayIso),
         checks: stats.checksToday ?? sumSeriesInUtcWindow(checksSeries, "count", todayIso),
         signups: stats.signupsToday ?? sumSeriesInUtcWindow(usersSeries, "count", todayIso),
@@ -553,9 +582,9 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
         ),
         checksTrend: trendPct(stats.checksToday ?? 0, stats.checksYesterday ?? 0),
         signupsTrend: trendPct(stats.signupsToday ?? 0, stats.signupsYesterday ?? 0),
-      };
+      }, methods);
     case "yesterday":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueYesterday ?? sumSeriesInUtcWindow(
           revenueSeries, "revenue", yesterdayIso, todayIso,
         ),
@@ -568,27 +597,27 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
         revenueTrend: null,
         checksTrend: null,
         signupsTrend: null,
-      };
+      }, methods);
     case "week":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueThisWeek ?? sumSeriesInUtcWindow(revenueSeries, "revenue", weekStartIso),
         checks: stats.checksThisWeek ?? sumSeriesInUtcWindow(checksSeries, "count", weekStartIso),
         signups: stats.signupsThisWeek ?? sumSeriesInUtcWindow(usersSeries, "count", weekStartIso),
         revenueTrend: trendPct(stats.revenueThisWeek ?? 0, stats.revenueLastWeek ?? 0),
         checksTrend: trendPct(stats.checksThisWeek ?? 0, stats.checksLastWeek ?? 0),
         signupsTrend: trendPct(stats.signupsThisWeek ?? 0, stats.signupsLastWeek ?? 0),
-      };
+      }, methods);
     case "month":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueThisMonth ?? sumSeriesInUtcWindow(revenueSeries, "revenue", monthStartIso),
         checks: stats.checksThisMonth ?? sumSeriesInUtcWindow(checksSeries, "count", monthStartIso),
         signups: stats.signupsThisMonth ?? sumSeriesInUtcWindow(usersSeries, "count", monthStartIso),
         revenueTrend: trendPct(stats.revenueThisMonth ?? 0, stats.revenueLastMonth ?? 0),
         checksTrend: trendPct(stats.checksThisMonth ?? 0, stats.checksLastMonth ?? 0),
         signupsTrend: trendPct(stats.signupsThisMonth ?? 0, stats.signupsLastMonth ?? 0),
-      };
+      }, methods);
     case "lastMonth":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueLastMonth ?? sumSeriesInUtcWindow(
           revenueSeries, "revenue", lastMonthStartIso, monthStartIso,
         ),
@@ -601,25 +630,25 @@ export function derivePeriodMetrics(stats: ExtendedStats, period: DashboardPerio
         revenueTrend: null,
         checksTrend: null,
         signupsTrend: null,
-      };
+      }, methods);
     case "quarter":
-      return {
+      return withRevenueNet({
         revenue: sumSeriesInUtcWindow(revenueSeries, "revenue", quarterStartIso),
         checks: sumSeriesInUtcWindow(checksSeries, "count", quarterStartIso),
         signups: sumSeriesInUtcWindow(usersSeries, "count", quarterStartIso),
         revenueTrend: null,
         checksTrend: null,
         signupsTrend: null,
-      };
+      }, methods);
     case "year":
-      return {
+      return withRevenueNet({
         revenue: stats.revenueThisYear ?? sumSeriesInUtcWindow(revenueSeries, "revenue", yearStartIso),
         checks: stats.checksThisYear ?? sumSeriesInUtcWindow(checksSeries, "count", yearStartIso),
         signups: stats.signupsThisYear ?? sumSeriesInUtcWindow(usersSeries, "count", yearStartIso),
         revenueTrend: null,
         checksTrend: null,
         signupsTrend: null,
-      };
+      }, methods);
   }
 }
 

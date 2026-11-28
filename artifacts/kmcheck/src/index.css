@@ -752,10 +752,11 @@ html.admin-theme-active .admin-main .admin-table-scroll {
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pinch-zoom;
+  /* Allow vertical page scroll while still panning wide tables horizontally. */
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 html.admin-theme-active .admin-main .admin-table-scroll table {

@@ -36,6 +36,7 @@ import {
   acquisitionChannelTintClass,
   acquisitionChannelTextClass,
 } from "@/lib/admin-dashboard-stats";
+import { PROCESSOR_FEE_FOOTNOTE } from "@/lib/payment-processor-fees";
 
 /** Recharts stays out of the admin layout / nav graph — load only when Overview paints the chart. */
 const AdminDashboardChart = lazyWithRetry(() => import("@/pages/admin/admin-dashboard-chart"));
@@ -142,6 +143,7 @@ function StatCell({
   trend,
   compareLabel,
   footnote,
+  subMetric,
   sourceParts,
   icon: Icon,
   highlight,
@@ -155,6 +157,8 @@ function StatCell({
   compareLabel?: string;
   /** Small secondary line (e.g. legacy text footnote). */
   footnote?: string | null;
+  /** Compact secondary metric under the main value (e.g. Neto / fees). */
+  subMetric?: React.ReactNode;
   /** Where revenue/signups came from — shown between value and label. */
   sourceParts?: Array<{ label: string; value: string; channel?: string }> | null;
   icon?: React.ElementType;
@@ -235,6 +239,9 @@ function StatCell({
             <span className="text-lg font-bold tabular-nums leading-none">{value}</span>
             <TrendBadge value={trend ?? null} compact />
           </div>
+          {subMetric ? (
+            <p className="text-[10px] text-muted-foreground mt-1 leading-snug line-clamp-2">{subMetric}</p>
+          ) : null}
           <p className="text-[11px] text-muted-foreground mt-1.5 truncate leading-tight">{label}</p>
           {compareLabel && trend != null && (
             <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{compareLabel}</p>
@@ -256,8 +263,11 @@ function StatCell({
           <p className="text-3xl lg:text-[2rem] font-bold tabular-nums tracking-tight mt-4 leading-none">
             {value}
           </p>
+          {subMetric ? (
+            <p className="text-xs md:text-sm text-muted-foreground mt-2 leading-snug">{subMetric}</p>
+          ) : null}
           {renderSourceBreakdown({ className: "mt-2.5" })}
-          <p className={cn("text-base font-medium text-foreground/80", sourceParts?.length ? "mt-2" : "mt-2.5")}>{label}</p>
+          <p className={cn("text-base font-medium text-foreground/80", sourceParts?.length || subMetric ? "mt-2" : "mt-2.5")}>{label}</p>
           {compareLabel && trend != null && (
             <p className="text-sm text-muted-foreground mt-1.5">{compareLabel}</p>
           )}
@@ -272,6 +282,9 @@ function StatCell({
             <span className="text-lg md:text-2xl font-bold tabular-nums leading-none">{value}</span>
             <TrendBadge value={trend ?? null} compact />
           </div>
+          {subMetric ? (
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">{subMetric}</p>
+          ) : null}
           {renderSourceBreakdown({ className: "mt-1.5" })}
           {compareLabel && trend != null && (
             <p className="text-[11px] md:text-sm text-muted-foreground mt-1 truncate">{compareLabel}</p>
@@ -595,7 +608,6 @@ export default function AdminOverview() {
   const derived = useMemo(() => {
     if (!stats) return null;
 
-    const periodMetrics = derivePeriodMetrics(stats, period);
     const checksSource = stats.checksByDay90 ?? stats.checksByDay30 ?? [];
     const revenueSource = stats.revenueByDay90 ?? stats.revenueByDay30 ?? [];
     const usersSource = stats.usersByDay90 ?? stats.usersByDay ?? [];
@@ -613,6 +625,7 @@ export default function AdminOverview() {
     const countrySignupRows = slicePeriodBreakdown(stats.signupsByCountry, period);
     const countryPurchaseRows = slicePeriodBreakdown(stats.purchasesByCountry, period);
     const methodRows = slicePeriodBreakdown(stats.paymentsByMethod, period);
+    const periodMetrics = derivePeriodMetrics(stats, period, methodRows);
     const sourceRows = slicePeriodBreakdown(stats.salesBySource, period);
     const channelRows = slicePeriodBreakdown(stats.salesByChannel, period);
     const signupChannelRows = slicePeriodBreakdown(stats.signupsByChannel, period);
@@ -630,6 +643,16 @@ export default function AdminOverview() {
     const sourcePrev = comparePeriod
       ? slicePeriodBreakdown(stats.salesBySource, comparePeriod)
       : undefined;
+
+    const totalBruto = Number(stats.totalRevenue) || 0;
+    const totalNeto = Number(stats.totalNetRevenue);
+    const totalFees = Number(stats.totalProcessorFees);
+    const allTimeNet = Number.isFinite(totalNeto)
+      ? totalNeto
+      : Math.max(0, totalBruto - (Number.isFinite(totalFees) ? totalFees : 0));
+    const allTimeFees = Number.isFinite(totalFees)
+      ? totalFees
+      : Math.max(0, totalBruto - allTimeNet);
 
     return {
       periodMetrics,
@@ -649,7 +672,9 @@ export default function AdminOverview() {
       sourcePrev,
       pendingOpen: stats.pendingVinChecksOpen ?? 0,
       recentPending: stats.recentPendingVinChecks ?? [],
-      totalRevStr: fmtEuro(Number(stats.totalRevenue) || 0),
+      totalRevStr: fmtEuro(totalBruto),
+      totalNetStr: fmtEuro(allTimeNet),
+      totalFeesStr: fmtEuro(allTimeFees),
       cacheStr: `${Number(stats.cacheHitRate || 0).toFixed(1)}%`,
     };
   }, [stats, period, chartMetric, chartRange]);
@@ -846,10 +871,15 @@ export default function AdminOverview() {
           <div className="grid grid-cols-3 items-stretch gap-2.5 md:gap-5">
             <StatCell
               size="main"
-              label="Revenue"
-              value={<RisingCompactEuro value={derived?.periodMetrics.revenue ?? 0} replayKey={period} />}
+              label="Bruto"
+              value={<RisingCompactEuro value={derived?.periodMetrics.revenueGross ?? derived?.periodMetrics.revenue ?? 0} replayKey={period} />}
               trend={derived?.periodMetrics.revenueTrend}
               compareLabel={derived?.compareLabel}
+              subMetric={
+                derived
+                  ? `Neto ${fmtEuro(derived.periodMetrics.revenueNet)} · Fees ${fmtEuro(derived.periodMetrics.processorFees)}`
+                  : null
+              }
               sourceParts={derived?.revenueSourceChips}
               icon={DollarSign}
             />
@@ -871,6 +901,9 @@ export default function AdminOverview() {
               icon={UserPlus}
             />
           </div>
+          <p className="mt-2 text-[10px] md:text-xs text-muted-foreground/90" title={PROCESSOR_FEE_FOOTNOTE}>
+            {PROCESSOR_FEE_FOOTNOTE}
+          </p>
         </section>
 
         {/* Online users */}
@@ -1011,7 +1044,16 @@ export default function AdminOverview() {
         <section>
           <SectionHead title="Totals" icon={Zap} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4">
-            <StatCell label="All-time revenue" value={derived?.totalRevStr ?? "—"} icon={DollarSign} />
+            <StatCell
+              label="All-time bruto"
+              value={derived?.totalRevStr ?? "—"}
+              subMetric={
+                derived
+                  ? `Neto ${derived.totalNetStr} · Fees ${derived.totalFeesStr}`
+                  : null
+              }
+              icon={DollarSign}
+            />
             <StatCell label="VIN checks" value={String(stats?.totalVinChecks ?? "—")} icon={Zap} />
             <StatCell label="Users" value={String(stats?.totalUsers ?? "—")} icon={Users} />
             <StatCell
